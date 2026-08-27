@@ -1,6 +1,6 @@
 # Validation Report
 
-Updated: 2026-08-27 — static safety hardening verified; local runtime proof deferred
+Updated: 2026-08-27 — non-local MCP preparation verified; local runtime proof deferred
 
 This file owns the **proof boundary**. Continuation belongs in `docs/knowledge/next-action.md`; stable facts belong in `CONTEXT.md`.
 
@@ -12,15 +12,16 @@ DEFAULT CLIENT EXPOSURE:                  MCP Core + Geometry (27 tools)
 ACTIVE PHASE CONTRACT:                    SOURCE + FULL MCP STATIC PROOF
 CODEX FIRST-CALL LEGIBILITY:              SOURCE + FULL MCP STATIC PROOF
 BUILD BUNDLE IDENTITY:                    SOURCE + FULL MCP STATIC PROOF
-LATEST FULL MCP VERIFY:                   GREEN @ f2db288764382d4e4a2c6daca80e65359ad670a4
-LAST OBSERVED FULL CANONICAL GREEN:       f2db288764382d4e4a2c6daca80e65359ad670a4
-REPOSITORY CONTRACT BASELINE:             GREEN @ 471799dd12dcc84928f612b66b17b1319f966fc8
+DEFERRED LOCAL SMOKE CONTRACT:            SOURCE + FULL MCP STATIC PROOF
+LATEST FULL MCP VERIFY:                   GREEN @ 90c9b3d42bdd82ab3ebbc3278b8e2f4402ece1f1
+LAST OBSERVED FULL CANONICAL GREEN:       90c9b3d42bdd82ab3ebbc3278b8e2f4402ece1f1
+LATEST REPOSITORY VERIFY:                 GREEN @ 90c9b3d42bdd82ab3ebbc3278b8e2f4402ece1f1
 ACCEPTED LIVE BASELINE:                   2026-08-12 Blockbench 5.1.6
 CURRENT HARDENING LIVE RETEST:            DEFERRED BY USER; LOCAL PROOF REQUIRED
 CURRENT MODEL-QUALITY CLAIM:              LOCAL PROOF REQUIRED
 ```
 
-Current static proof must not be confused with live Blockbench behavior. Source/typecheck/tests/build/docs checks can prove phase ownership, prompt filtering, handoff semantics, schemas, buildability, generated-doc freshness, source-owned phase surface, and bundle-fingerprint generation; they cannot prove visual fidelity, installed-plugin freshness, live Codex tool exposure, playback, future Codex call efficiency, or Authoring Efficiency.
+Current static proof must not be confused with live Blockbench behavior. Source/typecheck/tests/build/docs checks can prove phase ownership, schemas, buildability, generated-doc freshness, source-owned phase surfaces, bundle-fingerprint generation, and the deferred smoke-gate contract; they cannot prove visual fidelity, installed-plugin freshness, a fresh Codex registry, live Blockbench mutation/Undo, playback, future call efficiency, or Authoring Efficiency.
 
 ## Current Agent-Contract Proof
 
@@ -31,9 +32,9 @@ MCP CORE + exactly one ACTIVE PHASE
 GEOMETRY | TEXTURING | ANIMATION
 ```
 
-Runtime initialize instructions name `ACTIVE PHASE`, carry the Bedrock coordinate invariant (`16 Blockbench units = 1 Minecraft block`, `x=width`, `y=height`, `z=length`, `+Y=up`), explain that foreign-phase tools are intentionally unavailable, and require `HANDOFF_REQUIRED` rather than foreign-tool search. Runtime workflow generation remains phase-filtered: shared minimum-evidence guidance + only the current phase workflow + compact readiness/handoff state.
+Runtime instructions name the active phase, preserve the Bedrock unit/axis invariant, explain foreign-phase absence, and require `HANDOFF_REQUIRED` instead of foreign-tool search. Phase transitions remain deliberate reload/reconnect boundaries rather than in-process surface mutation.
 
-The current full MCP gate passed at `f2db288764382d4e4a2c6daca80e65359ad670a4`:
+The current full MCP gate passed at `90c9b3d42bdd82ab3ebbc3278b8e2f4402ece1f1`:
 
 ```text
 bun install --frozen-lockfile  PASS
@@ -44,39 +45,80 @@ bun run build                  PASS
 bun run docs:check             PASS
 ```
 
-The current full test suite has no failing contract tests. Surface measurement remains within the existing ceilings and preserves the 64-tool retained catalog.
+Repository Verify also passed on the same commit. The current full test suite has no failing contract tests.
 
-Current regression coverage additionally proves:
+Current regression coverage proves, among other things:
 
 - missing phase defaults to Geometry while explicit invalid phase fails closed;
 - default Geometry exposure is Core + Geometry only (27 tools);
-- retained callable tools have one ownership category;
-- Direct Geometry remains free of the retired plan/compiler requirement;
-- initialize instructions name phase, Bedrock units/axes, foreign-tool absence, readiness, handoff, and STOP;
-- active Geometry routing distinguishes `add_group` from rig-specific `bone_rigging` and dedicated structural delete/rename routes;
-- first-call conditional invariants remain explicit for rotated Cubes, `add_group`, `modify_cube`, Locator, and Null Object mutation;
-- Geometry/Texturing/Animation runtime prompt bodies exclude foreign-phase authoring routes;
+- retained callable catalog remains 64 tools across phases;
+- required Geometry acceptance tools are present in the source-owned Geometry surface;
+- Direct Geometry remains free of the retired `plan_id` contract;
+- Geometry/Texturing/Animation prompt bodies exclude foreign-phase authoring routes;
 - specialists do not direct-call foreign-phase mutation;
-- intentionally disabled generic helpers are not treated as expected discovery targets;
-- routed exact-name discovery has full recall at the inspected default limit 8;
-- loopback/stateless transport, Origin/Host guards, request limits, and active socket cleanup retain regression coverage;
-- plugin startup does not enter ready UI before TCP bind and fails closed on bind error;
-- bind-failure verification checks structural cleanup/reset/return ordering rather than a mutable log sentence;
-- build output receives a deterministic SHA-256 bundle identity without changing release version;
-- `/health.build_identity` is distinct from `product.version`, `instance_id`, and `startup_time`;
-- unbundled source health fails closed to the explicit `source` build identity rather than pretending to be a packaged bundle.
+- routed exact-name discovery retains full recall at default limit 8;
+- loopback/stateless transport, Origin/Host guards, request bounds, active socket cleanup, and fail-closed TCP bind retain regression coverage;
+- build output receives a deterministic SHA-256 identity without changing release version;
+- `/health.build_identity`, `product.version`, `instance_id`, and `startup_time` have separate responsibilities;
+- canonical active plugin path is `mcp/dist/blockit_mcp.js`;
+- active operator guidance requires BlockIT MCP reload/restart plus client reconnect at phase handoff;
+- the local acceptance runbook preserves observable quality/efficiency vocabulary and explicitly says: `Do not invent token or latency numbers`.
+
+## Non-Local Acceptance Preparation Proof
+
+Everything identifiable before desktop execution is now prepared and regression-guarded.
+
+The existing `bun run verify:stateless-local` script was strengthened without adding a new runtime framework. When local testing is later reactivated, it can check in one bounded pass:
+
+```text
+/health stateless JSON mode
+live profile + requested authoring phase
+local dist/blockit_mcp.js embedded build_identity == /health.build_identity
+health exposed_tool_count == source-owned phase count
+initialize reports expected ACTIVE PHASE
+live tools/list exactly == getMcpSurfaceToolNames(profile, phase)
+risky_eval / from_geo_json absent
+required Geometry acceptance tools present
+Direct Geometry schemas do not expose or require plan_id
+```
+
+For Geometry, the required acceptance capability is:
+
+```text
+create_project
+add_group
+place_cube
+modify_cube
+modify_cubes_batch
+modify_group
+reparent_element
+capture_model_views
+bone_rigging
+export_model
+```
+
+The plan-free schema guard covers:
+
+```text
+add_group
+place_cube
+modify_cube
+modify_cubes_batch
+modify_group
+reparent_element
+```
+
+This reduces the eventual local session to artifact loading + one direct smoke + fresh Codex registry + representative Blockbench behavior. It does not turn a static check into live proof.
 
 ## Bundle Freshness Identity
 
-The build owner computes SHA-256 over the emitted MCP bundle content before adding the diagnostic banner, then injects:
+The production build computes SHA-256 over the emitted MCP bundle before adding the diagnostic banner, then injects:
 
 ```text
 globalThis.__BLOCKIT_BUILD_ID__ = "sha256:<64 lowercase hex>"
 ```
 
-The production build fails if the expected bundle is absent or the identity banner is not written. The build log prints the resulting fingerprint so a future local `/health` response can be compared against the exact locally built artifact.
-
-Identity responsibilities remain separate:
+Identity ownership remains:
 
 ```text
 product.version    = release/development version; currently 0.1.0
@@ -85,7 +127,7 @@ instance_id        = running server-process identity
 startup_time       = running server-process start time
 ```
 
-The fingerprint is diagnosis only. It is not a cache-buster, release version, session key, UI state, telemetry stream, or reconnect mechanism. The Blockbench panel intentionally remains free of build-fingerprint state.
+The fingerprint is diagnosis only. It is not a cache-buster, release version, session key, UI state, telemetry stream, or reconnect mechanism.
 
 ## Discovery / Static Footprint Proof
 
@@ -106,43 +148,7 @@ MRR             0.8844
 top_8_misses    0
 ```
 
-Raw semantic search remains a stress metric. The normal path is active-phase routing first, then exact routed spec loading when needed. Top-1/top-3/MRR are diagnostics, not standalone product-success claims.
-
-## Current Static / Source State
-
-Current retained source includes:
-
-- 64-tool normal Bedrock callable catalog across phases;
-- default client exposure narrowed to MCP Core + Geometry (27 tools);
-- phase-specific runtime workflow and active-specialist-only routing;
-- deterministic `HANDOFF_REQUIRED` with readiness + compact resume state;
-- Bedrock unit/axis contract in MCP initialize;
-- coherent Cube and Group batching;
-- deterministic non-overlapping Box-UV packing and returned `box_uv_region`;
-- logical UV resolution 128 default / 256 opt-in;
-- Texture Atlas/Painter/PBR/material-instance authoring;
-- Bedrock animation, effects, controller mutation/inspection;
-- Locator/Null Object lifecycle;
-- Undo/history, `.bbmodel`, and Bedrock geometry export;
-- loopback-only request-owned/stateless transport;
-- fail-closed TCP-bind lifecycle;
-- SHA-256 packaged-bundle freshness identity in `/health`;
-- `risky_eval` and `from_geo_json` disabled.
-
-The safety hardening did not add a router, registration profile, reconnect daemon, telemetry layer, alternate transport, compatibility framework, Geometry compiler, or Route 1 model workaround.
-
-## Box-UV / Phase Boundary
-
-Geometry owns UV Layout mutation. After Geometry `PASS`, final Box-UV state is locked with `autouv=0` where applicable, then `list_textures` performs the global UV audit. Texturing may read/audit UV state but must return required UV/geometry correction to Geometry via `HANDOFF_REQUIRED`.
-
-```text
-Geometry PASS
-→ UV Layout finalization
-→ final Box-UV lock
-→ list_textures audit
-→ UV Layout PASS
-→ HANDOFF_REQUIRED(texturing)
-```
+Raw semantic search remains a stress metric; the normal path is active-phase routing first, then exact routed spec loading when needed.
 
 ## Surface Guard
 
@@ -157,7 +163,7 @@ max per-tool payload                <= 3,200 characters
 canonical workflow source           < 9,000 characters
 ```
 
-These are **Static Footprint** regression ceilings. Character counts are regression ceilings, not client token measurements and not Authoring Efficiency proof. `bun run measure:surface` passed on the current MCP-green commit above.
+These are **Static Footprint** regression ceilings. Character counts are regression ceilings, not client token measurements and not Authoring Efficiency proof.
 
 ## Visual / Reference Proof Rule
 
@@ -180,19 +186,34 @@ QUALITY FAIL → no efficiency success claim
 QUALITY PASS → compare justified vs unnecessary work → Cost to Accepted Result
 ```
 
-Useful runtime observations include discovery calls, redundant readbacks, tool-search misses, placement batching, capture calls, correction outcomes, recovery, and same-cause retries. Unknown token/latency remains `UNVERIFIED` rather than estimated.
+Useful runtime observations include Discovery calls, Redundant readbacks, tool-search misses, batching, capture calls, Correction attempts, recovery, Same-cause retries, and whether corrections are `IMPROVED`, `UNCHANGED`, or `REGRESSED`. Do not invent token or latency numbers; unknown values remain `UNVERIFIED`.
 
-## Canonical Static Proof History
+## Current Static / Source State
 
-Commit `f2db288764382d4e4a2c6daca80e65359ad670a4` is the current observed **full canonical MCP green** after bundle-fingerprint and verifier hardening. Earlier green commits remain historical evidence only; current proof supersedes them for the static MCP boundary.
+Current retained source includes:
 
-`REPOSITORY CONTRACT BASELINE` above records the last proof-doc/repository baseline before this reconciliation. This reconciliation itself must pass current Repository Verify before being treated as delivered.
+- 64-tool normal Bedrock callable catalog across phases;
+- 27-tool default Core + Geometry exposure;
+- phase-specific workflow and active-specialist routing;
+- deterministic `HANDOFF_REQUIRED` state;
+- coherent Cube/Group batching;
+- Geometry-owned UV Layout and Box-UV workflow;
+- Texture Atlas/Painter/PBR/material-instance authoring;
+- Bedrock animation/controller authoring;
+- Locator/Null Object lifecycle;
+- Undo/history and `.bbmodel`/Bedrock export;
+- loopback-only request-owned/stateless transport;
+- fail-closed startup;
+- SHA-256 packaged-bundle freshness identity;
+- `risky_eval` and `from_geo_json` disabled.
+
+The non-local hardening did **not** add a reconnect daemon, registration profile, router, telemetry layer, alternate transport, compatibility framework, version cache-buster, Geometry compiler, or Route 1 workaround.
 
 ## Local Runtime History
 
 ### ACCEPTED LIVE BASELINE — 2026-08-12
 
-Historical live coverage included loopback/stateless transport, then-current tool surface, geometry/correction/Undo, texture/Painter/PBR/material instances, animation basics, Locator/Null Object lifecycle, persistence, and export.
+Historical live coverage included the then-current transport/tool surface, geometry/correction/Undo, texture/Painter/PBR/material instances, animation basics, Locator/Null Object lifecycle, persistence, and export.
 
 Historical live runs do not automatically prove the exact-current installed BlockIT/Codex surface.
 
@@ -208,6 +229,6 @@ bone-binding expressions
 
 ## Current Boundary
 
-The exact-current source has full static MCP verification and stronger packaged-bundle freshness diagnostics. The local installed-runtime retest is **DEFERRED BY USER** and remains `LOCAL PROOF REQUIRED`; no live Geometry-surface PASS is claimed.
+All currently identifiable **non-local** MCP acceptance preparation is complete and statically verified at `90c9b3d42bdd82ab3ebbc3278b8e2f4402ece1f1`. The local installed-runtime retest is **DEFERRED BY USER** and remains `LOCAL PROOF REQUIRED`; no live Geometry-surface, Codex-registry, visual-quality, or Authoring Efficiency PASS is claimed.
 
-Do not continue static development without a new concrete failing invariant. When the user later reactivates local verification, compare the locally printed bundle SHA-256 identity with `/health.build_identity`, then inspect the fresh live Geometry `tools/list` before Route 1 authoring.
+When the user later reactivates local verification, follow `docs/knowledge/operations/local-acceptance-runbook.md`: build the exact artifact, run the strengthened direct smoke, verify a fresh Codex registry, then perform only the representative Blockbench behavior needed by the gate. Until then, do not continue static development without a new concrete failing invariant.

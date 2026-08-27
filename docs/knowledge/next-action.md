@@ -1,6 +1,6 @@
 # Next Action
 
-Updated: 2026-08-27 — static safety hardening complete; local runtime verification deferred by user
+Updated: 2026-08-27 — non-local MCP preparation complete; local runtime verification deferred by user
 
 Working branch: **`Local` only**.
 
@@ -14,7 +14,9 @@ MCP_DIRECT_GEOMETRY_REPAIRED
 PLUGIN_ID_STABLE_BLOCKIT_MCP
 MCP_VERSION_STABLE_0_1_0
 BUILD_BUNDLE_SHA256_FINGERPRINT_READY
-STATIC_MCP_VERIFY_GREEN_AT_F2DB2887
+NON_LOCAL_ACCEPTANCE_PREP_COMPLETE
+STATIC_MCP_VERIFY_GREEN_AT_90C9B3D4
+REPOSITORY_VERIFY_GREEN_AT_90C9B3D4
 LIVE_GEOMETRY_SURFACE_LOCAL_PROOF_REQUIRED
 LOCAL_RUNTIME_TEST_DEFERRED_BY_USER
 ROUTE1_BLOCKBENCH_TEST_BLOCKED
@@ -22,10 +24,11 @@ NO_ACTIVE_LOCAL_ACCEPTANCE_RUN
 NO_ACTIVE_DEVELOPMENT
 ```
 
-Current static proof:
+Current non-local proof:
 
 ```text
-MCP Verify @ f2db288764382d4e4a2c6daca80e65359ad670a4: PASS
+MCP Verify        @ 90c9b3d42bdd82ab3ebbc3278b8e2f4402ece1f1: PASS
+Repository Verify @ 90c9b3d42bdd82ab3ebbc3278b8e2f4402ece1f1: PASS
 
 bun install --frozen-lockfile  PASS
 bun run typecheck              PASS
@@ -35,113 +38,125 @@ bun run build                  PASS
 bun run docs:check             PASS
 ```
 
-The production build now embeds a deterministic `sha256:<64 hex>` identity derived from the emitted MCP bundle. `/health.build_identity` reports that bundle identity; unbundled source falls back to `source`. `product.version` remains the release/development version `0.1.0`, while `instance_id` + `startup_time` remain process identity. Do not use version bumps as cache invalidation.
+All known non-local acceptance preparation is now locked before desktop testing:
 
-The recurring static failures were verifier drift, not evidence that the MCP needed another redesign. Verifiers now prefer owned behavior/invariants over comments, log wording, implementation location, removed UI labels, disabled tools, or historical metric thresholds.
+- canonical plugin artifact is `mcp/dist/blockit_mcp.js` everywhere active;
+- production build embeds deterministic `sha256:<64 hex>` identity while version remains `0.1.0`;
+- 64 retained Bedrock callable tools and 27 default Geometry-exposed tools remain separate contracts;
+- required Geometry acceptance tools are source-regression guarded;
+- Direct Geometry remains free of retired `plan_id`;
+- phase handoff instructions consistently require BlockIT MCP reload/restart plus client reconnect;
+- existing `bun run verify:stateless-local` now compares exact bundle identity, profile/phase, surface count, initialize phase, exact `tools/list`, forbidden tools, required Geometry tools, and live plan-free Geometry schemas;
+- the local acceptance runbook preserves quality/efficiency evidence boundaries and forbids invented token/latency numbers.
 
-Catalog and phase architecture remain unchanged: 64 retained Bedrock callable tools across phases; default Geometry exposure remains 27.
+No reconnect daemon, new profile/router, telemetry layer, alternate transport, version cache-buster, Geometry compiler, or Route 1 workaround was added.
 
 ## Development Contract
 
 ### Goal
 
-Preserve the exact-current static-safe MCP without further architecture work. Local installed-runtime verification remains required eventually, but is explicitly deferred until the user reactivates it.
+Preserve the current non-local-safe MCP state. Desktop Blockbench/Codex verification remains required eventually, but is explicitly deferred until the user reactivates it.
 
 ### Success Metric
 
 ```text
 full MCP static gate green
-+ production bundle has deterministic SHA-256 health identity
-+ version remains 0.1.0 and separate from build identity
-+ 64-tool catalog / 27-tool default Geometry exposure preserved
-+ Direct Geometry remains plan-free
-+ fail-closed bind/startup preserved
-+ verifier contracts are behavior-owned rather than ordinary prose-owned
-+ no new router/profile/daemon/telemetry/compatibility layer
++ repository contract green
++ deterministic build freshness identity
++ one canonical production artifact path
++ 64 catalog / 27 default Geometry exposure preserved
++ required Geometry acceptance surface regression-guarded
++ Direct Geometry plan-free
++ future local smoke gate deterministic
++ no unnecessary architecture
 ```
 
 ### Forbidden Proxy / Non-Goal
 
-Do not treat any of these as additional success work:
+Do not treat these as additional success work:
 
 ```text
 more tools
 version bump/cache busting
-new reconnect framework
+reconnect daemon/framework
 telemetry/session logging
 alternate transport
 new Geometry compiler/planner
 Route 1 model changes
-repeated static cleanup without a new failing invariant
+more static cleanup without a new failing invariant
 ```
 
-Static green still does **not** prove the installed Blockbench/Codex surface.
+Static green still does **not** prove the installed Blockbench/Codex surface or visual quality.
 
 ### First Evidence Required
 
-There is no active repository implementation task. If a new static failure appears, use that exact current CI failure and inspect its first wrong owner.
+There is no active repository implementation task. A new repository change requires a new concrete failing invariant.
 
-When the user later reactivates local verification, the first evidence is exact-current `/health` plus live `tools/list` from a clean Blockbench/Codex restart.
+When local verification is explicitly reactivated, first evidence is the one-command direct smoke result from the exact freshly built artifact, followed by a fresh Codex registry check.
 
 ### Failure Classification / first wrong owner
 
 ```text
-stale prose/comment/location assertion        → STALE_TEST
-build output lacks/changes fingerprint contract→ BUILD_TOOLING
-source/static green + stale installed instance → ENVIRONMENT / INSTALL
-fresh live tools/list differs from source       → MCP_PUBLIC_CONTRACT
-Blockbench plugin lifecycle/load failure        → BLOCKBENCH_RUNTIME
+source/static regression                        → first failing source/test owner
+local bundle identity != /health identity       → ENVIRONMENT / INSTALL
+server smoke PASS + fresh Codex registry differs→ ENVIRONMENT / INSTALL first
+fresh server tools/list differs from source     → MCP_PUBLIC_CONTRACT
+live schema exposes retired plan_id              → MCP_PUBLIC_CONTRACT
+Blockbench lifecycle/load failure                → BLOCKBENCH_RUNTIME
 ```
 
-Do not change Route 1 or model logic to compensate for an MCP/install defect.
+Do not change Route 1/model logic to compensate for MCP/install defects.
 
 ### Proof Required
 
-Completed static proof is the full MCP Verify sequence above. Live proof remains:
+Completed non-local proof is the MCP + Repository Verify result above.
+
+Deferred live proof remains:
 
 ```text
-fresh local /health
-+ fresh live tools/list
-+ comparison with getMcpSurfaceToolNames("bedrock_entity", "geometry")
-+ Direct Geometry schema check for retired plan_id
+exact local build + embedded build_identity
++ bun run verify:stateless-local
++ fresh Codex registry
++ representative Blockbench mutation + Undo
++ required phase handoff/reload proof
++ visual/reference quality proof when authoring begins
 ```
 
 That live proof is **deferred, not passed**.
 
 ## Repository Gate
 
-Current repository/static repair is complete. Preserve these invariants:
+Preserve these invariants:
 
-- verifier assertions test behavior/contracts rather than ordinary comments or log wording;
-- intentionally disabled helpers are not expected discovery targets;
+- verifier assertions prefer owned behavior/contracts over mutable prose or formatting;
+- canonical artifact is `mcp/dist/blockit_mcp.js`;
 - canonical workflow Static Footprint ceiling is `< 9,000` characters;
 - Static Footprint is not Authoring Efficiency proof;
 - 64-tool catalog and 27-tool default Geometry surface remain separate concepts;
-- `blockit_mcp`, version `0.1.0`, fail-closed startup, immutable per-connection phase surface, and Geometry-owned `bone_rigging` remain preserved;
-- bundle fingerprint is diagnosis only, not a versioning or cache-busting mechanism;
-- build fingerprint stays out of the normal Blockbench panel/UI.
+- `blockit_mcp`, version `0.1.0`, fail-closed startup, stateless loopback transport, immutable per-connection phase surface, and Geometry-owned `bone_rigging` remain preserved;
+- bundle fingerprint is diagnosis only, not versioning/cache-busting/UI/session state;
+- local smoke script remains an existing bounded verifier, not a new runtime framework.
 
-Do not reopen static cleanup without new evidence.
+Do not reopen repository cleanup without new evidence.
 
 ## Local Runtime Gate
 
 **DEFERRED BY USER — DO NOT RUN YET.**
 
-When explicitly reactivated:
+When explicitly reactivated, follow `docs/knowledge/operations/local-acceptance-runbook.md`. The intended first pass is:
 
 ```text
 sync current Local
-build final MCP bundle and note printed sha256 build identity
-close Codex + Blockbench completely
-ensure no old MCP owns the loopback port
-load only mcp/dist/blockit_mcp.js
-set active phase = Geometry
-confirm /health build_identity matches the locally built bundle
-open a fresh Codex connection
-capture live tools/list
+→ build mcp/dist/blockit_mcp.js
+→ load only that artifact
+→ Geometry active
+→ bun run verify:stateless-local
+→ fresh Codex connection/tool registry
 ```
 
-Required live Geometry capability includes at minimum:
+The smoke gate must PASS before representative Blockbench mutation/Undo or Route 1 authoring.
+
+Required live Geometry capability includes:
 
 ```text
 create_project
@@ -156,7 +171,7 @@ bone_rigging
 export_model
 ```
 
-These live schemas must not require `plan_id`:
+These live schemas must not expose or require `plan_id`:
 
 ```text
 add_group
@@ -167,7 +182,7 @@ modify_group
 reparent_element
 ```
 
-If live names/schemas differ, STOP and classify the first wrong owner before any patch.
+If live evidence differs, STOP and classify the first wrong owner before any patch.
 
 ## Route 1 Gate
 
@@ -177,4 +192,4 @@ The approved GLB remains evidence for depth/volume/hidden sides only. Do not vox
 
 ## STOP
 
-Static safety hardening is complete. Do not continue repository development merely to make the MCP look more sophisticated. Wait for either a new concrete static failure or explicit user reactivation of the Local Runtime Gate.
+All currently identifiable non-local MCP preparation is complete. Do not continue repository development merely to make the system more sophisticated. Wait for either a new concrete static failure or explicit user reactivation of the Local Runtime Gate.
