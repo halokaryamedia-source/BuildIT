@@ -7,13 +7,6 @@ import { STATUS_STABLE } from "@/lib/constants";
 import { resolveCoreCube, resolveCoreGroup } from "@/lib/coreIdentity";
 import { requireOpenProject } from "@/lib/util";
 import {
-  bindGeometryRole,
-  requireBoundGeometryTarget,
-  requireGeometryRoleAvailable,
-  requirePlanForOpenProject,
-  requireRotationIntent,
-} from "@/lib/geometryPlan";
-import {
   boxUvFootprint,
   packBoxUvOffsets,
   type BoxUvRegion,
@@ -159,7 +152,6 @@ const cubeCorrectionUpdateSchema = z
 
 export const placeCubeParameters = z
   .object({
-    plan_id: z.string().min(1).describe("Active prepare_geometry_plan ID."),
     elements: z
       .array(placeCubeElementSchema)
       .min(1)
@@ -210,7 +202,6 @@ export const placeCubeParameters = z
   .strict();
 
 export const modifyCubeParameters = z.object({
-  plan_id: z.string().min(1).describe("Active prepare_geometry_plan ID."),
   id: z
     .string()
     .min(1)
@@ -276,7 +267,6 @@ export const modifyCubeParameters = z.object({
 });
 
 export const modifyCubesBatchParameters = z.object({
-  plan_id: z.string().min(1).describe("Active prepare_geometry_plan ID."),
   updates: z
     .array(cubeCorrectionUpdateSchema)
     .min(1)
@@ -558,17 +548,8 @@ function resolvePlacementGroup(reference?: string): Group | "root" {
 export function registerCubesTools() {
   createTool(cubeToolDocs[0].name, {
     ...cubeToolDocs[0],
-    async execute({ plan_id, elements, faces, group }) {
+    async execute({ elements, faces, group }) {
       requireOpenProject("placing Cubes");
-      const plan = requirePlanForOpenProject(plan_id);
-      elements.forEach((element) =>
-        requireGeometryRoleAvailable(plan, element.name, "Cube", "cube")
-      );
-      elements.forEach((element) => {
-        if (element.rotation.some((value) => value !== 0)) {
-          requireRotationIntent(plan, element.name, "cube");
-        }
-      });
       const defaultOutlinerGroup = resolvePlacementGroup(group);
       const placements: Array<{ element: PlaceCubeElement; outlinerGroup: Group | "root" }> = elements.map((element: PlaceCubeElement) => ({
         element,
@@ -680,7 +661,6 @@ export function registerCubesTools() {
           name: cube.name,
         })),
       };
-      cubes.forEach((cube) => bindGeometryRole(plan, cube.name, cube.uuid, "cube"));
       const uvNote = plannedBoxUvOffsets
         ? " Box-UV offsets were auto-packed without overlap; keep autouv active through geometry correction, then lock the final Cubes in one batch before production paint."
         : "";
@@ -699,7 +679,6 @@ export function registerCubesTools() {
   createTool(cubeToolDocs[1].name, {
     ...cubeToolDocs[1],
     async execute({
-      plan_id,
       id,
       name,
       origin,
@@ -713,11 +692,6 @@ export function registerCubesTools() {
       visibility,
     }) {
       requireOpenProject("modifying a Cube");
-      const plan = requirePlanForOpenProject(plan_id);
-      requireBoundGeometryTarget(plan, id, "Cube correction");
-      if (rotation?.some((value) => value !== 0)) {
-        requireRotationIntent(plan, id, "cube");
-      }
       const cubes = [resolveUniqueCube(id)];
       const before = finalCubeState(cubes[0]);
 
@@ -811,17 +785,8 @@ export function registerCubesTools() {
 
   createTool(cubeToolDocs[2].name, {
     ...cubeToolDocs[2],
-    async execute({ plan_id, updates }) {
+    async execute({ updates }) {
       requireOpenProject("modifying Cubes");
-      const plan = requirePlanForOpenProject(plan_id);
-      updates.forEach((update) =>
-        requireBoundGeometryTarget(plan, update.id, "Cube batch correction")
-      );
-      updates.forEach((update) => {
-        if (update.rotation?.some((value) => value !== 0)) {
-          requireRotationIntent(plan, update.id, "cube");
-        }
-      });
 
       const targets: Array<{
         cube: Cube;

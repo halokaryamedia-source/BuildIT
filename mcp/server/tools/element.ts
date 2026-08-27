@@ -9,13 +9,6 @@ import {
   vector3Schema,
 } from "@/lib/zodObjects";
 import { requireOpenProject } from "@/lib/util";
-import {
-  bindGeometryRole,
-  requireBoundGeometryTarget,
-  requireGeometryRoleAvailable,
-  requirePlanForOpenProject,
-  requireRotationIntent,
-} from "@/lib/geometryPlan";
 
 export const removeElementParameters = z.object({
   id: elementIdSchema.describe(
@@ -137,7 +130,6 @@ export const getSelectionParameters = z.object({});
 
 export const addGroupParameters = z
   .object({
-    plan_id: z.string().min(1).describe("Active prepare_geometry_plan ID."),
     name: z
       .string()
       .min(1)
@@ -226,7 +218,6 @@ export const listOutlineParameters = z.object({
 });
 
 export const duplicateElementParameters = z.object({
-  plan_id: z.string().min(1).describe("Active prepare_geometry_plan ID."),
   id: elementIdSchema.describe(
     "Exact Cube or Group UUID, or exact unique name. Ambiguous names are rejected before duplication."
   ),
@@ -252,7 +243,6 @@ export const renameElementParameters = z.object({
 
 export const modifyGroupParameters = z
   .object({
-    plan_id: z.string().min(1).describe("Active prepare_geometry_plan ID."),
     id: z.string().min(1).describe("Exact Group UUID or unique exact name."),
     origin: finiteElementVector3Schema.optional().describe("New Group pivot/origin."),
     rotation: finiteElementVector3Schema.optional().describe("New Group rotation [x,y,z]."),
@@ -268,7 +258,6 @@ export const modifyGroupParameters = z
   );
 
 export const reparentElementParameters = z.object({
-  plan_id: z.string().min(1).describe("Active prepare_geometry_plan ID."),
   id: elementIdSchema.describe("Exact Cube or Group UUID or unique exact name."),
   parent: z
     .string()
@@ -677,9 +666,8 @@ export function registerElementTools() {
 
   createTool(elementToolDocs[1].name, {
     ...elementToolDocs[1],
-    async execute({ plan_id, name, origin, rotation, parent, groups }) {
+    async execute({ name, origin, rotation, parent, groups }) {
       requireOpenProject("adding a Group");
-      const plan = requirePlanForOpenProject(plan_id);
       const batch =
         groups ??
         [
@@ -690,14 +678,6 @@ export function registerElementTools() {
             parent,
           },
         ];
-      batch.forEach((entry) =>
-        requireGeometryRoleAvailable(plan, entry.name, "Group", "group")
-      );
-      batch.forEach((entry) => {
-        if (entry.rotation?.some((value) => value !== 0)) {
-          requireRotationIntent(plan, entry.name, "group");
-        }
-      });
 
       Undo.initEdit({
         elements: [],
@@ -750,7 +730,6 @@ export function registerElementTools() {
               },
             }),
       };
-      created.forEach((group) => bindGeometryRole(plan, group.name, group.uuid, "group"));
       return {
         content: [
           {
@@ -846,14 +825,8 @@ export function registerElementTools() {
 
   createTool(elementToolDocs[3].name, {
     ...elementToolDocs[3],
-    async execute({ plan_id, id, offset, newName }) {
+    async execute({ id, offset, newName }) {
       requireOpenProject("duplicating an element");
-      const plan = requirePlanForOpenProject(plan_id);
-      requireBoundGeometryTarget(plan, id, "Element duplication");
-      if (!newName) {
-        throw new Error("duplicate_element requires newName when a Geometry plan is active.");
-      }
-      requireGeometryRoleAvailable(plan, newName, "Duplicate");
       const element = resolveUniqueDestructiveElement(id);
       if (!(element instanceof Cube) && !(element instanceof Group)) {
         throw new Error(
@@ -905,19 +878,6 @@ export function registerElementTools() {
 
       preflightDuplicateTranslation(element, offset);
 
-      const plannedDuplicateRoles: string[] = [];
-      function collectDuplicateRoles(el: any, isRoot: boolean): void {
-        const name = isRoot && newName ? newName : `${el.name}_copy`;
-        plannedDuplicateRoles.push(name);
-        if (el instanceof Group) {
-          el.children.forEach((child: any) => collectDuplicateRoles(child, false));
-        }
-      }
-      collectDuplicateRoles(element, true);
-      plannedDuplicateRoles.forEach((role) =>
-        requireGeometryRoleAvailable(plan, role, "Duplicate subtree")
-      );
-
       Undo.initEdit({ elements: [], outliner: true, collections: [] });
       let dup: Cube | Group;
       try {
@@ -931,17 +891,6 @@ export function registerElementTools() {
 
       Canvas.updateAll();
       const result = { element: elementContinuationState(dup) };
-      const duplicatedElements: Array<Cube | Group> = [];
-      function collectDuplicatedElements(el: any): void {
-        if (el instanceof Cube || el instanceof Group) {
-          duplicatedElements.push(el);
-        }
-        if (el instanceof Group) {
-          el.children.forEach((child: any) => collectDuplicatedElements(child));
-        }
-      }
-      collectDuplicatedElements(dup);
-      duplicatedElements.forEach((item) => bindGeometryRole(plan, item.name, item.uuid, item instanceof Group ? "group" : "cube"));
       return {
         content: [
           {
@@ -1179,18 +1128,12 @@ export function registerElementTools() {
   }, elementToolDocs[8].status);
 
   createTool("modify_group", {
-    name: "modify_group",
     description:
       "Modifies one explicit Bedrock Group pivot, rotation, or visibility. Use rename_element for names.",
     annotations: { title: "Modify Group", destructiveHint: true },
     parameters: modifyGroupParameters,
-    async execute({ plan_id, id, origin, rotation, visibility }) {
+    async execute({ id, origin, rotation, visibility }) {
       requireOpenProject("modifying a Group");
-      const plan = requirePlanForOpenProject(plan_id);
-      requireBoundGeometryTarget(plan, id, "Group correction");
-      if (rotation?.some((value) => value !== 0)) {
-        requireRotationIntent(plan, id, "group");
-      }
       const group = resolveCoreGroup(
         id,
         "Use list_outline or find_elements_by_criteria, then inspect_element to confirm the intended Group UUID."
@@ -1261,15 +1204,12 @@ export function registerElementTools() {
   }, STATUS_STABLE);
 
   createTool("reparent_element", {
-    name: "reparent_element",
     description:
       "Moves one explicit Cube or Group to a new parent. Rejects self/circular hierarchy; local transform is preserved.",
     annotations: { title: "Reparent Element", destructiveHint: true },
     parameters: reparentElementParameters,
-    async execute({ plan_id, id, parent }) {
+    async execute({ id, parent }) {
       requireOpenProject("reparenting an element");
-      const plan = requirePlanForOpenProject(plan_id);
-      requireBoundGeometryTarget(plan, id, "Hierarchy correction");
       const element = resolveUniqueDestructiveElement(id);
       const nextParent = resolveParentGroup(parent);
       const previousParent =

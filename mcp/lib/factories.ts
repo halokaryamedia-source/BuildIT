@@ -121,7 +121,7 @@ function compactUnknownResult(name: string, result: unknown) {
     return compactStringResult(name, result);
   }
 
-  if (!result || typeof result !== "object" || !("content" in (result as ToolResult))) {
+  if (!result || typeof result !== "object" || !("content" in result)) {
     return {
       content: [{ type: "text" as const, text: `${name} returned structured data.` }],
       structuredContent: result,
