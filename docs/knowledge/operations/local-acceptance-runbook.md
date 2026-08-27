@@ -385,7 +385,7 @@ REGRESSED
 
 A healthy convergence loop favors `IMPROVED`, avoids blind Same-cause retries, and verifies affected views rather than capturing after every mutation.
 
-Unknown token/latency stays `UNVERIFIED`.
+Do not invent token or latency numbers; unknown values stay `UNVERIFIED`.
 
 ## 10. Failure Classification / First Wrong Owner
 

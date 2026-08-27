@@ -75,5 +75,6 @@ describe("local runtime gate source contract", () => {
     expect(runbook).toContain("build_identity");
     expect(runbook).toContain("bun run verify:stateless-local");
     expect(runbook).toContain("plan_id");
+    expect(runbook).toContain("Do not invent token or latency numbers");
   });
 });
