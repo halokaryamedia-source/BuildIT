@@ -256,6 +256,7 @@ export type ReferenceModelRuntime = OutlinerElement & {
   wireframe?: boolean;
   locked?: boolean;
   export?: boolean;
+  route1_owned?: boolean;
   mesh?: THREE.Object3D;
   preview_controller?: {
     updateTransform?: (element: ReferenceModelRuntime) => void;
@@ -397,11 +398,16 @@ export function isBlockItRoute1Reference(
   element: unknown
 ): element is ReferenceModelRuntime {
   if (!element || typeof element !== "object") return false;
-  const value = element as { type?: unknown; name?: unknown };
+  const value = element as {
+    type?: unknown;
+    name?: unknown;
+    route1_owned?: unknown;
+  };
   return (
     value.type === "reference_model" &&
-    typeof value.name === "string" &&
-    value.name.startsWith(BLOCKIT_ROUTE1_REFERENCE_PREFIX)
+    (value.route1_owned === true ||
+      (typeof value.name === "string" &&
+        value.name.startsWith(BLOCKIT_ROUTE1_REFERENCE_PREFIX)))
   );
 }
 
@@ -414,9 +420,43 @@ function isLoadedReference(reference: ReferenceModelRuntime): boolean {
   return Boolean(reference.mesh && reference.mesh.children.length > 0);
 }
 
+export function assertRoute1ReferenceInvariant(
+  reference: ReferenceModelRuntime
+): void {
+  if (reference.parent !== "root") {
+    throw new Error(
+      `Route 1 geometry reference ${reference.name || reference.uuid} must remain at the outliner root. Remove and reload it with manage_geometry_reference.`
+    );
+  }
+  if (reference.locked !== true) {
+    throw new Error(
+      `Route 1 geometry reference ${reference.name || reference.uuid} must remain locked. Remove and reload it with manage_geometry_reference.`
+    );
+  }
+  if (reference.export !== false) {
+    throw new Error(
+      `Route 1 geometry reference ${reference.name || reference.uuid} must remain export=false. Remove and reload it with manage_geometry_reference.`
+    );
+  }
+
+  const [sx, sy, sz] = reference.scale ?? [];
+  if (
+    ![sx, sy, sz].every(
+      (value) => typeof value === "number" && Number.isFinite(value) && value > 0
+    ) ||
+    Math.abs(sx - sy) > 1e-9 ||
+    Math.abs(sx - sz) > 1e-9
+  ) {
+    throw new Error(
+      `Route 1 geometry reference ${reference.name || reference.uuid} must keep uniform positive scale. Remove and reload it with manage_geometry_reference.`
+    );
+  }
+}
+
 export function readRoute1ReferenceEvidence(
   reference: ReferenceModelRuntime
 ): Route1ReferenceEvidence {
+  assertRoute1ReferenceInvariant(reference);
   if (!reference.mesh || !isLoadedReference(reference)) {
     throw new Error(
       `Route 1 geometry reference ${reference.name || reference.uuid} is not fully loaded.`
@@ -495,9 +535,13 @@ export function readRoute1ReferenceEvidence(
 }
 
 export function hasVisibleLoadedBlockItRoute1Reference(): boolean {
-  return listBlockItRoute1References().some(
-    (reference) => reference.visibility !== false && isLoadedReference(reference)
-  );
+  return listBlockItRoute1References().some((reference) => {
+    if (reference.visibility === false || !isLoadedReference(reference)) {
+      return false;
+    }
+    assertRoute1ReferenceInvariant(reference);
+    return true;
+  });
 }
 
 function resolveBlockItRoute1Reference(id: string): ReferenceModelRuntime {
@@ -780,6 +824,7 @@ export function registerProjectTools() {
             locked: true,
             export: false,
           }).init() as ReferenceModelRuntime;
+          reference.route1_owned = true;
           reference.addTo("root");
           await waitForReferenceLoad(reference);
           reference.locked = true;
@@ -882,6 +927,7 @@ export function registerProjectTools() {
       };
       if (typeof reference.extend === "function") reference.extend(patch);
       else Object.assign(reference, patch);
+      reference.route1_owned = true;
       reference.locked = true;
       reference.export = false;
       refreshReference(reference);
@@ -903,5 +949,4 @@ export function registerProjectTools() {
       };
     },
   }, projectToolDocs[3].status);
-
 }

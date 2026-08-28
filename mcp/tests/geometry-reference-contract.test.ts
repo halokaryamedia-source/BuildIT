@@ -1,6 +1,8 @@
 import { describe, expect, test } from "bun:test";
 import {
   BLOCKIT_ROUTE1_REFERENCE_PREFIX,
+  assertRoute1ReferenceInvariant,
+  isBlockItRoute1Reference,
   manageGeometryReferenceParameters,
   projectToolDocs,
   route1ReferenceYawDegrees,
@@ -98,6 +100,33 @@ describe("Route 1 geometry reference contract", () => {
     ).toThrow("block size must be finite and positive");
   });
 
+  test("runtime ownership survives rename while lifecycle invariants fail closed", () => {
+    const owned = {
+      type: "reference_model",
+      name: "renamed-reference",
+      route1_owned: true,
+      parent: "root",
+      locked: true,
+      export: false,
+      scale: [1, 1, 1],
+    } as any;
+    expect(isBlockItRoute1Reference(owned)).toBe(true);
+    expect(() => assertRoute1ReferenceInvariant(owned)).not.toThrow();
+
+    expect(() =>
+      assertRoute1ReferenceInvariant({ ...owned, parent: {} } as any)
+    ).toThrow("must remain at the outliner root");
+    expect(() =>
+      assertRoute1ReferenceInvariant({ ...owned, locked: false } as any)
+    ).toThrow("must remain locked");
+    expect(() =>
+      assertRoute1ReferenceInvariant({ ...owned, export: true } as any)
+    ).toThrow("must remain export=false");
+    expect(() =>
+      assertRoute1ReferenceInvariant({ ...owned, scale: [1, 2, 1] } as any)
+    ).toThrow("uniform positive scale");
+  });
+
   test("tool stays Geometry evidence rather than mesh conversion", () => {
     const tool = projectToolDocs.find(
       (entry) => entry.name === "manage_geometry_reference"
@@ -113,8 +142,10 @@ describe("Route 1 geometry reference contract", () => {
     const project = await source("server/tools/project.ts");
     expect(project).toContain("types?.reference_model");
     expect(project).toContain('reference.addTo("root")');
+    expect(project).toContain("reference.route1_owned = true");
     expect(project).toContain("locked: true");
     expect(project).toContain("export: false");
+    expect(project).toContain("assertRoute1ReferenceInvariant(reference)");
     expect(project).toContain("await waitForReferenceLoad(reference)");
     expect(project).toContain("Undo.cancelEdit(true)");
     expect(project).toContain("v1 supports one active Route 1 reference");
@@ -128,6 +159,7 @@ describe("Route 1 geometry reference contract", () => {
     expect(project).toContain("readRoute1ReferenceEvidence(reference);");
     expect(project).toContain("reference_only: true");
     expect(project).toContain("production_geometry: false");
+    expect(project).not.toContain("route1ReferenceRegistry");
     expect(project).not.toContain("voxelize");
     expect(project).not.toContain("decimat");
   });
