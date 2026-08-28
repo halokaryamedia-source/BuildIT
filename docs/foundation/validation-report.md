@@ -1,6 +1,6 @@
 # Validation Report
 
-Updated: 2026-08-28 — Route 1 source/static coding complete through quantitative evidence, reconnect recovery, preferred MultiView reproducibility, and ownership hardening; desktop proof intentionally deferred
+Updated: 2026-08-28 — Route 1 source/static + generic fixture preparation complete; desktop proof intentionally deferred
 
 This file owns the **proof boundary**. Continuation belongs in `docs/knowledge/next-action.md`; stable facts belong in `CONTEXT.md`.
 
@@ -14,15 +14,16 @@ ROUTE 1 GEOMETRY EVIDENCE BRIDGE:         SOURCE + FULL MCP STATIC PROOF
 ROUTE 1 HUNYUAN MULTIVIEW EXECUTABLE:     SOURCE + STATIC REPRODUCIBILITY PROOF
 ROUTE 1 QUANTITATIVE/RECONNECT EVIDENCE:  SOURCE + FULL MCP STATIC PROOF
 ROUTE 1 OWNERSHIP INVARIANTS:             SOURCE + FULL MCP STATIC PROOF
-LATEST FULL MCP VERIFY:                   GREEN @ 5bcaa8a7e9217dc84fb0d11d96c319ba1154e417
-LAST OBSERVED FULL CANONICAL GREEN:       5bcaa8a7e9217dc84fb0d11d96c319ba1154e417
-REPOSITORY VERIFY BEFORE FINAL DOC RECONCILIATION: GREEN @ 5d1f5ddb80488a6fb420eb6f47a5f06961e49419
+ROUTE 1 GENERIC FIXTURE PREPARATION:      SOURCE + FULL MCP STATIC PROOF
+LATEST FULL MCP VERIFY:                   GREEN @ 5ecbf25608f8da879497e2f687854cb68781f3cd
+LAST OBSERVED FULL CANONICAL GREEN:       5ecbf25608f8da879497e2f687854cb68781f3cd
+LATEST REPOSITORY VERIFY:                 GREEN @ eafd0ba81fa3f8840b84d234184798f34e2e0f35
 ACCEPTED LIVE BASELINE:                   2026-08-12 Blockbench 5.1.6
 CURRENT ROUTE 1 LIVE RETEST:              LOCAL PROOF REQUIRED — DEFERRED BY USER
 CURRENT MODEL-QUALITY CLAIM:              LOCAL PROOF REQUIRED
 ```
 
-Static source/CI evidence proves only what it exercises. It can prove phase ownership, schemas, buildability, generated-doc freshness, surface shape, fixed Hunyuan script contracts, Python source parsing, evidence/result fields, export guards, and fail-closed invariants. It **cannot prove visual fidelity**, installed-plugin freshness, fresh Codex registry state, desktop GLB rendering, live Blockbench Undo behavior, or model-quality improvement.
+Static source/CI evidence proves only what it exercises. It can prove phase ownership, schemas, buildability, generated-doc freshness, surface shape, fixed Hunyuan script contracts, Python source parsing, fixture preparation, file/artifact hashing, evidence/result fields, export guards, and fail-closed invariants. It **cannot prove visual fidelity**, installed-plugin freshness, fresh Codex registry state, desktop GLB rendering, live Blockbench Undo behavior, or model-quality improvement.
 
 ## Current Agent-Contract Proof
 
@@ -33,12 +34,12 @@ MCP CORE + exactly one ACTIVE PHASE
 GEOMETRY | TEXTURING | ANIMATION
 ```
 
-The current full MCP gate passed on exact `Local` source commit `5bcaa8a7e9217dc84fb0d11d96c319ba1154e417`:
+The current full MCP gate passed on exact `Local` source/preparation commit `5ecbf25608f8da879497e2f687854cb68781f3cd`:
 
 ```text
 bun install --frozen-lockfile  PASS
 bun run typecheck              PASS
-bun run test                   PASS — 358 tests, 0 fail, 3461 expectations, 64 files
+bun run test                   PASS — 363 tests, 0 fail, 3496 expectations, 65 files
 bun run measure:surface        PASS
 bun run build                  PASS
 bun run docs:check             PASS
@@ -52,6 +53,7 @@ Current regression coverage proves, among other things:
 - `manage_geometry_reference` is Geometry-owned and absent from Texturing/Animation;
 - Direct Geometry remains free of the retired `plan_id` contract;
 - canonical active plugin path is `mcp/dist/blockit_mcp.js`;
+- Route 1 preparation commands do not enter the MCP callable surface;
 - loopback/stateless transport and fail-closed startup retain regression coverage;
 - local diagnostic preflight still classifies the first known wrong owner before downstream surface diagnosis.
 
@@ -63,7 +65,7 @@ The bridge retains one experimental Geometry-owned capability:
 manage_geometry_reference
 ```
 
-Static contract now proves:
+Static contract proves:
 
 - input is one absolute local `.glb`, not URL/generic importer semantics;
 - Blockbench's installed `reference_models` element type is reused; no second GLTF importer or editable Blockbench Mesh conversion was added;
@@ -133,9 +135,44 @@ source front            +z
 output                  shape-only trimesh/GLB
 ```
 
-Both SingleView baseline and preferred MultiView scripts require the pinned local model files before pipeline construction. The accepted guidance value `5.0` is explicit instead of relying on a hidden upstream default. The current MCP test suite also compiles all tracked Route 1 Python entrypoints as source when Python is available; this ran and passed in canonical CI. It does not import Torch/Hunyuan or claim GPU inference proof.
+Both SingleView baseline and preferred MultiView scripts require the pinned local model files before pipeline construction. Guidance `5.0` is explicit instead of relying on a hidden upstream default. The MCP test suite compiles tracked Route 1 Python entrypoints as source when Python is available; this passed in canonical CI. It does not import Torch/Hunyuan or claim GPU inference proof.
 
-No weights, generated GLBs, or transient contact sheets are committed as production assets.
+No model weights are committed or packaged; weights remain external/transient.
+
+## Route 1 Generic Fixture Preparation Proof
+
+Preparation is object-agnostic and owned by:
+
+```text
+mcp/scripts/route1-fixture.ts
+mcp/package.json
+mcp/tests/route1-fixture-preparation.test.ts
+```
+
+The two bounded Bun commands are:
+
+```text
+bun run route1:prepare <fixture-directory>
+bun run route1:package <fixture-directory>
+```
+
+Static proof confirms:
+
+- strict fixture schema accepts generic fixture identity/evidence/provenance only and rejects unknown object-specific fields;
+- fixture paths are portable relative paths and realpath containment rejects traversal/symlink escape;
+- approved reference, contact sheet, and FRONT/LEFT/BACK Hunyuan inputs are distinct, non-empty files;
+- the approved GLB must carry a GLB 2.0 header whose declared length matches file size;
+- fixture.json, reference, GLB, contact sheet, and all three Hunyuan inputs receive SHA-256 evidence;
+- pinned Hunyuan model/revision/views/settings are exact fixture contract values;
+- `route1:prepare` is read-only and verifies the existing canonical `mcp/dist/blockit_mcp.js` artifact;
+- BlockIT artifact verification recomputes the same body SHA-256 represented by the build banner and also records the full bundle SHA-256;
+- `route1:package` copies only the exact plugin artifact plus fixture contract/evidence files, manifest, and `RUN.md`;
+- package creation uses a temporary sibling + rename, cleans failed temporary output, and refuses silent overwrite of an existing destination;
+- default package output stays under ignored `Experimental/route1-hunyuan-poc/.cache/test-ready/<fixture_id>`;
+- `repository_head_at_prepare` is context only; packaged plugin identity is the embedded build identity plus full bundle SHA-256;
+- preparation added no MCP tool/schema/category/profile and the measured MCP surface remained 65 tools / 28 Geometry tools.
+
+The representative sample used later may validate the generic workflow, but fixture identity, dimensions, or anatomy must never become global modelling rules.
 
 ## Fail-Fast Local Diagnostic Proof
 
@@ -162,17 +199,17 @@ Environment/install and Blockbench-runtime failures STOP before downstream surfa
 
 ## Bundle Freshness Identity
 
-The production build injects SHA-256 bundle identity. For exact source commit `5bcaa8a7...`, canonical MCP Verify built:
+The production build injects SHA-256 bundle identity. For exact source/preparation commit `5ecbf256...`, canonical MCP Verify built:
 
 ```text
-sha256:6fab9790e4d912724fd0f23416ad5b164e402d2314b710e724c8b7e49c7210be
+sha256:a2bdb04df6036548d9ebad8ea1bdf949596c5ff6bc494cf1fda2cfdda0bd5598
 ```
 
 `product.version`, `build_identity`, `instance_id`, and `startup_time` retain separate ownership. The fingerprint is diagnosis only, not a cache-buster/session mechanism.
 
 ## Discovery / Static Footprint Proof
 
-Current exact-source discovery evaluation:
+Current exact-source discovery evaluation remains:
 
 ```text
 raw semantic stress:
@@ -191,7 +228,7 @@ top_8_misses    0
 
 Evaluation corpus: 65 enabled tools, 53 expected tools, 106 intent cases.
 
-Measured exact-source surface:
+Measured exact-source MCP surface:
 
 ```text
 retained Bedrock callable catalog  65 tools
@@ -246,6 +283,7 @@ Current retained source includes:
 
 - 65-tool normal Bedrock callable catalog and 28-tool default Geometry exposure;
 - pinned preferred Hunyuan MultiView executable plus SingleView baseline;
+- generic object-agnostic Route 1 fixture validation/preparation/package commands outside MCP surface;
 - transient Route 1 GLB lifecycle through `manage_geometry_reference`;
 - quantitative world bounds/dimensions/scene statistics;
 - reconnect evidence through existing `reference_models` resource;
@@ -256,13 +294,13 @@ Current retained source includes:
 - loopback request-owned/stateless transport;
 - `risky_eval` and `from_geo_json` disabled.
 
-The Route 1 hardening did **not** add mesh-to-Cube conversion, voxelization, cuboid solving, segmentation, GLB cleanup/decimation, raycast/probe, similarity scoring, custom rendering, persistent registry, reconnect daemon, new routing/profile architecture, telemetry, alternate transport, or a Geometry compiler.
+The Route 1 work did **not** add object-specific modelling rules, mesh-to-Cube conversion, voxelization, cuboid solving, segmentation, GLB cleanup/decimation, raycast/probe, similarity scoring, custom rendering, persistent registry, reconnect daemon, new routing/profile architecture, telemetry, alternate transport, or a Geometry compiler.
 
 ## Local Runtime History
 
 ### ACCEPTED LIVE BASELINE — 2026-08-12
 
-Historical live coverage predates the current Route 1 bridge. It does not prove the exact-current installed BlockIT/Codex surface or current GLB behavior.
+Historical live coverage predates the current Route 1 bridge/preparation layer. It does not prove the exact-current installed BlockIT/Codex surface or current GLB behavior.
 
 ## Protected Gaps
 
@@ -276,6 +314,6 @@ bone-binding expressions
 
 ## Current Boundary
 
-All justified **source/static Route 1 coding is complete** on exact source commit `5bcaa8a7e9217dc84fb0d11d96c319ba1154e417`, and its full MCP gate is green. The user intentionally deferred the desktop/live test. No live Geometry-surface, fresh Codex-registry, GLB-rendering, visual-quality, or Authoring Efficiency PASS is claimed.
+All justified **source/static Route 1 coding and generic preparation work is complete** on exact source commit `5ecbf25608f8da879497e2f687854cb68781f3cd`, and its full MCP gate is green. The user intentionally deferred the desktop/live test. No live Geometry-surface, fresh Codex-registry, GLB-rendering, visual-quality, or Authoring Efficiency PASS is claimed.
 
-Further Route 1 source work requires new evidence from a later live run or a newly identified source defect; absence of live proof is not itself justification for another tool or framework.
+Further Route 1 source work requires new evidence from a later live run or a newly identified source/preparation defect; absence of live proof is not itself justification for another tool or framework.

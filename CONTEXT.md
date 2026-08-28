@@ -57,6 +57,8 @@ Current Route 1 source reuses the installed Blockbench Reference Models type rat
 
 The preferred Route 1 generator is tracked at `Experimental/route1-hunyuan-poc/generate_multiview_shape.py`: pinned Hunyuan3D-2mv, FRONT + LEFT(SIDE) + BACK, shape-only, fixed 50 steps / guidance 5.0 / octree 256 / chunks 20000 / seed 12345, with `+z` source-front convention. Model weights and generated GLBs remain transient `.cache/` data.
 
+Route 1 preparation is object-agnostic. `bun run route1:prepare <fixture-dir>` validates the strict fixture, input/file hashes, GLB 2.0 header, and exact BlockIT artifact identity; `bun run route1:package <fixture-dir>` packages the approved reference, approved GLB, contact sheet, FRONT/LEFT/BACK inputs, exact plugin artifact, manifest, and run handoff under ignored `.cache/` by default. These are Bun preparation commands, not MCP callable tools, so the 65/28 MCP surface is unchanged.
+
 Asset authoring loads only the specialist matching MCP `ACTIVE PHASE`. Persistent projects may store one compact `Current handoff state`, but never a tool-call transcript or persistent UUID registry.
 
 An absent authoring-phase setting defaults to Geometry. An explicit invalid phase stops MCP startup rather than silently presenting Geometry.

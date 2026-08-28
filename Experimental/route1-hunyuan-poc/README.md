@@ -7,6 +7,7 @@ EXPERIMENTAL SOURCE FOUNDATION APPLIED
 ROUTE 1 GATE 1 PASS
 PREFERRED MULTIVIEW EXECUTABLE TRACKED
 GEOMETRY EVIDENCE BRIDGE STATIC SOURCE APPLIED
+GENERIC FIXTURE PREPARATION TRACKED
 LIVE BLOCKBENCH BRIDGE PROOF PENDING
 NOT PRODUCTION
 ```
@@ -15,16 +16,17 @@ This experiment tests one claim:
 
 > Does a consistent Hunyuan3D shape reconstruction provide useful 3D evidence that improves the primary Blockbench geometry authored through BuildIT Geometry MCP?
 
-The Hunyuan mesh is temporary supporting evidence. It is **not** a mesh-to-Blockbench converter, and the approved Minecraft reference plus requested dimensions remain visual/size authority.
+The Hunyuan mesh is temporary supporting evidence. It is **not** a mesh-to-Blockbench converter, and the approved Minecraft reference plus requested dimensions remain visual/size authority. Any representative fixture is sample evidence only; it must never become an object-specific modelling rule.
 
 ## Current bounded path
 
 ```text
 separated FRONT + SIDE + BACK crops
 → Hunyuan3D-2mv shape-only generation
-→ temporary source-multiview-separated.glb
+→ temporary approved-shape GLB
 → FRONT / SIDE / TOP / ISOMETRIC contact sheet
 → Gate 1 mesh usefulness PASS
+→ generic fixture preparation/package
 → BuildIT manage_geometry_reference
 → transient 3D reference + quantitative evidence
 → normal semantic Groups/Cubes
@@ -60,7 +62,7 @@ subfolder  hunyuan3d-dit-v2-mv
 variant    fp16
 ```
 
-The upstream `from_pretrained` helper does not expose a Hugging Face `revision` parameter to its internal download path. Therefore Route 1 requires the pinned model snapshot to be downloaded locally first and `HY3DGEN_MODELS` to point at that local root. Both generation scripts fail before pipeline construction when the required local files are absent.
+The upstream `from_pretrained` helper does not expose a Hugging Face `revision` parameter to its internal download path. Route 1 therefore requires the pinned model snapshot to be downloaded locally first and `HY3DGEN_MODELS` to point at that local root. Both generation scripts fail before pipeline construction when required local files are absent.
 
 ## Fixed settings
 
@@ -74,11 +76,11 @@ seed               12345
 texture            disabled
 ```
 
-`guidance scale = 5.0` is explicit in both scripts so the accepted Route 1 run does not depend on an implicit upstream FlowMatching default.
+`guidance scale = 5.0` is explicit in both scripts so the accepted Route 1 path does not depend on an implicit upstream FlowMatching default.
 
 Do not tune Fast/Turbo, octree 380+, multiple seeds, extra views, cleanup passes, or texture generation without new runtime evidence identifying a specific bottleneck.
 
-## Local setup
+## Local Hunyuan setup
 
 The GPU proof belongs on the local CUDA machine, not GitHub CI.
 
@@ -92,7 +94,7 @@ pip install -r requirements.txt
 pip install -e .
 ```
 
-Download the pinned model subfolders into a local root. The examples below keep them under the Route 1 `.cache/models` directory.
+Download the pinned model subfolders into a local root. Model weights stay local/transient and are not part of a Route 1 package.
 
 ```python
 from pathlib import Path
@@ -127,11 +129,11 @@ PowerShell example:
 $env:HY3DGEN_MODELS="D:\Work\AI Stuff\BuildIT\Experimental\route1-hunyuan-poc\.cache\models"
 ```
 
-The local experiment environment may stay under `Experimental/route1-hunyuan-poc/.cache/venv`. Model weights, generated meshes, and contact sheets remain transient `.cache/` data.
+The local experiment environment may stay under `Experimental/route1-hunyuan-poc/.cache/venv`.
 
 ## Generate the preferred MultiView mesh
 
-Use the separated transparent-background views only. The approved SIDE crop is mapped to Hunyuan's `left` view, matching the upstream pinned MultiView API.
+Use the separated transparent-background views only. The approved SIDE crop maps to Hunyuan's `left` view, matching the pinned MultiView API.
 
 ```text
 input/separated-reference/front.png → front
@@ -165,6 +167,84 @@ python Experimental/route1-hunyuan-poc/render_contact_sheet.py \
   --output Experimental/route1-hunyuan-poc/.cache/contact-sheet-multiview-separated.png
 ```
 
+## Generic fixture preparation
+
+The preparation contract is object-agnostic. A fixture identifies one approved representative asset; its ID, dimensions, or shape do not become reusable modelling heuristics.
+
+Minimum portable fixture layout:
+
+```text
+<fixture>/
+├── fixture.json
+├── approved-reference.png
+├── approved-shape.glb
+├── contact-sheet.png
+└── input/
+    ├── front.png
+    ├── left.png
+    └── back.png
+```
+
+`fixture.json` records only generic evidence/provenance fields:
+
+```json
+{
+  "schema_version": 1,
+  "fixture_id": "representative-asset",
+  "approved_reference": "approved-reference.png",
+  "approved_glb": "approved-shape.glb",
+  "contact_sheet": "contact-sheet.png",
+  "hunyuan_inputs": {
+    "front": "input/front.png",
+    "left": "input/left.png",
+    "back": "input/back.png"
+  },
+  "source_front_direction": "+z",
+  "requested_dimensions_blocks": {
+    "width": 1,
+    "height": 1,
+    "length": 1
+  },
+  "hunyuan": {
+    "pipeline": "hunyuan3d-2mv",
+    "upstream_source_commit": "f8db63096c8282cb27354314d896feba5ba6ff8a",
+    "model_id": "tencent/Hunyuan3D-2mv",
+    "model_revision": "3a761b539b29fe4ff64714813aa9560fd66f5de0",
+    "model_subfolder": "hunyuan3d-dit-v2-mv",
+    "variant": "fp16",
+    "views": ["front", "left", "back"],
+    "inference_steps": 50,
+    "guidance_scale": 5,
+    "octree_resolution": 256,
+    "num_chunks": 20000,
+    "seed": 12345,
+    "texture": false
+  }
+}
+```
+
+Use actual approved requested dimensions for each fixture; the `1 × 1 × 1` values above are schema examples only.
+
+From `mcp/`:
+
+```bash
+bun run build
+bun run route1:prepare <fixture-directory>
+bun run route1:package <fixture-directory>
+```
+
+`route1:prepare` is read-only. It verifies the strict fixture contract, portable in-root file paths, non-empty inputs, GLB 2.0 header/length, SHA-256 hashes, pinned Hunyuan provenance, and the canonical `mcp/dist/blockit_mcp.js` embedded build identity.
+
+`route1:package` performs the same preflight and creates a portable preparation package. Default output:
+
+```text
+Experimental/route1-hunyuan-poc/.cache/test-ready/<fixture_id>/
+```
+
+The package contains the exact BlockIT artifact, `fixture.json`, approved reference, approved GLB, contact sheet, FRONT/LEFT/BACK Hunyuan inputs, `manifest.json`, and `RUN.md`. Existing outputs are never silently overwritten. The manifest records each file hash/size plus the BlockIT embedded build identity and full bundle SHA-256. `repository_head_at_prepare` is context only; artifact identity comes from the packaged bundle itself.
+
+These commands are Bun preparation utilities, **not MCP callable tools**. They do not expand the 65-tool catalog or 28-tool Geometry surface.
+
 ## SingleView baseline
 
 The original one-image baseline remains executable for A/B research only:
@@ -176,17 +256,11 @@ python Experimental/route1-hunyuan-poc/render_contact_sheet.py \
   --front-direction=-z
 ```
 
-Do not replace the approved MultiView evidence with this baseline without a new reason.
+Do not replace approved MultiView evidence with this baseline without a new reason.
 
 ## Gate 1 — Mesh usefulness (PASS)
 
-Gate 1 uses the actual approved Minecraft reference and the fresh Hunyuan contact sheet together. The accepted separated MultiView reconstruction preserves:
-
-1. identity and primary part count;
-2. major volume/depth;
-3. appendage placement;
-4. attachment relationships;
-5. plausible hidden-side interpretation without identity-changing hallucination.
+Gate 1 uses the actual approved Minecraft reference and fresh Hunyuan contact sheet together. A useful reconstruction preserves identity/primary part count, major volume/depth, appendage placement, attachment relationships, and a plausible hidden-side interpretation without identity-changing hallucination.
 
 A successful export, attractive render, or high polygon count is not enough. Any materially failing future generation must stop before Blockbench and classify input preparation versus Hunyuan reconstruction.
 
@@ -194,22 +268,23 @@ A successful export, attractive render, or high polygon count is not enough. Any
 
 After Gate 1, the approved GLB can be loaded through the experimental Geometry-owned `manage_geometry_reference` tool.
 
-BuildIT keeps the GLB as a locked, root-only, `export=false` Reference Model. It reports raw world-space AABB, dimensions in Blockbench units/blocks, and mesh/vertex/triangle diagnostics. These numbers are **evidence only**: raw Hunyuan bounds can include disconnected reconstruction fragments and never become requested target dimensions.
+BuildIT keeps the GLB as a locked, root-only, `export=false` Reference Model. It reports raw world-space AABB, dimensions in Blockbench units/blocks, and mesh/vertex/triangle diagnostics. These numbers are evidence only: **raw Hunyuan bounds** may include reconstruction fragments and never become **requested target dimensions**.
 
-The existing `reference_models://...` resource exposes the same Route 1 evidence and recovered front alignment after a fresh MCP/Codex connection. `capture_model_views` can use explicit target framing before Cubes exist when a loaded Route 1 reference is visible.
+The existing `reference_models://...` resource exposes the same Route 1 evidence and recovered front alignment after a fresh MCP/Codex connection. `capture_model_views` can use explicit target framing before Cubes exist when a loaded invariant-valid Route 1 reference is visible.
 
 Production geometry remains normal Groups/Cubes. Editable `.bbmodel` export is blocked while a tool-owned Route 1 reference remains active; remove the reference before production export.
 
 ## Remaining proof boundary
 
-Static source/CI can prove schemas, source ownership, buildability, generated-doc freshness, evidence fields, and fail-closed contracts. It cannot prove the installed desktop plugin actually renders the approved GLB correctly or that the resulting Cube authoring is visually better.
+Static source/CI can prove schemas, preparation contracts, hashes, source ownership, buildability, generated-doc freshness, evidence fields, and fail-closed contracts. It cannot prove the installed desktop plugin actually renders a representative approved GLB correctly or that Cube authoring becomes visually better.
 
 The next eventual live proof is:
 
 ```text
-fresh exact Local build
+prepare/package an approved representative fixture
+→ load packaged exact BlockIT artifact
 → Geometry registry contains manage_geometry_reference
-→ approved elephant GLB loads as 3D Reference Model
+→ approved representative GLB loads as 3D Reference Model
 → quantitative resource/tool evidence matches the loaded reference
 → explicit canonical GLB views work before Cube blockout
 → normal Groups/Cubes share the intended coordinate frame

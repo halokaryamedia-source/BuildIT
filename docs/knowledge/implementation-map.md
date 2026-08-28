@@ -42,7 +42,7 @@ mcp/lib/authoringPhase.ts      Core/phase classification + active-phase/handoff 
 mcp/ui/                        Blockbench panel/settings
 mcp/prompts/                   canonical workflow body + generated manifest
 mcp/build/                     build/docs/manifest generation
-mcp/scripts/                   verification/measurement utilities
+mcp/scripts/                   verification/measurement/preparation utilities
 mcp/tests/                     contract/integration regressions
 mcp/docs/                      generated API docs; secondary to source
 ```
@@ -61,6 +61,7 @@ For a named MCP-tool defect, inspect the mapped **source owner + primary regress
 | Route 1 quantitative/reconnect evidence | `mcp/server/tools/project.ts`, `mcp/server/resources.ts` | `mcp/tests/geometry-reference-contract.test.ts` |
 | Route 1 reference capture / production cleanup | `mcp/server/tools/camera.ts`, `mcp/server/tools/export.ts` | `mcp/tests/camera-framing-contract.test.ts`, `mcp/tests/geometry-reference-contract.test.ts` |
 | Route 1 Hunyuan MultiView reproducibility | `Experimental/route1-hunyuan-poc/generate_multiview_shape.py`, `Experimental/route1-hunyuan-poc/README.md` | `mcp/tests/route1-hunyuan-reproducibility.test.ts` |
+| Route 1 fixture preparation / packaging | `mcp/scripts/route1-fixture.ts`, `mcp/package.json` | `mcp/tests/route1-fixture-preparation.test.ts` |
 | `place_cube`, `modify_cube`, `modify_cubes_batch` | `mcp/server/tools/cubes.ts` | `mcp/tests/model-effectiveness-correction-accuracy.test.ts` |
 | `add_group` | `mcp/server/tools/element.ts` | `mcp/tests/p1-core-ownership.test.ts` |
 | `list_outline`, `find_elements_by_criteria` | `mcp/server/tools/element.ts` | `mcp/tests/context-payload-cleanup.test.ts` |
@@ -73,6 +74,8 @@ For a named MCP-tool defect, inspect the mapped **source owner + primary regress
 | `inspect_animation` | `mcp/server/tools/animation-inspection.ts` | `mcp/tests/context-payload-cleanup.test.ts` |
 | `get_undo_stack`, `undo`, `redo` | `mcp/server/tools/history.ts` | `mcp/tests/static-footprint-budget.test.ts` for compact recovery state; targeted history tests for behavior |
 | `export_model` | `mcp/server/tools/export.ts` | `mcp/tests/prelocal-generic-semantics.test.ts` |
+
+`route1:prepare` and `route1:package` are Bun preparation commands, not MCP callable tools. They do not change the retained catalog or active Geometry surface.
 
 ## Effectiveness / Footprint Evidence Ownership
 
