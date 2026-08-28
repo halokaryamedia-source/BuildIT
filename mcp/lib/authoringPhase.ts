@@ -51,6 +51,7 @@ const GEOMETRY_MAINTENANCE_TOOLS = new Set([
   "reparent_element",
   "manage_locator",
   "manage_null_object",
+  "manage_geometry_reference",
 ]);
 
 const CORE_TEXTURE_TOOLS = new Set([

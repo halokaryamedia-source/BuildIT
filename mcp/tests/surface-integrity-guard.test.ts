@@ -18,7 +18,7 @@ async function source(relativePath: string): Promise<string> {
 }
 
 describe("advertised surface and fail-closed integrity guards", () => {
-  test("all 64 enabled tools stay listed with their authored shapes", () => {
+  test("all 65 enabled tools stay listed with their authored shapes", () => {
     // Same shared-process exclusion as default-registration-import-safe:
     // fixture and extended-family registrations from other test files must
     // not distort the default Bedrock product surface count.
@@ -28,7 +28,7 @@ describe("advertised surface and fail-closed integrity guards", () => {
     const enabledDefinitions = Object.entries(
       getEnabledToolDefinitions()
     ).filter(([name]) => !name.includes("fixture") && !extendedToolNames.has(name));
-    expect(enabledDefinitions.length).toBe(64);
+    expect(enabledDefinitions.length).toBe(65);
 
     for (const [, toolDef] of enabledDefinitions) {
       const { inputSchema, parameterSchema } = toolDef as {
@@ -61,6 +61,8 @@ describe("advertised surface and fail-closed integrity guards", () => {
     expect(shapeFieldNames("export_model")).toContain("codec_id");
     expect(shapeFieldNames("export_model")).toContain("overwrite");
     expect(shapeFieldNames("modify_cubes_batch")).toContain("updates");
+    expect(shapeFieldNames("manage_geometry_reference")).toContain("action");
+    expect(shapeFieldNames("manage_geometry_reference")).toContain("path");
   });
 
   test("pixel schemas reject malformed colors and out-of-enum blend modes", () => {
@@ -116,6 +118,10 @@ describe("advertised surface and fail-closed integrity guards", () => {
     expect(exportSource).toContain("overwrite !== true");
     expect(exportSource).toContain(
       "Refusing to replace the existing .bbmodel"
+    );
+    expect(exportSource).toContain("listBlockItRoute1References");
+    expect(exportSource).toContain(
+      "Remove them with manage_geometry_reference before project export"
     );
 
     const paintSource = await source("server/tools/paint.ts");

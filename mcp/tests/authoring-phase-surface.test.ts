@@ -41,7 +41,7 @@ describe("authoring phase MCP surface", () => {
 
   test("default Geometry surface is Core plus Geometry only", () => {
     const geometry = phaseSurface("geometry");
-    expect(geometry.size).toBe(27);
+    expect(geometry.size).toBe(28);
 
     for (const coreTool of [
       "create_project",
@@ -70,6 +70,7 @@ describe("authoring phase MCP surface", () => {
       "rename_element",
       "manage_locator",
       "manage_null_object",
+      "manage_geometry_reference",
       "bone_rigging",
     ]) {
       expect(geometry.has(geometryTool), geometryTool).toBe(true);
@@ -168,6 +169,7 @@ describe("authoring phase MCP surface", () => {
       "remove_element",
       "rename_element",
       "manage_locator",
+      "manage_geometry_reference",
       "bone_rigging",
     ]) {
       expect(geometry.has(structuralTool), structuralTool).toBe(true);

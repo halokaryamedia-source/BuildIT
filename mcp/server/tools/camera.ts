@@ -6,6 +6,7 @@ import { captureScreenshot, captureAppScreenshot, imageContent } from "@/lib/uti
 import { readRenderedModelBounds, type RenderedModelBounds, type Vec3 } from "@/lib/renderedModelBounds";
 import { STATUS_EXPERIMENTAL, STATUS_STABLE } from "@/lib/constants";
 import { vector3Schema, projectionEnum } from "@/lib/zodObjects";
+import { hasVisibleLoadedBlockItRoute1Reference } from "./project";
 
 const CAPTURE_SIZE = 512;
 const FRAME_PADDING = 0.12;
@@ -142,7 +143,7 @@ export const cameraToolDocs: ToolSpec[] = [
   {
     name: "capture_model_views",
     description:
-      "Captures 1-5 deterministic labeled 512×512 canonical model views without changing the active editor camera. Requires explicit front_direction and supports model or explicit-envelope framing. Returns observation images only; it does not compare, score, repair, or return PASS/FAIL.",
+      "Captures 1-5 deterministic labeled 512×512 canonical views without changing the active editor camera. Model framing requires visible Cubes; explicit framing can also capture a loaded visible Route 1 3D reference before blockout. Returns observation only; no score/PASS/FAIL.",
     annotations: {
       title: "Capture Model Views",
       readOnlyHint: true,
@@ -422,15 +423,24 @@ export function registerCameraTools() {
       }
 
       const observed = readRenderedModelBounds();
-      if (!observed.bounds || observed.rendered_cube_count === 0) {
-        throw new Error("The active project has no visible Cube geometry to capture.");
+      const framingInput = framing as FramingInput;
+      if (framingInput.mode === "model") {
+        if (!observed.bounds || observed.rendered_cube_count === 0) {
+          throw new Error("Model framing requires visible Cube geometry to capture.");
+        }
+      } else if (
+        observed.rendered_cube_count === 0 &&
+        !hasVisibleLoadedBlockItRoute1Reference()
+      ) {
+        throw new Error(
+          "Explicit framing requires visible Cube geometry or a loaded visible BlockIT Route 1 geometry reference."
+        );
       }
 
-      const framingInput = framing as FramingInput;
       const framingBounds =
         framingInput.mode === "explicit"
           ? boundsFromExplicit(framingInput)
-          : observed.bounds;
+          : observed.bounds!;
 
       const capturePreview = Screencam.NoAAPreview;
       if (!capturePreview || capturePreview === Preview.selected) {

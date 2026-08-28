@@ -2,10 +2,32 @@
 /// <reference types="blockbench-types" />
 import { z } from "zod";
 import { createTool, type ToolSpec } from "@/lib/factories";
-import { STATUS_STABLE } from "@/lib/constants";
+import { STATUS_EXPERIMENTAL, STATUS_STABLE } from "@/lib/constants";
 import { readRenderedModelBounds } from "@/lib/renderedModelBounds";
+import { isAbsoluteFilesystemPath } from "@/lib/util";
 
 export const DEFAULT_BEDROCK_UV_RESOLUTION = 128;
+export const BLOCKIT_ROUTE1_REFERENCE_PREFIX = "blockit_route1__";
+
+const finiteReferenceVec3Schema = z.tuple([
+  z.number().finite(),
+  z.number().finite(),
+  z.number().finite(),
+]);
+
+export const route1FrontDirectionSchema = z.enum(["+z", "-z"]);
+export type Route1FrontDirection = z.infer<typeof route1FrontDirectionSchema>;
+
+const localGlbPathSchema = z
+  .string()
+  .min(1)
+  .refine(isAbsoluteFilesystemPath, {
+    message:
+      "Route 1 geometry reference path must be an absolute local filesystem path.",
+  })
+  .refine((path) => /\.glb$/i.test(path), {
+    message: "Route 1 geometry reference supports local .glb files only.",
+  });
 
 export const createProjectParameters = z
   .object({
@@ -25,6 +47,111 @@ export const createProjectParameters = z
 
 export const getProjectInfoParameters = z.object({});
 export const inspectModelBoundsParameters = z.object({});
+
+export const manageGeometryReferenceParameters = z
+  .object({
+    action: z
+      .enum(["load", "update", "remove"])
+      .describe("Route 1 reference lifecycle action."),
+    path: localGlbPathSchema
+      .optional()
+      .describe("Absolute local .glb path; required only for load."),
+    id: z
+      .string()
+      .min(1)
+      .optional()
+      .describe(
+        "Tool-owned Route 1 reference UUID or unique exact name; required for update/remove."
+      ),
+    source_front_direction: route1FrontDirectionSchema
+      .optional()
+      .describe(
+        "Required load-time front direction encoded by the approved Route 1 GLB."
+      ),
+    origin: finiteReferenceVec3Schema
+      .optional()
+      .describe("Reference origin [x,y,z]. Load default is [0,0,0]."),
+    uniform_scale: z
+      .number()
+      .finite()
+      .positive()
+      .optional()
+      .describe(
+        "Uniform scale multiplier. Load default is 1; non-uniform scaling is unsupported."
+      ),
+    visibility: z
+      .boolean()
+      .optional()
+      .describe("Reference visibility. Load default is true."),
+    wireframe: z
+      .boolean()
+      .optional()
+      .describe("Reference wireframe mode. Load default is false."),
+  })
+  .strict()
+  .superRefine((value, ctx) => {
+    const reject = (key: keyof typeof value, message: string) => {
+      if (value[key] !== undefined) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, path: [key], message });
+      }
+    };
+
+    if (value.action === "load") {
+      if (!value.path) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["path"],
+          message: "load requires path.",
+        });
+      }
+      if (!value.source_front_direction) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["source_front_direction"],
+          message: "load requires source_front_direction.",
+        });
+      }
+      reject(
+        "id",
+        "load does not accept id; v1 supports one active Route 1 reference."
+      );
+      return;
+    }
+
+    if (!value.id) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["id"],
+        message: `${value.action} requires id.`,
+      });
+    }
+    reject(
+      "path",
+      `${value.action} does not change the GLB source; remove and reload instead.`
+    );
+    reject(
+      "source_front_direction",
+      `${value.action} does not change source orientation; remove and reload instead.`
+    );
+
+    if (value.action === "remove") {
+      reject("origin", "remove accepts only action and id.");
+      reject("uniform_scale", "remove accepts only action and id.");
+      reject("visibility", "remove accepts only action and id.");
+      reject("wireframe", "remove accepts only action and id.");
+    } else if (
+      value.origin === undefined &&
+      value.uniform_scale === undefined &&
+      value.visibility === undefined &&
+      value.wireframe === undefined
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["action"],
+        message: "update requires an actual transform or display change.",
+      });
+    }
+  });
 
 export const projectToolDocs: ToolSpec[] = [
   {
@@ -60,6 +187,18 @@ export const projectToolDocs: ToolSpec[] = [
     },
     parameters: inspectModelBoundsParameters,
     status: STATUS_STABLE,
+  },
+  {
+    name: "manage_geometry_reference",
+    description:
+      "Loads, updates, or removes one approved local Route 1 .glb as transient 3D evidence through Blockbench Reference Models. It never converts mesh triangles to Bedrock geometry.",
+    annotations: {
+      title: "Manage Route 1 Geometry Reference",
+      destructiveHint: true,
+      openWorldHint: true,
+    },
+    parameters: manageGeometryReferenceParameters,
+    status: STATUS_EXPERIMENTAL,
   },
 ];
 
@@ -100,6 +239,205 @@ function currentProjectLifecycle() {
     export_path: Project.export_path ?? null,
     export_codec: Project.export_codec ?? null,
     saved: Project.saved === true,
+  };
+}
+
+type ReferenceFilesystem = {
+  existsSync(path: string): boolean;
+  statSync(path: string): { isFile(): boolean };
+};
+
+type ReferenceModelRuntime = OutlinerElement & {
+  path?: string;
+  origin: number[];
+  rotation: number[];
+  scale: number[];
+  visibility: boolean;
+  wireframe?: boolean;
+  locked?: boolean;
+  export?: boolean;
+  mesh?: THREE.Object3D;
+  preview_controller?: {
+    updateTransform?: (element: ReferenceModelRuntime) => void;
+    updateVisibility?: (element: ReferenceModelRuntime) => void;
+    updateSelection?: (element: ReferenceModelRuntime) => void;
+  };
+  extend?: (data: Record<string, unknown>) => ReferenceModelRuntime;
+};
+
+type ReferenceModelConstructor = new (
+  data?: Record<string, unknown>,
+  uuid?: string
+) => ReferenceModelRuntime;
+
+function requireBedrockReferenceProject(): void {
+  if (!Project) {
+    throw new Error(
+      "Open or create the intended Bedrock project before managing Route 1 geometry evidence."
+    );
+  }
+  const format = Format as
+    | { id?: string; forward_direction?: string }
+    | undefined;
+  if (format?.id !== "bedrock") {
+    throw new Error(
+      `Route 1 geometry reference requires bedrock format; current format is ${format?.id ?? "unknown"}.`
+    );
+  }
+  const direction = format.forward_direction ?? "-z";
+  if (direction !== "+z" && direction !== "-z") {
+    throw new Error(
+      `Route 1 v1 supports Bedrock project front +z/-z only; current forward direction is ${String(direction)}.`
+    );
+  }
+}
+
+function projectFrontDirection(): Route1FrontDirection {
+  const direction =
+    (Format as { forward_direction?: string } | undefined)?.forward_direction ??
+    "-z";
+  const parsed = route1FrontDirectionSchema.safeParse(direction);
+  if (!parsed.success) {
+    throw new Error(
+      `Unsupported Blockbench forward direction ${direction} for Route 1 v1.`
+    );
+  }
+  return parsed.data;
+}
+
+export function route1ReferenceYawDegrees(
+  source: Route1FrontDirection,
+  target: Route1FrontDirection
+): number {
+  return source === target ? 0 : 180;
+}
+
+export function isBlockItRoute1Reference(
+  element: unknown
+): element is ReferenceModelRuntime {
+  if (!element || typeof element !== "object") return false;
+  const value = element as { type?: unknown; name?: unknown };
+  return (
+    value.type === "reference_model" &&
+    typeof value.name === "string" &&
+    value.name.startsWith(BLOCKIT_ROUTE1_REFERENCE_PREFIX)
+  );
+}
+
+export function listBlockItRoute1References(): ReferenceModelRuntime[] {
+  if (typeof Outliner === "undefined") return [];
+  return (Outliner.elements ?? []).filter(isBlockItRoute1Reference);
+}
+
+function isLoadedReference(reference: ReferenceModelRuntime): boolean {
+  return Boolean(reference.mesh && reference.mesh.children.length > 0);
+}
+
+export function hasVisibleLoadedBlockItRoute1Reference(): boolean {
+  return listBlockItRoute1References().some(
+    (reference) => reference.visibility !== false && isLoadedReference(reference)
+  );
+}
+
+function resolveBlockItRoute1Reference(id: string): ReferenceModelRuntime {
+  const references = listBlockItRoute1References();
+  const uuidMatch = references.find((reference) => reference.uuid === id);
+  if (uuidMatch) return uuidMatch;
+
+  const nameMatches = references.filter((reference) => reference.name === id);
+  if (nameMatches.length === 1) return nameMatches[0];
+  if (nameMatches.length > 1) {
+    throw new Error(
+      `Route 1 geometry reference name "${id}" is ambiguous. Use the UUID.`
+    );
+  }
+  throw new Error(`Route 1 geometry reference "${id}" not found.`);
+}
+
+function referenceConstructor(): ReferenceModelConstructor {
+  const types = (
+    OutlinerElement as unknown as {
+      types?: Record<string, ReferenceModelConstructor>;
+    }
+  ).types;
+  const ReferenceModel = types?.reference_model;
+  if (!ReferenceModel) {
+    throw new Error(
+      "Blockbench Reference Models plugin is not active. Enable it, reload BlockIT, then retry manage_geometry_reference."
+    );
+  }
+  return ReferenceModel;
+}
+
+function localReferenceFilesystem(): ReferenceFilesystem {
+  // @ts-ignore - requireNativeModule is a Blockbench desktop global.
+  const fs = requireNativeModule("fs", {
+    message: "BlockIT Route 1 needs read access to the approved local GLB",
+  }) as ReferenceFilesystem | null;
+  if (!fs) {
+    throw new Error(
+      "File system access was denied for the approved local Route 1 GLB."
+    );
+  }
+  return fs;
+}
+
+function referenceName(path: string): string {
+  const file = path.replace(/\\/g, "/").split("/").pop() ?? "reference.glb";
+  const stem =
+    file
+      .replace(/\.glb$/i, "")
+      .replace(/[^A-Za-z0-9._-]+/g, "_")
+      .slice(0, 80) || "reference";
+  return `${BLOCKIT_ROUTE1_REFERENCE_PREFIX}${stem}`;
+}
+
+function sameVec3(a: readonly number[], b: readonly number[]): boolean {
+  return (
+    a.length >= 3 &&
+    b.length >= 3 &&
+    a.slice(0, 3).every((value, axis) => value === b[axis])
+  );
+}
+
+function refreshReference(reference: ReferenceModelRuntime): void {
+  reference.preview_controller?.updateTransform?.(reference);
+  reference.preview_controller?.updateVisibility?.(reference);
+  reference.preview_controller?.updateSelection?.(reference);
+  reference.mesh?.updateMatrixWorld(true);
+}
+
+async function waitForReferenceLoad(
+  reference: ReferenceModelRuntime,
+  timeoutMs = 20_000
+): Promise<void> {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    if (isLoadedReference(reference)) return;
+    await new Promise((resolve) => setTimeout(resolve, 50));
+  }
+  throw new Error(
+    `Timed out waiting for Blockbench Reference Models to load ${reference.path ?? "the GLB"}.`
+  );
+}
+
+function referenceState(reference: ReferenceModelRuntime) {
+  return {
+    uuid: reference.uuid,
+    name: reference.name,
+    path: reference.path ?? null,
+    route1_owned: true,
+    loaded: isLoadedReference(reference),
+    origin: [...reference.origin],
+    rotation: [...reference.rotation],
+    scale: [...reference.scale],
+    visibility: reference.visibility !== false,
+    wireframe: reference.wireframe === true,
+    locked: reference.locked === true,
+    export: reference.export !== false,
+    parent: reference.parent === "root" ? "root" : "non_root",
+    warning:
+      "GLB is depth/volume/attachment evidence only. Requested dimensions and the approved Minecraft reference remain authoritative; do not infer target size from raw reconstruction bounds.",
   };
 }
 
@@ -235,5 +573,167 @@ export function registerProjectTools() {
       };
     },
   }, projectToolDocs[2].status);
+
+  createTool(projectToolDocs[3].name, {
+    ...projectToolDocs[3],
+    parameters: manageGeometryReferenceParameters,
+    async execute(input) {
+      requireBedrockReferenceProject();
+      const parsed = manageGeometryReferenceParameters.parse(input);
+
+      if (parsed.action === "load") {
+        if (listBlockItRoute1References().length > 0) {
+          throw new Error(
+            "A BlockIT Route 1 reference is already active. Update or remove it before loading another."
+          );
+        }
+
+        const path = parsed.path!;
+        const fs = localReferenceFilesystem();
+        if (!fs.existsSync(path) || !fs.statSync(path).isFile()) {
+          throw new Error(`Route 1 GLB file not found: ${path}`);
+        }
+
+        const sourceFront = parsed.source_front_direction!;
+        const targetFront = projectFrontDirection();
+        const yaw = route1ReferenceYawDegrees(sourceFront, targetFront);
+        const uniformScale = parsed.uniform_scale ?? 1;
+        const ReferenceModel = referenceConstructor();
+        let reference: ReferenceModelRuntime | null = null;
+
+        Undo.initEdit({ outliner: true, elements: [], selection: true });
+        try {
+          reference = new ReferenceModel({
+            name: referenceName(path),
+            path,
+            origin: parsed.origin ?? [0, 0, 0],
+            rotation: [0, yaw, 0],
+            scale: [uniformScale, uniformScale, uniformScale],
+            visibility: parsed.visibility ?? true,
+            wireframe: parsed.wireframe ?? false,
+            locked: true,
+            export: false,
+          }).init() as ReferenceModelRuntime;
+          reference.addTo("root");
+          await waitForReferenceLoad(reference);
+          reference.locked = true;
+          reference.export = false;
+          refreshReference(reference);
+          Undo.finishEdit("Load Route 1 geometry reference", {
+            outliner: true,
+            elements: [reference],
+            selection: true,
+          });
+        } catch (error) {
+          try {
+            Undo.cancelEdit(true);
+          } finally {
+            if (
+              reference &&
+              (Outliner.elements ?? []).some(
+                (element) => element.uuid === reference!.uuid
+              )
+            ) {
+              reference.remove();
+            }
+          }
+          throw error;
+        }
+
+        const result = {
+          action: "load" as const,
+          reference: referenceState(reference),
+          alignment: {
+            source_front_direction: sourceFront,
+            project_front_direction: targetFront,
+            applied_yaw_degrees: yaw,
+            y_up_required: true,
+            uniform_scale_only: true,
+          },
+        };
+        return {
+          content: [
+            {
+              type: "text" as const,
+              text: `Loaded transient Route 1 GLB reference ${reference.name} (${reference.uuid}); source ${sourceFront} aligned to project ${targetFront} with Y yaw ${yaw}°.`,
+            },
+          ],
+          structuredContent: result,
+        };
+      }
+
+      const reference = resolveBlockItRoute1Reference(parsed.id!);
+      if (parsed.action === "remove") {
+        const removed = {
+          uuid: reference.uuid,
+          name: reference.name,
+          path: reference.path ?? null,
+        };
+        Undo.initEdit({ outliner: true, elements: [reference], selection: true });
+        reference.remove();
+        Undo.finishEdit("Remove Route 1 geometry reference", {
+          outliner: true,
+          elements: [reference],
+          selection: true,
+        });
+        return {
+          content: [
+            {
+              type: "text" as const,
+              text: `Removed transient Route 1 geometry reference ${removed.name} (${removed.uuid}).`,
+            },
+          ],
+          structuredContent: { action: "remove" as const, removed },
+        };
+      }
+
+      const nextOrigin = parsed.origin ?? [...reference.origin];
+      const nextScale =
+        parsed.uniform_scale === undefined
+          ? [...reference.scale]
+          : [parsed.uniform_scale, parsed.uniform_scale, parsed.uniform_scale];
+      const nextVisibility = parsed.visibility ?? reference.visibility;
+      const nextWireframe = parsed.wireframe ?? reference.wireframe ?? false;
+      if (
+        sameVec3(reference.origin, nextOrigin) &&
+        sameVec3(reference.scale, nextScale) &&
+        reference.visibility === nextVisibility &&
+        (reference.wireframe ?? false) === nextWireframe
+      ) {
+        throw new Error(
+          "Route 1 geometry reference update is an exact no-op."
+        );
+      }
+
+      Undo.initEdit({ elements: [reference] });
+      const patch = {
+        origin: nextOrigin,
+        scale: nextScale,
+        visibility: nextVisibility,
+        wireframe: nextWireframe,
+      };
+      if (typeof reference.extend === "function") reference.extend(patch);
+      else Object.assign(reference, patch);
+      reference.locked = true;
+      reference.export = false;
+      refreshReference(reference);
+      Undo.finishEdit("Update Route 1 geometry reference", {
+        elements: [reference],
+      });
+
+      return {
+        content: [
+          {
+            type: "text" as const,
+            text: `Updated transient Route 1 geometry reference ${reference.name} (${reference.uuid}).`,
+          },
+        ],
+        structuredContent: {
+          action: "update" as const,
+          reference: referenceState(reference),
+        },
+      };
+    },
+  }, projectToolDocs[3].status);
 
 }
