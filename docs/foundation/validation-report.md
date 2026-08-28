@@ -225,7 +225,7 @@ max per-tool payload                <= 3,200 characters
 canonical workflow source           < 9,000 characters
 ```
 
-These are **Static Footprint** guardrails. Character counts are not client token measurements and not Authoring Efficiency proof.
+These are **Static Footprint** guardrails. Character counts are regression ceilings, not client token measurements and not Authoring Efficiency proof.
 
 ## Visual / Reference Proof Rule
 
