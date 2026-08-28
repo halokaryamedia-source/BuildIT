@@ -33,7 +33,7 @@ MCP CORE + exactly one ACTIVE PHASE
 GEOMETRY | TEXTURING | ANIMATION
 ```
 
-The exact current source gate passed on `Local` commit `5bcaa8a7e9217dc84fb0d11d96c319ba1154e417`:
+The current full MCP gate passed on exact `Local` source commit `5bcaa8a7e9217dc84fb0d11d96c319ba1154e417`:
 
 ```text
 bun install --frozen-lockfile  PASS
