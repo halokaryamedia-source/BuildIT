@@ -1,10 +1,10 @@
 # Next Action
 
-Updated: 2026-08-28 — Route 1 generic preparation/source complete; live Blockbench test intentionally deferred by user
+Updated: 2026-08-28 — Route 1 generic source/preparation complete; live Blockbench test deferred by user
 
 Working branch: **`Local` only**.
 
-Current source + matching proof are authority. Static green does not prove the installed desktop/runtime or model quality.
+Static green does not prove installed desktop/runtime behavior or model quality.
 
 ## Current State
 
@@ -35,14 +35,14 @@ NO_ROUTE1_LIVE_PASS
 NO_ACTIVE_REPOSITORY_DEVELOPMENT
 ```
 
-Exact final source/preparation commit:
+Exact source/preparation commit:
 
 ```text
 5ecbf25608f8da879497e2f687854cb68781f3cd
 fix(route1): package reproducible multiview inputs
 ```
 
-Matching canonical MCP proof:
+Canonical MCP proof:
 
 ```text
 bun install --frozen-lockfile  PASS
@@ -53,18 +53,7 @@ bun run build                  PASS
 bun run docs:check             PASS
 ```
 
-Measured MCP surface is unchanged:
-
-```text
-catalog tools                  65
-Geometry exposure              28
-initialize instructions        608 chars
-tools/list response            78,400 chars
-input schemas                  58,352 chars
-max per-tool payload           3,062 chars
-```
-
-Exact source-build identity from canonical CI:
+Surface stayed **65 catalog / 28 Geometry**. Exact source-build identity:
 
 ```text
 sha256:a2bdb04df6036548d9ebad8ea1bdf949596c5ff6bc494cf1fda2cfdda0bd5598
@@ -74,7 +63,7 @@ sha256:a2bdb04df6036548d9ebad8ea1bdf949596c5ff6bc494cf1fda2cfdda0bd5598
 
 ### Goal
 
-Use approved Route 1 shape evidence as transient 3D guidance in Geometry, with an object-agnostic fixture/preparation layer that can package all inputs and the exact BlockIT artifact without creating object-specific modelling rules.
+Use approved Route 1 shape evidence as transient 3D guidance, with an object-agnostic preparation layer that packages all required inputs and the exact BlockIT artifact without object-specific modelling rules.
 
 ### Success Metric
 
@@ -82,25 +71,21 @@ Use approved Route 1 shape evidence as transient 3D guidance in Geometry, with a
 approved reference + requested dimensions remain authority
 → pinned FRONT + LEFT(SIDE) + BACK Hunyuan inputs
 → approved shape-only GLB + contact sheet
-→ strict generic fixture contract
-→ route1:prepare validates files/provenance/artifact identity
+→ strict generic fixture
+→ route1:prepare validates fixture/provenance/artifact identity
 → route1:package creates portable test-ready package
-→ Blockbench bridge uses transient 3D evidence
+→ transient Blockbench 3D evidence
 → normal Groups/Cubes remain production geometry
-→ transient reference removed before production .bbmodel export
+→ remove reference before production .bbmodel export
 ```
-
-Accepted visual result remains the product gate.
 
 ### Forbidden Proxy / Non-Goal
 
-Do not add object/anatomy-specific fixture fields, mesh-to-Cube conversion, voxelization, cuboid solver, GLB repair/decimation, semantic segmentation, raycast/probe, similarity scoring, opacity framework, custom GLB renderer, comparison framework, persistent Route 1 registry, Geometry compiler/planner, reconnect daemon, or autonomous correction without new evidence.
-
-Raw Hunyuan bounds remain observation only and never requested target dimensions.
+Do not add object/anatomy-specific fixture fields, mesh-to-Cube conversion, voxelization, cuboid solving, GLB repair/decimation, segmentation, raycast/probe, similarity scoring, custom rendering, persistent Route 1 registry, Geometry compiler/planner, reconnect daemon, or autonomous correction without new evidence. Raw Hunyuan bounds never become target dimensions.
 
 ### First Evidence Required
 
-No further source or preparation evidence is currently missing. The next new evidence is intentionally deferred until the user chooses to resume live testing:
+No further source/preparation evidence is missing. When the user reactivates live testing:
 
 ```text
 prepare/package one approved representative fixture
@@ -110,78 +95,71 @@ prepare/package one approved representative fixture
 → representative GLB bridge proof
 ```
 
-Do not start that run until the user reactivates it.
-
 ### Failure Classification / first wrong owner
 
 ```text
-fixture schema/file/hash failure                 → ROUTE 1 PREPARATION
-BlockIT artifact identity failure                → BUILD / INSTALL
-Hunyuan input/provenance mismatch                → ROUTE 1 / HUNYUAN EVIDENCE
-BLOCKBENCH_SERVER_UNREACHABLE                    → BLOCKBENCH_RUNTIME
-MCP_HEALTH_UNREADABLE / WRONG_MCP_PRODUCT        → ENVIRONMENT / INSTALL
-STALE_BUILD / WRONG_AUTHORING_PHASE              → ENVIRONMENT / INSTALL
-SERVER_PROCESS_UNSTABLE                          → BLOCKBENCH_RUNTIME
-fresh Codex tool absent after fresh build        → MCP_PUBLIC_CONTRACT / INSTALL
-Reference Models unavailable                     → ENVIRONMENT / INSTALL
-GLB load/transform/cleanup failure                → BLOCKBENCH_RUNTIME
-quantitative evidence/invariant failure           → ROUTE 1 MCP SOURCE / RUNTIME
-canonical GLB capture failure                     → CAMERA / BLOCKBENCH_RUNTIME
-GLB reconstruction materially wrong               → ROUTE 1 / HUNYUAN EVIDENCE
-Cube result wrong despite valid evidence          → MODELLING REASONING / SKILL
-production .bbmodel retains Route 1 reference     → EXPORT / CLEANUP BOUNDARY
+fixture/file/hash failure                    → ROUTE 1 PREPARATION
+BlockIT artifact identity failure            → BUILD / INSTALL
+Hunyuan input/provenance/reconstruction      → ROUTE 1 / HUNYUAN EVIDENCE
+server/process/GLB runtime failure            → BLOCKBENCH_RUNTIME
+wrong product/build/phase/plugin              → ENVIRONMENT / INSTALL
+fresh required tool absent                    → MCP_PUBLIC_CONTRACT / INSTALL
+quantitative invariant failure                → ROUTE 1 MCP SOURCE / RUNTIME
+canonical capture failure                     → CAMERA / BLOCKBENCH_RUNTIME
+Cube result wrong despite valid evidence      → MODELLING REASONING / SKILL
+.bbmodel retains Route 1 reference            → EXPORT / CLEANUP BOUNDARY
 ```
 
 ### Proof Required
 
-Source/preparation proof is complete. Eventual live proof remains:
+Eventual live proof remains:
 
 ```text
 local fail-fast diagnostic PASS
-+ fresh Codex Geometry registry contains manage_geometry_reference
-+ approved representative GLB renders as 3D reference
-+ tool/resource quantitative evidence matches loaded reference
-+ GLB-only explicit canonical views work before Cube blockout
++ fresh Geometry registry contains manage_geometry_reference
++ representative approved GLB renders in 3D
++ quantitative evidence matches loaded reference
++ pre-Cube explicit views work
 + reference/Cubes share intended coordinate frame
 + reference never becomes Bedrock geometry
-+ production .bbmodel is clean after reference removal
++ final .bbmodel is clean after removal
 ```
 
-Only after live bridge PASS may Route 1 quality/efficiency be compared against image-only authoring.
+Only after live bridge PASS may Route 1 quality/efficiency be compared with image-only authoring.
 
 ## Source Boundary
 
-Preferred Hunyuan generation is executable and pinned to Hunyuan3D-2mv FRONT + LEFT(SIDE) + BACK, shape-only, `+z` source front, fixed fp16 / 50 steps / guidance 5.0 / octree 256 / chunks 20000 / seed 12345.
+Hunyuan generation is pinned to Hunyuan3D-2mv FRONT + LEFT(SIDE) + BACK, shape-only, `+z`, fp16 / 50 steps / guidance 5.0 / octree 256 / chunks 20000 / seed 12345.
 
-`manage_geometry_reference` reuses Blockbench's installed `reference_models` type. It returns raw world AABB, dimensions in Blockbench units/blocks, and mesh/vertex/triangle diagnostics. `reference_models://...` recovers the same evidence/alignment after reconnect. Evidence/capture fails closed if a tool-owned reference becomes non-root, unlocked, export-enabled, or non-uniformly scaled.
+`manage_geometry_reference` reuses Blockbench Reference Models, returns quantitative 3D evidence, recovers through `reference_models://...`, and fails closed on invalid transient-reference invariants. Editable `.bbmodel` export remains blocked until the tool-owned reference is removed.
 
-Generic preparation is owned by `mcp/scripts/route1-fixture.ts` and is **not an MCP callable surface**:
+Generic preparation is **not an MCP callable surface**:
 
 ```text
 bun run route1:prepare <fixture-directory>
 bun run route1:package <fixture-directory>
 ```
 
-A fixture contains approved reference, approved GLB, contact sheet, FRONT/LEFT/BACK Hunyuan inputs, source-front direction, requested dimensions, and exact pinned Hunyuan provenance. Preparation verifies portable paths, non-empty files, GLB 2.0 header, SHA-256 hashes, and the canonical BlockIT bundle identity. Packaging copies those inputs plus `plugin/blockit_mcp.js`, `manifest.json`, and `RUN.md` into ignored `.cache/test-ready/<fixture_id>` by default; existing outputs are not overwritten.
+The fixture contains approved reference/GLB/contact sheet, FRONT/LEFT/BACK Hunyuan inputs, source front, requested dimensions, and pinned Hunyuan provenance. Preparation verifies portable paths, non-empty files, GLB 2.0 header, SHA-256 hashes, and BlockIT build identity. Packaging copies those inputs plus `plugin/blockit_mcp.js`, `manifest.json`, and `RUN.md` under ignored `.cache/test-ready/<fixture_id>` by default and refuses overwrite.
 
-The package manifest records the embedded BlockIT build identity and full bundle SHA-256. `repository_head_at_prepare` is context only, not a substitute for artifact identity.
+Manifest artifact authority is the embedded BlockIT build identity + full bundle SHA-256; `repository_head_at_prepare` is context only.
 
 ## Local Runtime Gate
 
 **ROUTE1_BLOCKBENCH_TEST_BLOCKED by deliberate user deferral, not by a known source/preparation blocker.**
 
-When live testing is reactivated:
+When reactivated:
 
 ```text
-build exact current BlockIT
+build current BlockIT
 → route1:prepare <approved-representative-fixture>
 → route1:package <approved-representative-fixture>
-→ load packaged blockit_mcp.js in Blockbench desktop
+→ load packaged plugin in Blockbench
 → Geometry active
 → bun run verify:stateless-local
-→ continue bridge/model-quality proof only after PASS
+→ continue only after PASS
 ```
 
 ## STOP
 
-Repository/source/preparation development stops here because no justified static gap remains. A representative sample may prove or disprove the generic pipeline, but it must never become an object-specific modelling rule. Resume coding only if later runtime/visual evidence identifies a specific wrong owner.
+Repository/source/preparation work stops here. A representative sample may validate the generic pipeline but must never become an object-specific rule. Resume coding only from specific later runtime/visual evidence.
