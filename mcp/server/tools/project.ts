@@ -3,7 +3,7 @@
 import { z } from "zod";
 import { createTool, type ToolSpec } from "@/lib/factories";
 import { STATUS_EXPERIMENTAL, STATUS_STABLE } from "@/lib/constants";
-import { readRenderedModelBounds } from "@/lib/renderedModelBounds";
+import { readRenderedModelBounds, type Vec3 } from "@/lib/renderedModelBounds";
 import { isAbsoluteFilesystemPath } from "@/lib/util";
 
 export const DEFAULT_BEDROCK_UV_RESOLUTION = 128;
@@ -247,7 +247,7 @@ type ReferenceFilesystem = {
   statSync(path: string): { isFile(): boolean };
 };
 
-type ReferenceModelRuntime = OutlinerElement & {
+export type ReferenceModelRuntime = OutlinerElement & {
   path?: string;
   origin: number[];
   rotation: number[];
@@ -269,6 +269,35 @@ type ReferenceModelConstructor = new (
   data?: Record<string, unknown>,
   uuid?: string
 ) => ReferenceModelRuntime;
+
+export type Route1ReferenceBoundsSummary = {
+  bounds_basis: "raw_reference_world_aabb";
+  blockbench_units_per_block: number;
+  world_bounds: {
+    min: Vec3;
+    max: Vec3;
+    center: Vec3;
+    size_xyz: Vec3;
+  };
+  dimensions_blockbench_units: {
+    width: number;
+    height: number;
+    length: number;
+  };
+  dimensions_blocks: {
+    width: number;
+    height: number;
+    length: number;
+  };
+};
+
+export type Route1ReferenceEvidence = Route1ReferenceBoundsSummary & {
+  scene_stats: {
+    mesh_count: number;
+    vertex_count: number;
+    triangle_count: number;
+  };
+};
 
 function requireBedrockReferenceProject(): void {
   if (!Project) {
@@ -312,6 +341,58 @@ export function route1ReferenceYawDegrees(
   return source === target ? 0 : 180;
 }
 
+export function summarizeRoute1WorldBounds(
+  min: Vec3,
+  max: Vec3,
+  blockSize: number
+): Route1ReferenceBoundsSummary {
+  if (!Number.isFinite(blockSize) || blockSize <= 0) {
+    throw new Error("Route 1 reference block size must be finite and positive.");
+  }
+  if (![...min, ...max].every(Number.isFinite)) {
+    throw new Error("Route 1 reference world bounds must be finite.");
+  }
+
+  const size: Vec3 = [
+    max[0] - min[0],
+    max[1] - min[1],
+    max[2] - min[2],
+  ];
+  if (size.some((value) => !Number.isFinite(value) || value <= 0)) {
+    throw new Error(
+      "Route 1 reference must have positive finite 3D span on X, Y, and Z."
+    );
+  }
+
+  const center: Vec3 = [
+    min[0] + size[0] / 2,
+    min[1] + size[1] / 2,
+    min[2] + size[2] / 2,
+  ];
+  const dimensionsBlockbenchUnits = {
+    width: size[0],
+    height: size[1],
+    length: size[2],
+  };
+
+  return {
+    bounds_basis: "raw_reference_world_aabb",
+    blockbench_units_per_block: blockSize,
+    world_bounds: {
+      min: [min[0], min[1], min[2]],
+      max: [max[0], max[1], max[2]],
+      center,
+      size_xyz: size,
+    },
+    dimensions_blockbench_units: dimensionsBlockbenchUnits,
+    dimensions_blocks: {
+      width: dimensionsBlockbenchUnits.width / blockSize,
+      height: dimensionsBlockbenchUnits.height / blockSize,
+      length: dimensionsBlockbenchUnits.length / blockSize,
+    },
+  };
+}
+
 export function isBlockItRoute1Reference(
   element: unknown
 ): element is ReferenceModelRuntime {
@@ -331,6 +412,85 @@ export function listBlockItRoute1References(): ReferenceModelRuntime[] {
 
 function isLoadedReference(reference: ReferenceModelRuntime): boolean {
   return Boolean(reference.mesh && reference.mesh.children.length > 0);
+}
+
+export function readRoute1ReferenceEvidence(
+  reference: ReferenceModelRuntime
+): Route1ReferenceEvidence {
+  if (!reference.mesh || !isLoadedReference(reference)) {
+    throw new Error(
+      `Route 1 geometry reference ${reference.name || reference.uuid} is not fully loaded.`
+    );
+  }
+
+  reference.mesh.updateMatrixWorld(true);
+  const box = new THREE.Box3().setFromObject(reference.mesh, true);
+  if (box.isEmpty()) {
+    throw new Error(
+      `Route 1 geometry reference ${reference.name || reference.uuid} has no measurable 3D bounds.`
+    );
+  }
+
+  const rawBlockSize = (Format as { block_size?: number } | undefined)?.block_size;
+  const blockSize =
+    typeof rawBlockSize === "number" &&
+    Number.isFinite(rawBlockSize) &&
+    rawBlockSize > 0
+      ? rawBlockSize
+      : 16;
+  const summary = summarizeRoute1WorldBounds(
+    [box.min.x, box.min.y, box.min.z],
+    [box.max.x, box.max.y, box.max.z],
+    blockSize
+  );
+
+  let meshCount = 0;
+  let vertexCount = 0;
+  let triangleCount = 0;
+  reference.mesh.traverse((object) => {
+    const candidate = object as THREE.Object3D & {
+      isMesh?: boolean;
+      geometry?: {
+        attributes?: { position?: { count?: number } };
+        index?: { count?: number } | null;
+      };
+    };
+    if (candidate.isMesh !== true) return;
+    meshCount += 1;
+
+    const rawVertexCount = candidate.geometry?.attributes?.position?.count;
+    const vertices =
+      typeof rawVertexCount === "number" &&
+      Number.isFinite(rawVertexCount) &&
+      rawVertexCount > 0
+        ? Math.floor(rawVertexCount)
+        : 0;
+    vertexCount += vertices;
+
+    const rawIndexCount = candidate.geometry?.index?.count;
+    const indices =
+      typeof rawIndexCount === "number" &&
+      Number.isFinite(rawIndexCount) &&
+      rawIndexCount > 0
+        ? Math.floor(rawIndexCount)
+        : 0;
+    triangleCount += Math.floor((indices > 0 ? indices : vertices) / 3);
+  });
+
+  if (meshCount === 0 || vertexCount === 0 || triangleCount === 0) {
+    throw new Error(
+      `Route 1 geometry reference ${reference.name || reference.uuid} loaded without usable triangle-mesh evidence.`
+    );
+  }
+
+  return {
+    ...summary,
+    scene_stats: {
+      mesh_count: meshCount,
+      vertex_count: vertexCount,
+      triangle_count: triangleCount,
+    },
+  };
 }
 
 export function hasVisibleLoadedBlockItRoute1Reference(): boolean {
@@ -427,6 +587,8 @@ function referenceState(reference: ReferenceModelRuntime) {
     name: reference.name,
     path: reference.path ?? null,
     route1_owned: true,
+    reference_only: true,
+    production_geometry: false,
     loaded: isLoadedReference(reference),
     origin: [...reference.origin],
     rotation: [...reference.rotation],
@@ -436,8 +598,11 @@ function referenceState(reference: ReferenceModelRuntime) {
     locked: reference.locked === true,
     export: reference.export !== false,
     parent: reference.parent === "root" ? "root" : "non_root",
+    evidence: isLoadedReference(reference)
+      ? readRoute1ReferenceEvidence(reference)
+      : null,
     warning:
-      "GLB is depth/volume/attachment evidence only. Requested dimensions and the approved Minecraft reference remain authoritative; do not infer target size from raw reconstruction bounds.",
+      "GLB is depth/volume/attachment evidence only. evidence.world_bounds includes every loaded mesh fragment; requested dimensions and the approved Minecraft reference remain authoritative, and raw reconstruction bounds must not define target size.",
   };
 }
 
@@ -619,6 +784,7 @@ export function registerProjectTools() {
           reference.locked = true;
           reference.export = false;
           refreshReference(reference);
+          readRoute1ReferenceEvidence(reference);
           Undo.finishEdit("Load Route 1 geometry reference", {
             outliner: true,
             elements: [reference],
@@ -705,6 +871,7 @@ export function registerProjectTools() {
         );
       }
 
+      readRoute1ReferenceEvidence(reference);
       Undo.initEdit({ elements: [reference] });
       const patch = {
         origin: nextOrigin,
