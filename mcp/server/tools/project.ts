@@ -424,6 +424,7 @@ export function readRoute1ReferenceEvidence(
   }
 
   reference.mesh.updateMatrixWorld(true);
+  // @ts-expect-error Blockbench provides THREE as a runtime global; current runtime accepts the precise Box3 flag even when installed typings lag it.
   const box = new THREE.Box3().setFromObject(reference.mesh, true);
   if (box.isEmpty()) {
     throw new Error(
