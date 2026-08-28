@@ -6,18 +6,18 @@ const HOST = "127.0.0.1";
 const ENDPOINT = "/bb-mcp";
 const PROTOCOL_VERSION = "2025-06-18";
 
-// The effect-mutation closure adds one compact default tool while retaining
-// the previous surface discipline. These are regression ceilings with small
-// headroom, not token-usage targets; max per-tool payload stays intentionally
-// unchanged so a new capability cannot justify a bloated schema by itself.
-// 2026-08-24: add_group gained the user-mandated coherent `groups` batch
-// (mirrors place_cube elements batching); ceilings were raised by the
-// measured delta of that one capability, not speculatively.
+// These are regression ceilings with small headroom, not token-usage targets;
+// max per-tool payload stays intentionally unchanged so a new capability cannot
+// justify a bloated schema by itself.
+// 2026-08-24: add_group gained the user-mandated coherent `groups` batch;
+// ceilings were raised by its measured delta.
+// 2026-08-28: Route 1 adds exactly one Geometry evidence tool. Only catalog
+// count and aggregate input-schema ceiling move by the measured capability delta.
 const SURFACE_BUDGET = {
-  tool_count: 64,
+  tool_count: 65,
   initialize_instructions_chars: 700,
   tools_list_response_chars: 82_000,
-  input_schema_chars: 58_000,
+  input_schema_chars: 58_500,
   description_chars: 11_500,
   max_tool_payload_chars: 3_200,
 } as const;

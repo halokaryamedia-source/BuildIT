@@ -1,6 +1,6 @@
 # Implementation Map
 
-Updated: 2026-08-25
+Updated: 2026-08-28
 
 Current `Local` source/ownership only. Repository/plugin continuation belongs in `docs/knowledge/next-action.md`; proof state belongs in `docs/foundation/validation-report.md`; asset continuity belongs in `workspace/active/<project>/README.md`.
 
@@ -57,6 +57,8 @@ For a named MCP-tool defect, inspect the mapped **source owner + primary regress
 | `create_project` | `mcp/server/tools/project.ts` | `mcp/tests/p1-core-ownership.test.ts` |
 | `get_project_info` | `mcp/server/tools/project.ts` | `mcp/tests/static-footprint-budget.test.ts` |
 | `inspect_model_bounds` | `mcp/server/tools/project.ts` | `mcp/tests/rendered-model-bounds-numeric-safety.test.ts` |
+| `manage_geometry_reference` | `mcp/server/tools/project.ts` | `mcp/tests/geometry-reference-contract.test.ts` |
+| Route 1 reference capture / production cleanup | `mcp/server/tools/camera.ts`, `mcp/server/tools/export.ts` | `mcp/tests/camera-framing-contract.test.ts`, `mcp/tests/geometry-reference-contract.test.ts` |
 | `place_cube`, `modify_cube`, `modify_cubes_batch` | `mcp/server/tools/cubes.ts` | `mcp/tests/model-effectiveness-correction-accuracy.test.ts` |
 | `add_group` | `mcp/server/tools/element.ts` | `mcp/tests/p1-core-ownership.test.ts` |
 | `list_outline`, `find_elements_by_criteria` | `mcp/server/tools/element.ts` | `mcp/tests/context-payload-cleanup.test.ts` |
@@ -87,17 +89,17 @@ Static Footprint cannot upgrade a runtime Authoring Efficiency or visual-quality
 
 ## MCP Catalog / Phase Exposure
 
-The normal Bedrock catalog retains **64 callable tools across phases**. It is not exposed to Codex all at once.
+The normal Bedrock catalog retains **65 callable tools across phases**. It is not exposed to Codex all at once.
 
 ```text
 MCP CORE + exactly one active phase
 
-geometry   = Cube/Group/rig/Locator/Null + structural delete/rename + UV Layout mutation
+geometry   = Cube/Group/rig/Locator/Null + Route 1 reference evidence + structural delete/rename + UV Layout mutation
 texturing  = Texture Atlas + Painter + PBR + material instances
 animation  = animation/keyframes/timeline/effects/controllers/inspection
 ```
 
-Default active phase is `geometry`; current Geometry exposure is **27 tools**. `list_textures` is read-only MCP Core because Geometry needs the global UV audit before Texturing handoff. `remove_element` and `rename_element` are Geometry-owned structural mutation, not cross-phase Core.
+Default active phase is `geometry`; current Geometry exposure is **28 tools**. `manage_geometry_reference` is Geometry-owned and does not enter Texturing/Animation. `list_textures` is read-only MCP Core because Geometry needs the global UV audit before Texturing handoff. `remove_element` and `rename_element` are Geometry-owned structural mutation, not cross-phase Core.
 
 Runtime initialize instructions name `ACTIVE PHASE`, explain why foreign-phase tools are absent, and require:
 
@@ -117,7 +119,7 @@ Catalog/static regression ceilings remain:
 ```text
 initialize instructions       <= 700 characters
 catalog tools/list budget     <= 82,000 characters
-catalog input schemas         <= 58,000 characters
+catalog input schemas         <= 58,500 characters
 catalog descriptions          <= 11,500 characters
 per-tool payload max          <= 3,200 characters
 ```
@@ -144,9 +146,11 @@ Do not turn a professional sample, reference fixture, or one failed model into a
 ## Current Bedrock Ownership
 
 - MCP Core: lifecycle, focused discovery/inspection, selection, read-only global UV/atlas audit, history/recovery, canonical capture, export;
-- Geometry: `place_cube`, `add_group`, `modify_cube`, `modify_cubes_batch`, structural delete/rename, Locator/Null mutation, `bone_rigging`, UV Layout mutation;
+- Geometry: `manage_geometry_reference`, `place_cube`, `add_group`, `modify_cube`, `modify_cubes_batch`, structural delete/rename, Locator/Null mutation, `bone_rigging`, UV Layout mutation;
 - Texturing: Texture Atlas lifecycle, Painter, PBR, material instances, Texture Verify;
 - Animation: numeric/Molang transforms, keyframes/timeline, effect mutation, AnimationController state-machine/state-effect mutation, animation inspection.
+
+Route 1 reference evidence is transient authoring state: approved image/dimensions remain authority, raw GLB bounds are observation only, and the tool-owned reference must be removed before production `.bbmodel` export.
 
 Protected gaps remain controller blend-curve mutation, TextureMesh direct authoring/inspection, native visible bounding-box fields, animated textures, and bone-binding expressions.
 

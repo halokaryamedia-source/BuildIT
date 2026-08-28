@@ -8,6 +8,7 @@ import {
 
 const REQUIRED_GEOMETRY_TOOLS = [
   "create_project",
+  "manage_geometry_reference",
   "add_group",
   "place_cube",
   "modify_cube",
@@ -20,6 +21,7 @@ const REQUIRED_GEOMETRY_TOOLS = [
 ] as const;
 
 const PLAN_FREE_GEOMETRY_TOOLS = [
+  "manage_geometry_reference",
   "add_group",
   "place_cube",
   "modify_cube",
@@ -37,7 +39,7 @@ describe("local runtime gate source contract", () => {
     const names = getMcpSurfaceToolNames("bedrock_entity", "geometry");
     const definitions = getEnabledToolDefinitions();
 
-    expect(names.length).toBe(27);
+    expect(names.length).toBe(28);
     for (const toolName of REQUIRED_GEOMETRY_TOOLS) {
       expect(names, toolName).toContain(toolName);
       expect(definitions[toolName], toolName).toBeDefined();
