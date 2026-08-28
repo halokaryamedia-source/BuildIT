@@ -1,10 +1,10 @@
 # Next Action
 
-Updated: 2026-08-28 — Route 1 Geometry Evidence Bridge source ready for Local delivery; exact Local CI still required
+Updated: 2026-08-28 — Route 1 Geometry Evidence Bridge source delivered and exact Local static gate green; local Blockbench proof required
 
 Working branch: **`Local` only**.
 
-Current source + matching proof are authority. Static proof never upgrades desktop/runtime/visual claims.
+Current source + matching proof are authority. Static green does not prove the installed desktop/runtime or model quality.
 
 ## Current State
 
@@ -16,38 +16,49 @@ MCP_VERSION_STABLE_0_1_0
 FAIL_FAST_LOCAL_DIAGNOSTIC_READY
 
 ROUTE1_GEOMETRY_BRIDGE_SOURCE_APPLIED
-ROUTE1_CANDIDATE_CANONICAL_GATE_GREEN
+ROUTE1_CANONICAL_LOCAL_STATIC_GATE_GREEN
 RETAINED_BEDROCK_CATALOG_65
 DEFAULT_GEOMETRY_SURFACE_28
-LOCAL_BRANCH_MCP_VERIFY_REQUIRED
 LIVE_GEOMETRY_SURFACE_LOCAL_PROOF_REQUIRED
 ROUTE1_BLOCKBENCH_TEST_BLOCKED
 NO_ROUTE1_LIVE_PASS
+NO_ACTIVE_REPOSITORY_DEVELOPMENT
 ```
 
-The production source delivery is the Route 1 Geometry Evidence Bridge validated on draft PR #22. The green validation merge snapshot was `39a9cd274809ce92088b223e09ac70e5b2844b28` with source head `036aae1173d08ec337786d4005001ba3765aa841` against Local base `7c0d53cc9b4449d4b49cf4e156d2cf6d795a55fc`.
-
-Candidate canonical proof:
+Exact production source commit:
 
 ```text
-Bun 1.3.14 / frozen install  PASS
-bun run typecheck            PASS
-bun run test                 PASS — 351 tests, 0 fail
-bun run measure:surface      PASS
-bun run build                PASS
-bun run docs:check           PASS
-Repository Verify            PASS
+4f772e6b0dce6c7655a34539c2efea7a2d846256
+feat(mcp): add Route 1 geometry evidence bridge
 ```
 
-Measured default surface:
+Exact Local proof:
 
 ```text
-catalog tools                65
-Geometry exposure            28
-initialize instructions      608 chars
-tools/list response          78,400 chars
-input schemas                58,352 chars
-max per-tool payload         3,062 chars
+Repository Verify              PASS
+bun install --frozen-lockfile  PASS
+bun run typecheck              PASS
+bun run test                   PASS — 351 tests, 0 fail
+bun run measure:surface        PASS
+bun run build                  PASS
+bun run docs:check             PASS
+```
+
+Measured source surface:
+
+```text
+catalog tools                  65
+Geometry exposure              28
+initialize instructions        608 chars
+tools/list response            78,400 chars
+input schemas                  58,352 chars
+max per-tool payload           3,062 chars
+```
+
+Built bundle identity from exact Local CI:
+
+```text
+sha256:0a0fba34dc15356bf44d7c5bfbddaf35795642446dc30031a66ecabcc0bd03af
 ```
 
 ## Development Contract
@@ -77,15 +88,26 @@ Approved Minecraft image + requested dimensions remain authority. GLB is support
 
 ### First Evidence Required
 
-After the source commit reaches `Local`, require the exact Local canonical gate. If any check fails, diagnose the first wrong owner and stop downstream runtime testing.
+The repository/source gate is complete. The next evidence must come from the exact local desktop/runtime:
+
+```text
+fresh exact Local build
+→ installed BlockIT identity match
+→ stateless local diagnostic PASS
+→ fresh Codex Geometry registry
+→ approved elephant GLB bridge proof
+```
 
 ### Failure Classification / first wrong owner
 
 ```text
-Local type/test/surface/build/docs failure    → exact MCP/source/test owner
+BLOCKBENCH_SERVER_UNREACHABLE                → BLOCKBENCH_RUNTIME
+MCP_HEALTH_UNREADABLE / WRONG_MCP_PRODUCT    → ENVIRONMENT / INSTALL
+STALE_BUILD / WRONG_AUTHORING_PHASE           → ENVIRONMENT / INSTALL
+SERVER_PROCESS_UNSTABLE                       → BLOCKBENCH_RUNTIME
+fresh Codex tool absent after fresh build     → MCP_PUBLIC_CONTRACT / INSTALL
 Reference Models unavailable                  → ENVIRONMENT / INSTALL
 GLB load/transform/cleanup failure             → BLOCKBENCH_RUNTIME
-fresh Codex tool absent after green build      → MCP_PUBLIC_CONTRACT / INSTALL
 canonical GLB capture failure                  → CAMERA / BLOCKBENCH_RUNTIME
 GLB reconstruction materially wrong            → ROUTE 1 / HUNYUAN EVIDENCE
 Cube result wrong despite valid evidence       → MODELLING REASONING / SKILL
@@ -95,26 +117,30 @@ production .bbmodel retains Route 1 reference  → EXPORT / CLEANUP BOUNDARY
 ### Proof Required
 
 ```text
-exact Local MCP Verify green
-+ exact Local Repository Verify green
-+ local fail-fast diagnostic PASS
-+ fresh Codex Geometry registry
-+ live elephant GLB bridge proof
+local fail-fast diagnostic PASS
++ fresh Codex Geometry registry contains manage_geometry_reference
++ GLB actually renders as 3D reference
++ GLB-only explicit canonical views work before Cube blockout
++ reference/Cubes share intended coordinate frame
++ reference never becomes Bedrock geometry
++ production .bbmodel is clean after reference removal
 ```
+
+Only after bridge PASS may Route 1 quality/efficiency be evaluated against image-only authoring.
 
 ## Source Boundary
 
-`manage_geometry_reference` is one experimental Geometry-owned tool. It accepts an absolute local `.glb`, reuses the installed Blockbench `reference_models` type, creates a root-only locked `export=false` reference, aligns `+z/-z` source front to project front, and allows only origin, positive uniform scale, visibility, and wireframe updates.
+`manage_geometry_reference` is one experimental Geometry-owned tool. It accepts one absolute local `.glb`, reuses Blockbench's installed `reference_models` type, creates a root-only locked `export=false` reference, aligns approved source `+z/-z` to project front, and allows only origin, positive uniform scale, visibility, and wireframe updates.
 
-Load completion is bounded and fail-closed. `capture_model_views` keeps `framing=model` Cube-owned while `framing=explicit` can capture a loaded visible tool-owned Route 1 reference before Cubes exist. Editable `.bbmodel` export is blocked while that transient reference remains; Bedrock geometry export is unaffected.
+Load completion is bounded and fail-closed. `capture_model_views` keeps `framing=model` Cube-owned while `framing=explicit` can capture a loaded visible tool-owned Route 1 reference before Cubes exist. Editable `.bbmodel` export is blocked while the transient tool-owned reference remains; Bedrock geometry export is unaffected.
 
 The modelling Skill keeps approved image/dimensions authoritative, prohibits triangle tracing/raw-GLB target sizing, and requires the reference to be removed before production `.bbmodel` export.
 
 ## Local Runtime Gate
 
-**ROUTE1_BLOCKBENCH_TEST_BLOCKED until the exact Local source gate is green.**
+**ROUTE1_BLOCKBENCH_TEST_BLOCKED until the fail-fast local runtime diagnostic passes.**
 
-Then run:
+Next exact step on the user's desktop:
 
 ```text
 sync exact Local
@@ -131,11 +157,11 @@ If it passes:
 ```text
 fresh Codex connection
 → verify manage_geometry_reference in Geometry surface
-→ Reference Models plugin active
+→ verify Reference Models plugin active
 → empty Bedrock project
-→ load approved elephant GLB, source front +z
-→ verify reference loaded/root/locked/export=false
-→ capture GLB-only canonical views with explicit framing
+→ load approved elephant GLB with source front +z
+→ verify loaded/root/locked/export=false
+→ capture GLB-only canonical views using explicit framing
 → author primary Groups/Cubes
 → capture GLB + Cubes
 → one causal correction OR one primary rebuild if required
@@ -155,12 +181,19 @@ reference never becomes Bedrock geometry
 production .bbmodel is clean
 ```
 
-Only after bridge PASS run the elephant A/B quality comparison: image-only versus image + Route 1 GLB evidence, judged by accepted quality, depth/attachment accuracy, corrections/rebuilds, and Cost to Accepted Result.
+After bridge PASS, run the elephant A/B quality comparison:
+
+```text
+A = approved image only
+B = approved image + Route 1 GLB evidence
+```
+
+Judge accepted quality, depth/attachment accuracy, material corrections, rebuild need, and Cost to Accepted Result. Do not promote Route 1 from technical bridge to quality improvement without that evidence.
 
 ## Repository Note
 
-`route1-candidate-preflight-do-not-use` is accidental unchanged history and must not be used. `route1-geometry-evidence-ci` and draft PR #22 are validation-only; do not merge that history into production.
+Draft PR #22 and `route1-geometry-evidence-ci` were validation-only and must not be merged as production history. `route1-candidate-preflight-do-not-use` is accidental unchanged history and must not be used. Delete these refs only through an authorized ref-delete capable channel; do not create workaround commits.
 
 ## STOP
 
-After exact Local canonical CI is green, stop repository development and move to the local Blockbench gate. Do not claim live MCP PASS or visual improvement before that proof.
+Repository development stops here. The next meaningful work is the exact local Blockbench/runtime gate. Do not add more Route 1 tooling or claim live/visual improvement before matching evidence exists.
