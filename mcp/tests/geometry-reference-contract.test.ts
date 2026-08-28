@@ -131,4 +131,18 @@ describe("Route 1 geometry reference contract", () => {
     expect(project).not.toContain("voxelize");
     expect(project).not.toContain("decimat");
   });
+
+  test("existing reference_models resource preserves Route 1 reconnect evidence", async () => {
+    const resource = await source("server/resources.ts");
+    expect(resource).toContain("isBlockItRoute1Reference");
+    expect(resource).toContain("readRoute1ReferenceEvidence");
+    expect(resource).toContain("recoverRoute1Alignment");
+    expect(resource).toContain("route1_owned: route1Owned");
+    expect(resource).toContain("reference_only: route1Owned ? true : null");
+    expect(resource).toContain("production_geometry: route1Owned ? false : null");
+    expect(resource).toContain("alignment: route1Owned ? recoverRoute1Alignment(refModel) : null");
+    expect(resource).toContain("route1Owned && loaded");
+    expect(resource).toContain("readRoute1ReferenceEvidence(refModel)");
+    expect(resource).not.toContain("route1ReferenceRegistry");
+  });
 });

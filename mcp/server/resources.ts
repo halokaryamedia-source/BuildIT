@@ -2,6 +2,12 @@
 /// <reference types="blockbench-types" />
 import { createResource, resources } from "@/lib/factories";
 import { findByResourceId, makeResourceUri } from "@/lib/resourceUri";
+import {
+  isBlockItRoute1Reference,
+  readRoute1ReferenceEvidence,
+  type ReferenceModelRuntime,
+  type Route1FrontDirection,
+} from "@/server/tools/project";
 
 // Register projects resource using the factory pattern
 createResource("projects", {
@@ -268,6 +274,42 @@ createResource("textures", {
   },
 });
 
+function normalizeHalfTurn(yaw: unknown): 0 | 180 | null {
+  if (typeof yaw !== "number" || !Number.isFinite(yaw)) return null;
+  const normalized = ((yaw % 360) + 360) % 360;
+  if (Math.abs(normalized) <= 1e-6 || Math.abs(normalized - 360) <= 1e-6) {
+    return 0;
+  }
+  if (Math.abs(normalized - 180) <= 1e-6) return 180;
+  return null;
+}
+
+function recoverRoute1Alignment(reference: ReferenceModelRuntime) {
+  const rawProjectFront =
+    (Format as { forward_direction?: string } | undefined)?.forward_direction ??
+    "-z";
+  const projectFront: Route1FrontDirection | null =
+    rawProjectFront === "+z" || rawProjectFront === "-z"
+      ? rawProjectFront
+      : null;
+  const yaw = normalizeHalfTurn(reference.rotation?.[1]);
+  const sourceFront: Route1FrontDirection | null =
+    projectFront === null || yaw === null
+      ? null
+      : yaw === 0
+        ? projectFront
+        : projectFront === "+z"
+          ? "-z"
+          : "+z";
+
+  return {
+    source_front_direction: sourceFront,
+    project_front_direction: projectFront,
+    applied_yaw_degrees: yaw,
+    recoverable: sourceFront !== null,
+  };
+}
+
 /**
  * Conditionally registers the reference_models resource at plugin runtime.
  * The Plugins global must never be read at module scope so this module stays
@@ -345,15 +387,14 @@ export function registerReferenceModelsResource(): void {
         return defaultValue;
       };
 
-      // Helper to extract reference model info
+      // Helper to extract reference model info. Tool-owned Route 1 references
+      // also expose the same quantitative evidence needed after a fresh MCP/Codex
+      // connection, without creating a second discovery tool or persisting a
+      // parallel registry.
       const getReferenceModelInfo = (model: OutlinerElement) => {
-        const refModel = model as OutlinerElement & {
-          path?: string;
-          origin?: unknown;
-          rotation?: unknown;
-          scale?: unknown;
-          visibility?: boolean;
-        };
+        const refModel = model as ReferenceModelRuntime;
+        const route1Owned = isBlockItRoute1Reference(model);
+        const loaded = Boolean(refModel.mesh?.children.length);
         return {
           uuid: refModel.uuid,
           name: refModel.name,
@@ -362,6 +403,18 @@ export function registerReferenceModelsResource(): void {
           rotation: normalizeVec3(refModel.rotation, [0, 0, 0]),
           scale: normalizeVec3(refModel.scale, [1, 1, 1]),
           visibility: refModel.visibility ?? true,
+          wireframe: refModel.wireframe ?? false,
+          locked: refModel.locked ?? false,
+          export: refModel.export !== false,
+          loaded,
+          route1_owned: route1Owned,
+          reference_only: route1Owned ? true : null,
+          production_geometry: route1Owned ? false : null,
+          alignment: route1Owned ? recoverRoute1Alignment(refModel) : null,
+          evidence:
+            route1Owned && loaded
+              ? readRoute1ReferenceEvidence(refModel)
+              : null,
         };
       };
 
