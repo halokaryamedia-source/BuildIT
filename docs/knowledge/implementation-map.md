@@ -58,7 +58,9 @@ For a named MCP-tool defect, inspect the mapped **source owner + primary regress
 | `get_project_info` | `mcp/server/tools/project.ts` | `mcp/tests/static-footprint-budget.test.ts` |
 | `inspect_model_bounds` | `mcp/server/tools/project.ts` | `mcp/tests/rendered-model-bounds-numeric-safety.test.ts` |
 | `manage_geometry_reference` | `mcp/server/tools/project.ts` | `mcp/tests/geometry-reference-contract.test.ts` |
+| Route 1 quantitative/reconnect evidence | `mcp/server/tools/project.ts`, `mcp/server/resources.ts` | `mcp/tests/geometry-reference-contract.test.ts` |
 | Route 1 reference capture / production cleanup | `mcp/server/tools/camera.ts`, `mcp/server/tools/export.ts` | `mcp/tests/camera-framing-contract.test.ts`, `mcp/tests/geometry-reference-contract.test.ts` |
+| Route 1 Hunyuan MultiView reproducibility | `Experimental/route1-hunyuan-poc/generate_multiview_shape.py`, `Experimental/route1-hunyuan-poc/README.md` | `mcp/tests/route1-hunyuan-reproducibility.test.ts` |
 | `place_cube`, `modify_cube`, `modify_cubes_batch` | `mcp/server/tools/cubes.ts` | `mcp/tests/model-effectiveness-correction-accuracy.test.ts` |
 | `add_group` | `mcp/server/tools/element.ts` | `mcp/tests/p1-core-ownership.test.ts` |
 | `list_outline`, `find_elements_by_criteria` | `mcp/server/tools/element.ts` | `mcp/tests/context-payload-cleanup.test.ts` |
@@ -150,7 +152,7 @@ Do not turn a professional sample, reference fixture, or one failed model into a
 - Texturing: Texture Atlas lifecycle, Painter, PBR, material instances, Texture Verify;
 - Animation: numeric/Molang transforms, keyframes/timeline, effect mutation, AnimationController state-machine/state-effect mutation, animation inspection.
 
-Route 1 reference evidence is transient authoring state: approved image/dimensions remain authority, raw GLB bounds are observation only, and the tool-owned reference must be removed before production `.bbmodel` export.
+Route 1 reference evidence is transient authoring state: approved image/dimensions remain authority, raw GLB bounds are observation only, and the tool-owned reference must be removed before production `.bbmodel` export. Runtime ownership survives rename; non-root, unlocked, export-enabled, or non-uniformly scaled Route 1 references fail closed until removed/reloaded.
 
 Protected gaps remain controller blend-curve mutation, TextureMesh direct authoring/inspection, native visible bounding-box fields, animated textures, and bone-binding expressions.
 
