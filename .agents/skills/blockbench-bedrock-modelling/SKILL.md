@@ -27,6 +27,8 @@ claim | observable requirement | supporting view | SUPPORTED | PROVISIONAL | CON
 
 Use a View Pair Map only to resolve materially ambiguous front/back, left/right, mirrored, depth, or 3/4 evidence. Reference fidelity is Minecraft-first: recognizability, primary masses/counts, topology/attachment, important negative spaces, and buildability over exact real-world contour.
 
+When an approved Route 1 GLB is explicitly available and `manage_geometry_reference` is exposed, it may be loaded as transient 3D evidence for depth, volume, attachment, placement, and hidden-side interpretation. Approved image + dimensions remain authority. Use explicit-envelope `capture_model_views`; never trace triangles or infer target size from raw GLB bounds. Remove the reference before production `.bbmodel` export.
+
 ## Simple Rigid Fast Path
 
 When the approved reference is clear, the object is predominantly rigid, topology is simple, and no material cross-view conflict exists, **do not turn analysis ceremony into the work**.
