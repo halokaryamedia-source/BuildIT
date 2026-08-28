@@ -1,7 +1,18 @@
+import { spawnSync } from "node:child_process";
 import { describe, expect, test } from "bun:test";
 
 async function source(path: string): Promise<string> {
   return Bun.file(path).text();
+}
+
+function availablePython(): string | null {
+  const candidates =
+    process.platform === "win32" ? ["python", "py"] : ["python3", "python"];
+  for (const candidate of candidates) {
+    const probe = spawnSync(candidate, ["--version"], { encoding: "utf8" });
+    if (!probe.error && probe.status === 0) return candidate;
+  }
+  return null;
 }
 
 describe("Route 1 Hunyuan reproducibility contract", () => {
@@ -16,6 +27,7 @@ describe("Route 1 Hunyuan reproducibility contract", () => {
       'MODEL_SUBFOLDER = "hunyuan3d-dit-v2-mv"',
       'MODEL_VARIANT = "fp16"',
       "INFERENCE_STEPS = 50",
+      "GUIDANCE_SCALE = 5.0",
       "OCTREE_RESOLUTION = 256",
       "NUM_CHUNKS = 20_000",
       "DEFAULT_SEED = 12_345",
@@ -26,6 +38,7 @@ describe("Route 1 Hunyuan reproducibility contract", () => {
       '"back": args.back',
       "require_local_model()",
       "num_inference_steps=INFERENCE_STEPS",
+      "guidance_scale=GUIDANCE_SCALE",
       "octree_resolution=OCTREE_RESOLUTION",
       "num_chunks=NUM_CHUNKS",
       'output_type="trimesh"',
@@ -45,14 +58,39 @@ describe("Route 1 Hunyuan reproducibility contract", () => {
     );
     for (const marker of [
       'MODEL_ID = "tencent/Hunyuan3D-2"',
+      'MODEL_REVISION = "9cd649ba6913f7a852e3286bad86bfa9a2d83dcf"',
       'MODEL_SUBFOLDER = "hunyuan3d-dit-v2-0"',
       "INFERENCE_STEPS = 50",
+      "GUIDANCE_SCALE = 5.0",
       "OCTREE_RESOLUTION = 256",
       "NUM_CHUNKS = 20_000",
       "DEFAULT_SEED = 12_345",
       'models_root = os.environ.get("HY3DGEN_MODELS")',
       "Pinned Hunyuan shape model is incomplete",
+      "guidance_scale=GUIDANCE_SCALE",
     ]) expect(script).toContain(marker);
+  });
+
+  test("tracked Route 1 Python entrypoints parse when Python is available", () => {
+    const python = availablePython();
+    if (!python) return;
+
+    const files = [
+      "../Experimental/route1-hunyuan-poc/generate_shape.py",
+      "../Experimental/route1-hunyuan-poc/generate_multiview_shape.py",
+      "../Experimental/route1-hunyuan-poc/render_contact_sheet.py",
+    ];
+    const checker =
+      "from pathlib import Path; import sys; [compile(Path(p).read_text(encoding='utf-8'), p, 'exec') for p in sys.argv[1:]]";
+    const result = spawnSync(python, ["-c", checker, ...files], {
+      encoding: "utf8",
+    });
+    if (result.error || result.status !== 0) {
+      throw new Error(
+        `Route 1 Python syntax check failed: ${result.stderr || result.stdout || result.error?.message}`
+      );
+    }
+    expect(result.status).toBe(0);
   });
 
   test("Route 1 README names the executable bridge and keeps live proof pending", async () => {
@@ -64,6 +102,7 @@ describe("Route 1 Hunyuan reproducibility contract", () => {
       "GEOMETRY EVIDENCE BRIDGE STATIC SOURCE APPLIED",
       "LIVE BLOCKBENCH BRIDGE PROOF PENDING",
       "generate_multiview_shape.py",
+      "guidance scale     5.0",
       "manage_geometry_reference",
       "reference_models://...",
       "raw Hunyuan bounds",

@@ -67,11 +67,14 @@ The upstream `from_pretrained` helper does not expose a Hugging Face `revision` 
 ```text
 variant            fp16
 inference steps    50
+guidance scale     5.0
 octree resolution  256
 num chunks         20000
 seed               12345
 texture            disabled
 ```
+
+`guidance scale = 5.0` is explicit in both scripts so the accepted Route 1 run does not depend on an implicit upstream FlowMatching default.
 
 Do not tune Fast/Turbo, octree 380+, multiple seeds, extra views, cleanup passes, or texture generation without new runtime evidence identifying a specific bottleneck.
 

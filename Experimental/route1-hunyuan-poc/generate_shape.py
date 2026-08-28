@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate one shape-only Hunyuan3D 2.0 mesh for the Route 1 experiment."""
+"""Generate one shape-only Hunyuan3D 2.0 mesh for the Route 1 single-view baseline."""
 
 from __future__ import annotations
 
@@ -15,9 +15,11 @@ from hy3dgen.shapegen import Hunyuan3DDiTFlowMatchingPipeline
 
 
 MODEL_ID = "tencent/Hunyuan3D-2"
+MODEL_REVISION = "9cd649ba6913f7a852e3286bad86bfa9a2d83dcf"
 MODEL_SUBFOLDER = "hunyuan3d-dit-v2-0"
 MODEL_VARIANT = "fp16"
 INFERENCE_STEPS = 50
+GUIDANCE_SCALE = 5.0
 OCTREE_RESOLUTION = 256
 NUM_CHUNKS = 20_000
 DEFAULT_SEED = 12_345
@@ -52,7 +54,7 @@ def prepare_image(path: Path) -> Image.Image:
             rgba = source.convert("RGBA")
             alpha_min, _ = rgba.getchannel("A").getextrema()
             if alpha_min < 255:
-                return rgba
+                return rgba.copy()
 
         rgb = source.convert("RGB")
 
@@ -90,6 +92,7 @@ def main() -> int:
     mesh = pipeline(
         image=image,
         num_inference_steps=INFERENCE_STEPS,
+        guidance_scale=GUIDANCE_SCALE,
         octree_resolution=OCTREE_RESOLUTION,
         num_chunks=NUM_CHUNKS,
         generator=torch.manual_seed(args.seed),
@@ -97,17 +100,21 @@ def main() -> int:
     )[0]
     if mesh is None:
         raise RuntimeError("Hunyuan returned no mesh.")
+    if len(mesh.vertices) == 0 or len(mesh.faces) == 0:
+        raise RuntimeError("Hunyuan returned an empty mesh.")
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
     mesh.export(args.output)
 
     device = torch.cuda.get_device_name(0)
     total_vram_gb = torch.cuda.get_device_properties(0).total_memory / (1024**3)
+    print(f"model_id={MODEL_ID}")
+    print(f"model_revision={MODEL_REVISION}")
     print(f"model_dir={model_dir}")
     print(f"device={device} vram_gb={total_vram_gb:.2f}")
     print(
-        f"settings=fp16 steps={INFERENCE_STEPS} "
-        f"octree={OCTREE_RESOLUTION} seed={args.seed}"
+        f"settings=fp16 steps={INFERENCE_STEPS} guidance={GUIDANCE_SCALE} "
+        f"octree={OCTREE_RESOLUTION} chunks={NUM_CHUNKS} seed={args.seed}"
     )
     print(f"mesh=vertices:{len(mesh.vertices)} faces:{len(mesh.faces)}")
     print(f"output={args.output.resolve()}")

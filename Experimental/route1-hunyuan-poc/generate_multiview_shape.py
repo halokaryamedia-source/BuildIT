@@ -19,6 +19,7 @@ MODEL_REVISION = "3a761b539b29fe4ff64714813aa9560fd66f5de0"
 MODEL_SUBFOLDER = "hunyuan3d-dit-v2-mv"
 MODEL_VARIANT = "fp16"
 INFERENCE_STEPS = 50
+GUIDANCE_SCALE = 5.0
 OCTREE_RESOLUTION = 256
 NUM_CHUNKS = 20_000
 DEFAULT_SEED = 12_345
@@ -115,6 +116,7 @@ def main() -> int:
     mesh = pipeline(
         image=images,
         num_inference_steps=INFERENCE_STEPS,
+        guidance_scale=GUIDANCE_SCALE,
         octree_resolution=OCTREE_RESOLUTION,
         num_chunks=NUM_CHUNKS,
         generator=torch.manual_seed(args.seed),
@@ -136,8 +138,8 @@ def main() -> int:
     print(f"device={device} vram_gb={total_vram_gb:.2f}")
     print(f"views={','.join(REQUIRED_VIEWS)} front_direction={FRONT_DIRECTION}")
     print(
-        f"settings=fp16 steps={INFERENCE_STEPS} octree={OCTREE_RESOLUTION} "
-        f"chunks={NUM_CHUNKS} seed={args.seed}"
+        f"settings=fp16 steps={INFERENCE_STEPS} guidance={GUIDANCE_SCALE} "
+        f"octree={OCTREE_RESOLUTION} chunks={NUM_CHUNKS} seed={args.seed}"
     )
     print(f"mesh=vertices:{len(mesh.vertices)} faces:{len(mesh.faces)}")
     print(f"output={args.output.resolve()}")
