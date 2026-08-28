@@ -1,6 +1,6 @@
 # Next Action
 
-Updated: 2026-08-27 — fail-fast local diagnostic preparation complete; local runtime verification deferred by user
+Updated: 2026-08-28 — Route 1 Geometry Evidence Bridge source/test candidate prepared; canonical generated-docs + Bun gate pending
 
 Working branch: **`Local` only**.
 
@@ -13,17 +13,21 @@ MCP_CONNECTION_STABILITY_REPAIR_APPLIED
 MCP_DIRECT_GEOMETRY_REPAIRED
 PLUGIN_ID_STABLE_BLOCKIT_MCP
 MCP_VERSION_STABLE_0_1_0
-BUILD_BUNDLE_SHA256_FINGERPRINT_READY
 FAIL_FAST_LOCAL_DIAGNOSTIC_READY
 STATIC_MCP_VERIFY_GREEN_AT_968ECCB5
+
+ROUTE1_GEOMETRY_BRIDGE_DEVELOPMENT_REACTIVATED
+ROUTE1_SOURCE_TEST_CANDIDATE_PREPARED_UNREFERENCED
+ROUTE1_CANDIDATE_HEAD_6B66DB8E
+LOCAL_SOURCE_HEAD_UNCHANGED_AT_ECA2F497
+CANONICAL_DOCS_BUILD_REQUIRED
+CANONICAL_MCP_STATIC_GATE_REQUIRED
 LIVE_GEOMETRY_SURFACE_LOCAL_PROOF_REQUIRED
-LOCAL_RUNTIME_TEST_DEFERRED_BY_USER
-ROUTE1_BLOCKBENCH_TEST_BLOCKED
-NO_ACTIVE_LOCAL_ACCEPTANCE_RUN
-NO_ACTIVE_DEVELOPMENT
+ROUTE1_BLOCKBENCH_LIVE_PROOF_REQUIRED
+NO_ROUTE1_PRODUCTION_PASS
 ```
 
-Current functional non-local proof:
+The previously recorded MCP static proof remains historical proof for the pre-Route1 source only:
 
 ```text
 MCP Verify @ 968eccb5f4d5a909e5d31d1f2c175eb712875ff7: PASS
@@ -36,181 +40,201 @@ bun run build                  PASS
 bun run docs:check             PASS
 ```
 
-All known pre-local connection diagnosis is now prepared:
+It does **not** prove the new Route 1 candidate.
 
-- canonical plugin artifact remains `mcp/dist/blockit_mcp.js`;
-- local bundle SHA-256 must match live `/health.build_identity`;
-- `/health.product.id` must identify BlockIT before tool-surface diagnosis;
-- two health reads must keep the same `instance_id`, `startup_time`, and build identity;
-- requested profile/phase must match before MCP protocol checks;
-- environment/install and Blockbench-runtime failures STOP before `tools/list`;
-- only a fresh-bundle protocol/surface mismatch reopens MCP public-contract work;
-- required Geometry capability and Direct Geometry `plan_id` guards remain intact.
-
-No reconnect daemon, new profile/router, telemetry layer, alternate transport, version cache-buster, Geometry compiler, or Route 1 workaround was added.
-
-## Development Contract
+## Active Development Contract — Route 1 Geometry Evidence Bridge v1
 
 ### Goal
 
-Preserve the current non-local-safe MCP and use one fail-fast diagnostic pass when local verification is later reactivated.
+Allow an approved Route 1 shape-only local `.glb` to enter the existing Geometry workflow as transient 3D reference evidence without becoming Bedrock geometry or a mesh-to-Cube compiler.
 
 ### Success Metric
 
 ```text
-full MCP static gate green
-+ deterministic bundle identity
-+ wrong-product detection
-+ stale-build fail-fast
-+ process-stability check
-+ phase mismatch classification
-+ exact live surface comparison after preflight only
-+ required Geometry surface guarded
-+ Direct Geometry plan-free
-+ no unnecessary architecture
+approved local GLB
+→ one deterministic 3D reference in Blockbench
+→ explicit source-front registration
+→ bounded origin / uniform-scale / visibility / wireframe control
+→ canonical explicit-envelope capture before or during Cube blockout
+→ normal Groups/Cubes remain production geometry
+→ Route 1 reference removed before production .bbmodel export
 ```
+
+Accepted-result quality remains the product gate. Tool/file/coordinate success is not visual resemblance proof.
 
 ### Forbidden Proxy / Non-Goal
 
-Do not treat these as additional success work:
+Do not add:
 
 ```text
-more tools
-version bump/cache busting
-reconnect daemon/framework
-auto-kill process
-auto-restart Blockbench
-telemetry/session logging
-alternate transport
-dynamic phase redesign
-new Geometry compiler/planner
-Route 1 model changes
-more static cleanup without a new failing invariant
+mesh-to-Cube conversion
+voxelizer / cuboid solver
+semantic mesh segmentation
+GLB cleanup / repair / decimation
+raycast / surface probe
+IoU / similarity scoring
+opacity framework
+custom GLB renderer
+persistent scene registry
+new comparison renderer
+Geometry compiler/planner
+autonomous correction loop
 ```
 
-Static green still does **not** prove the installed Blockbench/Codex surface or visual quality.
+The approved Minecraft reference + requested dimensions remain authority. The GLB is depth/volume/attachment/hidden-side evidence only; raw reconstruction bounds are not target dimensions.
 
-### First Evidence Required
+## Prepared Candidate
 
-There is no active repository implementation task.
-
-When local verification is explicitly reactivated, first evidence is:
+A complete source/test candidate was prepared from exact `Local` HEAD:
 
 ```text
-bun run verify:stateless-local
+base Local HEAD:
+eca2f4977aed6f121461ec60d1d5320bc27fac94
+
+candidate head (unreferenced Git commit):
+6b66db8ec1b27fd8828d0357905539c1b9be80f8
 ```
 
-from the exact freshly built artifact, followed by a fresh Codex registry check only if the direct diagnostic passes.
-
-### Failure Classification / first wrong owner
+The candidate changes only these owners:
 
 ```text
-BLOCKBENCH_SERVER_UNREACHABLE    → BLOCKBENCH_RUNTIME
-MCP_HEALTH_UNREADABLE            → ENVIRONMENT / INSTALL
-WRONG_MCP_PRODUCT                → ENVIRONMENT / INSTALL
-STALE_BUILD                      → ENVIRONMENT / INSTALL
-SERVER_PROCESS_UNSTABLE          → BLOCKBENCH_RUNTIME
-WRONG_AUTHORING_PHASE            → ENVIRONMENT / INSTALL
-MCP_HEALTH_CONTRACT_MISMATCH     → MCP_PUBLIC_CONTRACT
-MCP_INITIALIZE_CONTRACT_MISMATCH → MCP_PUBLIC_CONTRACT
-SURFACE_MISMATCH                 → MCP_PUBLIC_CONTRACT
-GEOMETRY_CAPABILITY_MISSING      → MCP_PUBLIC_CONTRACT
-RETIRED_PLAN_ID_EXPOSED          → MCP_PUBLIC_CONTRACT
+.agents/skills/blockbench-bedrock-modelling/SKILL.md
+mcp/lib/authoringPhase.ts
+mcp/server/tools/project.ts
+mcp/server/tools/camera.ts
+mcp/server/tools/export.ts
+mcp/tests/authoring-phase-surface.test.ts
+mcp/tests/camera-framing-contract.test.ts
+mcp/tests/default-registration-import-safe.test.ts
+mcp/tests/geometry-reference-contract.test.ts
+mcp/tests/surface-integrity-guard.test.ts
 ```
 
-Do not change Route 1/model logic to compensate for MCP/install defects.
+Candidate behavior:
 
-### Proof Required
+- adds one experimental Geometry-owned tool: `manage_geometry_reference`;
+- accepts one absolute local `.glb` only; no URL/generic `.gltf` path;
+- uses the installed Blockbench `reference_models` element type instead of adding another GLTF loader;
+- creates one tool-owned reference at root, locked, `export=false`;
+- aligns approved source `+z/-z` to the active Bedrock project `+z/-z` front by deterministic Y yaw;
+- allows only origin, positive uniform scale, visibility, and wireframe updates;
+- waits for the asynchronous Reference Models load and fails closed/cleans up on timeout or load failure;
+- allows `capture_model_views` with `framing=explicit` before Cubes when a loaded visible tool-owned Route 1 reference exists; `framing=model` remains Cube-owned;
+- blocks BlockIT editable `.bbmodel` export while a tool-owned Route 1 reference remains active; Bedrock geometry export remains unaffected;
+- keeps the modelling authority order explicit: approved image/dimensions first, Route 1 GLB only as supporting 3D evidence.
 
-Completed non-local proof is the MCP Verify result above plus the final Repository Verify for this docs reconciliation.
-
-Deferred live proof remains:
+Expected catalog/surface after final merge:
 
 ```text
-exact local build + embedded build_identity
-+ fail-fast direct diagnostic PASS
-+ fresh Codex registry
-+ representative Blockbench mutation + Undo
-+ required phase handoff/reload proof
-+ visual/reference quality proof when authoring begins
+retained catalog: 65 tools
+Geometry exposure: 28 tools
+Texturing/Animation: manage_geometry_reference absent
 ```
 
-That live proof is **deferred, not passed**.
+## Proof Obtained For Candidate
 
-## Repository Gate
-
-Preserve these invariants:
-
-- canonical artifact is `mcp/dist/blockit_mcp.js`;
-- 64-tool retained catalog and 27-tool default Geometry exposure remain separate concepts;
-- `blockit_mcp`, version `0.1.0`, fail-closed startup, stateless loopback transport, immutable per-connection phase surface, and Geometry-owned `bone_rigging` remain preserved;
-- bundle fingerprint is diagnosis only, not versioning/cache-busting/UI/session state;
-- local diagnostic script remains a verifier, not a runtime manager;
-- environment/runtime preflight failure must not cascade into missing-tool/schema source diagnosis;
-- canonical workflow Static Footprint ceiling remains `< 9,000` characters;
-- Static Footprint is not Authoring Efficiency proof.
-
-Do not reopen repository cleanup without new evidence.
-
-## Local Runtime Gate
-
-**DEFERRED BY USER — DO NOT RUN YET.**
-
-When explicitly reactivated, follow `docs/knowledge/operations/local-acceptance-runbook.md`.
-
-Intended first pass:
+Only the following preflight was available in the current execution channel:
 
 ```text
-sync current Local
-→ build mcp/dist/blockit_mcp.js
-→ load only that artifact
+candidate blob hashes matched intended local candidate files
+Git diff whitespace check: PASS
+TypeScript syntax parse preflight: PASS
+candidate changed-file review: 10 files, bounded to declared owners
+```
+
+This is **not** canonical MCP static proof. The current execution channel has no Bun/project dependency environment and cannot run the canonical docs generator. Generated MCP API docs were therefore intentionally not hand-edited and the candidate was intentionally not moved onto `Local`.
+
+## Next Exact Step — Bun-capable Repository Channel
+
+Do this before any Route 1 live Blockbench claim:
+
+```text
+1. sync current Local and re-pin HEAD
+2. materialize the candidate diff from 6b66db8ec1b27fd8828d0357905539c1b9be80f8
+3. preserve one logical final delivery; do not publish the candidate commits as separate production history
+4. run bun install --frozen-lockfile
+5. run bun run docs:build
+6. run bun run typecheck
+7. run bun run test
+8. run bun run measure:surface
+9. run bun run build
+10. run bun run docs:check
+```
+
+If any gate fails, diagnose the first wrong owner and fix only that owner. Do not move `Local` to the candidate merely to trigger CI.
+
+If the full gate passes:
+
+```text
+re-check Local HEAD
+→ create one atomic source + tests + generated-docs delivery
+→ update stable counts/ownership docs only if the merged source actually changed them
+→ then proceed to local runtime proof
+```
+
+## Local Runtime / Route 1 Proof
+
+Static source proof cannot prove the desktop integration. After the final source delivery is green, use the existing fail-fast local diagnostic first:
+
+```text
+exact fresh Local build
+→ load only mcp/dist/blockit_mcp.js
 → Geometry active
 → bun run verify:stateless-local
 ```
 
-If the direct diagnostic FAILS, obey its first classification and STOP. Do not continue to Codex registry or model authoring from downstream symptoms.
-
-If the direct diagnostic PASSES:
+If that passes:
 
 ```text
 fresh Codex connection
-→ compare fresh registry
-→ representative Blockbench mutation + Undo
-→ required phase handoff/reload proof
+→ verify Geometry surface includes manage_geometry_reference
+→ Reference Models plugin active
+→ empty Bedrock project
+→ load approved elephant Route 1 GLB (source front +z)
+→ verify 3D reference is loaded/root/locked/export=false
+→ capture GLB-only canonical views with explicit framing
+→ create primary Groups/Cubes
+→ capture GLB + Cubes
+→ one causal correction or one primary rebuild if required
+→ hide reference and capture model-only
+→ remove Route 1 reference
+→ export .bbmodel
+→ verify no reference_model remains in production project
 ```
 
-Required live Geometry capability remains:
+Required live acceptance for the bridge:
 
 ```text
-create_project
-add_group
-place_cube
-modify_cube
-modify_cubes_batch
-modify_group
-reparent_element
-capture_model_views
-bone_rigging
-export_model
+GLB is actually 3D in Blockbench
+Codex can capture it before Cube blockout
+reference and Cubes share the intended coordinate frame
+reference never becomes Bedrock geometry
+production .bbmodel is clean after reference removal
 ```
 
-These live schemas must not expose or require `plan_id`:
+Only after that bridge proof should the elephant A/B quality test compare image-only authoring versus image + Route 1 GLB evidence by accepted quality, depth/attachment accuracy, material corrections, rebuild need, and Cost to Accepted Result.
+
+## Failure Classification / First Wrong Owner
 
 ```text
-add_group
-place_cube
-modify_cube
-modify_cubes_batch
-modify_group
-reparent_element
+canonical docs/type/test/build failure     → MCP_PUBLIC_CONTRACT / source owner
+Reference Models unavailable               → ENVIRONMENT / INSTALL
+GLB fails to load / transform / cleanup     → BLOCKBENCH_RUNTIME
+fresh Codex tool absent after green build   → MCP_PUBLIC_CONTRACT / install diagnosis
+canonical GLB capture fails                 → CAMERA / BLOCKBENCH_RUNTIME
+GLB evidence itself materially wrong        → ROUTE 1 / HUNYUAN EVIDENCE
+Cube result wrong despite valid evidence    → MODELLING REASONING / SKILL
+production .bbmodel retains tool ref         → EXPORT / CLEANUP BOUNDARY
 ```
 
-## Route 1 Gate
+Do not change Hunyuan evidence to compensate for MCP/install defects, and do not change MCP geometry logic to compensate for a materially bad Route 1 reconstruction.
 
-ROUTE1_BLOCKBENCH_TEST_BLOCKED until the deferred Local Runtime Gate is explicitly reactivated and passes.
+## Repository Note
 
-The approved GLB remains evidence for depth/volume/hidden sides only. Do not voxelize/import it as final geometry or create a solver/compiler layer without demonstrated evidence that owns that need.
+A temporary branch named `route1-candidate-preflight-do-not-use` was accidentally created during candidate preparation. It points only to the unchanged historical `eca2f497...` source and contains none of the candidate changes. The current connector exposes no safe branch-delete operation, so do not use or advance that branch; delete it through an authorized ref-delete capable channel when convenient.
+
+The usable candidate is the unreferenced commit SHA above, not that branch.
 
 ## STOP
 
-All currently identifiable non-local MCP connection preparation is complete. Do not continue repository development merely to make the system more sophisticated. Wait for either a new concrete static failure or explicit user reactivation of the Local Runtime Gate.
+Do not claim Route 1 source PASS, live MCP PASS, or visual-quality improvement yet. The next meaningful work is the canonical generated-docs + Bun static gate on the prepared candidate, followed by the exact local Blockbench/elephant proof only after that gate passes.
