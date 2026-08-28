@@ -252,7 +252,7 @@ Current retained source includes:
 - explicit-envelope pre-Cube capture;
 - rename-resistant runtime ownership and fail-closed lifecycle invariants;
 - production `.bbmodel` cleanup guard;
-- existing Cube/Group, UV, Texture, animation, Locator/Null, Undo/history, and export capabilities;
+- existing Cube/Group, UV, Texture, animation, Locator/Null Object lifecycle, Undo/history, and export capabilities;
 - loopback request-owned/stateless transport;
 - `risky_eval` and `from_geo_json` disabled.
 
