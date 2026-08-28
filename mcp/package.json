@@ -19,6 +19,8 @@
     "measure:surface": "bun run ./scripts/measure-default-surface.ts",
     "eval:tool-discovery": "bun run ./scripts/evaluate-tool-discovery.ts",
     "verify:stateless-local": "bun run ./scripts/verify-stateless-local.ts",
+    "route1:prepare": "bun run ./scripts/route1-fixture.ts prepare",
+    "route1:package": "bun run ./scripts/route1-fixture.ts package",
     "prompts:build": "bun run ./build/generate-manifest.ts",
     "dev": "bun run prompts:build && bun run ./build --sourcemap",
     "dev:watch": "bun run prompts:build && bun run dev --watch",
