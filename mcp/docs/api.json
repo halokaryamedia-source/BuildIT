@@ -1,6 +1,6 @@
 {
   "version": "0.1.0",
-  "generatedAt": "2026-08-27T06:21:37.738Z",
+  "generatedAt": "2026-08-28T10:58:37.102Z",
   "tools": [
     {
       "name": "place_cube",
@@ -617,7 +617,7 @@
     {
       "name": "capture_model_views",
       "title": "Capture Model Views",
-      "description": "Captures 1-5 deterministic labeled 512×512 canonical model views without changing the active editor camera. Requires explicit front_direction and supports model or explicit-envelope framing. Returns observation images only; it does not compare, score, repair, or return PASS/FAIL.",
+      "description": "Captures 1-5 deterministic labeled 512×512 canonical views without changing the active editor camera. Model framing requires visible Cubes; explicit framing can also capture a loaded visible Route 1 3D reference before blockout. Returns observation only; no score/PASS/FAIL.",
       "status": "stable",
       "category": "Camera & Screenshots",
       "annotations": {
@@ -4804,6 +4804,97 @@
           "inspect_model_bounds": {
             "type": "object",
             "properties": {},
+            "additionalProperties": false
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      }
+    },
+    {
+      "name": "manage_geometry_reference",
+      "title": "Manage Route 1 Geometry Reference",
+      "description": "Loads, updates, or removes one approved local Route 1 .glb as transient 3D evidence through Blockbench Reference Models. It never converts mesh triangles to Bedrock geometry.",
+      "status": "experimental",
+      "category": "Project",
+      "annotations": {
+        "destructiveHint": true,
+        "openWorldHint": true
+      },
+      "parameters": {
+        "$ref": "#/definitions/manage_geometry_reference",
+        "definitions": {
+          "manage_geometry_reference": {
+            "type": "object",
+            "properties": {
+              "action": {
+                "type": "string",
+                "enum": [
+                  "load",
+                  "update",
+                  "remove"
+                ],
+                "description": "Route 1 reference lifecycle action.",
+                "markdownDescription": "Route 1 reference lifecycle action."
+              },
+              "path": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Absolute local .glb path; required only for load.",
+                "markdownDescription": "Absolute local .glb path; required only for load."
+              },
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Tool-owned Route 1 reference UUID or unique exact name; required for update/remove.",
+                "markdownDescription": "Tool-owned Route 1 reference UUID or unique exact name; required for update/remove."
+              },
+              "source_front_direction": {
+                "type": "string",
+                "enum": [
+                  "+z",
+                  "-z"
+                ],
+                "description": "Required load-time front direction encoded by the approved Route 1 GLB.",
+                "markdownDescription": "Required load-time front direction encoded by the approved Route 1 GLB."
+              },
+              "origin": {
+                "type": "array",
+                "minItems": 3,
+                "maxItems": 3,
+                "items": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ],
+                "description": "Reference origin [x,y,z]. Load default is [0,0,0].",
+                "markdownDescription": "Reference origin [x,y,z]. Load default is [0,0,0]."
+              },
+              "uniform_scale": {
+                "type": "number",
+                "exclusiveMinimum": 0,
+                "description": "Uniform scale multiplier. Load default is 1; non-uniform scaling is unsupported.",
+                "markdownDescription": "Uniform scale multiplier. Load default is 1; non-uniform scaling is unsupported."
+              },
+              "visibility": {
+                "type": "boolean",
+                "description": "Reference visibility. Load default is true.",
+                "markdownDescription": "Reference visibility. Load default is true."
+              },
+              "wireframe": {
+                "type": "boolean",
+                "description": "Reference wireframe mode. Load default is false.",
+                "markdownDescription": "Reference wireframe mode. Load default is false."
+              }
+            },
+            "required": [
+              "action"
+            ],
             "additionalProperties": false
           }
         },

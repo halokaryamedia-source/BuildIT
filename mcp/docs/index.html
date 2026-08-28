@@ -18,7 +18,7 @@
 
       <div class="nav-group">
         <p class="nav-heading">Overview</p>
-        <a href="#tools" class="nav-link">Tools <span class="count">(76)</span></a>
+        <a href="#tools" class="nav-link">Tools <span class="count">(77)</span></a>
         <a href="#prompts" class="nav-link">Prompts <span class="count">(1)</span></a>
         <a href="#resources" class="nav-link">Resources <span class="count">(8)</span></a>
       </div>
@@ -34,7 +34,7 @@
         <a href="#cat-import-export" class="nav-link">Import/Export <span class="count">(1)</span></a>
         <a href="#cat-material-instances" class="nav-link">Material Instances <span class="count">(5)</span></a>
         <a href="#cat-paint-tools" class="nav-link">Paint Tools <span class="count">(12)</span></a>
-        <a href="#cat-project" class="nav-link">Project <span class="count">(3)</span></a>
+        <a href="#cat-project" class="nav-link">Project <span class="count">(4)</span></a>
         <a href="#cat-textures" class="nav-link">Textures <span class="count">(13)</span></a>
         <a href="#cat-ui-interaction" class="nav-link">UI Interaction <span class="count">(4)</span></a>
       </div>
@@ -45,7 +45,7 @@
         <h1>BlockIT — Bedrock Entity MCP</h1>
         <p class="subtitle">API Reference — v0.1.0</p>
         <nav class="stats">
-          <a href="#tools"><strong>76</strong> tools (30 stable, 46 experimental)</a>
+          <a href="#tools"><strong>77</strong> tools (30 stable, 47 experimental)</a>
           <a href="#prompts"><strong>1</strong> prompts</a>
           <a href="#resources"><strong>8</strong> resources</a>
         </nav>
@@ -312,7 +312,7 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">Capture Model Views</p>
-      <p class="card-desc">Captures 1-5 deterministic labeled 512×512 canonical model views without changing the active editor camera. Requires explicit front_direction and supports model or explicit-envelope framing. Returns observation images only; it does not compare, score, repair, or return PASS/FAIL.</p>
+      <p class="card-desc">Captures 1-5 deterministic labeled 512×512 canonical views without changing the active editor camera. Model framing requires visible Cubes; explicit framing can also capture a loaded visible Route 1 3D reference before blockout. Returns observation only; no score/PASS/FAIL.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -2434,6 +2434,70 @@ bun run docs:check
         <p class="empty-params">No parameters</p>
       </div>
     </div>
+<div id="tool-manage_geometry_reference" class="card tool-card">
+      <div class="card-header">
+        <h3 class="card-name">manage_geometry_reference</h3>
+        <div class="card-badges">
+          <span class="badge badge-experimental">experimental</span>
+          <span class="badge badge-destructive">destructive</span><span class="badge badge-openworld">open-world</span>
+        </div>
+      </div>
+      <p class="card-title">Manage Route 1 Geometry Reference</p>
+      <p class="card-desc">Loads, updates, or removes one approved local Route 1 .glb as transient 3D evidence through Blockbench Reference Models. It never converts mesh triangles to Bedrock geometry.</p>
+      <div class="overflow-x">
+        <table class="param-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Required</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody><tr>
+      <td class="col-name">action</td>
+      <td class="col-type">&quot;load&quot; | &quot;update&quot; | &quot;remove&quot;</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc">Route 1 reference lifecycle action.</td>
+    </tr><tr>
+      <td class="col-name">path</td>
+      <td class="col-type">string</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Absolute local .glb path; required only for load. <span class="param-meta">[minLength: 1]</span></td>
+    </tr><tr>
+      <td class="col-name">id</td>
+      <td class="col-type">string</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Tool-owned Route 1 reference UUID or unique exact name; required for update/remove. <span class="param-meta">[minLength: 1]</span></td>
+    </tr><tr>
+      <td class="col-name">source_front_direction</td>
+      <td class="col-type">&quot;+z&quot; | &quot;-z&quot;</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Required load-time front direction encoded by the approved Route 1 GLB.</td>
+    </tr><tr>
+      <td class="col-name">origin</td>
+      <td class="col-type">unknown[]</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Reference origin [x,y,z]. Load default is [0,0,0]. <span class="param-meta">[minItems: 3, maxItems: 3]</span></td>
+    </tr><tr>
+      <td class="col-name">uniform_scale</td>
+      <td class="col-type">number</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Uniform scale multiplier. Load default is 1; non-uniform scaling is unsupported.</td>
+    </tr><tr>
+      <td class="col-name">visibility</td>
+      <td class="col-type">boolean</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Reference visibility. Load default is true.</td>
+    </tr><tr>
+      <td class="col-name">wireframe</td>
+      <td class="col-type">boolean</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Reference wireframe mode. Load default is false.</td>
+    </tr></tbody>
+    </table>
+      </div>
+    </div>
         </section>
 <section id="cat-textures" class="category-section">
           <h3 class="category-title">Textures</h3>
@@ -3153,7 +3217,7 @@ bun run docs:check
       </section>
 
       <footer class="page-footer">
-        Generated 2026-08-27T06:21:37.738Z from Zod schemas
+        Generated 2026-08-28T10:58:37.102Z from Zod schemas
       </footer>
     </main>
   </div>
