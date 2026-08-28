@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { mkdtemp, rm } from "node:fs/promises";
+import { mkdir, mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, test } from "bun:test";
@@ -22,6 +22,11 @@ function fixture(id = "sample-asset") {
     approved_reference: "approved-reference.png",
     approved_glb: "approved-shape.glb",
     contact_sheet: "contact-sheet.png",
+    hunyuan_inputs: {
+      front: "input/front.png",
+      left: "input/left.png",
+      back: "input/back.png",
+    },
     source_front_direction: "+z",
     requested_dimensions_blocks: { width: 2, height: 3, length: 4 },
     hunyuan: {
@@ -55,9 +60,13 @@ let process = requireNativeModule('process');${body}`;
 async function makeFixture() {
   const root = await mkdtemp(join(tmpdir(), "route1-fixture-"));
   tempRoots.push(root);
+  await mkdir(join(root, "input"));
   await Bun.write(join(root, "approved-reference.png"), new Uint8Array([1]));
   await Bun.write(join(root, "approved-shape.glb"), minimalGlb());
   await Bun.write(join(root, "contact-sheet.png"), new Uint8Array([2]));
+  await Bun.write(join(root, "input", "front.png"), new Uint8Array([3]));
+  await Bun.write(join(root, "input", "left.png"), new Uint8Array([4]));
+  await Bun.write(join(root, "input", "back.png"), new Uint8Array([5]));
   await Bun.write(
     join(root, "fixture.json"),
     `${JSON.stringify(fixture(), null, 2)}\n`
@@ -75,13 +84,14 @@ afterEach(async () => {
 
 describe("Route 1 generic fixture preparation", () => {
   test("contract stays object-agnostic and pins the accepted MultiView provenance", () => {
-    const sample = fixture("representative-machine");
+    const sample = fixture("representative-asset");
     expect(route1FixtureSchema.safeParse(sample).success).toBe(true);
-    expect(JSON.stringify(sample).toLowerCase()).not.toContain("elephant");
 
     expect(
-      route1FixtureSchema.safeParse({ ...sample, anatomy: { trunk: true } })
-        .success
+      route1FixtureSchema.safeParse({
+        ...sample,
+        object_specific: { special_part: true },
+      }).success
     ).toBe(false);
     expect(
       route1FixtureSchema.safeParse({
@@ -92,16 +102,28 @@ describe("Route 1 generic fixture preparation", () => {
     expect(
       route1FixtureSchema.safeParse({
         ...sample,
+        hunyuan_inputs: {
+          ...sample.hunyuan_inputs,
+          left: sample.hunyuan_inputs.front,
+        },
+      }).success
+    ).toBe(false);
+    expect(
+      route1FixtureSchema.safeParse({
+        ...sample,
         hunyuan: { ...sample.hunyuan, seed: 1 },
       }).success
     ).toBe(false);
   });
 
-  test("prepare inspection verifies portable files, hashes, and GLB 2.0 header", async () => {
+  test("prepare inspection verifies portable files, hashes, MultiView inputs, and GLB 2.0 header", async () => {
     const root = await makeFixture();
     const prepared = await inspectRoute1Fixture(root);
     expect(prepared.fixture.fixture_id).toBe("sample-asset");
     expect(prepared.files.approved_glb.sha256).toHaveLength(64);
+    expect(prepared.files.hunyuan_inputs.front.sha256).toHaveLength(64);
+    expect(prepared.files.hunyuan_inputs.left.sha256).toHaveLength(64);
+    expect(prepared.files.hunyuan_inputs.back.sha256).toHaveLength(64);
     expect(prepared.fixture_json.sha256).toHaveLength(64);
 
     await Bun.write(join(root, "approved-shape.glb"), new Uint8Array(12));
@@ -119,7 +141,7 @@ describe("Route 1 generic fixture preparation", () => {
     ).toThrow("does not match its bundled source body");
   });
 
-  test("package contains only the generic fixture, exact plugin artifact, manifest, and run handoff", async () => {
+  test("package contains the generic fixture inputs, exact plugin artifact, manifest, and run handoff", async () => {
     const fixtureRoot = await makeFixture();
     const inspected = await inspectRoute1Fixture(fixtureRoot);
 
@@ -131,7 +153,7 @@ describe("Route 1 generic fixture preparation", () => {
     const identity = inspectBlockItBundleContent(bundle, "0.1.0");
 
     const prepared = {
-      repository_head: "a".repeat(40),
+      repository_head_at_prepare: "a".repeat(40),
       blockit: {
         bundle_path: bundlePath,
         version: identity.version,
@@ -144,6 +166,7 @@ describe("Route 1 generic fixture preparation", () => {
     const manifest = buildRoute1PackageManifest(prepared);
     expect(manifest.authority.glb_role).toBe("supporting_3d_evidence_only");
     expect(manifest.fixture_id).toBe("sample-asset");
+    expect(manifest.repository_head_at_prepare).toBe("a".repeat(40));
 
     const output = join(artifactRoot, "Route1-Test-Ready");
     await writeRoute1Package(prepared, output);
@@ -152,17 +175,28 @@ describe("Route 1 generic fixture preparation", () => {
       await Bun.file(join(output, "manifest.json")).text()
     );
     expect(packaged.blockit.build_identity).toBe(identity.build_identity);
+    expect(packaged.fixture.hunyuan_inputs.front.sha256).toHaveLength(64);
     expect(
       await Bun.file(join(output, "plugin", "blockit_mcp.js")).exists()
     ).toBe(true);
     expect(
       await Bun.file(join(output, "fixture", "approved-shape.glb")).exists()
     ).toBe(true);
+    expect(
+      await Bun.file(join(output, "fixture", "input", "front.png")).exists()
+    ).toBe(true);
+    expect(
+      await Bun.file(join(output, "fixture", "input", "left.png")).exists()
+    ).toBe(true);
+    expect(
+      await Bun.file(join(output, "fixture", "input", "back.png")).exists()
+    ).toBe(true);
 
     const run = await Bun.file(join(output, "RUN.md")).text();
     expect(run).toContain("object-agnostic");
     expect(run).toContain("supporting 3D evidence only");
-    expect(run.toLowerCase()).not.toContain("elephant");
+    expect(run).toContain("Reproducible MultiView inputs");
+    expect(run).toContain("repository_head_at_prepare");
 
     await expect(writeRoute1Package(prepared, output)).rejects.toThrow(
       "output already exists"
@@ -181,7 +215,7 @@ describe("Route 1 generic fixture preparation", () => {
     const source = await Bun.file("./scripts/route1-fixture.ts").text();
     expect(source).toContain("ROUTE1_FIXTURE_PREPARED");
     expect(source).toContain("ROUTE1_TEST_READY_PACKAGE_CREATED");
+    expect(source).toContain("repository_head_at_prepare");
     expect(source).not.toContain("manage_geometry_reference");
-    expect(source.toLowerCase()).not.toContain("elephant");
   });
 });

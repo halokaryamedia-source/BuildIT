@@ -71,6 +71,11 @@ export const route1FixtureSchema = z.object({
   approved_reference: imagePath,
   approved_glb: glbPath,
   contact_sheet: imagePath,
+  hunyuan_inputs: z.object({
+    front: imagePath,
+    left: imagePath,
+    back: imagePath,
+  }).strict(),
   source_front_direction: z.enum(["+z", "-z"]),
   requested_dimensions_blocks: z.object({
     width: z.number().finite().positive(),
@@ -79,16 +84,18 @@ export const route1FixtureSchema = z.object({
   }).strict(),
   hunyuan: hunyuanSchema,
 }).strict().superRefine((fixture, ctx) => {
-  const files = [
+  const images = [
     fixture.approved_reference,
-    fixture.approved_glb,
     fixture.contact_sheet,
+    fixture.hunyuan_inputs.front,
+    fixture.hunyuan_inputs.left,
+    fixture.hunyuan_inputs.back,
   ];
-  if (new Set(files).size !== files.length) {
+  if (new Set(images).size !== images.length) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      path: ["approved_reference"],
-      message: "Reference, GLB, and contact sheet must be distinct files.",
+      path: ["hunyuan_inputs"],
+      message: "Reference, contact sheet, and Hunyuan input images must be distinct files.",
     });
   }
 });
@@ -195,10 +202,20 @@ export async function inspectRoute1Fixture(fixtureDir: string) {
   }
 
   const fixture = parsed.data;
-  const [approvedReference, approvedGlb, contactSheet] = await Promise.all([
+  const [
+    approvedReference,
+    approvedGlb,
+    contactSheet,
+    front,
+    left,
+    back,
+  ] = await Promise.all([
     inspectFile(root, fixture.approved_reference),
     inspectFile(root, fixture.approved_glb),
     inspectFile(root, fixture.contact_sheet),
+    inspectFile(root, fixture.hunyuan_inputs.front),
+    inspectFile(root, fixture.hunyuan_inputs.left),
+    inspectFile(root, fixture.hunyuan_inputs.back),
   ]);
   await assertGlb2(approvedGlb);
 
@@ -210,6 +227,7 @@ export async function inspectRoute1Fixture(fixtureDir: string) {
       approved_reference: approvedReference,
       approved_glb: approvedGlb,
       contact_sheet: contactSheet,
+      hunyuan_inputs: { front, left, back },
     },
   };
 }
@@ -298,7 +316,7 @@ export async function prepareRoute1State(
     inspectBlockItArtifact(repoRoot),
   ]);
   return {
-    repository_head: repositoryHead(repoRoot),
+    repository_head_at_prepare: repositoryHead(repoRoot),
     blockit,
     fixture,
   };
@@ -322,7 +340,7 @@ export function buildRoute1PackageManifest(prepared: Route1PreparedState) {
     manifest_version: 1 as const,
     fixture_schema_version: ROUTE1_FIXTURE_SCHEMA_VERSION,
     fixture_id: source.fixture.fixture_id,
-    repository_head: prepared.repository_head,
+    repository_head_at_prepare: prepared.repository_head_at_prepare,
     blockbench_units_per_block: 16 as const,
     blockit: {
       version: prepared.blockit.version,
@@ -334,6 +352,11 @@ export function buildRoute1PackageManifest(prepared: Route1PreparedState) {
       source_front_direction: source.fixture.source_front_direction,
       requested_dimensions_blocks: source.fixture.requested_dimensions_blocks,
       hunyuan: source.fixture.hunyuan,
+      hunyuan_inputs: {
+        front: packagedFile(source.files.hunyuan_inputs.front),
+        left: packagedFile(source.files.hunyuan_inputs.left),
+        back: packagedFile(source.files.hunyuan_inputs.back),
+      },
       fixture_json: {
         package_path: "fixture/fixture.json" as const,
         sha256: source.fixture_json.sha256,
@@ -357,6 +380,7 @@ type Manifest = ReturnType<typeof buildRoute1PackageManifest>;
 
 function runMarkdown(manifest: Manifest): string {
   const size = manifest.fixture.requested_dimensions_blocks;
+  const inputs = manifest.fixture.hunyuan_inputs;
   return `# Route 1 Prepared Fixture
 
 Fixture ID: \`${manifest.fixture_id}\`
@@ -373,7 +397,15 @@ This package is object-agnostic. The fixture identifies the representative asset
 Requested dimensions: ${size.width} × ${size.height} × ${size.length} blocks.
 Source front: \`${manifest.fixture.source_front_direction}\`.
 
-## Future live run
+## Reproducible MultiView inputs
+
+- front: \`${inputs.front.package_path}\`
+- left: \`${inputs.left.package_path}\`
+- back: \`${inputs.back.package_path}\`
+
+Use those three inputs with the repository's pinned \`generate_multiview_shape.py\` when the full Hunyuan→GLB path is being replayed. Model weights remain external/transient.
+
+## Future Blockbench run
 
 \`\`\`text
 load plugin/blockit_mcp.js
@@ -387,7 +419,7 @@ load plugin/blockit_mcp.js
 → export clean production .bbmodel
 \`\`\`
 
-Identity and file hashes are in \`manifest.json\`. Package creation does not prove live rendering, visual fidelity, or Route 1 quality improvement.
+Exact artifact/input hashes are in \`manifest.json\`. \`repository_head_at_prepare\` is context only; the packaged BlockIT artifact is identified by its embedded build identity plus bundle SHA-256. Package creation does not prove live rendering, visual fidelity, or Route 1 quality improvement.
 `;
 }
 
@@ -438,6 +470,9 @@ export async function writeRoute1Package(
       copyFixtureFile(fixtureRoot, prepared.fixture.files.approved_reference),
       copyFixtureFile(fixtureRoot, prepared.fixture.files.approved_glb),
       copyFixtureFile(fixtureRoot, prepared.fixture.files.contact_sheet),
+      copyFixtureFile(fixtureRoot, prepared.fixture.files.hunyuan_inputs.front),
+      copyFixtureFile(fixtureRoot, prepared.fixture.files.hunyuan_inputs.left),
+      copyFixtureFile(fixtureRoot, prepared.fixture.files.hunyuan_inputs.back),
     ]);
 
     const manifest = buildRoute1PackageManifest(prepared);
@@ -476,7 +511,7 @@ async function main(): Promise<void> {
     console.log(JSON.stringify({
       status: "ROUTE1_FIXTURE_PREPARED",
       fixture_id: manifest.fixture_id,
-      repository_head: manifest.repository_head,
+      repository_head_at_prepare: manifest.repository_head_at_prepare,
       blockit: manifest.blockit,
       fixture: manifest.fixture,
     }, null, 2));
@@ -505,7 +540,7 @@ async function main(): Promise<void> {
     fixture_id: packaged.manifest.fixture_id,
     output_dir: packaged.output_dir,
     blockit_build_identity: packaged.manifest.blockit.build_identity,
-    repository_head: packaged.manifest.repository_head,
+    repository_head_at_prepare: packaged.manifest.repository_head_at_prepare,
   }, null, 2));
 }
 
