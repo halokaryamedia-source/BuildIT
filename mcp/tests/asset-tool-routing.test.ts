@@ -48,7 +48,7 @@ describe("asset tool routing", () => {
     expect(skill).toContain("Group/bone parent move        → reparent_element");
     expect(skill).toContain("Group pivot/rotation/visible  → modify_group");
     expect(skill).toContain("rig IK/mirror                 → bone_rigging");
-    expect(skill).toContain("use `bone_rigging` only for rig-specific IK or mirroring");
+    expect(skill).toContain("`bone_rigging` only for IK/mirror");
     expect(skill).not.toContain("rig parent/pivot/IK/mirror    → bone_rigging");
   });
 

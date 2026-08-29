@@ -73,7 +73,7 @@ Locator/Null create/edit      → manage_locator / manage_null_object
 rig IK/mirror                 → bone_rigging
 ```
 
-`add_group` is normal bone creation. `reparent_element` owns Group/bone parent or root movement; `modify_group` owns Group pivot/rotation/visibility. In normal authoring, use `bone_rigging` only for rig-specific IK or mirroring. Known coherent Cubes → one `place_cube(elements=[...])`; uncertainty → no batch. Texture/PBR → `blockit-bedrock-texturing`; animation → `blockit-bedrock-animation`; geometry/rig/UV judgement → `blockbench-bedrock-modelling`.
+`add_group` creates bones; `reparent_element` owns parent/root; `modify_group` owns pivot/rotation/visibility; `bone_rigging` only for IK/mirror. Known Cubes → one `place_cube(elements=[...])`; uncertainty → no batch. geometry/rig/UV judgement → `blockbench-bedrock-modelling`.
 
 ## First-Call Invariants
 

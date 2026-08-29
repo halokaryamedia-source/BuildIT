@@ -46,7 +46,9 @@ describe("Codex Bedrock agent legibility contract", () => {
     expect(router).toContain("1 Minecraft block = 16 Blockbench units");
     expect(router).toContain("front_direction");
     expect(router).toContain("create normal bone/Group      → add_group");
-    expect(router).toContain("rig parent/pivot/IK/mirror    → bone_rigging");
+    expect(router).toContain("Group/bone parent move        → reparent_element");
+    expect(router).toContain("Group pivot/rotation/visible  → modify_group");
+    expect(router).toContain("rig IK/mirror                 → bone_rigging");
     expect(router).toContain("pass name OR groups, never both");
     expect(router).toContain("modify_cube               → id + at least one authored field change");
     expect(router).toContain("load **that exact active-phase spec once** before mutation");
