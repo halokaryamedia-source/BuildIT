@@ -5,7 +5,7 @@ description: Specialist for BlockIT MCP public contracts: tools/resources/prompt
 
 # MCP Server Development
 
-Own **client-visible MCP semantics**. The active `development-brief` defines goal/scope; `mcp/AGENTS.md` owns package-wide schema/runtime/result/docs/security rules. Do not repeat those rules here.
+Own **client-visible MCP semantics**. The active development route defines goal/scope; `mcp/AGENTS.md` owns package-wide schema/runtime/result/docs/security rules. Do not repeat those rules here.
 
 ## Use This Owner For
 
@@ -31,12 +31,13 @@ Do not stack those specialists merely because the implementation uses their tech
 ## Decision Procedure
 
 1. **Name the exact client-visible contract.** State what a caller currently sees/accepts and what must change.
-2. **Prove ownership.** Distinguish an MCP contract defect from an underlying Blockbench/runtime, TypeScript, Bun, or modelling problem.
-3. **Inspect the narrow owner.** Start with affected source/direct callers; inspect `lib/factories.ts`, shared schemas, registration profile, or `server/net.ts` only when the contract touches them.
-4. **Make the smallest contract change.** Reuse current factories/Zod/official SDK architecture. Do not add pagination, profiles, fallback APIs, transports, formats, or abstractions unless the requirement actually needs them.
-5. **Keep advertised and runtime semantics aligned.** Required/optional/default/refinement behavior, branch intent, annotations, descriptions, errors, and result shape must tell the same story as execution.
-6. **Update generated/public ownership through its source.** Never patch generated docs as the implementation.
-7. **Use the proof budget from root/development-brief.** Static contract proof is not live Blockbench or visual proof.
+2. **Preflight generated ownership.** If a public schema/description/spec may change, satisfy the generated-output capability preflight in `mcp/AGENTS.md` **before implementation**; do not accumulate source edits until the active channel can produce the required canonical generated state.
+3. **Prove ownership.** Distinguish an MCP contract defect from an underlying Blockbench/runtime, TypeScript, Bun, or modelling problem.
+4. **Inspect the narrow owner.** Start with affected source/direct callers; inspect `lib/factories.ts`, shared schemas, registration profile, or `server/net.ts` only when the contract touches them.
+5. **Make the smallest contract change.** Reuse current factories/Zod/official SDK architecture. Do not add pagination, profiles, fallback APIs, transports, formats, or abstractions unless the requirement actually needs them.
+6. **Keep advertised and runtime semantics aligned.** Required/optional/default/refinement behavior, branch intent, annotations, descriptions, errors, and result shape must tell the same story as execution.
+7. **Update generated/public ownership through its source.** Never patch generated docs as the implementation.
+8. **Use the proof budget from the active development route.** Static contract proof is not live Blockbench or visual proof.
 
 ## Efficiency Checks
 
@@ -51,7 +52,7 @@ Do **not** infer model-visible token cost from character count alone, remove ret
 
 ## Completion
 
-Return to the same development brief and confirm:
+Return to the same development route and confirm:
 
 - the intended MCP contract changed and unrelated contracts did not;
 - public schema/description/result semantics match implementation;

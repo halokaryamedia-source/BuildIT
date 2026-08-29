@@ -146,6 +146,32 @@ describe("repository GitHub discipline", () => {
     expect(brief).toContain("GITHUB_RULES.md` owns GitHub execution/history/CI");
   });
 
+  test("public MCP contract work preflights canonical generated output before implementation", async () => {
+    const [packageRules, specialist] = await Promise.all([
+      source("AGENTS.md"),
+      source("../.agents/skills/mcp-server-development/SKILL.md"),
+    ]);
+
+    requireInvariant(
+      packageRules,
+      /Before substantial implementation[\s\S]*public schema\/description\/spec[\s\S]*bun run docs:build[\s\S]*bun run docs:check[\s\S]*(STOP|defer)[\s\S]*before source edits accumulate/i,
+      "mcp/AGENTS.md",
+      "public-contract work proves generator capability before substantial source editing",
+    );
+    requireInvariant(
+      packageRules,
+      /GitHub Actions[\s\S]*verify generated freshness[\s\S]*not the authoring path[\s\S]*must not create\/commit/i,
+      "mcp/AGENTS.md",
+      "CI verifies generated freshness but does not author generated docs",
+    );
+    requireInvariant(
+      specialist,
+      /Preflight generated ownership[\s\S]*mcp\/AGENTS\.md[\s\S]*before implementation/i,
+      "mcp-server-development/SKILL.md",
+      "MCP public-contract specialist enters the package generator preflight before implementation",
+    );
+  });
+
   test("repository, authoring policy, and MCP verification stay split by proof surface", async () => {
     const [repository, authoring, mcp, packageRules] = await Promise.all([
       source("../.github/workflows/repository-verify.yml"),

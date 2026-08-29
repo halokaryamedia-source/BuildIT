@@ -64,6 +64,14 @@ When structured state exists, `structuredContent` is the canonical machine-reada
 
 `build/docs-manifest.ts` owns generated API surface. `build/docs.ts` writes `docs/api.json` and `docs/index.html`.
 
+Before substantial implementation of any task that can change a public schema/description/spec, perform this capability preflight:
+
+1. classify whether canonical generated API output will change;
+2. confirm the active execution channel can run `bun run docs:build` and `bun run docs:check` before final repository delivery;
+3. if it cannot, switch to a fitting local/Codex workspace or **STOP/defer the exact public-contract task before source edits accumulate**.
+
+GitHub Actions may verify generated freshness, but it is not the authoring path for generated MCP docs and must not create/commit them back to `Local`.
+
 When a public schema/description/spec changes:
 
 1. change the source owner;
