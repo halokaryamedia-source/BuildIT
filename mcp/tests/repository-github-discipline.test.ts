@@ -112,9 +112,10 @@ describe("repository GitHub discipline", () => {
   });
 
   test("repository and MCP verification remain split by proof surface", async () => {
-    const [repository, mcp] = await Promise.all([
+    const [repository, mcp, packageRules] = await Promise.all([
       source("../.github/workflows/repository-verify.yml"),
       source("../.github/workflows/mcp-verify.yml"),
+      source("AGENTS.md"),
     ]);
 
     for (const workflow of [repository, mcp]) {
@@ -123,8 +124,21 @@ describe("repository GitHub discipline", () => {
       expect(workflow).toContain("contents: read");
     }
 
+    const repositoryOnlyTests = [
+      "mcp/tests/repository-github-discipline.test.ts",
+      "mcp/tests/repository-supply-chain.test.ts",
+    ];
+    for (const path of repositoryOnlyTests) {
+      expect(repository).toContain(`- "${path}"`);
+      expect(mcp).toContain(`- "!${path}"`);
+    }
+
     expect(repository).toContain("tests/repository-github-discipline.test.ts");
     expect(repository).toContain("tests/static-footprint-budget.test.ts");
+    expect(packageRules).toContain("### During iteration");
+    expect(packageRules).toContain("### Final MCP gate");
+    expect(packageRules).toContain("Repository Verify");
+
     for (const command of [
       "bun run typecheck",
       "bun run test",
@@ -133,6 +147,7 @@ describe("repository GitHub discipline", () => {
       "bun run docs:check",
     ]) {
       expect(mcp).toContain(command);
+      expect(packageRules).toContain(command);
     }
   });
 

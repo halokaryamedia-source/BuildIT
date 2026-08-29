@@ -77,7 +77,18 @@ The runtime prompt bundle contains only prompts intentionally exposed by `server
 
 ## Verification
 
-For normal `mcp/**` source work, use the same repository gate as the official MCP verification workflow:
+Verification follows the changed claim; do not use the full MCP gate as an iteration loop.
+
+### During iteration
+
+- Run the smallest targeted regression that can falsify the changed behavior or public contract.
+- Run `bun run typecheck` when TypeScript/source shape changes make it materially useful.
+- For public schema/description/spec changes, regenerate canonical docs before the final delivery and require `bun run docs:check` on the final state.
+- Do not repeatedly run the full canonical gate after each edit.
+
+### Final MCP gate
+
+For one final logical change that affects MCP executable source, public MCP contracts, build output, or generated API ownership, run the canonical gate once on the final state:
 
 ```bash
 bun install --frozen-lockfile
@@ -88,7 +99,9 @@ bun run build
 bun run docs:check
 ```
 
-Use targeted tests for the public contract being changed; do not add low-value ceremony. GitHub/static proof covers source contracts and buildability, **not** live Blockbench rendering, Undo behavior, playback, persistence, or visual fidelity. Run local proof only when the active user/task explicitly requires it.
+Repository-policy/static regressions stored under `mcp/tests/` are owned by **Repository Verify** when the change does not affect MCP executable/public-contract behavior. Their filesystem location alone does not require a full MCP Verify run.
+
+GitHub/static proof covers source contracts and buildability, **not** live Blockbench rendering, Undo behavior, playback, persistence, or visual fidelity. Run local proof only when the active user/task explicitly requires it.
 
 ## Security / Capability Boundary
 
