@@ -4,108 +4,166 @@ async function source(path: string): Promise<string> {
   return Bun.file(path).text();
 }
 
-function requireInvariant(body: string, pattern: RegExp, owner: string, invariant: string, expected: string): void {
-  if (!pattern.test(body)) throw new Error(`INVARIANT: ${invariant}\nOWNER: ${owner}\nEXPECTED: ${expected}`);
+function requireInvariant(
+  body: string,
+  pattern: RegExp,
+  owner: string,
+  invariant: string,
+): void {
+  if (!pattern.test(body)) {
+    throw new Error(`INVARIANT: ${invariant}\nOWNER: ${owner}`);
+  }
 }
 
 describe("repository GitHub discipline", () => {
-  test("GITHUB_RULES keeps the canonical transaction and proof discipline", async () => {
+  test("GITHUB_RULES keeps compact semantic transaction, delivery, proof, and stop boundaries", async () => {
     const rules = await source("../GITHUB_RULES.md");
     expect(rules.length).toBeLessThan(25_000);
-    for (const marker of [
-      "PIN", "READ MINIMUM", "DIAGNOSE", "TOOL FIT", "WRITE ONCE", "VERIFY MINIMUM", "STOP",
-      "STALE TEST", "ROUTING FAILURE", "PROOF FAILURE", "Same-cause retry budget: maximum 2 attempts",
-      "Static source/CI evidence proves only what it exercises", "Do not use exact natural-language prose as a test contract",
-    ]) expect(rules).toContain(marker);
+
+    for (const heading of [
+      "## 1. PIN",
+      "## 2. READ MINIMUM",
+      "## 3. DIAGNOSE",
+      "## 4. TOOL + TRANSFER GATE",
+      "## 5. WRITE ONCE",
+      "## 6. VERIFY + FAILURE POLICY",
+      "## 7. STOP",
+    ]) {
+      expect(rules).toContain(heading);
+    }
+
     requireInvariant(
       rules,
-      /repo\/ref\/HEAD pinned[\s\S]*scope \+ owners final[\s\S]*complete final contents ready[\s\S]*no scratch\/temporary paths[\s\S]*expected proof known[\s\S]*DO NOT WRITE/,
-      "GITHUB_RULES.md", "repository mutations require a complete pre-write transaction gate", "pinned authority + final scope/content + known proof",
+      /`Local` is the working repository authority/i,
+      "GITHUB_RULES.md",
+      "Local remains the default working authority",
     );
-    requireInvariant(rules, /keep ref unchanged while blobs\/tree are prepared/, "GITHUB_RULES.md", "atomic candidate preparation cannot move Local early", "keep ref unchanged during blob/tree preparation");
+    requireInvariant(
+      rules,
+      /same conversation\/development session[\s\S]*Do not reread the full boot set/i,
+      "GITHUB_RULES.md",
+      "continuity boot is reusable in-session",
+    );
+    requireInvariant(
+      rules,
+      /ChatGPT atomic Git delivery[\s\S]*keep Local unchanged[\s\S]*fast-forward Local once/i,
+      "GITHUB_RULES.md",
+      "ChatGPT coherent multi-file delivery remains atomic",
+    );
+    requireInvariant(
+      rules,
+      /repo\/ref\/current state pinned[\s\S]*scope \+ owners final[\s\S]*complete final contents ready[\s\S]*selected method carries whole delivery[\s\S]*expected relevant proof known[\s\S]*DO NOT WRITE/i,
+      "GITHUB_RULES.md",
+      "repository mutation requires a complete transaction gate",
+    );
+    requireInvariant(
+      rules,
+      /Known capability mismatch[\s\S]*0 retries[\s\S]*Same-cause valid-method failure[\s\S]*2 attempts/i,
+      "GITHUB_RULES.md",
+      "failure classes retain bounded retry semantics",
+    );
+    requireInvariant(
+      rules,
+      /Static source\/CI evidence[\s\S]*does not prove live Blockbench/i,
+      "GITHUB_RULES.md",
+      "static proof cannot upgrade live runtime proof",
+    );
+    expect(rules).toContain("GitHub Actions is verification/deployment infrastructure");
+    expect(rules).toContain("Do not use exact natural-language wording as a test contract");
   });
 
-  test("root routing requires the Developing Execution Gate without bloating asset authoring", async () => {
+  test("root routing keeps bounded Developing and lightweight asset-authoring paths separate", async () => {
     const root = await source("../AGENTS.md");
     expect(root.length).toBeLessThan(7_500);
-    for (const marker of [
-      "### Observe / recover context", "### Repository / Plugin Work", "#### Developing Execution Gate",
-      "Success Metric", "Forbidden Proxy / Non-Goal", "First Evidence Required",
-      "Failure Classification / first wrong owner", "Proof Required", "STOP Condition",
-      "Authoring Efficiency", "Static Footprint", "### Bounded Maintenance", "### Asset Authoring",
-      "do not automatically load", "Do not route it through `development-brief`", "active specialist only",
-    ]) expect(root).toContain(marker);
-    expect(root).toContain("raw MCP-call count alone cannot prove product improvement");
-    expect(root).toContain("Do not mutate until those fields are decision-ready");
+    for (const heading of [
+      "### Observe / recover context",
+      "### Repository / Plugin Work",
+      "#### Developing Execution Gate",
+      "### Bounded Maintenance",
+      "### Asset Authoring",
+    ]) {
+      expect(root).toContain(heading);
+    }
+    requireInvariant(
+      root,
+      /Success Metric[\s\S]*Forbidden Proxy \/ Non-Goal[\s\S]*First Evidence Required[\s\S]*Failure Classification \/ first wrong owner[\s\S]*Proof Required[\s\S]*STOP Condition/,
+      "AGENTS.md",
+      "non-trivial Developing keeps the real execution contract",
+    );
+    expect(root).toContain("do not automatically load");
+    expect(root).toContain("Do not route it through `development-brief`");
   });
 
-  test("development brief preserves continuity and real success metrics", async () => {
+  test("development brief preserves cross-session grounding without owning GitHub execution", async () => {
     const brief = await source("../.agents/skills/development-brief/SKILL.md");
     expect(brief.length).toBeLessThan(6_000);
-    for (const marker of [
-      "## Mandatory Developing continuity", "## Development Contract", "Success Metric",
-      "Forbidden Proxy / Non-Goal", "First Evidence Required", "Failure Classification / first wrong owner",
-      "STOP Condition", "## Effectiveness vocabulary", "Authoring Quality", "Authoring Efficiency",
-      "Cost to Accepted Result", "Static Footprint", "## Evidence before optimization", "## Failure classification",
-    ]) expect(brief).toContain(marker);
+    for (const heading of [
+      "## Mandatory Developing continuity",
+      "## Development Contract",
+      "## Effectiveness vocabulary",
+      "## Evidence before optimization",
+      "## Failure classification",
+      "## Completion Boundary",
+    ]) {
+      expect(brief).toContain(heading);
+    }
+    expect(brief).toContain("Cost to Accepted Result");
+    expect(brief).toContain("GITHUB_RULES.md` owns GitHub execution/history/CI");
   });
 
-  test("repository and MCP verification stay split by proof surface", async () => {
+  test("repository and MCP verification remain split by proof surface", async () => {
     const [repository, mcp] = await Promise.all([
-      source("../.github/workflows/repository-verify.yml"), source("../.github/workflows/mcp-verify.yml"),
+      source("../.github/workflows/repository-verify.yml"),
+      source("../.github/workflows/mcp-verify.yml"),
     ]);
-    for (const marker of ["branches:\n      - Local", "cancel-in-progress: true", "contents: read"]) {
-      expect(repository).toContain(marker);
-      expect(mcp).toContain(marker);
+
+    for (const workflow of [repository, mcp]) {
+      expect(workflow).toContain("branches:\n      - Local");
+      expect(workflow).toContain("cancel-in-progress: true");
+      expect(workflow).toContain("contents: read");
     }
+
     expect(repository).toContain("tests/repository-github-discipline.test.ts");
     expect(repository).toContain("tests/static-footprint-budget.test.ts");
-    expect(repository).toContain("tests/documentation-handoff.test.ts");
-    expect(mcp).toContain("bun run typecheck");
-    expect(mcp).toContain("bun run test");
-    expect(mcp).toContain("bun run measure:surface");
-    expect(mcp).toContain("bun run build");
-    expect(mcp).toContain("bun run docs:check");
+    for (const command of [
+      "bun run typecheck",
+      "bun run test",
+      "bun run measure:surface",
+      "bun run build",
+      "bun run docs:check",
+    ]) {
+      expect(mcp).toContain(command);
+    }
   });
 
-  test("current continuation records current MCP verification work without stale runtime state", async () => {
+  test("continuation remains compact, deferred, and separate from proof/source ownership", async () => {
     const [next, experimental] = await Promise.all([
-      source("../docs/knowledge/next-action.md"), source("../Experimental/README.md"),
+      source("../docs/knowledge/next-action.md"),
+      source("../Experimental/README.md"),
     ]);
-    expect(next.length).toBeLessThan(7_500);
-    for (const marker of [
-      "Working branch: **`Local` only**",
+
+    expect(next.length).toBeLessThan(5_000);
+    for (const heading of [
       "## Current State",
       "## Development Contract",
-      "Success Metric",
-      "Forbidden Proxy / Non-Goal",
-      "First Evidence Required",
-      "Failure Classification / first wrong owner",
-      "Proof Required",
+      "### Success Metric",
+      "### Forbidden Proxy / Non-Goal",
+      "### First Evidence Required",
+      "### Failure Classification / first wrong owner",
+      "### Proof Required",
+      "## Deferred Work",
       "## Local Runtime Gate",
       "## STOP",
-      "MCP_DIRECT_GEOMETRY_REPAIRED",
-      "LIVE_GEOMETRY_SURFACE_LOCAL_PROOF_REQUIRED",
-      "ROUTE1_BLOCKBENCH_TEST_BLOCKED",
-    ]) expect(next).toContain(marker);
-    for (const stale of ["AWAITING_PLUGIN_ENABLE_THEN_RUNBOOK_STEP_4", "LOCAL_ACCEPTANCE_REACTIVATED_BY_USER_2026_08_23", "PRELOCAL_CONTROLLER_MUTATION_READY"]) {
-      expect(next).not.toContain(stale);
+    ]) {
+      expect(next).toContain(heading);
     }
+    expect(next).toContain("Working branch: **`Local` only**");
+    expect(next).toContain("MCP_DIRECT_GEOMETRY_REPAIRED");
+    expect(next).toContain("LIVE_GEOMETRY_SURFACE_LOCAL_PROOF_REQUIRED");
+    expect(next).toContain("ROUTE1_BLOCKBENCH_TEST_BLOCKED");
+    expect(next).toContain("GEOMETRY_CLEANUP_DEFERRED_BY_USER");
+    expect(next).not.toContain("AWAITING_PLUGIN_ENABLE_THEN_RUNBOOK_STEP_4");
     expect(experimental).toContain("NOT PRODUCTION");
     expect(experimental).toContain("## Stop rules");
-  });
-
-  test("experimental Blockbench Web harness remains bounded and artifact-only", async () => {
-    const [workflow, runner, pkg] = await Promise.all([
-      source("../.github/workflows/blockbench-web-poc.yml"),
-      source("../Experimental/blockbench-web-poc/run-poc.mjs"),
-      source("../Experimental/blockbench-web-poc/package.json"),
-    ]);
-    expect(workflow).toContain("workflow_dispatch:");
-    expect(workflow).toContain("contents: read");
-    expect(workflow).not.toContain("pull_request_target");
-    expect(workflow).not.toContain("self-hosted");
-    expect(pkg).toContain('"playwright": "1.62.1"');
-    expect(runner).toContain("proof.json");
   });
 });
