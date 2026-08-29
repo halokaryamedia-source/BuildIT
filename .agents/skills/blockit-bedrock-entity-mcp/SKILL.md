@@ -5,7 +5,7 @@ description: BlockIT Bedrock Entity asset router. Route from active phase + inte
 
 # BlockIT Bedrock Entity MCP
 
-Use for **asset authoring**, not plugin development. Target `bedrock`.
+Use for **asset authoring**. Target `bedrock`.
 
 ## Fast Routing Contract
 
@@ -73,7 +73,7 @@ Locator/Null create/edit      → manage_locator / manage_null_object
 rig IK/mirror                 → bone_rigging
 ```
 
-`add_group` creates bones; `reparent_element` owns parent/root; `modify_group` owns pivot/rotation/visibility; `bone_rigging` only for IK/mirror. Known Cubes → one `place_cube(elements=[...])`; uncertainty → no batch. geometry/rig/UV judgement → `blockbench-bedrock-modelling`.
+`add_group` creates bones; `reparent_element` owns parent/root; `modify_group` owns pivot/rotation/visibility; `bone_rigging` only for IK/mirror. Known coherent Cubes → one `place_cube(elements=[...])`; uncertainty → no batch. geometry/rig/UV judgement → `blockbench-bedrock-modelling`.
 
 ## First-Call Invariants
 
