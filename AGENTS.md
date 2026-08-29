@@ -101,7 +101,7 @@ Do not preload later-phase specialists. On `HANDOFF_REQUIRED`, preserve compact 
 
 `workspace/active/<project>/README.md` owns persistent asset continuity.
 
-For normal asset authoring, **do not automatically load** `CONTEXT.md`, `docs/knowledge/next-action.md`, `development-brief`, Git history, secondary indexes, or foundation docs. Asset authoring is not software Developing merely because a model changes. Do not route it through `development-brief` unless repository/plugin behavior changes.
+For normal asset authoring, **do not automatically load** `CONTEXT.md`, `docs/knowledge/next-action.md`, `development-brief`, Git history, secondary indexes, or foundation docs. Asset authoring is not software **Developing** merely because a model changes. Do not route it through `development-brief` unless repository/plugin behavior changes.
 
 ## GitHub Work
 
