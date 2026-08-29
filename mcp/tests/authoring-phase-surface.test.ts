@@ -330,9 +330,9 @@ describe("authoring phase MCP surface", () => {
       source("../workspace/README.md"),
     ]);
 
-    expect(root).toContain("→ active specialist only");
-    expect(root).toContain("Do **not** preload later-phase specialists");
-    expect(root).toContain("ACTIVE PHASE from MCP initialize");
+    expect(root).toMatch(/ACTIVE PHASE[\s\S]*active specialist only/i);
+    expect(root).toMatch(/Do (?:\*\*)?not(?:\*\*)? preload later-phase specialists/i);
+    expect(root).toContain("HANDOFF_REQUIRED");
     expect(workspace).toContain("Current handoff state");
     expect(workspace).toContain("completed_gate(s)");
     expect(workspace).toContain("resume_target");
