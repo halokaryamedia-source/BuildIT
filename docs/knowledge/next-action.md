@@ -1,6 +1,6 @@
 # Next Action
 
-Updated: 2026-08-28 — Route 1 generic source/preparation complete; live Blockbench test deferred by user
+Updated: 2026-08-29 — Route 1 generic source/preparation complete; live Blockbench test and follow-up Geometry cleanup deferred by user
 
 Working branch: **`Local` only**.
 
@@ -31,6 +31,7 @@ DEFAULT_GEOMETRY_SURFACE_28
 LIVE_GEOMETRY_SURFACE_LOCAL_PROOF_REQUIRED
 ROUTE1_BLOCKBENCH_TEST_BLOCKED
 ROUTE1_LIVE_TEST_DEFERRED_BY_USER
+GEOMETRY_CLEANUP_DEFERRED_BY_USER
 NO_ROUTE1_LIVE_PASS
 NO_ACTIVE_REPOSITORY_DEVELOPMENT
 ```
@@ -144,6 +145,25 @@ The fixture contains approved reference/GLB/contact sheet, FRONT/LEFT/BACK Hunyu
 
 Manifest artifact authority is the embedded BlockIT build identity + full bundle SHA-256; `repository_head_at_prepare` is context only.
 
+## Deferred Geometry Cleanup
+
+Deferred by explicit user request on 2026-08-29 while `GITHUB_RULES.md` is being revised.
+
+The interrupted audit identified possible Geometry public-contract cleanup around Cube per-face UV correction and overlapping `bone_rigging` structural actions. **Nothing from that interrupted candidate is approved source authority or a completed repository change.**
+
+When the user later reactivates this work:
+
+```text
+re-pin current Local
+→ re-read current Geometry owners
+→ re-diagnose the first wrong owner under the revised GitHub Rules
+→ prepare one complete logical candidate
+→ use a transfer method that fits the whole delivery
+→ do not reuse orphan/preflight Git objects or earlier uncommitted candidate assumptions as authority
+```
+
+Do not resume this cleanup automatically after the rules revision.
+
 ## Local Runtime Gate
 
 **ROUTE1_BLOCKBENCH_TEST_BLOCKED by deliberate user deferral, not by a known source/preparation blocker.**
@@ -162,4 +182,4 @@ build current BlockIT
 
 ## STOP
 
-Repository/source/preparation work stops here. A representative sample may validate the generic pipeline but must never become an object-specific rule. Resume coding only from specific later runtime/visual evidence.
+Repository/source/preparation work stops here. A representative sample may validate the generic pipeline but must never become an object-specific rule. Resume coding only from explicit user reactivation and specific later runtime/visual evidence.
