@@ -61,11 +61,11 @@ describe("repository workflow supply chain", () => {
     }
   });
 
-  test("supply-chain policy retains trusted-source and immutable-revision boundaries", async () => {
+  test("supply-chain policy retains least-privilege and pinned-action boundaries", async () => {
     const rules = await source("../GITHUB_RULES.md");
-    expect(rules).toContain("trusted sources");
-    expect(rules).toContain("immutable/pinned revisions");
-    expect(rules).toContain("never move to `latest`, `main`, or `master`");
-    expect(rules).toContain("Do not widen permissions");
+    expect(rules).toMatch(/least-privilege/i);
+    expect(rules).toMatch(/pinned\/trusted action versions/i);
+    expect(rules).toMatch(/event-derived strings as untrusted input/i);
+    expect(rules).toMatch(/pull_request_target/);
   });
 });
