@@ -20,7 +20,6 @@ async function main() {
 
   const manifest: PromptManifest = {
     version,
-    generatedAt: new Date().toISOString(),
     prompts,
   };
 

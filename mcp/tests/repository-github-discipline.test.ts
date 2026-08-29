@@ -146,29 +146,49 @@ describe("repository GitHub discipline", () => {
     expect(brief).toContain("GITHUB_RULES.md` owns GitHub execution/history/CI");
   });
 
-  test("public MCP contract work preflights canonical generated output before implementation", async () => {
-    const [packageRules, specialist] = await Promise.all([
+  test("generated MCP outputs preflight before substantial implementation", async () => {
+    const [packageRules, specialist, implementation] = await Promise.all([
       source("AGENTS.md"),
       source("../.agents/skills/mcp-server-development/SKILL.md"),
+      source("../docs/knowledge/implementation-map.md"),
     ]);
 
     requireInvariant(
       packageRules,
       /Before substantial implementation[\s\S]*public schema\/description\/spec[\s\S]*bun run docs:build[\s\S]*bun run docs:check[\s\S]*(STOP|defer)[\s\S]*before source edits accumulate/i,
       "mcp/AGENTS.md",
-      "public-contract work proves generator capability before substantial source editing",
+      "public-contract work proves API generator capability before substantial source editing",
+    );
+    requireInvariant(
+      packageRules,
+      /canonical runtime prompt source[\s\S]*bun run prompts:build[\s\S]*prompts\/manifest\.json[\s\S]*(STOP|defer)[\s\S]*before prompt edits accumulate/i,
+      "mcp/AGENTS.md",
+      "runtime prompt work proves manifest generator capability before prompt edits accumulate",
+    );
+    requireInvariant(
+      packageRules,
+      /same package version[\s\S]*canonical prompt content[\s\S]*same manifest bytes[\s\S]*no wall-clock-only metadata/i,
+      "mcp/AGENTS.md",
+      "generated prompt manifest remains deterministic",
     );
     requireInvariant(
       packageRules,
       /GitHub Actions[\s\S]*verify generated freshness[\s\S]*not the authoring path[\s\S]*must not create\/commit/i,
       "mcp/AGENTS.md",
-      "CI verifies generated freshness but does not author generated docs",
+      "CI verifies generated freshness but does not author generated outputs",
     );
     requireInvariant(
       specialist,
-      /Preflight generated ownership[\s\S]*mcp\/AGENTS\.md[\s\S]*before implementation/i,
+      /Preflight generated ownership[\s\S]*(schema|description|spec)[\s\S]*runtime prompt[\s\S]*mcp\/AGENTS\.md[\s\S]*before implementation/i,
       "mcp-server-development/SKILL.md",
-      "MCP public-contract specialist enters the package generator preflight before implementation",
+      "MCP public-contract specialist enters the relevant generator preflight before implementation",
+    );
+
+    expect(implementation).toContain(
+      "| complex / ambiguous development contract | `.agents/skills/development-brief/` |"
+    );
+    expect(implementation).not.toContain(
+      "| repository change contract | `.agents/skills/development-brief/` |"
     );
   });
 
@@ -272,9 +292,15 @@ describe("repository GitHub discipline", () => {
       expect(authoring).not.toContain(command);
     }
 
+    requireInvariant(
+      packageRules,
+      /repository-policy[\s\S]*Repository Verify[\s\S]*authoring-policy[\s\S]*Authoring Policy Verify[\s\S]*executable or public MCP[\s\S]*MCP Verify/i,
+      "mcp/AGENTS.md",
+      "MCP-package rules route static repository, static authoring, and executable/public claims to distinct verifiers",
+    );
+
     expect(packageRules).toContain("### During iteration");
     expect(packageRules).toContain("### Final MCP gate");
-    expect(packageRules).toContain("Repository Verify");
   });
 
   test("continuation remains compact, deferred, and separate from proof/source ownership", async () => {

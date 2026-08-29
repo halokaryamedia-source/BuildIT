@@ -4,7 +4,6 @@ import { assertBedrockWorkflowSourceCompatible } from "@/lib/promptContract";
 
 export interface PromptManifest {
   version: string;
-  generatedAt: string;
   prompts: Record<string, string>;
 }
 
@@ -13,7 +12,6 @@ const PROMPT_OVERRIDE_STORE_VERSION = 2;
 
 const promptManifestSchema = z.object({
   version: z.string(),
-  generatedAt: z.string(),
   prompts: z.record(z.string(), z.string()),
 });
 

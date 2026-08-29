@@ -70,7 +70,13 @@ Before substantial implementation of any task that can change a public schema/de
 2. confirm the active execution channel can run `bun run docs:build` and `bun run docs:check` before final repository delivery;
 3. if it cannot, switch to a fitting local/Codex workspace or **STOP/defer the exact public-contract task before source edits accumulate**.
 
-GitHub Actions may verify generated freshness, but it is not the authoring path for generated MCP docs and must not create/commit them back to `Local`.
+Before substantial editing of canonical runtime prompt source such as `prompts/bedrock_entity_workflow.md`:
+
+1. confirm the active execution channel can run `bun run prompts:build` and carry the resulting `prompts/manifest.json` in the same logical delivery;
+2. if it cannot, switch to a fitting local/Codex workspace or **STOP/defer before prompt edits accumulate**;
+3. keep generated prompt output deterministic: the same package version + canonical prompt content must produce the same manifest bytes, with no wall-clock-only metadata.
+
+GitHub Actions may verify generated freshness, but it is not the authoring path for generated MCP docs or prompt manifests and must not create/commit them back to `Local`.
 
 When a public schema/description/spec changes:
 
@@ -78,6 +84,8 @@ When a public schema/description/spec changes:
 2. update manifest ownership only when needed;
 3. regenerate through `bun run docs:build`;
 4. require `bun run docs:check` to pass.
+
+When canonical runtime prompt source changes, regenerate through `bun run prompts:build` and include `prompts/manifest.json` in the same logical delivery.
 
 Do not edit generated tool entries manually.
 
@@ -92,6 +100,7 @@ Verification follows the changed claim; do not use the full MCP gate as an itera
 - Run the smallest targeted regression that can falsify the changed behavior or public contract.
 - Run `bun run typecheck` when TypeScript/source shape changes make it materially useful.
 - For public schema/description/spec changes, regenerate canonical docs before the final delivery and require `bun run docs:check` on the final state.
+- For canonical runtime prompt changes, regenerate the prompt manifest before final delivery.
 - Do not repeatedly run the full canonical gate after each edit.
 
 ### Final MCP gate
@@ -107,7 +116,15 @@ bun run build
 bun run docs:check
 ```
 
-Repository-policy/static regressions stored under `mcp/tests/` are owned by **Repository Verify** when the change does not affect MCP executable/public-contract behavior. Their filesystem location alone does not require a full MCP Verify run.
+Verifier ownership follows the claim, not the physical location of a test under `mcp/tests/`:
+
+```text
+repository-policy / repository-static contract → Repository Verify
+authoring-policy / authoring-static contract   → Authoring Policy Verify
+executable or public MCP behavior               → MCP Verify
+```
+
+A test file living under `mcp/tests/` alone never upgrades a static policy change into a full MCP gate.
 
 GitHub/static proof covers source contracts and buildability, **not** live Blockbench rendering, Undo behavior, playback, persistence, or visual fidelity. Run local proof only when the active user/task explicitly requires it.
 

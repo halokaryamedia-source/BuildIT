@@ -15,11 +15,25 @@ describe("Bedrock prompt and skill surface", () => {
     expect(prompts).toContain("selectMcpPhaseWorkflowBody");
   });
 
-  test("runtime prompt manifest exactly mirrors the canonical full prompt source", async () => {
-    const promptSource = await source("prompts/bedrock_entity_workflow.md");
-    const manifest = JSON.parse(await source("prompts/manifest.json")) as { prompts: Record<string, string> };
+  test("runtime prompt manifest exactly mirrors canonical source and is deterministic", async () => {
+    const [promptSource, manifestText, generator, loader] = await Promise.all([
+      source("prompts/bedrock_entity_workflow.md"),
+      source("prompts/manifest.json"),
+      source("build/generate-manifest.ts"),
+      source("lib/promptLoader.ts"),
+    ]);
+    const manifest = JSON.parse(manifestText) as {
+      version: string;
+      prompts: Record<string, string>;
+      generatedAt?: unknown;
+    };
+
     expect(Object.keys(manifest.prompts)).toEqual(["bedrock_entity_workflow"]);
     expect(manifest.prompts.bedrock_entity_workflow).toBe(promptSource);
+    expect("generatedAt" in manifest).toBe(false);
+    expect(generator).not.toContain("generatedAt");
+    expect(generator).not.toContain("new Date");
+    expect(loader).not.toContain("generatedAt");
   });
 
   test("maintainer references remain source files but are excluded from runtime bundle", async () => {

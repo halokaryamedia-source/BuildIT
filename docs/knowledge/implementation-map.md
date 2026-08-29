@@ -22,7 +22,7 @@ Current `Local` source/ownership only. Repository/plugin continuation belongs in
 | modelling judgement | `.agents/skills/blockbench-bedrock-modelling/` |
 | texture/PBR judgement | `.agents/skills/blockit-bedrock-texturing/` |
 | animation judgement | `.agents/skills/blockit-bedrock-animation/` |
-| repository change contract | `.agents/skills/development-brief/` |
+| complex / ambiguous development contract | `.agents/skills/development-brief/` |
 | MCP public/schema/result/transport | `.agents/skills/mcp-server-development/` |
 | Blockbench API/lifecycle/UI/Undo | `.agents/skills/blockbench-runtime-development/` |
 | TypeScript | `.agents/skills/typescript-type-safety/` |

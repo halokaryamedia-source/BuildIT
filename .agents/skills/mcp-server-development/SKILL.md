@@ -22,7 +22,7 @@ Route elsewhere when the primary semantic owner is:
 ```text
 TypeScript type system        → typescript-type-safety
 Bun/build/package tooling     → bun-tooling
-Blockbench API/Undo/UI/runtime→ blockbench-runtime-development
+Blockbench API/lifecycle/UI/Undo  → blockbench-runtime-development
 visual/model judgement        → blockbench-bedrock-modelling
 ```
 
@@ -31,12 +31,12 @@ Do not stack those specialists merely because the implementation uses their tech
 ## Decision Procedure
 
 1. **Name the exact client-visible contract.** State what a caller currently sees/accepts and what must change.
-2. **Preflight generated ownership.** If a public schema/description/spec may change, satisfy the generated-output capability preflight in `mcp/AGENTS.md` **before implementation**; do not accumulate source edits until the active channel can produce the required canonical generated state.
+2. **Preflight generated ownership.** If a public schema/description/spec or canonical runtime prompt may change, satisfy the relevant generated-output capability preflight in `mcp/AGENTS.md` **before implementation**; do not accumulate source/prompt edits until the active channel can produce the required canonical generated state.
 3. **Prove ownership.** Distinguish an MCP contract defect from an underlying Blockbench/runtime, TypeScript, Bun, or modelling problem.
 4. **Inspect the narrow owner.** Start with affected source/direct callers; inspect `lib/factories.ts`, shared schemas, registration profile, or `server/net.ts` only when the contract touches them.
 5. **Make the smallest contract change.** Reuse current factories/Zod/official SDK architecture. Do not add pagination, profiles, fallback APIs, transports, formats, or abstractions unless the requirement actually needs them.
 6. **Keep advertised and runtime semantics aligned.** Required/optional/default/refinement behavior, branch intent, annotations, descriptions, errors, and result shape must tell the same story as execution.
-7. **Update generated/public ownership through its source.** Never patch generated docs as the implementation.
+7. **Update generated/public ownership through its source.** Never patch generated docs or prompt manifests as the implementation.
 8. **Use the proof budget from the active development route.** Static contract proof is not live Blockbench or visual proof.
 
 ## Efficiency Checks
