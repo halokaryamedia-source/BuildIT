@@ -146,6 +146,22 @@ describe("repository GitHub discipline", () => {
     expect(brief).toContain("GITHUB_RULES.md` owns GitHub execution/history/CI");
   });
 
+  test("repository-development instruction owners stay bounded by responsibility", async () => {
+    const [packageRules, developmentBrief, mcpDevelopment] = await Promise.all([
+      source("AGENTS.md"),
+      source("../.agents/skills/development-brief/SKILL.md"),
+      source("../.agents/skills/mcp-server-development/SKILL.md"),
+    ]);
+
+    expect(packageRules.length).toBeLessThan(6_000);
+    expect(developmentBrief.length).toBeLessThan(6_000);
+    expect(mcpDevelopment.length).toBeLessThan(4_000);
+
+    expect(packageRules).toContain("Root `../AGENTS.md` owns repository routing");
+    expect(mcpDevelopment).toContain("`mcp/AGENTS.md` owns package-wide");
+    expect(developmentBrief).toContain("## Effectiveness vocabulary");
+  });
+
   test("generated MCP outputs preflight before substantial implementation", async () => {
     const [packageRules, specialist, implementation] = await Promise.all([
       source("AGENTS.md"),

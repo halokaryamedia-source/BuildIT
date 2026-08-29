@@ -48,22 +48,6 @@ describe("static footprint budget", () => {
     expect(workflow.length).toBeLessThan(9_000);
   });
 
-  test("repository-development instruction owners stay bounded by responsibility", async () => {
-    const [packageRules, developmentBrief, mcpDevelopment] = await Promise.all([
-      source("AGENTS.md"),
-      source("../.agents/skills/development-brief/SKILL.md"),
-      source("../.agents/skills/mcp-server-development/SKILL.md"),
-    ]);
-
-    expect(packageRules.length).toBeLessThan(6_000);
-    expect(developmentBrief.length).toBeLessThan(6_000);
-    expect(mcpDevelopment.length).toBeLessThan(4_000);
-
-    expect(packageRules).toContain("Root `../AGENTS.md` owns repository routing");
-    expect(mcpDevelopment).toContain("`mcp/AGENTS.md` owns package-wide");
-    expect(developmentBrief).toContain("## Effectiveness vocabulary");
-  });
-
   test("static footprint is explicitly separate from authoring efficiency", async () => {
     const [brief, implementation, runbook] = await Promise.all([
       source("../.agents/skills/development-brief/SKILL.md"),
