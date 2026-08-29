@@ -61,6 +61,8 @@ broad scans          0
 
 The Developing boot required by root `AGENTS.md`, `GITHUB_RULES.md`, `CONTEXT.md`, `docs/knowledge/next-action.md`, and `.agents/skills/development-brief/SKILL.md` is an intentional exception because it prevents cross-session drift. After that boot, additional reading remains minimum-needed.
 
+A completed continuity boot may be reused within the same conversation/development session while the repository, working branch, GitHub Rules, and continuation authority have not materially changed. Do not reread the full boot set for each subtask merely for reassurance. Reboot only when a new conversation/session begins, the working authority changes, one of those owners changes materially, or current evidence shows the cached authority may be stale.
+
 - Open more only when a concrete unresolved question requires it.
 - When the exact path is known, prefer direct fetch over repository search.
 - Do not read history, review archives, generated output, adjacent owners, or all workspaces merely to feel safer.
@@ -105,7 +107,7 @@ derived/generated artifact wrong
 
 ## 4. TOOL + TRANSFER GATE — choose a method that natively fits
 
-Use the simplest capability that safely produces the required final state.
+Use the simplest capability that safely produces the required final state. ChatGPT and Codex/local workspaces are both valid development channels; do not require a channel switch merely because the current task has more than one text file.
 
 ```text
 current branch / exact file state
@@ -116,16 +118,20 @@ one small bounded UTF-8 file
 + complete current file available
 → GitHub Contents API / update_file
 
-coherent multi-file logical delivery /
-commit atomicity matters /
-large file / many precise hunks /
-coordinated refactor / binary / Git LFS /
-true patch or Git semantics required
+coherent multi-file UTF-8 delivery authored in ChatGPT
++ complete final file contents known
++ atomic repository history required
++ low-level Git-data capability available
+→ ChatGPT atomic Git delivery
+
+large/precise edit better served by patch semantics /
+local build or generator required during iteration /
+binary / Git LFS / filesystem-heavy change
 → Local or Codex-style git workspace,
-  or another known-safe atomic Git capability
+  or another known-safe fitting capability
 
 final artifact cannot be transferred safely/natively
-by the available GitHub capability
+by the available capability
 → Manual Handoff
 
 CI diagnosis
@@ -136,6 +142,34 @@ browser / Blockbench / visual / local-runtime claim
 ```
 
 Do not choose a per-file Contents API merely because it is available when doing so would turn one logical delivery into several repository commits.
+
+### ChatGPT atomic Git delivery
+
+Low-level Git-data operations are a valid **intentional delivery mechanism** when ChatGPT has already prepared one complete coherent text change and atomic repository history is the reason for using them. This is different from iterative connector experimentation.
+
+Canonical flow:
+
+```text
+pin exact Local HEAD + base tree
+→ fetch only required exact current owners
+→ finish all reasoning/coding before repository mutation
+→ prepare every final replacement blob
+→ create one tree from the pinned base tree
+→ keep Local unchanged while blobs/tree are prepared
+→ re-check HEAD once immediately before final commit/ref movement when concurrency is plausible
+→ create one categorized logical commit with the pinned/current HEAD as parent
+→ fast-forward Local once
+→ run only relevant final verification
+→ STOP
+```
+
+Requirements:
+
+- The complete intended file set and final content must be known before the first Git object is created.
+- Exact complete current content must be available for every full-file replacement; never reconstruct unseen source from snippets.
+- The Git-data path must result in one reviewable logical commit, not a sequence of candidate/checkpoint/retry commits.
+- Preparing unreferenced blobs/tree for that already-complete atomic delivery is allowed; they are not permission to experiment with alternate architectures or unsupported payloads.
+- If required generated artifacts, binaries, runtime outputs, or canonical generators cannot be produced by the active capability, return to the transfer gate before moving `Local`; do not commit a knowingly incomplete coherent baseline.
 
 ### Transfer gate before the first write
 
@@ -170,7 +204,7 @@ Never create or use the following solely to bypass a transfer limitation:
 - transfer-only helper manifests;
 - temporary branches/workflows;
 - alternate repository structures;
-- blob/tree/commit/ref chains that merely carry the same unsupported payload;
+- blob/tree/commit/ref chains that merely carry the same **unsupported** payload after a capability mismatch;
 - generated source wrappers whose only purpose is avoiding a large-file edit;
 - scratch files or proof-only files on `Local`.
 
@@ -179,8 +213,8 @@ Also:
 - Never full-replace a file from partial file context.
 - Never split `update_file` into chunks. It replaces the whole file; it does not append or patch.
 - Keep blob/content SHA, commit SHA, tree SHA, tag/ref, workflow-run ID, artifact ID, job ID, and other GitHub identifiers distinct; use only the identifier required by the operation.
-- Low-level Git blob/tree/commit/ref operations are valid only when the task genuinely requires those Git semantics and the capability is known to fit. They are **not** a connector-bypass mechanism, alternate editor, transfer experiment, or workaround for a large file.
-- Do not create orphan blobs, trees, commits, temporary refs, or candidate branches merely to preflight content that could not be safely transferred by the active channel.
+- Low-level Git blob/tree/commit/ref operations are valid for the bounded ChatGPT atomic-delivery contract above or when the task otherwise genuinely requires Git semantics. They are **not** an iterative connector-bypass mechanism, alternate scratch editor, or retry strategy for an unsupported payload.
+- Do not create orphan blobs, trees, commits, temporary refs, or candidate branches merely to discover whether unsupported content can be transferred. Unreferenced Git objects prepared as part of one already-complete atomic ChatGPT delivery remain allowed by the preceding contract.
 - Force-push, history rewrite, destructive reset, or equivalent ref manipulation is never a workaround for stale state, CI failure, connector limits, commit spam, or messy history.
 - Do not use GitHub Actions as a remote shell, source editor, transfer engine, or substitute for missing local/Blockbench/browser capability.
 - A final destination path may be created only when the real intended content for that path is ready.
@@ -362,14 +396,14 @@ inline-text-only connector
 → genuine local-file/binary upload capability
 
 per-file Contents API causing commit fragmentation
-→ proper atomic git workspace
+→ intentional ChatGPT atomic Git delivery or proper atomic git workspace
 ```
 
 Not valid strategy changes:
 
 ```text
-update_file
-→ blob/tree/commit/ref to carry the same unsupported payload
+unsupported payload through update_file
+→ blob/tree/commit/ref carrying the same unsupported payload
 
 large source file
 → wrapper/fragment/temporary generated file solely to avoid editing the owner
@@ -442,30 +476,31 @@ Do not automatically:
 ## Default efficiency budget
 
 ```text
-owner/source reads               1–3 after required continuity boot
-history reads                    0
-broad scans                      0
-transfer strategy                1 default; 2 maximum only when root limitation is removed
-uncertain-capability probe       <= 1
-malformed-request correction     <= 1
-same-cause valid-method retry    <= 2 attempts
-capability-denial retry          0
-whole-delivery transfer trial    <= 3 minutes active experimentation
-new files                        0 unless required
-new workflows                    0 unless required
-new abstractions                 0
-intentional writes/file          1
-logical commits/task             1 by default
-uncategorized commits            0
-intermediate/checkpoint commits  0
-CI-trigger commits               0
-proof-only commits               0
-push/ref updates/task            1 by default
-relevant CI                      0–1 per affected proof surface
-placeholder/transfer hacks       0
-adjacent cleanup                 0
-repository side effects          0 unless required
-high-impact mutations            0 unless explicitly authorized
+continuity boot rereads             0 while reusable in-session
+owner/source reads                  1–3 after required continuity boot
+history reads                       0
+broad scans                         0
+transfer strategy                   1 default; 2 maximum only when root limitation is removed
+uncertain-capability probe          <= 1
+malformed-request correction        <= 1
+same-cause valid-method retry       <= 2 attempts
+capability-denial retry             0
+whole-delivery transfer trial       <= 3 minutes active experimentation
+new files                           0 unless required
+new workflows                       0 unless required
+new abstractions                    0
+intentional writes/file             1
+logical commits/task                1 by default
+uncategorized commits               0
+intermediate/checkpoint commits     0
+CI-trigger commits                  0
+proof-only commits                  0
+push/ref updates/task               1 by default
+relevant CI                         0–1 per affected proof surface
+placeholder/transfer hacks          0
+adjacent cleanup                    0
+repository side effects             0 unless required
+high-impact mutations               0 unless explicitly authorized
 ```
 
 The budgets are default efficiency boundaries. The failure/transfer ceilings in Rule 6 are hard stops and are not reset by changing tools or representations.
