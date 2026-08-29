@@ -24,6 +24,7 @@ describe("repository workflow supply chain", () => {
   test("active verification workflows pin trusted Actions to immutable revisions", async () => {
     const workflows = await Promise.all([
       source("../.github/workflows/repository-verify.yml"),
+      source("../.github/workflows/authoring-policy-verify.yml"),
       source("../.github/workflows/mcp-verify.yml"),
     ]);
 
@@ -45,16 +46,17 @@ describe("repository workflow supply chain", () => {
   });
 
   test("active Bun runtime and package resolution remain reproducible", async () => {
-    const [mcpWorkflow, repositoryWorkflow, bunVersion] = await Promise.all([
+    const [mcpWorkflow, repositoryWorkflow, authoringWorkflow, bunVersion] = await Promise.all([
       source("../.github/workflows/mcp-verify.yml"),
       source("../.github/workflows/repository-verify.yml"),
+      source("../.github/workflows/authoring-policy-verify.yml"),
       source("../.bun-version"),
     ]);
 
     expect(bunVersion.trim()).toMatch(/^\d+\.\d+\.\d+$/);
     expect(await Bun.file("bun.lock").exists()).toBe(true);
 
-    for (const workflow of [mcpWorkflow, repositoryWorkflow]) {
+    for (const workflow of [mcpWorkflow, repositoryWorkflow, authoringWorkflow]) {
       expect(workflow).toContain('bun-version-file: ".bun-version"');
       expect(workflow).toContain("bun install --frozen-lockfile");
       expect(workflow).toContain("contents: read");

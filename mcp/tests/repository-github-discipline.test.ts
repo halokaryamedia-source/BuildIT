@@ -146,33 +146,75 @@ describe("repository GitHub discipline", () => {
     expect(brief).toContain("GITHUB_RULES.md` owns GitHub execution/history/CI");
   });
 
-  test("repository and MCP verification remain split by proof surface", async () => {
-    const [repository, mcp, packageRules] = await Promise.all([
+  test("repository, authoring policy, and MCP verification stay split by proof surface", async () => {
+    const [repository, authoring, mcp, packageRules] = await Promise.all([
       source("../.github/workflows/repository-verify.yml"),
+      source("../.github/workflows/authoring-policy-verify.yml"),
       source("../.github/workflows/mcp-verify.yml"),
       source("AGENTS.md"),
     ]);
 
-    for (const workflow of [repository, mcp]) {
+    for (const workflow of [repository, authoring, mcp]) {
       expect(workflow).toContain("branches:\n      - Local");
       expect(workflow).toContain("cancel-in-progress: true");
       expect(workflow).toContain("contents: read");
     }
 
-    const repositoryOnlyTests = [
+    for (const path of [
       "mcp/tests/repository-github-discipline.test.ts",
       "mcp/tests/repository-supply-chain.test.ts",
-    ];
-    for (const path of repositoryOnlyTests) {
-      expect(repository).toContain(`- "${path}"`);
-      expect(mcp).toContain(`- "!${path}"`);
+      "mcp/tests/documentation-handoff.test.ts",
+      "mcp/tests/experimental-authoring-contract.test.ts",
+      "mcp/tests/active-routing-integrity.test.ts",
+      "mcp/tests/static-footprint-budget.test.ts",
+    ]) {
+      expect(repository).toContain(path);
     }
 
-    expect(repository).toContain("tests/repository-github-discipline.test.ts");
-    expect(repository).toContain("tests/static-footprint-budget.test.ts");
-    expect(packageRules).toContain("### During iteration");
-    expect(packageRules).toContain("### Final MCP gate");
-    expect(packageRules).toContain("Repository Verify");
+    for (const pattern of [
+      "!mcp/tests/repository-*.test.ts",
+      "!mcp/tests/documentation-handoff.test.ts",
+      "!mcp/tests/experimental-authoring-contract.test.ts",
+      "!mcp/tests/active-routing-integrity.test.ts",
+      "!mcp/tests/static-footprint-budget.test.ts",
+      "!mcp/tests/*authoring*.test.ts",
+      "!mcp/tests/asset-tool-routing.test.ts",
+      "!mcp/tests/reference-generator-buildability.test.ts",
+      "!mcp/tests/model-effectiveness-*.test.ts",
+      "!mcp/tests/texture-production-discipline.test.ts",
+      "!mcp/tests/animation-professional-reasoning.test.ts",
+      "!mcp/tests/prelocal-prompt-skill-surface.test.ts",
+      "!mcp/tests/prelocal-usage-optimization.test.ts",
+    ]) {
+      expect(mcp).toContain(pattern);
+    }
+
+    for (const pattern of [
+      "mcp/tests/*authoring*.test.ts",
+      "mcp/tests/asset-tool-routing.test.ts",
+      "mcp/tests/reference-generator-buildability.test.ts",
+      "mcp/tests/model-effectiveness-*.test.ts",
+      "mcp/tests/texture-production-discipline.test.ts",
+      "mcp/tests/animation-professional-reasoning.test.ts",
+      "mcp/tests/prelocal-prompt-skill-surface.test.ts",
+      "mcp/tests/prelocal-usage-optimization.test.ts",
+    ]) {
+      expect(authoring).toContain(pattern);
+    }
+
+    expect(repository).not.toContain("tests/model-effectiveness-*.test.ts");
+    expect(authoring).toContain("tests/model-effectiveness-*.test.ts");
+
+    for (const path of [
+      ".agents/skills/blockit-bedrock-entity-mcp/**",
+      ".agents/skills/blockbench-bedrock-modelling/**",
+      ".agents/skills/blockit-bedrock-texturing/**",
+      ".agents/skills/blockit-bedrock-animation/**",
+      "docs/foundation/**",
+    ]) {
+      expect(authoring).toContain(path);
+      expect(mcp).not.toContain(path);
+    }
 
     for (const command of [
       "bun run typecheck",
@@ -184,6 +226,15 @@ describe("repository GitHub discipline", () => {
       expect(mcp).toContain(command);
       expect(packageRules).toContain(command);
     }
+
+    for (const command of ["bun run typecheck", "bun run measure:surface", "bun run build", "bun run docs:check"]) {
+      expect(repository).not.toContain(command);
+      expect(authoring).not.toContain(command);
+    }
+
+    expect(packageRules).toContain("### During iteration");
+    expect(packageRules).toContain("### Final MCP gate");
+    expect(packageRules).toContain("Repository Verify");
   });
 
   test("continuation remains compact, deferred, and separate from proof/source ownership", async () => {

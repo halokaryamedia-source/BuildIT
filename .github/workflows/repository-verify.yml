@@ -9,14 +9,22 @@ on:
       - "GITHUB_RULES.md"
       - "CONTEXT.md"
       - "README.md"
-      - ".agents/skills/**"
-      - "docs/foundation/**"
-      - "docs/knowledge/**"
-      - "workspace/README.md"
+      - ".agents/skills/development-brief/**"
+      - ".agents/skills/mcp-server-development/**"
+      - ".agents/skills/blockbench-runtime-development/**"
+      - ".agents/skills/bun-tooling/**"
+      - ".agents/skills/typescript-type-safety/**"
+      - "docs/foundation/validation-report.md"
+      - "docs/knowledge/next-action.md"
+      - "docs/knowledge/implementation-map.md"
+      - "docs/knowledge/operations/**"
       - "mcp/AGENTS.md"
       - "mcp/README.md"
-      - "mcp/tests/repository-github-discipline.test.ts"
-      - "mcp/tests/repository-supply-chain.test.ts"
+      - "mcp/tests/repository-*.test.ts"
+      - "mcp/tests/documentation-handoff.test.ts"
+      - "mcp/tests/experimental-authoring-contract.test.ts"
+      - "mcp/tests/active-routing-integrity.test.ts"
+      - "mcp/tests/static-footprint-budget.test.ts"
       - "mcp/prompts/blockbench_code_eval_safety.md"
       - "mcp/prompts/blockbench_native_apis.md"
       - "Experimental/**"
@@ -30,14 +38,22 @@ on:
       - "GITHUB_RULES.md"
       - "CONTEXT.md"
       - "README.md"
-      - ".agents/skills/**"
-      - "docs/foundation/**"
-      - "docs/knowledge/**"
-      - "workspace/README.md"
+      - ".agents/skills/development-brief/**"
+      - ".agents/skills/mcp-server-development/**"
+      - ".agents/skills/blockbench-runtime-development/**"
+      - ".agents/skills/bun-tooling/**"
+      - ".agents/skills/typescript-type-safety/**"
+      - "docs/foundation/validation-report.md"
+      - "docs/knowledge/next-action.md"
+      - "docs/knowledge/implementation-map.md"
+      - "docs/knowledge/operations/**"
       - "mcp/AGENTS.md"
       - "mcp/README.md"
-      - "mcp/tests/repository-github-discipline.test.ts"
-      - "mcp/tests/repository-supply-chain.test.ts"
+      - "mcp/tests/repository-*.test.ts"
+      - "mcp/tests/documentation-handoff.test.ts"
+      - "mcp/tests/experimental-authoring-contract.test.ts"
+      - "mcp/tests/active-routing-integrity.test.ts"
+      - "mcp/tests/static-footprint-budget.test.ts"
       - "mcp/prompts/blockbench_code_eval_safety.md"
       - "mcp/prompts/blockbench_native_apis.md"
       - "Experimental/**"
@@ -79,10 +95,4 @@ jobs:
             tests/experimental-authoring-contract.test.ts \
             tests/static-footprint-budget.test.ts \
             tests/documentation-handoff.test.ts \
-            tests/active-routing-integrity.test.ts \
-            tests/asset-authoring-usage-slimming.test.ts \
-            tests/asset-tool-routing.test.ts \
-            tests/reference-generator-buildability.test.ts \
-            tests/model-effectiveness-*.test.ts \
-            tests/prelocal-prompt-skill-surface.test.ts \
-            tests/prelocal-usage-optimization.test.ts
+            tests/active-routing-integrity.test.ts
