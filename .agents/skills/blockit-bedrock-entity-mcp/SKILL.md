@@ -66,12 +66,14 @@ create normal bone/Group      → add_group
 create Cube                   → place_cube
 one known Cube fix            → modify_cube
 several known Cube fixes      → modify_cubes_batch
+Group/bone parent move        → reparent_element
+Group pivot/rotation/visible  → modify_group
 structural delete/rename      → remove_element / rename_element
 Locator/Null create/edit      → manage_locator / manage_null_object
-rig parent/pivot/IK/mirror    → bone_rigging
+rig IK/mirror                 → bone_rigging
 ```
 
-`add_group` is normal bone creation; `bone_rigging` is for parent/pivot/IK/mirror, not ordinary create/delete/rename. Known coherent Cubes → one `place_cube(elements=[...])`; uncertainty → no batch. Texture/PBR → `blockit-bedrock-texturing`; animation → `blockit-bedrock-animation`; geometry/rig/UV judgement → `blockbench-bedrock-modelling`.
+`add_group` is normal bone creation. `reparent_element` owns Group/bone parent or root movement; `modify_group` owns Group pivot/rotation/visibility. In normal authoring, use `bone_rigging` only for rig-specific IK or mirroring. Known coherent Cubes → one `place_cube(elements=[...])`; uncertainty → no batch. Texture/PBR → `blockit-bedrock-texturing`; animation → `blockit-bedrock-animation`; geometry/rig/UV judgement → `blockbench-bedrock-modelling`.
 
 ## First-Call Invariants
 

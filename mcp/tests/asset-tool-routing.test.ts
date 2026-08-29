@@ -42,6 +42,16 @@ describe("asset tool routing", () => {
     ]) expect(skill).toContain(tool);
   });
 
+  test("Geometry hierarchy and rig routes have one canonical owner", async () => {
+    const skill = await source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md");
+
+    expect(skill).toContain("Group/bone parent move        → reparent_element");
+    expect(skill).toContain("Group pivot/rotation/visible  → modify_group");
+    expect(skill).toContain("rig IK/mirror                 → bone_rigging");
+    expect(skill).toContain("use `bone_rigging` only for rig-specific IK or mirroring");
+    expect(skill).not.toContain("rig parent/pivot/IK/mirror    → bone_rigging");
+  });
+
   test("native tool search is bounded active-phase deferred spec loading", async () => {
     const skill = await source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md");
 
