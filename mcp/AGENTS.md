@@ -1,111 +1,102 @@
 # MCP Package Rules
 
-Applies to `mcp/**`. Root `../AGENTS.md` owns repository routing, proof economy, evidence labels, communication, and general work discipline. This file contains only MCP-package rules that materially change implementation decisions.
+Applies to `mcp/**`. Root `../AGENTS.md` owns repository routing, proof economy, evidence labels, communication, and general work discipline. This file keeps only MCP-package rules that change implementation decisions.
 
 ## Source Ownership
 
 ```text
-index.ts        plugin lifecycle entry
-server/         MCP transport, tools, resources, prompts
-server/tools/   authored project/model/texture/animation operations
-lib/            shared factories, schemas, identities, runtime helpers
+index.ts        plugin lifecycle
+server/         MCP transport/tools/resources/prompts
+server/tools/   authored model/texture/animation operations
+lib/            shared schemas/factories/identity/runtime helpers
 ui/             Blockbench panel/settings
-prompts/        prompt source references
-build/          build/docs generation
+prompts/        canonical prompt sources + generated manifest
+build/          build/docs/prompt generation
 scripts/        deliberate verification helpers
 tests/          contract/integration regressions
 docs/           generated API docs; never hand-edit generated entries
 ```
 
-Use the affected owner and direct callers first. Do not scan every tool family for a bounded change.
+Use the affected owner + direct callers first. Do not scan every tool family for a bounded change.
 
 ## MCP Public Contract Pattern
 
-Tool modules must remain import-safe outside Blockbench because docs/tests load schemas in Bun/Node.
+Tool modules stay import-safe outside Blockbench because Bun/Node loads schemas for docs/tests.
 
 At module scope:
+- export the exact Zod parameter schema and domain `ToolSpec[]`;
+- do not read Blockbench runtime globals.
 
-- export the exact Zod parameter schema;
-- export the domain `ToolSpec[]` metadata;
-- do **not** read Blockbench runtime globals.
+At registration/execution:
+- register through existing `createTool`/family ownership;
+- keep full runtime validation on the original schema;
+- preserve annotations and deterministic identities;
+- use Blockbench globals only where runtime execution owns them.
 
-At registration/execution scope:
-
-- register through `createTool` and existing family registration;
-- use Blockbench globals only where runtime execution owns them;
-- keep full runtime validation on the original Zod schema;
-- preserve annotations and deterministic identities.
-
-When a broad `ToolSpec` spread weakens inference, restate the same concrete `parameters` schema in `createTool`; do not weaken types or duplicate a competing contract.
+If a broad `ToolSpec` spread weakens inference, restate the same concrete `parameters` schema in `createTool`; do not weaken or duplicate the contract.
 
 ## Input / Identity Rules
 
-- Validate all MCP input at the boundary.
-- Match optional/default/nullability/refinement semantics to actual execution.
-- Reuse shared schemas/identity resolvers before creating near-duplicates.
-- Prefer UUID first, then only documented unique exact-name/ID fallback.
-- Explicit ambiguous targets fail closed; do not silently choose editor selection or the first match.
-- Keep schema construction free of `Formats`, `BarItems`, `Plugins`, Painter, or other Blockbench globals; live-format checks belong inside execution.
-- Reject ineffective destructive requests when the owner can determine they are no-ops before Undo.
+- Validate MCP input at the boundary and match optional/default/nullability/refinement to execution.
+- Reuse shared schemas/identity resolvers; prefer UUID, then documented unique exact-name/ID fallback.
+- Ambiguous explicit targets fail closed; never silently choose editor selection or the first match.
+- Schema construction stays free of Blockbench globals; live-format checks belong in execution.
+- Reject provable destructive no-ops before Undo.
 
 ## Result / Context Efficiency
 
-When structured state exists, `structuredContent` is the canonical machine-readable result.
+`structuredContent` is canonical machine-readable state when available.
 
-- Do not mirror the same full JSON again in `content.text`; use a short useful summary.
-- The registration boundary compacts an exact single-text JSON mirror, but implementations should still prefer the compact shape directly.
-- Keep discovery/list tools summary-first when a focused read already owns detailed state.
-- Reuse mutation-returned authored state so callers do not need immediate confirmation reads.
-- Filesystem export is metadata-first after a verified path write; return compiled artifact content only when explicitly requested.
-- Images and genuinely different explanatory text may accompany structured data.
-- Do not remove legitimate authored fields or impose global limits merely to reduce size; static counts identify candidates, not client-visible token cost.
+- Do not mirror identical full JSON in `content.text`; use a short useful summary.
+- Keep discovery/list tools summary-first; focused reads own detail.
+- Reuse mutation-returned authored state instead of immediate confirmation reads.
+- Filesystem export is metadata-first after a verified write; return compiled content only when requested.
+- Do not remove legitimate authored fields or impose global limits merely to reduce size.
 
 ## Generated Documentation / Prompts
 
-`build/docs-manifest.ts` owns generated API surface. `build/docs.ts` writes `docs/api.json` and `docs/index.html`.
+`build/docs-manifest.ts` owns generated API surface; `build/docs.ts` writes `docs/api.json` and `docs/index.html`.
 
-Before substantial implementation of any task that can change a public schema/description/spec, perform this capability preflight:
+Before substantial implementation that can change a public schema/description/spec:
 
-1. classify whether canonical generated API output will change;
-2. confirm the active execution channel can run `bun run docs:build` and `bun run docs:check` before final repository delivery;
-3. if it cannot, switch to a fitting local/Codex workspace or **STOP/defer the exact public-contract task before source edits accumulate**.
+```text
+will generated API change?
+→ active channel can run bun run docs:build + bun run docs:check?
+  YES → continue
+  NO  → switch to fitting local/Codex workspace or STOP/defer before source edits accumulate
+```
 
-Before substantial editing of canonical runtime prompt source such as `prompts/bedrock_entity_workflow.md`:
+Before substantial editing of canonical runtime prompt source:
 
-1. confirm the active execution channel can run `bun run prompts:build` and carry the resulting `prompts/manifest.json` in the same logical delivery;
-2. if it cannot, switch to a fitting local/Codex workspace or **STOP/defer before prompt edits accumulate**;
-3. keep generated prompt output deterministic: the same package version + canonical prompt content must produce the same manifest bytes, with no wall-clock-only metadata.
+```text
+active channel can run bun run prompts:build
++ carry prompts/manifest.json in the same logical delivery?
+  YES → continue
+  NO  → switch or STOP/defer before prompt edits accumulate
+```
 
-GitHub Actions may verify generated freshness, but it is not the authoring path for generated MCP docs or prompt manifests and must not create/commit them back to `Local`.
+The same package version + canonical prompt content must produce the same manifest bytes; no wall-clock-only metadata. GitHub Actions may verify generated freshness, but is not the authoring path and must not create/commit generated output to `Local`.
 
-When a public schema/description/spec changes:
+Public schema/description/spec change: edit source → update manifest ownership only when needed → `bun run docs:build` → `bun run docs:check`.
 
-1. change the source owner;
-2. update manifest ownership only when needed;
-3. regenerate through `bun run docs:build`;
-4. require `bun run docs:check` to pass.
+Canonical runtime prompt change: edit source → `bun run prompts:build` → include `prompts/manifest.json` in the same logical delivery.
 
-When canonical runtime prompt source changes, regenerate through `bun run prompts:build` and include `prompts/manifest.json` in the same logical delivery.
-
-Do not edit generated tool entries manually.
-
-The runtime prompt bundle contains only prompts intentionally exposed by `server/prompts.ts`. Maintainer/reference Markdown may remain source-only and must not be bundled just because it exists in `prompts/`.
+Runtime bundles only prompts intentionally exposed by `server/prompts.ts`; maintainer Markdown stays source-only unless explicitly exposed.
 
 ## Verification
 
-Verification follows the changed claim; do not use the full MCP gate as an iteration loop.
+Verification follows the changed claim; the full MCP gate is not an iteration loop.
 
 ### During iteration
 
-- Run the smallest targeted regression that can falsify the changed behavior or public contract.
-- Run `bun run typecheck` when TypeScript/source shape changes make it materially useful.
-- For public schema/description/spec changes, regenerate canonical docs before the final delivery and require `bun run docs:check` on the final state.
-- For canonical runtime prompt changes, regenerate the prompt manifest before final delivery.
-- Do not repeatedly run the full canonical gate after each edit.
+- Run the smallest regression that can falsify the change.
+- Run `bun run typecheck` when TypeScript/source shape makes it useful.
+- Regenerate affected docs/prompt output before final delivery.
+- Do not rerun the full canonical gate after each edit.
 
 ### Final MCP gate
 
-For one final logical change that affects MCP executable source, public MCP contracts, build output, or generated API ownership, run the canonical gate once on the final state:
+For one final logical change affecting executable source, public MCP contracts, build output, or generated ownership:
 
 ```bash
 bun install --frozen-lockfile
@@ -116,7 +107,7 @@ bun run build
 bun run docs:check
 ```
 
-Verifier ownership follows the claim, not the physical location of a test under `mcp/tests/`:
+Verifier ownership follows the claim, not a test file's location:
 
 ```text
 repository-policy / repository-static contract → Repository Verify
@@ -124,15 +115,13 @@ authoring-policy / authoring-static contract   → Authoring Policy Verify
 executable or public MCP behavior               → MCP Verify
 ```
 
-A test file living under `mcp/tests/` alone never upgrades a static policy change into a full MCP gate.
-
-GitHub/static proof covers source contracts and buildability, **not** live Blockbench rendering, Undo behavior, playback, persistence, or visual fidelity. Run local proof only when the active user/task explicitly requires it.
+A file under `mcp/tests/` alone never upgrades a static policy change into a full MCP gate. GitHub/static proof covers source contracts/buildability, not live Blockbench rendering, Undo, playback, persistence, or visual fidelity.
 
 ## Security / Capability Boundary
 
-- Default server exposure remains loopback-only with present-Origin validation.
-- `risky_eval` and `from_geo_json` remain disabled; do not re-enable them indirectly.
+- Keep default server exposure loopback-only with present-Origin validation.
+- `risky_eval` and `from_geo_json` remain disabled.
 - Do not broaden network exposure without separately reviewed authentication design.
-- Do not add a router/profile/framework, generic importer, alternate transport, or replacement schema/server stack without a proved current requirement.
-- Preserve retained Bedrock capability; reducing tool count is not itself a product requirement.
+- Do not add routers/profiles/frameworks, generic importers, alternate transports, or replacement schema/server stacks without a proved requirement.
+- Preserve retained Bedrock capability; lower tool count is not itself a product requirement.
 - Keep dependencies lean and never commit secrets.
