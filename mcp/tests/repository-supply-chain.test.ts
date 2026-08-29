@@ -45,7 +45,7 @@ describe("repository workflow supply chain", () => {
     }
   });
 
-  test("active Bun runtime and package resolution remain reproducible", async () => {
+  test("verification workflows install only the dependency surface they execute", async () => {
     const [mcpWorkflow, repositoryWorkflow, authoringWorkflow, bunVersion] = await Promise.all([
       source("../.github/workflows/mcp-verify.yml"),
       source("../.github/workflows/repository-verify.yml"),
@@ -58,9 +58,15 @@ describe("repository workflow supply chain", () => {
 
     for (const workflow of [mcpWorkflow, repositoryWorkflow, authoringWorkflow]) {
       expect(workflow).toContain('bun-version-file: ".bun-version"');
-      expect(workflow).toContain("bun install --frozen-lockfile");
       expect(workflow).toContain("contents: read");
     }
+
+    expect(mcpWorkflow).toContain("bun install --frozen-lockfile");
+    expect(mcpWorkflow).not.toContain("bun install --frozen-lockfile --production");
+
+    expect(authoringWorkflow).toContain("bun install --frozen-lockfile --production");
+
+    expect(repositoryWorkflow).not.toContain("bun install");
   });
 
   test("supply-chain policy retains least-privilege and pinned-action boundaries", async () => {

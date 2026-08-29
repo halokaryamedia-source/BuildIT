@@ -165,7 +165,6 @@ describe("repository GitHub discipline", () => {
       "mcp/tests/documentation-handoff.test.ts",
       "mcp/tests/experimental-authoring-contract.test.ts",
       "mcp/tests/active-routing-integrity.test.ts",
-      "mcp/tests/static-footprint-budget.test.ts",
     ]) {
       expect(repository).toContain(path);
     }
@@ -173,12 +172,14 @@ describe("repository GitHub discipline", () => {
       "tests/repository-github-discipline.test.ts",
       "tests/repository-supply-chain.test.ts",
       "tests/experimental-authoring-contract.test.ts",
-      "tests/static-footprint-budget.test.ts",
       "tests/documentation-handoff.test.ts",
       "tests/active-routing-integrity.test.ts",
     ]) {
       expect(repository).toContain(command);
     }
+    expect(repository).not.toContain("mcp/tests/static-footprint-budget.test.ts");
+    expect(repository).not.toContain("tests/static-footprint-budget.test.ts");
+    expect(repository).not.toContain("bun install");
 
     for (const pattern of [
       "!mcp/tests/repository-*.test.ts",
@@ -199,6 +200,7 @@ describe("repository GitHub discipline", () => {
     }
 
     for (const pattern of [
+      "mcp/tests/static-footprint-budget.test.ts",
       "mcp/tests/*authoring*.test.ts",
       "mcp/tests/asset-tool-routing.test.ts",
       "mcp/tests/reference-generator-buildability.test.ts",
@@ -213,6 +215,7 @@ describe("repository GitHub discipline", () => {
 
     expect(repository).not.toContain("tests/model-effectiveness-*.test.ts");
     expect(authoring).toContain("tests/model-effectiveness-*.test.ts");
+    expect(authoring).toContain("bun install --frozen-lockfile --production");
 
     for (const path of [
       ".agents/skills/blockit-bedrock-entity-mcp/**",
@@ -235,6 +238,8 @@ describe("repository GitHub discipline", () => {
       expect(mcp).toContain(command);
       expect(packageRules).toContain(command);
     }
+    expect(mcp).toContain("bun install --frozen-lockfile");
+    expect(mcp).not.toContain("bun install --frozen-lockfile --production");
 
     for (const command of ["bun run typecheck", "bun run measure:surface", "bun run build", "bun run docs:check"]) {
       expect(repository).not.toContain(command);
