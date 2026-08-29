@@ -160,15 +160,24 @@ describe("repository GitHub discipline", () => {
       expect(workflow).toContain("contents: read");
     }
 
+    expect(repository).toContain('mcp/tests/repository-*.test.ts');
     for (const path of [
-      "mcp/tests/repository-github-discipline.test.ts",
-      "mcp/tests/repository-supply-chain.test.ts",
       "mcp/tests/documentation-handoff.test.ts",
       "mcp/tests/experimental-authoring-contract.test.ts",
       "mcp/tests/active-routing-integrity.test.ts",
       "mcp/tests/static-footprint-budget.test.ts",
     ]) {
       expect(repository).toContain(path);
+    }
+    for (const command of [
+      "tests/repository-github-discipline.test.ts",
+      "tests/repository-supply-chain.test.ts",
+      "tests/experimental-authoring-contract.test.ts",
+      "tests/static-footprint-budget.test.ts",
+      "tests/documentation-handoff.test.ts",
+      "tests/active-routing-integrity.test.ts",
+    ]) {
+      expect(repository).toContain(command);
     }
 
     for (const pattern of [
