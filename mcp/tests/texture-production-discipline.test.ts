@@ -28,7 +28,12 @@ describe("professional texture production discipline", () => {
         expect(owner.toLowerCase()).toContain(term.toLowerCase());
       }
     }
-    for (const owner of [context, skill, workflow, policy]) {
+
+    // Stable project context owns the semantic distinction, while active
+    // texturing/runtime/policy owners retain the concrete tool contract.
+    expect(context).toContain("Texture Atlas");
+    expect(context).toContain("stores pixels");
+    for (const owner of [skill, workflow, policy]) {
       expect(owner).toContain("create_texture");
       expect(owner.toLowerCase()).toContain("texture atlas");
     }
