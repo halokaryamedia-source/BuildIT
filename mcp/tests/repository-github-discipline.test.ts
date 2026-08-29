@@ -72,32 +72,52 @@ describe("repository GitHub discipline", () => {
     expect(rules).toContain("Do not use exact natural-language wording as a test contract");
   });
 
-  test("root routing keeps bounded Developing and lightweight asset-authoring paths separate", async () => {
+  test("root routing uses bounded, standard, and complex development contracts", async () => {
     const root = await source("../AGENTS.md");
-    expect(root.length).toBeLessThan(7_500);
+    expect(root.length).toBeLessThan(7_000);
+
     for (const heading of [
       "### Observe / recover context",
       "### Repository / Plugin Work",
       "#### Developing Execution Gate",
       "### Bounded Maintenance",
+      "### Standard Development",
+      "### Complex / Ambiguous Developing",
       "### Asset Authoring",
     ]) {
       expect(root).toContain(heading);
     }
+
     requireInvariant(
       root,
-      /Success Metric[\s\S]*Forbidden Proxy \/ Non-Goal[\s\S]*First Evidence Required[\s\S]*Failure Classification \/ first wrong owner[\s\S]*Proof Required[\s\S]*STOP Condition/,
+      /Bounded contract[\s\S]*Goal[\s\S]*Failure Classification \/ first wrong owner[\s\S]*Acceptance[\s\S]*Proof Required[\s\S]*STOP Condition/i,
       "AGENTS.md",
-      "non-trivial Developing keeps the real execution contract",
+      "bounded maintenance retains owner, acceptance, proof, and stop gates",
     );
+    requireInvariant(
+      root,
+      /Standard contract[\s\S]*Goal[\s\S]*Success Metric[\s\S]*First Evidence Required \/ first wrong owner[\s\S]*In Scope \/ Out of Scope[\s\S]*Proof Required[\s\S]*STOP Condition/i,
+      "AGENTS.md",
+      "standard development retains success, owner, scope, proof, and stop gates",
+    );
+    requireInvariant(
+      root,
+      /Complex \/ Ambiguous Developing[\s\S]*development-brief[\s\S]*(architecture|redesign)[\s\S]*(quality|efficiency)/i,
+      "AGENTS.md",
+      "complex or evidence-sensitive work escalates to the full development brief",
+    );
+
+    expect(root).toContain("Forbidden Proxy / Non-Goal");
     expect(root).toContain("do not automatically load");
-    expect(root).toContain("Do not route it through `development-brief`");
+    expect(root).toContain("Do not load `CONTEXT.md`, `next-action.md`, or `development-brief` merely because");
   });
 
-  test("development brief preserves cross-session grounding without owning GitHub execution", async () => {
+  test("development brief is an escalation contract, not mandatory ceremony", async () => {
     const brief = await source("../.agents/skills/development-brief/SKILL.md");
     expect(brief.length).toBeLessThan(6_000);
+
     for (const heading of [
+      "## Entry boundary",
       "## Mandatory Developing continuity",
       "## Development Contract",
       "## Effectiveness vocabulary",
@@ -107,7 +127,22 @@ describe("repository GitHub discipline", () => {
     ]) {
       expect(brief).toContain(heading);
     }
+
+    requireInvariant(
+      brief,
+      /Do \*\*not\*\* load this Skill for bounded maintenance[\s\S]*clear standard change/i,
+      "development-brief/SKILL.md",
+      "clear work does not escalate to the full development brief",
+    );
+    requireInvariant(
+      brief,
+      /Goal[\s\S]*Success Metric[\s\S]*Forbidden Proxy \/ Non-Goal[\s\S]*First Evidence Required[\s\S]*Failure Classification \/ first wrong owner[\s\S]*Proof Required[\s\S]*STOP Condition/i,
+      "development-brief/SKILL.md",
+      "complex development keeps the full outcome and evidence contract",
+    );
+
     expect(brief).toContain("Cost to Accepted Result");
+    expect(brief).toContain("new ChatGPT, Codex, or Opencode session");
     expect(brief).toContain("GITHUB_RULES.md` owns GitHub execution/history/CI");
   });
 
