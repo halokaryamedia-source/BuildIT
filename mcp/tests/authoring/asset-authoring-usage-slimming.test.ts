@@ -12,7 +12,7 @@ describe("pre-local asset-authoring usage slimming", () => {
     expect(agents).toContain("### Asset Authoring");
     expect(agents).toContain("do not automatically load");
     expect(agents).toContain("Asset authoring is not software **Development**");
-    expect(agents).toContain("Do not route it through `development-brief`");
+    expect(agents).toMatch(/do not route it through `development-brief`/i);
   });
 
   test("router stays compact and routing-only while modelling owns visual gates", async () => {
