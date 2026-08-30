@@ -1,6 +1,6 @@
 ---
 name: blockbench-runtime-development
-description: Specialist for Blockbench runtime/plugin integration in BlockIT. Use when the primary problem is BBPlugin lifecycle, Blockbench globals/APIs, panels/dialogs/settings/actions, runtime permissions, Undo/Canvas/model mutation mechanics, event cleanup, or other behavior that must execute correctly inside Blockbench. Do not use for MCP protocol contracts, Bun tooling, TypeScript type-system problems, reference generation, or Bedrock modelling decisions such as shape, proportions, Cuboid decomposition, texture art direction, or visual quality.
+description: Specialist for Blockbench runtime/plugin integration in BlockIT. Use when the primary problem is BBPlugin lifecycle, Blockbench globals/APIs, panels/dialogs/settings/actions, runtime permissions, Undo/Canvas/model mutation mechanics, event cleanup, or other behavior that must execute correctly inside Blockbench. Do not use for MCP protocol contracts, ordinary TypeScript/Bun implementation mechanics, reference generation, or Bedrock modelling decisions such as shape, proportions, Cuboid decomposition, texture art direction, or visual quality.
 ---
 
 # Blockbench Runtime Development
@@ -25,16 +25,16 @@ good model should look like.
 Adjacent owners:
 
 - MCP public/protocol contracts → `mcp-server-development`;
-- TypeScript type-system failures → `typescript-type-safety`;
-- Bun build/package behavior → `bun-tooling`;
 - Bedrock model shape/proportion/reference/visual judgement →
   `blockbench-bedrock-modelling`;
-- Source Image → Modelling Brief generation → `docs/foundation/04-reference-guide.md`.
+- Source Image → Modelling Brief generation → `docs/foundation/04-reference-guide.md`;
+- TypeScript/Bun compiler/build/package mechanics → exact affected source/build owner under `mcp/AGENTS.md`.
 
 If an MCP tool calls Blockbench APIs, choose by the **proved semantic owner**:
 public MCP contract → MCP specialist; correct contract but wrong Blockbench
 operation/lifecycle → this skill; operation works but the model is visually
-wrong → modelling specialist.
+wrong → modelling specialist. Ordinary TypeScript/Bun correctness stays with the
+same implementation owner instead of creating another routing hop.
 
 ## Local Architecture First
 
@@ -98,9 +98,11 @@ specific UI interaction.
 - Do not infer visual quality from successful Undo/Canvas/element/save behavior.
 - Do not import generic plugin/Vue scaffolding into the existing plugin.
 - Do not add abstractions around a one-off API without repeated Local behavior.
+- Do not create a separate language/build skill for ordinary TypeScript or Bun mechanics.
 
 ## Completion
 
-Return to `development-brief` and confirm the runtime/API problem is fixed at its
-real owner, adjacent domains stayed outside scope, undo/update/cleanup are
-appropriate, and unavailable live proof is reported rather than inferred.
+Return to the active development route and confirm the runtime/API problem is
+fixed at its real owner, adjacent domains stayed outside scope,
+undo/update/cleanup are appropriate, and unavailable live proof is reported
+rather than inferred.

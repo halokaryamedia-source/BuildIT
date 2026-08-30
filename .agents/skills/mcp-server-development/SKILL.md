@@ -20,19 +20,18 @@ Own **client-visible MCP semantics**. The active development route defines goal/
 Route elsewhere when the primary semantic owner is:
 
 ```text
-TypeScript type system        → typescript-type-safety
-Bun/build/package tooling     → bun-tooling
-Blockbench API/lifecycle/UI/Undo  → blockbench-runtime-development
-visual/model judgement        → blockbench-bedrock-modelling
+Blockbench API/lifecycle/UI/Undo → blockbench-runtime-development
+visual/model judgement           → blockbench-bedrock-modelling
+TypeScript/Bun compile/build mechanics → exact source/build owner under mcp/AGENTS.md
 ```
 
-Do not stack those specialists merely because the implementation uses their technologies.
+TypeScript and Bun do not need standalone specialists merely because this implementation uses them. Do not stack specialists when the client-visible MCP contract already owns the decision.
 
 ## Decision Procedure
 
 1. **Name the exact client-visible contract.** State what a caller currently sees/accepts and what must change.
 2. **Preflight generated ownership.** If a public schema/description/spec or canonical runtime prompt may change, satisfy the relevant generated-output capability preflight in `mcp/AGENTS.md` **before implementation**; do not accumulate source/prompt edits until the active channel can produce the required canonical generated state.
-3. **Prove ownership.** Distinguish an MCP contract defect from an underlying Blockbench/runtime, TypeScript, Bun, or modelling problem.
+3. **Prove ownership.** Distinguish an MCP contract defect from underlying Blockbench/runtime behavior or ordinary implementation-language/build mechanics.
 4. **Inspect the narrow owner.** Start with affected source/direct callers; inspect `lib/factories.ts`, shared schemas, registration profile, or `server/net.ts` only when the contract touches them.
 5. **Make the smallest contract change.** Reuse current factories/Zod/official SDK architecture. Do not add pagination, profiles, fallback APIs, transports, formats, or abstractions unless the requirement actually needs them.
 6. **Keep advertised and runtime semantics aligned.** Required/optional/default/refinement behavior, branch intent, annotations, descriptions, errors, and result shape must tell the same story as execution.

@@ -6,7 +6,7 @@ async function text(path: string): Promise<string> {
 }
 
 describe("cross-agent repository handoff", () => {
-  test("repository-owned skill inventory resolves from canonical packages", async () => {
+  test("repository-owned skill inventory resolves from canonical task/domain packages", async () => {
     const dirs = (await readdir("../.agents/skills", { withFileTypes: true }))
       .filter((entry) => entry.isDirectory())
       .map((entry) => entry.name)
@@ -19,15 +19,15 @@ describe("cross-agent repository handoff", () => {
       "blockit-bedrock-animation",
       "blockit-bedrock-entity-mcp",
       "blockit-bedrock-texturing",
-      "bun-tooling",
       "development-brief",
       "mcp-server-development",
-      "typescript-type-safety",
     ]);
 
     for (const name of dirs) {
       expect(await Bun.file(`../.agents/skills/${name}/SKILL.md`).exists()).toBe(true);
     }
+    expect(await Bun.file("../.agents/skills/bun-tooling/SKILL.md").exists()).toBe(false);
+    expect(await Bun.file("../.agents/skills/typescript-type-safety/SKILL.md").exists()).toBe(false);
 
     const [context, root, developmentBrief] = await Promise.all([
       text("../CONTEXT.md"), text("../AGENTS.md"), text("../.agents/skills/development-brief/SKILL.md"),
@@ -35,6 +35,23 @@ describe("cross-agent repository handoff", () => {
     expect(context).toContain("Root `AGENTS.md` owns task selection");
     expect(root).toContain("#### Developing Execution Gate");
     expect(developmentBrief).toContain("new ChatGPT, Codex, or Opencode session");
+  });
+
+  test("language and build mechanics stay with package owners instead of root skills", async () => {
+    const [packageRules, implementation, brief, mcpDevelopment, runtimeDevelopment] = await Promise.all([
+      text("AGENTS.md"),
+      text("../docs/knowledge/implementation-map.md"),
+      text("../.agents/skills/development-brief/SKILL.md"),
+      text("../.agents/skills/mcp-server-development/SKILL.md"),
+      text("../.agents/skills/blockbench-runtime-development/SKILL.md"),
+    ]);
+
+    expect(packageRules).toContain("TypeScript and Bun are implementation mechanics");
+    expect(implementation).toContain("MCP TypeScript/Bun implementation mechanics");
+    for (const owner of [implementation, brief, mcpDevelopment, runtimeDevelopment]) {
+      expect(owner).not.toContain("typescript-type-safety");
+      expect(owner).not.toContain("bun-tooling");
+    }
   });
 
   test("handoff keeps the real development objective explicit across providers", async () => {

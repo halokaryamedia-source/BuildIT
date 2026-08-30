@@ -123,10 +123,11 @@ Do not patch a downstream owner because it is easier to edit.
 ```text
 MCP public/schema/result/transport → mcp-server-development
 Blockbench API/lifecycle/UI/Undo  → blockbench-runtime-development
-TypeScript type-system            → typescript-type-safety
-Bun/build/package tooling         → bun-tooling
 model/visual judgement            → blockbench-bedrock-modelling
+TypeScript/Bun mechanics          → exact affected source/build owner + mcp/AGENTS.md
 ```
+
+TypeScript and Bun are implementation mechanics, not standalone semantic routing destinations. Use normal language/build correctness at the real owner; create or load a specialist only when the problem has a distinct reusable decision boundary.
 
 If no specialist adds material procedure, do not load one.
 

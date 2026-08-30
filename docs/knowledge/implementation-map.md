@@ -1,6 +1,6 @@
 # Implementation Map
 
-Updated: 2026-08-28
+Updated: 2026-08-30
 
 Current `Local` source/ownership only. Repository/plugin continuation belongs in `docs/knowledge/next-action.md`; proof state belongs in `docs/foundation/validation-report.md`; asset continuity belongs in `workspace/active/<project>/README.md`.
 
@@ -25,11 +25,10 @@ Current `Local` source/ownership only. Repository/plugin continuation belongs in
 | complex / ambiguous development contract | `.agents/skills/development-brief/` |
 | MCP public/schema/result/transport | `.agents/skills/mcp-server-development/` |
 | Blockbench API/lifecycle/UI/Undo | `.agents/skills/blockbench-runtime-development/` |
-| TypeScript | `.agents/skills/typescript-type-safety/` |
-| Bun/build/package tooling | `.agents/skills/bun-tooling/` |
+| MCP TypeScript/Bun implementation mechanics | `mcp/AGENTS.md` + exact affected source/build owner |
 | local acceptance procedure | `docs/knowledge/operations/local-acceptance-runbook.md` only when explicitly reactivated |
 
-Workspace is storage/continuity, not an MCP capability family.
+Workspace is storage/continuity, not an MCP capability family. TypeScript and Bun are implementation mechanics inside the selected owner, not standalone root specialist routes.
 
 ## MCP Source Areas
 

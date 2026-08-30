@@ -19,6 +19,8 @@ docs/           generated API docs; never hand-edit generated entries
 
 Use the affected owner + direct callers first. Do not scan every tool family for a bounded change.
 
+TypeScript and Bun are implementation mechanics, not root Skill routes; keep compiler/build issues with the exact affected source/build owner and route only exposed MCP/runtime semantics to the matching specialist.
+
 ## MCP Public Contract Pattern
 
 Tool modules stay import-safe outside Blockbench because Bun/Node loads schemas for docs/tests.
