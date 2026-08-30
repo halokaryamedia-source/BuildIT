@@ -32,21 +32,33 @@ describe("current developer-facing documentation sync", () => {
     expect(implementation).toContain("77 declared source ToolSpecs");
   });
 
-  test("execution context and proof ceilings stay synchronized", async () => {
-    const [root, githubRules, packageRules] = await Promise.all([
+  test("execution context markers, defaults, and proof ceilings stay synchronized", async () => {
+    const [root, githubRules, packageRules, flow, contributing, runbook] = await Promise.all([
       text("../AGENTS.md"),
       text("../GITHUB_RULES.md"),
       text("AGENTS.md"),
+      text("../docs/knowledge/flow.md"),
+      text("../CONTRIBUTING.md"),
+      text("../docs/knowledge/operations/local-acceptance-runbook.md"),
     ]);
 
-    for (const owner of [root, githubRules, packageRules]) {
+    for (const owner of [root, githubRules, packageRules, flow, contributing]) {
       for (const context of ["REMOTE_GITHUB", "LOCAL_CODE", "LIVE_BLOCKBENCH"]) {
         expect(owner).toContain(context);
       }
     }
 
-    expect(root).toContain("## Execution Context Gate");
-    expect(root).toContain("## Task Class After Context");
+    for (const marker of [
+      "CONTEXT: REMOTE_GITHUB",
+      "CONTEXT: LOCAL_CODE",
+      "CONTEXT: LIVE_BLOCKBENCH",
+      "SWITCH CONTEXT:",
+    ]) {
+      expect(root).toContain(marker);
+    }
+    expect(root).toMatch(/without a marker[\s\S]*lowest sufficient provable context/i);
+    expect(root).toMatch(/never infer `LOCAL_CODE`[\s\S]*never infer `LIVE_BLOCKBENCH`/i);
+    expect(root).toMatch(/`LIVE_BLOCKBENCH` is never assumed/i);
     expect(root).toMatch(/proof ceiling[\s\S]*handoff before substantial edits/i);
     expect(root).toContain("LOCAL PROOF REQUIRED");
 
@@ -54,14 +66,17 @@ describe("current developer-facing documentation sync", () => {
     expect(githubRules).toContain("### Execution Handoff");
     expect(githubRules).toContain("FROM_CONTEXT");
     expect(githubRules).toContain("TO_CONTEXT");
-    expect(githubRules).toMatch(/CI is not a substitute[\s\S]*live Blockbench proof/i);
 
     expect(packageRules).toContain("## Execution Context / Proof Ceiling");
     expect(packageRules).toMatch(
       /REMOTE_GITHUB[\s\S]*source\/static\/CI-verifiable[\s\S]*LOCAL_CODE[\s\S]*LIVE_BLOCKBENCH/i
     );
-    expect(packageRules).toMatch(
-      /generated output or runtime proof[\s\S]*transfer \*\*before substantial edits accumulate\*\*/i
-    );
+
+    expect(flow).toMatch(/PIN CURRENT AUTHORITY[\s\S]*EXECUTION CONTEXT[\s\S]*PROOF CEILING[\s\S]*TASK CLASS/i);
+    expect(flow).not.toContain("ChatGPT → GitHub");
+    expect(flow).not.toContain("Codex local / Blockbench");
+
+    expect(runbook).toMatch(/LIVE_BLOCKBENCH[\s\S]*execution capability[\s\S]*does not activate/i);
+    expect(runbook).toMatch(/targeted live debugging[\s\S]*formal Local Acceptance/i);
   });
 });

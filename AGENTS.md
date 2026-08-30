@@ -4,13 +4,22 @@ Current intent owns the task; current source and relevant proof own behavior.
 
 ## Branch and boot
 
-- `Local` is the working authority; `main` changes only on explicit user request.
-- Use the smallest sufficient boot; material GitHub work follows `GITHUB_RULES.md`.
-- Reuse an in-session boot while repository/ref/rules remain current.
+- `Local` is working authority; `main` changes only on explicit user request.
+- Material GitHub work follows `GITHUB_RULES.md`.
+- Reuse a boot while repo/ref/rules and execution capability remain current.
 
 ## Execution Context Gate
 
-Before task classification or implementation, classify by **actual capability**, not product/UI name:
+Classify by **actual capability**, not product/UI name, before task class or implementation.
+
+```text
+CONTEXT: REMOTE_GITHUB
+CONTEXT: LOCAL_CODE
+CONTEXT: LIVE_BLOCKBENCH
+SWITCH CONTEXT: <REMOTE_GITHUB | LOCAL_CODE | LIVE_BLOCKBENCH>
+```
+
+A marker states intended context, not proof. Confirm capability. If it overstates capability, use the highest provable context and report the mismatch. Without a marker, choose the lowest sufficient provable context. Never infer `LOCAL_CODE` from “Codex” or a local-sounding task; never infer `LIVE_BLOCKBENCH` because Blockbench is mentioned. `LIVE_BLOCKBENCH` is never assumed.
 
 ```text
 REMOTE_GITHUB   = GitHub repository + CI; no local worktree/Bun/installed Blockbench
@@ -18,19 +27,19 @@ LOCAL_CODE      = local checkout + Bun/tests/build/generators/filesystem
 LIVE_BLOCKBENCH = LOCAL_CODE + deployed/reloaded BlockIT + reconnected live MCP client
 ```
 
-`REMOTE_GITHUB` may implement work provable by source/static/CI. `LOCAL_CODE` may additionally prove local build/test/generator/filesystem behavior. `LIVE_BLOCKBENCH` is required for installed `build_identity`, live `tools/list`, Undo/playback/persistence, and live model/visual/runtime claims.
+Context persists until explicit switch or capability changes. Proof ceiling: `REMOTE_GITHUB` = source/static/CI; `LOCAL_CODE` adds local build/test/generator/filesystem; `LIVE_BLOCKBENCH` adds installed/live Blockbench proof.
 
 ```text
 required acceptance <= current proof ceiling → continue
-required complete delivery/proof needs unavailable generator/runtime → handoff before substantial edits
-bounded source result is complete here → deliver + mark remaining proof LOCAL PROOF REQUIRED
+needs unavailable generator/runtime → handoff before substantial edits
+bounded source result complete here → deliver + remaining proof = LOCAL PROOF REQUIRED
 ```
 
-CI is not a substitute for generator-owned committed output or live Blockbench proof.
+CI does not replace generator-owned committed output or live Blockbench proof.
 
 ### Observe / recover context
 
-For read-only `amati`, inspect, understand, audit, or recovery:
+For read-only `amati`, inspect, audit, or recovery:
 
 ```text
 AGENTS.md → GITHUB_RULES.md Core Rules
@@ -48,11 +57,9 @@ AGENTS.md → GITHUB_RULES.md Core Rules → EXECUTION CONTEXT
 → exact owner + nearest AGENTS.md → only material continuity/evidence
 ```
 
-For a named MCP-tool defect, use `docs/knowledge/implementation-map.md` **Hot-Path Defect Index** before broad search.
+For a named MCP-tool defect, use `docs/knowledge/implementation-map.md` **Hot-Path Defect Index** first.
 
 #### Development Execution Gate
-
-Use the smallest contract that protects the real result.
 
 **Bounded contract**
 ```text
@@ -73,15 +80,15 @@ Proof Required
 STOP Condition
 ```
 
-Escalate to `development-brief` only for architecture/redesign, cross-owner/material ambiguity, non-obvious public contract design, unresolved success criteria, or quality/efficiency work. It keeps `Forbidden Proxy / Non-Goal` and material unknowns explicit. Never substitute an easy proxy for the user's success condition; **Authoring Efficiency** is cost to an accepted result and **Static Footprint** is only a guardrail.
+Escalate to `development-brief` only for architecture/redesign, cross-owner/material ambiguity, non-obvious public contract design, unresolved success criteria, or quality/efficiency work. **Authoring Efficiency** is cost to an accepted result; **Static Footprint** is only a guardrail.
 
 ### Bounded Maintenance
 
-A concrete bug, stale rule/test, CI-routing defect, or behavior-preserving cleanup with an exact owner may start from that owner. Load `CONTEXT.md`, `next-action.md`, or `development-brief` only when they can materially change scope/acceptance. Fix the first wrong owner; do not widen Maintenance into redesign.
+A concrete bug, stale rule/test, CI-routing defect, or behavior-preserving cleanup may start at its exact owner. Load continuity/brief only when it can change scope or acceptance.
 
 ### Standard Development
 
-Use the standard contract when requirement and likely owner are clear but work is broader than bounded maintenance. Recover `CONTEXT.md` / `next-action.md` only when material; add one specialist only when useful.
+Use the standard contract when requirement and likely owner are clear but work exceeds bounded maintenance. Recover continuity only when material; add one specialist only when useful.
 
 ### Complex / Ambiguous Development
 
@@ -103,29 +110,21 @@ current request / approved reference → persistent workspace when needed
 → blockit-bedrock-entity-mcp → ACTIVE PHASE → active specialist only → BlockIT MCP
 ```
 
-Do not preload later-phase specialists. On `HANDOFF_REQUIRED`, preserve compact resume-critical state, switch/reload phase, then load only its specialist. `workspace/active/<project>/README.md` owns persistent asset continuity.
+Do not preload later-phase specialists. On `HANDOFF_REQUIRED`, retain resume-critical state, switch/reload, then load only its specialist. `workspace/active/<project>/README.md` owns continuity.
 
-For normal asset authoring, do not automatically load repository continuation/history/foundation docs. Asset authoring is not software **Development** merely because a model changes; do not route it through `development-brief` unless repository/plugin behavior changes.
+For normal asset authoring, do not automatically load repository continuation/history/foundation docs. Asset authoring is not software **Development**; do not route it through `development-brief` unless repository/plugin behavior changes.
 
 ## GitHub Work
 
-`GITHUB_RULES.md` owns branch/ref authority, execution-context transfer, atomic delivery, history, CI/API/security, retries, experimental Actions, and STOP behavior. One coherent multi-file change stays one logical commit.
+`GITHUB_RULES.md` owns branch/ref, context transfer, atomic delivery, CI/security, retries, and STOP. One coherent multi-file change stays one logical commit.
 
 ## Source Precedence
 
-1. current user instruction;
-2. current source + relevant runtime/visual proof;
-3. root/nearest `AGENTS.md`;
-4. current foundation policy;
-5. `next-action.md`;
-6. `CONTEXT.md`;
-7. history only when rationale can change the decision.
-
-If continuation is stale, current source remains authority; reconcile it only when its owned state matters.
+current user → current source/proof → root/nearest `AGENTS.md` → foundation → `next-action.md` → `CONTEXT.md` → history only when rationale matters. Current source outranks stale continuation.
 
 ## Work Discipline
 
-- Inspect owner/caller/pattern before shared changes; make the minimum complete change.
+- Inspect owner/caller/pattern first; make the minimum complete change.
 - Do not broaden scope or add fallback/framework/profile/compatibility layers without proved need.
 - Stop the same failed direction after two attempts without new evidence.
 - `No change required` is valid. Never claim proof above the current execution-context ceiling.
@@ -147,15 +146,6 @@ Minecraft Bedrock Entity (`bedrock`) remains default. Tool/file/coordinate succe
 
 ## Canonical Owners
 
-- GitHub execution/history/CI/security → `GITHUB_RULES.md`
-- product flow → `docs/knowledge/flow.md`
-- continuation → `docs/knowledge/next-action.md`
-- active asset continuity → `workspace/active/<project>/README.md`
-- stable facts → `CONTEXT.md`
-- source/tool ownership → `docs/knowledge/implementation-map.md`
-- proof state → `docs/knowledge/current-validation.md`
-- durable policy → `docs/foundation/`
-- local procedure → `docs/knowledge/operations/local-acceptance-runbook.md` only when reactivated
-- research → `Experimental/`
+GitHub → `GITHUB_RULES.md`; flow → `docs/knowledge/flow.md`; continuation → `docs/knowledge/next-action.md`; assets → `workspace/active/<project>/README.md`; stable facts → `CONTEXT.md`; source ownership → `docs/knowledge/implementation-map.md`; proof → `docs/knowledge/current-validation.md`; durable policy → `docs/foundation/`; local acceptance → `docs/knowledge/operations/local-acceptance-runbook.md` when reactivated; research → `Experimental/`.
 
-Do not create duplicate navigation, review archives, decision logs, roadmaps, or parallel planning/state systems.
+Do not create duplicate navigation, review archives, decision logs, roadmaps, or parallel state systems.

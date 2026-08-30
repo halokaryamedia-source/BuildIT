@@ -1,8 +1,10 @@
 # Local Acceptance Runbook
 
-Updated: 2026-08-30  
-Owner: local Codex/Opencode + desktop Blockbench acceptance procedure  
+Updated: 2026-08-31  
+Owner: `LIVE_BLOCKBENCH` formal acceptance procedure  
 Active only when `docs/knowledge/next-action.md` explicitly reactivates local testing.
+
+`LIVE_BLOCKBENCH` is an execution capability, not automatic procedure activation. Targeted live debugging or runtime reproduction may use that capability whenever the current task requires it; this does not activate the formal Local Acceptance procedure below.
 
 This runbook proves only live/runtime claims that repository CI cannot establish. Do not start it from a historical TODO or deferred state.
 

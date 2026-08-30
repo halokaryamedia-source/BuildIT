@@ -1,6 +1,6 @@
 # Contributing to BlockIT
 
-BlockIT is developed on the `Local` branch and promoted to `main` only by explicit maintainer instruction. Keep contributions small, evidence-driven, and aligned with the repository owners instead of introducing parallel workflows or frameworks.
+BlockIT is developed on the `Local` branch and promoted to `main` only by explicit maintainer instruction. Keep contributions small, evidence-driven, and aligned with repository owners instead of introducing parallel workflows or frameworks.
 
 ## Branch model
 
@@ -10,6 +10,18 @@ main   → stable / release authority
 ```
 
 Maintainers normally work directly on `Local`. External contributions should target `Local` unless a maintainer explicitly requests another base. Do not target or modify `main` as part of ordinary development; promotion to `main` uses `Release Verify`.
+
+## Execution context
+
+Before implementation, classify the capability actually available:
+
+```text
+REMOTE_GITHUB   → repository/GitHub + CI only
+LOCAL_CODE      → local checkout + Bun/tests/build/generators/filesystem
+LIVE_BLOCKBENCH → LOCAL_CODE + deployed/reloaded BlockIT + reconnected live MCP
+```
+
+Use `CONTEXT: ...` or `SWITCH CONTEXT: ...` when useful. The label does not create capability; root `AGENTS.md` owns proof ceilings and fail-safe defaults. Do not claim local/runtime proof from `REMOTE_GITHUB`, and do not treat `LIVE_BLOCKBENCH` as automatic activation of formal Local Acceptance.
 
 ## Before changing code
 
@@ -39,7 +51,7 @@ main release boundary    → bun run verify:release
 
 Install the locked dependency surface required by the selected verifier. During iteration, prefer a targeted `bun test <file>` or primitive command; do not run a full verifier merely because a Markdown or routing file changed.
 
-Live Blockbench, visual, playback, persistence, installed-plugin, and client-registry claims require matching local/runtime evidence.
+Live Blockbench, visual, playback, persistence, installed-plugin, and client-registry claims require matching `LIVE_BLOCKBENCH` evidence.
 
 ## CI behavior
 
@@ -57,7 +69,7 @@ CI on `Local` is an asynchronous regression safety net, not a blocking permissio
 
 Generated MCP API documentation and prompt manifests follow their canonical source + generator. Do not hand-edit generated output to make a verifier pass.
 
-Transient captures, previews, sample renders, caches, and per-mutation screenshots do not belong at repository root. Use the existing ignored `.cache/` locations under persistent workspace or `Experimental/` work when temporary visual/debug evidence is needed.
+Transient captures, previews, sample renders, caches, and per-mutation screenshots do not belong at repository root. Use existing ignored `.cache/` locations under persistent workspace or `Experimental/` work when temporary visual/debug evidence is needed.
 
 ## Commit discipline
 

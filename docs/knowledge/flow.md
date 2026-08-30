@@ -1,19 +1,25 @@
 # BlockIT Flow
 
-Updated: 2026-08-30
+Updated: 2026-08-31
 
-This is the **single detailed current flow**. Root `AGENTS.md` owns task routing.
+This is the **single detailed current flow**. Root `AGENTS.md` owns execution-context and task routing.
 
 ## 1. Route
 
 ```text
+PIN CURRENT AUTHORITY
+→ EXECUTION CONTEXT
+   REMOTE_GITHUB | LOCAL_CODE | LIVE_BLOCKBENCH
+→ PROOF CEILING
+→ TASK CLASS
+
 REFERENCE PREPARATION → blockbench-reference-generator
 ASSET AUTHORING       → named workspace package when persistent → blockit-bedrock-entity-mcp → active specialist only
-REPOSITORY WORK       → AGENTS.md classify Bounded | Standard | Complex → exact owner + nearest AGENTS.md → development-brief only when Complex
-LOCAL ACCEPTANCE      → inactive unless next-action.md explicitly reactivates it
+REPOSITORY WORK       → Bounded | Standard | Complex → exact owner + nearest AGENTS.md → development-brief only when Complex
+LOCAL ACCEPTANCE      → formal procedure; inactive unless next-action.md explicitly reactivates it
 ```
 
-Hardening never silently continues into image generation. After hardening/verification, **STOP AND REPORT**; generation requires a fresh explicit user instruction.
+Execution context describes available capability, not product/UI identity and not procedure activation. `LIVE_BLOCKBENCH` permits targeted live debugging when the task requires it; it does **not** activate the formal Local Acceptance runbook. Hardening never silently continues into image generation. After hardening/verification, **STOP AND REPORT**; generation requires a fresh explicit user instruction.
 
 ## 2. Reference Preparation
 
@@ -187,25 +193,29 @@ For persistent projects, save the current `.bbmodel` and deliberate deliverables
 ## 4. Repository Work
 
 ```text
-AGENTS.md
+PIN current Local
+→ EXECUTION CONTEXT + PROOF CEILING
 → GITHUB_RULES.md Core Rules
 → classify Bounded | Standard | Complex
 → exact owner + nearest AGENTS.md
 → recover CONTEXT.md / next-action.md only when material
 → development-brief only when Complex
 → one smallest coherent patch
-→ minimum useful proof
+→ minimum useful proof within current ceiling
+→ HANDOFF if complete delivery/proof needs higher capability
 → STOP AND REPORT
 ```
 
-A clear maintenance or standard-development task must not load `development-brief` merely because files in the repository change. Repository proof never becomes permission for image generation or local Blockbench execution.
+A clear maintenance or standard-development task must not load `development-brief` merely because files in the repository change. Repository proof never becomes permission for image generation or live Blockbench claims.
 
 ## 5. Evidence / Continuity
 
 ```text
-ChatGPT → GitHub          = source/docs/static/CI evidence
-image-capable preparation = generated-reference visual evidence
-Codex local / Blockbench  = installed-client/runtime/model-facing evidence
+REMOTE_GITHUB   = repository/source/docs/static/CI evidence
+LOCAL_CODE      = REMOTE_GITHUB + local Bun/build/test/generator/filesystem evidence
+LIVE_BLOCKBENCH = LOCAL_CODE + installed-client/live MCP/model/runtime evidence
+
+LIVE_BLOCKBENCH capability ≠ formal Local Acceptance activation
 
 repository continuation    → next-action.md
 active asset continuity    → workspace/active/<project>/README.md
@@ -214,7 +224,7 @@ asset workspace rules      → workspace/README.md
 stable facts               → CONTEXT.md
 current proof state        → docs/knowledge/current-validation.md
 current source ownership   → implementation-map.md
-local acceptance procedure → operations/local-acceptance-runbook.md only when reactivated
+formal local acceptance    → operations/local-acceptance-runbook.md only when reactivated
 historical rationale       → Git history / GitHub issues and PRs
 ```
 
