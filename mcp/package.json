@@ -22,6 +22,7 @@
     "verify:mcp": "bun run typecheck && bun run test && bun run measure:surface && bun run build && bun run docs:check",
     "verify:release": "bun run verify:mcp",
     "eval:tool-discovery": "bun run ./scripts/evaluate-tool-discovery.ts",
+    "eval:authoring-efficiency": "bun run ../Experimental/authoring-efficiency-benchmark/evaluate.mjs",
     "verify:stateless-local": "bun run ./scripts/verify-stateless-local.ts",
     "route1:prepare": "bun run ./scripts/route1-fixture.ts prepare",
     "route1:package": "bun run ./scripts/route1-fixture.ts package",

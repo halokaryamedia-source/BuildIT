@@ -19,6 +19,7 @@ on:
       - "workspace/README.md"
       - "workspace/active/README.md"
       - "Experimental/route1-hunyuan-poc/**"
+      - "Experimental/authoring-efficiency-benchmark/**"
       - "mcp/tests/authoring/**"
       - ".github/workflows/authoring-policy-verify.yml"
   workflow_dispatch:
