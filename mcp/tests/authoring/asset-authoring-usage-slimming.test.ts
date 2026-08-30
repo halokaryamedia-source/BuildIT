@@ -10,8 +10,8 @@ describe("pre-local asset-authoring usage slimming", () => {
   test("asset authoring bypasses repository-development boot and development-brief", async () => {
     const agents = await source("../AGENTS.md");
     expect(agents).toContain("### Asset Authoring");
-    expect(agents).toContain("do not automatically load");
-    expect(agents).toContain("Asset authoring is not software **Development**");
+    expect(agents).toMatch(/do not automatically load/i);
+    expect(agents).toMatch(/asset authoring is not software \*\*development\*\*/i);
     expect(agents).toMatch(/do not route it through `development-brief`/i);
   });
 

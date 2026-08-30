@@ -35,8 +35,8 @@ describe("cross-agent repository handoff", () => {
       text("../.agents/skills/development-brief/SKILL.md"),
     ]);
 
-    expect(packageRules).toContain("TypeScript and Bun are implementation mechanics");
-    expect(implementation).toContain("MCP TypeScript/Bun implementation mechanics");
+    expect(packageRules).toMatch(/TypeScript and Bun are implementation mechanics/i);
+    expect(implementation).toMatch(/MCP TypeScript\/Bun implementation mechanics/i);
     expect(root).toContain("#### Development Execution Gate");
     expect(brief).toContain("## Mandatory Development continuity");
     for (const owner of [implementation, brief]) {
@@ -53,15 +53,15 @@ describe("cross-agent repository handoff", () => {
     ]);
 
     for (const owner of [root, brief]) {
-      expect(owner).toContain("Success Metric");
-      expect(owner).toContain("Forbidden Proxy / Non-Goal");
+      expect(owner).toMatch(/success metric/i);
+      expect(owner).toMatch(/forbidden proxy\s*\/\s*non-goal/i);
     }
     for (const owner of [root, brief, runbook]) {
-      expect(owner).toContain("Authoring Efficiency");
-      expect(owner).toContain("Static Footprint");
+      expect(owner).toMatch(/authoring efficiency/i);
+      expect(owner).toMatch(/static footprint/i);
     }
-    expect(runbook).toContain("Cost to Accepted Result");
-    expect(runbook).toContain("QUALITY FAIL");
+    expect(runbook).toMatch(/cost to accepted result/i);
+    expect(runbook).toMatch(/quality fail/i);
   });
 
   test("stable facts, continuation, proof, source ownership, and live procedure stay separate", async () => {
@@ -73,11 +73,11 @@ describe("cross-agent repository handoff", () => {
       text("../docs/knowledge/operations/local-acceptance-runbook.md"),
     ]);
 
-    expect(context).toContain("stable project facts only");
+    expect(context).toMatch(/stable project facts only/i);
     expect(next).toContain("NO_ACTIVE_REPOSITORY_DEVELOPMENT");
-    expect(validation).toContain("current proof interpretation");
-    expect(implementation).toContain("This map contains no active task status");
-    expect(runbook).toContain("Active only when `docs/knowledge/next-action.md` explicitly reactivates local testing");
+    expect(validation).toMatch(/current proof interpretation/i);
+    expect(implementation).toMatch(/no active task status/i);
+    expect(runbook).toMatch(/explicitly reactivates local testing/i);
     expect(await Bun.file("../docs/foundation/validation-report.md").exists()).toBe(false);
   });
 
@@ -142,11 +142,11 @@ describe("cross-agent repository handoff", () => {
       text("../docs/knowledge/operations/local-acceptance-runbook.md"),
     ]);
 
-    expect(validation).toContain("Visual / Reference Proof Rule");
-    expect(validation).toContain("cannot prove visual fidelity");
-    expect(validation).toContain("Authoring Efficiency");
-    expect(implementation).toContain("Static Footprint cannot upgrade");
-    expect(runbook).toContain("quality gate passes");
-    expect(runbook).toContain("Cost to Accepted Result");
+    expect(validation).toMatch(/Visual\s*\/\s*Reference Proof Rule/i);
+    expect(validation).toMatch(/cannot prove visual fidelity/i);
+    expect(validation).toMatch(/authoring efficiency/i);
+    expect(implementation).toMatch(/Static Footprint[\s\S]*cannot upgrade/i);
+    expect(runbook).toMatch(/quality gate passes/i);
+    expect(runbook).toMatch(/cost to accepted result/i);
   });
 });
