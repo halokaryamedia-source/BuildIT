@@ -80,7 +80,7 @@ Proof Required
 STOP Condition
 ```
 
-Escalate to `development-brief` only for architecture/redesign, cross-owner/material ambiguity, non-obvious public contract design, unresolved success criteria, or quality/efficiency work. **Authoring Efficiency** is cost to an accepted result; **Static Footprint** is only a guardrail.
+Escalate to `development-brief` only for architecture/redesign, cross-owner/material ambiguity, non-obvious public contract design, unresolved success criteria, or quality/efficiency work. The brief keeps `Forbidden Proxy / Non-Goal` explicit. **Authoring Efficiency** is cost to an accepted result; **Static Footprint** is only a guardrail.
 
 ### Bounded Maintenance
 
