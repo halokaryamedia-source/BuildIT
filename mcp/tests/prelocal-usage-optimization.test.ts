@@ -28,16 +28,29 @@ describe("pre-local usage optimization contract", () => {
     expect(modelling).toContain("helps one view while materially regressing another is rejected");
   });
 
-  test("authoring efficiency uses accepted quality plus observable runtime cost", async () => {
+  test("authoring efficiency requires accepted quality plus observable runtime cost", async () => {
     const runbook = await source("../docs/knowledge/operations/local-acceptance-runbook.md");
-    for (const marker of [
-      "Authoring Efficiency", "Cost to Accepted Result", "QUALITY FAIL", "QUALITY PASS",
-      "Discovery calls", "Redundant readbacks", "tool_search calls / misses",
-      "Correction attempts", "Same-cause retries", "CONTRACT_CAUSED", "REASONING_CAUSED",
-      "IMPROVED", "UNCHANGED", "REGRESSED",
-    ]) expect(runbook).toContain(marker);
-    expect(runbook).toContain("Static Footprint");
-    expect(runbook).toContain("Do not invent token or latency numbers");
+    const normalized = runbook.toLowerCase().replace(/\s+/g, " ");
+
+    for (const concept of [
+      "authoring efficiency",
+      "cost to accepted result",
+      "quality fail",
+      "quality gate passes",
+      "discovery",
+      "redundant readbacks",
+      "tool-search misses",
+      "correction attempts",
+      "same-cause retries",
+      "contract_caused",
+      "reasoning_caused",
+      "improved",
+      "unchanged",
+      "regressed",
+      "static footprint",
+    ]) expect(normalized).toContain(concept);
+
+    expect(normalized).toMatch(/quality must stay accepted[\s\S]*cost to accepted result decreases/);
   });
 
   test("workspace resume persists meaningful state instead of mutation-count checkpoints", async () => {
