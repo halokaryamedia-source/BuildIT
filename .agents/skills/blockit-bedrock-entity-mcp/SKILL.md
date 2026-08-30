@@ -25,6 +25,8 @@ Normal asset work **must not begin by searching repository files**.
 
 MCP initialize `ACTIVE PHASE` + current `tools/list` are the **routing authority for the first tool decision**. Tool absence caused by phase scoping is **not** a discovery failure.
 
+Bedrock: **1 Minecraft block = 16 Blockbench units**. Reuse one `capture_model_views` `front_direction` (`+z|-z`); persist only when resume-critical.
+
 ## Active Phase Contract
 
 ```text
@@ -88,12 +90,12 @@ rig IK/mirror                 → bone_rigging
 ```text
 place_cube rotation != 0  → origin required
 add_group                 → pass name OR groups, never both
-modify_cube               → id + authored change
+modify_cube               → id + at least one authored field change
 manage_locator create     → name+parent; update → id+authored change
 manage_null_object create → name+parent; update → id+parent/position
 ```
 
-Load the exact active-phase spec once only when conditional/action fields matter. Validation failure repairs the **same routed tool**.
+If conditional/action fields matter, load **that exact active-phase spec once** before mutation. Validation failure repairs arguments for the **same routed tool**.
 
 ## Search / Recovery
 
