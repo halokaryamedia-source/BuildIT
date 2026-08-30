@@ -42,9 +42,13 @@ mcp/ui/                        Blockbench panel/settings
 mcp/prompts/                   canonical workflow body + generated manifest
 mcp/build/                     build/docs/manifest generation
 mcp/scripts/                   verification/measurement/preparation utilities
-mcp/tests/                     contract/integration regressions
+mcp/tests/repository/          repository/routing/static verifier regressions
+mcp/tests/authoring/           authoring/effectiveness/static verifier regressions
+mcp/tests/*.test.ts            executable/default package regressions
 mcp/docs/                      generated API docs; secondary to source
 ```
+
+The test folder owns **test-only CI routing**. `verify:mcp` still runs the recursive full test suite when executable/public MCP source changes, so folder separation does not reduce source-change regression coverage.
 
 ## Hot-Path Defect Index
 
@@ -54,12 +58,12 @@ For a named MCP-tool defect, inspect the mapped **source owner + primary regress
 |---|---|---|
 | authoring phase exposure / `HANDOFF_REQUIRED` | `mcp/lib/authoringPhase.ts`, `mcp/server/server.ts`, active specialist Skills | `mcp/tests/authoring-phase-surface.test.ts` |
 | `create_project` | `mcp/server/tools/project.ts` | `mcp/tests/p1-core-ownership.test.ts` |
-| `get_project_info` | `mcp/server/tools/project.ts` | `mcp/tests/static-footprint-budget.test.ts` |
+| `get_project_info` | `mcp/server/tools/project.ts` | `mcp/tests/authoring/static-footprint-budget.test.ts` |
 | `inspect_model_bounds` | `mcp/server/tools/project.ts` | `mcp/tests/rendered-model-bounds-numeric-safety.test.ts` |
 | `manage_geometry_reference` | `mcp/server/tools/project.ts` | `mcp/tests/geometry-reference-contract.test.ts` |
 | Route 1 quantitative/reconnect evidence | `mcp/server/tools/project.ts`, `mcp/server/resources.ts` | `mcp/tests/geometry-reference-contract.test.ts` |
 | Route 1 reference capture / production cleanup | `mcp/server/tools/camera.ts`, `mcp/server/tools/export.ts` | `mcp/tests/camera-framing-contract.test.ts`, `mcp/tests/geometry-reference-contract.test.ts` |
-| Route 1 Hunyuan MultiView reproducibility | `Experimental/route1-hunyuan-poc/generate_multiview_shape.py`, `Experimental/route1-hunyuan-poc/README.md` | `mcp/tests/route1-hunyuan-reproducibility.test.ts` |
+| Route 1 Hunyuan MultiView reproducibility | `Experimental/route1-hunyuan-poc/generate_multiview_shape.py`, `Experimental/route1-hunyuan-poc/README.md` | `mcp/tests/authoring/route1-hunyuan-reproducibility.test.ts` |
 | Route 1 fixture preparation / packaging | `mcp/scripts/route1-fixture.ts`, `mcp/package.json` | `mcp/tests/route1-fixture-preparation.test.ts` |
 | `place_cube`, `modify_cube`, `modify_cubes_batch` | `mcp/server/tools/cubes.ts` | `mcp/tests/model-effectiveness-correction-accuracy.test.ts` |
 | `add_group` | `mcp/server/tools/element.ts` | `mcp/tests/p1-core-ownership.test.ts` |
@@ -71,7 +75,7 @@ For a named MCP-tool defect, inspect the mapped **source owner + primary regress
 | `manage_animation_effects` | `mcp/server/tools/animation-effects.ts` | `mcp/tests/animation-effect-mutation-contract.test.ts` |
 | `manage_animation_controller` | `mcp/server/tools/animation-controller.ts` | `mcp/tests/animation-controller-mutation-contract.test.ts` |
 | `inspect_animation` | `mcp/server/tools/animation-inspection.ts` | `mcp/tests/context-payload-cleanup.test.ts` |
-| `get_undo_stack`, `undo`, `redo` | `mcp/server/tools/history.ts` | `mcp/tests/static-footprint-budget.test.ts` for compact recovery state; targeted history tests for behavior |
+| `get_undo_stack`, `undo`, `redo` | `mcp/server/tools/history.ts` | `mcp/tests/authoring/static-footprint-budget.test.ts` for compact recovery state; targeted history tests for behavior |
 | `export_model` | `mcp/server/tools/export.ts` | `mcp/tests/prelocal-generic-semantics.test.ts` |
 
 `route1:prepare` and `route1:package` are Bun preparation commands, not MCP callable tools. They do not change the retained catalog or active Geometry surface.
@@ -80,7 +84,7 @@ For a named MCP-tool defect, inspect the mapped **source owner + primary regress
 
 ```text
 Static Footprint
-→ mcp/tests/static-footprint-budget.test.ts
+→ mcp/tests/authoring/static-footprint-budget.test.ts
 → instruction/schema/surface compactness only
 
 Authoring Quality + Authoring Efficiency

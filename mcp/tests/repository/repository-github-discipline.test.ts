@@ -81,7 +81,7 @@ describe("repository GitHub discipline", () => {
     requireInvariant(specialist, /Preflight generated ownership[\s\S]*(schema|description|spec)[\s\S]*runtime prompt[\s\S]*mcp\/AGENTS\.md/i, "mcp-server-development/SKILL.md", "specialist follows package generator ownership");
   });
 
-  test("package.json owns verifier composition and workflows only select proof surfaces", async () => {
+  test("test-only verifier ownership is directory-based while full MCP remains recursive", async () => {
     const [repository, authoring, mcp, release, packageText] = await Promise.all([
       source("../.github/workflows/repository-verify.yml"),
       source("../.github/workflows/authoring-policy-verify.yml"),
@@ -91,13 +91,9 @@ describe("repository GitHub discipline", () => {
     ]);
     const scripts = JSON.parse(packageText).scripts as Record<string, string>;
 
-    for (const name of ["verify:repository", "verify:authoring", "verify:mcp", "verify:release"]) {
-      expect(typeof scripts[name]).toBe("string");
-      expect(scripts[name].length).toBeGreaterThan(0);
-    }
-
-    expect(scripts["verify:repository"]).toContain("repository-github-discipline.test.ts");
-    expect(scripts["verify:authoring"]).toContain("route1-hunyuan-reproducibility.test.ts");
+    expect(scripts["verify:repository"]).toBe("bun test tests/repository/*.test.ts");
+    expect(scripts["verify:authoring"]).toBe("bun test tests/authoring/*.test.ts");
+    expect(scripts["test"]).toBe("bun test");
     expect(scripts["verify:release"]).toBe("bun run verify:mcp");
 
     const fullGate = scripts["verify:mcp"];
@@ -123,9 +119,48 @@ describe("repository GitHub discipline", () => {
     expect(release).toContain("pull_request:\n    branches:\n      - main");
 
     expect(repository).toContain('"mcp/package.json"');
+    expect(repository).toContain('"mcp/tests/repository/**"');
     expect(authoring).not.toContain('"mcp/package.json"');
+    expect(authoring).toContain('"mcp/tests/authoring/**"');
     expect(authoring).toContain('"Experimental/route1-hunyuan-poc/**"');
     expect(mcp).toContain('"mcp/**"');
+    expect(mcp).toContain('"!mcp/tests/repository/**"');
+    expect(mcp).toContain('"!mcp/tests/authoring/**"');
+
+    for (const workflow of [repository, authoring, mcp]) {
+      expect(workflow).not.toMatch(/mcp\/tests\/[^"\n]+\.test\.ts/);
+    }
+
+    for (const name of [
+      "repository-github-discipline.test.ts",
+      "repository-supply-chain.test.ts",
+      "documentation-handoff.test.ts",
+      "experimental-authoring-contract.test.ts",
+      "active-routing-integrity.test.ts",
+    ]) {
+      expect(await Bun.file(`tests/repository/${name}`).exists(), name).toBe(true);
+      expect(await Bun.file(`tests/${name}`).exists(), name).toBe(false);
+    }
+
+    for (const name of [
+      "static-footprint-budget.test.ts",
+      "model-effectiveness-reference-grounding.test.ts",
+      "texture-production-discipline.test.ts",
+      "animation-professional-reasoning.test.ts",
+      "route1-hunyuan-reproducibility.test.ts",
+    ]) {
+      expect(await Bun.file(`tests/authoring/${name}`).exists(), name).toBe(true);
+      expect(await Bun.file(`tests/${name}`).exists(), name).toBe(false);
+    }
+
+    for (const name of [
+      "authoring-phase-surface.test.ts",
+      "texture-authoring-contract.test.ts",
+      "model-effectiveness-correction-accuracy.test.ts",
+    ]) {
+      expect(await Bun.file(`tests/${name}`).exists(), name).toBe(true);
+      expect(await Bun.file(`tests/authoring/${name}`).exists(), name).toBe(false);
+    }
 
     for (const workflow of [repository, authoring, mcp, release]) {
       expect(workflow).not.toContain("bun run measure:surface\n");
