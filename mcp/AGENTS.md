@@ -11,8 +11,8 @@ server/tools/   authored model/texture/animation operations
 lib/            shared schemas/factories/identity/runtime helpers
 ui/             Blockbench panel/settings
 prompts/        canonical prompt sources + generated manifest
-build/          build/docs/prompt generation
-scripts/        deliberate verification helpers
+build/          build/docs/prompt generation + developer watch policy
+scripts/        verification/measurement/preparation/local-deploy utilities
 tests/          contract/integration regressions
 docs/           generated API docs; never hand-edit generated entries
 ```

@@ -40,8 +40,10 @@ mcp/lib/                       schemas/factories/identity/result helpers
 mcp/lib/authoringPhase.ts      Core/phase classification + active-phase/handoff contract
 mcp/ui/                        Blockbench panel/settings
 mcp/prompts/                   canonical workflow body + generated manifest
-mcp/build/                     build/docs/manifest generation
-mcp/scripts/                   verification/measurement/preparation utilities
+mcp/build/                     build/docs/manifest generation + developer watch policy
+mcp/build/watch-policy.ts      dev:watch production-input routing
+mcp/scripts/                   verification/measurement/preparation/local-deploy utilities
+mcp/scripts/deploy-local.ts    explicit local Blockbench plugin deployment
 mcp/tests/repository/          repository/routing/static verifier regressions
 mcp/tests/authoring/           authoring/effectiveness/static verifier regressions
 mcp/tests/*.test.ts            executable/default package regressions
@@ -57,6 +59,7 @@ For a named MCP-tool defect, inspect the mapped **source owner + primary regress
 | Tool(s) / boundary | Source owner | Primary regression owner |
 |---|---|---|
 | authoring phase exposure / `HANDOFF_REQUIRED` | `mcp/lib/authoringPhase.ts`, `mcp/server/server.ts`, active specialist Skills | `mcp/tests/authoring-phase-surface.test.ts` |
+| developer loop: `dev:watch`, prompt watch regeneration, `deploy:local` | `mcp/build/index.ts`, `mcp/build/watch-policy.ts`, `mcp/scripts/deploy-local.ts` | `mcp/tests/developer-loop.test.ts` |
 | `create_project` | `mcp/server/tools/project.ts` | `mcp/tests/p1-core-ownership.test.ts` |
 | `get_project_info` | `mcp/server/tools/project.ts` | `mcp/tests/authoring/static-footprint-budget.test.ts` |
 | `inspect_model_bounds` | `mcp/server/tools/project.ts` | `mcp/tests/rendered-model-bounds-numeric-safety.test.ts` |
@@ -98,6 +101,8 @@ Static Footprint cannot upgrade a runtime Authoring Efficiency or visual-quality
 ## MCP Catalog / Phase Exposure
 
 The normal Bedrock catalog retains **65 callable tools across phases**. It is not exposed to Codex all at once.
+
+Generated API docs enumerate **77 declared source ToolSpecs**, including disabled/source-preserved definitions. That documentation inventory is not the retained callable catalog and is not an active client surface.
 
 ```text
 MCP CORE + exactly one active phase

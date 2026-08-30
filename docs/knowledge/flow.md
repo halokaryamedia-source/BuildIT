@@ -212,7 +212,7 @@ active asset continuity    → workspace/active/<project>/README.md
 saved asset package        → workspace/saved/<project>/
 asset workspace rules      → workspace/README.md
 stable facts               → CONTEXT.md
-current proof state        → foundation/validation-report.md
+current proof state        → docs/knowledge/current-validation.md
 current source ownership   → implementation-map.md
 local acceptance procedure → operations/local-acceptance-runbook.md only when reactivated
 historical rationale       → Git history / GitHub issues and PRs

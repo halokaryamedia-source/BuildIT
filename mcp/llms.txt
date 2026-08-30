@@ -12,7 +12,7 @@ Default endpoint:
 
 Transport is loopback-only, stateless Streamable HTTP with JSON responses.
 
-The normal `bedrock_entity` profile retains **64 callable tools across authoring phases**, but they are **not exposed all at once**. Runtime exposure is:
+The normal `bedrock_entity` profile retains **65 callable tools across authoring phases**, but they are **not exposed all at once**. Runtime exposure is:
 
 ```text
 MCP CORE + exactly one ACTIVE PHASE
@@ -22,7 +22,9 @@ TEXTURING = Texture Atlas + Painter + PBR + material instances + Texture Verify
 ANIMATION = animation/keyframes/timeline/effects/controllers/inspection
 ```
 
-Default phase is **Geometry**, currently **27 exposed tools**. A phase change is deliberate: set `MCP Authoring Phase`, reload BlockIT/MCP, then continue from compact handoff state.
+Default phase is **Geometry**, currently **28 exposed tools**. A phase change is deliberate: set `MCP Authoring Phase`, reload BlockIT/MCP, then continue from compact handoff state.
+
+Generated API documentation enumerates **77 declared source ToolSpecs**, including disabled/source-preserved definitions. That documentation count is not the normal callable catalog and is not the current phase exposure.
 
 Foreign-phase mutation is not a tool-search miss. Use `HANDOFF_REQUIRED` instead of searching for, emulating, renaming, or substituting a tool from another phase.
 
@@ -67,12 +69,10 @@ From `mcp/`:
 
 ```bash
 bun install --frozen-lockfile
-bun run typecheck
-bun run test
-bun run measure:surface
-bun run build
-bun run docs:check
+bun run verify:mcp
 ```
+
+During iteration use the smallest targeted regression or primitive check that can falsify the current change; do not use the full verifier as the edit loop.
 
 `measure:surface` is a **catalog/static payload guard**, not the actual default Geometry exposure and not an Authoring Efficiency metric.
 
