@@ -20,6 +20,7 @@ jobs:
   verify:
     name: Full release contract
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     defaults:
       run:
         working-directory: mcp
