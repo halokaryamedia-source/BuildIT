@@ -99,9 +99,18 @@ If conditional/action fields matter, load **that exact active-phase spec once** 
 
 ## Search / Recovery
 
-`tool_search` is **deferred spec loading after routing** only for an expected tool that belongs to the active phase. One precise search; miss → reformulate once; second miss → `BLOCKED`.
+`tool_search` is **deferred spec loading after routing** only for an expected tool that belongs to the active phase.
 
-A known foreign-phase tool must never enter this search path.
+Once routing has selected the tool, query **the exact selected tool name only** first, for example `modify_cube`. Do not append the original semantic request: extra words such as `create`, `group`, `animation`, or `material` can pull sibling tools above the already-selected target in lexical search.
+
+```text
+exact selected tool name
+→ found: load that spec and continue
+→ miss: exact name + one distinguishing domain noun, once
+→ second miss: BLOCKED
+```
+
+The fallback is search-backend recovery, **not re-routing**. A known foreign-phase tool must never enter this search path.
 
 ```text
 validation      → INVALID_INPUT       → repair args; same tool
