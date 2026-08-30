@@ -86,9 +86,10 @@ Production artifact:
 
 ```text
 mcp/dist/blockit_mcp.js
+build_identity = sha256:<64 lowercase hex>
 ```
 
-Record only material environment state: Local HEAD, build identity, Blockbench/Bun/client versions when available, actual plugin path, endpoint, active authoring phase, and Extended MCP Families setting.
+Record only material environment state: Local HEAD, `build_identity`, Blockbench/Bun/client versions when available, actual plugin path, endpoint, active authoring phase, and Extended MCP Families setting.
 
 If the exact loaded artifact cannot be established, classify `ENVIRONMENT / INSTALL` and STOP.
 
@@ -120,7 +121,7 @@ bun run verify:stateless-local -- texturing
 bun run verify:stateless-local -- animation
 ```
 
-The smoke gate must match the source-owned phase surface and local build identity. A fresh client connection must then expose the same tool names. Server PASS + stale client registry means `ENVIRONMENT / INSTALL` first.
+The smoke gate must match the source-owned phase surface and local `build_identity`; direct Geometry mutation schemas remain free of retired `plan_id`. A fresh client connection must then expose the same tool names. Server PASS + stale client registry means `ENVIRONMENT / INSTALL` first.
 
 ## 5. Phase Handoff
 
@@ -207,7 +208,7 @@ UNCHANGED
 REGRESSED
 ```
 
-Quality must stay accepted while Cost to Accepted Result decreases; otherwise no efficiency improvement is claimed.
+Quality must stay accepted while Cost to Accepted Result decreases; otherwise no efficiency improvement is claimed. Do not invent token or latency numbers; unknown values remain `UNVERIFIED`.
 
 ## 9. Failure / Completion
 
