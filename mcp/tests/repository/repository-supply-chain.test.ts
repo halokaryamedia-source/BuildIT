@@ -65,12 +65,29 @@ describe("repository workflow supply chain", () => {
     for (const workflow of [mcpWorkflow, repositoryWorkflow, authoringWorkflow, releaseWorkflow]) {
       expect(workflow).toContain('bun-version-file: ".bun-version"');
       expect(workflow).toContain("contents: read");
+      expect(workflow).toContain("persist-credentials: false");
     }
+
+    expect(repositoryWorkflow).toContain("timeout-minutes: 5");
+    expect(authoringWorkflow).toContain("timeout-minutes: 5");
+    expect(mcpWorkflow).toContain("timeout-minutes: 10");
+    expect(releaseWorkflow).toContain("timeout-minutes: 10");
 
     expect(mcpWorkflow).toContain("bun install --frozen-lockfile");
     expect(releaseWorkflow).toContain("bun install --frozen-lockfile");
     expect(authoringWorkflow).toContain("bun install --frozen-lockfile --production");
     expect(repositoryWorkflow).not.toContain("bun install");
+  });
+
+  test("developer-facing static docs route to repository verification rather than the full MCP gate", async () => {
+    const [repositoryWorkflow, mcpWorkflow] = await Promise.all([
+      source("../.github/workflows/repository-verify.yml"),
+      source("../.github/workflows/mcp-verify.yml"),
+    ]);
+
+    expect(repositoryWorkflow).toContain('"docs/knowledge/flow.md"');
+    expect(repositoryWorkflow).toContain('"mcp/llms.txt"');
+    expect(mcpWorkflow).toContain('"!mcp/llms.txt"');
   });
 
   test("supply-chain policy retains least-privilege and pinned-action boundaries", async () => {

@@ -15,12 +15,14 @@ on:
       - ".agents/skills/development-brief/**"
       - ".agents/skills/mcp-server-development/**"
       - ".agents/skills/blockbench-runtime-development/**"
+      - "docs/knowledge/flow.md"
       - "docs/knowledge/current-validation.md"
       - "docs/knowledge/next-action.md"
       - "docs/knowledge/implementation-map.md"
       - "docs/knowledge/operations/**"
       - "mcp/AGENTS.md"
       - "mcp/README.md"
+      - "mcp/llms.txt"
       - "mcp/package.json"
       - "mcp/tests/repository/**"
       - "mcp/prompts/blockbench_code_eval_safety.md"
@@ -41,6 +43,7 @@ jobs:
   verify:
     name: Static repository contract
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     defaults:
       run:
         working-directory: mcp
@@ -48,6 +51,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
