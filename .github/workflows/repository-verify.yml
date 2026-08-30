@@ -5,6 +5,7 @@ on:
     branches:
       - Local
     paths:
+      - ".editorconfig"
       - ".gitattributes"
       - ".gitignore"
       - "AGENTS.md"
@@ -12,6 +13,7 @@ on:
       - "CONTEXT.md"
       - "README.md"
       - "CONTRIBUTING.md"
+      - "SECURITY.md"
       - ".agents/skills/development-brief/**"
       - ".agents/skills/mcp-server-development/**"
       - ".agents/skills/blockbench-runtime-development/**"

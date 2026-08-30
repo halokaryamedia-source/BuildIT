@@ -90,6 +90,15 @@ describe("repository workflow supply chain", () => {
     expect(mcpWorkflow).toContain('"!mcp/llms.txt"');
   });
 
+  test("repository hygiene owners are present and routed to static verification", async () => {
+    const repositoryWorkflow = await source("../.github/workflows/repository-verify.yml");
+
+    expect(repositoryWorkflow).toContain('".editorconfig"');
+    expect(repositoryWorkflow).toContain('"SECURITY.md"');
+    expect(await Bun.file("../.editorconfig").exists()).toBe(true);
+    expect(await Bun.file("../SECURITY.md").exists()).toBe(true);
+  });
+
   test("supply-chain policy retains least-privilege and pinned-action boundaries", async () => {
     const rules = await source("../GITHUB_RULES.md");
     expect(rules).toMatch(/least-privilege/i);
