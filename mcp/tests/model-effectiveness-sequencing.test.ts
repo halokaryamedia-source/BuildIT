@@ -32,15 +32,15 @@ describe("model creation effectiveness — texture/animation sequencing", () => 
     );
   });
 
-  test("existing-asset tasks may use current geometry as baseline without inventing reference approval", async () => {
+  test("existing-asset baseline policy stays with modelling owners", async () => {
     const [orchestrator, modelling, foundation] = await Promise.all([
       source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md"),
       source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
       source("../docs/foundation/03-modelling-workflow.md"),
     ]);
 
-    expect(orchestrator.toLowerCase()).toContain("existing geometry may be a task baseline");
-    expect(orchestrator.toLowerCase()).toContain("without certifying reference accuracy");
+    expect(orchestrator.toLowerCase()).not.toContain("existing geometry may be a task baseline");
+    expect(orchestrator.toLowerCase()).not.toContain("without certifying reference accuracy");
     expect(modelling.toLowerCase()).toContain("existing-asset work may use current geometry as baseline");
     expect(foundation.toLowerCase()).toContain("existing-asset work may accept the current asset as the task baseline");
   });

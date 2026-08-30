@@ -15,14 +15,26 @@ describe("pre-local asset-authoring usage slimming", () => {
     expect(agents).toContain("Do not route it through `development-brief`");
   });
 
-  test("normal authoring skill stack remains compact while hard gates stay present", async () => {
+  test("router stays compact and routing-only while modelling owns visual gates", async () => {
     const orchestrator = await source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md");
     const modelling = await source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md");
-    expect(orchestrator.length).toBeLessThan(8_000);
+    expect(orchestrator.length).toBeLessThan(5_000);
     expect(modelling.length).toBeLessThan(13_000);
-    for (const required of ["Minimum Necessary Evidence", "FAIL / UNVERIFIED / PASS", "BLOCKED", "capture_model_views", "modify_cube", "export_model"]) {
-      expect(orchestrator).toContain(required);
-    }
+
+    for (const required of [
+      "Tool Lane Discipline",
+      "State Reuse / Anti-Loop",
+      "HANDOFF_REQUIRED",
+      "capture_model_views",
+      "modify_cube",
+      "export_model",
+      "geometry/rig/UV judgement",
+    ]) expect(orchestrator).toContain(required);
+
+    expect(orchestrator).not.toContain("FAIL / UNVERIFIED / PASS");
+    expect(orchestrator.toLowerCase()).not.toContain("difference-first");
+    expect(orchestrator.toLowerCase()).not.toContain("existing geometry may be a task baseline");
+
     for (const required of ["SUPPORTED", "PROVISIONAL", "CONFLICTING", "UNAVAILABLE", "difference-first", "FAIL", "UNVERIFIED", "PASS", "BLOCKED", "geometry_effect"]) {
       expect(modelling.toLowerCase()).toContain(required.toLowerCase());
     }

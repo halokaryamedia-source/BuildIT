@@ -5,17 +5,20 @@ async function source(path: string): Promise<string> {
 }
 
 describe("model creation effectiveness — minimum necessary evidence", () => {
-  test("normal modelling avoids ritual calls while keeping validity gates", async () => {
+  test("domain judgement owns evidence policy while router owns state reuse", async () => {
     const orchestrator = await source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md");
     const modelling = await source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md");
     const workflow = await source("prompts/bedrock_entity_workflow.md");
 
-    for (const text of [orchestrator, modelling, workflow]) {
+    for (const text of [modelling, workflow]) {
       expect(text.toLowerCase()).toContain("minimum necessary evidence");
       expect(text.toLowerCase()).toContain("unverified");
     }
-    expect(orchestrator).toContain("Do not inspect every new Cube or capture after every mutation");
+
+    expect(orchestrator).toContain("State Reuse / Anti-Loop");
     expect(orchestrator).toContain("Do not automatically re-read fresh mutation targets");
+    expect(orchestrator).not.toContain("FAIL / UNVERIFIED / PASS");
+    expect(orchestrator.toLowerCase()).not.toContain("difference-first");
     expect(modelling).toContain("No per-Cube inspection ceremony");
     expect(modelling).toContain("No screenshot-per-mutation loop");
     expect(workflow).toContain("Do not inspect every Cube, capture after every mutation");

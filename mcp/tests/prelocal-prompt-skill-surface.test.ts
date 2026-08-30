@@ -75,7 +75,9 @@ describe("Bedrock prompt and skill surface", () => {
     ]);
     expect(root).toContain("active specialist only");
     expect(orchestrator).toContain("Tool Lane Discipline");
-    expect(orchestrator).toContain("FAIL / UNVERIFIED / PASS");
+    expect(orchestrator).toContain("Own only **phase/tool routing");
+    expect(orchestrator).not.toContain("FAIL / UNVERIFIED / PASS");
+    expect(orchestrator.toLowerCase()).not.toContain("difference-first");
     expect(modelling).toContain("Difference-First Reference Fidelity Verdict");
     expect(texturing).toContain("material_instance");
     expect(texturing).toContain("PBR/material semantics");
@@ -97,7 +99,8 @@ describe("Bedrock prompt and skill surface", () => {
       expect(text).toContain("PASS");
       expect(text.toLowerCase()).toContain("difference-first");
     }
-    expect(orchestrator).toContain("FAIL / UNVERIFIED / PASS");
+    expect(orchestrator).not.toContain("FAIL / UNVERIFIED / PASS");
+    expect(orchestrator.toLowerCase()).not.toContain("difference-first");
     expect(workflow).toContain("Front PASS is not full 3D PASS");
   });
 
