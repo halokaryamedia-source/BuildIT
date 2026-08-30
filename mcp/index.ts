@@ -59,8 +59,7 @@ BBPlugin.register("blockit_mcp", {
       return;
     }
 
-    // Get network module with Blockbench permission handling
-    // @ts-ignore - requireNativeModule is a Blockbench global
+    // Get network module with Blockbench permission handling.
     const net = requireNativeModule("net", {
       message: "Network access is required for the MCP server to accept connections.",
       detail: "The MCP plugin needs to create a local server that AI assistants can connect to.",
