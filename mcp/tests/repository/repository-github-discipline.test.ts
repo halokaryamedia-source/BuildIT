@@ -168,6 +168,24 @@ describe("repository GitHub discipline", () => {
     }
   });
 
+  test("release verification is Local-only, exact-candidate, and ancestry guarded", async () => {
+    const release = await source("../.github/workflows/release-verify.yml");
+
+    expect(release).toContain("name: Full release contract");
+    expect(release).toContain("HEAD_REF: ${{ github.head_ref }}");
+    expect(release).toContain("HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name }}");
+    expect(release).toContain('test "$HEAD_REPOSITORY" = "$GITHUB_REPOSITORY"');
+    expect(release).toContain('test "$HEAD_REF" = "Local"');
+    expect(release).toContain("REF_NAME: ${{ github.ref_name }}");
+    expect(release).toContain('test "$REF_NAME" = "Local"');
+    expect(release).toContain("ref: ${{ github.event.pull_request.head.sha || github.sha }}");
+    expect(release).toContain("fetch-depth: 0");
+    expect(release).toContain("persist-credentials: false");
+    expect(release).toContain("git fetch --no-tags origin main:refs/remotes/origin/main");
+    expect(release).toContain("git merge-base --is-ancestor origin/main HEAD");
+    expect(release).toContain("bun run verify:release");
+  });
+
   test("continuation and local acceptance remain compact, current, and fail-closed", async () => {
     const [next, validation, runbook, experimental] = await Promise.all([
       source("../docs/knowledge/next-action.md"),
