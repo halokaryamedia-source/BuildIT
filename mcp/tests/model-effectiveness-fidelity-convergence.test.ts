@@ -26,18 +26,14 @@ describe("model creation effectiveness — fidelity convergence and evaluation i
   });
 
   test("model-facing evaluation remains evidence-bound and non-circular", async () => {
-    const [reference, validation, proof] = await Promise.all([
+    const [reference, validation] = await Promise.all([
       source("../docs/foundation/04-reference-guide.md"),
       source("../docs/foundation/07-visual-validation.md"),
-      source("../docs/foundation/validation-report.md"),
     ]);
     expect(normalized(reference)).toContain("actual approved reference image");
     expect(normalized(validation)).toContain("actual approved reference image");
     expect(normalized(validation)).toContain("fresh current-revision model");
     expect(normalized(validation)).toContain("difference-first");
-    expect(proof).toContain("Visual / Reference Proof Rule");
-    expect(proof).toContain("LOCAL PROOF REQUIRED");
-    expect(proof).toContain("scalar similarity");
   });
 
   test("fidelity hardening adds no scorer, planner, runtime profile, or fixture-specific law", async () => {

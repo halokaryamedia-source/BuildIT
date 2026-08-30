@@ -1,13 +1,13 @@
 ---
 name: development-brief
-description: Escalation contract for complex or ambiguous BlockIT Developing. Use when success criteria, ownership, architecture, cross-owner scope, or quality/efficiency evidence needs explicit grounding. Not for bounded maintenance, clear standard development, or ordinary asset authoring.
+description: Escalation contract for complex or ambiguous BlockIT Development. Use when success criteria, ownership, architecture, cross-owner scope, or quality/efficiency evidence needs explicit grounding. Not for bounded maintenance, clear standard development, or ordinary asset authoring.
 ---
 
 # Development Brief
 
 Use this Skill only when the lightweight routes in root `AGENTS.md` are insufficient. It protects complex work without turning every repository change into planning ceremony.
 
-Root `AGENTS.md` owns route selection, boot, source precedence, and the Developing Execution Gate. `GITHUB_RULES.md` owns GitHub execution/history/CI.
+Root `AGENTS.md` owns route selection, boot, source precedence, and the Development Execution Gate. `GITHUB_RULES.md` owns GitHub execution/history/CI.
 
 ## Entry boundary
 
@@ -15,9 +15,9 @@ Enter this brief for architecture/redesign, unclear or cross-owner requirements,
 
 Do **not** load this Skill for bounded maintenance or a clear standard change merely because the task touches repository/plugin source.
 
-Normal asset authoring is not Developing. A read-only `amati / inspect / understand` request reports and stops unless the user also asks to change something.
+Normal asset authoring is not Development. A read-only `amati / inspect / understand` request reports and stops unless the user also asks to change something.
 
-## Mandatory Developing continuity
+## Mandatory Development continuity
 
 When this full brief is entered:
 

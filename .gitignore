@@ -10,6 +10,11 @@ Thumbs.db
 .claude/
 .codex/
 
+# Local environment / secrets
+.env
+.env.*
+!.env.example
+
 # Dependencies / generated runtime output
 node_modules/
 dist/

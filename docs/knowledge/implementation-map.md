@@ -2,7 +2,7 @@
 
 Updated: 2026-08-30
 
-Current `Local` source/ownership only. Repository/plugin continuation belongs in `docs/knowledge/next-action.md`; proof state belongs in `docs/foundation/validation-report.md`; asset continuity belongs in `workspace/active/<project>/README.md`.
+Current `Local` source/ownership only. Repository/plugin continuation belongs in `docs/knowledge/next-action.md`; proof state belongs in `docs/knowledge/current-validation.md`; asset continuity belongs in `workspace/active/<project>/README.md`.
 
 ## Primary Owners
 
@@ -16,7 +16,7 @@ Current `Local` source/ownership only. Repository/plugin continuation belongs in
 | asset workspace lifecycle | `workspace/README.md` |
 | detailed product flow | `docs/knowledge/flow.md` |
 | durable modelling/texture policy | `docs/foundation/` |
-| proof state | `docs/foundation/validation-report.md` |
+| current proof state | `docs/knowledge/current-validation.md` |
 | reference preparation | `.agents/skills/blockbench-reference-generator/` |
 | asset orchestration | `.agents/skills/blockit-bedrock-entity-mcp/` |
 | modelling judgement | `.agents/skills/blockbench-bedrock-modelling/` |
@@ -160,4 +160,4 @@ Protected gaps remain controller blend-curve mutation, TextureMesh direct author
 
 ## Continuation Boundary
 
-This map contains no active task status. Read `docs/knowledge/next-action.md` for continuation and `docs/foundation/validation-report.md` for proof. Historical audits, fixture-specific rationale, and discarded approaches belong in Git history.
+This map contains no active task status. Read `docs/knowledge/next-action.md` for continuation and `docs/knowledge/current-validation.md` for current proof. Historical audits, fixture-specific rationale, and discarded approaches belong in Git history.

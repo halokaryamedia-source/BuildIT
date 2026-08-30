@@ -327,4 +327,4 @@ Requested texture scope is complete when:
 
 - [Geometry Standard](05-geometry-standard.md)
 - [Visual Validation](07-visual-validation.md)
-- [Validation Report](validation-report.md)
+- [Current Validation](../knowledge/current-validation.md)

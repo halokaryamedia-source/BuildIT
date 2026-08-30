@@ -4,13 +4,13 @@ Updated: 2026-08-30 — repository context streamlined; Route 1 live validation 
 
 Working branch: **`Local` only**.
 
-This file owns **active continuation only**. Stable facts belong in `CONTEXT.md`; current proof belongs in `docs/foundation/validation-report.md`; source ownership belongs in `docs/knowledge/implementation-map.md`.
+This file owns **active continuation only**. Stable facts belong in `CONTEXT.md`; current proof belongs in `docs/knowledge/current-validation.md`; source ownership belongs in `docs/knowledge/implementation-map.md`.
 
 ## Current Status
 
 `NO_ACTIVE_REPOSITORY_DEVELOPMENT`
 
-Route 1 source/static preparation is complete. The last full canonical MCP proof remains recorded in `docs/foundation/validation-report.md`. No current live Blockbench/Geometry or model-quality PASS is claimed.
+Route 1 source/static preparation is complete. The known full canonical MCP proof baseline remains recorded in `docs/knowledge/current-validation.md`. No current live Blockbench/Geometry or model-quality PASS is claimed.
 
 ## Active Boundary
 

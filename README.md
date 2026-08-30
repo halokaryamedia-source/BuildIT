@@ -8,10 +8,10 @@ BlockIT is an AI-assisted **Minecraft Bedrock Entity** modelling workspace built
 
 ```text
 Local  → active development / working authority
-main   → changes only by explicit instruction
+main   → stable / release authority; changes only by explicit promotion
 ```
 
-Routine repository development uses `Local`. Repository behavior is routed by `AGENTS.md`; GitHub execution/history/CI rules are owned by `GITHUB_RULES.md`.
+Routine repository development uses `Local`. Repository behavior is routed by `AGENTS.md`; GitHub execution/history/CI rules are owned by `GITHUB_RULES.md`. Promotion to `main` uses the full `Release Verify` workflow.
 
 ## Product Flow
 
@@ -39,7 +39,7 @@ Do not encode transient continuation or CI state here.
 
 - stable project facts → `CONTEXT.md`
 - repository/plugin continuation → `docs/knowledge/next-action.md`
-- current proof state → `docs/foundation/validation-report.md`
+- current proof state → `docs/knowledge/current-validation.md`
 - exact current source/tool ownership → `docs/knowledge/implementation-map.md`
 
 Static source/CI proof does not prove live Blockbench visual fidelity, playback, persistence, or model-quality improvement unless that exact surface actually ran.
@@ -48,8 +48,8 @@ Static source/CI proof does not prove live Blockbench visual fidelity, playback,
 
 ```text
 .agents/skills/    task/domain specialists loaded only when relevant
-docs/foundation/  durable authoring policy + current proof owner
-docs/knowledge/   current flow, continuation, source ownership, local procedure
+docs/foundation/  durable authoring policy
+docs/knowledge/   current flow, continuation, source ownership, proof, local procedure
 mcp/              Blockbench MCP plugin/runtime/build/tests/generated API docs
 workspace/        persistent active/saved asset packages
 Experimental/     bounded research/proof harnesses only

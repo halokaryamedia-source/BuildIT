@@ -1,9 +1,9 @@
 # BlockIT Workspace Context
 
-Last verified stable facts: 2026-08-29  
+Last verified stable facts: 2026-08-30  
 Stability: stable
 
-This file owns **stable project facts only**. Repository/plugin continuation belongs in `docs/knowledge/next-action.md`; proof state belongs in `docs/foundation/validation-report.md`; source ownership belongs in `docs/knowledge/implementation-map.md`; asset continuity belongs in `workspace/active/<project>/README.md`; routing belongs in `AGENTS.md`.
+This file owns **stable project facts only**. Repository/plugin continuation belongs in `docs/knowledge/next-action.md`; proof state belongs in `docs/knowledge/current-validation.md`; source ownership belongs in `docs/knowledge/implementation-map.md`; asset continuity belongs in `workspace/active/<project>/README.md`; routing belongs in `AGENTS.md`.
 
 ## Product
 
@@ -26,8 +26,8 @@ Root `AGENTS.md` owns task selection.
 
 ```text
 .agents/skills/    canonical skills
-docs/foundation/  durable policy + proof owner
-docs/knowledge/   flow, continuation, ownership, local procedures
+docs/foundation/  durable authoring policy
+docs/knowledge/   flow, continuation, ownership, current proof, local procedures
 mcp/              plugin/runtime/build/tests/generated API docs
 workspace/        persistent active/saved asset packages
 Experimental/     bounded research/proof harnesses only
@@ -75,7 +75,7 @@ Repository source/docs/CI work may be performed through ChatGPT/GitHub or a loca
 - product flow → `docs/knowledge/flow.md`
 - repository continuation → `docs/knowledge/next-action.md`
 - source/tool ownership → `docs/knowledge/implementation-map.md`
-- proof state → `docs/foundation/validation-report.md`
+- current proof state → `docs/knowledge/current-validation.md`
 - active asset continuity → `workspace/active/<project>/README.md`
 - asset workspace rules → `workspace/README.md`
 - local acceptance procedure → `docs/knowledge/operations/local-acceptance-runbook.md` only when explicitly reactivated

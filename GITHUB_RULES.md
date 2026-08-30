@@ -34,7 +34,7 @@ Before a material change, know the repository, intended ref, current HEAD when m
 
 ## 2. READ MINIMUM — read only what can change the decision
 
-After the Developing continuity boot, default to:
+After the Development continuity boot, default to:
 
 ```text
 owner/source files   1–3
@@ -313,7 +313,7 @@ high-impact mutations               0 unless explicitly authorized
 
 ```text
 continuation       → docs/knowledge/next-action.md
-proof state        → docs/foundation/validation-report.md
+proof state        → docs/knowledge/current-validation.md
 implementation     → docs/knowledge/implementation-map.md
 asset continuity   → workspace/active/<project>/README.md
 generated API docs → canonical MCP source + generator
@@ -321,7 +321,7 @@ research           → Experimental/
 ```
 
 - `next-action.md` stores only continuation, blockers, deferrals, and the next meaningful repository action.
-- `validation-report.md` owns proof claims; static/CI evidence never upgrades live/visual proof.
+- `current-validation.md` owns current proof interpretation; static/CI evidence never upgrades live/visual proof.
 - When the user defers source work or local testing, record cross-session deferral once when needed and stop.
 
 # Conditional GitHub surfaces

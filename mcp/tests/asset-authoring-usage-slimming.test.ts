@@ -11,7 +11,7 @@ describe("pre-local asset-authoring usage slimming", () => {
     const agents = await source("../AGENTS.md");
     expect(agents).toContain("### Asset Authoring");
     expect(agents).toContain("do not automatically load");
-    expect(agents).toContain("Asset authoring is not software **Developing**");
+    expect(agents).toContain("Asset authoring is not software **Development**");
     expect(agents).toContain("Do not route it through `development-brief`");
   });
 

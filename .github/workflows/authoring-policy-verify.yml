@@ -18,6 +18,7 @@ on:
       - "docs/knowledge/operations/local-acceptance-runbook.md"
       - "workspace/README.md"
       - "workspace/active/README.md"
+      - "Experimental/route1-hunyuan-poc/**"
       - "mcp/tests/static-footprint-budget.test.ts"
       - "mcp/tests/*authoring*.test.ts"
       - "mcp/tests/asset-tool-routing.test.ts"
@@ -30,37 +31,7 @@ on:
       - "mcp/tests/codex-agent-legibility-contract.test.ts"
       - "mcp/tests/prelocal-prompt-skill-surface.test.ts"
       - "mcp/tests/prelocal-usage-optimization.test.ts"
-      - ".github/workflows/authoring-policy-verify.yml"
-  pull_request:
-    branches:
-      - Local
-      - main
-    paths:
-      - "AGENTS.md"
-      - "CONTEXT.md"
-      - ".agents/skills/blockbench-reference-generator/**"
-      - ".agents/skills/blockit-bedrock-entity-mcp/**"
-      - ".agents/skills/blockbench-bedrock-modelling/**"
-      - ".agents/skills/blockit-bedrock-texturing/**"
-      - ".agents/skills/blockit-bedrock-animation/**"
-      - "docs/foundation/**"
-      - "docs/knowledge/flow.md"
-      - "docs/knowledge/implementation-map.md"
-      - "docs/knowledge/operations/local-acceptance-runbook.md"
-      - "workspace/README.md"
-      - "workspace/active/README.md"
-      - "mcp/tests/static-footprint-budget.test.ts"
-      - "mcp/tests/*authoring*.test.ts"
-      - "mcp/tests/asset-tool-routing.test.ts"
-      - "mcp/tests/reference-generator-buildability.test.ts"
-      - "mcp/tests/model-effectiveness-*.test.ts"
-      - "mcp/tests/texture-design-reasoning.test.ts"
-      - "mcp/tests/texture-production-discipline.test.ts"
-      - "mcp/tests/texture-visual-convergence.test.ts"
-      - "mcp/tests/animation-professional-reasoning.test.ts"
-      - "mcp/tests/codex-agent-legibility-contract.test.ts"
-      - "mcp/tests/prelocal-prompt-skill-surface.test.ts"
-      - "mcp/tests/prelocal-usage-optimization.test.ts"
+      - "mcp/tests/route1-hunyuan-reproducibility.test.ts"
       - ".github/workflows/authoring-policy-verify.yml"
   workflow_dispatch:
 
@@ -107,4 +78,5 @@ jobs:
             tests/animation-professional-reasoning.test.ts \
             tests/codex-agent-legibility-contract.test.ts \
             tests/prelocal-prompt-skill-surface.test.ts \
-            tests/prelocal-usage-optimization.test.ts
+            tests/prelocal-usage-optimization.test.ts \
+            tests/route1-hunyuan-reproducibility.test.ts

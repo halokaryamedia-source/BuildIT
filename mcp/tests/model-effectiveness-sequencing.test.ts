@@ -84,11 +84,8 @@ describe("model creation effectiveness — texture/animation sequencing", () => 
 
   test("sequencing remains instruction/phase ownership rather than a registration profile", async () => {
     const profile = await source("lib/registrationProfile.ts");
-    const validation = await source("../docs/foundation/validation-report.md");
     expect(profile).toContain('export type McpRegistrationProfile = "bedrock_entity" | "extended";');
     expect(profile).not.toContain("sequencing_profile");
     expect(profile).not.toContain("readiness_profile");
-    expect(validation).toContain("Current Agent-Contract Proof");
-    expect(validation).toContain("LOCAL PROOF REQUIRED");
   });
 });

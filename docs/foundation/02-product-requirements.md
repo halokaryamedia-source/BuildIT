@@ -299,5 +299,5 @@ Current Local source contains the main Reference Fidelity observation,
 correction, targeting, and pivot/initial-placement safety mechanisms. Their live
 Blockbench/MCP integration is `LOCAL PROOF REQUIRED` until deliberately tested.
 
-See [Validation Report](validation-report.md) and
+See [Current Validation](../knowledge/current-validation.md) and
 [Implementation Map](../knowledge/implementation-map.md).

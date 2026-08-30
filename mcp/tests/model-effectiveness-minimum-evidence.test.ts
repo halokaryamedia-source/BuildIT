@@ -43,13 +43,4 @@ describe("model creation effectiveness — minimum necessary evidence", () => {
     expect(profile).not.toContain("efficiency_mode");
     expect(profile).not.toContain("minimum_evidence");
   });
-
-  test("CI proof remains static and cannot upgrade live authoring claims", async () => {
-    const validation = await source("../docs/foundation/validation-report.md");
-    expect(validation).toContain("LAST OBSERVED FULL CANONICAL GREEN");
-    expect(validation).toContain("LOCAL PROOF REQUIRED");
-    expect(validation).toContain("The current full MCP gate passed");
-    expect(validation).toContain("cannot prove visual fidelity");
-    expect(validation).toContain("Authoring Efficiency");
-  });
 });

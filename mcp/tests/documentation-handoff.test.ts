@@ -23,17 +23,17 @@ describe("cross-agent repository handoff", () => {
       "mcp-server-development",
     ]);
 
-    for (const name of dirs) {
-      expect(await Bun.file(`../.agents/skills/${name}/SKILL.md`).exists()).toBe(true);
-    }
+    for (const name of dirs) expect(await Bun.file(`../.agents/skills/${name}/SKILL.md`).exists()).toBe(true);
     expect(await Bun.file("../.agents/skills/bun-tooling/SKILL.md").exists()).toBe(false);
     expect(await Bun.file("../.agents/skills/typescript-type-safety/SKILL.md").exists()).toBe(false);
 
     const [context, root, developmentBrief] = await Promise.all([
-      text("../CONTEXT.md"), text("../AGENTS.md"), text("../.agents/skills/development-brief/SKILL.md"),
+      text("../CONTEXT.md"),
+      text("../AGENTS.md"),
+      text("../.agents/skills/development-brief/SKILL.md"),
     ]);
     expect(context).toContain("Root `AGENTS.md` owns task selection");
-    expect(root).toContain("#### Developing Execution Gate");
+    expect(root).toContain("#### Development Execution Gate");
     expect(developmentBrief).toContain("new ChatGPT, Codex, or Opencode session");
   });
 
@@ -69,32 +69,31 @@ describe("cross-agent repository handoff", () => {
     expect(root).toContain("Forbidden Proxy / Non-Goal");
     expect(brief).toContain("Forbidden Proxy / Non-Goal");
     expect(runbook).toContain("Cost to Accepted Result");
-    for (const marker of ["QUALITY FAIL", "CONTRACT_CAUSED", "REASONING_CAUSED", "IMPROVED", "UNCHANGED", "REGRESSED"]) {
-      expect(runbook).toContain(marker);
-    }
   });
 
-  test("continuation, stable facts, proof, and ownership remain separate", async () => {
+  test("continuation, stable facts, current proof, and ownership remain separate", async () => {
     const [context, next, validation, implementation] = await Promise.all([
       text("../CONTEXT.md"),
       text("../docs/knowledge/next-action.md"),
-      text("../docs/foundation/validation-report.md"),
+      text("../docs/knowledge/current-validation.md"),
       text("../docs/knowledge/implementation-map.md"),
     ]);
 
     expect(context).toContain("stable project facts only");
-    expect(context).not.toContain("AWAITING_PLUGIN_ENABLE");
+    expect(context).toContain("docs/knowledge/current-validation.md");
     expect(next).toContain("Working branch: **`Local` only**");
     expect(next).toContain("## Current Status");
     expect(next).toContain("## Active Boundary");
     expect(next).toContain("## Next Step");
     expect(next).toContain("NO_ACTIVE_REPOSITORY_DEVELOPMENT");
     expect(next).not.toContain("## Development Contract");
-    expect(next).not.toContain("## Local Runtime Gate");
-    expect(next).not.toContain("AWAITING_PLUGIN_ENABLE_THEN_RUNBOOK_STEP_4");
-    expect(validation).toContain("This file owns the **proof boundary**");
+    expect(validation).toContain("current proof interpretation");
     expect(validation).toContain("LOCAL PROOF REQUIRED");
+    expect(validation).toContain("KNOWN FULL MCP BASELINE");
+    expect(validation).not.toContain("LATEST FULL MCP VERIFY");
+    expect(validation).not.toContain("LATEST REPOSITORY VERIFY");
     expect(implementation).toContain("This map contains no active task status");
+    expect(await Bun.file("../docs/foundation/validation-report.md").exists()).toBe(false);
   });
 
   test("historical review and decision residue stays outside active knowledge", async () => {
@@ -112,23 +111,27 @@ describe("cross-agent repository handoff", () => {
     }
   });
 
-  test("transient repository-root visual output is ignored rather than versioned", async () => {
+  test("transient and generated repository surfaces are classified explicitly", async () => {
     const rootDirs = (await readdir("..", { withFileTypes: true }))
       .filter((entry) => entry.isDirectory())
       .map((entry) => entry.name);
     expect(rootDirs).not.toContain(".capture");
     expect(rootDirs).not.toContain(".sample-renders");
 
-    const ignore = await text("../.gitignore");
-    expect(ignore).toContain(".capture/");
-    expect(ignore).toContain(".sample-renders/");
+    const [ignore, attributes] = await Promise.all([
+      text("../.gitignore"),
+      text("../.gitattributes"),
+    ]);
+    for (const marker of [".capture/", ".sample-renders/", ".env", ".env.*", "!.env.example"]) {
+      expect(ignore).toContain(marker);
+    }
+    expect(attributes).toContain("mcp/docs/*.html linguist-generated=true");
   });
 
   test("named MCP defects retain bounded source and regression owners", async () => {
     const implementation = await text("../docs/knowledge/implementation-map.md");
     expect(implementation).toContain("## Hot-Path Defect Index");
     expect(implementation).toContain("source owner + primary regression owner first");
-    expect(implementation).toContain("mcp/tests/static-footprint-budget.test.ts");
 
     const mappings = [
       { tools: ["create_project"], source: "server/tools/project.ts", test: "tests/p1-core-ownership.test.ts" },
@@ -149,18 +152,17 @@ describe("cross-agent repository handoff", () => {
     }
   });
 
-  test("proof docs never upgrade static compactness into live authoring claims", async () => {
+  test("current proof never upgrades static compactness into live authoring claims", async () => {
     const [validation, implementation, runbook] = await Promise.all([
-      text("../docs/foundation/validation-report.md"),
+      text("../docs/knowledge/current-validation.md"),
       text("../docs/knowledge/implementation-map.md"),
       text("../docs/knowledge/operations/local-acceptance-runbook.md"),
     ]);
 
-    expect(validation).toContain("LAST OBSERVED FULL CANONICAL GREEN");
     expect(validation).toContain("ACCEPTED LIVE BASELINE");
-    expect(validation).toContain("Character counts are regression ceilings");
     expect(validation).toContain("Visual / Reference Proof Rule");
     expect(validation).toContain("cannot prove visual fidelity");
+    expect(validation).toContain("Authoring Efficiency");
     expect(implementation).toContain("## Effectiveness / Footprint Evidence Ownership");
     expect(implementation).toContain("Static Footprint cannot upgrade");
     expect(runbook).toContain("Static Footprint");

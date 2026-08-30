@@ -5,6 +5,7 @@ on:
     branches:
       - Local
     paths:
+      - ".gitattributes"
       - ".gitignore"
       - "AGENTS.md"
       - "GITHUB_RULES.md"
@@ -14,7 +15,7 @@ on:
       - ".agents/skills/development-brief/**"
       - ".agents/skills/mcp-server-development/**"
       - ".agents/skills/blockbench-runtime-development/**"
-      - "docs/foundation/validation-report.md"
+      - "docs/knowledge/current-validation.md"
       - "docs/knowledge/next-action.md"
       - "docs/knowledge/implementation-map.md"
       - "docs/knowledge/operations/**"
@@ -26,35 +27,8 @@ on:
       - "mcp/tests/active-routing-integrity.test.ts"
       - "mcp/prompts/blockbench_code_eval_safety.md"
       - "mcp/prompts/blockbench_native_apis.md"
-      - "Experimental/**"
-      - ".github/workflows/**"
-  pull_request:
-    branches:
-      - Local
-      - main
-    paths:
-      - ".gitignore"
-      - "AGENTS.md"
-      - "GITHUB_RULES.md"
-      - "CONTEXT.md"
-      - "README.md"
-      - "CONTRIBUTING.md"
-      - ".agents/skills/development-brief/**"
-      - ".agents/skills/mcp-server-development/**"
-      - ".agents/skills/blockbench-runtime-development/**"
-      - "docs/foundation/validation-report.md"
-      - "docs/knowledge/next-action.md"
-      - "docs/knowledge/implementation-map.md"
-      - "docs/knowledge/operations/**"
-      - "mcp/AGENTS.md"
-      - "mcp/README.md"
-      - "mcp/tests/repository-*.test.ts"
-      - "mcp/tests/documentation-handoff.test.ts"
-      - "mcp/tests/experimental-authoring-contract.test.ts"
-      - "mcp/tests/active-routing-integrity.test.ts"
-      - "mcp/prompts/blockbench_code_eval_safety.md"
-      - "mcp/prompts/blockbench_native_apis.md"
-      - "Experimental/**"
+      - "Experimental/README.md"
+      - "Experimental/blockbench-web-poc/**"
       - ".github/workflows/**"
   workflow_dispatch:
 

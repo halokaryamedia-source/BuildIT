@@ -90,13 +90,15 @@ describe("Bedrock Locator / Null Object direct coverage", () => {
   });
 
   test("current owners keep Locator coverage mapped while protected gaps remain explicit", async () => {
-    const orchestrator = await source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md");
-    const validation = await source("../docs/foundation/validation-report.md");
+    const [orchestrator, implementation] = await Promise.all([
+      source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md"),
+      source("../docs/knowledge/implementation-map.md"),
+    ]);
     expect(orchestrator).toContain("list_locator_elements");
     expect(orchestrator).toContain("manage_locator / manage_null_object");
     expect(orchestrator).toContain("Do not automatically re-read fresh mutation targets with `inspect_element`");
-    expect(validation).toContain("Locator/Null Object lifecycle");
-    expect(validation).toContain("TextureMesh direct authoring/inspection");
-    expect(validation).toContain("AnimationController blend-curve mutation");
+    expect(implementation).toContain("mcp/tests/bedrock-locator-coverage.test.ts");
+    expect(implementation).toContain("TextureMesh direct authoring/inspection");
+    expect(implementation).toContain("controller blend-curve mutation");
   });
 });

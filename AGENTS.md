@@ -35,7 +35,7 @@ AGENTS.md
 
 For a named MCP-tool defect, use `docs/knowledge/implementation-map.md` **Hot-Path Defect Index** before broad search.
 
-#### Developing Execution Gate
+#### Development Execution Gate
 
 Use the smallest contract that protects the real result.
 
@@ -72,7 +72,7 @@ Do not load `CONTEXT.md`, `next-action.md`, or `development-brief` merely becaus
 
 Use the standard contract when the requirement and likely owner are clear but the change is broader than bounded maintenance. Recover `CONTEXT.md` and `docs/knowledge/next-action.md` only when they can change the decision. Add one specialist only when it contributes material procedure.
 
-### Complex / Ambiguous Developing
+### Complex / Ambiguous Development
 
 Use `.agents/skills/development-brief/SKILL.md` for architecture/redesign, unclear/cross-owner requirements, material public-contract design, quality/efficiency optimization, or unresolved success criteria. This route recovers `CONTEXT.md` + `docs/knowledge/next-action.md` before implementation.
 
@@ -101,7 +101,7 @@ Do not preload later-phase specialists. On `HANDOFF_REQUIRED`, preserve compact 
 
 `workspace/active/<project>/README.md` owns persistent asset continuity.
 
-For normal asset authoring, **do not automatically load** `CONTEXT.md`, `docs/knowledge/next-action.md`, `development-brief`, Git history, secondary indexes, or foundation docs. Asset authoring is not software **Developing** merely because a model changes. Do not route it through `development-brief` unless repository/plugin behavior changes.
+For normal asset authoring, **do not automatically load** `CONTEXT.md`, `docs/knowledge/next-action.md`, `development-brief`, Git history, secondary indexes, or foundation docs. Asset authoring is not software **Development** merely because a model changes. Do not route it through `development-brief` unless repository/plugin behavior changes.
 
 ## GitHub Work
 
@@ -156,7 +156,7 @@ Minecraft Bedrock Entity (`bedrock`) remains default. Tool/file/coordinate succe
 - active asset continuity → `workspace/active/<project>/README.md`
 - stable facts → `CONTEXT.md`
 - source/tool ownership → `docs/knowledge/implementation-map.md`
-- proof state → `docs/foundation/validation-report.md`
+- proof state → `docs/knowledge/current-validation.md`
 - durable policy → `docs/foundation/`
 - local procedure → `docs/knowledge/operations/local-acceptance-runbook.md` only when reactivated
 - research → `Experimental/`

@@ -1,15 +1,15 @@
 # Contributing to BlockIT
 
-BlockIT is developed on the `Local` branch and released or promoted elsewhere only by explicit maintainer instruction. Keep contributions small, evidence-driven, and aligned with the repository owners instead of introducing parallel workflows or frameworks.
+BlockIT is developed on the `Local` branch and promoted to `main` only by explicit maintainer instruction. Keep contributions small, evidence-driven, and aligned with the repository owners instead of introducing parallel workflows or frameworks.
 
 ## Branch model
 
 ```text
 Local  → active development / working authority
-main   → not a routine development target
+main   → stable / release authority
 ```
 
-Maintainers normally work directly on `Local`. External contributions should target `Local` unless a maintainer explicitly requests another base. Do not target or modify `main` as part of ordinary development.
+Maintainers normally work directly on `Local`. External contributions should target `Local` unless a maintainer explicitly requests another base. Do not target or modify `main` as part of ordinary development; promotion to `main` uses `Release Verify`.
 
 ## Before changing code
 
@@ -19,6 +19,7 @@ Start from the smallest owner that can actually explain the requested change:
 - GitHub delivery/history/CI/security → `GITHUB_RULES.md`;
 - stable product facts → `CONTEXT.md`;
 - current continuation → `docs/knowledge/next-action.md` only when material;
+- current proof interpretation → `docs/knowledge/current-validation.md`;
 - source/tool ownership → `docs/knowledge/implementation-map.md`;
 - MCP package implementation → `mcp/AGENTS.md`;
 - persistent asset work → `workspace/README.md`.
@@ -41,6 +42,18 @@ bun run docs:check
 ```
 
 Do not run the full MCP gate merely because a Markdown or repository-routing file changed. Live Blockbench, visual, playback, persistence, and installed-plugin claims require matching local/runtime evidence.
+
+## CI behavior
+
+CI on `Local` is an asynchronous regression safety net, not a blocking permission gate for normal development.
+
+- Use the cheapest relevant proof before committing.
+- After a normal `Local` commit, continue work without polling or waiting for queued/in-progress CI.
+- Only a failure on the current relevant `Local` HEAD needs diagnosis; cancelled or superseded runs can be ignored.
+- `Repository Verify` owns repository/routing/security/static infrastructure contracts.
+- `Authoring Policy Verify` owns static authoring policy, specialist routing, and Route 1 source/reproducibility contracts.
+- `MCP Verify` owns executable/public MCP source, build, generated-doc, and full package regressions.
+- `Release Verify` runs the full canonical gate for `main` pull requests and stable-branch pushes.
 
 ## Generated files
 

@@ -1,0 +1,2 @@
+# Keep GitHub language statistics focused on authored source/tooling.
+mcp/docs/*.html linguist-generated=true
