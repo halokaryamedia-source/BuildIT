@@ -28,6 +28,7 @@ nul
 # Tool cache
 __pycache__/
 *.pyc
+mcp/.cache/
 
 # Obsidian UI/workspace state is local; Markdown under docs/knowledge stays tracked.
 docs/knowledge/.obsidian/

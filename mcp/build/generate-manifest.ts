@@ -4,7 +4,7 @@ import type { PromptManifest } from "../lib/promptLoader";
 
 const RUNTIME_PROMPT_FILES = ["bedrock_entity_workflow.md"] as const;
 
-async function main() {
+export async function generatePromptManifest(): Promise<void> {
   log.header("Prompt Manifest Generator");
 
   const promptsDir = import.meta.dir + "/../prompts";
@@ -31,7 +31,9 @@ async function main() {
   );
 }
 
-main().catch((err) => {
-  log.error(`Prompt manifest generation failed: ${err}`);
-  process.exit(1);
-});
+if (import.meta.main) {
+  generatePromptManifest().catch((err) => {
+    log.error(`Prompt manifest generation failed: ${err}`);
+    process.exit(1);
+  });
+}

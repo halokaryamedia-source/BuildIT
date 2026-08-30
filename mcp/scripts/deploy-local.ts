@@ -1,0 +1,103 @@
+import { copyFile, stat } from "node:fs/promises";
+import { basename, dirname, isAbsolute, resolve } from "node:path";
+
+const EXPECTED_PLUGIN_FILENAME = "blockit_mcp.js";
+const DEFAULT_ARTIFACT_PATH = resolve(import.meta.dir, "../dist/blockit_mcp.js");
+
+export function resolveDeployTarget(
+  args: string[],
+  env: Record<string, string | undefined> = process.env
+): string {
+  const positional = args.filter((arg) => arg !== "--");
+  if (positional.length > 1) {
+    throw new Error(
+      "Local deploy accepts exactly one destination path. Pass it as the only argument or set BLOCKIT_PLUGIN_PATH."
+    );
+  }
+
+  const rawTarget = positional[0] ?? env.BLOCKIT_PLUGIN_PATH;
+  if (!rawTarget) {
+    throw new Error(
+      "Missing local Blockbench plugin destination. Pass an absolute path ending in blockit_mcp.js or set BLOCKIT_PLUGIN_PATH."
+    );
+  }
+  if (!isAbsolute(rawTarget)) {
+    throw new Error("Local deploy destination must be an absolute filesystem path.");
+  }
+  if (basename(rawTarget) !== EXPECTED_PLUGIN_FILENAME) {
+    throw new Error(
+      `Local deploy destination must end in ${EXPECTED_PLUGIN_FILENAME} so the installed filename matches the stable plugin ID.`
+    );
+  }
+
+  return resolve(rawTarget);
+}
+
+export function extractBuildIdentity(content: string): string {
+  const match = content.match(
+    /globalThis\.__BLOCKIT_BUILD_ID__\s*=\s*["'](sha256:[a-f0-9]{64})["']/
+  );
+  if (!match) {
+    throw new Error("Built plugin is missing a valid embedded build_identity.");
+  }
+  return match[1];
+}
+
+export async function deployArtifact(
+  sourcePath: string,
+  targetPath: string
+): Promise<{ target: string; build_identity: string }> {
+  const source = resolve(sourcePath);
+  const target = resolve(targetPath);
+
+  if (source === target) {
+    throw new Error("Local deploy destination must differ from the build artifact path.");
+  }
+
+  const sourceFile = Bun.file(source);
+  if (!(await sourceFile.exists())) {
+    throw new Error(`Built plugin does not exist: ${source}`);
+  }
+
+  const sourceContent = await sourceFile.text();
+  const buildIdentity = extractBuildIdentity(sourceContent);
+
+  let parentInfo;
+  try {
+    parentInfo = await stat(dirname(target));
+  } catch {
+    throw new Error(`Local deploy destination directory does not exist: ${dirname(target)}`);
+  }
+  if (!parentInfo.isDirectory()) {
+    throw new Error(`Local deploy destination parent is not a directory: ${dirname(target)}`);
+  }
+
+  await copyFile(source, target);
+
+  const deployedContent = await Bun.file(target).text();
+  if (deployedContent !== sourceContent) {
+    throw new Error("Local deploy verification failed: installed plugin bytes differ from the built artifact.");
+  }
+  if (extractBuildIdentity(deployedContent) !== buildIdentity) {
+    throw new Error("Local deploy verification failed: installed build_identity changed during copy.");
+  }
+
+  return { target, build_identity: buildIdentity };
+}
+
+async function main(): Promise<void> {
+  const target = resolveDeployTarget(Bun.argv.slice(2));
+  const receipt = await deployArtifact(DEFAULT_ARTIFACT_PATH, target);
+
+  console.log("BlockIT local plugin deployed.");
+  console.log(`target: ${receipt.target}`);
+  console.log(`build_identity: ${receipt.build_identity}`);
+  console.log("Reload Blockbench/BlockIT explicitly, reconnect the MCP client, then run verify:stateless-local.");
+}
+
+if (import.meta.main) {
+  main().catch((error) => {
+    console.error(`Local deploy failed: ${error instanceof Error ? error.message : String(error)}`);
+    process.exit(1);
+  });
+}

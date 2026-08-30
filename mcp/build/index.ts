@@ -1,14 +1,18 @@
 import { watch } from "node:fs";
 import { createHash } from "node:crypto";
 import { mkdir, copyFile, rename, rm, stat, unlink } from "node:fs/promises";
-import { resolve, join, normalize, sep } from "node:path";
+import { resolve, join } from "node:path";
 import { log, c, isCleanMode, isProduction, isWatchMode } from "./utils";
 import { blockbenchCompatPlugin, textFileLoaderPlugin } from "./plugins";
+import { generatePromptManifest } from "./generate-manifest";
+import {
+  RUNTIME_WATCH_TARGETS,
+  classifyWatchPath,
+  type WatchAction,
+} from "./watch-policy";
 import { version } from "../package.json";
 
 const OUTPUT_DIR = "./dist";
-// Normalized output dir name for path comparison (strips "./" prefix)
-const OUTPUT_DIR_NAME = normalize(OUTPUT_DIR).replace(/^\.[\\/]/, "");
 const entryFile = resolve("./index.ts");
 
 async function cleanOutputDir() {
@@ -24,9 +28,7 @@ async function cleanOutputDir() {
   }
 }
 
-// Function to handle the build process
 async function buildPlugin(): Promise<boolean> {
-  // Ensure output directory exists
   try {
     await mkdir(OUTPUT_DIR, { recursive: true });
   } catch (error: unknown) {
@@ -37,7 +39,6 @@ async function buildPlugin(): Promise<boolean> {
     }
   }
 
-  // Build the plugin
   const result = await Bun.build({
     entrypoints: [entryFile],
     outdir: OUTPUT_DIR,
@@ -48,7 +49,6 @@ async function buildPlugin(): Promise<boolean> {
     external: [
       "three",
       "tinycolor2",
-      // Native modules that require permission in Blockbench v5.0+
       "node:module",
       "node:fs",
       "node:fs/promises",
@@ -69,12 +69,10 @@ async function buildPlugin(): Promise<boolean> {
       "v8",
     ],
     minify: isProduction,
-    // Compile-time constants for dead code elimination
     define: {
       "process.env.NODE_ENV": isProduction ? '"production"' : '"development"',
       __DEV__: isProduction ? "false" : "true",
     },
-    // Remove debugger statements in production
     drop: isProduction ? ["debugger"] : [],
   });
 
@@ -131,7 +129,6 @@ let process = requireNativeModule('process');`;
   }
   log.step(`Embedded build identity ${c.gray}${buildIdentity}${c.reset}`);
 
-  // Rename the sourcemap file
   const indexMapFile = join(OUTPUT_DIR, "index.js.map");
   const mcpMapFile = join(OUTPUT_DIR, "blockit_mcp.js.map");
 
@@ -140,7 +137,6 @@ let process = requireNativeModule('process');`;
     log.step(`Renamed ${c.gray}index.js.map${c.reset} → ${c.cyan}blockit_mcp.js.map${c.reset}`);
   }
 
-  // Copy the README file
   const readmeSource = resolve("./about.md");
   const readmeDest = join(OUTPUT_DIR, "about.md");
 
@@ -152,31 +148,42 @@ let process = requireNativeModule('process');`;
   return true;
 }
 
-// Function to watch for file changes
 function watchFiles() {
-  log.info("[Build] Watching for changes...");
+  log.info("[Build] Watching production runtime inputs...");
 
-  // Build serialization to prevent overlapping builds
   let currentBuild: Promise<void> | null = null;
   let pendingRebuild = false;
+  let pendingPromptRegeneration = false;
 
-  async function queueRebuild(filename: string) {
-    // If a build is in progress, mark as pending and return
-    if (currentBuild) {
-      pendingRebuild = true;
-      return;
+  async function queueRebuild(filename: string, action: Exclude<WatchAction, "ignore">) {
+    pendingRebuild = true;
+    if (action === "regenerate-prompts-and-rebuild") {
+      pendingPromptRegeneration = true;
     }
 
-    // Start the build
+    if (currentBuild) return;
+
     currentBuild = (async () => {
-      do {
+      while (pendingRebuild) {
+        const shouldRegeneratePrompts = pendingPromptRegeneration;
         pendingRebuild = false;
+        pendingPromptRegeneration = false;
+
         log.header(`${c.yellow}[Build] Rebuild${c.reset}`);
         log.step(`File changed: ${c.cyan}${filename}${c.reset}`);
+
+        if (shouldRegeneratePrompts) {
+          await generatePromptManifest();
+        }
+
         await cleanOutputDir();
-        await buildPlugin();
-        log.success("Rebuild complete");
-      } while (pendingRebuild);
+        const success = await buildPlugin();
+        if (success) {
+          log.success("Rebuild complete");
+        } else {
+          log.error("Rebuild failed");
+        }
+      }
     })();
 
     try {
@@ -186,40 +193,18 @@ function watchFiles() {
     }
   }
 
-  const watcher = watch(
-    "./",
-    { recursive: true },
-    (_eventType, filename) => {
-      if (!filename) return;
-
-      // Normalize filename for consistent comparison
-      const normalizedFilename = normalize(filename);
-
-      // Ignore output directory (compare normalized paths)
-      if (
-        normalizedFilename === OUTPUT_DIR_NAME ||
-        normalizedFilename.startsWith(`${OUTPUT_DIR_NAME}${sep}`)
-      ) {
-        return;
-      }
-
-      // Ignore other non-source files
-      if (
-        normalizedFilename.endsWith(".js.map") ||
-        normalizedFilename.includes(".git") ||
-        normalizedFilename.startsWith(`node_modules${sep}`) ||
-        normalizedFilename === "node_modules"
-      ) {
-        return;
-      }
-
-      queueRebuild(filename);
-    }
+  const watchers = RUNTIME_WATCH_TARGETS.map((target) =>
+    watch(target.path, { recursive: target.recursive }, (_eventType, filename) => {
+      const changedPath =
+        target.recursive && filename ? `${target.path}/${filename}` : target.path;
+      const action = classifyWatchPath(changedPath);
+      if (action === "ignore") return;
+      void queueRebuild(changedPath, action);
+    })
   );
 
-  // Handle process termination
   process.on("SIGINT", () => {
-    watcher.close();
+    for (const watcher of watchers) watcher.close();
     log.dim("[Build] Watch mode stopped");
     process.exit(0);
   });

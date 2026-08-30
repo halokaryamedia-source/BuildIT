@@ -17,7 +17,25 @@ Production plugin: `dist/blockit_mcp.js`. The filename must match the stable `bl
 
 `bun run build` embeds a deterministic SHA-256 `build_identity` into the production bundle. When the desktop plugin is running, `bun run verify:stateless-local` compares that exact local bundle identity, expected profile/phase, and live `tools/list`. It does not replace the later fresh-client or visual acceptance gates.
 
-`bun run dev:watch` is build/watch only. Loading or replacing the installed desktop Blockbench plugin is a separate explicit local action. Do **not** use the upstream hosted plugin as runtime authority for this repository; upstream contributors remain credited in package metadata, while BlockIT source/builds come from this repository.
+## Local Development Loop
+
+`bun run typecheck` remains the authoritative TypeScript check. TypeScript reuses ignored local state at `mcp/.cache/tsconfig.tsbuildinfo` on repeated runs; CI starts from a clean checkout, so the same command remains a cold authoritative gate there. Use `bun run typecheck:profile` only when compiler timing itself needs diagnosis.
+
+```bash
+bun run dev:watch
+```
+
+Watch mode builds once, then observes only production runtime inputs (`index.ts`, runtime source directories, icon/about assets, and the canonical Bedrock workflow prompt). Tests, generated docs, caches, and unrelated package files do not trigger plugin rebuilds. Editing `prompts/bedrock_entity_workflow.md` regenerates `prompts/manifest.json` before the plugin rebuild so the running artifact cannot silently lag the canonical prompt. Restart watch mode after changing build tooling, dependencies, or package metadata.
+
+Installing the built artifact remains explicit. To copy the exact production bundle into a known local Blockbench plugin file:
+
+```bash
+bun run deploy:local -- /absolute/path/to/blockit_mcp.js
+```
+
+The destination must be an existing directory plus an absolute file path ending in `blockit_mcp.js`. `BLOCKIT_PLUGIN_PATH` may be used instead of the positional path. The helper builds first, copies exact bytes, verifies the embedded `build_identity`, prints the deployed identity, and **does not** reload Blockbench or reconnect the MCP client automatically. Reload/reconnect explicitly, then run `bun run verify:stateless-local` when live proof is required.
+
+Do **not** use the upstream hosted plugin as runtime authority for this repository; upstream contributors remain credited in package metadata, while BlockIT source/builds come from this repository.
 
 ## Endpoint / Containment
 
@@ -96,7 +114,7 @@ lib/          shared schemas/factories/runtime helpers
 ui/           Blockbench panel/settings
 prompts/      runtime workflow + generated manifest
 build/        build/docs/manifest tooling
-scripts/      verification/measurement utilities
+scripts/      verification/measurement/local-deploy utilities
 tests/        contract/integration regressions
 docs/         generated API documentation
 ```

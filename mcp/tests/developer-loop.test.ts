@@ -1,0 +1,118 @@
+import { describe, expect, test } from "bun:test";
+import { mkdtempSync, mkdirSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { generatePromptManifest } from "@/build/generate-manifest";
+import {
+  RUNTIME_WATCH_TARGETS,
+  classifyWatchPath,
+} from "@/build/watch-policy";
+import {
+  deployArtifact,
+  extractBuildIdentity,
+  resolveDeployTarget,
+} from "@/scripts/deploy-local";
+
+describe("developer loop", () => {
+  test("authoritative typecheck reuses only ignored local incremental state", async () => {
+    const [packageJson, tsconfig, gitignore] = await Promise.all([
+      Bun.file("package.json").json(),
+      Bun.file("tsconfig.json").json(),
+      Bun.file("../.gitignore").text(),
+    ]);
+
+    expect(packageJson.scripts.typecheck).toBe("tsc --noEmit");
+    expect(packageJson.scripts["typecheck:profile"]).toBe(
+      "tsc --noEmit --extendedDiagnostics"
+    );
+    expect(tsconfig.compilerOptions.incremental).toBe(true);
+    expect(tsconfig.compilerOptions.tsBuildInfoFile).toBe(
+      ".cache/tsconfig.tsbuildinfo"
+    );
+    expect(gitignore).toContain("mcp/.cache/");
+  });
+
+  test("watch mode observes production inputs instead of the entire MCP tree", async () => {
+    const packageJson = await Bun.file("package.json").json();
+    const buildSource = await Bun.file("build/index.ts").text();
+
+    expect(packageJson.scripts["dev:watch"]).toBe(
+      "bun run prompts:build && bun run ./build --sourcemap --watch"
+    );
+    expect(
+      packageJson.scripts["dev:watch"].match(/prompts:build/g)?.length ?? 0
+    ).toBe(1);
+    expect(buildSource).not.toContain('watch("./"');
+    expect(buildSource).toContain("RUNTIME_WATCH_TARGETS.map");
+
+    expect(RUNTIME_WATCH_TARGETS.map((entry) => entry.path)).toEqual([
+      "index.ts",
+      "icon.svg",
+      "about.md",
+      "server",
+      "lib",
+      "ui",
+      "macros",
+      "prompts/bedrock_entity_workflow.md",
+    ]);
+
+    expect(classifyWatchPath("server/tools/cubes.ts")).toBe("rebuild");
+    expect(classifyWatchPath("lib/factories.ts")).toBe("rebuild");
+    expect(classifyWatchPath("ui/settings.ts")).toBe("rebuild");
+    expect(classifyWatchPath("macros/getIcon.ts")).toBe("rebuild");
+    expect(classifyWatchPath("prompts/bedrock_entity_workflow.md")).toBe(
+      "regenerate-prompts-and-rebuild"
+    );
+    expect(classifyWatchPath("tests/developer-loop.test.ts")).toBe("ignore");
+    expect(classifyWatchPath("docs/api.json")).toBe("ignore");
+    expect(classifyWatchPath("prompts/manifest.json")).toBe("ignore");
+  });
+
+  test("prompt generator is import-safe for watch-mode reuse", () => {
+    expect(typeof generatePromptManifest).toBe("function");
+  });
+
+  test("local deploy requires one explicit absolute stable plugin path", () => {
+    const root = mkdtempSync(join(tmpdir(), "blockit-deploy-target-"));
+    try {
+      const target = join(root, "blockit_mcp.js");
+      expect(resolveDeployTarget([target], {})).toBe(target);
+      expect(resolveDeployTarget([], { BLOCKIT_PLUGIN_PATH: target })).toBe(target);
+      expect(() => resolveDeployTarget([], {})).toThrow(/Missing local Blockbench plugin destination/);
+      expect(() => resolveDeployTarget(["relative/blockit_mcp.js"], {})).toThrow(
+        /absolute filesystem path/
+      );
+      expect(() => resolveDeployTarget([join(root, "wrong-name.js")], {})).toThrow(
+        /blockit_mcp\.js/
+      );
+      expect(() => resolveDeployTarget([target, target], {})).toThrow(
+        /exactly one destination path/
+      );
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  test("local deploy copies exact built bytes and preserves build identity", async () => {
+    const root = mkdtempSync(join(tmpdir(), "blockit-deploy-copy-"));
+    try {
+      const sourceDir = join(root, "source");
+      const installDir = join(root, "installed");
+      mkdirSync(sourceDir);
+      mkdirSync(installDir);
+
+      const source = join(sourceDir, "blockit_mcp.js");
+      const target = join(installDir, "blockit_mcp.js");
+      const identity = `sha256:${"a".repeat(64)}`;
+      const content = `globalThis.__BLOCKIT_BUILD_ID__ = ${JSON.stringify(identity)};\nconsole.log("fixture");\n`;
+      await Bun.write(source, content);
+
+      expect(extractBuildIdentity(content)).toBe(identity);
+      const receipt = await deployArtifact(source, target);
+      expect(receipt).toEqual({ target, build_identity: identity });
+      expect(await Bun.file(target).text()).toBe(content);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+});

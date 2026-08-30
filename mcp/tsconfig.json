@@ -16,6 +16,8 @@
         "resolveJsonModule": true,
         "forceConsistentCasingInFileNames": true,
         "skipLibCheck": true,
+        "incremental": true,
+        "tsBuildInfoFile": ".cache/tsconfig.tsbuildinfo",
         "types": [
             "blockbench-types",
             "bun"
