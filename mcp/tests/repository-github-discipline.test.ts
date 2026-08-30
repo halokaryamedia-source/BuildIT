@@ -123,7 +123,7 @@ describe("repository GitHub discipline", () => {
     expect(release).toContain("pull_request:\n    branches:\n      - main");
 
     expect(repository).toContain('"mcp/package.json"');
-    expect(authoring).toContain('"mcp/package.json"');
+    expect(authoring).not.toContain('"mcp/package.json"');
     expect(authoring).toContain('"Experimental/route1-hunyuan-poc/**"');
     expect(mcp).toContain('"mcp/**"');
 
