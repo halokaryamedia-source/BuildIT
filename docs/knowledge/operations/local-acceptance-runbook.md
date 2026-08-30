@@ -210,16 +210,6 @@ REGRESSED
 
 Quality must stay accepted while Cost to Accepted Result decreases; otherwise no efficiency improvement is claimed. Do not invent token or latency numbers; unknown values remain `UNVERIFIED`.
 
-For before/after optimization work, use the fixed Geometry suite in `Experimental/authoring-efficiency-benchmark/`. Run each case from a fresh project and fresh agent/client session; do not inspect the existing approved `.bbmodel` or `.geo.json` before the case quality verdict. Store result JSON only under an ignored local `.cache/` path, then compare from `mcp/`:
-
-```bash
-bun run eval:authoring-efficiency -- \
-  ../workspace/active/Clockwork/.cache/authoring-efficiency/baseline.json \
-  ../workspace/active/Clockwork/.cache/authoring-efficiency/candidate.json
-```
-
-The benchmark uses a quality-first Pareto comparison and deliberately has no weighted score. `TRADEOFF` requires diagnosis; it is not automatically an improvement. `bun run eval:tool-discovery` remains only a static routing proxy.
-
 ## 9. Failure / Completion
 
 Use the first wrong owner:
