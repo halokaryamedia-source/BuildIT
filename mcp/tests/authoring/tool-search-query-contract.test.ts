@@ -9,11 +9,14 @@ describe("exact-name tool search contract", () => {
 
     expect(skill).toContain("deferred spec loading after routing");
     expect(skill).toContain("the exact selected tool name only");
-    expect(skill).toContain("The fallback is search-backend recovery, **not re-routing**");
-    expect(skill).toContain("exact name + one distinguishing domain noun, once");
+    expect(skill).toContain("One precise search");
+    expect(skill).toContain("reformulate once");
+    expect(skill).toContain("search-backend recovery, **not re-routing**");
 
-    expect(routedEval).toContain("testCase.query = testCase.expected");
+    expect(routedEval).toContain("query: testCase.expected");
     expect(routedEval).toContain('routed_query_contract: "<exact_selected_tool_name>"');
+    expect(routedEval).toContain("applyMcpToolSurface");
+    expect(routedEval).toContain("getMcpSurfaceToolNames");
     expect(routedEval).not.toContain("`${testCase.expected} ${testCase.query}`");
   });
 });
