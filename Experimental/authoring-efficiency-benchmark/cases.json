@@ -1,0 +1,87 @@
+{
+  "schema_version": 1,
+  "suite": "clockwork-geometry-v1",
+  "scope": "geometry-only",
+  "cases": [
+    {
+      "id": "clockwork-signal-lamp",
+      "complexity": "small",
+      "reference": "workspace/active/Clockwork/references/signal-lamp.png",
+      "forbidden_baselines": [
+        "workspace/active/Clockwork/clockwork-signal-lamp.bbmodel",
+        "workspace/active/Clockwork/clockwork-signal-lamp.geo.json"
+      ],
+      "target_dimensions": {
+        "width": 24,
+        "depth": 24,
+        "height": 36
+      },
+      "required_quality_dimensions": [
+        "identity",
+        "primary_form",
+        "cross_view_coherence",
+        "topology_attachment",
+        "buildability"
+      ],
+      "acceptance_notes": [
+        "Compact semi-steampunk signal lamp intended for a 3x3 pillar.",
+        "Base is centered and flush on the pillar top surface.",
+        "Housing remains coherent across the approved views; color-state differences are outside Geometry scope."
+      ]
+    },
+    {
+      "id": "clockwork-spike-floor-trap",
+      "complexity": "medium",
+      "reference": "workspace/active/Clockwork/references/spike-floor-trap.png",
+      "forbidden_baselines": [
+        "workspace/active/Clockwork/clockwork-spike-floor-trap.bbmodel",
+        "workspace/active/Clockwork/clockwork-spike-floor-trap.geo.json"
+      ],
+      "target_dimensions": {
+        "width": 16,
+        "depth": 16,
+        "height": 8
+      },
+      "required_quality_dimensions": [
+        "identity",
+        "primary_form",
+        "cross_view_coherence",
+        "topology_attachment",
+        "negative_space",
+        "buildability"
+      ],
+      "acceptance_notes": [
+        "Compact 1x1 floor-mounted active spike trap.",
+        "Base is flush to the floor and stays inside the target envelope.",
+        "Four shorter outer spikes and one taller center spike preserve the approved height hierarchy and spacing."
+      ]
+    },
+    {
+      "id": "clockwork-power-ring",
+      "complexity": "large",
+      "reference": "workspace/active/Clockwork/references/power-ring.png",
+      "forbidden_baselines": [
+        "workspace/active/Clockwork/clockwork-power-ring.bbmodel",
+        "workspace/active/Clockwork/clockwork-power-ring.geo.json"
+      ],
+      "target_dimensions": {
+        "width": 32,
+        "depth": 24,
+        "height": 36
+      },
+      "required_quality_dimensions": [
+        "identity",
+        "primary_form",
+        "cross_view_coherence",
+        "topology_attachment",
+        "negative_space",
+        "buildability"
+      ],
+      "acceptance_notes": [
+        "Compact power-ring conduit paired with the Clockwork generator.",
+        "Preserve the continuous segmented ring, three mechanical hubs, dual supports, floating stepped core, four conduits, and base control details.",
+        "The major central opening and support relationships must remain coherent across approved views."
+      ]
+    }
+  ]
+}
