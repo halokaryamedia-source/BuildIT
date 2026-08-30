@@ -8,16 +8,14 @@ From `mcp/`:
 
 ```bash
 bun install --frozen-lockfile
-bun run typecheck
-bun run test
-bun run measure:surface
-bun run build
-bun run docs:check
+bun run verify:mcp
 ```
+
+`package.json` owns verifier composition. Use `verify:repository` for repository/static contracts, `verify:authoring` for authoring-policy contracts, `verify:mcp` for executable/public MCP changes, and `verify:release` for the `main` release boundary. During iteration, run only the smallest targeted test or primitive command that can falsify the change.
 
 Production plugin: `dist/blockit_mcp.js`. The filename must match the stable `blockit_mcp` plugin ID. `dist/` is generated output; package version alone is not artifact-freshness proof.
 
-`bun run build` embeds a deterministic SHA-256 `build_identity` into the production bundle. When the desktop plugin is running, `bun run verify:stateless-local` compares that exact local bundle identity, expected profile/phase, and live `tools/list`. It does not replace the later fresh-Codex or visual acceptance gates.
+`bun run build` embeds a deterministic SHA-256 `build_identity` into the production bundle. When the desktop plugin is running, `bun run verify:stateless-local` compares that exact local bundle identity, expected profile/phase, and live `tools/list`. It does not replace the later fresh-client or visual acceptance gates.
 
 `bun run dev:watch` is build/watch only. Loading or replacing the installed desktop Blockbench plugin is a separate explicit local action. Do **not** use the upstream hosted plugin as runtime authority for this repository; upstream contributors remain credited in package metadata, while BlockIT source/builds come from this repository.
 
@@ -107,4 +105,4 @@ Generated API/prompt artifacts follow source generators and must never be hand-e
 
 ## Proof Boundary
 
-Current continuation lives in `../docs/knowledge/next-action.md`; proof history/current evidence lives in `../docs/foundation/validation-report.md`. Source or CI success does not by itself prove live Blockbench rendering, visual fidelity, playback, or current installed-plugin/Codex behavior.
+Current continuation lives in `../docs/knowledge/next-action.md`; current proof interpretation lives in `../docs/knowledge/current-validation.md`. Source or CI success does not by itself prove live Blockbench rendering, visual fidelity, playback, or current installed-plugin/client behavior.

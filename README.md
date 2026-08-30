@@ -69,12 +69,10 @@ From `mcp/`:
 
 ```bash
 bun install --frozen-lockfile
-bun run typecheck
-bun run test
-bun run measure:surface
-bun run build
-bun run docs:check
+bun run verify:mcp
 ```
+
+`mcp/package.json` owns verifier composition. Use targeted tests during iteration; use `verify:repository`, `verify:authoring`, `verify:mcp`, or `verify:release` only for the proof surface that changed.
 
 Development watch mode builds only:
 

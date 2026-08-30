@@ -36,17 +36,5 @@ jobs:
       - name: Install dependencies from lockfile
         run: bun install --frozen-lockfile
 
-      - name: Typecheck
-        run: bun run typecheck
-
-      - name: Full regression suite
-        run: bun run test
-
-      - name: Catalog MCP surface measurement
-        run: bun run measure:surface
-
-      - name: Production build
-        run: bun run build
-
-      - name: Generated docs freshness
-        run: bun run docs:check
+      - name: Verify release contract
+        run: bun run verify:release

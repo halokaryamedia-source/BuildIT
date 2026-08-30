@@ -63,20 +63,4 @@ jobs:
         run: bun install --frozen-lockfile --production
 
       - name: Verify authoring policy and routing
-        run: |
-          bun test \
-            tests/static-footprint-budget.test.ts \
-            tests/documentation-handoff.test.ts \
-            tests/active-routing-integrity.test.ts \
-            tests/*authoring*.test.ts \
-            tests/asset-tool-routing.test.ts \
-            tests/reference-generator-buildability.test.ts \
-            tests/model-effectiveness-*.test.ts \
-            tests/texture-design-reasoning.test.ts \
-            tests/texture-production-discipline.test.ts \
-            tests/texture-visual-convergence.test.ts \
-            tests/animation-professional-reasoning.test.ts \
-            tests/codex-agent-legibility-contract.test.ts \
-            tests/prelocal-prompt-skill-surface.test.ts \
-            tests/prelocal-usage-optimization.test.ts \
-            tests/route1-hunyuan-reproducibility.test.ts
+        run: bun run verify:authoring

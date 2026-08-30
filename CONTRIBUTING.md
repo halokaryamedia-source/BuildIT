@@ -28,32 +28,30 @@ Do not broad-read the repository or historical material for reassurance. Fix the
 
 ## Verification
 
-Use the cheapest check that can falsify the changed claim.
+Use the cheapest check that can falsify the changed claim. From `mcp/`, canonical verifier composition is owned by `package.json`:
 
-Repository/routing/static-policy changes use the repository or authoring-policy verification surface that owns them. Executable/public MCP changes use the canonical MCP gate from `mcp/`:
-
-```bash
-bun install --frozen-lockfile
-bun run typecheck
-bun run test
-bun run measure:surface
-bun run build
-bun run docs:check
+```text
+repository/static policy → bun run verify:repository
+authoring/static policy  → bun run verify:authoring
+executable/public MCP    → bun run verify:mcp
+main release boundary    → bun run verify:release
 ```
 
-Do not run the full MCP gate merely because a Markdown or repository-routing file changed. Live Blockbench, visual, playback, persistence, and installed-plugin claims require matching local/runtime evidence.
+Install the locked dependency surface required by the selected verifier. During iteration, prefer a targeted `bun test <file>` or primitive command; do not run a full verifier merely because a Markdown or routing file changed.
+
+Live Blockbench, visual, playback, persistence, installed-plugin, and client-registry claims require matching local/runtime evidence.
 
 ## CI behavior
 
 CI on `Local` is an asynchronous regression safety net, not a blocking permission gate for normal development.
 
 - Use the cheapest relevant proof before committing.
-- After a normal `Local` commit, continue work without polling or waiting for queued/in-progress CI.
+- After a normal `Local` commit, continue work without waiting for queued/in-progress CI unless its result is required for the next decision.
 - Only a failure on the current relevant `Local` HEAD needs diagnosis; cancelled or superseded runs can be ignored.
 - `Repository Verify` owns repository/routing/security/static infrastructure contracts.
 - `Authoring Policy Verify` owns static authoring policy, specialist routing, and Route 1 source/reproducibility contracts.
 - `MCP Verify` owns executable/public MCP source, build, generated-doc, and full package regressions.
-- `Release Verify` runs the full canonical gate for `main` pull requests and stable-branch pushes.
+- `Release Verify` runs the canonical release gate for `main` pull requests and stable-branch pushes.
 
 ## Generated files
 

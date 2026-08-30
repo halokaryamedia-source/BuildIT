@@ -87,14 +87,23 @@ Runtime bundles only prompts intentionally exposed by `server/prompts.ts`; maint
 
 ## Verification
 
-Verification follows the changed claim; the full MCP gate is not an iteration loop.
+Verification follows the changed claim; `package.json` owns verifier composition so CI, local work, and docs do not maintain separate command lists.
+
+Canonical entrypoints from `mcp/`:
+
+```text
+repository-policy / repository-static contract → bun run verify:repository
+authoring-policy / authoring-static contract   → bun run verify:authoring
+executable or public MCP behavior               → bun run verify:mcp
+main release boundary                           → bun run verify:release
+```
 
 ### During iteration
 
 - Run the smallest regression that can falsify the change.
 - Run `bun run typecheck` when TypeScript/source shape makes it useful.
 - Regenerate affected docs/prompt output before final delivery.
-- Do not rerun the full canonical gate after each edit.
+- Do not rerun a canonical full verifier after each edit.
 
 ### Final MCP gate
 
@@ -102,19 +111,7 @@ For one final logical change affecting executable source, public MCP contracts, 
 
 ```bash
 bun install --frozen-lockfile
-bun run typecheck
-bun run test
-bun run measure:surface
-bun run build
-bun run docs:check
-```
-
-Verifier ownership follows the claim, not a test file's location:
-
-```text
-repository-policy / repository-static contract → Repository Verify
-authoring-policy / authoring-static contract   → Authoring Policy Verify
-executable or public MCP behavior               → MCP Verify
+bun run verify:mcp
 ```
 
 A file under `mcp/tests/` alone never upgrades a static policy change into a full MCP gate. GitHub/static proof covers source contracts/buildability, not live Blockbench rendering, Undo, playback, persistence, or visual fidelity.

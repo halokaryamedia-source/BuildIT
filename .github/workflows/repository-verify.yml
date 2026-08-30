@@ -21,6 +21,7 @@ on:
       - "docs/knowledge/operations/**"
       - "mcp/AGENTS.md"
       - "mcp/README.md"
+      - "mcp/package.json"
       - "mcp/tests/repository-*.test.ts"
       - "mcp/tests/documentation-handoff.test.ts"
       - "mcp/tests/experimental-authoring-contract.test.ts"
@@ -57,10 +58,4 @@ jobs:
           bun-version-file: ".bun-version"
 
       - name: Verify repository routing and policy
-        run: |
-          bun test \
-            tests/repository-github-discipline.test.ts \
-            tests/repository-supply-chain.test.ts \
-            tests/experimental-authoring-contract.test.ts \
-            tests/documentation-handoff.test.ts \
-            tests/active-routing-integrity.test.ts
+        run: bun run verify:repository
