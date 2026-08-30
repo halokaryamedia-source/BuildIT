@@ -6,10 +6,11 @@ Canonical GitHub operating rules for AI/ChatGPT in this repository. Root and nea
 
 ## How to use this file
 
-Apply Core Rules 1–7 in order. Conditional sections apply only when the current task touches that surface.
+Apply Core Rules 1–7 in order. Root `AGENTS.md` classifies the execution context before task class.
 
 ```text
 PIN
+→ EXECUTION CONTEXT
 → READ MINIMUM
 → DIAGNOSE
 → TOOL + TRANSFER GATE
@@ -28,13 +29,29 @@ Before a material change, know the repository, intended ref, current HEAD when m
 - Direct branch/file fetch is current-state authority; search is discovery.
 - Every supported write explicitly targets the intended ref.
 - `main`, protected, production, release, archived, or read-only refs are not write targets without explicit authority.
-- Replacement/deletion uses the current blob/content SHA from the exact target branch.
-- Re-check HEAD only when concurrency is plausible or immediately before a final ref move that could overwrite newer work.
+- Replacement/deletion uses current content/blob authority from the exact target branch.
+- Re-check HEAD only when concurrency is plausible or immediately before a ref move that could overwrite newer work.
 - Current source plus relevant proof outranks stale continuation prose.
+
+### Execution context / proof ceiling
+
+Classify by actual capability, not UI/product name:
+
+```text
+REMOTE_GITHUB   = repository/GitHub + CI evidence; no local worktree/Bun/installed Blockbench
+LOCAL_CODE      = local checkout + Bun/tests/build/generators/filesystem
+LIVE_BLOCKBENCH = LOCAL_CODE + deployed/reloaded BlockIT + reconnected live MCP client
+```
+
+- `REMOTE_GITHUB` may implement changes whose requested acceptance is fully source/static/CI-verifiable.
+- `LOCAL_CODE` additionally owns canonical local generators, build/test, and filesystem proof.
+- `LIVE_BLOCKBENCH` is required for installed build identity, live `tools/list`, Blockbench Undo/playback/persistence, and live visual/runtime proof.
+- If complete delivery or required proof exceeds the current context, transfer before substantial edits accumulate. A bounded source result may still be delivered when complete within the current ceiling, with remaining proof labeled `LOCAL PROOF REQUIRED`.
+- GitHub Actions may verify repository contracts; CI is not a substitute for generator-authored committed output or live Blockbench proof.
 
 ## 2. READ MINIMUM — read only what can change the decision
 
-After the Development continuity boot, default to:
+After the reusable boot, default to:
 
 ```text
 owner/source files   1–3
@@ -42,13 +59,11 @@ history reads        0
 broad scans          0
 ```
 
-The boot defined by root `AGENTS.md` may be reused within the same conversation/development session while repository, branch, GitHub Rules, and continuation authority have not materially changed. Do not reread the full boot set for each subtask merely for reassurance.
-
 - Prefer direct fetch when the exact path is known.
 - For a named MCP defect, use `docs/knowledge/implementation-map.md` before broad search.
 - Open more only for a concrete unresolved question.
 - Truncated, paginated, partial, or capped output is incomplete evidence, not proof of absence.
-- Verify exact repository/ref/access once before concluding a missing target is absent.
+- Verify exact repository/ref/access once before concluding a target is absent.
 - Read history only when rationale or regression origin can change the decision.
 
 ## 3. DIAGNOSE — fix the first wrong owner
@@ -79,7 +94,7 @@ derived artifact wrong
 ```
 
 - Do not widen maintenance into redesign.
-- Do not perform unrelated cleanup, compatibility work, dependency upgrades, framework creation, or documentation synchronization unless required by the same logical outcome.
+- Do not perform unrelated cleanup, dependency upgrades, compatibility work, framework creation, or documentation synchronization unless required by the same logical outcome.
 - CI failure is evidence to diagnose, not permission to change the easiest file.
 - Historical TODOs, audits, interrupted candidates, and old experiments are inactive unless reproduced or explicitly reactivated.
 - `No change required` is valid.
@@ -87,40 +102,30 @@ derived artifact wrong
 
 ## 4. TOOL + TRANSFER GATE — choose a method that fits
 
-ChatGPT and Codex/local workspaces are both valid development channels. Choose the simplest capability that can safely deliver the complete intended result.
+Choose the simplest method that can complete the intended result **inside the current execution-context ceiling**.
 
 ```text
-exact current file / branch state
-→ direct GitHub fetch
+REMOTE_GITHUB
+→ exact current file/branch state: direct GitHub fetch
+→ one bounded UTF-8 file: Contents API
+→ coherent multi-file UTF-8 change: atomic Git delivery
+→ CI diagnosis: run → failing job/step → relevant log
 
-one bounded UTF-8 file
-+ complete current file available
-+ one logical delivery
-→ GitHub Contents API
+LOCAL_CODE
+→ precise patch iteration / local generator / build / filesystem-heavy work
+→ local git workspace or another fitting local capability
 
-coherent multi-file UTF-8 change authored in ChatGPT
-+ complete final contents known
-+ atomic history required
-+ Git-data capability available
-→ ChatGPT atomic Git delivery
+LIVE_BLOCKBENCH
+→ installed plugin / Blockbench / visual / local-runtime claim
+→ matching live runtime capability
 
-precise patch iteration / local generator or build needed /
-binary / Git LFS / filesystem-heavy work
-→ local/Codex git workspace or another fitting capability
-
-final payload cannot be carried safely
-→ Manual Handoff
-
-CI diagnosis
-→ run → failing job/step → relevant log
-
-Blockbench / browser / visual / local-runtime claim
-→ matching runtime capability
+required completion cannot fit current context
+→ Execution Handoff
 ```
 
 ### ChatGPT atomic Git delivery
 
-Use low-level Git-data operations as an intentional delivery mechanism only after the complete coherent text change is ready.
+Use low-level Git-data operations only after the complete coherent text change is ready.
 
 ```text
 pin exact Local HEAD + base tree
@@ -154,26 +159,29 @@ Also:
 
 - Never split `update_file`; it replaces the whole file.
 - Keep blob/content SHA, commit SHA, tree SHA, ref, workflow-run ID, artifact ID, and job ID distinct.
-- Low-level Git is valid for the bounded atomic-delivery contract above or genuine Git semantics; it is not an iterative scratch editor or retry strategy.
+- Low-level Git is not an iterative scratch editor or retry strategy.
 - Never force-push, rewrite history, destructive-reset, or change repository structure to work around stale state, CI failure, connector limits, or messy history.
-- GitHub Actions is verification/deployment infrastructure, not a remote shell, source editor, or transfer engine.
+- GitHub Actions is verification/deployment infrastructure, not a remote shell, source editor, generator-authoring path, or transfer engine.
 
-### Manual Handoff
+### Execution Handoff
 
-Use Manual Handoff only when direct repository delivery is unavailable, unsafe, materially slower, or harmful to history.
-
-Provide the exact final file/package plus:
+Use when the required delivery/proof exceeds the current context. Provide:
 
 ```text
+FROM_CONTEXT: REMOTE_GITHUB | LOCAL_CODE
+TO_CONTEXT: LOCAL_CODE | LIVE_BLOCKBENCH
 repository
 branch/ref
-destination
-action: upload | replace | merge | extract
-expected result
-current repository state
+pinned HEAD
+completed
+pending
+why higher capability is required
+first command/action
+acceptance
+do not redo
 ```
 
-Do not claim repository presence until the artifact is actually uploaded.
+Do not claim local/runtime completion until the receiving context actually executes it.
 
 ## 5. WRITE ONCE — deliver one meaningful logical state
 
@@ -199,7 +207,7 @@ any NO
 - If HEAD moves materially, refetch affected state and rebuild from current authority.
 - Keep one canonical owner per durable rule/state where practical.
 - Update README/status/continuation/proof only when the state it owns actually changes.
-- Preserve lockfiles, runtime/version constraints, and pinned action revisions unless they are the actual owner.
+- Preserve lockfiles, runtime/version constraints, and pinned/trusted action versions unless they are the actual owner.
 - New files, workflows, abstractions, fixtures, reports, branches, PRs, issues, comments, labels, and releases default to zero unless scope proves a need.
 - Generated MCP API docs follow canonical source + generator; never hand-edit them to obtain green status.
 - `Experimental/` evidence is not production capability or local-acceptance proof.
@@ -218,15 +226,9 @@ prepare complete logical change
 → STOP
 ```
 
-Message format:
+Message format: `<type>(<optional-scope>): <concise logical outcome>`.
 
-```text
-<type>(<optional-scope>): <concise logical outcome>
-```
-
-Use `feat`, `fix`, `docs`, `refactor`, `test`, `ci`, `build`, `release`, or bounded `chore`.
-
-Split commits only for genuinely independent outcomes that can be reviewed/reverted separately. Never split by file, tool call, technical layer, discovery order, or transfer limitation. Do not rewrite published/shared history merely for aesthetics.
+Use `feat`, `fix`, `docs`, `refactor`, `test`, `ci`, `build`, `release`, or bounded `chore`. Split commits only for genuinely independent outcomes. Never split by file, tool call, technical layer, discovery order, or transfer limitation. Do not rewrite published/shared history merely for aesthetics.
 
 ## 6. VERIFY + FAILURE POLICY — prove only what matters
 
@@ -234,13 +236,13 @@ Validation is evidence, not ceremony.
 
 - Run the cheapest check that can falsify the changed claim.
 - Use targeted checks during iteration.
-- Use the full MCP suite once on the final logical state only when executable/public MCP contracts can actually be affected.
-- Policy/routing/planning/status-only changes use only repository/static verification that owns those contracts.
+- Use the full MCP suite once on final state only when executable/public MCP contracts can actually be affected.
+- Policy/routing/planning/status-only changes use only the repository/static verification that owns those contracts.
 - Only completed successful verification is PASS; queued, running, cancelled, skipped, neutral, or superseded is not PASS.
 - On failure, inspect the failing job/step and relevant error before editing.
 - Do not weaken or bypass a valid verifier merely to get green.
-- Regression tests protect material recurring invariants, not cosmetic prose. Do not use exact natural-language wording as a test contract unless the exact string is machine-required.
-- Static source/CI evidence proves only what it exercises. It does not prove live Blockbench behavior, visual fidelity, persistence, playback, browser behavior, deployment, or local runtime unless those actually ran.
+- Regression tests protect material recurring invariants, not cosmetic prose.
+- **Static source/CI evidence does not prove live Blockbench behavior**, visual fidelity, persistence, playback, deployment, or local runtime unless those actually ran.
 - User-deferred live/local testing stays deferred until explicitly reactivated.
 
 ### Failure / retry matrix
@@ -257,15 +259,7 @@ Validation is evidence, not ceremony.
 | 5xx/timeout/unknown mutation | inspect target state before retry |
 | Same-cause valid-method failure with new evidence | maximum **2 attempts** |
 
-Transfer experimentation:
-
-```text
-strategy                 1 default; 2 maximum only if root limitation is removed
-per valid method         <= 2 attempts / about 2 minutes
-whole delivery           <= about 3 minutes active experimentation
-```
-
-Changing tools, encodings, branches, Git-object types, or representations does not reset the ceiling.
+Changing tools, encodings, branches, Git-object types, or representations does not reset retry ceilings.
 
 ### Interrupted delivery
 
@@ -279,7 +273,7 @@ Stop when:
 requested outcome + relevant proof satisfied
 → STOP
 
-confirmed capability mismatch + valid fallback/handoff delivered
+confirmed capability mismatch + valid handoff delivered
 → STOP
 
 authoritative permission/safety/policy boundary blocks the operation
@@ -299,7 +293,6 @@ uncertain-capability probe          <= 1
 same-cause retry                    <= 2
 capability-denial retry             0
 transfer strategies                 1 default; 2 maximum
-whole-delivery experiment           <= ~3 minutes
 intentional writes/file             1
 logical commits/task                1 by default
 push/ref updates/task               1 by default
@@ -328,16 +321,13 @@ research           → Experimental/
 
 ## API failures and ambiguous mutations
 
-Interpret 401 as authentication, 403 as permission/policy/rate-limit, 404 as missing/inaccessible/stale, 409 as conflict/stale state, 422 as invalid request/policy, 429 as rate limiting, and 5xx/timeout as potentially unknown mutation outcome. Rule 6 owns retry behavior.
-
-Do not create request storms. After an unknown mutation outcome, inspect current target state before retry.
+Interpret 401 as authentication, 403 as permission/policy/rate-limit, 404 as missing/inaccessible/stale, 409 as conflict/stale state, 422 as invalid request/policy, 429 as rate limiting, and 5xx/timeout as potentially unknown mutation outcome. After an unknown mutation outcome, inspect current target state before retry.
 
 ## Special files, generated artifacts, and large transfers
 
-Distinguish regular UTF-8 files from symlinks, submodules, Git LFS pointers, generated artifacts, binaries, and files outside practical tool limits.
-
+- Distinguish regular UTF-8 files from symlinks, submodules, Git LFS pointers, generated artifacts, binaries, and files outside practical tool limits.
 - Never hand-edit an LFS pointer as content.
-- Do not rewrite symlinks/submodules/binaries through plain-text replacement unless that representation is intended.
+- Do not rewrite symlinks/submodules/binaries through plain-text replacement unless intended.
 - Generated artifacts follow canonical source and generator.
 - Compression does not make an unsupported transfer method valid.
 

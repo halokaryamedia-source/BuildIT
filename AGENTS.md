@@ -4,20 +4,38 @@ Current intent owns the task; current source and relevant proof own behavior.
 
 ## Branch and boot
 
-- `Local` is the working authority; never silently use another ref. `main` changes only on explicit user request.
-- Choose the smallest sufficient boot. Material GitHub work follows `GITHUB_RULES.md`.
-- Reuse an in-session boot while repository/branch/rule authority remains current.
+- `Local` is the working authority; `main` changes only on explicit user request.
+- Use the smallest sufficient boot; material GitHub work follows `GITHUB_RULES.md`.
+- Reuse an in-session boot while repository/ref/rules remain current.
+
+## Execution Context Gate
+
+Before task classification or implementation, classify by **actual capability**, not product/UI name:
+
+```text
+REMOTE_GITHUB   = GitHub repository + CI; no local worktree/Bun/installed Blockbench
+LOCAL_CODE      = local checkout + Bun/tests/build/generators/filesystem
+LIVE_BLOCKBENCH = LOCAL_CODE + deployed/reloaded BlockIT + reconnected live MCP client
+```
+
+`REMOTE_GITHUB` may implement work provable by source/static/CI. `LOCAL_CODE` may additionally prove local build/test/generator/filesystem behavior. `LIVE_BLOCKBENCH` is required for installed `build_identity`, live `tools/list`, Undo/playback/persistence, and live model/visual/runtime claims.
+
+```text
+required acceptance <= current proof ceiling → continue
+required complete delivery/proof needs unavailable generator/runtime → handoff before substantial edits
+bounded source result is complete here → deliver + mark remaining proof LOCAL PROOF REQUIRED
+```
+
+CI is not a substitute for generator-owned committed output or live Blockbench proof.
 
 ### Observe / recover context
 
 For read-only `amati`, inspect, understand, audit, or recovery:
 
 ```text
-AGENTS.md
-→ GITHUB_RULES.md Core Rules
+AGENTS.md → GITHUB_RULES.md Core Rules
 → CONTEXT.md / next-action only if material
-→ smallest owner
-→ report → STOP
+→ smallest owner → report → STOP
 ```
 
 Do not edit, run CI, advance continuation, activate local acceptance, or execute a recorded next step unless the user also asks to continue/change something.
@@ -25,12 +43,9 @@ Do not edit, run CI, advance continuation, activate local acceptance, or execute
 ### Repository / Plugin Work
 
 ```text
-AGENTS.md
-→ GITHUB_RULES.md Core Rules
+AGENTS.md → GITHUB_RULES.md Core Rules → EXECUTION CONTEXT
 → classify: Bounded | Standard | Complex
-→ exact owner + nearest AGENTS.md
-→ only material continuity/evidence
-→ at most one useful specialist
+→ exact owner + nearest AGENTS.md → only material continuity/evidence
 ```
 
 For a named MCP-tool defect, use `docs/knowledge/implementation-map.md` **Hot-Path Defect Index** before broad search.
@@ -58,81 +73,63 @@ Proof Required
 STOP Condition
 ```
 
-Escalate to full `development-brief` only for architecture/redesign, cross-owner or material ambiguity, non-obvious public/product contract design, unresolved success criteria, or quality / efficiency / accuracy / less-usage / less-looping work. The full route keeps `Forbidden Proxy / Non-Goal` and material unknowns explicit.
-
-Never substitute an easy proxy for the user's success condition. For quality/efficiency work, accepted result quality is the gate; **Authoring Efficiency** is cost to an accepted result; **Static Footprint** is only a context/surface guardrail. Static size or raw call count alone cannot prove improvement. Runtime/visual claims require matching evidence.
+Escalate to `development-brief` only for architecture/redesign, cross-owner/material ambiguity, non-obvious public contract design, unresolved success criteria, or quality/efficiency work. It keeps `Forbidden Proxy / Non-Goal` and material unknowns explicit. Never substitute an easy proxy for the user's success condition; **Authoring Efficiency** is cost to an accepted result and **Static Footprint** is only a guardrail.
 
 ### Bounded Maintenance
 
-A concrete bug, stale rule/test, CI-routing defect, or behavior-preserving cleanup with an exact owner may start from that owner when stable context cannot change the decision.
-
-Do not load `CONTEXT.md`, `next-action.md`, or `development-brief` merely because work touches the repository. Load them only when stable/cross-session state can materially alter scope, ownership, or acceptance. Fix the first wrong owner; do not widen Maintenance into redesign.
+A concrete bug, stale rule/test, CI-routing defect, or behavior-preserving cleanup with an exact owner may start from that owner. Load `CONTEXT.md`, `next-action.md`, or `development-brief` only when they can materially change scope/acceptance. Fix the first wrong owner; do not widen Maintenance into redesign.
 
 ### Standard Development
 
-Use the standard contract when the requirement and likely owner are clear but the change is broader than bounded maintenance. Recover `CONTEXT.md` and `docs/knowledge/next-action.md` only when they can change the decision. Add one specialist only when it contributes material procedure.
+Use the standard contract when requirement and likely owner are clear but work is broader than bounded maintenance. Recover `CONTEXT.md` / `next-action.md` only when material; add one specialist only when useful.
 
 ### Complex / Ambiguous Development
 
-Use `.agents/skills/development-brief/SKILL.md` for architecture/redesign, unclear/cross-owner requirements, material public-contract design, quality/efficiency optimization, or unresolved success criteria. This route recovers `CONTEXT.md` + `docs/knowledge/next-action.md` before implementation.
+Use `.agents/skills/development-brief/SKILL.md` for architecture/redesign, unclear/cross-owner requirements, material public-contract design, quality/efficiency optimization, or unresolved success criteria. Recover `CONTEXT.md` + `next-action.md` before implementation.
 
-## Task Class First
+## Task Class After Context
 
 ### Reference Preparation
 
 ```text
-source image / user intent
-→ blockbench-reference-generator
+source image / user intent → blockbench-reference-generator
 → readiness → one Draft → visual gate → user approval
 ```
 
 ### Asset Authoring
 
 ```text
-current request / approved reference
-→ persistent workspace when needed
-→ blockit-bedrock-entity-mcp
-→ ACTIVE PHASE
-→ active specialist only
-→ BlockIT MCP
+current request / approved reference → persistent workspace when needed
+→ blockit-bedrock-entity-mcp → ACTIVE PHASE → active specialist only → BlockIT MCP
 ```
 
-Do not preload later-phase specialists. On `HANDOFF_REQUIRED`, preserve compact resume-critical state, switch/reload to the target phase, then load only its specialist.
+Do not preload later-phase specialists. On `HANDOFF_REQUIRED`, preserve compact resume-critical state, switch/reload phase, then load only its specialist. `workspace/active/<project>/README.md` owns persistent asset continuity.
 
-`workspace/active/<project>/README.md` owns persistent asset continuity.
-
-For normal asset authoring, **do not automatically load** `CONTEXT.md`, `docs/knowledge/next-action.md`, `development-brief`, Git history, secondary indexes, or foundation docs. Asset authoring is not software **Development** merely because a model changes. Do not route it through `development-brief` unless repository/plugin behavior changes.
+For normal asset authoring, do not automatically load repository continuation/history/foundation docs. Asset authoring is not software **Development** merely because a model changes; do not route it through `development-brief` unless repository/plugin behavior changes.
 
 ## GitHub Work
 
-`GITHUB_RULES.md` owns branch/ref authority, tool fit, atomic delivery, history, CI/API/security, retries, experimental Actions, and STOP behavior. One coherent multi-file change stays one logical commit.
+`GITHUB_RULES.md` owns branch/ref authority, execution-context transfer, atomic delivery, history, CI/API/security, retries, experimental Actions, and STOP behavior. One coherent multi-file change stays one logical commit.
 
 ## Source Precedence
 
 1. current user instruction;
 2. current source + relevant runtime/visual proof;
 3. root/nearest `AGENTS.md`;
-4. current `docs/foundation/` policy;
-5. `docs/knowledge/next-action.md`;
+4. current foundation policy;
+5. `next-action.md`;
 6. `CONTEXT.md`;
-7. history/issues/PRs only when rationale can change the decision.
+7. history only when rationale can change the decision.
 
-If `next-action.md` is stale, current source remains authority. Reconcile it in the same logical delivery when safe; block first only when stale continuation can materially change the decision.
+If continuation is stale, current source remains authority; reconcile it only when its owned state matters.
 
 ## Work Discipline
 
-- Inspect owner/caller/pattern before shared changes.
-- Make the minimum complete change; reuse before adding a layer.
-- Do not broaden scope because adjacent issues are visible.
-- No fallback/framework/profile/compatibility layer without proved need.
+- Inspect owner/caller/pattern before shared changes; make the minimum complete change.
+- Do not broaden scope or add fallback/framework/profile/compatibility layers without proved need.
 - Stop the same failed direction after two attempts without new evidence.
-- `No change required` is valid. Never claim proof not obtained.
+- `No change required` is valid. Never claim proof above the current execution-context ceiling.
 - Update status/continuity only when its owned state changed.
-
-## Execution / Proof
-
-**ChatGPT → GitHub:** repository/source/docs/CI evidence.  
-**Codex local / Blockbench desktop / Opencode local:** local runtime/model/visual proof when explicitly active and required.
 
 ```text
 CURRENT-PROJECT VERIFIED
@@ -142,7 +139,7 @@ UNSUPPORTED
 UNKNOWN
 ```
 
-Source/CI proof never upgrades a live visual/runtime claim. Artifact existence is not visual approval until inspected.
+Source/CI proof never upgrades live visual/runtime proof. Artifact existence is not visual approval until inspected.
 
 ## Product Boundary
 

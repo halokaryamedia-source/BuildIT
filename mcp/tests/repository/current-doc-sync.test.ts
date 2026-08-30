@@ -31,4 +31,37 @@ describe("current developer-facing documentation sync", () => {
     expect(implementation).toContain("`mcp/tests/developer-loop.test.ts`");
     expect(implementation).toContain("77 declared source ToolSpecs");
   });
+
+  test("execution context and proof ceilings stay synchronized", async () => {
+    const [root, githubRules, packageRules] = await Promise.all([
+      text("../AGENTS.md"),
+      text("../GITHUB_RULES.md"),
+      text("AGENTS.md"),
+    ]);
+
+    for (const owner of [root, githubRules, packageRules]) {
+      for (const context of ["REMOTE_GITHUB", "LOCAL_CODE", "LIVE_BLOCKBENCH"]) {
+        expect(owner).toContain(context);
+      }
+    }
+
+    expect(root).toContain("## Execution Context Gate");
+    expect(root).toContain("## Task Class After Context");
+    expect(root).toMatch(/proof ceiling[\s\S]*handoff before substantial edits/i);
+    expect(root).toContain("LOCAL PROOF REQUIRED");
+
+    expect(githubRules).toContain("Execution context / proof ceiling");
+    expect(githubRules).toContain("### Execution Handoff");
+    expect(githubRules).toContain("FROM_CONTEXT");
+    expect(githubRules).toContain("TO_CONTEXT");
+    expect(githubRules).toMatch(/CI is not a substitute[\s\S]*live Blockbench proof/i);
+
+    expect(packageRules).toContain("## Execution Context / Proof Ceiling");
+    expect(packageRules).toMatch(
+      /REMOTE_GITHUB[\s\S]*source\/static\/CI-verifiable[\s\S]*LOCAL_CODE[\s\S]*LIVE_BLOCKBENCH/i
+    );
+    expect(packageRules).toMatch(
+      /generated output or runtime proof[\s\S]*transfer \*\*before substantial edits accumulate\*\*/i
+    );
+  });
 });

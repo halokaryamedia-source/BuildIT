@@ -21,6 +21,22 @@ Use the affected owner + direct callers first. Do not scan every tool family for
 
 TypeScript and Bun are implementation mechanics, not root Skill routes; keep compiler/build issues with the exact affected source/build owner and route only exposed MCP/runtime semantics to the matching specialist.
 
+## Execution Context / Proof Ceiling
+
+Use the root execution-context names by capability, not product/UI label:
+
+```text
+REMOTE_GITHUB   = repository edits + GitHub Actions/source/CI proof
+LOCAL_CODE      = local checkout + Bun/tests/build/generators/filesystem
+LIVE_BLOCKBENCH = LOCAL_CODE + deployed/reloaded BlockIT + reconnected live MCP client
+```
+
+- `REMOTE_GITHUB` may implement MCP changes when acceptance is fully source/static/CI-verifiable. It cannot claim local command execution, canonical generated output it cannot produce, installed-plugin freshness, or live Blockbench behavior.
+- `LOCAL_CODE` owns local generators, typecheck/tests/build, filesystem behavior, and exact generated-artifact synchronization. A successful local build still does not prove the installed Blockbench runtime.
+- `LIVE_BLOCKBENCH` is required for `verify:stateless-local`, installed `build_identity`, live `tools/list`, Undo/playback/persistence, and model/visual/runtime proof.
+
+If complete delivery needs generated output or runtime proof above the current ceiling, transfer **before substantial edits accumulate**. Do not use CI to author generated files and do not hand-edit generated output.
+
 ## MCP Public Contract Pattern
 
 Tool modules stay import-safe outside Blockbench because Bun/Node loads schemas for docs/tests.
@@ -62,19 +78,18 @@ If a broad `ToolSpec` spread weakens inference, restate the same concrete `param
 Before substantial implementation that can change a public schema/description/spec:
 
 ```text
-will generated API change?
-→ active channel can run bun run docs:build + bun run docs:check?
+LOCAL_CODE or LIVE_BLOCKBENCH can run docs:build + docs:check?
   YES → continue
-  NO  → switch to fitting local/Codex workspace or STOP/defer before source edits accumulate
+  NO / REMOTE_GITHUB → transfer or STOP/defer before source edits accumulate
 ```
 
 Before substantial editing of canonical runtime prompt source:
 
 ```text
-active channel can run bun run prompts:build
+LOCAL_CODE or LIVE_BLOCKBENCH can run prompts:build
 + carry prompts/manifest.json in the same logical delivery?
   YES → continue
-  NO  → switch or STOP/defer before prompt edits accumulate
+  NO / REMOTE_GITHUB → transfer or STOP/defer before prompt edits accumulate
 ```
 
 The same package version + canonical prompt content must produce the same manifest bytes; no wall-clock-only metadata. GitHub Actions may verify generated freshness, but is not the authoring path and must not create/commit generated output to `Local`.
@@ -100,9 +115,9 @@ main release boundary                           → bun run verify:release
 
 ### During iteration
 
-- Run the smallest regression that can falsify the change.
-- Run `bun run typecheck` when TypeScript/source shape makes it useful.
-- Regenerate affected docs/prompt output before final delivery.
+- `LOCAL_CODE` / `LIVE_BLOCKBENCH`: run the smallest local regression that can falsify the change; run `typecheck` when useful.
+- `REMOTE_GITHUB`: inspect the smallest relevant GitHub Actions proof; do not treat CI as local execution.
+- Regenerate affected docs/prompt output before final delivery when the current context can canonically do so.
 - Do not rerun a canonical full verifier after each edit.
 
 ### Final MCP gate
