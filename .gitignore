@@ -33,5 +33,9 @@ workspace/**/.cache/
 # Experimental transient runtime/proof output. Intentional harness source stays tracked.
 Experimental/**/.cache/
 
+# Repository-root generated visual/debug output is transient and must stay local.
+.capture/
+.sample-renders/
+
 # Legacy local workspace cache path remains ignored if an older package is opened.
 workspace/**/mcp-data/cache/

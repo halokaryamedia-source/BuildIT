@@ -1,8 +1,17 @@
 # BlockIT
 
-BlockIT is an AI-assisted **Minecraft Bedrock Entity** modelling workspace built around a local Blockbench MCP plugin. The working development authority is **`Local`**; `main` changes only by explicit instruction.
+BlockIT is an AI-assisted **Minecraft Bedrock Entity** modelling workspace built around a local Blockbench MCP plugin.
 
 **Project snapshot:** `v0.1` (separate from the MCP package version).
+
+## Branch Model
+
+```text
+Local  → active development / working authority
+main   → changes only by explicit instruction
+```
+
+Routine repository development uses `Local`. Repository behavior is routed by `AGENTS.md`; GitHub execution/history/CI rules are owned by `GITHUB_RULES.md`.
 
 ## Product Flow
 
@@ -16,9 +25,11 @@ Reference-driven work is Minecraft-first: preserve recognizability, primary mass
 
 ## Current Product Surface
 
-The default Bedrock Entity MCP surface contains **64 enabled tools**. Current source covers Cube/Group authoring, texture/Painter/PBR/material instances, Bedrock animation and AnimationController mutation, Locator/Null Object lifecycle, Undo/history, editable `.bbmodel`, and Bedrock geometry export.
+The retained normal Bedrock catalog contains **65 callable tools across authoring phases**. Startup exposes only **MCP Core + exactly one active authoring phase**; default **Geometry** currently exposes **28 tools**.
 
-Retained current hardening includes coherent Cube placement batching, coherent Group batching, explicit project UV resolution selection (`128` default, `256` opt-in), source-level texture/paint fixes, and compact result/discovery discipline. Generic fallback families remain opt-in; `risky_eval` and `from_geo_json` remain disabled.
+Current source covers Cube/Group authoring, texture/Painter/PBR/material instances, Bedrock animation and AnimationController mutation, Locator/Null Object lifecycle, Undo/history, editable `.bbmodel`, and Bedrock geometry export.
+
+Retained hardening includes coherent Cube placement batching, coherent Group batching, explicit project UV resolution selection (`128` default, `256` opt-in), source-level texture/paint fixes, and compact result/discovery discipline. Generic fallback families remain opt-in; `risky_eval` and `from_geo_json` remain disabled.
 
 Protected gaps remain controller blend-curve mutation, TextureMesh direct authoring/inspection, native visible bounding-box fields, animated-texture authoring, and bone-binding expressions.
 
@@ -28,10 +39,23 @@ Do not encode transient continuation or CI state here.
 
 - stable project facts → `CONTEXT.md`
 - repository/plugin continuation → `docs/knowledge/next-action.md`
-- proof state → `docs/foundation/validation-report.md`
+- current proof state → `docs/foundation/validation-report.md`
 - exact current source/tool ownership → `docs/knowledge/implementation-map.md`
 
 Static source/CI proof does not prove live Blockbench visual fidelity, playback, persistence, or model-quality improvement unless that exact surface actually ran.
+
+## Repository Map
+
+```text
+.agents/skills/    task/domain specialists loaded only when relevant
+docs/foundation/  durable authoring policy + current proof owner
+docs/knowledge/   current flow, continuation, source ownership, local procedure
+mcp/              Blockbench MCP plugin/runtime/build/tests/generated API docs
+workspace/        persistent active/saved asset packages
+Experimental/     bounded research/proof harnesses only
+```
+
+Generated/transient captures and sample renders are not repository-root source artifacts. Persistent visual/project evidence belongs with its owning workspace or experimental package; temporary output stays in ignored cache paths.
 
 ## Asset Workspace
 
@@ -60,17 +84,12 @@ bun run dev:watch
 
 Deployment/loading into desktop Blockbench is a separate explicit local action; a normal watch build must not silently overwrite the installed plugin.
 
-## Current Owners
+## Contributing
 
-- `AGENTS.md` — task class, routing, source/proof discipline
-- `GITHUB_RULES.md` — branch/ref, commit/history, CI/API/security, retries, STOP
-- `CONTEXT.md` — stable facts
-- `docs/knowledge/next-action.md` — current continuation only
-- `docs/foundation/validation-report.md` — current proof boundary
-- `docs/knowledge/implementation-map.md` — source/tool ownership
-- `docs/knowledge/flow.md` — detailed product flow
-- `docs/foundation/` — durable policy
-- `.agents/skills/` — canonical task specialists
-- `workspace/README.md` — persistent asset storage rules
+Repository development conventions, verification routing, commit discipline, and transient-file rules are documented in `CONTRIBUTING.md`.
 
 Historical audits, test-model iterations, retired decisions, and obsolete continuation belong in Git history rather than parallel current-state files.
+
+## License
+
+BlockIT is distributed under the GNU General Public License v3.0. See `LICENSE` for the full terms.

@@ -1,6 +1,6 @@
 # BlockIT Flow
 
-Updated: 2026-08-25
+Updated: 2026-08-30
 
 This is the **single detailed current flow**. Root `AGENTS.md` owns task routing.
 
@@ -9,7 +9,7 @@ This is the **single detailed current flow**. Root `AGENTS.md` owns task routing
 ```text
 REFERENCE PREPARATION → blockbench-reference-generator
 ASSET AUTHORING       → named workspace package when persistent → blockit-bedrock-entity-mcp → active specialist only
-REPOSITORY WORK       → next-action.md → affected owner → development-brief
+REPOSITORY WORK       → AGENTS.md classify Bounded | Standard | Complex → exact owner + nearest AGENTS.md → development-brief only when Complex
 LOCAL ACCEPTANCE      → inactive unless next-action.md explicitly reactivates it
 ```
 
@@ -187,11 +187,18 @@ For persistent projects, save the current `.bbmodel` and deliberate deliverables
 ## 4. Repository Work
 
 ```text
-AGENTS.md → next-action.md when continuing → affected owner + nearest AGENTS.md
-→ development-brief → regression preflight → one smallest coherent patch → minimum useful proof → STOP AND REPORT
+AGENTS.md
+→ GITHUB_RULES.md Core Rules
+→ classify Bounded | Standard | Complex
+→ exact owner + nearest AGENTS.md
+→ recover CONTEXT.md / next-action.md only when material
+→ development-brief only when Complex
+→ one smallest coherent patch
+→ minimum useful proof
+→ STOP AND REPORT
 ```
 
-Repository proof never becomes permission for image generation or local Blockbench execution.
+A clear maintenance or standard-development task must not load `development-brief` merely because files in the repository change. Repository proof never becomes permission for image generation or local Blockbench execution.
 
 ## 5. Evidence / Continuity
 

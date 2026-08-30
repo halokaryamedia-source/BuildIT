@@ -38,14 +38,13 @@ describe("cross-agent repository handoff", () => {
   });
 
   test("handoff keeps the real development objective explicit across providers", async () => {
-    const [root, brief, next, runbook] = await Promise.all([
+    const [root, brief, runbook] = await Promise.all([
       text("../AGENTS.md"),
       text("../.agents/skills/development-brief/SKILL.md"),
-      text("../docs/knowledge/next-action.md"),
       text("../docs/knowledge/operations/local-acceptance-runbook.md"),
     ]);
 
-    for (const owner of [root, brief, next]) expect(owner).toContain("Success Metric");
+    for (const owner of [root, brief]) expect(owner).toContain("Success Metric");
     for (const owner of [root, brief, runbook]) {
       expect(owner).toContain("Authoring Efficiency");
       expect(owner).toContain("Static Footprint");
@@ -69,9 +68,12 @@ describe("cross-agent repository handoff", () => {
     expect(context).toContain("stable project facts only");
     expect(context).not.toContain("AWAITING_PLUGIN_ENABLE");
     expect(next).toContain("Working branch: **`Local` only**");
-    expect(next).toContain("## Current State");
-    expect(next).toContain("## Development Contract");
-    expect(next).toContain("## Local Runtime Gate");
+    expect(next).toContain("## Current Status");
+    expect(next).toContain("## Active Boundary");
+    expect(next).toContain("## Next Step");
+    expect(next).toContain("NO_ACTIVE_REPOSITORY_DEVELOPMENT");
+    expect(next).not.toContain("## Development Contract");
+    expect(next).not.toContain("## Local Runtime Gate");
     expect(next).not.toContain("AWAITING_PLUGIN_ENABLE_THEN_RUNBOOK_STEP_4");
     expect(validation).toContain("This file owns the **proof boundary**");
     expect(validation).toContain("LOCAL PROOF REQUIRED");
@@ -91,6 +93,18 @@ describe("cross-agent repository handoff", () => {
       expect(body).not.toContain("../knowledge/decisions/");
       expect(body).not.toContain("../knowledge/reviews/");
     }
+  });
+
+  test("transient repository-root visual output is ignored rather than versioned", async () => {
+    const rootDirs = (await readdir("..", { withFileTypes: true }))
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => entry.name);
+    expect(rootDirs).not.toContain(".capture");
+    expect(rootDirs).not.toContain(".sample-renders");
+
+    const ignore = await text("../.gitignore");
+    expect(ignore).toContain(".capture/");
+    expect(ignore).toContain(".sample-renders/");
   });
 
   test("named MCP defects retain bounded source and regression owners", async () => {

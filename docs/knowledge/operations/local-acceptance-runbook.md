@@ -1,6 +1,6 @@
 # Local Acceptance Runbook
 
-Updated: 2026-08-27  
+Updated: 2026-08-30  
 Owner: local Codex/Opencode + desktop Blockbench acceptance procedure  
 Active only when `docs/knowledge/next-action.md` explicitly reactivates the local gate.
 
@@ -104,8 +104,8 @@ Normal starting baseline:
 endpoint                = http://127.0.0.1:3000/bb-mcp
 profile                 = bedrock_entity
 active authoring phase  = geometry
-Geometry tools/list     = 27 exposed tools
-retained catalog        = 64 callable tools across phases
+Geometry tools/list     = 28 exposed tools
+retained catalog        = 65 callable tools across phases
 Extended MCP Families   = OFF
 risky_eval              = disabled
 from_geo_json           = disabled
@@ -180,7 +180,7 @@ A smoke failure means `ENVIRONMENT / INSTALL` or `MCP_PUBLIC_CONTRACT`; do not c
 
 The direct server smoke does **not** prove Codex itself refreshed its tool registry.
 
-Create a fresh Codex connection/task and capture the live tool names. For Geometry, compare them with the same source-owned 27-tool surface. Do not search for a known foreign-phase tool.
+Create a fresh Codex connection/task and capture the live tool names. For Geometry, compare them with the same source-owned 28-tool surface. Do not search for a known foreign-phase tool.
 
 If Codex names differ while the direct server smoke passes:
 

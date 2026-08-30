@@ -319,32 +319,27 @@ describe("repository GitHub discipline", () => {
     expect(packageRules).toContain("### Final MCP gate");
   });
 
-  test("continuation remains compact, deferred, and separate from proof/source ownership", async () => {
+  test("continuation stays compact and stores only active/deferred boundaries", async () => {
     const [next, experimental] = await Promise.all([
       source("../docs/knowledge/next-action.md"),
       source("../Experimental/README.md"),
     ]);
 
-    expect(next.length).toBeLessThan(5_000);
+    expect(next.length).toBeLessThan(2_500);
     for (const heading of [
-      "## Current State",
-      "## Development Contract",
-      "### Success Metric",
-      "### Forbidden Proxy / Non-Goal",
-      "### First Evidence Required",
-      "### Failure Classification / first wrong owner",
-      "### Proof Required",
-      "## Deferred Work",
-      "## Local Runtime Gate",
-      "## STOP",
+      "## Current Status",
+      "## Active Boundary",
+      "## Next Step",
     ]) {
       expect(next).toContain(heading);
     }
     expect(next).toContain("Working branch: **`Local` only**");
-    expect(next).toContain("MCP_DIRECT_GEOMETRY_REPAIRED");
-    expect(next).toContain("LIVE_GEOMETRY_SURFACE_LOCAL_PROOF_REQUIRED");
-    expect(next).toContain("ROUTE1_BLOCKBENCH_TEST_BLOCKED");
-    expect(next).toContain("GEOMETRY_CLEANUP_DEFERRED_BY_USER");
+    expect(next).toContain("NO_ACTIVE_REPOSITORY_DEVELOPMENT");
+    expect(next).toContain("Route 1 live validation remains deferred");
+    expect(next).toContain("Geometry cleanup remains deferred");
+    expect(next).not.toContain("## Development Contract");
+    expect(next).not.toContain("## Local Runtime Gate");
+    expect(next).not.toContain("MCP_DIRECT_GEOMETRY_REPAIRED");
     expect(next).not.toContain("AWAITING_PLUGIN_ENABLE_THEN_RUNBOOK_STEP_4");
     expect(experimental).toContain("NOT PRODUCTION");
     expect(experimental).toContain("## Stop rules");

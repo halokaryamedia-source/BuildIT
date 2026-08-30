@@ -5,10 +5,12 @@ on:
     branches:
       - Local
     paths:
+      - ".gitignore"
       - "AGENTS.md"
       - "GITHUB_RULES.md"
       - "CONTEXT.md"
       - "README.md"
+      - "CONTRIBUTING.md"
       - ".agents/skills/development-brief/**"
       - ".agents/skills/mcp-server-development/**"
       - ".agents/skills/blockbench-runtime-development/**"
@@ -33,10 +35,12 @@ on:
       - Local
       - main
     paths:
+      - ".gitignore"
       - "AGENTS.md"
       - "GITHUB_RULES.md"
       - "CONTEXT.md"
       - "README.md"
+      - "CONTRIBUTING.md"
       - ".agents/skills/development-brief/**"
       - ".agents/skills/mcp-server-development/**"
       - ".agents/skills/blockbench-runtime-development/**"

@@ -32,7 +32,7 @@ risky_eval                   disabled
 from_geo_json                disabled
 ```
 
-The normal Bedrock catalog retains **64 callable tools across authoring phases**. Plugin startup exposes **Core + exactly one authoring phase** so Geometry, Texturing, and Animation work do not overlap. The default **Geometry** surface currently exposes **27 tools**. Phase changes are deliberate handoffs through the `MCP Authoring Phase` setting and require BlockIT MCP reload plus client reconnect.
+The normal Bedrock catalog retains **65 callable tools across authoring phases**. Plugin startup exposes **Core + exactly one authoring phase** so Geometry, Texturing, and Animation work do not overlap. The default **Geometry** surface currently exposes **28 tools**. Phase changes are deliberate handoffs through the `MCP Authoring Phase` setting and require BlockIT MCP reload plus client reconnect.
 
 ```text
 CORE + GEOMETRY
@@ -77,11 +77,11 @@ Do not broad-search source for ordinary asset authoring, inspect every new Cube,
 ## Surface Guard
 
 ```text
-retained Bedrock callable catalog  64 tools
-default Geometry exposure           27 tools
+retained Bedrock callable catalog  65 tools
+default Geometry exposure           28 tools
 initialize instructions             <= 700 characters
 catalog tools/list budget           <= 82,000 characters
-catalog input schemas               <= 58,000 characters
+catalog input schemas               <= 58,500 characters
 catalog descriptions                <= 11,500 characters
 max per-tool payload                <= 3,200 characters
 runtime workflow prompt             < 9,000 characters
