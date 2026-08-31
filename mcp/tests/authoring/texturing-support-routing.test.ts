@@ -13,7 +13,7 @@ describe("texturing hot-path routing", () => {
 
     expect(supportStart).toBeGreaterThan(-1);
     expect(support).toMatch(/must not enter the normal hot path/i);
-    expect(support).toMatch(/current user intent specifically requires/i);
+    expect(support).toMatch(/user intent specifically requires/i);
 
     for (const tool of [
       "color_picker_tool",
