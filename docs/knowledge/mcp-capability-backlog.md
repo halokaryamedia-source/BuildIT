@@ -4,11 +4,11 @@ Updated: 2026-09-01
 
 Authority: **`Local` only**.
 
-This file records capability gaps discovered from the BlockIT audit against public Blockbench MCP implementations and native Blockbench behavior. It is backlog/design state, not runtime proof.
+This file records capability gaps discovered from BlockIT audits against official Blockbench documentation, native Bedrock Blockbench source, the current Minecraft Bedrock geometry schema, and public Blockbench MCP implementations. It is backlog/design state, not runtime proof.
 
 ## Goal
 
-Improve **Cost to Accepted Result** without inflating the MCP surface.
+Improve **Cost to Accepted Result** while keeping one obvious owner for each normal workflow.
 
 Preserve:
 
@@ -18,11 +18,10 @@ Preserve:
 - coherent Undo;
 - Geometry → Texturing → Animation phase boundaries;
 - generated-doc discipline;
-- visual proof as final quality authority.
+- visual proof as final quality authority;
+- conditional/lazy coverage for uncommon native features instead of bloating the hot tool surface.
 
 ## Current Gate
-
-The active pre-E2E implementation remains the Texturing contract in `docs/knowledge/next-action.md`.
 
 Public ToolSpec/schema or runtime prompt changes require `LOCAL_CODE` because canonical prompt/API output must be generated with Bun. Never hand-edit generated prompt/API files remotely.
 
@@ -31,6 +30,7 @@ REMOTE-SAFE FOUNDATION
 → LOCAL PUBLIC-CONTRACT IMPLEMENTATION
 → bun run prompts:build
 → bun run docs:build
+→ bun run docs:check
 → bun run verify:mcp
 → LIVE Geometry → Texturing → Animation E2E
 → measure Cost to Accepted Result
@@ -54,538 +54,510 @@ mcp/tests/animation-preview-state.test.ts
 
 All remain **LOCAL PROOF REQUIRED** until Bun/local/live gates pass.
 
-### Geometry remote correctness follow-through
+---
 
-The second Geometry audit found correctness holes beyond tool-count curation. The following source hardening is already on `Local`, but remains **LOCAL PROOF REQUIRED**:
+# Geometry — Full Coverage Curation
+
+The Geometry target was re-audited against:
+
+- official Blockbench modeling documentation and reference docs;
+- native `JannisX11/blockbench` Bedrock codec/outliner behavior;
+- current Minecraft Bedrock `minecraft:geometry` capabilities;
+- public MCP implementations including SwagRee, sosadly, Jason Gardner, XiaoNetwork-Astral, adhi-jp, FFriends, Golub4ik and ashfox.
+
+The goal is **full relevant Bedrock Geometry coverage with minimum duplicate intent owners**, not raw parity with every Blockbench editor action.
+
+## Current remote-safe correctness work already on `Local`
 
 ```text
-DONE IN SOURCE
 inspect_element
   → reports Cube inflate
   → reports export state for Cube/Group/Locator/Null Object
 
 duplicate_element
   → delegates property fidelity to native Blockbench duplicate()
-  → supports Cube/Group/Locator/Null descendants inside duplicated Group subtrees
-  → preserves one Undo owner
+  → supports Locator/Null descendants inside duplicated Group subtrees
+  → keeps one Undo owner
 
 export identity
-  → Group creation/rename rejects case-insensitive bone-name collisions
-  → Locator/Null rename guards native per-bone locator export keys
-  → Locator/Null create and parent-change use per-parent exported locator-key collision rules
+  → Group create/rename rejects case-insensitive Bedrock bone-name collisions
+  → Locator/Null identity follows per-parent exported locator-key rules
+  → create and parent-change preflight locator-key collisions
+
+structural preflight
+  → Group batch parent/name planning occurs before Undo
+  → duplication planning occurs before Undo
+  → Group pivot correction fails closed when required preview state is unavailable
 
 measurement foundation
   → authored Cube + actual matrixWorld + inflate → world-space OBB
-  → exact OBB SAT contact foundation is shared by the planned measure_geometry owner
+  → exact SAT classification: separate / touching / intersecting
 ```
 
-Still requires `LOCAL_CODE` because it changes public ToolSpec/schema/surface or needs live transform proof:
+These source changes are still **LOCAL PROOF REQUIRED**.
 
-```text
-LOCAL PUBLIC-CONTRACT WORK
-modify_cubes_batch
-  → absorb name + inflate from modify_cube
-  → absorb exact per-face UV mode/rectangle/rotation correction
+## Final normal Geometry surface target
 
-reparent_element
-  → explicit preserve=local|world semantics
-  → Cube/Group/Locator/Null support
-  → Locator/Null must remain parented to an explicit Group
-
-find_elements_by_criteria
-  → absorb Locator/Null discovery
-
-manage_locator
-  → absorb Null Object lifecycle
-
-modify_group
-  → absorb bounded IK fields
-
-measure_geometry
-  → expose bounded world-space Cube contact/measurement readback
-
-phase surface
-  → retire modify_cube/select_all_of_type/list_locator_elements/manage_null_object/bone_rigging from normal Geometry exposure
-```
-
-Do not call Geometry complete until the public consolidation, generated artifacts, local tests, and live Geometry E2E all pass.
-
----
-
-# Geometry Surface Curation
-
-Current normal Geometry phase exposes **28 tools**: 15 shared Core tools plus 13 Geometry-owned tools. The curation goal is not to minimize count mechanically; it is to remove duplicate intent owners while preserving one obvious route for each normal Geometry task.
-
-## Target Geometry Surface
-
-Target after local public-contract cleanup: **about 24 tools**, while adding exact spatial/contact measurement and per-face UV correction.
+Target normal surface: **about 26 tools**.
 
 ```text
 CORE / SETUP / EVIDENCE
-create_project
-get_project_info
-inspect_model_bounds
-undo
-redo
-get_undo_stack
-list_outline
-find_elements_by_criteria
-get_selection
-inspect_element
-capture_model_views
-export_model
-list_textures
+1  create_project
+2  configure_project
+3  get_project_info
+4  inspect_model_bounds
+5  undo
+6  redo
+7  get_undo_stack
+8  list_outline
+9  find_elements_by_criteria
+10 get_selection
+11 inspect_element
+12 capture_model_views
+13 export_model
+14 list_textures
 
 GEOMETRY AUTHORING / CORRECTION
-place_cube
-modify_cubes_batch
-add_group
-duplicate_element
-remove_element
-rename_element
-modify_group
-reparent_element
-manage_locator
-manage_geometry_reference
-measure_geometry
+15 place_cube
+16 modify_cubes_batch
+17 add_group
+18 duplicate_element
+19 remove_element
+20 rename_element
+21 modify_group
+22 reparent_element
+23 manage_locator
+24 manage_geometry_reference
+25 measure_geometry
+26 manage_texture_mesh
 ```
 
-This target intentionally removes five active names and adds one focused read-only measurement owner:
+Remove from the normal Geometry surface after local consolidation:
 
 ```text
-REMOVE FROM NORMAL GEOMETRY SURFACE
 modify_cube
 select_all_of_type
 list_locator_elements
 manage_null_object
 bone_rigging
-
-ADD
-measure_geometry
 ```
 
-## Ownership Decisions
+This is intentionally **more complete than the current surface while reducing duplicate ownership**.
 
-### `modify_cubes_batch` becomes the single Cube correction owner
+## Conditional / extended Geometry coverage
 
-Current `modify_cube` and `modify_cubes_batch` overlap on transform/Box-UV/visibility correction. Keep the bounded batch owner and allow one-item batches instead of maintaining two public correction contracts.
-
-Local implementation should absorb the useful single-only fields into `modify_cubes_batch`:
+Do not put these in the normal hot surface. Expose only when the workflow needs them:
 
 ```text
-name
-inflate
+manage_bounding_box
+manage_item_display_transform
 ```
 
-It should also become the owner for Tier-A per-face UV correction:
+`BoundingBox` is useful for Bedrock collision/custom-hit-test workflows but is not normal visual entity geometry. Item display transforms are valid native geometry metadata but uncommon for ordinary mob/entity authoring.
+
+## Explicitly not part of normal BlockIT Geometry
 
 ```text
-uv_mode
-faces[].face
-faces[].uv
-faces[].rotation
+generic Mesh vertex/edge/face editing
+poly_mesh authoring
+arbitrary JavaScript / execute_script
+procedural biped/limb generators
+generic UI action bridges
+semantic compiler / Intent Program authority
+automatic phase switching
 ```
 
-Requirements stay unchanged: explicit identity, full preflight, one coherent Undo, no-op rejection, exact final readback. Do not add a separate `set_face_uv` tool.
+Bedrock `poly_mesh` is deprecated for new content; generic mesh breadth does not justify a large hot MCP surface.
 
-### `find_elements_by_criteria` absorbs Locator/Null discovery
+---
 
-Current `list_locator_elements` exists because the general finder only covers Cube/Group, while `inspect_element` already supports Cube/Group/Locator/Null Object. Expand the finder type surface to:
+## Geometry ownership decisions
+
+### `configure_project` — project/export identity owner
+
+`create_project` must initialize an explicit Bedrock model identifier instead of allowing export to fall back to `geometry.unknown`.
+
+Normal configuration fields:
 
 ```text
-cube | group | locator | null_object | any
+name?
+model_identifier?
+logical_uv_width?
+logical_uv_height?
 ```
 
-Then remove `list_locator_elements` from the normal surface. `list_outline` remains separate because hierarchy traversal and targeted search are distinct efficient intents.
+Creation should accept/set `model_identifier`; later project metadata changes use `configure_project` rather than overloading geometry element tools.
 
-### `manage_locator` absorbs Null Object creation/update
+Visible bounds do not need a separate manual owner in the normal path because native Bedrock export calculates them from project geometry; inspection should report the effective exported state when useful.
 
-Current `manage_locator` and `manage_null_object` are parallel lifecycle tools with nearly identical create/update structure. Keep one owner with an explicit kind discriminator:
+### `modify_cubes_batch` — single Cube correction owner
+
+Retire `modify_cube`; one-Cube correction is a one-item batch.
+
+Final bounded correction coverage:
 
 ```text
-kind: locator | null_object
+identity / transform
+  name?
+  from?
+  to?
+  origin?
+  rotation?
+  inflate?
+  visibility?
+  export?
+
+Box UV
+  uv_offset?
+  autouv?
+  mirror_uv?
+  uv_layout: preserve | auto ?
+
+per-face UV
+  uv_mode?
+  faces[]:
+    face
+    uv?
+    rotation?
+    render/export-face semantic?   # only after native export behavior is proven locally
 ```
 
-Type-specific fields stay strict. Rename/delete remain owned by `rename_element` / `remove_element`.
+Use the existing deterministic Box-UV packer to repair existing/resized Box-UV layouts rather than adding a separate `pack_uv` tool.
 
-Parent movement should be owned by the generic `reparent_element` rather than duplicated inside Locator/Null update contracts once that generic owner is proven for all supported outliner element types.
+Per-face material-instance ownership is cross-phase. Geometry must preserve it; Texturing/material tooling owns intentional material assignment unless a focused Bedrock requirement proves otherwise.
 
-### `reparent_element` becomes the single parent-movement owner
+### `add_group` — Group/bone creation owner
 
-Expand/clarify the existing owner for:
+Keep coherent one/batch Group creation and add optional bounded child adoption:
+
+```text
+children?: [UUID ...]
+```
+
+All children and parents are preflighted before one Undo. This replaces the useful create/adopt behavior currently hidden inside `bone_rigging` without keeping that broad router.
+
+### `duplicate_element` — faithful duplication + mirror owner
+
+Keep native faithful subtree duplication.
+
+Extend supported direct targets to all relevant normal outliner types when locally proven:
 
 ```text
 Cube
 Group
 Locator
 Null Object
+TextureMesh
 ```
 
-Group cycle protection remains special to Group hierarchy. Cube/Group may use `root` when intentional. Locator/Null Object must remain parented to an explicit Group because Bedrock exports them inside the parent bone's `locators` map.
-
-Parent movement has two materially different transform intents and must never guess between them:
+Add optional proper mirror semantics instead of a separate mirror tool:
 
 ```text
-preserve=local
-preserve=world
+mirror?:
+  axis: x | y | z
+  plane: number
 ```
 
-World-preserving behavior must follow proven Blockbench reparent transform semantics and receive local/live fixtures before the ToolSpec claims support. Do not keep a second parent mutation path inside another Geometry tool.
+Mirror must reflect the full intended subtree/geometry and preserve/repair names deterministically. Do not keep the current shallow `bone_rigging.mirror` behavior.
 
-### `modify_group` absorbs normal rig-state correction
+### `remove_element` — delete and resolve/ungroup owner
 
-Current broad `bone_rigging` duplicates existing owners:
+Normal delete remains recursive for Group.
+
+Add an explicit Group-only resolve mode for hierarchy cleanup:
 
 ```text
-bone_rigging.create      → add_group
-bone_rigging.parent      → reparent_element
-bone_rigging.unparent    → reparent_element
-bone_rigging.delete      → remove_element
-bone_rigging.rename      → rename_element
-bone_rigging.set_pivot   → modify_group(origin)
+mode: delete | resolve_group
 ```
 
-The genuinely unique normal rig state is IK. Add bounded Group IK fields to `modify_group` instead of preserving a multi-action `bone_rigging` router:
+`resolve_group` removes the Group while preserving children and the intended rendered/world result. No separate `ungroup` tool.
+
+### `rename_element` — identity rename owner
+
+Keep one rename owner for all supported outliner element families. Preserve Bedrock export identity invariants:
+
+- Group/bone names remain case-insensitively unique where Bedrock animation/export matching requires it;
+- Locator/Null exported keys remain unique inside the parent bone;
+- TextureMesh/general element names remain explicit but need not inherit bone-only uniqueness rules.
+
+### `modify_group` — Group/bone authored-state owner
+
+Normal fields:
 
 ```text
-ik_enabled?
-ik_target?
+origin?
+rotation?
+visibility?
+export?
+mirror_uv?
+reset?
 ```
 
-IK target resolution remains explicit and fail-closed.
-
-The current `bone_rigging.mirror` implementation must not justify retaining the broad tool by itself. Its current source duplicates a Group and reflects the Group origin on one axis; this is not sufficient evidence of a complete subtree/descendant-geometry mirror contract. A future mirror primitive is evidence-gated and should be designed as its own explicit Geometry semantic only if real workloads require it.
-
-### `select_all_of_type` leaves the normal Geometry phase
-
-Normal BlockIT Geometry mutation is explicit UUID/name targeted. No primary Geometry authoring route requires mass editor selection. Keep `get_selection` as the conditional bridge when the user explicitly refers to the current editor selection, but do not expose a selection-mutating convenience tool in the default Geometry surface without a proven workflow owner.
-
-### `measure_geometry` is the only new Tier-A Geometry tool
-
-Use `mcp/lib/orientedBoxContact.ts` plus `mcp/lib/blockbenchCubeObb.ts` as the Cube contact foundation. One read-only owner may support bounded:
+Advanced/conditional native fields may remain available without being emphasized in the normal prompt:
 
 ```text
-elements
-pairs
-distances
-angles
+bedrock_binding?
+material?
 ```
 
-The caller supplies semantic expectations (`connected`, `separate`, `intentionally_embedded`, or unspecified). The tool reports evidence; it never guesses intended topology or replaces visual acceptance.
+Do **not** move current ad-hoc Group IK fields into this owner. Current Blockbench native IK workflow is centered on Null Objects.
 
-## Tools That Stay Separate Deliberately
+### `reparent_element` — one parent-movement owner
 
-Do **not** merge these just to reduce tool count:
+Support:
 
 ```text
-undo / redo / get_undo_stack
-  distinct mutation/read annotations and recovery intents
-
-list_outline / find_elements_by_criteria
-  hierarchy traversal vs targeted discovery
-
-inspect_model_bounds / capture_model_views
-  numeric rendered bounds vs visual evidence
-
-get_project_info / inspect_element
-  project lifecycle metadata vs one authored target
-
-place_cube / add_group
-  Cube geometry schema vs bone/Group hierarchy schema
-
-manage_geometry_reference / ordinary geometry mutation
-  transient Route-1 evidence lifecycle is intentionally isolated
+Cube
+Group
+Locator
+Null Object
+TextureMesh
 ```
 
-Do not create a giant generic `modify_element` or `transform_elements` owner merely to reduce names; mixed Cube/Group/Locator schemas would increase ambiguity and payload size.
+Rules:
 
-## Geometry Local Acceptance
+- Group cycle protection remains strict;
+- Locator/Null/TextureMesh parent validity follows native format behavior;
+- Locator/Null remain under an explicit Group for Bedrock locator export;
+- no second parent mutation path remains inside `manage_locator` / `manage_texture_mesh` after consolidation.
 
-When this curation is implemented in `LOCAL_CODE`, update exact phase/catalog counts only from measured source/runtime output. Required proof includes:
-
-```text
-one Cube correction owner only
-one general element discovery owner only
-one Locator/Null lifecycle owner only
-one parent-movement owner only
-no broad duplicate bone_rigging router
-faithful duplicate round-trip for Cube face/UV state + Locator/Null descendants
-export-safe Group/bone and locator-key identity fixtures
-preserve=local and preserve=world reparent fixtures
-IK round-trip through modify_group
-per-face UV correction round-trip through modify_cubes_batch
-measure_geometry exact Cube contact fixtures
-phase ownership remains Geometry-only
-prompts:build PASS
-docs:build + docs:check PASS
-verify:mcp PASS
-live Geometry E2E PASS before runtime quality claims
-```
-
----
-
-# Tier A
-
-## Geometry A1 — Per-Face UV Correction
-
-Gap: `place_cube` can author explicit per-face UV at creation, but existing/imported per-face UV rectangles and face rotation need deterministic correction.
-
-Preferred direction after Geometry curation: extend the canonical `modify_cubes_batch` correction owner, not `modify_cube` and not a new generic UV family. One-Cube correction uses a one-item batch.
-
-Conceptual update fields:
-
-```text
-modify_cubes_batch
-  updates:
-    - id
-      uv_mode?
-      faces?
-        face
-        uv
-        rotation?
-```
-
-Requirements: explicit Cube identity, finite UVs, native rotations only, clear Box UV ↔ per-face switching, full preflight before Undo, final UV readback.
-
-## Geometry A2 — Exact Spatial / Contact Measurement
-
-Gap: canonical views/bounds do not numerically prove whether rotated Cube parts are separated, touching, or penetrating.
-
-Foundations:
-
-```text
-mcp/lib/orientedBoxContact.ts
-mcp/lib/blockbenchCubeObb.ts
-```
-
-Preferred public direction: one read-only `measure_geometry`-style owner.
-
-Possible surfaces:
-
-```text
-elements
-pairs
-distances
-angles
-```
-
-Caller owns semantic expectation:
-
-```text
-unspecified
-connected
-separate
-intentionally_embedded
-```
-
-Never infer intended connection from names/appearance. For Cubes, prefer exact transformed OBB evidence.
-
-## Geometry A3 — Explicit Reparent Transform Policy
-
-Gap: current `reparent_element` preserves authored local state only. Changing parent can therefore change the rendered/world pose when the old/new parent transforms differ.
-
-Required public semantics:
+Explicit transform policy:
 
 ```text
 preserve: local | world
 ```
 
-No implicit default should be claimed until compatibility behavior is deliberately chosen. `world` must follow native Blockbench reparent adjustment semantics and prove final authored + rendered state before success.
+`world` must follow proven Blockbench reparent-adjustment semantics and receive live fixtures before being claimed supported.
+
+A bounded multi-move form may be added inside this same owner if E2E shows repeated parent calls are expensive.
+
+### `find_elements_by_criteria` — universal targeted discovery owner
+
+Expand type coverage to:
+
+```text
+cube | group | locator | null_object | texture_mesh | any
+```
+
+Remove `list_locator_elements` from the hot surface.
+
+### `list_outline` — hierarchy traversal owner
+
+Keep separate from targeted search. Extend hierarchy output sufficiently to expose relevant non-Cube descendants (Locator / Null / TextureMesh) without turning it into a full-state dump.
+
+### `inspect_element` — exact one-target readback owner
+
+Support exact authored state for:
+
+```text
+Cube
+Group
+Locator
+Null Object
+TextureMesh
+```
+
+Cube readback includes `inflate`, export state and UV detail. TextureMesh readback should include its native authored fields:
+
+```text
+texture_name
+origin
+local_pivot
+rotation
+scale
+visibility
+export
+parent
+```
+
+### `get_selection` — conditional user-selection bridge
+
+Keep because the user may explicitly refer to the currently selected object. Report all normal supported outliner families, not Cube/Group only.
+
+### `inspect_model_bounds` — rendered model bounds owner
+
+Current Cube bounds are useful but final normal coverage must account for visual TextureMesh geometry too. Report what element classes contribute to the result so consumers do not mistake Cube-only bounds for complete rendered-model bounds.
+
+### `manage_locator` — Locator + Null Object lifecycle owner
+
+Merge `manage_null_object` into one owner with explicit kind:
+
+```text
+kind: locator | null_object
+```
+
+Locator fields include position/rotation/ignore-inherited-scale/export.
+
+Null Object fields include:
+
+```text
+position
+export
+ik_target?
+ik_source?
+lock_ik_target_rotation?
+```
+
+This follows native Blockbench Null Object IK ownership. Rename/delete remain `rename_element` / `remove_element`; parent movement becomes `reparent_element` after consolidation.
+
+### `manage_texture_mesh` — native Bedrock TextureMesh owner
+
+TextureMesh is valid visual Bedrock geometry and therefore must be covered.
+
+Keep one focused lifecycle/correction owner instead of generic Mesh editing.
+
+Native authored fields:
+
+```text
+create/update
+name
+parent
+texture_name
+origin
+local_pivot
+rotation
+scale
+visibility
+export
+```
+
+Rename/delete/parent movement should reuse generic owners where practical; the tool owns TextureMesh-specific creation and authored-property changes.
+
+### `measure_geometry` — one numerical Geometry evidence owner
+
+Absorb useful measurement ideas from external MCPs without creating many separate tools.
+
+Bounded query modes may include:
+
+```text
+bounds
+distance
+angle
+contact
+alignment
+symmetry
+```
+
+Exact Cube contact uses the prepared world-space OBB + SAT foundations. Caller owns semantic expectations; the tool reports evidence and never invents topology intent.
+
+TextureMesh can initially support bounds/center/distance evidence where exact Cube-style OBB contact is not mathematically appropriate.
+
+### `manage_geometry_reference`
+
+Keep isolated for approved transient Route-1 GLB evidence. It remains reference-only and export=false; it never becomes production Mesh geometry.
 
 ---
 
-## Texturing A1 — `create_texture` Dimension Semantics
+## Geometry validator / diagnostics strategy
 
-Already locked in `docs/knowledge/next-action.md`.
-
-Required:
-
-- remove omitted-dimension 16×16 blank-production behavior;
-- explicit width+height only as a pair;
-- blank base derives project logical UV;
-- blank variant/PBR derives established base bitmap size;
-- absolute file import preserves native dimensions;
-- data URL remains explicit-dimension until native inference is proven;
-- return dimension provenance.
-
-## Texturing A2 — Deterministic Face-Local Authoring
-
-Already locked in `docs/knowledge/next-action.md`.
-
-Preferred tool:
+Do **not** add a duplicate generic `check_model` tool. BlockIT already exposes native Blockbench Validator resources:
 
 ```text
-paint_face_features
+validator://status
+validator://warnings
+validator://errors
+validator://checks/{id}
 ```
 
-Exact operations:
-
-```text
-fill
-rect
-line
-pixels
-```
-
-Use shared `facePixelMapping`; full preflight; one texture edit; one Undo; exact RGBA postcondition verification; no automatic artistic PASS.
-
-## Texturing A3 — Texture Revision Guard
-
-Gap: manual editor changes can make later exact MCP writes stale.
-
-Foundation: `mcp/lib/textureRevision.ts`.
-
-Revision identity:
-
-```text
-sha256:<width>x<height>:<decoded RGBA digest>
-```
-
-Prefer returning `revision` from existing texture observations. Exact destructive paths may accept:
-
-```text
-expected_revision?: string
-```
-
-Stale token must fail before bitmap mutation/Undo.
-
-## Texturing A4 — Focused Face / Region Readback
-
-Extend existing texture observation rather than adding multiple tools.
-
-Conceptually:
-
-```text
-get_texture
-  scope: full | face | rect
-```
-
-Face read returns face-local image, local size, mapped atlas rect, and revision. Orientation must match `paint_face_features`.
-
-## Texturing A5 — Native Texture Clone
-
-Avoid round-tripping a full PNG just to create a color variant.
-
-Preferred owner: extend `create_texture` with explicit:
-
-```text
-source_texture: <UUID>
-```
-
-Native copy; dimensions derive from source; role/group remains caller-owned; source/data/fill semantics remain unambiguous.
-
-## Texturing A6 — PNG Export
-
-Add Texturing-owned deterministic standalone texture delivery.
-
-Conceptually:
-
-```text
-export_texture
-```
-
-Explicit texture UUID, safe path policy, explicit overwrite, no file picker, return path/bytes/identity/dimensions. Must work for base, variants, and PBR support textures.
+Specialized objective diagnostics such as coplanar/Z-fighting checks should be lazy validator/resource evidence when added, not permanent hot tools.
 
 ---
 
-## Animation A1 — Complete Bedrock Metadata
+## Geometry local acceptance gate
 
-Add ownership for native:
-
-```text
-override_previous_animation
-start_delay
-loop_delay
-```
-
-Prefer extending existing Animation metadata/timeline owner. Delay values preserve authored Molang and are never evaluated by BlockIT. Inspection must round-trip final values.
-
-## Animation A2 — Animation / Controller JSON Delivery
-
-Gap: animations/controllers can be authored but do not have their own deterministic standalone codec-owned export route.
-
-Preferred direction:
+Do not call Geometry complete until all of the following are proven:
 
 ```text
-export_animation_file
-  type: animation | controller
+project model_identifier round-trip + export identifier
+one Cube correction owner only
+one general discovery owner only
+one Locator/Null lifecycle owner only
+one parent-movement owner only
+no broad bone_rigging router
+faithful duplication for all supported descendants
+proper subtree mirror fixtures
+export-safe Group and locator-key identity fixtures
+preserve=local + preserve=world reparent fixtures
+per-face UV correction + existing Box-UV repack
+Group reset/mirror/export native round-trip
+Null Object IK target/source/rotation-lock round-trip
+TextureMesh create/update/inspect/export round-trip
+measure_geometry exact Cube contact fixtures
+rendered bounds correctly identify Cube/TextureMesh contribution
+conditional BoundingBox and item-display coverage remain outside hot surface
+phase ownership remains Geometry-only
+prompts:build PASS
+docs:build + docs:check PASS
+verify:mcp PASS
+LIVE Geometry E2E PASS
 ```
-
-Use native Blockbench `AnimationCodec`. Support compiled content and/or explicit safe-path write. Keep separate from geometry export.
-
-## Animation A3 — Temporary Pose Canonical Views
-
-Add read-only animation timestamp observation without persistent timeline state changes.
-
-Foundation: `mcp/lib/animationPreviewState.ts` owns the generic preview-state transaction and guaranteed restoration. Concrete Blockbench effect muting, codec time semantics, and canonical capture remain runtime-owned.
-
-Conceptually:
-
-```text
-capture_animation_views
-  animation
-  time
-  views
-  front_direction
-```
-
-Snapshot selected/playing/timeline state, mute effects when needed, pose temporarily, capture canonical views, restore on every path. Return requested and rendered time.
-
-## Animation A4 — Multi-Bone / Multi-Channel Keyframe Batch
-
-Current single bone/channel unit can make one complete pose expensive.
-
-Prefer extending existing keyframe owner:
-
-```text
-targets:
-  - bone
-    channel
-    keyframes
-```
-
-Full preflight before Undo; duplicate times fail; one request = one Undo; preserve authored Molang. Prioritize if E2E confirms pose-call cost is material.
 
 ---
 
-# Tier B — After Core / E2E Evidence
+# Texturing Tier A
 
-## Geometry
+The existing Texturing plan remains valid.
 
-- relative translate/scale/rotate/pivot intent, preferably inside the canonical Cube/Group correction owners;
-- UV island translate/scale/90° rotation after exact per-face UV correction is stable;
-- explicit-pair symmetry audit;
-- a properly specified mirror primitive only if repeated workloads prove it materially useful;
-- coplanar/Z-fighting diagnostic as lazy validation/resource evidence.
+```text
+A1 create_texture dimension semantics
+A2 paint_face_features deterministic face-local authoring
+A3 texture revision / stale-write guard
+A4 focused face/region get_texture readback
+A5 native source_texture clone for variants
+A6 deterministic PNG export
+```
 
-## Texturing
+Key rules remain:
 
-- copy face pixels with optional flip/rotation;
-- bounded exact `replace_color`, region flip/rotate, flood fill;
-- objective statistics: exact color count, transparency counts, histogram, texel density.
+- omitted blank base dimensions derive project logical UV;
+- width+height are explicit as a pair only;
+- face-local exact writes use shared facePixelMapping;
+- one call = full preflight + one texture edit + one Undo + exact postcondition;
+- no automatic artistic quality PASS;
+- PBR/material ownership remains Texturing.
 
-Do not turn statistics into artistic quality scores.
+Tier B after E2E evidence:
 
-## Animation
-
-- native entity-relative/global rotation round-trip;
-- animation validation sweep after exact Geometry contact + temporary pose capture exist;
-- native animation/controller import for existing Bedrock projects.
+```text
+copy-face pixels
+bounded replace-color / flood-fill / region transforms
+objective palette/transparency/texel-density statistics
+```
 
 ---
 
-# Tier C — Evidence-Gated
+# Animation Tier A
 
 ```text
-linear cube arrays
-radial cube arrays
-dense face-grid authoring
-advanced texture region transforms
+A1 native Bedrock animation metadata
+   override_previous_animation
+   start_delay
+   loop_delay
+
+A2 animation/controller JSON delivery through native AnimationCodec
+A3 temporary-pose canonical view capture
+A4 multi-bone / multi-channel authored keyframe batch if E2E confirms call cost
+```
+
+Native entity-relative/global rotation, validation sweep, and import remain later evidence-gated extensions.
+
+---
+
+# Cross-phase Tier B / C
+
+Only add when normal E2E proves material benefit:
+
+```text
+relative translate/scale/rotate intent
+UV island transforms
+copy-face texture operations
+linear/radial arrays
+advanced symmetry automation
+animation pose sweep
 advanced pre/post keyframe data points
-specialized symmetry automation
 ```
 
-Add only when repeated workloads prove material benefit.
+Prefer extending an existing canonical owner over adding a new tool whenever the intent and schema remain clear.
 
 ---
 
@@ -599,7 +571,8 @@ risky_eval
 arbitrary Blockbench JavaScript
 automatic phase switching
 semantic compiler / Intent Program authority
-generic mesh/vertex/weight-paint expansion
+generic Mesh/vertex/weight-paint expansion
+new poly_mesh authoring
 procedural biped/limb generators
 noise-first automatic texture detailing
 automatic artistic quality scores
@@ -609,9 +582,9 @@ tool-count growth for parity alone
 
 BlockIT remains explicit, fail-closed, Bedrock-specific, Undo-aware, and evidence-driven.
 
-## External References
+## External reference set
 
-Capability ideas were compared against:
+Geometry capability decisions were compared against official Blockbench documentation/source, current Bedrock geometry schema behavior, and public MCP implementations including:
 
 - `SwagRee/BlockBenchMCP`
 - `sosadly/blockbench-mcp`
@@ -622,6 +595,4 @@ Capability ideas were compared against:
 - `Golub4ik-Official/blockbench-mcp`
 - `sigee-min/ashfox`
 
-Native semantics/format ownership were checked against official `JannisX11/blockbench` source when material.
-
-External repositories are references only. BlockIT implementation must follow this repository's rules, Bedrock constraints, source ownership, and proof boundaries.
+External repositories are references only. BlockIT implementation follows this repository's rules, Bedrock constraints, source ownership and proof boundaries.
