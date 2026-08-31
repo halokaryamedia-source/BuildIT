@@ -1,6 +1,6 @@
 # MCP Capability Backlog
 
-Updated: 2026-08-31
+Updated: 2026-09-01
 
 Authority: **`Local` only**.
 
@@ -44,6 +44,8 @@ mcp/lib/facePixelMapping.ts
 mcp/tests/face-pixel-mapping.test.ts
 mcp/lib/orientedBoxContact.ts
 mcp/tests/oriented-box-contact.test.ts
+mcp/lib/blockbenchCubeObb.ts
+mcp/tests/blockbench-cube-obb.test.ts
 mcp/lib/textureRevision.ts
 mcp/tests/texture-revision.test.ts
 mcp/lib/animationPreviewState.ts
@@ -51,6 +53,62 @@ mcp/tests/animation-preview-state.test.ts
 ```
 
 All remain **LOCAL PROOF REQUIRED** until Bun/local/live gates pass.
+
+### Geometry remote correctness follow-through
+
+The second Geometry audit found correctness holes beyond tool-count curation. The following source hardening is already on `Local`, but remains **LOCAL PROOF REQUIRED**:
+
+```text
+DONE IN SOURCE
+inspect_element
+  → reports Cube inflate
+  → reports export state for Cube/Group/Locator/Null Object
+
+duplicate_element
+  → delegates property fidelity to native Blockbench duplicate()
+  → supports Cube/Group/Locator/Null descendants inside duplicated Group subtrees
+  → preserves one Undo owner
+
+export identity
+  → Group creation/rename rejects case-insensitive bone-name collisions
+  → Locator/Null rename guards native per-bone locator export keys
+  → Locator/Null create and parent-change use per-parent exported locator-key collision rules
+
+measurement foundation
+  → authored Cube + actual matrixWorld + inflate → world-space OBB
+  → exact OBB SAT contact foundation is shared by the planned measure_geometry owner
+```
+
+Still requires `LOCAL_CODE` because it changes public ToolSpec/schema/surface or needs live transform proof:
+
+```text
+LOCAL PUBLIC-CONTRACT WORK
+modify_cubes_batch
+  → absorb name + inflate from modify_cube
+  → absorb exact per-face UV mode/rectangle/rotation correction
+
+reparent_element
+  → explicit preserve=local|world semantics
+  → Cube/Group/Locator/Null support
+  → Locator/Null must remain parented to an explicit Group
+
+find_elements_by_criteria
+  → absorb Locator/Null discovery
+
+manage_locator
+  → absorb Null Object lifecycle
+
+modify_group
+  → absorb bounded IK fields
+
+measure_geometry
+  → expose bounded world-space Cube contact/measurement readback
+
+phase surface
+  → retire modify_cube/select_all_of_type/list_locator_elements/manage_null_object/bone_rigging from normal Geometry exposure
+```
+
+Do not call Geometry complete until the public consolidation, generated artifacts, local tests, and live Geometry E2E all pass.
 
 ---
 
@@ -163,7 +221,16 @@ Locator
 Null Object
 ```
 
-Group cycle protection remains special to Group hierarchy. Other element types still require an explicit Group or intentional root when format-valid. Do not keep a second parent mutation path inside another Geometry tool.
+Group cycle protection remains special to Group hierarchy. Cube/Group may use `root` when intentional. Locator/Null Object must remain parented to an explicit Group because Bedrock exports them inside the parent bone's `locators` map.
+
+Parent movement has two materially different transform intents and must never guess between them:
+
+```text
+preserve=local
+preserve=world
+```
+
+World-preserving behavior must follow proven Blockbench reparent transform semantics and receive local/live fixtures before the ToolSpec claims support. Do not keep a second parent mutation path inside another Geometry tool.
 
 ### `modify_group` absorbs normal rig-state correction
 
@@ -195,7 +262,7 @@ Normal BlockIT Geometry mutation is explicit UUID/name targeted. No primary Geom
 
 ### `measure_geometry` is the only new Tier-A Geometry tool
 
-Use `mcp/lib/orientedBoxContact.ts` as the Cube contact foundation. One read-only owner may support bounded:
+Use `mcp/lib/orientedBoxContact.ts` plus `mcp/lib/blockbenchCubeObb.ts` as the Cube contact foundation. One read-only owner may support bounded:
 
 ```text
 elements
@@ -242,6 +309,9 @@ one general element discovery owner only
 one Locator/Null lifecycle owner only
 one parent-movement owner only
 no broad duplicate bone_rigging router
+faithful duplicate round-trip for Cube face/UV state + Locator/Null descendants
+export-safe Group/bone and locator-key identity fixtures
+preserve=local and preserve=world reparent fixtures
 IK round-trip through modify_group
 per-face UV correction round-trip through modify_cubes_batch
 measure_geometry exact Cube contact fixtures
@@ -281,7 +351,12 @@ Requirements: explicit Cube identity, finite UVs, native rotations only, clear B
 
 Gap: canonical views/bounds do not numerically prove whether rotated Cube parts are separated, touching, or penetrating.
 
-Foundation: `mcp/lib/orientedBoxContact.ts`.
+Foundations:
+
+```text
+mcp/lib/orientedBoxContact.ts
+mcp/lib/blockbenchCubeObb.ts
+```
 
 Preferred public direction: one read-only `measure_geometry`-style owner.
 
@@ -304,6 +379,18 @@ intentionally_embedded
 ```
 
 Never infer intended connection from names/appearance. For Cubes, prefer exact transformed OBB evidence.
+
+## Geometry A3 — Explicit Reparent Transform Policy
+
+Gap: current `reparent_element` preserves authored local state only. Changing parent can therefore change the rendered/world pose when the old/new parent transforms differ.
+
+Required public semantics:
+
+```text
+preserve: local | world
+```
+
+No implicit default should be claimed until compatibility behavior is deliberately chosen. `world` must follow native Blockbench reparent adjustment semantics and prove final authored + rendered state before success.
 
 ---
 
