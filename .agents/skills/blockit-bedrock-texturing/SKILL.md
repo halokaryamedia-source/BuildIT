@@ -64,6 +64,26 @@ Texture Verify
 
 Global UV gate = `list_textures` → `uv_audit.production_gate`. Never `tool_search` for `modify_cube`, `modify_cubes_batch`, `bone_rigging`, or another Geometry mutation while Texturing is active.
 
+## Conditional Support — Not Default Routing
+
+The Texturing phase intentionally retains advanced/editor-state tools, but they **must not enter the normal hot path unless the current user intent specifically requires their behavior**. Do not choose them merely because tool search ranks a sibling above a direct route.
+
+```text
+sample existing pixel/color   → color_picker_tool
+clone a texture region        → copy_brush_tool
+explicit destructive erase   → eraser_tool
+change global Painter state   → paint_settings
+persist/reuse brush preset    → create_brush_preset / load_brush_preset
+selection-based pixel edit    → texture_selection
+layer lifecycle/compositing   → texture_layer_management
+custom TextureGroup only      → add_texture_group
+import external texture_set   → import_texture_set
+single PBR channel operation  → assign_texture_channel
+write material config file    → save_material_config
+```
+
+Normal authored PBR creation/update remains `create_pbr_material` / `configure_material`; normal pixel styling remains `draw_shape_tool`, `paint_fill_tool`, `gradient_tool`, or `paint_with_brush`. Support tools do not justify extra discovery/readback before those direct routes.
+
 ## First-Call Invariants
 
 ```text
