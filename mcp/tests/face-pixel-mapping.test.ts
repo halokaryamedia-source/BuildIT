@@ -1,8 +1,12 @@
 import { describe, expect, test } from "bun:test";
 import {
+  faceLocalPixelSize,
+  mapFaceLocalPixelToAtlasPixel,
   mapFaceUvToTexturePixels,
+  requireExactFacePixelGrid,
   requireFiniteFaceUv,
   requirePositiveTextureMetric,
+  requireSupportedFaceRotation,
 } from "@/lib/facePixelMapping";
 
 async function source(path: string): Promise<string> {
@@ -61,6 +65,61 @@ describe("face pixel mapping ownership", () => {
       flip_u: false,
       flip_v: false,
     });
+  });
+
+  test("maps face-local pixels through Blockbench 0/90/180/270 rotation semantics", () => {
+    const mapping = mapFaceUvToTexturePixels(
+      [10, 20, 14, 23],
+      { width: 128, displayHeight: 128, uvWidth: 128, uvHeight: 128 },
+      "fixture"
+    );
+
+    expect(faceLocalPixelSize(mapping, 0, "fixture")).toEqual([4, 3]);
+    expect(mapFaceLocalPixelToAtlasPixel(mapping, 0, 0, 0, "fixture")).toEqual({ x: 10, y: 20 });
+    expect(mapFaceLocalPixelToAtlasPixel(mapping, 0, 3, 2, "fixture")).toEqual({ x: 13, y: 22 });
+
+    expect(faceLocalPixelSize(mapping, 90, "fixture")).toEqual([3, 4]);
+    expect(mapFaceLocalPixelToAtlasPixel(mapping, 90, 0, 0, "fixture")).toEqual({ x: 10, y: 22 });
+    expect(mapFaceLocalPixelToAtlasPixel(mapping, 90, 2, 3, "fixture")).toEqual({ x: 13, y: 20 });
+
+    expect(faceLocalPixelSize(mapping, 180, "fixture")).toEqual([4, 3]);
+    expect(mapFaceLocalPixelToAtlasPixel(mapping, 180, 0, 0, "fixture")).toEqual({ x: 13, y: 22 });
+    expect(mapFaceLocalPixelToAtlasPixel(mapping, 180, 3, 2, "fixture")).toEqual({ x: 10, y: 20 });
+
+    expect(faceLocalPixelSize(mapping, 270, "fixture")).toEqual([3, 4]);
+    expect(mapFaceLocalPixelToAtlasPixel(mapping, 270, 0, 0, "fixture")).toEqual({ x: 13, y: 20 });
+    expect(mapFaceLocalPixelToAtlasPixel(mapping, 270, 2, 3, "fixture")).toEqual({ x: 10, y: 22 });
+  });
+
+  test("applies authored U/V direction after local rotation mapping", () => {
+    const mapping = mapFaceUvToTexturePixels(
+      [14, 23, 10, 20],
+      { width: 128, displayHeight: 128, uvWidth: 128, uvHeight: 128 },
+      "fixture"
+    );
+    expect(mapping.flip_u).toBe(true);
+    expect(mapping.flip_v).toBe(true);
+    expect(mapFaceLocalPixelToAtlasPixel(mapping, 0, 0, 0, "fixture")).toEqual({ x: 13, y: 22 });
+    expect(mapFaceLocalPixelToAtlasPixel(mapping, 90, 0, 0, "fixture")).toEqual({ x: 13, y: 20 });
+  });
+
+  test("exact face-local mapping rejects fractional grids, bad rotations, and out-of-range pixels", () => {
+    const fractional = mapFaceUvToTexturePixels(
+      [0.25, 0, 1.25, 1],
+      { width: 128, displayHeight: 128, uvWidth: 128, uvHeight: 128 },
+      "fixture"
+    );
+    expect(() => requireExactFacePixelGrid(fractional, "fixture")).toThrow();
+    expect(() => requireSupportedFaceRotation(45, "fixture")).toThrow();
+
+    const exact = mapFaceUvToTexturePixels(
+      [0, 0, 4, 3],
+      { width: 128, displayHeight: 128, uvWidth: 128, uvHeight: 128 },
+      "fixture"
+    );
+    expect(() => mapFaceLocalPixelToAtlasPixel(exact, 0, 4, 0, "fixture")).toThrow();
+    expect(() => mapFaceLocalPixelToAtlasPixel(exact, 90, 3, 0, "fixture")).toThrow();
+    expect(() => mapFaceLocalPixelToAtlasPixel(exact, 0, 0.5, 0, "fixture")).toThrow();
   });
 
   test("rejects non-finite UVs and non-positive texture metrics", () => {

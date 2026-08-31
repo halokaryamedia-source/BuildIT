@@ -5,6 +5,17 @@ export type TexturePixelMetrics = {
   uvHeight: number;
 };
 
+export const SUPPORTED_FACE_ROTATIONS = [0, 90, 180, 270] as const;
+export type SupportedFaceRotation = (typeof SUPPORTED_FACE_ROTATIONS)[number];
+
+export type FaceTexturePixelMapping = {
+  corners: [number, number, number, number];
+  rect: [number, number, number, number];
+  size: [number, number];
+  flip_u: boolean;
+  flip_v: boolean;
+};
+
 export function requireFiniteFaceUv(
   values: readonly number[],
   context: string
@@ -29,6 +40,18 @@ export function requirePositiveTextureMetric(
   return value;
 }
 
+export function requireSupportedFaceRotation(
+  value: number,
+  context: string
+): SupportedFaceRotation {
+  if (!SUPPORTED_FACE_ROTATIONS.includes(value as SupportedFaceRotation)) {
+    throw new Error(
+      `${context} uses unsupported face rotation ${value}. Expected 0, 90, 180, or 270 degrees.`
+    );
+  }
+  return value as SupportedFaceRotation;
+}
+
 function roundNativePainterCoordinate(value: number): number {
   return Math.round(value * 100) / 100;
 }
@@ -37,7 +60,7 @@ export function mapFaceUvToTexturePixels(
   values: readonly number[],
   metrics: TexturePixelMetrics,
   context: string
-) {
+): FaceTexturePixelMapping {
   const uv = requireFiniteFaceUv(values, context);
   const width = requirePositiveTextureMetric(metrics.width, `${context} texture width`);
   const displayHeight = requirePositiveTextureMetric(
@@ -77,9 +100,110 @@ export function mapFaceUvToTexturePixels(
 
   return {
     corners,
-    rect: [left, top, right, bottom] as [number, number, number, number],
-    size: [right - left, bottom - top] as [number, number],
+    rect: [left, top, right, bottom],
+    size: [right - left, bottom - top],
     flip_u: corners[2] < corners[0],
     flip_v: corners[3] < corners[1],
+  };
+}
+
+export function requireExactFacePixelGrid(
+  mapping: FaceTexturePixelMapping,
+  context: string
+): [number, number] {
+  if (!mapping.corners.every(Number.isInteger)) {
+    throw new Error(
+      `${context} does not map to exact physical pixel boundaries. Face-local exact painting requires integral texture-pixel UV boundaries.`
+    );
+  }
+
+  const uPixels = Math.abs(mapping.corners[2] - mapping.corners[0]);
+  const vPixels = Math.abs(mapping.corners[3] - mapping.corners[1]);
+  if (
+    !Number.isInteger(uPixels) ||
+    !Number.isInteger(vPixels) ||
+    uPixels <= 0 ||
+    vPixels <= 0 ||
+    mapping.size[0] !== uPixels ||
+    mapping.size[1] !== vPixels
+  ) {
+    throw new Error(
+      `${context} does not define a positive exact face pixel grid.`
+    );
+  }
+  return [uPixels, vPixels];
+}
+
+export function faceLocalPixelSize(
+  mapping: FaceTexturePixelMapping,
+  rotationValue: number,
+  context: string
+): [number, number] {
+  const [uPixels, vPixels] = requireExactFacePixelGrid(mapping, context);
+  const rotation = requireSupportedFaceRotation(rotationValue, context);
+  return rotation === 90 || rotation === 270
+    ? [vPixels, uPixels]
+    : [uPixels, vPixels];
+}
+
+/**
+ * Maps one caller-visible face-local pixel back to the underlying texture atlas.
+ * Blockbench CubeFace.UVToLocal rotates normalized UV once per 90 degrees as
+ * [x, y] -> [1 - y, x]; this applies the discrete inverse of that transform.
+ */
+export function mapFaceLocalPixelToAtlasPixel(
+  mapping: FaceTexturePixelMapping,
+  rotationValue: number,
+  localX: number,
+  localY: number,
+  context: string
+): { x: number; y: number } {
+  if (!Number.isInteger(localX) || !Number.isInteger(localY)) {
+    throw new Error(`${context} requires integer face-local pixel coordinates.`);
+  }
+
+  const [uPixels, vPixels] = requireExactFacePixelGrid(mapping, context);
+  const rotation = requireSupportedFaceRotation(rotationValue, context);
+  const [localWidth, localHeight] = faceLocalPixelSize(
+    mapping,
+    rotation,
+    context
+  );
+  if (
+    localX < 0 ||
+    localY < 0 ||
+    localX >= localWidth ||
+    localY >= localHeight
+  ) {
+    throw new Error(
+      `${context} local pixel (${localX}, ${localY}) is outside face bounds 0..${localWidth - 1} × 0..${localHeight - 1}.`
+    );
+  }
+
+  let uIndex: number;
+  let vIndex: number;
+  switch (rotation) {
+    case 0:
+      uIndex = localX;
+      vIndex = localY;
+      break;
+    case 90:
+      uIndex = localY;
+      vIndex = vPixels - 1 - localX;
+      break;
+    case 180:
+      uIndex = uPixels - 1 - localX;
+      vIndex = vPixels - 1 - localY;
+      break;
+    case 270:
+      uIndex = uPixels - 1 - localY;
+      vIndex = localX;
+      break;
+  }
+
+  const [left, top, right, bottom] = mapping.rect;
+  return {
+    x: mapping.flip_u ? right - 1 - uIndex : left + uIndex,
+    y: mapping.flip_v ? bottom - 1 - vIndex : top + vIndex,
   };
 }
