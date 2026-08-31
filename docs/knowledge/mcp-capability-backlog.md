@@ -46,6 +46,8 @@ mcp/lib/orientedBoxContact.ts
 mcp/tests/oriented-box-contact.test.ts
 mcp/lib/textureRevision.ts
 mcp/tests/texture-revision.test.ts
+mcp/lib/animationPreviewState.ts
+mcp/tests/animation-preview-state.test.ts
 ```
 
 All remain **LOCAL PROOF REQUIRED** until Bun/local/live gates pass.
@@ -226,6 +228,8 @@ Use native Blockbench `AnimationCodec`. Support compiled content and/or explicit
 ## Animation A3 — Temporary Pose Canonical Views
 
 Add read-only animation timestamp observation without persistent timeline state changes.
+
+Foundation: `mcp/lib/animationPreviewState.ts` owns the generic preview-state transaction and guaranteed restoration. Concrete Blockbench effect muting, codec time semantics, and canonical capture remain runtime-owned.
 
 Conceptually:
 
