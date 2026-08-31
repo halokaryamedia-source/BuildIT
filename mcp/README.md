@@ -103,7 +103,18 @@ max per-tool payload                <= 3,200 characters
 runtime workflow prompt             < 9,000 characters
 ```
 
-`authoring-phase-surface.test.ts` owns the phase-exposure contract. `measure:surface` remains the catalog/static payload guard. Character counts are regression ceilings, not installed-client token measurements.
+`authoring-phase-surface.test.ts` owns phase-exposure correctness. `measure:surface` remains the full callable-catalog/static payload guard. `measure:phases` measures the actual source-owned Core + active-phase `tools/list` payloads over the real loopback transport for Geometry, Texturing, and Animation. Both are static/source measurements: neither is installed-client token usage or Authoring Efficiency proof.
+
+## Live Geometry E2E
+
+After building, explicitly deploying/reloading BlockIT, reconnecting the MCP client, and confirming Geometry is active, the disposable live verifier can prove the basic authoring path:
+
+```bash
+bun run verify:stateless-local
+bun run verify:geometry-live -- --confirm-disposable
+```
+
+`verify:geometry-live` intentionally replaces/discards the active Blockbench project, then checks create → Group/Cube authoring → exact readback → fixed-frame render change → Undo → Redo. It leaves the disposable project open. Passing this gate proves those live runtime effects only; it does **not** score visual similarity or establish accepted model quality.
 
 ## Source Layout
 
