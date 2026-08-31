@@ -49,6 +49,31 @@ function refreshValidation(): void {
   Validator.validate();
 }
 
+export function summarizeActiveValidatorChecks(
+  checks: readonly {
+    id: string;
+    errors: readonly unknown[];
+    warnings: readonly unknown[];
+  }[]
+) {
+  return checks.flatMap((check) => {
+    const errorCount = check.errors.length;
+    const warningCount = check.warnings.length;
+    const totalProblems = errorCount + warningCount;
+    if (totalProblems === 0) return [];
+
+    return [
+      {
+        id: check.id,
+        errorCount,
+        warningCount,
+        totalProblems,
+        detail_uri: `validator://checks/${check.id}`,
+      },
+    ];
+  });
+}
+
 /**
  * Extract element references from a problem's buttons
  * Looks for common patterns like "Select Cube", "Select Texture", etc.
@@ -168,6 +193,7 @@ export function registerValidatorResources() {
     },
     async readCallback(uri) {
       refreshValidation();
+      const problemChecks = summarizeActiveValidatorChecks(Validator.checks);
       return {
         contents: [
           {
@@ -179,8 +205,10 @@ export function registerValidatorResources() {
                   errorCount: Validator.errors.length,
                   warningCount: Validator.warnings.length,
                   checkCount: Validator.checks.length,
+                  problemCheckCount: problemChecks.length,
                   triggers: Validator.triggers,
                 },
+                problem_checks: problemChecks,
                 detail_resources: {
                   errors: "validator://errors",
                   warnings: "validator://warnings",
