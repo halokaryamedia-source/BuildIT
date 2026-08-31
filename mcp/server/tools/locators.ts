@@ -178,6 +178,7 @@ export const locatorToolDocs: ToolSpec[] = [
 ];
 
 type LocatorElement = Locator | NullObject;
+type LocatorElementKind = "locator" | "null_object";
 
 function requireBedrockEntityProject(): void {
   if (!Project) {
@@ -350,28 +351,34 @@ function vector3Equals(
   );
 }
 
-/**
- * Bedrock locators/null objects become bones sharing one namespace with
- * Cubes/Groups on export, so create-time uniqueness is enforced across all
- * outliner families instead of only the requesting family.
- */
-function assertOutlinerNameAvailable(
+export function bedrockLocatorExportKey(
+  kind: LocatorElementKind,
+  name: string
+): string {
+  return kind === "null_object" ? `_null_${name}` : name;
+}
+
+function locatorElementKind(element: LocatorElement): LocatorElementKind {
+  return element instanceof NullObject ? "null_object" : "locator";
+}
+
+function assertLocatorExportKeyAvailable(
+  parent: Group,
+  kind: LocatorElementKind,
   name: string,
-  requestedKind: "Locator" | "Null Object"
+  excludeUuid?: string
 ): void {
-  const families: Array<[string, Array<{ name: string }>]> = [
-    ["Locator", Locator.all],
-    ["Null Object", NullObject.all],
-    ["Cube", (Cube.all ?? []) as Array<{ name: string }>],
-    ["Group", (Group.all ?? []) as Array<{ name: string }>],
-  ];
-  for (const [family, items] of families) {
-    const collision = items.find((item) => item.name === name);
-    if (collision) {
-      throw new Error(
-        `${requestedKind} name "${name}" already exists as a ${family} ("${collision.name}"). Names must remain unique across Locators, Null Objects, Cubes, and Groups so exported Bedrock bone references stay deterministic.`
-      );
-    }
+  const requestedKey = bedrockLocatorExportKey(kind, name);
+  const collision = parent.children.find(
+    (child) =>
+      child.uuid !== excludeUuid &&
+      (child instanceof Locator || child instanceof NullObject) &&
+      bedrockLocatorExportKey(locatorElementKind(child), child.name) === requestedKey
+  );
+  if (collision instanceof Locator || collision instanceof NullObject) {
+    throw new Error(
+      `${kind === "locator" ? "Locator" : "Null Object"} "${name}" would export locator key "${requestedKey}" under Group "${parent.name}", but that key is already owned by ${collision instanceof NullObject ? "Null Object" : "Locator"} "${collision.name}" (${collision.uuid}). Locator keys must be unique within each parent bone.`
+    );
   }
 }
 
@@ -412,7 +419,7 @@ export function registerLocatorTools() {
 
         if (args.action === "create") {
           const parent = resolveParent(args.parent);
-          assertOutlinerNameAvailable(args.name, "Locator");
+          assertLocatorExportKeyAvailable(parent, "locator", args.name);
 
           const edited: OutlinerElement[] = [];
           let locator: Locator | undefined;
@@ -472,6 +479,14 @@ export function registerLocatorTools() {
             `No-op update rejected: locator ${locator.name} (${locator.uuid}) already has the requested state. No Undo entry was created.`
           );
         }
+        if (parentChanges && nextParent) {
+          assertLocatorExportKeyAvailable(
+            nextParent,
+            "locator",
+            locator.name,
+            locator.uuid
+          );
+        }
 
         Undo.initEdit({ elements: [locator], outliner: true });
         try {
@@ -512,7 +527,7 @@ export function registerLocatorTools() {
 
         if (args.action === "create") {
           const parent = resolveParent(args.parent);
-          assertOutlinerNameAvailable(args.name, "Null Object");
+          assertLocatorExportKeyAvailable(parent, "null_object", args.name);
           const edited: OutlinerElement[] = [];
           let element: NullObject | undefined;
           Undo.initEdit({ elements: edited, outliner: true });
@@ -554,6 +569,14 @@ export function registerLocatorTools() {
         if (!parentChanges && !positionChanges) {
           throw new Error(
             `No-op update rejected: null object ${element.name} (${element.uuid}) already has the requested state. No Undo entry was created.`
+          );
+        }
+        if (parentChanges && nextParent) {
+          assertLocatorExportKeyAvailable(
+            nextParent,
+            "null_object",
+            element.name,
+            element.uuid
           );
         }
 
