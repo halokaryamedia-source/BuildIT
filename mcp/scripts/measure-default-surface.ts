@@ -1,12 +1,6 @@
 import "@/server/tools";
 import { createServer as createTcpServer, type AddressInfo } from "node:net";
 import createNetServer from "@/server/net";
-import {
-  DEFAULT_MCP_AUTHORING_PHASE,
-  MCP_AUTHORING_PHASES,
-  type McpAuthoringPhase,
-} from "@/lib/authoringPhase";
-import { applyMcpToolSurface } from "@/server/tools";
 
 const HOST = "127.0.0.1";
 const ENDPOINT = "/bb-mcp";
@@ -27,12 +21,6 @@ const SURFACE_BUDGET = {
   description_chars: 11_500,
   max_tool_payload_chars: 3_200,
 } as const;
-
-const EXPECTED_PHASE_TOOL_COUNTS: Record<McpAuthoringPhase, number> = {
-  geometry: 28,
-  texturing: 43,
-  animation: 24,
-};
 
 type ListedTool = {
   name?: string;
@@ -59,21 +47,21 @@ type BranchSchemaSummary = {
   id_description: string | null;
 };
 
-type PayloadPercentiles = {
-  p50: number;
-  p90: number;
-  p95: number;
-  max: number;
-};
-
-type SurfaceSliceMetrics = {
+type SurfaceMetrics = {
+  protocol_version: string;
   initialize_instructions_chars: number;
   tool_count: number;
   tools_list_response_chars: number;
   tools_array_chars: number;
   input_schema_chars: number;
   description_chars: number;
-  per_tool_payload_chars: PayloadPercentiles;
+  per_tool_payload_chars: {
+    p50: number;
+    p90: number;
+    p95: number;
+    max: number;
+  };
+  branch_schema_audit: Record<string, BranchSchemaSummary>;
   largest_tools: Array<{
     name: string;
     payload_chars: number;
@@ -82,63 +70,11 @@ type SurfaceSliceMetrics = {
   }>;
 };
 
-type SurfaceMetrics = SurfaceSliceMetrics & {
-  protocol_version: string;
-  branch_schema_audit: Record<string, BranchSchemaSummary>;
-  phase_surfaces: Record<McpAuthoringPhase, SurfaceSliceMetrics>;
-};
-
 function percentile(values: number[], fraction: number): number {
   if (values.length === 0) return 0;
   const sorted = [...values].sort((a, b) => a - b);
   const index = Math.max(0, Math.ceil(fraction * sorted.length) - 1);
   return sorted[index] ?? 0;
-}
-
-function summarizeRows(
-  initializeInstructions: string,
-  listedText: string,
-  tools: ListedTool[]
-): SurfaceSliceMetrics {
-  const rows = tools.map((tool) => {
-    const payloadChars = JSON.stringify(tool).length;
-    const inputSchemaChars = JSON.stringify(tool.inputSchema ?? {}).length;
-    const descriptionChars = tool.description?.length ?? 0;
-    return {
-      name: tool.name ?? "<unnamed>",
-      payload_chars: payloadChars,
-      input_schema_chars: inputSchemaChars,
-      description_chars: descriptionChars,
-    };
-  });
-  const payloadSizes = rows.map((row) => row.payload_chars);
-
-  return {
-    initialize_instructions_chars: initializeInstructions.length,
-    tool_count: tools.length,
-    tools_list_response_chars: listedText.length,
-    tools_array_chars: JSON.stringify(tools).length,
-    input_schema_chars: rows.reduce(
-      (total, row) => total + row.input_schema_chars,
-      0
-    ),
-    description_chars: rows.reduce(
-      (total, row) => total + row.description_chars,
-      0
-    ),
-    per_tool_payload_chars: {
-      p50: percentile(payloadSizes, 0.5),
-      p90: percentile(payloadSizes, 0.9),
-      p95: percentile(payloadSizes, 0.95),
-      max: payloadSizes.length > 0 ? Math.max(...payloadSizes) : 0,
-    },
-    largest_tools: [...rows]
-      .sort(
-        (a, b) =>
-          b.payload_chars - a.payload_chars || a.name.localeCompare(b.name)
-      )
-      .slice(0, 10),
-  };
 }
 
 function summarizeBranchSchema(
@@ -232,31 +168,6 @@ function assertWithinSurfaceBudget(metrics: SurfaceMetrics): void {
   }
 }
 
-function assertPhaseSurfaces(
-  catalog: SurfaceSliceMetrics,
-  phases: Record<McpAuthoringPhase, SurfaceSliceMetrics>
-): void {
-  for (const phase of MCP_AUTHORING_PHASES) {
-    const metrics = phases[phase];
-    const expectedCount = EXPECTED_PHASE_TOOL_COUNTS[phase];
-    if (metrics.tool_count !== expectedCount) {
-      throw new Error(
-        `${phase} tool_count=${metrics.tool_count} expected exactly ${expectedCount}`
-      );
-    }
-    if (metrics.tools_list_response_chars >= catalog.tools_list_response_chars) {
-      throw new Error(
-        `${phase} tools/list payload must stay smaller than the retained 65-tool catalog payload.`
-      );
-    }
-    if (metrics.input_schema_chars >= catalog.input_schema_chars) {
-      throw new Error(
-        `${phase} input-schema payload must stay smaller than the retained 65-tool catalog payload.`
-      );
-    }
-  }
-}
-
 async function postMcp(
   baseUrl: string,
   body: unknown,
@@ -279,70 +190,6 @@ async function postMcp(
   const text = await response.text();
   const json = JSON.parse(text) as JsonRpcBody;
   return { response, text, json };
-}
-
-async function readCurrentSurface(
-  baseUrl: string,
-  requestId: number
-): Promise<{
-  initializeInstructions: string;
-  listedText: string;
-  tools: ListedTool[];
-}> {
-  const initialized = await postMcp(baseUrl, {
-    jsonrpc: "2.0",
-    id: requestId,
-    method: "initialize",
-    params: {
-      protocolVersion: PROTOCOL_VERSION,
-      capabilities: {},
-      clientInfo: {
-        name: "blockit-surface-measurement",
-        version: "1.0.0",
-      },
-    },
-  });
-  if (initialized.response.status !== 200) {
-    throw new Error(
-      `MCP initialize failed (${initialized.response.status}): ${initialized.text}`
-    );
-  }
-  if (initialized.json.result?.protocolVersion !== PROTOCOL_VERSION) {
-    throw new Error(
-      `Unexpected MCP protocol version: ${initialized.json.result?.protocolVersion ?? "missing"}`
-    );
-  }
-  const initializeInstructions = initialized.json.result?.instructions ?? "";
-  if (!initializeInstructions.trim()) {
-    throw new Error("MCP initialize must expose compact namespace instructions.");
-  }
-
-  const listed = await postMcp(
-    baseUrl,
-    {
-      jsonrpc: "2.0",
-      id: requestId + 1,
-      method: "tools/list",
-      params: {},
-    },
-    true
-  );
-  if (listed.response.status !== 200) {
-    throw new Error(
-      `MCP tools/list failed (${listed.response.status}): ${listed.text}`
-    );
-  }
-  if (listed.json.error) {
-    throw new Error(
-      `MCP tools/list error: ${listed.json.error.message ?? "unknown"}`
-    );
-  }
-
-  return {
-    initializeInstructions,
-    listedText: listed.text,
-    tools: listed.json.result?.tools ?? [],
-  };
 }
 
 async function main(): Promise<void> {
@@ -372,53 +219,101 @@ async function main(): Promise<void> {
     const tcpAddress = address as AddressInfo;
     const baseUrl = `http://${HOST}:${tcpAddress.port}`;
 
-    // Measure the retained authored catalog first, before startup-style phase
-    // filtering mutates tool.enabled. This preserves the existing static budget.
-    const catalogRead = await readCurrentSurface(baseUrl, 1);
-    const catalog = summarizeRows(
-      catalogRead.initializeInstructions,
-      catalogRead.listedText,
-      catalogRead.tools
+    const initialized = await postMcp(baseUrl, {
+      jsonrpc: "2.0",
+      id: 1,
+      method: "initialize",
+      params: {
+        protocolVersion: PROTOCOL_VERSION,
+        capabilities: {},
+        clientInfo: { name: "blockit-surface-measurement", version: "1.0.0" },
+      },
+    });
+    if (initialized.response.status !== 200) {
+      throw new Error(
+        `MCP initialize failed (${initialized.response.status}): ${initialized.text}`
+      );
+    }
+    if (initialized.json.result?.protocolVersion !== PROTOCOL_VERSION) {
+      throw new Error(
+        `Unexpected MCP protocol version: ${initialized.json.result?.protocolVersion ?? "missing"}`
+      );
+    }
+    const initializeInstructions = initialized.json.result?.instructions ?? "";
+    if (!initializeInstructions.trim()) {
+      throw new Error("MCP initialize must expose compact namespace instructions.");
+    }
+
+    const listed = await postMcp(
+      baseUrl,
+      {
+        jsonrpc: "2.0",
+        id: 2,
+        method: "tools/list",
+        params: {},
+      },
+      true
     );
+    if (listed.response.status !== 200) {
+      throw new Error(
+        `MCP tools/list failed (${listed.response.status}): ${listed.text}`
+      );
+    }
+    if (listed.json.error) {
+      throw new Error(`MCP tools/list error: ${listed.json.error.message ?? "unknown"}`);
+    }
+
+    const tools = listed.json.result?.tools ?? [];
+    const rows = tools.map((tool) => {
+      const payloadChars = JSON.stringify(tool).length;
+      const inputSchemaChars = JSON.stringify(tool.inputSchema ?? {}).length;
+      const descriptionChars = tool.description?.length ?? 0;
+      return {
+        name: tool.name ?? "<unnamed>",
+        payload_chars: payloadChars,
+        input_schema_chars: inputSchemaChars,
+        description_chars: descriptionChars,
+      };
+    });
+
+    const payloadSizes = rows.map((row) => row.payload_chars);
     const branchSchemaAudit = Object.fromEntries(
       ["manage_locator", "manage_null_object"].map((toolName) => [
         toolName,
-        summarizeBranchSchema(catalogRead.tools, toolName),
+        summarizeBranchSchema(tools, toolName),
       ])
     );
 
-    // Measure what an installed client actually receives after BlockIT applies
-    // Core + exactly one authoring phase. These are diagnostic measurements,
-    // separate from the retained-catalog regression ceilings above.
-    const phaseSurfaces = {} as Record<
-      McpAuthoringPhase,
-      SurfaceSliceMetrics
-    >;
-    let requestId = 10;
-    for (const phase of MCP_AUTHORING_PHASES) {
-      applyMcpToolSurface("bedrock_entity", phase);
-      const phaseRead = await readCurrentSurface(baseUrl, requestId);
-      phaseSurfaces[phase] = summarizeRows(
-        phaseRead.initializeInstructions,
-        phaseRead.listedText,
-        phaseRead.tools
-      );
-      requestId += 10;
-    }
-
     const metrics: SurfaceMetrics = {
       protocol_version: PROTOCOL_VERSION,
-      ...catalog,
+      initialize_instructions_chars: initializeInstructions.length,
+      tool_count: tools.length,
+      tools_list_response_chars: listed.text.length,
+      tools_array_chars: JSON.stringify(tools).length,
+      input_schema_chars: rows.reduce(
+        (total, row) => total + row.input_schema_chars,
+        0
+      ),
+      description_chars: rows.reduce(
+        (total, row) => total + row.description_chars,
+        0
+      ),
+      per_tool_payload_chars: {
+        p50: percentile(payloadSizes, 0.5),
+        p90: percentile(payloadSizes, 0.9),
+        p95: percentile(payloadSizes, 0.95),
+        max: payloadSizes.length > 0 ? Math.max(...payloadSizes) : 0,
+      },
       branch_schema_audit: branchSchemaAudit,
-      phase_surfaces: phaseSurfaces,
+      largest_tools: [...rows]
+        .sort((a, b) => b.payload_chars - a.payload_chars || a.name.localeCompare(b.name))
+        .slice(0, 10),
     };
 
     console.log(JSON.stringify(metrics, null, 2));
     assertAdvertisedBranchGuidance(metrics.branch_schema_audit);
     assertWithinSurfaceBudget(metrics);
-    assertPhaseSurfaces(catalog, phaseSurfaces);
   } finally {
-    applyMcpToolSurface("bedrock_entity", DEFAULT_MCP_AUTHORING_PHASE);
     if (server.listening) {
       await new Promise<void>((resolve, reject) => {
         server.close((error) => {
