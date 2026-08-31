@@ -603,6 +603,28 @@ function assertBatchGroupNamesAvailable(
   }
 }
 
+type PlannedGroupParent = Group | "root" | number;
+
+function planGroupBatchParents(
+  batch: readonly { name: string; parent?: string }[]
+): PlannedGroupParent[] {
+  const earlierByExactName = new Map<string, number>();
+  return batch.map((entry, index) => {
+    const reference = entry.parent ?? "root";
+    let planned: PlannedGroupParent;
+    if (reference === "root") {
+      planned = "root";
+    } else {
+      const earlierIndex = earlierByExactName.get(reference);
+      planned = earlierIndex !== undefined
+        ? earlierIndex
+        : resolveParentGroup(reference);
+    }
+    earlierByExactName.set(entry.name, index);
+    return planned;
+  });
+}
+
 function locatorExportKey(element: Locator | NullObject, name = element.name): string {
   return element instanceof NullObject ? `_null_${name}` : name;
 }
@@ -688,6 +710,15 @@ function preflightDuplicateGroupNames(
   };
 
   visit(source, true);
+}
+
+function preflightFaithfulDuplicate(
+  element: Cube | Group,
+  offset: readonly number[],
+  newName?: string
+): void {
+  preflightDuplicateTranslation(element, offset);
+  preflightDuplicateGroupNames(element, newName);
 }
 
 function translateDuplicatedSubtree(
@@ -784,9 +815,6 @@ function duplicateFaithfully(
   offset: readonly number[],
   newName?: string
 ): Cube | Group {
-  preflightDuplicateTranslation(element, offset);
-  preflightDuplicateGroupNames(element, newName);
-
   const duplicated = element.duplicate();
   if (!(duplicated instanceof Cube) && !(duplicated instanceof Group)) {
     throw new Error(
@@ -797,6 +825,18 @@ function duplicateFaithfully(
   applyDuplicateNames(element, duplicated, newName, true);
   translateDuplicatedSubtree(duplicated, offset);
   return duplicated;
+}
+
+function vector3Equals(
+  first: ArrayLike<number>,
+  second: ArrayLike<number>
+): boolean {
+  return (
+    first.length === second.length &&
+    first[0] === second[0] &&
+    first[1] === second[1] &&
+    first[2] === second[2]
+  );
 }
 
 export function registerElementTools() {
@@ -897,6 +937,7 @@ export function registerElementTools() {
         ];
 
       assertBatchGroupNamesAvailable(batch);
+      const parentPlan = planGroupBatchParents(batch);
 
       Undo.initEdit({
         elements: [],
@@ -907,8 +948,17 @@ export function registerElementTools() {
 
       const created: Group[] = [];
       try {
-        for (const entry of batch) {
-          const parentGroup = resolveParentGroup(entry.parent ?? "root");
+        for (const [index, entry] of batch.entries()) {
+          const plannedParent = parentPlan[index];
+          const parentGroup =
+            typeof plannedParent === "number"
+              ? created[plannedParent]
+              : plannedParent;
+          if (!parentGroup) {
+            throw new Error(
+              `Internal Group batch parent plan ${plannedParent} was not available for entry ${index}.`
+            );
+          }
           const group = new Group({
             name: entry.name,
             origin: entry.origin ?? [0, 0, 0],
@@ -1052,6 +1102,8 @@ export function registerElementTools() {
           `Element "${id}" cannot be duplicated by the Bedrock Cuboid workflow. Use an explicit Cube or Group target.`
         );
       }
+
+      preflightFaithfulDuplicate(element, offset, newName);
 
       Undo.initEdit({
         elements: [],
@@ -1327,20 +1379,19 @@ export function registerElementTools() {
         "Use list_outline or find_elements_by_criteria, then inspect_element to confirm the intended Group UUID."
       );
       const sameOrigin =
-        origin === undefined ||
-        (origin[0] === group.origin[0] &&
-          origin[1] === group.origin[1] &&
-          origin[2] === group.origin[2]);
+        origin === undefined || vector3Equals(origin, group.origin);
       const sameRotation =
-        rotation === undefined ||
-        (rotation[0] === group.rotation[0] &&
-          rotation[1] === group.rotation[1] &&
-          rotation[2] === group.rotation[2]);
+        rotation === undefined || vector3Equals(rotation, group.rotation);
       const sameVisibility =
         visibility === undefined || visibility === group.visibility;
       if (sameOrigin && sameRotation && sameVisibility) {
         throw new Error(
           `modify_group request for Group ${group.name} (${group.uuid}) has no authored effect.`
+        );
+      }
+      if (origin !== undefined && !sameOrigin && !group.mesh) {
+        throw new Error(
+          `Group ${group.name} (${group.uuid}) has no preview mesh, so transferOrigin() cannot safely preserve descendant visual placement. No mutation was applied.`
         );
       }
 
@@ -1359,6 +1410,11 @@ export function registerElementTools() {
       try {
         if (origin !== undefined && !sameOrigin) {
           group.transferOrigin(origin as [number, number, number]);
+          if (!vector3Equals(group.origin, origin)) {
+            throw new Error(
+              `Group ${group.name} (${group.uuid}) pivot readback did not match the requested origin.`
+            );
+          }
         }
         group.extend({
           ...(rotation !== undefined && !sameRotation
