@@ -436,12 +436,14 @@ export function registerElementInspectionTools() {
               : element instanceof Locator
                 ? inspectLocator(element)
                 : inspectNullObject(element);
+        const detailSummary =
+          element instanceof Cube && detail === "uv" ? " with UV mapping detail" : "";
 
         return {
           content: [
             {
               type: "text" as const,
-              text: JSON.stringify(result),
+              text: `Inspected ${result.type} "${result.name}" (${result.uuid})${detailSummary}.`,
             },
           ],
           structuredContent: result,
