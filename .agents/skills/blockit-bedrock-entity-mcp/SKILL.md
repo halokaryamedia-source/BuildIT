@@ -5,9 +5,7 @@ description: BlockIT Bedrock Entity asset router. Route from active phase + inte
 
 # BlockIT Bedrock Entity MCP
 
-Use for **asset authoring**; target `bedrock`.
-
-Own only **phase/tool routing, argument preflight, state reuse, handoff, and recovery**. Judgement owners:
+Target `bedrock`. Own phase/tool routing, preflight, state reuse, handoff, recovery. Judgement:
 
 ```text
 geometry/rig/UV → blockbench-bedrock-modelling
@@ -21,7 +19,7 @@ Normal asset work **must not begin by searching repository files**.
 
 `ACTIVE PHASE + intent + known state/UUIDs → exact exposed tool → execute → reuse fresh state`
 
-MCP initialize `ACTIVE PHASE` + `tools/list` are the **routing authority for the first tool decision**. Tool absence caused by phase scoping is **not** a discovery failure.
+MCP `ACTIVE PHASE` + `tools/list` are the **routing authority for the first tool decision**; phase absence is not discovery failure.
 
 Bedrock: **1 Minecraft block = 16 Blockbench units**. Reuse `capture_model_views` `front_direction`; persist only when resume-critical.
 
@@ -33,19 +31,7 @@ TEXTURING = Texture Atlas + Painter + PBR + material instances
 ANIMATION = animation/keyframes/timeline/effects/controllers
 ```
 
-Foreign-phase need:
-
-```text
-HANDOFF_REQUIRED
-target_phase: <geometry|texturing|animation>
-reason: <why>
-readiness: <latest gates>
-resume_from: <current target>
-action: set MCP Authoring Phase=<target>; reload BlockIT MCP
-STOP
-```
-
-Do **not** `tool_search` or substitute a foreign-phase tool.
+Foreign-phase need → `HANDOFF_REQUIRED` with target_phase, reason, readiness, resume_from, phase switch/reload action → STOP. Do **not** `tool_search` or substitute it.
 
 ## Authoring Stage Lock
 
@@ -82,7 +68,7 @@ Locator/Null create/edit      → manage_locator / manage_null_object
 rig IK/mirror                 → bone_rigging
 ```
 
-`bone_rigging` only for IK/mirror. Known coherent Cubes → one `place_cube(elements=[...])`; uncertainty → no batch. geometry/rig/UV judgement → `blockbench-bedrock-modelling`.
+`bone_rigging` only for IK/mirror. Known coherent Cubes → one `place_cube(elements=[...])`; uncertainty → no batch. Known Cubes sharing one deterministic TRANSLATE/RESIZE intent → derive absolute targets once from fresh state → one `modify_cubes_batch`; never loop inspect→modify per Cube. Relative intent stays reasoning-layer arithmetic; writes remain absolute/fail-closed.
 
 ## First-Call Invariants
 
@@ -98,9 +84,9 @@ If conditional/action fields matter, load **that exact active-phase spec once** 
 
 ## Search / Recovery
 
-`tool_search` is **deferred spec loading after routing** only for a tool that belongs to the active phase.
+`tool_search` is **deferred spec loading after routing** only for a tool that **belongs to the active phase**.
 
-**One precise search:** the exact selected tool name only. On miss, **reformulate once** with exact name + one domain noun. A second miss → `BLOCKED`. Fallback is search-backend recovery, **not re-routing**. A known foreign-phase tool must never enter this search path.
+**One precise search:** exact selected tool name only. On miss, **reformulate once** with exact name + one domain noun. A second miss → `BLOCKED`. Fallback is search-backend recovery, not re-routing. **A known foreign-phase tool must never enter this search path.**
 
 ```text
 validation      → INVALID_INPUT       → repair args; same tool
@@ -116,9 +102,9 @@ unsupported     → CAPABILITY_MISMATCH → handoff once or BLOCKED
 - Known UUID → no discovery unless stale/ambiguous.
 - Fresh mutation → reuse returned state/`geometry_effect`; no confirmation readback.
 - **Do not automatically re-read fresh mutation targets with `inspect_element`.**
-- Validator gate → read `validator://status` first; zero problems means no detail-resource read.
+- Validator gate → `validator://status` first; zero problems means no detail read.
 - `inspect_model_bounds` only for envelope/scale/ground/displacement.
 - Skip `get_project_info` after create/export unless lifecycle state is unknown/stale.
-- Same routed failure twice without new evidence → `BLOCKED`; return to the owning diagnosis.
+- Same routed failure twice without new evidence → `BLOCKED`; return to owning diagnosis.
 
 `export_model`: Bedrock JSON (`bedrock`) or editable `.bbmodel` (`project`). Never emulate missing capability.

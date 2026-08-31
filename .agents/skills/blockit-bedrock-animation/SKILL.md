@@ -29,17 +29,19 @@ Do not `tool_search` for `bone_rigging` while Animation is active.
 ```text
 new animation                         → create_animation
 unknown animation/controller          → inspect_animation
-controller state/composition/effects  → manage_animation_controller
-existing animation effects            → manage_animation_effects
 transform keyframes / Molang values   → manage_keyframes
-curve change with evidence            → animation_graph_editor
+coherent time/value cohort transform  → batch_keyframe_operations
 time/length/FPS/loop/Molang controls  → animation_timeline
-batch coherent operations             → batch_keyframe_operations
+curve change with evidence            → animation_graph_editor
 explicit copy/paste/mirror            → animation_copy_paste
+existing animation effects            → manage_animation_effects
+controller state/composition/effects  → manage_animation_controller
 new-animation particle/sound          → create_animation
 ```
 
-Load the exact active-phase tool only. Reuse fresh UUID/state; known identity **must not fall back to broad hierarchy discovery or confirmation reads**.
+Load the exact active-phase tool only. Reuse fresh UUID/state; known identity **must not fall back to broad hierarchy discovery or confirmation reads**. If one offset/scale/mirror/bake intent applies to several existing keys, use one `batch_keyframe_operations`; do not loop `manage_keyframes` per key. Per-key authored value changes remain `manage_keyframes`.
+
+Controller/effect/graph/copy-paste tools are conditional: use them only when that behavior is requested or evidenced, not because search ranks them near a basic keyframe/timeline route.
 
 ## Motion Design Contract
 

@@ -1,15 +1,15 @@
 ---
 name: blockit-bedrock-texturing
-description: Bedrock specialist for Texture Atlas, Texture Styling, Painter, PBR, material instances, and Texture Verify.
+description: Bedrock Texture Atlas/Painter/PBR/Texture Verify specialist.
 ---
 
 # BlockIT Bedrock Texturing
 
-Use only when `ACTIVE PHASE: TEXTURING`. Geometry owns geometry/rig/UV mutation.
+`ACTIVE PHASE: TEXTURING` only. Geometry owns geometry/rig/UV mutation.
 
 ## Phase Boundary
 
-Texturing may inspect/audit UV state but must not borrow Cube mutation.
+May inspect/audit UV state but must not borrow Cube mutation.
 
 ```text
 UV/geometry/rig correction required
@@ -22,36 +22,30 @@ UV/geometry/rig correction required
 → STOP
 ```
 
-Entry: final Box UV locked with `autouv=0`; `list_textures` has no invalid/out-of-bounds/partial-overlap blocker. Reuse `box_uv_region` read-only.
+Entry: final Box UV locked with `autouv=0`; no invalid/out-of-bounds/partial-overlap blocker. Reuse `box_uv_region` read-only.
 
 ## Canonical Vocabulary
 
-```text
-UV Layout       = geometry → atlas mapping
-Texture Atlas   = bitmap/PNG canvas
-Texture Styling = color/material/shading/detail
-Texture Verify  = fresh atlas + mapped-model visual validation
-```
-
-`create_texture` = Texture Atlas; Painter = Texture Styling; per-face `material_instance` stays here.
+`UV Layout` = geometry→atlas mapping; `Texture Atlas` = bitmap/PNG; `Texture Styling` = color/material/shading/detail; `Texture Verify` = fresh atlas + mapped-model visual validation. `create_texture` = Texture Atlas; Painter = Texture Styling; per-face `material_instance` stays here.
 
 ## Direct Routing
 
-Reuse fresh state; load exact spec only when needed.
+Reuse fresh state; load exact spec only as needed.
 
 ```text
-global UV/atlas readiness  → list_textures (`uv_audit.production_gate`)
-face-specific mapping      → inspect_element only when needed
-unlocked/invalid UV        → HANDOFF_REQUIRED(geometry)
-create atlas bitmap        → create_texture
-inventory/select           → list_textures / activate_texture
-base/material regions      → draw_shape_tool
-contiguous base fill       → paint_fill_tool
-stepped value/form/detail  → draw_shape_tool / paint_with_brush
-supported smooth ramp      → gradient_tool
-PBR/material semantics     → create_pbr_material / configure_material / assign_texture_channel
-fresh atlas image          → get_texture
-mapped model-view evidence → capture_model_views
+global UV/atlas readiness       → list_textures (`uv_audit.production_gate`)
+face-specific mapping           → inspect_element only when needed
+unlocked/invalid UV             → HANDOFF_REQUIRED(geometry)
+blank atlas resolution unknown  → get_project_info once; known handoff state skips it
+create atlas bitmap             → create_texture
+inventory/select                → list_textures / activate_texture
+base/material regions           → draw_shape_tool
+contiguous base fill            → paint_fill_tool
+stepped value/form/detail       → draw_shape_tool / paint_with_brush
+supported smooth ramp           → gradient_tool
+PBR/material semantics          → create_pbr_material / configure_material / assign_texture_channel
+fresh atlas image               → get_texture
+mapped model-view evidence      → capture_model_views
 ```
 
 Never `tool_search` for `modify_cube`, `modify_cubes_batch`, `bone_rigging`, or another Geometry mutation while Texturing is active.
@@ -63,10 +57,10 @@ These **must not enter the normal hot path unless user intent specifically requi
 ```text
 color_picker_tool | copy_brush_tool | eraser_tool | paint_settings
 create_brush_preset | load_brush_preset | texture_selection | texture_layer_management
-add_texture_group | import_texture_set | assign_texture_channel | save_material_config
+add_texture_group | import_texture_set | save_material_config
 ```
 
-Normal direct routes remain `create_pbr_material`, `configure_material`, `draw_shape_tool`, `paint_fill_tool`, `gradient_tool`, and `paint_with_brush`. Support tools do not justify extra discovery/readback.
+Direct routes remain `create_pbr_material`, `configure_material`, `assign_texture_channel`, `draw_shape_tool`, `paint_fill_tool`, `gradient_tool`, `paint_with_brush`; support tools do not justify extra readback.
 
 ## First-Call Invariants
 
@@ -78,19 +72,19 @@ pbr_channel          → material TextureGroup `group` required
 Painter coordinates  → texture pixels; keep in bounds
 ```
 
-Current `create_texture` has a provisional **16×16** blank default. Production Codex must therefore **not omit blank Atlas size**; reuse fresh project resolution.
+Current `create_texture` has a provisional **16×16** blank default. Production Codex must therefore **not omit blank Atlas size**; reuse project resolution. Existing base-color atlas → reuse its UUID.
 
 ## Deferred Spec Loading
 
-Load the routed active-phase spec only when needed. Known identity skips broad discovery; do not re-list/re-read it only for confirmation.
+Load the routed spec only when needed. Known identity skips broad discovery; do not re-list/re-read only for confirmation.
 
 ## Texture Atlas
 
-Use one base-color atlas for the whole model, not one per body part/Cube/material zone. Production logical UV is **128×128 default, 256×256 opt-in**. Pin atlas UUID and pass `texture_id` when multiple textures are loaded. PBR normal/height/MER are support atlases.
+Use one base-color atlas for the model, not one per body part/Cube. Production logical UV is **128×128 default, 256×256 opt-in**. Pin atlas UUID; pass `texture_id` with multiple textures. PBR normal/height/MER are support atlases.
 
 ## Texture Styling
 
-Define palette roles, value/hue ramp, material zones, face-aware shading, contact/occlusion, edge, alpha, seam, identity marks, detail budget, and pixels per UV unit. Flat color is a **BASE PASS only**; reject random high-contrast noise.
+Define palette, value/hue ramp, material zones, face shading, contact/occlusion, edge, alpha, seam, identity, detail budget, and pixels per UV unit. Flat color is a **BASE PASS only**; reject random high-contrast noise.
 
 ```text
 BASE PASS             → draw_shape_tool / paint_fill_tool
@@ -100,8 +94,8 @@ SECONDARY DETAIL PASS → controlled detail
 VERIFY                → Texture Verify
 ```
 
-`gradient_tool` is only for reference-supported continuous transition. Repeated same-color detail may use one `paint_with_brush` batch with `connect_strokes=false`.
+`gradient_tool` is only for reference-supported continuous transition. Repeated same-color detail → one `paint_with_brush` batch with `connect_strokes=false`.
 
 ## Texture Verify / Visual Convergence
 
-Use approved reference + fresh `get_texture` + `capture_model_views`. Review UV → material → form → identity → microdetail. Verdict: `FAIL | UNVERIFIED | PASS`. `FAIL` → smallest causal correction → fresh evidence → `IMPROVED | UNCHANGED | REGRESSED`; same causal direction twice → `BLOCKED`.
+Use approved reference + fresh `get_texture` + `capture_model_views`. Review UV → material → form → identity → microdetail. Verdict: `FAIL | UNVERIFIED | PASS`. `FAIL` → smallest bounded causal correction → fresh affected evidence → `IMPROVED | UNCHANGED | REGRESSED`; same causal direction twice → `BLOCKED`.
