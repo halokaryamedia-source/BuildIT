@@ -94,13 +94,13 @@ manage_locator create     → name+parent; update → id+authored change
 manage_null_object create → name+parent; update → id+parent/position
 ```
 
-If conditional/action fields matter, load **that exact active-phase spec once** before mutation. Validation failure repairs same-tool args.
+If conditional/action fields matter, load **that exact active-phase spec once** before mutation. Validation failure repairs arguments for the **same routed tool**.
 
 ## Search / Recovery
 
 `tool_search` is **deferred spec loading after routing** only for a tool that belongs to the active phase.
 
-**One precise search:** the exact selected tool name only. On miss, **reformulate once** with exact name + one domain noun. A second miss → `BLOCKED`. Fallback recovers search, not routing. A known foreign-phase tool must never enter this search path.
+**One precise search:** the exact selected tool name only. On miss, **reformulate once** with exact name + one domain noun. A second miss → `BLOCKED`. Fallback is search-backend recovery, **not re-routing**. A known foreign-phase tool must never enter this search path.
 
 ```text
 validation      → INVALID_INPUT       → repair args; same tool
