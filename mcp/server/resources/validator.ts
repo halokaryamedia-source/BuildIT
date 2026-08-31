@@ -45,6 +45,10 @@ declare const Validator: ValidatorSingleton;
 // Helper Functions
 // ============================================================================
 
+function refreshValidation(): void {
+  Validator.validate();
+}
+
 /**
  * Extract element references from a problem's buttons
  * Looks for common patterns like "Select Cube", "Select Texture", etc.
@@ -149,23 +153,21 @@ export function registerValidatorResources() {
     uriTemplate: "validator://status",
     title: "Validator Status",
     description:
-      "Returns validation counts/status only. Read `validator://errors` or `validator://warnings` only when detailed problems are needed.",
+      "Runs fresh Blockbench validation and returns counts/status only. Read `validator://errors` or `validator://warnings` only when detailed problems are needed.",
     async listCallback() {
-      const totalProblems = Validator.errors.length + Validator.warnings.length;
       return {
         resources: [
           {
             uri: "validator://status",
             name: "Validation Status",
-            description: totalProblems === 0
-              ? "No validation problems"
-              : `${Validator.errors.length} errors, ${Validator.warnings.length} warnings`,
+            description: "Read for a fresh validation summary",
             mimeType: "application/json",
           },
         ],
       };
     },
     async readCallback(uri) {
+      refreshValidation();
       return {
         contents: [
           {
@@ -202,7 +204,7 @@ export function registerValidatorResources() {
     uriTemplate: "validator://checks/{id}",
     title: "Validator Checks",
     description:
-      "Returns information about registered validator checks. Use without an ID to list all checks, or provide a check ID to get details about a specific check.",
+      "Returns information about registered validator checks. Use without an ID to list all checks, or provide a check ID to get fresh details about a specific check.",
     async listCallback() {
       if (Validator.checks.length === 0) {
         return { resources: [] };
@@ -218,6 +220,7 @@ export function registerValidatorResources() {
       };
     },
     async readCallback(uri, { id }) {
+      refreshValidation();
       // If no ID, return all checks
       if (!id) {
         return {
@@ -272,23 +275,21 @@ export function registerValidatorResources() {
     uriTemplate: "validator://warnings",
     title: "Validator Warnings",
     description:
-      "Returns current validation warnings. Any elementRefs are best-effort message-text inferences and are explicitly marked non-authoritative.",
+      "Runs fresh Blockbench validation and returns current warnings. Any elementRefs are best-effort message-text inferences and are explicitly marked non-authoritative.",
     async listCallback() {
       return {
         resources: [
           {
             uri: "validator://warnings",
             name: "Validation Warnings",
-            description:
-              Validator.warnings.length === 0
-                ? "No warnings"
-                : `${Validator.warnings.length} warning(s)`,
+            description: "Read for fresh validation warnings",
             mimeType: "application/json",
           },
         ],
       };
     },
     async readCallback(uri) {
+      refreshValidation();
       const warnings = Validator.warnings.map((w) => serializeProblem(w, false));
 
       // Group warnings by affected element type
@@ -333,23 +334,21 @@ export function registerValidatorResources() {
     uriTemplate: "validator://errors",
     title: "Validator Errors",
     description:
-      "Returns current validation errors. Any elementRefs are best-effort message-text inferences and are explicitly marked non-authoritative.",
+      "Runs fresh Blockbench validation and returns current errors. Any elementRefs are best-effort message-text inferences and are explicitly marked non-authoritative.",
     async listCallback() {
       return {
         resources: [
           {
             uri: "validator://errors",
             name: "Validation Errors",
-            description:
-              Validator.errors.length === 0
-                ? "No errors"
-                : `${Validator.errors.length} error(s)`,
+            description: "Read for fresh validation errors",
             mimeType: "application/json",
           },
         ],
       };
     },
     async readCallback(uri) {
+      refreshValidation();
       const errors = Validator.errors.map((e) => serializeProblem(e, true));
 
       // Group errors by affected element type
