@@ -18,9 +18,10 @@
     "typecheck:profile": "tsc --noEmit --extendedDiagnostics",
     "test": "bun test",
     "measure:surface": "bun run ./scripts/measure-default-surface.ts",
+    "measure:phases": "bun run ./scripts/measure-phase-surfaces.ts",
     "verify:repository": "bun test tests/repository/*.test.ts",
     "verify:authoring": "bun test tests/authoring/*.test.ts",
-    "verify:mcp": "bun run typecheck && bun run test && bun run measure:surface && bun run build && bun run docs:check",
+    "verify:mcp": "bun run typecheck && bun run test && bun run measure:surface && bun run measure:phases && bun run build && bun run docs:check",
     "verify:release": "bun run verify:mcp",
     "eval:tool-discovery": "bun run ./scripts/evaluate-tool-discovery.ts",
     "verify:stateless-local": "bun run ./scripts/verify-stateless-local.ts",
@@ -45,7 +46,7 @@
     "@types/bun": "^1.3.8",
     "blockbench-types": "5.1.0",
     "tinycolor2": "^1.6.0",
-    "typescript": "^5.9.3",
+    "typescript": "5.9.3",
     "zod-to-json-schema": "^3.25.1"
   }
 }
