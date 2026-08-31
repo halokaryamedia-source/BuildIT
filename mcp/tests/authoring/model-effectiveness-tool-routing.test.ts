@@ -23,7 +23,7 @@ describe("model creation effectiveness — tool routing", () => {
     expect(geometryRuntime).toContain("fresh model views");
     expect(geometryRuntime).not.toContain("create_texture");
     expect(geometryRuntime).not.toContain("create_animation");
-    expect(orchestrator).toContain("Skip `get_project_info` after create/export unless required");
+    expect(orchestrator).toMatch(/Skip `get_project_info` after create\/export unless .*lifecycle state.*unknown\/stale/i);
     expect(modelling).toContain("Stay in the geometry lane unless a current decision requires another branch");
   });
 
