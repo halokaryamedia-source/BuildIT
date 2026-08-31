@@ -15,17 +15,15 @@ texture/PBR     → blockit-bedrock-texturing
 animation/motion→ blockit-bedrock-animation
 ```
 
-Do not duplicate their visual or quality criteria here.
-
 ## Fast Routing Contract
 
 Normal asset work **must not begin by searching repository files**.
 
 `ACTIVE PHASE + intent + known state/UUIDs → exact exposed tool → execute → reuse fresh state`
 
-MCP initialize `ACTIVE PHASE` + current `tools/list` are the **routing authority for the first tool decision**. Tool absence caused by phase scoping is **not** a discovery failure.
+MCP initialize `ACTIVE PHASE` + `tools/list` are the **routing authority for the first tool decision**. Phase-scoped absence is not a discovery failure.
 
-Bedrock: **1 Minecraft block = 16 Blockbench units**. Reuse one `capture_model_views` `front_direction` (`+z|-z`); persist only when resume-critical.
+Bedrock: **1 Minecraft block = 16 Blockbench units**. Reuse one `capture_model_views` `front_direction`; persist only when resume-critical.
 
 ## Active Phase Contract
 
@@ -53,7 +51,7 @@ Do **not** `tool_search` or substitute a foreign-phase tool.
 
 `DISCOVER → AUTHOR → VERIFY → CORRECT → VERIFY → DONE`
 
-`DISCOVER` is only for unknown/stale identity or exact spec needs; fresh state must not regress there.
+`DISCOVER` only for unknown/stale identity or exact spec; fresh state must not regress.
 
 ## Tool Lane Discipline
 
@@ -96,13 +94,13 @@ manage_locator create     → name+parent; update → id+authored change
 manage_null_object create → name+parent; update → id+parent/position
 ```
 
-If conditional/action fields matter, load **that exact active-phase spec once** before mutation. Validation failure repairs arguments for the **same routed tool**.
+Load the exact active-phase spec once only when conditional/action fields matter. Validation failure repairs args for the same routed tool.
 
 ## Search / Recovery
 
 `tool_search` is **deferred spec loading after routing** only for a tool that belongs to the active phase.
 
-**One precise search:** the exact selected tool name only (`modify_cube`); do not append the original request. On miss, **reformulate once** with exact name + one distinguishing domain noun. A second miss → `BLOCKED`. The fallback is search-backend recovery, **not re-routing**. A known foreign-phase tool must never enter this search path.
+**One precise search:** exact selected tool name only. On miss, **reformulate once** with exact name + one domain noun. A second miss → `BLOCKED`. Fallback recovers search, not routing. A known foreign-phase tool must never enter this search path.
 
 ```text
 validation      → INVALID_INPUT       → repair args; same tool
