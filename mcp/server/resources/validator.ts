@@ -153,7 +153,7 @@ export function registerValidatorResources() {
     uriTemplate: "validator://status",
     title: "Validator Status",
     description:
-      "Runs fresh Blockbench validation and returns counts/status only. Read `validator://errors` or `validator://warnings` only when detailed problems are needed.",
+      "Returns validation counts/status only. Read `validator://errors` or `validator://warnings` only when detailed problems are needed.",
     async listCallback() {
       return {
         resources: [
@@ -204,7 +204,7 @@ export function registerValidatorResources() {
     uriTemplate: "validator://checks/{id}",
     title: "Validator Checks",
     description:
-      "Returns information about registered validator checks. Use without an ID to list all checks, or provide a check ID to get fresh details about a specific check.",
+      "Returns information about registered validator checks. Use without an ID to list all checks, or provide a check ID to get details about a specific check.",
     async listCallback() {
       if (Validator.checks.length === 0) {
         return { resources: [] };
@@ -275,7 +275,7 @@ export function registerValidatorResources() {
     uriTemplate: "validator://warnings",
     title: "Validator Warnings",
     description:
-      "Runs fresh Blockbench validation and returns current warnings. Any elementRefs are best-effort message-text inferences and are explicitly marked non-authoritative.",
+      "Returns current validation warnings. Any elementRefs are best-effort message-text inferences and are explicitly marked non-authoritative.",
     async listCallback() {
       return {
         resources: [
@@ -334,7 +334,7 @@ export function registerValidatorResources() {
     uriTemplate: "validator://errors",
     title: "Validator Errors",
     description:
-      "Runs fresh Blockbench validation and returns current errors. Any elementRefs are best-effort message-text inferences and are explicitly marked non-authoritative.",
+      "Returns current validation errors. Any elementRefs are best-effort message-text inferences and are explicitly marked non-authoritative.",
     async listCallback() {
       return {
         resources: [
