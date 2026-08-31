@@ -23,7 +23,7 @@ Normal asset work **must not begin by searching repository files**.
 
 MCP initialize `ACTIVE PHASE` + `tools/list` are the **routing authority for the first tool decision**. Tool absence caused by phase scoping is **not** a discovery failure.
 
-Bedrock: **1 Minecraft block = 16 Blockbench units**. Reuse one `capture_model_views` `front_direction`; persist only when resume-critical.
+Bedrock: **1 Minecraft block = 16 Blockbench units**. Reuse `capture_model_views` `front_direction`; persist only when resume-critical.
 
 ## Active Phase Contract
 
