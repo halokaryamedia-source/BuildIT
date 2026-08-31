@@ -127,6 +127,15 @@ export function requireFiniteInspectableFaceUv(
   return requireFiniteFaceUv(values, context);
 }
 
+export function requireFiniteInspectableScalar(value: number, context: string): number {
+  if (!Number.isFinite(value)) {
+    throw new Error(
+      `${context} contains a non-finite authored scalar and cannot be reported safely.`
+    );
+  }
+  return value;
+}
+
 type EffectiveTextureSpace =
   | {
       state: "mapped";
@@ -305,6 +314,11 @@ function inspectCube(cube: Cube, detail: "geometry" | "uv") {
     ] as [number, number, number],
     origin: requireFiniteInspectableVector3(cube.origin, `Cube ${cube.name} (${cube.uuid}) origin`),
     rotation: requireFiniteInspectableVector3(cube.rotation, `Cube ${cube.name} (${cube.uuid}) rotation`),
+    inflate: requireFiniteInspectableScalar(
+      cube.inflate ?? 0,
+      `Cube ${cube.name} (${cube.uuid}) inflate`
+    ),
+    export: cube.export !== false,
     ...(detail === "uv" ? { uv: inspectCubeUv(cube) } : {}),
     visibility: cube.visibility !== false,
   };
@@ -319,6 +333,7 @@ function inspectGroup(group: Group) {
     parent: parentInfo(group),
     origin: requireFiniteInspectableVector3(group.origin, `Group ${group.name} (${group.uuid}) origin`),
     rotation: requireFiniteInspectableVector3(group.rotation, `Group ${group.name} (${group.uuid}) rotation`),
+    export: group.export !== false,
     visibility: group.visibility !== false,
     children_count: group.children?.length ?? 0,
   };
@@ -334,6 +349,7 @@ function inspectLocator(locator: Locator) {
     position: requireFiniteInspectableVector3(locator.position, `Locator ${locator.name} (${locator.uuid}) position`),
     rotation: requireFiniteInspectableVector3(locator.rotation, `Locator ${locator.name} (${locator.uuid}) rotation`),
     ignore_inherited_scale: locator.ignore_inherited_scale,
+    export: locator.export !== false,
     visibility: locator.visibility !== false,
   };
 }
@@ -349,6 +365,7 @@ function inspectNullObject(element: NullObject) {
     ik_target: element.ik_target || null,
     ik_source: element.ik_source || null,
     lock_ik_target_rotation: element.lock_ik_target_rotation,
+    export: element.export !== false,
     visibility: element.visibility !== false,
   };
 }
