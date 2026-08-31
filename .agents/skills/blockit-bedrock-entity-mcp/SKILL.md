@@ -66,6 +66,7 @@ hierarchy question            → list_outline
 known target detail           → inspect_element
 visible/reference comparison  → capture_model_views
 numeric envelope/scale/ground → inspect_model_bounds
+structural validation gate    → validator://status; details only when nonzero
 Locator identity unknown      → list_locator_elements
 global UV/atlas readiness     → list_textures
 recover change                → undo / redo
@@ -117,6 +118,7 @@ unsupported     → CAPABILITY_MISMATCH → handoff once or BLOCKED
 - Known UUID → no discovery unless stale/ambiguous.
 - Fresh mutation → reuse returned state/`geometry_effect`; no confirmation readback.
 - **Do not automatically re-read fresh mutation targets with `inspect_element`.**
+- Validator gate → read `validator://status` first; zero problems means no detail-resource read.
 - `inspect_model_bounds` only for envelope/scale/ground/displacement.
 - Skip `get_project_info` after create/export unless required by unknown/stale lifecycle state.
 - Same routed failure twice without new evidence → `BLOCKED`; return to the owning diagnosis.
