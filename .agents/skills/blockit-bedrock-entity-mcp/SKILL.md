@@ -5,7 +5,7 @@ description: BlockIT Bedrock Entity asset router. Route from active phase + inte
 
 # BlockIT Bedrock Entity MCP
 
-Use for **asset authoring**. Target `bedrock`.
+Use for **asset authoring**; target `bedrock`.
 
 Own only **phase/tool routing, argument preflight, state reuse, handoff, and recovery**. Judgement owners:
 
@@ -21,7 +21,7 @@ Normal asset work **must not begin by searching repository files**.
 
 `ACTIVE PHASE + intent + known state/UUIDs → exact exposed tool → execute → reuse fresh state`
 
-MCP initialize `ACTIVE PHASE` + `tools/list` are the **routing authority for the first tool decision**. Phase-scoped absence is not a discovery failure.
+MCP initialize `ACTIVE PHASE` + `tools/list` are the **routing authority for the first tool decision**. Tool absence caused by phase scoping is **not** a discovery failure.
 
 Bedrock: **1 Minecraft block = 16 Blockbench units**. Reuse one `capture_model_views` `front_direction`; persist only when resume-critical.
 
@@ -118,7 +118,7 @@ unsupported     → CAPABILITY_MISMATCH → handoff once or BLOCKED
 - **Do not automatically re-read fresh mutation targets with `inspect_element`.**
 - Validator gate → read `validator://status` first; zero problems means no detail-resource read.
 - `inspect_model_bounds` only for envelope/scale/ground/displacement.
-- Skip `get_project_info` after create/export unless required by unknown/stale lifecycle state.
+- Skip `get_project_info` after create/export unless lifecycle state is unknown/stale.
 - Same routed failure twice without new evidence → `BLOCKED`; return to the owning diagnosis.
 
 `export_model`: Bedrock JSON (`bedrock`) or editable `.bbmodel` (`project`). Never emulate missing capability.
