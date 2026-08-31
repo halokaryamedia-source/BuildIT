@@ -1,6 +1,6 @@
 ---
 name: blockit-bedrock-texturing
-description: Bedrock Texture Atlas/Painter/PBR/Texture Verify specialist.
+description: Bedrock Texture/Painter/PBR specialist.
 ---
 
 # BlockIT Bedrock Texturing
@@ -22,15 +22,15 @@ UV/geometry/rig correction required
 → STOP
 ```
 
-Entry: final Box UV locked with `autouv=0`; no invalid/out-of-bounds/partial-overlap blocker. Reuse `box_uv_region` read-only.
+Entry: final Box UV locked with `autouv=0`; no invalid/out-of-bounds/partial-overlap blocker; reuse `box_uv_region`.
 
 ## Canonical Vocabulary
 
-`UV Layout` = geometry→atlas mapping; `Texture Atlas` = bitmap/PNG; `Texture Styling` = color/material/shading/detail; `Texture Verify` = fresh atlas + mapped-model visual validation. `create_texture` = Texture Atlas; Painter = Texture Styling; per-face `material_instance` stays here.
+`UV Layout` = geometry→atlas; `Texture Atlas` = bitmap/PNG; `Texture Styling` = color/material/shading/detail; `Texture Verify` = fresh atlas + mapped-model validation. `create_texture` = Texture Atlas; Painter = Texture Styling; `material_instance` stays here.
 
 ## Direct Routing
 
-Reuse fresh state; load exact spec only as needed.
+Reuse fresh state; load exact spec only when needed.
 
 ```text
 global UV/atlas readiness       → list_textures (`uv_audit.production_gate`)
@@ -60,7 +60,7 @@ create_brush_preset | load_brush_preset | texture_selection | texture_layer_mana
 add_texture_group | import_texture_set | save_material_config
 ```
 
-Direct routes remain `create_pbr_material`, `configure_material`, `assign_texture_channel`, `draw_shape_tool`, `paint_fill_tool`, `gradient_tool`, `paint_with_brush`; support tools do not justify extra readback.
+Normal direct routes remain `create_pbr_material`, `configure_material`, `assign_texture_channel`, `draw_shape_tool`, `paint_fill_tool`, `gradient_tool`, `paint_with_brush`. Support tools do not justify extra discovery/readback.
 
 ## First-Call Invariants
 
@@ -76,11 +76,11 @@ Current `create_texture` has a provisional **16×16** blank default. Production 
 
 ## Deferred Spec Loading
 
-Load the routed spec only when needed. Known identity skips broad discovery; do not re-list/re-read only for confirmation.
+Load routed spec only when needed. Known identity skips broad discovery; do not re-list/re-read it only for confirmation.
 
 ## Texture Atlas
 
-Use one base-color atlas for the model, not one per body part/Cube. Production logical UV is **128×128 default, 256×256 opt-in**. Pin atlas UUID; pass `texture_id` with multiple textures. PBR normal/height/MER are support atlases.
+Use one base-color atlas for the model, not one per body part/Cube. Production logical UV is **128×128 default, 256×256 opt-in**. Pin atlas UUID and pass `texture_id` when multiple textures are loaded. PBR normal/height/MER are support atlases.
 
 ## Texture Styling
 
@@ -94,7 +94,7 @@ SECONDARY DETAIL PASS → controlled detail
 VERIFY                → Texture Verify
 ```
 
-`gradient_tool` is only for reference-supported continuous transition. Repeated same-color detail → one `paint_with_brush` batch with `connect_strokes=false`.
+`gradient_tool` is only for reference-supported continuous transition. Same-color detail → one `paint_with_brush` batch with `connect_strokes=false`.
 
 ## Texture Verify / Visual Convergence
 

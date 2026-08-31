@@ -26,22 +26,20 @@ describe("texturing hot-path routing", () => {
       "texture_layer_management",
       "add_texture_group",
       "import_texture_set",
-      "assign_texture_channel",
       "save_material_config",
-    ]) {
-      expect(support).toContain(tool);
-    }
+    ]) expect(support).toContain(tool);
 
     for (const direct of [
       "create_pbr_material",
       "configure_material",
+      "assign_texture_channel",
       "draw_shape_tool",
       "paint_fill_tool",
       "gradient_tool",
       "paint_with_brush",
-    ]) {
-      expect(support).toContain(direct);
-    }
+    ]) expect(skill).toContain(direct);
+
     expect(support).toMatch(/Support tools do not justify extra discovery\/readback/i);
+    expect(support).not.toContain("assign_texture_channel");
   });
 });
