@@ -4,10 +4,7 @@ import { z } from "zod";
 import { createTool, type ToolSpec } from "@/lib/factories";
 import { STATUS_EXPERIMENTAL, STATUS_STABLE } from "@/lib/constants";
 import { resolveCoreGroup, resolveCoreTexture } from "@/lib/coreIdentity";
-import {
-  elementIdSchema,
-  vector3Schema,
-} from "@/lib/zodObjects";
+import { elementIdSchema } from "@/lib/zodObjects";
 import { requireOpenProject } from "@/lib/util";
 
 export const removeElementParameters = z.object({
@@ -510,9 +507,6 @@ function exceedsBounds(
 }
 
 const MAX_REGEX_PATTERN_LENGTH = 512;
-// Heuristic: nested quantifiers like (a+)+, (.*)*, (a+|b)*, (foo){2,}+ are the
-// classic catastrophic-backtracking shape. Reject quantifiers applied to a
-// group whose body already contains a quantifier.
 const CATASTROPHIC_BACKTRACK_HEURISTIC = /\([^)]*[+*?][^)]*\)\s*[+*?{]/;
 
 function safeCompileRegex(pattern: string | undefined): RegExp | null {
@@ -561,6 +555,82 @@ export function requireFiniteTranslatedElementVector3(
   return translated;
 }
 
+export function hasCaseInsensitiveGroupNameCollision(
+  groups: readonly { uuid: string; name: string }[],
+  requestedName: string,
+  excludeUuid?: string
+): boolean {
+  const normalized = requestedName.toLowerCase();
+  return groups.some(
+    (group) =>
+      group.uuid !== excludeUuid && group.name.toLowerCase() === normalized
+  );
+}
+
+function assertGroupNameAvailable(name: string, excludeUuid?: string): void {
+  if (hasCaseInsensitiveGroupNameCollision(Group.all, name, excludeUuid)) {
+    const conflicts = Group.all
+      .filter(
+        (group) =>
+          group.uuid !== excludeUuid &&
+          group.name.toLowerCase() === name.toLowerCase()
+      )
+      .map((group) => `${group.name} (${group.uuid})`)
+      .join(", ");
+    throw new Error(
+      `Bedrock Group/bone name "${name}" collides case-insensitively with existing Group(s): ${conflicts}. Bone names must stay unique for deterministic Bedrock animation/export binding.`
+    );
+  }
+}
+
+function assertBatchGroupNamesAvailable(
+  batch: readonly { name: string }[]
+): void {
+  const occupied = new Map<string, string>();
+  for (const group of Group.all) {
+    occupied.set(group.name.toLowerCase(), `${group.name} (${group.uuid})`);
+  }
+
+  for (const entry of batch) {
+    const key = entry.name.toLowerCase();
+    const existing = occupied.get(key);
+    if (existing) {
+      throw new Error(
+        `Bedrock Group/bone name "${entry.name}" collides case-insensitively with ${existing}. Group names must be unique before creating the batch.`
+      );
+    }
+    occupied.set(key, `planned Group "${entry.name}"`);
+  }
+}
+
+function locatorExportKey(element: Locator | NullObject, name = element.name): string {
+  return element instanceof NullObject ? `_null_${name}` : name;
+}
+
+function assertAnchorRenameAvailable(
+  element: Locator | NullObject,
+  requestedName: string
+): void {
+  const parent = element.parent;
+  if (!(parent instanceof Group)) {
+    throw new Error(
+      `${continuationElementType(element)} ${element.name} (${element.uuid}) has no Group parent; Bedrock locator identity cannot be validated safely.`
+    );
+  }
+  const requestedKey = locatorExportKey(element, requestedName);
+  const conflict = parent.children.find(
+    (child) =>
+      child !== element &&
+      (child instanceof Locator || child instanceof NullObject) &&
+      locatorExportKey(child) === requestedKey
+  );
+  if (conflict && (conflict instanceof Locator || conflict instanceof NullObject)) {
+    throw new Error(
+      `Renaming ${continuationElementType(element)} "${element.name}" to "${requestedName}" would collide with exported locator key "${requestedKey}" already owned by ${continuationElementType(conflict)} "${conflict.name}" (${conflict.uuid}) under Group "${parent.name}".`
+    );
+  }
+}
+
 function preflightDuplicateTranslation(
   element: unknown,
   offset: readonly number[]
@@ -578,10 +648,157 @@ function preflightDuplicateTranslation(
     }
     return;
   }
+  if (element instanceof Locator || element instanceof NullObject) {
+    requireFiniteTranslatedElementVector3(
+      element.position,
+      offset,
+      `${continuationElementType(element)} ${element.name} (${element.uuid}) position`
+    );
+    return;
+  }
   throw new Error(
-    "The Bedrock Cuboid duplicate workflow supports only Cube/Group targets and Cube/Group descendants."
+    "The Bedrock Cuboid duplicate workflow supports only Cube/Group targets and Cube/Group/Locator/Null Object descendants."
   );
 }
+
+function preflightDuplicateGroupNames(
+  source: Cube | Group,
+  newName?: string
+): void {
+  if (!(source instanceof Group)) return;
+
+  const occupied = new Map<string, string>();
+  for (const group of Group.all) {
+    occupied.set(group.name.toLowerCase(), `${group.name} (${group.uuid})`);
+  }
+
+  const visit = (group: Group, isRoot: boolean) => {
+    const plannedName = isRoot && newName ? newName : `${group.name}_copy`;
+    const key = plannedName.toLowerCase();
+    const conflict = occupied.get(key);
+    if (conflict) {
+      throw new Error(
+        `Duplicating Group "${group.name}" would create Bedrock bone name "${plannedName}", which collides case-insensitively with ${conflict}. Choose a different root name or rename the conflicting Group first.`
+      );
+    }
+    occupied.set(key, `planned Group "${plannedName}"`);
+    for (const child of group.children) {
+      if (child instanceof Group) visit(child, false);
+    }
+  };
+
+  visit(source, true);
+}
+
+function translateDuplicatedSubtree(
+  element: Cube | Group | Locator | NullObject,
+  offset: readonly number[]
+): void {
+  if (element instanceof Cube) {
+    element.from = requireFiniteTranslatedElementVector3(
+      element.from,
+      offset,
+      `Duplicated Cube ${element.name} (${element.uuid}) from`
+    );
+    element.to = requireFiniteTranslatedElementVector3(
+      element.to,
+      offset,
+      `Duplicated Cube ${element.name} (${element.uuid}) to`
+    );
+    element.origin = requireFiniteTranslatedElementVector3(
+      element.origin,
+      offset,
+      `Duplicated Cube ${element.name} (${element.uuid}) origin`
+    );
+    return;
+  }
+
+  if (element instanceof Group) {
+    element.origin = requireFiniteTranslatedElementVector3(
+      element.origin,
+      offset,
+      `Duplicated Group ${element.name} (${element.uuid}) origin`
+    );
+    for (const child of element.children) {
+      if (
+        child instanceof Cube ||
+        child instanceof Group ||
+        child instanceof Locator ||
+        child instanceof NullObject
+      ) {
+        translateDuplicatedSubtree(child, offset);
+      } else {
+        throw new Error(
+          `Duplicated Group "${element.name}" contains unsupported descendant type ${String((child as { type?: unknown }).type ?? "unknown")}.`
+        );
+      }
+    }
+    return;
+  }
+
+  element.position = requireFiniteTranslatedElementVector3(
+    element.position,
+    offset,
+    `Duplicated ${continuationElementType(element)} ${element.name} (${element.uuid}) position`
+  );
+}
+
+function applyDuplicateNames(
+  source: Cube | Group | Locator | NullObject,
+  copy: Cube | Group | Locator | NullObject,
+  newName: string | undefined,
+  isRoot: boolean
+): void {
+  copy.name = isRoot && newName ? newName : `${source.name}_copy`;
+
+  if (source instanceof Group && copy instanceof Group) {
+    if (source.children.length !== copy.children.length) {
+      throw new Error(
+        `Native duplicate of Group "${source.name}" changed descendant count (${source.children.length} -> ${copy.children.length}); refusing to claim faithful duplication.`
+      );
+    }
+    source.children.forEach((sourceChild, index) => {
+      const copyChild = copy.children[index];
+      if (
+        (sourceChild instanceof Cube ||
+          sourceChild instanceof Group ||
+          sourceChild instanceof Locator ||
+          sourceChild instanceof NullObject) &&
+        (copyChild instanceof Cube ||
+          copyChild instanceof Group ||
+          copyChild instanceof Locator ||
+          copyChild instanceof NullObject)
+      ) {
+        applyDuplicateNames(sourceChild, copyChild, undefined, false);
+        return;
+      }
+      throw new Error(
+        `Native duplicate of Group "${source.name}" produced an unsupported or mismatched descendant at index ${index}.`
+      );
+    });
+  }
+}
+
+function duplicateFaithfully(
+  element: Cube | Group,
+  offset: readonly number[],
+  newName?: string
+): Cube | Group {
+  preflightDuplicateTranslation(element, offset);
+  preflightDuplicateGroupNames(element, newName);
+
+  const duplicated = element.duplicate();
+  if (!(duplicated instanceof Cube) && !(duplicated instanceof Group)) {
+    throw new Error(
+      `Native Blockbench duplicate returned unsupported type for ${element.name} (${element.uuid}).`
+    );
+  }
+
+  applyDuplicateNames(element, duplicated, newName, true);
+  translateDuplicatedSubtree(duplicated, offset);
+  return duplicated;
+}
+
 export function registerElementTools() {
   createTool(elementToolDocs[0].name, {
     ...elementToolDocs[0],
@@ -678,6 +895,8 @@ export function registerElementTools() {
             parent,
           },
         ];
+
+      assertBatchGroupNamesAvailable(batch);
 
       Undo.initEdit({
         elements: [],
@@ -834,54 +1053,16 @@ export function registerElementTools() {
         );
       }
 
-      function cloneCube(cube: Cube, parent: any, isRoot: boolean) {
-        const dupe = new Cube({
-          name: isRoot && newName ? newName : `${cube.name}_copy`,
-          from: [cube.from[0] + offset[0], cube.from[1] + offset[1], cube.from[2] + offset[2]],
-          to: [cube.to[0] + offset[0], cube.to[1] + offset[1], cube.to[2] + offset[2]],
-          origin: [cube.origin[0] + offset[0], cube.origin[1] + offset[1], cube.origin[2] + offset[2]],
-          rotation: cube.rotation,
-          autouv: cube.autouv,
-          uv_offset: cube.uv_offset,
-          mirror_uv: cube.mirror_uv,
-          shade: cube.shade,
-          inflate: cube.inflate,
-          color: cube.color,
-          visibility: cube.visibility,
-        }).init();
-        dupe.addTo(parent);
-        return dupe;
-      }
-
-      function cloneGroup(group: Group, parent: any, isRoot: boolean) {
-        const dupeGroup = new Group({
-          name: isRoot && newName ? newName : `${group.name}_copy`,
-          origin: [group.origin[0] + offset[0], group.origin[1] + offset[1], group.origin[2] + offset[2]],
-          rotation: group.rotation,
-          autouv: group.autouv,
-          selected: group.selected,
-          shade: group.shade,
-          visibility: group.visibility,
-        }).init();
-        dupeGroup.addTo(parent);
-        group.children.forEach((child: any) => cloneElement(child, dupeGroup, false));
-        return dupeGroup;
-      }
-
-      function cloneElement(el: any, parent: any, isRoot: boolean) {
-        if (el instanceof Cube) return cloneCube(el, parent, isRoot);
-        if (el instanceof Group) return cloneGroup(el, parent, isRoot);
-        throw new Error(
-          `Group "${parent?.name ?? "(unknown)"}" contains an element type that the Bedrock Cuboid duplicate workflow does not clone.`
-        );
-      }
-
-      preflightDuplicateTranslation(element, offset);
-
-      Undo.initEdit({ elements: [], outliner: true, collections: [] });
+      Undo.initEdit({
+        elements: [],
+        groups: [],
+        outliner: true,
+        selection: true,
+        collections: [],
+      });
       let dup: Cube | Group;
       try {
-        dup = cloneElement(element, element.parent ?? "root", true);
+        dup = duplicateFaithfully(element, offset, newName);
         Undo.finishEdit("Agent duplicated element");
       } catch (error) {
         Undo.cancelEdit(true);
@@ -903,15 +1084,23 @@ export function registerElementTools() {
     },
   }, elementToolDocs[3].status);
 
-  /**
-   * Rename an element. Mirrors the simple property change seen in the existing tools,
-   * using `extend` to apply the change and updating the editor.
-   */
   createTool(elementToolDocs[4].name, {
     ...elementToolDocs[4],
     async execute({ id, new_name }) {
       requireOpenProject("renaming an element");
       const element = resolveUniqueDestructiveElement(id);
+
+      if (element.name === new_name) {
+        throw new Error(
+          `rename_element request for ${continuationElementType(element)} ${element.name} (${element.uuid}) has no authored effect.`
+        );
+      }
+      if (element instanceof Group) {
+        assertGroupNameAvailable(new_name, element.uuid);
+      } else if (element instanceof Locator || element instanceof NullObject) {
+        assertAnchorRenameAvailable(element, new_name);
+      }
+
       Undo.initEdit({
         elements: element instanceof Group ? [] : [element],
         groups: element instanceof Group ? [element] : [],
@@ -971,7 +1160,6 @@ export function registerElementTools() {
       let truncated = false;
 
       for (const el of candidates) {
-
         const elType = getElementType(el);
         if (!elType) continue;
         if (type !== "any" && elType !== type) continue;
