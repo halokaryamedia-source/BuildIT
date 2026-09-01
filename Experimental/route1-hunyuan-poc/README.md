@@ -7,8 +7,9 @@ EXPERIMENTAL SOURCE FOUNDATION APPLIED
 ROUTE 1 GATE 1 PASS
 PREFERRED MULTIVIEW EXECUTABLE TRACKED
 GEOMETRY EVIDENCE BRIDGE STATIC SOURCE APPLIED
+REFERENCE ALIGNMENT PURE FOUNDATION TRACKED
 GENERIC FIXTURE PREPARATION TRACKED
-LIVE BLOCKBENCH BRIDGE PROOF PENDING
+LIVE BLOCKBENCH ALIGNMENT/BRIDGE PROOF PENDING
 NOT PRODUCTION
 ```
 
@@ -27,8 +28,12 @@ separated FRONT + SIDE + BACK crops
 → FRONT / SIDE / TOP / ISOMETRIC contact sheet
 → Gate 1 mesh usefulness PASS
 → generic fixture preparation/package
-→ BuildIT manage_geometry_reference
-→ transient 3D reference + quantitative evidence
+→ BuildIT manage_geometry_reference canonical load
+→ read raw reference bounds
+→ uniform fit-envelope scale from requested Minecraft dimensions
+→ read fresh scaled bounds
+→ center X/Z + ground Y translation
+→ canonical aligned reference captures
 → normal semantic Groups/Cubes
 → remove transient reference before production .bbmodel export
 ```
@@ -243,7 +248,7 @@ Experimental/route1-hunyuan-poc/.cache/test-ready/<fixture_id>/
 
 The package contains the exact BlockIT artifact, `fixture.json`, approved reference, approved GLB, contact sheet, FRONT/LEFT/BACK Hunyuan inputs, `manifest.json`, and `RUN.md`. Existing outputs are never silently overwritten. The manifest records each file hash/size plus the BlockIT embedded build identity and full bundle SHA-256. `repository_head_at_prepare` is context only; artifact identity comes from the packaged bundle itself.
 
-These commands are Bun preparation utilities, **not MCP callable tools**. They do not expand the 65-tool catalog or 28-tool Geometry surface.
+These commands are Bun preparation utilities, **not MCP callable tools**. They do not expand the callable catalog or Geometry surface.
 
 ## SingleView baseline
 
@@ -274,11 +279,103 @@ The existing `reference_models://...` resource exposes the same Route 1 evidence
 
 Production geometry remains normal Groups/Cubes. Editable `.bbmodel` export is blocked while a tool-owned Route 1 reference remains active; remove the reference before production export.
 
+## Reference alignment contract — pre-live foundation
+
+The GLB is normalized reconstruction evidence, not a physical-size authority. Route 1 therefore aligns the displayed reference to the **requested Minecraft dimensions** without editing the GLB file and without non-uniform deformation.
+
+The pure planning owner is:
+
+```text
+mcp/lib/route1ReferenceAlignment.ts
+```
+
+with targeted regression contract:
+
+```text
+mcp/tests/route1-reference-alignment.test.ts
+```
+
+The intended live sequence deliberately uses the existing `manage_geometry_reference` primitives and fresh evidence between transform stages:
+
+```text
+1. load canonical GLB reference
+   origin=[0,0,0]
+   uniform_scale=1
+   source_front_direction from fixture
+
+2. read current raw world bounds
+
+3. plan one uniform FIT_ENVELOPE multiplier
+   target units = requested_dimensions_blocks × Format.block_size
+   multiplier = min(
+     target_width_units  / observed_width_units,
+     target_height_units / observed_height_units,
+     target_length_units / observed_length_units
+   )
+
+4. update uniform_scale only
+
+5. read fresh post-scale world bounds
+
+6. plan translation only
+   center X → requested target center X
+   min Y    → requested ground Y
+   center Z → requested target center Z
+
+7. update origin only
+
+8. read fresh aligned evidence + canonical captures
+
+9. author normal semantic Groups/Cubes
+```
+
+Why scale and translation are separate:
+
+- Reference Model scale/pivot behavior must be observed live rather than inferred from static source alone.
+- A fresh post-scale measurement prevents a large one-shot transform formula from encoding an unproven pivot assumption.
+- The second step is pure translation, which is easy to verify from observed world bounds.
+
+The default live proof anchor is `center X=0`, `ground Y=0`, `center Z=0` unless the approved fixture explicitly requires another target anchor. That anchor is a test convention, not a universal modelling rule.
+
+### Alignment invariants
+
+```text
+requested dimensions = numeric authority
+approved image        = visual authority
+GLB bounds            = observation only
+
+uniform scale only
+no X/Y/Z independent stretching
+no pre-scaling or rewriting approved-shape.glb
+no mesh repair/decimation added for alignment
+no triangle → Cube conversion
+no quality score as authority
+```
+
+A fit-envelope plan may leave unused space on one or two axes. That is expected. Axis coverage is evidence, not an instruction to stretch the GLB until every requested dimension matches.
+
+The alignment planner returns objective values only:
+
+```text
+observed dimensions
+requested dimensions
+scale multiplier
+next uniform scale
+aligned dimensions
+per-axis coverage ratio
+limiting axis/axes
+translation delta
+next origin
+expected translated bounds
+```
+
+Do not add multiple alignment modes, a one-call auto-align API, or new public ToolSpec fields before the live sequence above proves the Blockbench behavior and demonstrates repeated workflow value. If the same sequence is stable across representative fixtures, local implementation may later consolidate it behind the existing Geometry reference owner rather than adding another tool family.
+
 ## Remaining proof boundary
 
-Static source/CI can prove schemas, preparation contracts, hashes, source ownership, buildability, generated-doc freshness, evidence fields, and fail-closed contracts. It cannot prove the installed desktop plugin actually renders a representative approved GLB correctly or that Cube authoring becomes visually better.
+Static source/CI can prove schemas, preparation contracts, hashes, source ownership, buildability, generated-doc freshness, evidence fields, pure alignment math, and fail-closed contracts. It cannot prove the installed desktop plugin actually renders a representative approved GLB correctly, that Reference Model scale/origin behavior matches the intended live sequence, or that Cube authoring becomes visually better.
 
-The next eventual live proof is:
+The next live proof is now explicitly reactivated:
 
 ```text
 prepare/package an approved representative fixture
@@ -286,6 +383,10 @@ prepare/package an approved representative fixture
 → Geometry registry contains manage_geometry_reference
 → approved representative GLB loads as 3D Reference Model
 → quantitative resource/tool evidence matches the loaded reference
+→ apply planned uniform fit-envelope scale
+→ read fresh scaled bounds
+→ apply center X/Z + ground Y translation
+→ aligned evidence matches requested envelope/anchor policy
 → explicit canonical GLB views work before Cube blockout
 → normal Groups/Cubes share the intended coordinate frame
 → transient reference is removed

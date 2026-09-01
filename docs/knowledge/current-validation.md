@@ -1,6 +1,6 @@
 # Current Validation
 
-Updated: 2026-08-30
+Updated: 2026-09-01
 
 This file owns **current proof interpretation**. Active continuation belongs in `docs/knowledge/next-action.md`; stable product facts belong in `CONTEXT.md`; exact source/test ownership belongs in `docs/knowledge/implementation-map.md`.
 
@@ -13,7 +13,8 @@ BEDROCK CALLABLE CATALOG:        65 tools across phases
 DEFAULT CLIENT EXPOSURE:         MCP Core + Geometry (28 tools)
 KNOWN FULL MCP BASELINE:         PASS @ 5ecbf25608f8da879497e2f687854cb68781f3cd
 ACCEPTED LIVE BASELINE:          2026-08-12 Blockbench 5.1.6
-CURRENT ROUTE 1 LIVE RETEST:     LOCAL PROOF REQUIRED — DEFERRED BY USER
+CURRENT ROUTE 1 LIVE RETEST:     REACTIVATED — LOCAL PROOF REQUIRED
+ROUTE 1 ALIGNMENT FOUNDATION:    SOURCE PREPARED — LOCAL TEST + LIVE PROOF REQUIRED
 CURRENT MODEL-QUALITY CLAIM:     LOCAL PROOF REQUIRED
 ```
 
@@ -38,6 +39,17 @@ Static/current source contracts retain:
 - generated API/prompt ownership through canonical source + generator;
 - repository, authoring-policy, executable MCP, experimental runtime, and release verification as separate proof surfaces.
 
+Route 1 alignment planning now has a pure source foundation for two deliberately separate operations:
+
+```text
+observed GLB bounds + requested Minecraft dimensions
+→ uniform fit-envelope scale plan
+→ measure fresh scaled bounds
+→ center X/Z + ground Y translation plan
+```
+
+The pure planner does **not** prove Blockbench Reference Model transform semantics. It does not change `manage_geometry_reference`, does not pre-scale the GLB artifact, does not add non-uniform scaling, and does not convert mesh triangles to Bedrock Cubes. The public/runtime contract remains unchanged until local/live evidence justifies any consolidation.
+
 Exact regression ownership and protected capability gaps live in `docs/knowledge/implementation-map.md`; this file does not duplicate them.
 
 ## Visual / Reference Proof Rule
@@ -55,6 +67,8 @@ The following cannot create visual `PASS` by themselves:
 
 Front-view agreement does not prove hidden depth or full 3D fidelity. If required evidence is unavailable, the correct state is `UNVERIFIED` or `LOCAL PROOF REQUIRED`, not inferred success.
 
+For Route 1 specifically, requested dimensions remain numeric authority and the approved reference image remains visual authority. GLB bounds are observation only. Fit-envelope alignment may scale the reference uniformly to fit the requested envelope, but it must never redefine the target dimensions or justify non-uniform deformation.
+
 ## Authoring Efficiency
 
 **Static Footprint** and raw call count are guardrails, not Authoring Efficiency proof.
@@ -63,10 +77,12 @@ Authoring Efficiency means **Cost to Accepted Result**: the justified work neede
 
 Runtime Authoring Efficiency or model-quality claims require the matching local acceptance procedure and accepted artifact evidence.
 
+For Route 1, useful alignment must first pass the technical desktop bridge. Only then compare image-only authoring against image + GLB authoring on accepted visual quality, depth/attachment accuracy, corrections/rebuilds, and total Cost to Accepted Result.
+
 ## Evidence Limits
 
-Static source/CI evidence can prove the contracts it actually executes, such as schemas, routing, deterministic generated output, buildability, phase ownership, pinned reproducibility inputs, and fail-closed source invariants.
+Static source/CI evidence can prove the contracts it actually executes, such as schemas, routing, deterministic generated output, buildability, phase ownership, pinned reproducibility inputs, pure alignment math, and fail-closed source invariants.
 
-It **cannot prove visual fidelity**, installed-plugin freshness, fresh client registry state, desktop GLB rendering, live Blockbench Undo/playback/persistence, or model-quality improvement unless those surfaces actually ran.
+It **cannot prove visual fidelity**, installed-plugin freshness, fresh client registry state, desktop GLB rendering, live Reference Model scale/origin behavior, live Blockbench Undo/playback/persistence, or model-quality improvement unless those surfaces actually ran.
 
-User-deferred Route 1 live validation and Geometry cleanup remain deferred until explicitly reactivated.
+Route 1 live validation is now explicitly reactivated. The next proof must use one approved representative fixture and verify canonical GLB load, uniform fit-envelope scaling, a fresh post-scale measurement, center/ground translation, canonical captures, shared Cube coordinate frame, reference cleanup, and `.bbmodel` export without `reference_model` state.
