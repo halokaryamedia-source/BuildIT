@@ -1,6 +1,6 @@
 # Local Acceptance Runbook
 
-Updated: 2026-08-31  
+Updated: 2026-09-01  
 Owner: `LIVE_BLOCKBENCH` formal acceptance procedure  
 Active only when `docs/knowledge/next-action.md` explicitly reactivates local testing.
 
@@ -34,6 +34,14 @@ Authoring Efficiency only after quality PASS
 ```
 
 Do not edit source until a reproducible failure identifies the first wrong owner.
+
+For the current Route 1 batch, the product choice is already locked:
+
+```text
+selected workflow = approved image + approved GLB
+```
+
+Do **not** add an image-only comparison run. The purpose of local acceptance is to verify that the selected image+GLB workflow works correctly end to end.
 
 ## 2. Pin Local State
 
@@ -84,6 +92,12 @@ bun run verify:mcp
 
 `verify:mcp` is the package-owned full gate: typecheck → full tests → surface measurement → production build → generated-doc freshness.
 
+For the current Route 1 alignment foundation, ensure the targeted pure regression is included/passing:
+
+```text
+mcp/tests/route1-reference-alignment.test.ts
+```
+
 Production artifact:
 
 ```text
@@ -97,7 +111,7 @@ If the exact loaded artifact cannot be established, classify `ENVIRONMENT / INST
 
 ## 4. Live Server / Registry Gate
 
-Normal Geometry baseline:
+Current Geometry baseline:
 
 ```text
 endpoint               http://127.0.0.1:3000/bb-mcp
@@ -109,6 +123,8 @@ Extended MCP Families  OFF
 risky_eval             disabled
 from_geo_json          disabled
 ```
+
+These are current-runtime values, not the future BASE/EXTENDED target surface. Use the exact current source/registry as authority if those counts have changed by the time local testing begins.
 
 Load only the freshly built plugin, reconnect, then from `mcp/` run:
 
@@ -165,7 +181,127 @@ small Bedrock project
 
 Texturing starts only after Geometry/UV readiness passes. Animation starts only when required and its upstream readiness passes. Structural defects return to Geometry through handoff.
 
-## 7. Visual / Authoring Quality Gate
+## 7. Route 1 Selected Image + GLB Acceptance
+
+This is the current Route 1 local test. It tests the selected workflow; it does not compare alternative reference strategies.
+
+### Required fixture
+
+Use one approved representative fixture containing:
+
+```text
+fixture.json
+approved-reference.png
+approved-shape.glb
+contact-sheet.png
+input/front.png
+input/left.png
+input/back.png
+```
+
+`fixture.json` must provide the approved requested dimensions and `source_front_direction`.
+
+### Test sequence
+
+```text
+1. approved reference image visible in the same judgement context
+
+2. open/create intended Bedrock project
+
+3. manage_geometry_reference(load)
+   path = approved-shape.glb
+   source_front_direction = fixture value
+   origin = [0,0,0]
+   uniform_scale = 1
+
+4. record returned RAW world bounds
+
+5. plan FIT_ENVELOPE using:
+   mcp/lib/route1ReferenceAlignment.ts
+   target dimensions = requested_dimensions_blocks
+   blockbench_units_per_block = live Format.block_size
+
+6. manage_geometry_reference(update)
+   uniform_scale = planned next_uniform_scale
+   change scale only
+
+7. obtain FRESH post-scale reference bounds
+   do not infer them from the prior bounds
+
+8. plan CENTER_XZ_GROUND_Y translation
+   default target anchor:
+     center_x = 0
+     ground_y = 0
+     center_z = 0
+   unless fixture explicitly requires another anchor
+
+9. manage_geometry_reference(update)
+   origin = planned next_origin
+   change origin only
+
+10. obtain FRESH aligned evidence
+
+11. capture canonical reference views:
+    FRONT
+    SIDE
+    TOP
+    ISOMETRIC
+
+12. author one coherent semantic Group/Cube blockout
+    use approved image for visual authority
+    use GLB for supported depth/volume/attachment/hidden-side evidence
+    use requested dimensions for numeric envelope
+
+13. capture current model views and judge reference fidelity
+
+14. remove transient Route 1 reference
+
+15. export editable .bbmodel
+
+16. verify production project/export contains no reference_model state
+```
+
+### Alignment acceptance
+
+```text
+front orientation correct
++Y remains up
+uniform scale only
+reference fits inside requested envelope
+fresh post-scale measurement used before translation
+X/Z center matches target anchor
+minimum Y matches target ground
+no raw GLB dimension promoted to target authority
+no non-uniform stretch
+no pre-scaled/rewritten approved GLB
+normal Groups/Cubes share the intended coordinate frame
+reference removed before .bbmodel export
+```
+
+Unused envelope space on one or two axes is valid. It is not a failure and must not trigger non-uniform stretching.
+
+### Non-goals
+
+Do not add during this acceptance run:
+
+```text
+image-only A/B comparison
+new 3D file formats
+OBJ/PLY/STL support
+mesh repair or decimation
+voxelizer
+triangle-to-Cube conversion
+semantic mesh parser
+cuboid solver
+new auto-align tool
+multiple alignment modes
+Reference Models fork
+scalar GLB quality score
+```
+
+If the selected path fails, identify the first wrong owner from evidence. Fix only that owner, rerun the failing step first, then rerun this Route 1 sequence. Do not redesign the pipeline merely because the first live run exposes a local bug.
+
+## 8. Visual / Authoring Quality Gate
 
 The actual approved reference must be visible. Filename/path/README/memory is not image evidence.
 
@@ -186,7 +322,15 @@ Tool success, valid coordinates, export success, or low call count cannot overri
 
 Use difference-first `FAIL | UNVERIFIED | PASS`. Apply a causal correction only after diagnosis. Two failed attempts in the same causal direction without new evidence → `BLOCKED`.
 
-## 8. Authoring Efficiency — Cost to Accepted Result
+For Route 1, the evidence hierarchy remains:
+
+```text
+approved image        → visual authority
+requested dimensions  → numeric authority
+aligned GLB           → supporting 3D evidence
+```
+
+## 9. Authoring Efficiency — Cost to Accepted Result
 
 **Authoring Efficiency is evaluated only after the relevant quality gate passes.** Static Footprint is a separate regression guard and cannot prove runtime efficiency.
 
@@ -212,7 +356,9 @@ REGRESSED
 
 Quality must stay accepted while Cost to Accepted Result decreases; otherwise no efficiency improvement is claimed. Do not invent token or latency numbers; unknown values remain `UNVERIFIED`.
 
-## 9. Failure / Completion
+For Route 1, do not spend local time benchmarking image-only again. Measure only the selected image+GLB path and remove avoidable work inside that path.
+
+## 10. Failure / Completion
 
 Use the first wrong owner:
 
@@ -227,6 +373,7 @@ VISUAL_FEEDBACK
 CORRECTION_CAPABILITY
 BLOCKBENCH_RUNTIME
 ENVIRONMENT / INSTALL
+ROUTE1_ALIGNMENT
 TEXTURE / PBR
 ANIMATION
 PERSISTENCE / EXPORT

@@ -53,6 +53,7 @@ recover change                → undo / redo
 file deliverable              → export_model
 
 GEOMETRY
+Route 1 GLB lifecycle         → manage_geometry_reference when exposed
 create normal bone/Group      → add_group
 create Cube                   → place_cube
 one known Cube fix            → modify_cube
@@ -65,6 +66,52 @@ rig IK/mirror                 → bone_rigging
 ```
 
 `bone_rigging` only for IK/mirror. Known coherent Cubes → one `place_cube(elements=[...])`; uncertainty → no batch. Known Cubes sharing one deterministic TRANSLATE/RESIZE intent → derive absolute targets once from fresh state → one `modify_cubes_batch`; never loop inspect→modify per Cube. Relative intent stays reasoning-layer arithmetic; writes stay absolute/fail-closed.
+
+## Route 1 Selected Image + GLB Flow
+
+The selected Route 1 reference workflow is **approved image + requested dimensions + approved shape-only `.glb`**. Do not reopen image-only versus image+GLB as an acceptance decision.
+
+When the GLB route is available:
+
+```text
+approved image visible
++ requested dimensions known
++ approved GLB path known
+→ manage_geometry_reference(load)
+   origin=[0,0,0]
+   uniform_scale=1
+   source_front_direction from fixture
+→ reuse returned raw reference bounds/evidence
+→ plan uniform FIT_ENVELOPE scale
+→ manage_geometry_reference(update uniform_scale only)
+→ reuse fresh post-scale bounds/evidence
+→ plan center-X/Z + ground-Y translation
+→ manage_geometry_reference(update origin only)
+→ reuse fresh aligned evidence
+→ capture_model_views canonical views
+→ normal semantic Group/Cube authoring
+→ manage_geometry_reference(remove)
+→ export_model(codec_id=project)
+```
+
+Authority and invariants:
+
+```text
+approved image        = visual authority
+requested dimensions  = numeric authority
+GLB                    = depth/volume/attachment evidence
+raw GLB bounds         = observation only
+uniform scale only
+measure again after scale before translating
+no non-uniform stretch
+no triangle → Cube conversion
+no mesh repair/decimation for alignment
+no scalar quality score as authority
+```
+
+The default local-test anchor is `center X=0`, `ground Y=0`, `center Z=0` unless the fixture explicitly requires another anchor.
+
+Do not add a new auto-align tool or new public alignment mode merely to reduce these calls. Use the existing reference lifecycle + pure alignment planning first; only a reproducible local failure may justify changing the runtime owner.
 
 ## First-Call Invariants
 
@@ -98,9 +145,10 @@ unsupported     → CAPABILITY_MISMATCH → handoff once or BLOCKED
 - Known UUID → no discovery unless stale/ambiguous.
 - Fresh mutation → reuse returned state/`geometry_effect`; no confirmation readback.
 - **Do not automatically re-read fresh mutation targets with `inspect_element`.**
+- Route 1 is an explicit exception only where a **fresh post-transform world-bounds observation** is the designed input to the next alignment stage.
 - Validator gate → read `validator://status` first; zero problems means no detail-resource read.
 - `inspect_model_bounds` only for envelope/scale/ground/displacement.
 - Skip `get_project_info` after create/export unless lifecycle state is unknown/stale.
 - Same routed failure twice without new evidence → `BLOCKED`.
 
-`export_model`: Bedrock JSON (`bedrock`) or editable `.bbmodel` (`project`). Never emulate missing capability.
+`export_model`: Bedrock JSON (`bedrock`) or editable `.bbmodel` (`project`). Never emulate missing capability. Route 1 `.bbmodel` export happens only after the transient reference is removed.

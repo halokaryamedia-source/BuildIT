@@ -1,6 +1,6 @@
 # Next Action
 
-Updated: 2026-09-01 — full MCP coverage curated; capability loading vocabulary unified to BASE / EXTENDED; same-phase retrieval/reuse and efficiency measurement clarified; public consolidation/build/live proof remains local
+Updated: 2026-09-01 — BASE / EXTENDED capability design curated; Route 1 image+GLB workflow selected and fully prepared for local test
 
 Working branch: **`Local` only**.
 
@@ -8,7 +8,15 @@ This file owns **active continuation only**. Stable facts belong in `CONTEXT.md`
 
 ## Current Status
 
-`FULL_MCP_COVERAGE_CURATED_BASE_EXTENDED_LOCAL_IMPLEMENTATION_REQUIRED`
+```text
+CAPABILITY ROUTING DESIGN:
+FULL_MCP_COVERAGE_CURATED_BASE_EXTENDED_LOCAL_IMPLEMENTATION_REQUIRED
+
+ROUTE 1:
+IMAGE_GLB_SELECTED
+ALIGNMENT_SOURCE_PREPARED
+LOCAL_TEST_ONLY_NEXT
+```
 
 Geometry, Texturing, Animation, and Core/project lifecycle have been re-audited against official Blockbench documentation/native source, current Minecraft Bedrock behavior/schema, and surveyed public Blockbench MCP implementations.
 
@@ -28,9 +36,144 @@ Do **not** remove rare capability merely to reduce tool count. Keep it supported
 
 Do **not** restart broad external feature hunting before local implementation unless a concrete missing production capability appears.
 
-## Capability Loading Model
+---
 
-There are exactly **two capability categories**. These names are canonical in design, implementation, generated guidance, tests, and user-facing diagnostics.
+# Route 1 — selected workflow and immediate next action
+
+The Route 1 product decision is final for this batch:
+
+```text
+APPROVED IMAGE
++
+REQUESTED DIMENSIONS
++
+APPROVED SHAPE-ONLY GLB
+```
+
+Image-only versus image+GLB is **not** a current A/B gate. The user has selected image+GLB. Local work tests the selected path; it does not choose the path again.
+
+Authority is fixed:
+
+```text
+approved image        → visual authority
+requested dimensions  → numeric envelope authority
+approved GLB          → depth / volume / attachment / hidden-side evidence
+raw GLB bounds        → observation only
+```
+
+GLB format remains `.glb` only for Route 1. It is a transient Blockbench Reference Model, not production geometry. Production authoring remains semantic Bedrock Groups/Cubes, then `.bbmodel` / Bedrock geometry delivery.
+
+## Canonical Route 1 alignment
+
+Pure planner already on `Local`:
+
+```text
+mcp/lib/route1ReferenceAlignment.ts
+mcp/tests/route1-reference-alignment.test.ts
+```
+
+Required sequence:
+
+```text
+1. load approved GLB
+   manage_geometry_reference(load)
+   origin=[0,0,0]
+   uniform_scale=1
+   source_front_direction from fixture
+
+2. read raw world bounds
+
+3. plan uniform FIT_ENVELOPE
+   target units = requested_dimensions_blocks × live Format.block_size
+   scale multiplier = min(
+     target_width  / observed_width,
+     target_height / observed_height,
+     target_length / observed_length
+   )
+
+4. update uniform_scale only
+
+5. read FRESH post-scale world bounds
+
+6. plan translation only
+   center X → target center X
+   min Y    → target ground Y
+   center Z → target center Z
+
+7. update origin only
+
+8. read FRESH aligned evidence
+
+9. capture FRONT / SIDE / TOP / ISOMETRIC
+
+10. author semantic Groups/Cubes with approved image visible
+
+11. remove transient GLB
+
+12. export production .bbmodel
+
+13. verify no reference_model remains
+```
+
+Default local-test anchor:
+
+```text
+center X = 0
+ground Y = 0
+center Z = 0
+```
+
+unless the approved fixture explicitly requires another anchor.
+
+Route 1 invariants:
+
+```text
+uniform scale only
+measure again after scale before translation
+unused envelope space on one/two axes is valid
+no X/Y/Z independent stretching
+no pre-scaling or rewriting approved-shape.glb
+no mesh repair/decimation for alignment
+no triangle → Cube conversion
+no semantic mesh parser / cuboid solver
+no scalar quality score as authority
+no new auto-align tool unless a reproducible local failure proves current ownership insufficient
+```
+
+## Route 1 local execution — test, not redesign
+
+When local testing begins:
+
+```text
+1. git switch Local
+2. git pull --ff-only
+3. git status --short
+4. cd mcp
+5. bun install --frozen-lockfile
+6. bun run verify:mcp
+7. confirm route1-reference-alignment regression PASS
+8. bun run build
+9. prepare/package one approved representative Route 1 fixture
+10. deploy/load exact current BlockIT artifact
+11. run Geometry smoke / fresh client registry
+12. run canonical Route 1 sequence above
+13. inspect approved image + fresh captures
+14. remove reference
+15. export .bbmodel
+16. confirm no reference_model state
+17. record PASS or the first reproducible wrong owner
+18. STOP
+```
+
+If the selected path passes, Route 1 is accepted for the tested claim. Do **not** append an image-only comparison run.
+
+If it fails, diagnose the first wrong owner and fix only that owner. Do not broaden Route 1 or introduce a new format/tool/framework merely because the first live run exposes a local bug.
+
+---
+
+# Capability Loading Model
+
+There are exactly **two capability categories**. These names are canonical in design and future implementation/guidance:
 
 ```text
 BASE
@@ -47,7 +190,7 @@ Do **not** use `PHASE_DEFAULT`, `ON_DEMAND`, `AUTO_LOADED`, `INTENT_LOADED`, `HO
 
 `BASE` and `EXTENDED` classify capability exposure only. They are **not runtime modes**, do not create a second phase system, and do not change capability ownership.
 
-### Routing invariant
+## Routing invariant
 
 ```text
 ACTIVE PHASE
@@ -59,144 +202,91 @@ only EXTENDED capability definitions relevant to the current intent/evidence
 
 No category-wide activation exists. No `EXTENDED` pack activation exists.
 
-### Same-phase transition contract
-
-Category transitions must not create reload/reconnect/reset churn.
+## Same-phase transition contract
 
 ```text
 BASE → BASE
-→ call the exact next BASE capability directly
+→ call exact BASE capability directly
 
 BASE → EXTENDED
-→ explicit intent/evidence triggers one narrow lookup when the capability definition is not already available
-→ choose the exact owner
+→ if needed definition is unavailable, one narrow lookup for coherent current intent
+→ choose exact owner
 → execute
-→ keep BASE surface available
-→ no phase switch, reload, reconnect, or category reset
+→ keep BASE available
+→ no phase switch/reload/reconnect/reset
 
 EXTENDED → BASE
-→ call the exact BASE capability directly
+→ call BASE directly
 → no unload/reset ceremony
 
 EXTENDED → EXTENDED
-→ reuse already available matching capability definitions first
-→ if the next intent needs an unavailable capability, perform one narrow lookup for that intent
+→ reuse available definitions first
+→ lookup only when a newly required capability definition is unavailable
 → never load every EXTENDED capability in the phase
 ```
 
-An `EXTENDED` capability does not become a mandatory dependency merely because it was used once. Reuse its available definition while the current phase/session context remains valid; otherwise continue through `BASE` without an explicit unload action.
+An `EXTENDED` capability does not become a mandatory dependency merely because it was used once. Reuse it while relevant; otherwise continue through BASE with no unload action.
 
-### EXTENDED lookup and reuse contract
-
-`EXTENDED` is a context-loading mechanism, not a reason to add extra routing ceremony.
+## EXTENDED lookup / reuse
 
 ```text
 exact route already available
 → call directly
 
 route known but definition unavailable
-→ one narrow lookup for the coherent current intent
-→ backend may return a bounded set of closely relevant definitions
-→ choose one exact owner for each action
-→ keep returned definitions reusable in the current phase/session
+→ one narrow lookup for coherent current intent
+→ backend may return bounded closely related definitions
+→ choose one exact owner per action
+→ keep returned definitions reusable in current phase/session
 
 same capability needed again
-→ reuse; do not search again
+→ reuse; no second lookup
 
 lookup miss
 → reformulate once with exact capability/domain wording
-→ second miss = BLOCKED or capability gap
+→ second miss = BLOCKED / capability gap
 ```
 
-A narrow lookup returning several closely related definitions does **not** create a pack, subgroup, or new category. It only avoids repeated lookup overhead inside one coherent workflow.
+Several closely related definitions returned by one narrow lookup do not form a pack/category.
 
-Never re-run lookup merely for confirmation after a successful mutation. Never send a known foreign-phase capability through same-phase `EXTENDED` lookup.
+Never re-run lookup merely for confirmation after a successful mutation. Never send a known foreign-phase capability through same-phase EXTENDED lookup.
 
-### Category assignment rule
+## Category assignment rule
 
-`BASE` membership must be evidence-driven. Do not classify a tool only because it feels common or rare.
-
-Evaluate together:
+BASE membership is evidence-driven. Evaluate:
 
 ```text
 intent frequency
-+
 schema/context cost
-+
-workflow adjacency with other BASE operations
-+
+workflow adjacency
 lookup overhead
-+
 selection-collision risk
-+
 Cost to Accepted Result
 ```
 
-Consequences:
+No universal tool-count threshold is copied from another host/model/vendor.
 
-```text
-small + frequently adjacent capability
-→ may remain BASE even if not used in every asset
-
-large + uncommon capability
-→ strong EXTENDED candidate
-
-rare but tiny capability
-→ benchmark before moving it out of BASE
-
-frequent but very large/collision-prone capability
-→ benchmark before keeping it BASE
-```
-
-There is no universal tool-count threshold. Final membership is decided from BlockIT measurements, not copied from another host/model/vendor.
-
-### Cross-phase transition contract
-
-Capability category never bypasses phase ownership.
+## Cross-phase transition
 
 ```text
 current intent belongs to ACTIVE PHASE
-→ use BASE or EXTENDED route
+→ BASE or EXTENDED route
 
 current intent belongs to FOREIGN PHASE
 → HANDOFF_REQUIRED
-→ preserve only resume-critical state
+→ preserve resume-critical state only
 → switch owning phase
-→ reload/reconnect only because phase ownership changed
-→ new phase begins with BASE
-→ if the immediate next intent needs EXTENDED, load only relevant definitions after reconnect
+→ reload/reconnect because phase ownership changed
+→ new phase begins from its active BASE surface once implemented
 ```
 
-A known foreign-phase tool must never enter same-phase `EXTENDED` search. Phase absence is not a discovery miss.
+Known foreign-phase capability never enters same-phase EXTENDED search.
 
-If a BASE capability detects authored state that needs an `EXTENDED` capability, return an explicit continuation hint:
+Current phase-switch transport remains authoritative until measured local/live evidence proves a better implementation. Do not combine capability-surface consolidation with transport/protocol redesign.
 
-```text
-CAPABILITY_REQUIRED
-capability: <exact tool/capability owner when known>
-reason: <observed authored state or explicit requirement>
-```
+---
 
-Do not return a category name, pack name, or broad family when one exact capability owner is known.
-
-### Phase-handoff optimization boundary
-
-Current phase ownership and current reload/reconnect handoff remain authoritative until local/live evidence proves a better implementation.
-
-During this consolidation:
-
-```text
-measure phase-handoff count
-measure reload/reconnect overhead
-measure context/tool-search cost around each handoff
-compare against accepted-result quality and correction count
-```
-
-Do **not** combine tool-surface consolidation with an MCP transport/protocol redesign.
-
-If measured phase reload/reconnect cost becomes a dominant contributor to Cost to Accepted Result after the new capability routing is live, treat phase-switch mechanics as a separate evidence-gated redesign. Phase ownership itself remains independent from how a phase switch is transported.
-
-## Remote-safe foundations already on `Local`
+# Remote-safe foundations already on `Local`
 
 ```text
 CORE / PROJECT
@@ -205,6 +295,7 @@ mcp/lib/bedrockProjectSemantics.ts
 GEOMETRY
 mcp/lib/orientedBoxContact.ts
 mcp/lib/blockbenchCubeObb.ts
+mcp/lib/route1ReferenceAlignment.ts
 
 TEXTURING
 mcp/lib/facePixelMapping.ts
@@ -217,15 +308,19 @@ mcp/lib/animationPreviewState.ts
 mcp/lib/bedrockAnimationSemantics.ts
 ```
 
-Each has targeted regression contracts in `mcp/tests/`.
+Targeted regressions exist in `mcp/tests/`, including:
 
-All are **LOCAL PROOF REQUIRED** until Bun/local/live gates pass.
+```text
+route1-reference-alignment.test.ts
+```
+
+All remain **LOCAL PROOF REQUIRED** until Bun/local/live gates pass.
 
 ---
 
 # Locked target surfaces
 
-Exact runtime counts must be measured after public consolidation. The lists below define target routing, not a claim that those schemas are already implemented.
+Exact runtime counts must be measured after public consolidation. These lists define design target, not a claim that BASE/EXTENDED exposure is already live.
 
 ## Shared Core / project lifecycle
 
@@ -238,8 +333,6 @@ configure_project
 get_project_info
 export_model
 ```
-
-Core read/inspection tools remain available to phases according to their existing ownership and routing needs rather than being duplicated into phase-specific owners.
 
 Required Core extensions:
 
@@ -269,9 +362,7 @@ manage_project_session
   reload
 ```
 
-Recovery/selection state is loaded only when current evidence requires it. Session management is loaded only for explicit multi-project/session intent. Normal `.bbmodel` save remains `export_model(codec=project)`; do not add a duplicate `save_project` owner.
-
----
+Normal `.bbmodel` save remains `export_model(codec=project)`; do not add duplicate `save_project`.
 
 ## Geometry
 
@@ -315,26 +406,11 @@ manage_item_display_transform
 manage_reference_image
 ```
 
-Route exact intent only:
-
-```text
-locator/null/attachment/socket/effect-origin/IK-target → manage_locator
-native Bedrock TextureMesh                              → manage_texture_mesh
-3D Route-1 reference evidence                          → manage_geometry_reference
-explicit bounding-box editor state                     → manage_bounding_box
-item-display transform integration                     → manage_item_display_transform
-2D reference-image workflow                            → manage_reference_image
-```
-
-None of these should occupy ordinary Cube/bone authoring context without matching intent/evidence.
-
----
+Route 1 `manage_geometry_reference` stays Geometry-owned. Alignment math remains inside `mcp/lib/route1ReferenceAlignment.ts`; do not create a separate alignment tool family.
 
 ## Texturing
 
 ### BASE
-
-Default classic Minecraft/Bedrock texture authoring is intentionally small:
 
 ```text
 create_texture
@@ -346,8 +422,6 @@ export_texture
 ```
 
 `list_textures` remains shared Core because Geometry uses its UV/atlas gate before Texturing handoff.
-
-The existing Painter/UI-state wrappers leave the production surface after replacement behavior is verified.
 
 ### EXTENDED
 
@@ -364,25 +438,6 @@ list_material_instances
 set_material_instances
 ```
 
-Intent examples that require these routes include:
-
-```text
-PBR
-RTX
-Vibrant Visuals
-normal map
-height map
-MER / MERS
-metalness
-roughness
-emissive surface
-subsurface
-texture_set
-texture layers/groups
-animated texture
-per-face material instances
-```
-
 PBR correctness remains mandatory whenever its capability is loaded:
 
 ```text
@@ -391,10 +446,6 @@ normal XOR height
 MER vs MERS semantics
 one PBR correction owner
 ```
-
-Normal `get_texture` / `paint_texture` remain frame-aware so animated textures do not create a second bitmap-authoring model.
-
----
 
 ## Animation
 
@@ -419,16 +470,6 @@ batch_keyframe_operations
 animation_copy_paste
 ```
 
-Additional efficiency requirements inside existing owners:
-
-```text
-create_animation
-  → source_animation clone
-
-capture_animation_views
-  → frames | contact_sheet
-```
-
 ### EXTENDED
 
 ```text
@@ -438,17 +479,6 @@ animation_playback
 manage_animation_curves
 import_animation_file
 validate_animation_motion
-```
-
-Route exact intent only:
-
-```text
-particle/sound/timeline-instruction keyframes → manage_animation_effects
-state-driven runtime composition              → manage_animation_controller
-explicit editor playback                      → animation_playback
-Bezier/editor curve work                      → manage_animation_curves
-animation/controller file import              → import_animation_file
-objective sampled motion QA                    → validate_animation_motion
 ```
 
 `manage_animation_controller` still needs:
@@ -463,13 +493,11 @@ blend_transition_curve
 explicit Bedrock short keys
 ```
 
-`manage_animation_curves` retains the bake-before-Bedrock-delivery boundary. `validate_animation_motion` is objective sampled QA, not a subjective quality score.
-
-`bone_rigging` remains Geometry-owned and is dismantled there.
+`manage_animation_curves` retains bake-before-Bedrock-delivery. `validate_animation_motion` is objective sampled QA, not a subjective quality score.
 
 ---
 
-# Critical correctness contracts to preserve during local implementation
+# Critical correctness contracts
 
 ## Core / project
 
@@ -479,7 +507,7 @@ no handwritten .bbmodel parser
 replace-current requires explicit unsaved handling
 new-tab load returns exact selected project identity
 rectangular logical UV allowed
-logical UV change requires keep|rescale_uv policy
+logical UV change requires keep|rescale_uv
 rescale_uv preflights Box-UV/per-face exactness before Undo
 static visible bounds remain native auto-calculated
 explicit/expand visible bounds only extend runtime/animation coverage safely
@@ -496,6 +524,10 @@ world/local reparent semantics
 TextureMesh coverage
 world-space measurement/contact
 one full preflight before Undo
+Route 1 image+GLB authority split
+Route 1 uniform fit-envelope only
+Route 1 fresh post-scale bounds before center/ground translation
+Route 1 reference removed before .bbmodel export
 ```
 
 ## Texturing
@@ -508,244 +540,107 @@ face-local + animated-frame-local mapping
 revision stale-write guard before Undo
 one Undo + exact affected RGBA postcondition
 PNG/TGA standalone delivery
+```
 
-when PBR capability is loaded:
-  exclusive PBR channel membership
-  normal XOR height
-  MER vs MERS semantics
+When PBR capability is loaded:
+
+```text
+exclusive PBR channel membership
+normal XOR height
+MER vs MERS semantics
 ```
 
 ## Animation
 
 ```text
-full loop modes + native metadata:
-  override_previous_animation
-  anim_time_update
-  blend_weight
-  start_delay
-  loop_delay
-
-Animation identifiers:
-  start with a letter
-  letters/numbers/underscore/period only
-
-keyframes:
-  multi-bone/multi-channel explicit batch
-  numeric + Molang
-  pre/post
-  linear/catmullrom direct Bedrock
-  step via pre/post
-  Bezier editor-only → bake before Bedrock delivery
-
-controllers when controller capability is loaded:
-  delete lifecycle
-  duplicate controller/state
-  ordered transitions
-  ordered animation links
-  blend_transition_curve
-  explicit Bedrock short animation/controller keys
-  nested/external controller-animation references
-
-verification:
-  temporary pose capture restores editor state
-  bounded contact-sheet temporal evidence
-  optional Molang preview context restored
-
-file delivery:
-  native AnimationCodec compile/export
-  unbaked Bezier blocks direct Bedrock export
+full loop modes + native metadata
+Bedrock identifier grammar
+multi-bone/multi-channel explicit keyframe batch
+numeric + Molang
+pre/post
+linear/catmullrom direct Bedrock
+step via pre/post
+Bezier editor-only → bake before Bedrock delivery
+controller ordered transitions/links + blend curve + explicit keys
+capture restores editor state
+native AnimationCodec export
+unbaked Bezier blocks direct delivery
 ```
 
-Minecraft controller state `variables/remap_curve` is an **EXTENDED Bedrock extension gap** because current native Blockbench state objects do not ordinarily persist it. Do not claim support until local implementation proves import → project save/reopen → Undo → inspect → compile/export round trip. Fail explicitly rather than silently dropping it.
+Minecraft controller `variables/remap_curve` remains an EXTENDED Bedrock extension gap until persistent round trip is proven locally.
 
 ---
 
-# LOCAL_CODE implementation sequence
+# Broader LOCAL_CODE implementation sequence
 
-When the PC/local batch begins:
+This remains separate from the immediate Route 1 test. Public ToolSpec/schema/runtime prompt consolidation requires `LOCAL_CODE` + Bun and is not falsely claimed complete by the remote design work.
 
 ```text
 1. git checkout Local
 2. git pull --ff-only
 3. cd mcp
 4. bun install --frozen-lockfile
-
-5. run smallest prepared pure regressions first:
-   Core / Project:
-     bedrock-project-semantics
-   Geometry:
-     oriented-box-contact
-     blockbench-cube-obb
-   Texturing:
-     face-pixel-mapping
-     texture-revision
-     texture-frame-mapping
-     pbr-material-membership
-   Animation:
-     animation-preview-state
-     bedrock-animation-semantics
-
-6. Core/project lifecycle consolidation:
-   open_project using native codecs
-   create_project rectangular logical UV contract
-   configure_project model_identifier + logical UV policy + visible bounds
-   get_project_info current/all scope
-   EXTENDED manage_project_session
-
-7. Geometry public consolidation:
-   BASE owner consolidation
-   modify_cubes_batch final owner + per-face UV
-   universal finder/locator/null ownership
-   reparent preserve local/world
-   measure_geometry
-   EXTENDED TextureMesh/reference/bounding/item-display/reference-image owners
-   retire duplicate Geometry routes
-
-8. Texturing public consolidation:
-   BASE classic texture surface only
-   create_texture dimension/clone contract
-   configure_texture + remove_texture
-   get_texture scoped/revision/frame reads
-   unified paint_texture
-   export_texture PNG/TGA
-   PBR/advanced texture/material-instance routes as EXTENDED capabilities
-   retire duplicate Painter/material-instance routes
-
-9. Animation public consolidation:
-   BASE clip/keyframe/inspect/capture/export surface
-   create_animation full native metadata/value coverage + source_animation clone
-   configure_animation + remove_animation
-   unified multi-target manage_keyframes
-   remove Timeline-selection/global-clipboard dependency
-   effects/controllers/playback/curves/import/motion validation as EXTENDED capabilities
-   controller delete/order/blend-curve/key-link + duplicate state/controller corrections
-   expand inspect_animation list/focused coverage
-   capture_animation_views + contact sheet
-   export_animation_file
-
-10. implement capability exposure after owner schemas/behavior are ready:
-    BASE = automatically available for active phase
-    EXTENDED = narrow intent/evidence lookup only when needed
-    one lookup may return a bounded closely relevant definition set; actions still use one exact owner
-    same-phase category transitions require no reload/reconnect/reset
-    already available EXTENDED definitions are reused instead of searched again
-    do not infer runtime counts from this document
-
-11. update specialist Skills / runtime prompt / phase routing from the measured final catalog using the same BASE / EXTENDED vocabulary only
-
+5. run prepared pure regressions
+6. Core/project lifecycle consolidation
+7. Geometry public consolidation
+8. Texturing public consolidation
+9. Animation public consolidation
+10. implement BASE/EXTENDED exposure from final owner schemas
+11. update specialist Skills/runtime prompt from measured catalog
 12. bun run prompts:build
 13. bun run docs:build
 14. bun run docs:check
 15. bun run verify:mcp
-
-16. review generated + source diff for stale/dead tool names or retired category terms
-17. measure actual BASE and full available counts per phase
+16. review generated/source diff
+17. measure actual BASE/full available counts
 18. deploy/reload BlockIT
-
-19. LIVE open/save/reopen project lifecycle fixture
-20. LIVE Geometry BASE E2E
-21. LIVE Geometry EXTENDED fixture(s)
-22. LIVE Texturing classic BASE E2E
-23. LIVE Texturing PBR/advanced EXTENDED fixture(s)
-24. LIVE Animation BASE E2E
-25. LIVE Animation EXTENDED effects/controller fixture(s)
-26. same-phase BASE ↔ EXTENDED transition E2E with no reload/reconnect
-27. EXTENDED reuse E2E: same capability twice with no second lookup
-28. cross-phase handoff E2E
-29. measure Cost to Accepted Result and context/tool-search cost
-30. compare three measured surfaces without creating new runtime categories:
-    a. all retained active-phase capabilities exposed
-    b. proposed BASE + EXTENDED split
-    c. a deliberately smaller BASE candidate
-31. keep the surface with the lowest Cost to Accepted Result while preserving accepted quality and full capability reachability
+19. live BASE/EXTENDED routing fixtures
+20. cross-phase handoff fixture
+21. measure Cost to Accepted Result
 ```
 
 Do not split this into a new roadmap. This file remains the single continuation owner.
 
 ---
 
-# Cross-phase and category-transition live proof additions
+# Final completion gates
 
-The local/live batch must prove:
-
-```text
-.bbmodel export → open_project → exact project state survives
-Bedrock geometry open path
-new-tab vs replace-current unsaved behavior
-multi-project scope=current|all identity
-64×32 and other rectangular logical UV fixtures
-logical UV keep policy
-logical UV rescale policy with exact Box-UV/per-face preflight
-native static visible-bounds auto behavior
-explicit/expanded visible bounds for animation envelope
-whole Animation clone
-controller/state duplicate
-contact-sheet capture + full editor-state restoration
-
-CAPABILITY ROUTING
-BASE intent calls direct route with zero capability lookup
-first EXTENDED intent requires at most one narrow lookup for the coherent intent
-same EXTENDED capability reused later requires zero new lookup while current definition remains available
-BASE → EXTENDED requires no phase switch/reload/reconnect
-EXTENDED → BASE requires no unload/reset/reconnect
-EXTENDED → EXTENDED reuses available definitions first and performs a new lookup only for an unavailable needed capability
-foreign-phase capability never enters EXTENDED lookup
-classic Texture session does not load PBR capability without matching intent/evidence
-PBR intent loads only closely relevant definitions + existing BASE surface
-basic Animation clip does not load controller/effects capabilities
-controller intent does not load unrelated EXTENDED capabilities
-basic Geometry does not load TextureMesh/reference/item-display capabilities
-full capability remains discoverable when exact intent requires it
-
-EFFICIENCY MEASUREMENT
-record initial tool/schema context cost
-record EXTENDED lookup count
-record repeated lookup count
-record wrong-route / wrong-phase attempts
-record mutation/readback/correction count
-record phase handoff + reload/reconnect count
-record elapsed workflow cost when measurable
-compare all metrics against accepted-result quality
-```
-
----
-
-# Final completion gate
-
-No phase may be called complete from static source alone.
+## Route 1 selected workflow
 
 ```text
-SOURCE/DESIGN READY
-≠
-LOCAL PASS
-≠
-LIVE PASS
+pure alignment regression PASS
+exact current BlockIT artifact loaded
+approved GLB loads
+raw evidence readable
+uniform fit-envelope scale works
+fresh scaled evidence observed
+center X/Z + ground Y works
+fresh aligned evidence observed
+canonical views work
+semantic Groups/Cubes share intended coordinate frame
+approved image remains visual authority
+reference removed
+.bbmodel exports
+no reference_model remains
+no known P0/P1 Route 1 correctness hole
 ```
 
-Final completion requires:
+No image-only comparison run is required.
+
+## Broader MCP capability routing
 
 ```text
 public ownership matches curated coverage
 only BASE and EXTENDED exist as capability-category vocabulary
-BASE surface contains only evidence-justified active-phase routes
-EXTENDED capability remains discoverable but absent from BASE context
-one narrow EXTENDED lookup may return bounded closely relevant definitions without creating a pack/category
-already available EXTENDED definitions are reused without repeated lookup
-same-phase category transitions never require reload/reconnect/reset
-PBR absent from classic Texturing context unless requested/evidenced
+BASE surface contains evidence-justified active-phase routes
+EXTENDED remains reachable without bloating BASE context
+already loaded EXTENDED definitions reused without repeated lookup
+same-phase category transitions require no reload/reconnect/reset
 all generated prompt/docs current
 bun run verify:mcp PASS
-project open/save/reopen fixture PASS
-live BASE authoring fixtures PASS
-representative EXTENDED fixtures PASS
-same-phase category-transition fixtures PASS
-EXTENDED reuse fixture PASS
-live evidence/restore fixtures PASS
+representative live BASE and EXTENDED fixtures PASS
 cross-phase handoffs PASS
-BASE membership selected from measured Cost to Accepted Result rather than a copied tool-count threshold
-phase reload/reconnect cost measured before any separate phase-switch redesign is considered
-measured context/tool-search cost is lower than the worse tested alternatives without accepted-quality regression
+BASE membership selected from measured Cost to Accepted Result
+phase reload/reconnect cost measured before any separate switch redesign
 no known P0/P1 correctness hole
 ```
-
-Route-1 historical live validation and old experiments remain inactive unless concrete evidence makes them relevant to the current implementation batch.

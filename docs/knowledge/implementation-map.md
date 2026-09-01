@@ -1,6 +1,6 @@
 # Implementation Map
 
-Updated: 2026-08-30
+Updated: 2026-09-01
 
 Current `Local` source/ownership only. Repository/plugin continuation belongs in `docs/knowledge/next-action.md`; proof state belongs in `docs/knowledge/current-validation.md`; asset continuity belongs in `workspace/active/<project>/README.md`.
 
@@ -38,6 +38,8 @@ mcp/server/                    transport/tools/resources/prompts
 mcp/server/tools/              authored operations
 mcp/lib/                       schemas/factories/identity/result helpers
 mcp/lib/authoringPhase.ts      Core/phase classification + active-phase/handoff contract
+mcp/lib/route1ReferenceAlignment.ts
+                               pure Route 1 fit-envelope + center/ground planning
 mcp/ui/                        Blockbench panel/settings
 mcp/prompts/                   canonical workflow body + generated manifest
 mcp/build/                     build/docs/manifest generation + developer watch policy
@@ -64,6 +66,7 @@ For a named MCP-tool defect, inspect the mapped **source owner + primary regress
 | `get_project_info` | `mcp/server/tools/project.ts` | `mcp/tests/authoring/static-footprint-budget.test.ts` |
 | `inspect_model_bounds` | `mcp/server/tools/project.ts` | `mcp/tests/rendered-model-bounds-numeric-safety.test.ts` |
 | `manage_geometry_reference` | `mcp/server/tools/project.ts` | `mcp/tests/geometry-reference-contract.test.ts` |
+| Route 1 alignment math | `mcp/lib/route1ReferenceAlignment.ts` | `mcp/tests/route1-reference-alignment.test.ts` |
 | Route 1 quantitative/reconnect evidence | `mcp/server/tools/project.ts`, `mcp/server/resources.ts` | `mcp/tests/geometry-reference-contract.test.ts` |
 | Route 1 reference capture / production cleanup | `mcp/server/tools/camera.ts`, `mcp/server/tools/export.ts` | `mcp/tests/camera-framing-contract.test.ts`, `mcp/tests/geometry-reference-contract.test.ts` |
 | Route 1 Hunyuan MultiView reproducibility | `Experimental/route1-hunyuan-poc/generate_multiview_shape.py`, `Experimental/route1-hunyuan-poc/README.md` | `mcp/tests/authoring/route1-hunyuan-reproducibility.test.ts` |
@@ -83,6 +86,43 @@ For a named MCP-tool defect, inspect the mapped **source owner + primary regress
 
 `route1:prepare` and `route1:package` are Bun preparation commands, not MCP callable tools. They do not change the retained catalog or active Geometry surface.
 
+## Route 1 Ownership
+
+The selected Route 1 production reference path is:
+
+```text
+approved image + requested dimensions
++ approved shape-only GLB
+→ manage_geometry_reference
+→ raw bounds observation
+→ route1ReferenceAlignment fit-envelope plan
+→ uniform scale update
+→ fresh bounds observation
+→ route1ReferenceAlignment center-X/Z + ground-Y plan
+→ origin update
+→ canonical aligned captures
+→ semantic Groups/Cubes
+→ remove transient reference
+→ production .bbmodel
+```
+
+Ownership is deliberately split:
+
+```text
+approved image / visual authority        → reference + modelling judgement
+requested dimensions / numeric authority → user/fixture requirement
+GLB generation/provenance                 → Experimental/route1-hunyuan-poc
+GLB lifecycle / live evidence             → mcp/server/tools/project.ts
+alignment math                            → mcp/lib/route1ReferenceAlignment.ts
+visual framing                            → mcp/server/tools/camera.ts
+production cleanup/export                 → mcp/server/tools/export.ts
+semantic Minecraft geometry               → normal Geometry owners
+```
+
+The GLB is transient evidence, never production geometry. It remains root-only, locked, `export=false`, and uniformly scaled. Raw GLB bounds do not define target dimensions. No mesh-to-Cube conversion, voxelizer, repair/decimation pipeline, non-uniform scale, or quality score belongs in Route 1 without a new explicitly evidenced requirement.
+
+The image+GLB workflow is already selected. Image-only versus image+GLB is **not** a current acceptance gate.
+
 ## Effectiveness / Footprint Evidence Ownership
 
 ```text
@@ -100,7 +140,7 @@ Static Footprint cannot upgrade a runtime Authoring Efficiency or visual-quality
 
 ## MCP Catalog / Phase Exposure
 
-The normal Bedrock catalog retains **65 callable tools across phases**. It is not exposed to Codex all at once.
+The current runtime Bedrock catalog retains **65 callable tools across phases**. It is not exposed to Codex all at once.
 
 Generated API docs enumerate **77 declared source ToolSpecs**, including disabled/source-preserved definitions. That documentation inventory is not the retained callable catalog and is not an active client surface.
 
@@ -159,7 +199,7 @@ Do not turn a professional sample, reference fixture, or one failed model into a
 ## Current Bedrock Ownership
 
 - MCP Core: lifecycle, focused discovery/inspection, selection, read-only global UV/atlas audit, history/recovery, canonical capture, export;
-- Geometry: `manage_geometry_reference`, `place_cube`, `add_group`, `modify_cube`, `modify_cubes_batch`, structural delete/rename, Locator/Null mutation, `bone_rigging`, UV Layout mutation;
+- Geometry: `manage_geometry_reference`, Route 1 alignment planning, `place_cube`, `add_group`, `modify_cube`, `modify_cubes_batch`, structural delete/rename, Locator/Null mutation, `bone_rigging`, UV Layout mutation;
 - Texturing: Texture Atlas lifecycle, Painter, PBR, material instances, Texture Verify;
 - Animation: numeric/Molang transforms, keyframes/timeline, effect mutation, AnimationController state-machine/state-effect mutation, animation inspection.
 

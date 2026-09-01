@@ -20,14 +20,56 @@ Reference-driven work requires the **actual approved reference image visible in 
 
 ```text
 user brief/target → identity/function
-approved image → visible Minecraft form
-approved dimensions → numeric envelope
+approved image → visual authority
+approved dimensions → numeric envelope authority
+approved Route 1 GLB → 3D depth/volume/attachment evidence
 claim | observable requirement | supporting view | SUPPORTED | PROVISIONAL | CONFLICTING | UNAVAILABLE
 ```
 
-Use a View Pair Map only to resolve materially ambiguous front/back, left/right, mirrored, depth, or 3/4 evidence. Reference fidelity is Minecraft-first: recognizability, primary masses/counts, topology/attachment, important negative spaces, and buildability over exact real-world contour.
+For the selected Route 1 workflow, use **approved image + approved GLB together**. Image-only versus image+GLB is not a modelling decision gate. The GLB supports depth, volume, attachment, placement, and hidden-side interpretation; it never overrides the approved image or requested dimensions.
 
-When an approved Route 1 GLB is explicitly available and `manage_geometry_reference` is exposed, it may be loaded as transient 3D evidence for depth, volume, attachment, placement, and hidden-side interpretation. Approved image + dimensions remain authority. Use explicit-envelope `capture_model_views`; never trace triangles or infer target size from raw GLB bounds. Remove the reference before production `.bbmodel` export.
+When `manage_geometry_reference` is exposed, Route 1 grounding is:
+
+```text
+load approved .glb
+  origin=[0,0,0]
+  uniform_scale=1
+  source_front_direction from fixture
+→ read raw world bounds
+→ plan one uniform FIT_ENVELOPE scale from requested dimensions
+→ update uniform_scale only
+→ read fresh post-scale world bounds
+→ plan translation only
+   center X → target center X
+   min Y    → target ground Y
+   center Z → target center Z
+→ update origin only
+→ read fresh aligned evidence
+→ capture canonical GLB/model views
+```
+
+Default local-test anchor is `center X=0`, `ground Y=0`, `center Z=0` unless the approved fixture explicitly requires another target anchor.
+
+Alignment invariants:
+
+```text
+requested dimensions = numeric authority
+approved image        = visual authority
+raw GLB bounds        = observation only
+uniform scale only
+FIT_ENVELOPE = minimum target/observed axis ratio
+measure again after scale before translation
+unused target envelope space is allowed
+no X/Y/Z independent stretching
+no pre-scaling/rewriting approved-shape.glb
+no mesh repair/decimation for alignment
+no triangle → Cube conversion
+no scalar GLB quality score as authority
+```
+
+If the aligned GLB materially disagrees with the approved image, retain only supported 3D relationships from the GLB. Do not distort it to force agreement. Use explicit-envelope `capture_model_views`; never trace triangles or infer target size from raw GLB bounds. Remove the reference before production `.bbmodel` export.
+
+Use a View Pair Map only to resolve materially ambiguous front/back, left/right, mirrored, depth, or 3/4 evidence that remains after image+GLB grounding. Reference fidelity is Minecraft-first: recognizability, primary masses/counts, topology/attachment, important negative spaces, and buildability over exact real-world contour.
 
 ## Simple Rigid Fast Path
 
@@ -113,3 +155,5 @@ Capture affected view(s) first; expand only for material cross-view risk. Classi
 `BLOCKED` covers missing approved image, unresolved material conflict, unavailable capability, or repeated same-cause failure. Minor drift alone is not a blocker.
 
 Primary-form hierarchy/pivots may precede `PASS`; secondary geometry and neutral organization wait. Production texture/animation waits for dependent geometry/hierarchy/pivots. Existing-asset work may use current geometry as baseline without claiming reference approval. Complete only claims supported by fresh evidence; report `UNVERIFIED` honestly.
+
+For Route 1 completion, remove the transient GLB before `.bbmodel` export and verify the production project contains no `reference_model` state.

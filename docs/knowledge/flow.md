@@ -1,6 +1,6 @@
 # BlockIT Flow
 
-Updated: 2026-08-31
+Updated: 2026-09-01
 
 This is the **single detailed current flow**. Root `AGENTS.md` owns execution-context and task routing.
 
@@ -73,10 +73,76 @@ If no persistent package exists and the user wants retention, create one compact
 
 Choose the smallest evidence path that can change the model decision.
 
-For a clear predominantly rigid reference:
+### Route 1 selected reference path — approved image + GLB
+
+For Route 1 reference-driven modelling, the selected production evidence is **approved image + requested dimensions + approved shape-only `.glb`**. Image-only versus image+GLB is not a current decision gate and is not repeated during local acceptance.
+
+Authority is fixed:
 
 ```text
-ACTUAL APPROVED REFERENCE + HANDOFF CONSTRAINTS
+approved image        → visual authority
+requested dimensions  → numeric envelope authority
+approved GLB          → depth / volume / attachment / hidden-side evidence
+raw GLB bounds        → observation only
+```
+
+The GLB never becomes production geometry and never defines target size. It is loaded as a transient Reference Model through `manage_geometry_reference` when that Geometry capability is exposed.
+
+Canonical Route 1 alignment:
+
+```text
+load approved GLB
+  origin=[0,0,0]
+  uniform_scale=1
+  source_front_direction from fixture
+→ read raw world bounds
+→ plan uniform FIT_ENVELOPE scale from requested dimensions
+→ update uniform_scale only
+→ read fresh post-scale bounds
+→ plan translation only
+   center X → target center X
+   min Y    → target ground Y
+   center Z → target center Z
+→ update origin only
+→ read fresh aligned evidence
+→ canonical FRONT / SIDE / TOP / ISOMETRIC captures
+→ semantic Minecraft Groups/Cubes
+→ remove transient GLB
+→ export production .bbmodel
+```
+
+Default local-test anchor is:
+
+```text
+center X = 0
+ground Y = 0
+center Z = 0
+```
+
+unless the approved fixture explicitly requires another target anchor.
+
+Alignment rules:
+
+```text
+uniform scale only
+FIT_ENVELOPE = min(target_width/observed_width,
+                   target_height/observed_height,
+                   target_length/observed_length)
+measure again after scale before translating
+unused envelope space on one/two axes is valid
+no non-uniform X/Y/Z stretching
+no pre-scaling or rewriting approved-shape.glb
+no mesh repair/decimation for alignment
+no triangle → Cube conversion
+no scalar quality score as visual authority
+```
+
+If the aligned GLB disagrees materially with the approved image, the approved image and requested dimensions remain authoritative. Use the GLB only for supported 3D relationships; do not distort it to force every target dimension to match.
+
+For a clear predominantly rigid reference after Route 1 grounding:
+
+```text
+ACTUAL APPROVED REFERENCE + ALIGNED GLB + HANDOFF CONSTRAINTS
 → identity + envelope + primary masses
 → CONSTRUCTION + TRANSFORM OWNERSHIP
 → minimum meaningful hierarchy
@@ -86,7 +152,7 @@ ACTUAL APPROVED REFERENCE + HANDOFF CONSTRAINTS
 → FAIL | UNVERIFIED | PASS
 ```
 
-Do **not** force View Pair Map / Reference Evidence Map ceremony when the reference is already clear.
+Do **not** force View Pair Map / Reference Evidence Map ceremony when the image+GLB evidence is already clear.
 
 For material ambiguity/conflict only:
 
@@ -113,6 +179,8 @@ fresh target state
 ```
 
 After Geometry `PASS`, add identity-weighted secondary geometry only when silhouette, recognizability, contact/layering, or motion benefits.
+
+Before production `.bbmodel` export, any BlockIT-owned Route 1 reference must be removed. A production `.bbmodel` must contain no `reference_model` state.
 
 ### 3.2 Canonical UV / Texture Vocabulary
 
