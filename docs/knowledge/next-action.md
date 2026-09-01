@@ -1,6 +1,6 @@
 # Next Action
 
-Updated: 2026-09-01 — full MCP coverage curated; capability loading vocabulary unified to PHASE_DEFAULT / ON_DEMAND; same-phase transitions clarified; public consolidation/build/live proof remains local
+Updated: 2026-09-01 — full MCP coverage curated; capability loading vocabulary unified to PHASE_DEFAULT / ON_DEMAND; same-phase retrieval/reuse and efficiency measurement clarified; public consolidation/build/live proof remains local
 
 Working branch: **`Local` only**.
 
@@ -17,7 +17,7 @@ The design goal is locked:
 ```text
 full relevant Bedrock/Blockbench capability coverage
 +
-one obvious owner per normal intent
+one obvious owner per ordinary intent
 +
 load only what the current phase + current intent needs
 +
@@ -40,8 +40,7 @@ PHASE_DEFAULT
 
 ON_DEMAND
 → not present in the default active-phase context
-→ loaded only when explicit intent or observed authored state requires that exact capability
-→ load the exact capability, never a broad pack "just in case"
+→ loaded only when explicit intent or observed authored state requires that capability
 ```
 
 Do **not** use `HOT`, `DEFERRED`, `LAZY`, `SPECIALIZED`, `NICHE`, `normal`, `conditional`, or `extended` as alternative capability-category names.
@@ -55,7 +54,7 @@ ACTIVE PHASE
 +
 PHASE_DEFAULT
 +
-only the exact ON_DEMAND capability required by current intent/evidence
+only ON_DEMAND capability definitions relevant to the current intent/evidence
 ```
 
 No category-wide activation exists. No `ON_DEMAND` pack activation exists.
@@ -69,8 +68,8 @@ PHASE_DEFAULT → PHASE_DEFAULT
 → call the exact next default capability directly
 
 PHASE_DEFAULT → ON_DEMAND
-→ explicit intent/evidence identifies one exact capability
-→ load that capability definition once
+→ explicit intent/evidence triggers one narrow lookup when the capability definition is not already available
+→ choose the exact owner
 → execute
 → keep PHASE_DEFAULT surface available
 → no phase switch, reload, reconnect, or category reset
@@ -80,12 +79,76 @@ ON_DEMAND → PHASE_DEFAULT
 → no unload/reset ceremony
 
 ON_DEMAND → ON_DEMAND
-→ only when the next intent/evidence requires another exact capability
-→ load that exact capability only
+→ reuse already available matching capability definitions first
+→ if the next intent needs an unavailable capability, perform one narrow lookup for that intent
 → never load every ON_DEMAND capability in the phase
 ```
 
-An `ON_DEMAND` capability does not remain a mandatory dependency for later steps merely because it was used once. Reuse it when the next intent still needs it; otherwise continue through `PHASE_DEFAULT` without an explicit unload action.
+An `ON_DEMAND` capability does not become a mandatory dependency merely because it was used once. Reuse its available definition while the current phase/session context remains valid; otherwise continue through `PHASE_DEFAULT` without an explicit unload action.
+
+### ON_DEMAND lookup and reuse contract
+
+`ON_DEMAND` is a context-loading mechanism, not a reason to add extra routing ceremony.
+
+```text
+exact route already available
+→ call directly
+
+route known but definition unavailable
+→ one narrow lookup for the coherent current intent
+→ backend may return a bounded set of closely relevant definitions
+→ choose one exact owner for each action
+→ keep returned definitions reusable in the current phase/session
+
+same capability needed again
+→ reuse; do not search again
+
+lookup miss
+→ reformulate once with exact capability/domain wording
+→ second miss = BLOCKED or capability gap
+```
+
+A narrow lookup returning several closely related definitions does **not** create a pack, subgroup, or new category. It only avoids repeated lookup overhead inside one coherent workflow.
+
+Never re-run lookup merely for confirmation after a successful mutation. Never send a known foreign-phase capability through same-phase `ON_DEMAND` lookup.
+
+### Category assignment rule
+
+`PHASE_DEFAULT` membership must be evidence-driven. Do not classify a tool only because it feels common or rare.
+
+Evaluate together:
+
+```text
+intent frequency
++
+schema/context cost
++
+workflow adjacency with other PHASE_DEFAULT operations
++
+lookup overhead
++
+selection-collision risk
++
+Cost to Accepted Result
+```
+
+Consequences:
+
+```text
+small + frequently adjacent capability
+→ may remain PHASE_DEFAULT even if not used in every asset
+
+large + uncommon capability
+→ strong ON_DEMAND candidate
+
+rare but tiny capability
+→ benchmark before moving it out of PHASE_DEFAULT
+
+frequent but very large/collision-prone capability
+→ benchmark before keeping it PHASE_DEFAULT
+```
+
+There is no universal tool-count threshold. Final membership is decided from BlockIT measurements, not copied from another host/model/vendor.
 
 ### Cross-phase transition contract
 
@@ -93,7 +156,7 @@ Capability category never bypasses phase ownership.
 
 ```text
 current intent belongs to ACTIVE PHASE
-→ use PHASE_DEFAULT or exact ON_DEMAND route
+→ use PHASE_DEFAULT or ON_DEMAND route
 
 current intent belongs to FOREIGN PHASE
 → HANDOFF_REQUIRED
@@ -101,7 +164,7 @@ current intent belongs to FOREIGN PHASE
 → switch owning phase
 → reload/reconnect only because phase ownership changed
 → new phase begins with PHASE_DEFAULT
-→ if the immediate next intent needs ON_DEMAND, load that one capability after reconnect
+→ if the immediate next intent needs ON_DEMAND, load only relevant definitions after reconnect
 ```
 
 A known foreign-phase tool must never enter same-phase `ON_DEMAND` search. Phase absence is not a discovery miss.
@@ -110,11 +173,28 @@ If a default capability detects authored state that needs an `ON_DEMAND` capabil
 
 ```text
 CAPABILITY_REQUIRED
-capability: <exact tool/capability owner>
+capability: <exact tool/capability owner when known>
 reason: <observed authored state or explicit requirement>
 ```
 
 Do not return a category name, pack name, or broad family when one exact capability owner is known.
+
+### Phase-handoff optimization boundary
+
+Current phase ownership and current reload/reconnect handoff remain authoritative until local/live evidence proves a better implementation.
+
+During this consolidation:
+
+```text
+measure phase-handoff count
+measure reload/reconnect overhead
+measure context/tool-search cost around each handoff
+compare against accepted-result quality and correction count
+```
+
+Do **not** combine tool-surface consolidation with an MCP transport/protocol redesign.
+
+If measured phase reload/reconnect cost becomes a dominant contributor to Cost to Accepted Result after the new capability routing is live, treat phase-switch mechanics as a separate evidence-gated redesign. Phase ownership itself remains independent from how a phase switch is transported.
 
 ## Remote-safe foundations already on `Local`
 
@@ -303,7 +383,7 @@ animated texture
 per-face material instances
 ```
 
-PBR correctness remains mandatory whenever its exact capability is loaded:
+PBR correctness remains mandatory whenever its capability is loaded:
 
 ```text
 exclusive channel membership
@@ -528,7 +608,7 @@ When the PC/local batch begins:
    get_texture scoped/revision/frame reads
    unified paint_texture
    export_texture PNG/TGA
-   PBR/advanced texture/material-instance routes as exact ON_DEMAND capabilities
+   PBR/advanced texture/material-instance routes as ON_DEMAND capabilities
    retire duplicate Painter/material-instance routes
 
 9. Animation public consolidation:
@@ -537,7 +617,7 @@ When the PC/local batch begins:
    configure_animation + remove_animation
    unified multi-target manage_keyframes
    remove Timeline-selection/global-clipboard dependency
-   effects/controllers/playback/curves/import/motion validation as exact ON_DEMAND capabilities
+   effects/controllers/playback/curves/import/motion validation as ON_DEMAND capabilities
    controller delete/order/blend-curve/key-link + duplicate state/controller corrections
    expand inspect_animation list/focused coverage
    capture_animation_views + contact sheet
@@ -545,8 +625,10 @@ When the PC/local batch begins:
 
 10. implement capability exposure after owner schemas/behavior are ready:
     PHASE_DEFAULT = automatically available for active phase
-    ON_DEMAND = exact intent/evidence-loaded capability only
+    ON_DEMAND = narrow intent/evidence lookup only when needed
+    one lookup may return a bounded closely relevant definition set; actions still use one exact owner
     same-phase category transitions require no reload/reconnect/reset
+    already available ON_DEMAND definitions are reused instead of searched again
     do not infer runtime counts from this document
 
 11. update specialist Skills / runtime prompt / phase routing from the measured final catalog using the same PHASE_DEFAULT / ON_DEMAND vocabulary only
@@ -568,8 +650,14 @@ When the PC/local batch begins:
 24. LIVE Animation PHASE_DEFAULT E2E
 25. LIVE Animation ON_DEMAND effects/controller fixture(s)
 26. same-phase PHASE_DEFAULT ↔ ON_DEMAND transition E2E with no reload/reconnect
-27. cross-phase handoff E2E
-28. measure Cost to Accepted Result and context/tool-search cost
+27. ON_DEMAND reuse E2E: same capability twice with no second lookup
+28. cross-phase handoff E2E
+29. measure Cost to Accepted Result and context/tool-search cost
+30. compare three measured surfaces without creating new runtime categories:
+    a. all retained active-phase capabilities exposed
+    b. proposed PHASE_DEFAULT + ON_DEMAND split
+    c. a deliberately smaller PHASE_DEFAULT candidate
+31. keep the surface with the lowest Cost to Accepted Result while preserving accepted quality and full capability reachability
 ```
 
 Do not split this into a new roadmap. This file remains the single continuation owner.
@@ -595,18 +683,29 @@ controller/state duplicate
 contact-sheet capture + full editor-state restoration
 
 CAPABILITY ROUTING
-PHASE_DEFAULT intent calls direct route with zero capability search
-ON_DEMAND intent resolves the exact capability once
+PHASE_DEFAULT intent calls direct route with zero capability lookup
+first ON_DEMAND intent requires at most one narrow lookup for the coherent intent
+same ON_DEMAND capability reused later requires zero new lookup while current definition remains available
 PHASE_DEFAULT → ON_DEMAND requires no phase switch/reload/reconnect
 ON_DEMAND → PHASE_DEFAULT requires no unload/reset/reconnect
-ON_DEMAND → ON_DEMAND loads only the next exact capability
-foreign-phase capability never enters ON_DEMAND search
+ON_DEMAND → ON_DEMAND reuses available definitions first and performs a new lookup only for an unavailable needed capability
+foreign-phase capability never enters ON_DEMAND lookup
 classic Texture session does not load PBR capability without matching intent/evidence
-PBR intent loads only exact PBR capability needed + existing PHASE_DEFAULT surface
+PBR intent loads only closely relevant definitions + existing PHASE_DEFAULT surface
 basic Animation clip does not load controller/effects capabilities
-controller intent loads controller capability without unrelated ON_DEMAND capabilities
+controller intent does not load unrelated ON_DEMAND capabilities
 basic Geometry does not load TextureMesh/reference/item-display capabilities
 full capability remains discoverable when exact intent requires it
+
+EFFICIENCY MEASUREMENT
+record initial tool/schema context cost
+record ON_DEMAND lookup count
+record repeated lookup count
+record wrong-route / wrong-phase attempts
+record mutation/readback/correction count
+record phase handoff + reload/reconnect count
+record elapsed workflow cost when measurable
+compare all metrics against accepted-result quality
 ```
 
 ---
@@ -628,8 +727,10 @@ Final completion requires:
 ```text
 public ownership matches curated coverage
 only PHASE_DEFAULT and ON_DEMAND exist as capability-category vocabulary
-PHASE_DEFAULT surface contains only ordinary active-phase routes
+PHASE_DEFAULT surface contains only evidence-justified active-phase routes
 ON_DEMAND capability remains discoverable but absent from default context
+one narrow ON_DEMAND lookup may return bounded closely relevant definitions without creating a pack/category
+already available ON_DEMAND definitions are reused without repeated lookup
 same-phase category transitions never require reload/reconnect/reset
 PBR absent from classic Texturing context unless requested/evidenced
 all generated prompt/docs current
@@ -638,9 +739,12 @@ project open/save/reopen fixture PASS
 live PHASE_DEFAULT authoring fixtures PASS
 representative ON_DEMAND fixtures PASS
 same-phase category-transition fixtures PASS
+ON_DEMAND reuse fixture PASS
 live evidence/restore fixtures PASS
 cross-phase handoffs PASS
-measured context/tool-search cost is lower than untiered surface
+PHASE_DEFAULT membership selected from measured Cost to Accepted Result rather than a copied tool-count threshold
+phase reload/reconnect cost measured before any separate phase-switch redesign is considered
+measured context/tool-search cost is lower than the worse tested alternatives without accepted-quality regression
 no known P0/P1 correctness hole
 ```
 
