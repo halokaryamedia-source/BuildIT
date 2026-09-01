@@ -19,47 +19,47 @@ Preserve:
 - Geometry → Texturing → Animation phase boundaries;
 - generated-doc discipline;
 - visual proof as final quality authority;
-- full relevant capability coverage without bloating the automatically loaded active-phase context.
+- full relevant capability coverage without bloating the BASE active-phase context.
 
 ## Canonical capability categories
 
 There are exactly two routing categories across BlockIT:
 
 ```text
-AUTO_LOADED
+BASE
 → automatically available when its owning phase is active
 → ordinary path for that phase
 
-INTENT_LOADED
-→ absent from the automatically loaded active-phase context
+EXTENDED
+→ absent from the BASE active-phase context
 → loaded only when explicit intent or observed authored state requires that exact capability
 ```
 
 These names are canonical across design, implementation, generated docs/prompts, specialist guidance, tests, and diagnostics.
 
-Do **not** use `PHASE_DEFAULT`, `ON_DEMAND`, `HOT`, `DEFERRED`, `LAZY`, `SPECIALIZED`, `NICHE`, `normal`, `conditional`, or `extended` as alternative capability-category labels. Domain terms keep their domain meaning; for example **normal map** is a texture type, not a routing category.
+Do **not** use `PHASE_DEFAULT`, `ON_DEMAND`, `AUTO_LOADED`, `INTENT_LOADED`, `HOT`, `DEFERRED`, `LAZY`, `SPECIALIZED`, `NICHE`, `normal`, or `conditional` as alternative capability-category labels. Domain terms keep their domain meaning; for example **normal map** is a texture type, not a routing category.
 
-Category is a static exposure classification, not a runtime mode. Same-phase movement between `AUTO_LOADED` and `INTENT_LOADED` never requires phase switch, reload, reconnect, category reset, or pack activation.
+Category is a static exposure classification, not a runtime mode. Same-phase movement between `BASE` and `EXTENDED` never requires phase switch, reload, reconnect, category reset, or pack activation.
 
 ```text
-AUTO_LOADED → AUTO_LOADED
+BASE → BASE
   direct route
 
-AUTO_LOADED → INTENT_LOADED
+BASE → EXTENDED
   exact intent/evidence → load exact capability → execute
 
-INTENT_LOADED → AUTO_LOADED
+EXTENDED → BASE
   direct route; no unload ceremony
 
-INTENT_LOADED → INTENT_LOADED
+EXTENDED → EXTENDED
   load only the next exact capability when required
 
 FOREIGN PHASE
   HANDOFF_REQUIRED → phase switch/reload/reconnect
-  new phase begins with AUTO_LOADED
+  new phase begins with BASE
 ```
 
-No `INTENT_LOADED` pack exists. A known foreign-phase capability must not enter same-phase capability search.
+No `EXTENDED` pack exists. A known foreign-phase capability must not enter same-phase capability search.
 
 ## Current Gate
 
@@ -73,7 +73,7 @@ REMOTE-SAFE FOUNDATION
 → bun run docs:check
 → bun run verify:mcp
 → LIVE Geometry → Texturing → Animation E2E
-→ LIVE AUTO_LOADED ↔ INTENT_LOADED transition E2E
+→ LIVE BASE ↔ EXTENDED transition E2E
 → measure Cost to Accepted Result
 → evidence-gated follow-up work
 ```
@@ -109,7 +109,7 @@ All remain **LOCAL PROOF REQUIRED** until Bun/local/live gates pass.
 
 After the Geometry, Texturing, and Animation audits were complete, BlockIT was compared again against native Blockbench project/session/file behavior and public MCP lifecycle coverage. No new large authoring family was found, but several cross-phase gaps remain important.
 
-## AUTO_LOADED Core addition: `open_project`
+## BASE Core addition: `open_project`
 
 BlockIT can create projects and export editable `.bbmodel`, but the production surface still lacks a deterministic owner for resuming an existing asset.
 
@@ -137,7 +137,7 @@ Use native Blockbench codecs as authority:
 
 No handwritten `.bbmodel` parser. The tool must preflight path/type/current-unsaved state before replacing any current project and must return exact selected-project identity after load.
 
-This is the only new `AUTO_LOADED` Core tool from the post-phase audit.
+This is the only new `BASE` Core tool from the post-phase audit.
 
 ## `configure_project` additions
 
@@ -214,7 +214,7 @@ save_path
 export_path
 ```
 
-`INTENT_LOADED` project-session owner:
+`EXTENDED` project-session owner:
 
 ```text
 manage_project_session
@@ -223,13 +223,13 @@ manage_project_session
   reload
 ```
 
-`close`/`reload` must refuse unsaved state unless explicit discard consent is supplied. Keep this `INTENT_LOADED` because ordinary authoring should remain pinned to one intended project.
+`close`/`reload` must refuse unsaved state unless explicit discard consent is supplied. Keep this `EXTENDED` because ordinary authoring should remain pinned to one intended project.
 
 ## Existing-owner efficiency additions
 
 ### Whole Animation clone
 
-Extend `AUTO_LOADED` `create_animation`:
+Extend `BASE` `create_animation`:
 
 ```text
 source_animation?: UUID/name
@@ -256,9 +256,9 @@ Extend `capture_animation_views` rather than adding a video/screenshot-sequence 
 output: frames | contact_sheet
 ```
 
-A bounded contact sheet across explicit timestamps is the preferred temporal evidence because it exposes timing progression without video/GIF overhead. Animated GIF/video export remains evidence-gated rather than part of `AUTO_LOADED`.
+A bounded contact sheet across explicit timestamps is the preferred temporal evidence because it exposes timing progression without video/GIF overhead. Animated GIF/video export remains evidence-gated rather than part of `BASE`.
 
-## INTENT_LOADED 2D reference-image coverage
+## EXTENDED 2D reference-image coverage
 
 Blockbench native project state supports 2D reference images separately from BlockIT's 3D Route-1 GLB reference.
 
@@ -275,23 +275,23 @@ Bounded fields may include absolute image source, name, mode/view, position, siz
 
 ## Molang validation policy
 
-Do not add an `AUTO_LOADED` `validate_molang` tool merely for parity. Every Molang-bearing mutation owner should validate authored text using the strongest safe native/static parser available before Undo when possible.
+Do not add a `BASE` `validate_molang` tool merely for parity. Every Molang-bearing mutation owner should validate authored text using the strongest safe native/static parser available before Undo when possible.
 
-A future `INTENT_LOADED` `validate_molang` remains evidence-gated for debugging only if real workflows repeatedly need standalone expression diagnosis.
+A future `EXTENDED` `validate_molang` remains evidence-gated for debugging only if real workflows repeatedly need standalone expression diagnosis.
 
-## Post-phase AUTO_LOADED counts
+## Post-phase BASE counts
 
-With `open_project` added to shared Core, approximate automatically loaded phase surfaces become:
+With `open_project` added to shared Core, approximate BASE phase surfaces become:
 
 ```text
-Geometry   ≈ 27 total before further AUTO_LOADED reduction
-Texturing  ≈ 25 total before INTENT_LOADED separation
-Animation  ≈ 24 total before INTENT_LOADED separation
+Geometry   ≈ 27 total before further BASE reduction
+Texturing  ≈ 25 total before EXTENDED separation
+Animation  ≈ 24 total before EXTENDED separation
 ```
 
-These historical estimates are input to the local consolidation, not final target counts. Final counts must be measured after the `AUTO_LOADED` / `INTENT_LOADED` split.
+These historical estimates are input to the local consolidation, not final target counts. Final counts must be measured after the `BASE` / `EXTENDED` split.
 
-Additional `INTENT_LOADED` Core/cross-phase coverage includes:
+Additional `EXTENDED` Core/cross-phase coverage includes:
 
 ```text
 manage_project_session
@@ -306,7 +306,7 @@ No other new Core family is currently justified.
 
 Geometry was re-audited against official Blockbench modeling/reference docs, native Bedrock codec/outliner behavior, current `minecraft:geometry` capabilities, and public MCP implementations.
 
-## AUTO_LOADED Geometry target
+## BASE Geometry target
 
 ```text
 CORE / SETUP / EVIDENCE
@@ -334,7 +334,7 @@ reparent_element
 measure_geometry
 ```
 
-Shared recovery/selection capabilities are `INTENT_LOADED`, not automatically exposed merely because Geometry is active:
+Shared recovery/selection capabilities are `EXTENDED`, not automatically exposed merely because Geometry is active:
 
 ```text
 undo
@@ -353,7 +353,7 @@ manage_null_object
 bone_rigging
 ```
 
-## INTENT_LOADED Geometry
+## EXTENDED Geometry
 
 ```text
 manage_locator
@@ -383,7 +383,7 @@ Remote-safe Geometry correctness work already on `Local` includes faithful nativ
 
 Texturing was re-audited against official Blockbench Paint Mode/Texture/Layer/PBR/animated-texture behavior, native source, Minecraft Bedrock texture-set/Vibrant Visuals PBR semantics, and public Blockbench MCPs.
 
-## AUTO_LOADED Texturing target
+## BASE Texturing target
 
 Default classic Minecraft/Bedrock texturing stays intentionally small:
 
@@ -426,7 +426,7 @@ import_texture_set
 save_material_config
 ```
 
-## INTENT_LOADED Texturing
+## EXTENDED Texturing
 
 ```text
 create_pbr_material
@@ -441,7 +441,7 @@ list_material_instances
 set_material_instances
 ```
 
-These remain full supported capability, but exact intent/evidence must load the exact owner. There is no PBR pack, advanced-texture pack, or material-instance pack activation step.
+These remain fully supported capability, but exact intent/evidence must load the exact owner. There is no PBR pack, advanced-texture pack, or material-instance pack activation step.
 
 Intent examples:
 
@@ -495,7 +495,7 @@ Animation was re-audited against:
 - current Minecraft Bedrock animation and animation-controller documentation/schema;
 - public Blockbench MCPs including SwagRee, sosadly, adhi-jp, XiaoNetwork-Astral and other surveyed implementations.
 
-The goal is **full relevant Bedrock Animation coverage with one direct owner for each authored result**, while editor-only aids stay out of `AUTO_LOADED`.
+The goal is **full relevant Bedrock Animation coverage with one direct owner for each authored result**, while editor-only aids stay out of `BASE`.
 
 ## Current Animation surface problem
 
@@ -526,7 +526,7 @@ animation_copy_paste
 
 all mutate transform keyframe cohorts, while `animation_timeline` mixes temporary editor playback/selection state with persistent authored Animation properties.
 
-## AUTO_LOADED Animation target
+## BASE Animation target
 
 ```text
 create_animation
@@ -538,7 +538,7 @@ capture_animation_views
 export_animation_file
 ```
 
-The capability is broader than the current surface while automatically loaded ownership becomes simpler.
+The capability is broader than the current surface while BASE ownership becomes simpler.
 
 Retire after replacement contracts exist:
 
@@ -553,7 +553,7 @@ animation_copy_paste
 
 Do not remove source behavior until replacement contracts, generated artifacts and regression/live proof exist.
 
-## INTENT_LOADED Animation
+## EXTENDED Animation
 
 ```text
 manage_animation_effects
@@ -564,7 +564,7 @@ import_animation_file
 validate_animation_motion
 ```
 
-Controller `variables/remap_curve` is a separate **INTENT_LOADED Bedrock-extension gap** discussed below; it remains inside the controller owner rather than becoming another tool.
+Controller `variables/remap_curve` is a separate **EXTENDED Bedrock-extension gap** discussed below; it remains inside the controller owner rather than becoming another tool.
 
 ---
 
@@ -729,13 +729,13 @@ step        → Blockbench compiles to Bedrock pre/post
 bezier      → Blockbench/editor preview only; bake before direct Bedrock delivery
 ```
 
-`AUTO_LOADED` `manage_keyframes` must not silently author direct-export Bezier as though it were Minecraft-safe. Keep explicit Bezier handle editing under `INTENT_LOADED` `manage_animation_curves`, or preserve existing editor curves, but `export_animation_file` must fail closed while unbaked Bezier remains.
+`BASE` `manage_keyframes` must not silently author direct-export Bezier as though it were Minecraft-safe. Keep explicit Bezier handle editing under `EXTENDED` `manage_animation_curves`, or preserve existing editor curves, but `export_animation_file` must fail closed while unbaked Bezier remains.
 
 Molang expressions also require caution with smooth/Bezier editor interpolation; preserve source text and do not claim preview equivalence without live evidence.
 
 ### `manage_animation_effects`
 
-This `INTENT_LOADED` owner covers native Bedrock effect channels:
+This `EXTENDED` owner covers native Bedrock effect channels:
 
 ```text
 particle
@@ -747,7 +747,7 @@ Retain bounded add/update/remove operations, full preflight and one Undo. Effect
 
 ### `manage_animation_controller`
 
-This `INTENT_LOADED` owner keeps all controller lifecycle/composition behavior together.
+This `EXTENDED` owner keeps all controller lifecycle/composition behavior together.
 
 Already covered well:
 
@@ -797,7 +797,7 @@ The explicit key is authoritative for export. A loaded item is optional supporti
 
 Current Minecraft controller docs support per-state variables with Molang values and optional `remap_curve`. Current native Blockbench `AnimationControllerState` source does not expose/persist this field in its ordinary state model.
 
-Treat this as **INTENT_LOADED Bedrock extension work**, not an `AUTO_LOADED` field that may silently disappear.
+Treat this as **EXTENDED Bedrock extension work**, not a `BASE` field that may silently disappear.
 
 Before claiming support, `LOCAL_CODE` must prove a persistent plugin-owned round trip across:
 
@@ -847,7 +847,7 @@ interpolation
 Bezier editor metadata when present
 ```
 
-Controller inspection retains state scripts/effects/transitions/links and `blend_transition_curve`, and later includes state variables only after the INTENT_LOADED persistence contract is proven.
+Controller inspection retains state scripts/effects/transitions/links and `blend_transition_curve`, and later includes state variables only after the EXTENDED persistence contract is proven.
 
 ### `capture_animation_views` — canonical motion evidence owner
 
@@ -876,7 +876,7 @@ camera/view state owned by capture path
 
 Optional temporary **Molang preview context / variable placeholders** should be supported only through Molang/value inputs and restored after capture. Never use arbitrary JavaScript to fake runtime state.
 
-A future `INTENT_LOADED` extension may capture one explicit controller state, but it must snapshot/restore controller selection and all dependent animation preview state just as strictly.
+A future `EXTENDED` extension may capture one explicit controller state, but it must snapshot/restore controller selection and all dependent animation preview state just as strictly.
 
 ### `export_animation_file` — delivery owner
 
@@ -907,7 +907,7 @@ Do not silently bake or mutate the authored animation during export.
 
 ---
 
-# INTENT_LOADED Animation behavior details
+# EXTENDED Animation behavior details
 
 ## `animation_playback`
 
@@ -964,7 +964,7 @@ Always restore editor state. Do not produce a subjective animation quality score
 
 ---
 
-# Animation editor features intentionally outside AUTO_LOADED
+# Animation editor features intentionally outside BASE
 
 Blockbench exposes additional editor conveniences including timeline selection, markers, onion skin, keyframe colors, animation presets, graph-view toggles and panel filtering. These help a human use the UI but do not define the Bedrock animation artifact.
 
@@ -987,10 +987,10 @@ Do not call Animation complete until all of these are proven locally/live:
 
 ```text
 SURFACE / OWNERSHIP
-one AUTO_LOADED persistent Animation configuration owner
-one AUTO_LOADED transform-keyframe mutation owner
+one BASE persistent Animation configuration owner
+one BASE transform-keyframe mutation owner
 no global clipboard / Timeline-selection dependency
-playback/curve/import/motion-QA capabilities INTENT_LOADED only
+playback/curve/import/motion-QA capabilities EXTENDED only
 bone_rigging absent from Animation surface
 
 ANIMATION LIFECYCLE
@@ -1010,17 +1010,17 @@ Bezier direct-export rejection + explicit bake path
 copy/mirror/retime/reverse/smooth/bake one-Undo fixtures
 
 EFFECTS
-particle/sound/instruction round trip through INTENT_LOADED effects owner
+particle/sound/instruction round trip through EXTENDED effects owner
 
 CONTROLLERS
-INTENT_LOADED controller owner loads only for controller intent/evidence
+EXTENDED controller owner loads only for controller intent/evidence
 controller delete/duplicate
 state duplicate
 ordered transitions
 ordered animation links
 blend_transition_curve
 external/vanilla/nested-controller short-key links
-state variable/remap_curve INTENT_LOADED persistence decision
+state variable/remap_curve EXTENDED persistence decision
 
 READ / VERIFY
 inspect list + focused animation/controller/bone data
@@ -1033,13 +1033,13 @@ DELIVERY
 native codec animation JSON compile/export
 native codec controller JSON compile/export
 unbaked Bezier blocks delivery
-INTENT_LOADED import round trip
+EXTENDED import round trip
 
 ROUTING
-AUTO_LOADED → INTENT_LOADED no reload/reconnect
-INTENT_LOADED → AUTO_LOADED no unload/reset
-INTENT_LOADED → INTENT_LOADED exact next capability only
-foreign-phase capability never enters INTENT_LOADED search
+BASE → EXTENDED no reload/reconnect
+EXTENDED → BASE no unload/reset
+EXTENDED → EXTENDED exact next capability only
+foreign-phase capability never enters EXTENDED search
 
 GATES
 Animation-only phase ownership
@@ -1047,8 +1047,8 @@ prompts:build PASS
 docs:build PASS
 docs:check PASS
 verify:mcp PASS
-LIVE Animation AUTO_LOADED E2E PASS
-LIVE Animation INTENT_LOADED E2E PASS
+LIVE Animation BASE E2E PASS
+LIVE Animation EXTENDED E2E PASS
 ```
 
 Animation remains **LOCAL PROOF REQUIRED** until public consolidation, generated artifacts, tests and live Blockbench verification all pass.
@@ -1069,9 +1069,9 @@ persistent UUID registries
 large generic routers/profiles/frameworks without evidence
 procedural biped/limb generators as default authoring
 destructive whole-animation replacement as the ordinary editing model
-AUTO_LOADED video/GIF generation when bounded frames/contact sheets provide sufficient evidence
+BASE video/GIF generation when bounded frames/contact sheets provide sufficient evidence
 category-specific reload/reconnect/reset behavior
-INTENT_LOADED pack loaders or pack registries
+EXTENDED pack loaders or pack registries
 parallel capability-category vocabulary
 ```
 
