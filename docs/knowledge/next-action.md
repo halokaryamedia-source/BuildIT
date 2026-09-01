@@ -1,777 +1,548 @@
 # Next Action
 
-Updated: 2026-08-31 — remote-safe Texturing preparation underway; local public-contract implementation/build remains pending; cross-phase live E2E stays after cleanup
+Updated: 2026-09-01 — full Texturing coverage audit completed; remote-safe frame/PBR foundations prepared; local public-contract consolidation remains pending
 
 Working branch: **`Local` only**.
 
-This file owns **active continuation only**. Stable facts belong in `CONTEXT.md`; proof belongs in `docs/knowledge/current-validation.md`; source ownership belongs in `docs/knowledge/implementation-map.md`.
+This file owns **active continuation only**. Stable facts belong in `CONTEXT.md`; capability design belongs in `docs/knowledge/mcp-capability-backlog.md`; proof belongs in `docs/knowledge/current-validation.md`; source ownership belongs in `docs/knowledge/implementation-map.md`.
 
 ## Current Status
 
-`TEXTURING_REMOTE_PREPARATION_IN_PROGRESS_LOCAL_IMPLEMENTATION_REQUIRED`
+`TEXTURING_FULL_COVERAGE_CURATED_LOCAL_IMPLEMENTATION_REQUIRED`
 
-The remote MCP efficiency audit is complete. Geometry, Animation, Camera/inspection, History, Export, validation routing, phase ownership, UUID-first targeting, one-Undo ownership, and fail-closed semantics do **not** require redesign before live E2E.
+Geometry full-coverage curation is recorded separately. The active implementation focus remains **Texturing** before live cross-phase E2E.
+
+The new full Texturing audit supersedes the earlier narrow plan that added `paint_face_features` while retaining many Painter wrappers. The accepted direction is now:
+
+```text
+one normal texture creation owner
+one normal texture configuration owner
+one normal exact bitmap mutation owner
+one normal exact bitmap readback owner
+small PBR owner set
+conditional/lazy owners for layers, animation, generic groups, texture_set, and material instances
+```
 
 Remote-safe preparation already completed on `Local`:
 
-- compacted `inspect_element` so full authored state is not duplicated in both text and `structuredContent`;
-- moved face UV→physical-pixel mapping into the narrow shared owner `mcp/lib/facePixelMapping.ts`;
-- added regression coverage for UV bounds, physical-density scaling, U/V direction, exact-grid rejection, and shared ownership;
-- verified Blockbench native CubeFace rotation semantics from official source: each 90° maps normalized UV as `[x,y] → [1-y,x]`; the shared helper now prepares the discrete inverse mapping for caller-visible face-local pixels at 0/90/180/270 degrees;
-- public ToolSpecs, runtime Texturing prompt, generated API docs, and live runtime are intentionally unchanged until `LOCAL_CODE` can regenerate/verify the complete contract in one batch.
+- `mcp/lib/facePixelMapping.ts` — exact face-local UV/rotation/flip mapping;
+- `mcp/lib/textureRevision.ts` — decoded-RGBA SHA-256 revision identity + stale-write guard;
+- `mcp/lib/textureFrameMapping.ts` — exact static/animated frame-stack mapping;
+- `mcp/lib/pbrMaterialMembership.ts` — pure exclusive PBR channel membership planning, including normal-vs-height conflict;
+- targeted Bun regression contracts for all four helpers;
+- `inspect_element` compact authored-state/UV inspection already shares the face mapping owner.
 
-The remaining pre-E2E cleanup with current evidence is Texturing:
+All remote-safe source/test preparation remains **LOCAL PROOF REQUIRED** until Bun and live gates run.
 
-1. fix `create_texture` blank-dimension semantics;
-2. add one focused deterministic face-local texture-authoring primitive;
-3. connect the new authoring primitive to the shared exact face-local rotation/pixel mapping;
-4. update Texturing routing/prompt semantics;
-5. regenerate canonical prompt/docs output and run the final MCP gate in `LOCAL_CODE`.
+## Why Texturing Still Comes Before Live E2E
 
-Do **not** broaden this pass into generic transform APIs, arbitrary execution, automatic phase switching, array/radial tool families, symmetry scoring, Animation schema splitting, TextureMesh, animated textures, controller blend curves, bone-binding expressions, or another framework/router/profile.
-
-## Why This Cleanup Comes Before Live E2E
-
-The live E2E harness is already source-prepared, but Texturing still has a known provisional public contract: omitted `create_texture` dimensions currently become 16×16 even though normal new BlockIT Bedrock projects use project logical UV resolution (128 by default, 256 opt-in).
-
-Running final Texturing E2E before correcting a known public-contract defect would measure a workflow we already intend to change. Therefore:
+Current public Texturing has both known correctness gaps and an unnecessarily wide surface:
 
 ```text
-REMOTE-SAFE PREPARATION
-→ LOCAL TEXTURING CONTRACT IMPLEMENTATION
-→ LOCAL GENERATION + verify:mcp
-→ LIVE GEOMETRY → TEXTURING → ANIMATION E2E
+create_texture omitted dimensions → provisional 16×16
+exact face-local bitmap editing    → no canonical public owner
+texture revision guard             → foundation only
+animated frame-local mapping       → foundation only
+PBR channel replacement            → can leave duplicate/conflicting group membership
+Texture lifecycle                  → no complete normal owner
+Painter surface                    → many UI-state wrappers instead of one result owner
+```
+
+Running final Texturing E2E before correcting these would measure a workflow we already know will change.
+
+Required sequence:
+
+```text
+REMOTE-SAFE FOUNDATION (prepared)
+→ LOCAL TEXTURING PUBLIC-CONTRACT CONSOLIDATION
+→ prompts:build
+→ docs:build
+→ docs:check
+→ verify:mcp
+→ deploy/reload BlockIT
+→ LIVE Geometry → Texturing → Animation E2E
 → measure Cost to Accepted Result
-→ only then decide evidence-gated ergonomics work
 ```
 
-## Locked Texturing Cleanup Contract
+---
 
-### Goal
+# Locked Normal Texturing Surface Direction
 
-Make BlockIT Texturing more deterministic and cheaper for ChatGPT to use without broadening the MCP surface unnecessarily.
-
-Success means:
-
-- `create_texture` no longer silently creates omitted-dimension blank production atlases at 16×16;
-- face-specific crisp details can be authored with **face-local pixels** instead of ChatGPT manually calculating atlas-global coordinates;
-- exact writes are full-preflighted, atomic, Undo-safe, and machine-verifiable;
-- inspection and mutation share the same UV→pixel and rotation math;
-- existing Bedrock/PBR, phase ownership, UUID-first targeting, fail-closed semantics, and visual-proof boundaries remain intact;
-- generated prompt/docs output comes only from canonical local generators;
-- final `bun run verify:mcp` passes before the implementation commit.
-
-### Non-Goals
-
-Do not add or redesign in this pass:
+After local consolidation, target roughly **10 Texturing-specific tools**, plus shared Core:
 
 ```text
-generic transform_elements
-relative Geometry transform intent
-array/radial duplication
-symmetry audit/scoring
-Animation schema slimming/splitting
-automatic authoring-phase switching
-execute_script / arbitrary JS / risky_eval
-TextureMesh direct authoring
-animated texture authoring
-controller blend-curve mutation
-bone-binding expressions
-persistent registries
-new generic routers/profiles/frameworks
+create_texture
+configure_texture
+remove_texture
+get_texture
+export_texture
+paint_texture
+create_pbr_material
+configure_material
+list_materials
+get_material_info
 ```
 
-Relative Geometry transforms, texture revision guards, dense face-grid authoring, and Animation schema slimming remain **post-E2E evidence-gated candidates**, not current requirements.
+`list_textures` remains shared Core because Geometry uses its UV/atlas gate before handoff.
 
-## Exact Source Scope
-
-### Production source
-
-Modify in `LOCAL_CODE`:
+Retire from the **normal** Texturing surface after replacements are implemented:
 
 ```text
-mcp/server/tools/texture.ts
-mcp/server/tools/paint.ts
+paint_fill_tool
+draw_shape_tool
+gradient_tool
+color_picker_tool
+copy_brush_tool
+eraser_tool
+paint_settings
+paint_with_brush
+create_brush_preset
+load_brush_preset
+texture_selection
+texture_layer_management
+add_texture_group
+activate_texture
+assign_texture_channel
+get_face_material_instances
+set_face_material_instance
+bulk_set_material_instances
+clear_material_instances
+import_texture_set
+save_material_config
 ```
 
-Already prepared remotely:
+Do not delete behavior before its replacement owner is implemented and verified.
+
+Conditional/lazy coverage target:
 
 ```text
-mcp/lib/facePixelMapping.ts
-mcp/server/tools/element-inspection.ts
-mcp/tests/face-pixel-mapping.test.ts
+manage_texture_layers
+manage_texture_group
+manage_animated_texture
+manage_texture_set
+list_material_instances
+set_material_instances
 ```
 
-The helper exists only so inspection and mutation use identical UV→pixel mathematics. It must not become a generic texture framework.
+These remain native/relevant capability, but they do not belong in every normal ChatGPT Texturing session.
 
-### Agent/routing contract
+---
 
-Modify only when source behavior is ready:
+# P0 — `create_texture` Correctness + Lifecycle Entry
+
+## Omitted dimensions
+
+Remove the current public defaults:
 
 ```text
-.agents/skills/blockit-bedrock-texturing/SKILL.md
-mcp/prompts/bedrock_entity_workflow.md
+width default=16
+height default=16
 ```
 
-### Generated output — LOCAL_CODE only
+New pair invariant:
 
 ```text
-mcp/prompts/manifest.json
-mcp/docs/api.json
-mcp/docs/index.html
-```
-
-Never hand-edit generated entries.
-
-### Tests
-
-Use existing test owners where possible. Add a dedicated test only where no current owner cleanly protects the new invariant.
-
-Required proof surfaces:
-
-```text
-create_texture schema/runtime semantics
-face-pixel pure mapping
-face-local 0/90/180/270 mapping
-paint_face_features public contract
-atomicity / full-preflight / one Undo
-Texturing-only phase exposure
-Skill/runtime-prompt routing
-```
-
-Do not create a parallel test system.
-
-## P0 — `create_texture` Resolution Semantics
-
-### Current defect
-
-Current public schema supplies:
-
-```text
-width  default = 16
-height default = 16
-```
-
-Omitting dimensions therefore reaches runtime as 16×16 even when the intended production canvas should follow the current project/base atlas.
-
-### New public schema
-
-Conceptually:
-
-```text
-name: string
-width?: integer 16..4096
-height?: integer 16..4096
-data?: deterministic image source
-group?: TextureGroup reference
-fill_color?: color
-layer_name?: string
-pbr_channel?: color | normal | height | mer
-render_mode?: ...
-render_sides?: ...
-```
-
-Pair invariant:
-
-```text
-width + height present → valid pair
+width + height present → valid explicit pair
 width only             → FAIL
 height only            → FAIL
-neither                → runtime derives only for supported cases
+neither                → derive only for supported role/source
 ```
 
-Never infer a square bitmap from one supplied dimension.
-
-### Runtime dimension resolution
-
-#### Blank base-color atlas
+Runtime resolution:
 
 ```text
-data absent
-role = base_color_candidate
-width/height absent
-→ use Project.texture_width × Project.texture_height
-→ dimension_source = project_logical_uv
+blank base atlas, no dims
+→ Project.texture_width × Project.texture_height
+→ dimension_source=project_logical_uv
+
+blank explicit variant, no dims
+→ exactly one established base atlas
+→ base bitmap dimensions
+→ dimension_source=base_atlas
+
+blank PBR support, no dims
+→ material group + exactly one established base atlas
+→ base bitmap dimensions
+→ dimension_source=base_atlas
+
+explicit width+height
+→ exact requested bitmap
+→ dimension_source=explicit
+
+absolute image file, no dims
+→ preserve native imported dimensions
+→ dimension_source=imported_file
+
+data URL
+→ require explicit width+height until local proof supports safe inference
 ```
 
-Normal new BlockIT projects therefore resolve to 128×128 or explicit 256×256 logical resolution.
+Important: BlockIT may default new projects to 128×128, but **square 128-based dimensions are not a universal Bedrock requirement**. Preserve valid rectangular project/imported layouts such as 64×32. Product defaults and native format validity are separate concerns.
 
-Existing production/provisional canvas validation still applies when the caller supplies explicit dimensions.
+## Clone/variant creation
 
-#### Blank explicit color variant
+Add:
 
 ```text
-data absent
-role = explicit_variant
-width/height absent
-→ require exactly one established base atlas
-→ use baseAtlas.width × baseAtlas.height
-→ dimension_source = base_atlas
+source_texture?: UUID
 ```
 
-#### Blank PBR support atlas
+Native internal clone; no PNG round trip through ChatGPT. Source/data/fill modes must remain mutually unambiguous.
+
+## Fill semantics
+
+`fill_color` should fill the bitmap directly. Do not require or activate Texture layers merely to name a fill layer. Layers are an explicit conditional workflow.
+
+## Result provenance
+
+Return compact continuation state:
 
 ```text
-data absent
-role = pbr_support
-width/height absent
-→ require exactly one established base atlas
-→ preserve current material TextureGroup requirement
-→ use baseAtlas.width × baseAtlas.height
-→ dimension_source = base_atlas
-```
-
-#### Explicit dimensions
-
-```text
-width + height supplied
-→ use exactly those dimensions
-→ run current role/preflight validation
-→ dimension_source = explicit
-```
-
-#### Absolute imported image file
-
-Preserve the native imported file dimensions.
-
-Preferred safe contract:
-
-```text
-absolute image file + dimensions omitted → Texture.fromFile owns native dimensions
-absolute image file + dimensions supplied → reject unless local runtime proves a clear intended resize semantic
-```
-
-Return:
-
-```text
-dimension_source = imported_file
-```
-
-Do not pretend schema width/height control a native import if Blockbench ultimately replaces them from the image file.
-
-#### Data URL
-
-Until local implementation proves reliable native dimension inference:
-
-```text
-data:image/... + explicit width+height → allowed
-data:image/... + omitted dimensions    → FAIL
-```
-
-Do not guess.
-
-### Project requirement
-
-`create_texture` should fail clearly when no intended Bedrock project is open rather than operating through incidental Texture globals.
-
-### Structured result provenance
-
-Creation should return compact provenance in `structuredContent`, for example:
-
-```text
-texture: <existing compact texture metadata>
 creation:
-  dimension_source: project_logical_uv | base_atlas | explicit | imported_file
-  requested_dimensions: [w,h] | null
-  resolved_dimensions: [w,h]
+  dimension_source
+  requested_dimensions
+  resolved_dimensions
 ```
 
-This is continuation state; ChatGPT should not need an immediate confirmation read just to learn why the dimensions were chosen.
+---
 
-## P0 — Focused `paint_face_features` Tool
+# P0 — `configure_texture`
 
-### Purpose
+Add one normal owner for existing Texture properties/lifecycle correction.
 
-BlockIT already knows a Cube face's UV rectangle, texture-space rectangle, U/V direction, face rotation, and related mapping state. ChatGPT should not manually convert a local intent such as:
+Initial bounded scope:
 
 ```text
-head / north / local pixel (4,5)
+texture: explicit UUID/name
+name?
+render_mode?
+render_sides?
+resize_bitmap?
+  width
+  height
+  sampling: nearest
 ```
 
-into atlas-global X/Y coordinates.
+Physical bitmap resize must not silently mutate project logical UV or Geometry UV layout. If caller wants logical UV resolution/layout changes, return `HANDOFF_REQUIRED(geometry)`.
 
-Add exactly one focused Texturing tool:
+Animated frame lifecycle remains conditional under `manage_animated_texture`.
+
+---
+
+# P0 — `remove_texture`
+
+Add explicit destructive Texture deletion.
+
+Before Undo:
+
+- resolve exact Texture;
+- identify base/PBR/group/material dependencies;
+- reject ambiguous/destructive state unless caller intent satisfies the public contract;
+- never leave a material with silently wrong channel ownership;
+- one call = one Undo.
+
+---
+
+# P0 — Unified `get_texture`
+
+Expand existing readback instead of adding `get_texture_region`, `get_face_grid`, `get_texture_revision`, color-picker, and palette-read tools.
+
+Conceptual scopes:
 
 ```text
-paint_face_features
+full
+frame
+face
+rect
+pixels
 ```
 
-This tool owns **crisp deterministic Minecraft face-local detail**, not general artistic painting.
-
-Existing Painter tools remain available for atlas-level/general work.
-
-### Targeting
-
-Each face target must identify:
+Return only requested evidence:
 
 ```text
-cube: explicit Cube UUID preferred; unique exact name only under current identity policy
-face: north | south | east | west | up | down
+texture metadata
+frame metadata when animated
+mapped atlas rect
+image preview when useful
+bounded exact RGBA when requested
+revision
+optional objective statistics
 ```
 
-No implicit selected Cube.
+`revision` uses `mcp/lib/textureRevision.ts`.
 
-Texture identity must be explicit when multiple textures exist, consistent with current deterministic texture behavior.
+Face scope uses `mcp/lib/facePixelMapping.ts`.
+Animated frame scope uses `mcp/lib/textureFrameMapping.ts`.
 
-### Recommended public shape
+---
 
-Conceptually:
+# P0 — Unified `paint_texture`
+
+This replaces the earlier public `paint_face_features` plan and the normal Painter-wrapper family.
+
+## Target contract
+
+Explicit discriminated target:
 
 ```text
-texture_id?: string
-faces:
-  - cube: string
-    face: Face
-    ops:
-      - FillOp | RectOp | LineOp | PixelsOp
+target.kind = atlas
+  rect?
+  frame?
+
+or
+
+target.kind = face
+  cube
+  face
+  frame?
 ```
 
-Keep the schema bounded and strict.
+No implicit selected Cube/face. Texture identity must be explicit when multiple candidate textures are loaded.
 
-### Supported operations
+## Bounded result operations
 
-#### Fill
-
-```text
-type: fill
-color: exact authored RGBA/HEX
-```
-
-Fills exactly the physical pixels owned by the mapped face.
-
-#### Rect
+Support exact/artifact semantics rather than UI buttons:
 
 ```text
-type: rect
-x, y: non-negative integer local face pixels
-width, height: positive integers
-color
-```
-
-#### Line
-
-```text
-type: line
-x1, y1, x2, y2: non-negative integer local face pixels
-color
-```
-
-Use deterministic crisp integer rasterization only. No antialiasing.
-
-#### Pixels
-
-```text
-type: pixels
-pixels:
-  - x: non-negative integer
-    y: non-negative integer
-    color
-```
-
-This is intended for identity-critical marks, eyes, seams, symbols, etc.
-
-### Explicit exclusions
-
-Do **not** add to `paint_face_features`:
-
-```text
-soft brush
+fill / flood
+rect
+ellipse
+line
+stroke
+pixels
 gradient
-layer management
-selection management
-mirror-paint editor state
-stylus configuration
-arbitrary Painter settings
-generic image processing
+erase
+replace_color
+copy_region / copy_face
+flip_x / flip_y
+rotate_90 / rotate_180 / rotate_270
 ```
 
-Those remain existing specialized Painter routes.
-
-## Face-Local Coordinate Contract
-
-For a mapped physical face of `W × H` pixels, caller-visible coordinates are:
+Per-op options only when they affect bitmap output:
 
 ```text
-top-left     = (0,0)
-top-right    = (W-1,0)
-bottom-left  = (0,H-1)
-bottom-right = (W-1,H-1)
+color / opacity
+blend mode
+brush size / softness / shape
+lock alpha
 ```
 
-The caller never supplies atlas-global coordinates to `paint_face_features`.
+Do not expose normal global Painter state, stylus settings, editor selections, brush presets, or mirror-paint UI mode.
 
-The shared mapping owner now prepares:
-
-- finite UV validation;
-- logical→physical texture scaling;
-- normalized physical face bounds;
-- U/V direction preservation;
-- exact-grid rejection for fractional/ambiguous physical boundaries;
-- supported face rotation validation at 0/90/180/270;
-- discrete inverse local→UV pixel mapping based on Blockbench native CubeFace rotation semantics;
-- caller-visible local face dimensions that swap on 90/270 for non-square faces;
-- out-of-range and non-integer local coordinate rejection.
-
-The helper must never silently clamp, round an ambiguous exact grid, wrap, or choose another face.
-
-### Face rotation proof boundary
-
-Remote source evidence now establishes Blockbench's native transform used by `CubeFace.UVToLocal()`:
-
-```text
-for each 90°:
-[x,y] → [1-y,x]
-```
-
-The pure helper/tests may encode the discrete inverse, but **live Blockbench runtime corner mapping remains LOCAL PROOF REQUIRED** before `paint_face_features` can claim supported runtime mutation at all four rotations.
-
-If local proof disagrees, fix the helper before exposing the public tool; do not weaken the verifier.
-
-### Animated textures
-
-Current inspection already treats animated texture mapping as unsupported when physical bitmap height differs from displayed frame height. Preserve that boundary for `paint_face_features` until a dedicated animated-texture contract exists.
-
-## Full Preflight Before Mutation
+## Exactness / concurrency
 
 Before `Undo.initEdit`:
 
 ```text
-require intended project
-resolve texture
-resolve every Cube
-resolve every requested face
-verify face enabled/paintable
-verify finite UV
-verify logical/physical texture dimensions
-resolve exact face-local mapping + rotation
-validate every requested local coordinate/shape
-expand fill/rect/line/pixel ops into exact final physical writes
-verify all final writes remain inside their owning face and texture
-validate bounded request size
+resolve intended project + texture
+resolve optional expected_revision
+resolve target frame/face/rect
+validate exact frame mapping
+validate exact face mapping/rotation/flips
+validate every op and bounded expansion
+prove writes remain inside target/bitmap
 ```
 
-Any failure means:
+Then:
 
 ```text
-NO bitmap mutation
-NO partial write
-NO Undo entry
+one Undo snapshot
+→ apply writes
+→ read affected RGBA
+→ exact compare
+→ mismatch: cancel/recover + throw
+→ match: finish Undo
 ```
 
-No per-face recovery loop after mutation begins.
+No partial write or Undo entry on preflight failure.
 
-## One Coherent Call = One Undo Unit
+Exact postcondition is execution proof, not artistic `PASS`.
 
-A multi-face request remains:
+---
+
+# P0 — PBR Correctness
+
+## Sole correction owner
+
+`configure_material` absorbs `assign_texture_channel`.
+
+Use `mcp/lib/pbrMaterialMembership.ts` to plan membership before Undo.
+
+Invariant after every operation:
 
 ```text
-one tool call
-→ one full preflight
-→ one texture edit
-→ one Undo entry
+0..1 color image
+0..1 normal image
+0..1 height image
+0..1 MER/MERS image
+normal XOR height
 ```
 
-Do not create one Undo transaction per face/Cube.
+Replacing a channel detaches the old member rather than relabeling it as another channel. Moving an incoming texture from another material refreshes both material previews/state.
 
-## Exact Postcondition Verification
+## MER / MERS
 
-For this deterministic exact-pixel tool, execution should verify its own write before completion:
+Do not conflate uniform subsurface config with image alpha.
 
 ```text
-expand expected final pixel writes
-→ establish Undo snapshot
-→ apply one texture edit
-→ read touched pixels back
-→ compare exact expected RGBA
-→ mismatch: cancel/recover and throw
-→ exact match: finish Undo
+MER image  = RGB: metalness/emissive/roughness
+MERS image = RGBA: metalness/emissive/roughness/subsurface
 ```
 
-Return summary-first machine state such as:
+Local public schema must make these states unambiguous and re-check current Minecraft version restrictions before claiming uniform-MERS support.
+
+`create_pbr_material`, `list_materials`, and `get_material_info` remain separate normal owners.
+
+---
+
+# P0/P1 — `export_texture`
+
+Add deterministic standalone texture delivery.
+
+Explicit:
 
 ```text
-operation: paint_face_features
-texture: {uuid,name,...}
-faces_modified: N
-pixels_written: N
-pixels_verified: N
-postcondition: verified
-affected_faces: bounded compact metadata
+texture UUID/path
+format
+overwrite
 ```
 
-Exact pixel postcondition proves execution correctness only. It does **not** create Texture Styling visual `PASS`; fresh atlas + mapped model view still own visual acceptance.
-
-## Existing Painter Tools Remain
-
-Do not delete or collapse current Painter capability.
-
-Final intended routing:
+Support at least:
 
 ```text
-contiguous atlas/base fill        → paint_fill_tool / draw_shape_tool
-general atlas shapes/strokes      → draw_shape_tool / paint_with_brush
-supported smooth transition       → gradient_tool
-crisp face-local identity/detail  → paint_face_features
-special editor workflows          → existing conditional Painter tools
+png
+tga
 ```
 
-The new tool removes manual atlas arithmetic; it is not a replacement for Painter.
+because Bedrock entity/material workflows may use or prioritize TGA. Do not claim JPEG export without local/native proof.
 
-## Texturing Skill Cleanup
+Return path, dimensions, format, and write confirmation.
 
-Update `.agents/skills/blockit-bedrock-texturing/SKILL.md` only when implementation is ready.
+---
 
-Remove stale workaround language equivalent to:
+# Conditional / Extended Texturing
+
+## `manage_texture_layers`
+
+Full explicit native layer lifecycle:
 
 ```text
-blank atlas resolution unknown → get_project_info once
-create_texture has provisional 16×16 default
-production must always repeat width+height explicitly
+create/delete/duplicate
+rename
+opacity/blend/visibility
+offset/scale
+move/reorder
+merge_down
+flip/rotate/center
+flatten
 ```
 
-New direct routing should express:
+Normal `paint_texture` must require explicit layer identity when layer-enabled state would otherwise be ambiguous.
+
+## `manage_texture_group`
+
+For explicit non-material variant/group lifecycle only:
 
 ```text
-global UV/atlas readiness       → list_textures
-face-specific mapping inspect   → inspect_element only when genuinely needed
-blank base atlas                → create_texture; omit size to use current project logical UV
-explicit higher-density bitmap  → create_texture with width+height
-crisp face-local detail         → paint_face_features
-general atlas styling           → draw_shape_tool / paint_with_brush
-PBR/material semantics          → existing material tools
-fresh atlas evidence            → get_texture
-mapped-model visual evidence    → capture_model_views
+create
+rename
+resolve/remove
+add/remove texture membership
 ```
 
-First-call semantics:
+PBR material groups continue through PBR owners.
+
+## `manage_animated_texture`
+
+Bedrock Entity format supports animated textures, but this is conditional workflow.
+
+Cover native result semantics:
 
 ```text
-blank base no dims      → project logical UV
-blank variant/PBR       → established base atlas bitmap
-explicit dimensions     → width+height pair
-absolute file import    → native imported dimensions
-data URL                 → explicit dimensions until native inference is proven
+fps
+frame order mode
+custom order
+frame duplicate/delete/reorder
+safe frame-stack structure
 ```
 
-Do not duplicate the entire public schema in the Skill.
+Normal `get_texture` / `paint_texture` remain frame-aware, so exact editing of an animated atlas does not require switching to a second mutation model.
 
-## Runtime Workflow Prompt Cleanup
+Bedrock entity runtime animation requires render-controller `uv_anim` plus compatible material/resource-pack setup. Return/reference that integration explicitly; do not silently mutate a resource pack.
 
-Update `mcp/prompts/bedrock_entity_workflow.md` after source behavior is implemented.
+## `manage_texture_set`
 
-Remove stale instruction that production callers must explicitly repeat 128-based `create_texture` width/height because of the provisional 16×16 default.
-
-Replace with semantic routing:
+Replace separate import/save names with:
 
 ```text
-new blank base atlas
-→ create_texture uses current project logical UV when dimensions are omitted
-
-explicit higher-density bitmap
-→ pass width + height explicitly
-
-crisp local face details
-→ paint_face_features with face-local pixels
+import
+export
 ```
 
-Keep existing durable boundaries:
+Native parsing/compile behavior, explicit safe paths, explicit overwrite.
 
-- one base-color atlas;
-- UV Layout is separate from Texture Styling;
-- PBR atlases are support channels;
-- flat fill is not visual completion;
-- Texture Verify still needs fresh atlas + mapped model evidence.
+## Material instances
 
-Prompt change requires canonical `prompts:build` output in the same local delivery.
-
-## Required Test Matrix
-
-### `create_texture` schema
-
-Must prove:
+Conditional only:
 
 ```text
-name only                     → schema PASS
-width + height                → PASS
-width only                    → FAIL
-height only                   → FAIL
-empty name                    → FAIL
-fractional dimensions         → FAIL
-out-of-range dimensions       → FAIL
-data + fill_color             → FAIL
-fill_color without layer_name → FAIL
-pbr_channel without group     → FAIL
+list_material_instances
+set_material_instances
 ```
 
-Update stale tests that currently assume omission materializes 16×16.
+Consolidate single/bulk/clear mutation into bounded assignments with `material_name: string | null`, full preflight and one Undo.
 
-### Dimension resolution
+---
 
-Required cases:
+# Texturing Local Implementation Order
 
-```text
-blank base + project 128 → 128×128 / project_logical_uv
-blank base + project 256 → 256×256 / project_logical_uv
-blank explicit variant   → base bitmap / base_atlas
-blank PBR support         → base bitmap / base_atlas
-explicit 256×256          → 256×256 / explicit
-one-sided size            → rejected
-absolute file no dims     → native / imported_file
-data URL no dims          → rejected until supported
-```
-
-### Face mapping
-
-Pure remote-safe tests now cover the owner contract; local final proof must include:
-
-```text
-four corners for 0/90/180/270
-one interior point
-U reversed
-V reversed
-both reversed
-non-square face
-higher physical pixel density than logical UV
-out-of-range local coordinate rejection
-fractional/ambiguous physical mapping rejection
-live Blockbench corner readback for each supported rotation
-```
-
-### `paint_face_features` schema
-
-Must reject:
-
-```text
-empty faces
-empty ops
-negative local coordinates
-zero rect dimensions
-invalid face enum
-malformed colors
-oversized bounded request
-```
-
-Must accept a representative multi-face batch.
-
-### Atomicity
-
-Prove:
-
-```text
-all targets/writes are resolved before Undo.initEdit
-one coherent call creates one Undo unit
-no per-face nested Undo loop
-exact postcondition readback exists
-failure cancels/reverts edit
-structured result stays summary-first
-```
-
-### Phase exposure
-
-Texturing:
-
-```text
-paint_face_features → present
-```
-
-Geometry and Animation:
-
-```text
-paint_face_features → absent
-```
-
-Update exact surface counts only because the intended tool was actually added, never to make a stale assertion green.
-
-### Routing
-
-Texturing Skill and runtime prompt must direct crisp face-local identity/detail to `paint_face_features` without tool-searching Geometry mutations.
-
-## Geometry / Animation Before E2E
-
-No new source defect has been found that justifies another pre-E2E public API change.
-
-Geometry remains:
-
-```text
-CURRENT-PROJECT SOURCE: adequate for pre-E2E
-POST-E2E CANDIDATES ONLY:
-- bounded relative translate/resize inside existing modify owners
-- batch inflate only if a representative workflow proves repeated single-Cube cost
-```
-
-Animation remains:
-
-```text
-CURRENT-PROJECT SOURCE: adequate for pre-E2E
-POST-E2E CANDIDATES ONLY:
-- coordinated multi-bone authored edit if real pose correction causes call explosion
-- schema slimming only if measured serialized cost drops without capability loss
-```
-
-Do not add these merely for parity with another MCP.
-
-## Prepared Live E2E Source
-
-The live harness remains **source-prepared only**; this is not a live PASS claim.
-
-```text
-GEOMETRY
-bun run verify:geometry-live -- --confirm-disposable
-→ exact geometry readback + before/after render + Undo/Redo
-→ observable request/tool-call cost
-
-switch Authoring Phase → texturing; reload/reconnect
-bun run verify:texturing-live -- --confirm-disposable
-→ reuse same project
-→ deterministic texture mutation + exact readback + Undo/Redo
-→ observable request/tool-call cost
-
-switch Authoring Phase → animation; reload/reconnect
-bun run verify:animation-live -- --confirm-disposable
-→ reuse same e2e_root bone
-→ authored keyframe edit + exact inspect_animation readback + Undo/Redo
-→ observable request/tool-call cost
-```
-
-The Texturing E2E fixture must be updated in LOCAL_CODE after `paint_face_features` becomes the intended production route; do not retain a stale disconnected-global-coordinate fixture merely because it already exists.
-
-## Local Implementation / Validation Sequence
-
-When moving to the user's PC:
+When the PC/local batch begins:
 
 ```text
 1. git checkout Local && git pull --ff-only
 2. cd mcp
 3. bun install --frozen-lockfile
-4. run the smallest existing regression set first to catch any remote-preparation compile/test issue
-5. fix create_texture schema/runtime dimension semantics
-6. implement paint_face_features using facePixelMapping.ts
-7. prove native rotation mapping in a disposable live/local fixture
-8. add/update targeted tests
-9. update Texturing Skill + runtime workflow prompt
-10. bun run prompts:build
-11. bun run docs:build
-12. bun run docs:check
-13. bun run verify:mcp
-14. deploy/reload BlockIT
-15. Geometry → Texturing → Animation live E2E
-16. only after accepted-quality E2E, decide evidence-gated Geometry/Texture/Animation ergonomics candidates
+4. run smallest regressions first, including:
+   - face-pixel-mapping
+   - texture-revision
+   - texture-frame-mapping
+   - pbr-material-membership
+5. correct create_texture semantics
+6. add configure_texture + remove_texture
+7. expand get_texture scoped/revision/frame readback
+8. implement unified paint_texture
+9. wire PBR membership planner and fix MER/MERS contract
+10. add export_texture PNG/TGA
+11. implement normal surface retirement/routing
+12. add conditional owners required for coverage
+13. update Texturing Skill + runtime prompt
+14. bun run prompts:build
+15. bun run docs:build
+16. bun run docs:check
+17. bun run verify:mcp
+18. deploy/reload BlockIT
+19. run live Texturing E2E, including static + animated + PBR fixtures
+20. only then call Texturing complete or choose evidence-gated follow-up ergonomics
 ```
 
-Do not use GitHub Actions to author generated files.
-
-## Verification Boundary
-
-All remote-safe commits made after the last known full MCP baseline remain:
+## Required acceptance
 
 ```text
-LOCAL PROOF REQUIRED
+create/lifecycle correctness
+rectangular native texture fixtures
+frame-aware exact mapping
+revision stale-write failure before Undo
+one canonical bitmap mutation owner
+one Undo per mutation request
+exact RGBA postcondition
+PBR exclusive membership + normal XOR height
+MER/MERS correct semantics
+PNG/TGA delivery
+conditional layer/animation/texture-set/material-instance coverage
+phase surface/count from measured runtime
+prompts/docs freshness
+verify:mcp PASS
+LIVE Texturing E2E PASS
 ```
 
-until the user's PC runs the matching canonical verifier. Static source review does not upgrade them to local/live PASS.
-
-Static or CI proof must not be promoted to live Blockbench quality/runtime proof.
-
-## Other Deferred Work
-
-Route 1 live validation remains user-deferred. Historical TODOs, interrupted candidates, and old experiments are not active work by themselves.
+Do **not** call Texturing complete before these gates.
