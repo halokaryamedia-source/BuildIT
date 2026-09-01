@@ -1,6 +1,6 @@
 # Next Action
 
-Updated: 2026-09-01 — Geometry, Texturing, and Animation full-coverage curation completed; remote-safe foundations prepared; public consolidation/build/live proof remains local
+Updated: 2026-09-01 — Geometry, Texturing, Animation, and final Core/cross-phase gap curation completed; remote-safe foundations prepared; public consolidation/build/live proof remains local
 
 Working branch: **`Local` only**.
 
@@ -8,9 +8,9 @@ This file owns **active continuation only**. Stable facts belong in `CONTEXT.md`
 
 ## Current Status
 
-`CROSS_PHASE_FULL_COVERAGE_CURATED_LOCAL_IMPLEMENTATION_REQUIRED`
+`FULL_MCP_COVERAGE_CURATED_LOCAL_IMPLEMENTATION_REQUIRED`
 
-All three authored phases have now been re-audited against official Blockbench documentation/native source, current Minecraft Bedrock behavior/schema, and surveyed public Blockbench MCP implementations.
+Geometry, Texturing, Animation, and the final Core/project-lifecycle surface have now been re-audited against official Blockbench documentation/native source, current Minecraft Bedrock behavior/schema, and surveyed public Blockbench MCP implementations.
 
 The design goal is locked:
 
@@ -29,6 +29,9 @@ Do **not** restart broad external feature hunting before local implementation un
 ## Remote-safe foundations already on `Local`
 
 ```text
+CORE / PROJECT
+mcp/lib/bedrockProjectSemantics.ts
+
 GEOMETRY
 mcp/lib/orientedBoxContact.ts
 mcp/lib/blockbenchCubeObb.ts
@@ -52,9 +55,43 @@ All are **LOCAL PROOF REQUIRED** until Bun/local/live gates pass.
 
 # Locked target surfaces
 
+## Shared Core / project lifecycle
+
+The final post-phase audit adds one normal Core tool:
+
+```text
+open_project
+```
+
+Required Core extensions:
+
+```text
+create_project
+  → rectangular logical UV width/height; 128×128 remains default only
+
+configure_project
+  → model_identifier
+  → logical UV resize policy: keep | rescale_uv
+  → authored visible-bounds policy for animated/runtime envelope cases
+
+get_project_info
+  → scope=current|all for multi-project safety
+```
+
+Conditional Core/session:
+
+```text
+manage_project_session
+  switch
+  close
+  reload
+```
+
+Normal `.bbmodel` save remains `export_model(codec=project)`; do not add a duplicate `save_project` owner.
+
 ## Geometry
 
-Normal target: **about 26 tools** including shared Core.
+Normal target: **about 27 tools** including shared Core.
 
 Main consolidation:
 
@@ -65,7 +102,8 @@ manage_null_object       → manage_locator
 bone_rigging             → canonical Geometry owners
 select_all_of_type       → leave normal surface
 
-add:
+add/complete:
+open_project (shared Core)
 configure_project
 measure_geometry
 manage_texture_mesh
@@ -76,11 +114,12 @@ Conditional:
 ```text
 manage_bounding_box
 manage_item_display_transform
+manage_reference_image
 ```
 
 ## Texturing
 
-Normal target: **about 10 Texturing-specific + shared Core** (~24 phase total after Core cleanup).
+Normal target: **about 10 Texturing-specific + shared Core** (~25 phase total after final Core addition).
 
 ```text
 create_texture
@@ -110,7 +149,7 @@ The existing Painter/UI-state wrappers leave the normal hot surface after replac
 
 ## Animation
 
-Normal target: **about 9 Animation-specific + shared Core** (~23 phase total after Core cleanup).
+Normal target: **about 9 Animation-specific + shared Core** (~24 phase total after final Core addition).
 
 ```text
 create_animation
@@ -133,6 +172,20 @@ batch_keyframe_operations
 animation_copy_paste
 ```
 
+Additional efficiency requirements inside existing owners:
+
+```text
+create_animation
+  → source_animation clone
+
+manage_animation_controller
+  → duplicate_controller
+  → duplicate_state
+
+capture_animation_views
+  → frames | contact_sheet
+```
+
 Conditional:
 
 ```text
@@ -147,6 +200,21 @@ validate_animation_motion
 ---
 
 # Critical correctness contracts to preserve during local implementation
+
+## Core / project
+
+```text
+open_project uses native project/Bedrock codecs
+no handwritten .bbmodel parser
+replace-current requires explicit unsaved handling
+new-tab load returns exact selected project identity
+rectangular logical UV allowed
+logical UV change requires keep|rescale_uv policy
+rescale_uv preflights Box-UV/per-face exactness before Undo
+static visible bounds remain native auto-calculated
+explicit/expand visible bounds only extend runtime/animation coverage safely
+multi-project reads identify selected project explicitly
+```
 
 ## Geometry
 
@@ -199,6 +267,7 @@ keyframes:
 
 controllers:
   delete lifecycle
+  duplicate controller/state
   ordered transitions
   ordered animation links
   blend_transition_curve
@@ -207,6 +276,7 @@ controllers:
 
 verification:
   temporary pose capture restores editor state
+  bounded contact-sheet temporal evidence
   optional Molang preview context restored
 
 file delivery:
@@ -229,6 +299,8 @@ When the PC/local batch begins:
 4. bun install --frozen-lockfile
 
 5. run smallest prepared pure regressions first:
+   Core / Project:
+     bedrock-project-semantics
    Geometry:
      oriented-box-contact
      blockbench-cube-obb
@@ -241,16 +313,23 @@ When the PC/local batch begins:
      animation-preview-state
      bedrock-animation-semantics
 
-6. Geometry public consolidation:
-   configure_project
+6. Core/project lifecycle consolidation:
+   open_project using native codecs
+   create_project rectangular logical UV contract
+   configure_project model_identifier + logical UV policy + visible bounds
+   get_project_info current/all scope
+   conditional manage_project_session
+
+7. Geometry public consolidation:
    modify_cubes_batch final owner + per-face UV
    universal finder/locator/null ownership
    reparent preserve local/world
    measure_geometry
    manage_texture_mesh
+   conditional manage_reference_image / bounding box / item display transforms
    retire duplicate Geometry routes
 
-7. Texturing public consolidation:
+8. Texturing public consolidation:
    create_texture dimension/clone contract
    configure_texture + remove_texture
    get_texture scoped/revision/frame reads
@@ -260,66 +339,58 @@ When the PC/local batch begins:
    conditional Texturing owners
    retire normal Painter/material-instance duplicates
 
-8. Animation public consolidation:
-   create_animation full native metadata/value coverage
+9. Animation public consolidation:
+   create_animation full native metadata/value coverage + source_animation clone
    configure_animation + remove_animation
    unified multi-target manage_keyframes
    remove Timeline-selection/global-clipboard dependency
    move persistent timeline properties to configure_animation
-   controller delete/order/blend-curve/key-link corrections
+   controller delete/order/blend-curve/key-link + duplicate state/controller corrections
    expand inspect_animation list/focused coverage
-   capture_animation_views
+   capture_animation_views + contact sheet
    export_animation_file
    conditional playback/Bezier/import/motion validation owners
 
-9. update phase routing / specialist Skills / runtime prompt only after source behavior is ready
+10. update phase routing / specialist Skills / runtime prompt only after source behavior is ready
 
-10. bun run prompts:build
-11. bun run docs:build
-12. bun run docs:check
-13. bun run verify:mcp
+11. bun run prompts:build
+12. bun run docs:build
+13. bun run docs:check
+14. bun run verify:mcp
 
-14. review generated + source diff for stale/dead tool names
-15. deploy/reload BlockIT
+15. review generated + source diff for stale/dead tool names
+16. deploy/reload BlockIT
 
-16. LIVE Geometry E2E
-17. LIVE Texturing E2E
-18. LIVE Animation E2E
-19. cross-phase handoff E2E
-20. measure Cost to Accepted Result
+17. LIVE open/save/reopen project lifecycle fixture
+18. LIVE Geometry E2E
+19. LIVE Texturing E2E
+20. LIVE Animation E2E
+21. cross-phase handoff E2E
+22. measure Cost to Accepted Result
 ```
 
 Do not split this into a new roadmap. This file remains the single continuation owner.
 
 ---
 
-# Animation-specific live proof matrix
+# Cross-phase live proof additions
 
-The Animation pass is not complete until live Blockbench proves at least:
+The local/live batch must now also prove:
 
 ```text
-create/configure/delete Animation
-once / loop / hold
-start_delay / loop_delay / override / blend_weight / anim_time_update
-entity-relative rotation
-Molang transform value round trip
-pre/post discontinuity round trip
-catmullrom round trip
-step export as pre/post
-Bezier direct-export rejection
-Bezier bake → export-safe output
-multi-bone/multi-channel one-Undo mutation
-copy/mirror/retime/reverse/bake
-particle/sound/instruction effects
-controller transition order
-controller animation-link order
-nested/external controller key
-blend_transition_curve
-Animation + Controller native codec export
-temporary pose capture + full state restoration
+.bbmodel export → open_project → exact project state survives
+Bedrock geometry open path
+new-tab vs replace-current unsaved behavior
+multi-project scope=current|all identity
+64×32 and other rectangular logical UV fixtures
+logical UV keep policy
+logical UV rescale policy with exact Box-UV/per-face preflight
+native static visible-bounds auto behavior
+explicit/expanded visible bounds for animation envelope
+whole Animation clone
+controller/state duplicate
+contact-sheet capture + full editor-state restoration
 ```
-
-If controller `variables/remap_curve` persistence cannot be proven, record it explicitly as a native Blockbench representation limitation rather than weakening the verifier.
 
 ---
 
@@ -341,6 +412,7 @@ Final completion requires:
 public surface matches curated ownership
 all generated prompt/docs current
 bun run verify:mcp PASS
+project open/save/reopen fixture PASS
 live authoring fixtures PASS
 live evidence/restore fixtures PASS
 cross-phase handoffs PASS
