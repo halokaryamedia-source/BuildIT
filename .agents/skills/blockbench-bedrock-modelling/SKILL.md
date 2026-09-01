@@ -32,7 +32,7 @@ Use a View Pair Map only to resolve materially ambiguous front/back, left/right,
 
 ## Simple Rigid Fast Path
 
-When reference evidence is clear, topology is simple, and the object is predominantly rigid:
+When reference evidence is clear, topology is simple, and the object is predominantly rigid, **do not turn analysis ceremony into the work**:
 
 ```text
 identity + envelope + primary masses
@@ -72,7 +72,7 @@ For every required attachment state its contact target/invariant before coordina
 
 ## Primary Build / Difference-First Reference Fidelity Verdict
 
-Create the minimum coherent form: masses, counts, contacts, negative spaces, and required hierarchy before detail. Resolve minor discrepancy consistently:
+Stay in the geometry lane unless a current decision requires another branch. Create the minimum coherent form: masses, counts, contacts, negative spaces, and required hierarchy before detail. Resolve minor discrepancy consistently:
 
 ```text
 explicit user requirement

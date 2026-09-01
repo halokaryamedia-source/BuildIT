@@ -39,7 +39,7 @@ controller state/composition/effects  → manage_animation_controller
 new-animation particle/sound          → create_animation
 ```
 
-Load the exact active-phase tool only. Reuse fresh UUID/state; known identity **must not fall back to broad hierarchy discovery or confirmation reads**. If one offset/scale/mirror/bake intent applies to several existing keys, use one `batch_keyframe_operations`; do not loop `manage_keyframes` per key. Per-key authored value changes remain `manage_keyframes`.
+Load the exact active-phase tool only. Reuse fresh UUID/state; known identity **must not fall back to broad hierarchy discovery or confirmation reads**. If one offset/scale/mirror/bake intent applies to several existing keys, use one `batch_keyframe_operations`; do not loop `manage_keyframes` per key. Per-key authored value changes remain `manage_keyframes`. Prefer batch coherent operations for one shared cohort intent.
 
 Controller/effect/graph/copy-paste tools are conditional: use them only when that behavior is requested or evidenced, not because search ranks them near a basic keyframe/timeline route.
 

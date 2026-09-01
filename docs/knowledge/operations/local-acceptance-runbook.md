@@ -4,7 +4,7 @@ Updated: 2026-09-01
 Owner: `LIVE_BLOCKBENCH` formal acceptance procedure  
 Active only when `docs/knowledge/next-action.md` explicitly reactivates local testing.
 
-`LIVE_BLOCKBENCH` is an execution capability; it does not activate this procedure by itself. Use this runbook only for claims repository CI cannot prove. Do not edit source until a reproducible failure identifies the first wrong owner.
+`LIVE_BLOCKBENCH` is an execution capability; it does not activate this procedure by itself. Targeted live debugging may use that capability without activating formal Local Acceptance. Use this runbook only for claims repository CI cannot prove. Do not edit source until a reproducible failure identifies the first wrong owner.
 
 ## 1. Acceptance Contract
 
@@ -167,7 +167,7 @@ After Core/Geometry/Texturing/Animation owners are consolidated, regenerate prom
 
 ## 8. Authoring Efficiency
 
-Only after quality PASS, record observable work that can change a decision: meaningful MCP calls, discovery/lookups, repeated lookup, **redundant readbacks**, corrections/rebuilds, recovery, phase handoffs/reloads, and elapsed workflow cost when measurable.
+Only after quality PASS, record observable work that can change a decision: meaningful MCP calls, discovery/lookups, repeated lookup, tool-search misses, **redundant readbacks**, corrections/rebuilds, recovery, phase handoffs/reloads, and elapsed workflow cost when measurable.
 
 Classify material work when useful:
 

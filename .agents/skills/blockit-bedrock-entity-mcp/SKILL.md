@@ -19,7 +19,7 @@ Normal asset work **must not begin by searching repository files**.
 
 `ACTIVE PHASE + intent + known state/UUIDs → exact exposed tool → execute → reuse fresh state`
 
-`ACTIVE PHASE` + `tools/list` are the **routing authority for the first tool decision**; phase absence is not discovery failure. **1 block = 16 Blockbench units**.
+`ACTIVE PHASE` + `tools/list` are the **routing authority for the first tool decision**; phase absence is not discovery failure. **1 Minecraft block = 16 Blockbench units**.
 
 ## Active Phase Contract
 
@@ -61,7 +61,7 @@ Locator/Null create/edit      → manage_locator / manage_null_object
 rig IK/mirror                 → bone_rigging
 ```
 
-`bone_rigging` only for IK/mirror. Known coherent Cubes → one `place_cube(elements=[...])`; uncertainty → no batch. Known Cubes sharing one deterministic TRANSLATE/RESIZE intent → derive absolute targets once from fresh state → one `modify_cubes_batch`; never loop inspect→modify per Cube.
+`bone_rigging` only for IK/mirror. Known coherent Cubes → one `place_cube(elements=[...])`; uncertainty → no batch. Known Cubes sharing one deterministic TRANSLATE/RESIZE intent → derive absolute targets once from fresh state → one `modify_cubes_batch`; never loop inspect→modify per Cube. Relative intent stays reasoning-layer arithmetic.
 
 ## Route 1
 
@@ -99,7 +99,7 @@ unsupported     → CAPABILITY_MISMATCH → handoff once or BLOCKED
 - Known UUID → no discovery unless stale/ambiguous.
 - Fresh mutation → reuse returned state/`geometry_effect`; no confirmation readback.
 - **Do not automatically re-read fresh mutation targets with `inspect_element`.**
-- Validator → summary first; details only when nonzero.
+- Validator gate → read `validator://status` first; zero problems means no detail-resource read.
 - `inspect_model_bounds` only for envelope/scale/ground/displacement.
 - Skip `get_project_info` after create/export unless lifecycle state is unknown/stale.
 - Same routed failure twice without new evidence → `BLOCKED`.
