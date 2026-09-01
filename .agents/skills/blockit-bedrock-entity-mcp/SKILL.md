@@ -19,7 +19,7 @@ Normal asset work **must not begin by searching repository files**.
 
 `ACTIVE PHASE + intent + known state/UUIDs → exact exposed tool → execute → reuse fresh state`
 
-`ACTIVE PHASE` + `tools/list` are the **routing authority for the first tool decision**; phase absence is not discovery failure. **1 Minecraft block = 16 Blockbench units**.
+`ACTIVE PHASE` + `tools/list` are the **routing authority for the first tool decision**; phase absence is not discovery failure. **1 Minecraft block = 16 Blockbench units**. Reuse `capture_model_views` `front_direction` when material.
 
 ## Active Phase Contract
 
@@ -61,11 +61,11 @@ Locator/Null create/edit      → manage_locator / manage_null_object
 rig IK/mirror                 → bone_rigging
 ```
 
-`bone_rigging` only for IK/mirror. Known coherent Cubes → one `place_cube(elements=[...])`; uncertainty → no batch. Known Cubes sharing one deterministic TRANSLATE/RESIZE intent → derive absolute targets once from fresh state → one `modify_cubes_batch`; never loop inspect→modify per Cube. Relative intent stays reasoning-layer arithmetic.
+`bone_rigging` only for IK/mirror. Known coherent Cubes → one `place_cube(elements=[...])`; uncertainty → no batch. Known Cubes sharing one deterministic TRANSLATE/RESIZE intent → derive absolute targets once from fresh state → one `modify_cubes_batch`; never loop inspect→modify per Cube. Relative intent stays reasoning-layer arithmetic; writes stay absolute/fail-closed.
 
 ## Route 1
 
-Selected path = **approved image + dimensions + shape-only `.glb`**. Route transient GLB via `manage_geometry_reference`; modelling owns uniform fit-envelope, fresh post-scale bounds, center/ground judgement, and cleanup before `.bbmodel`. Details: `Experimental/route1-hunyuan-poc/README.md`.
+Selected path = **image + dimensions + shape-only `.glb`**. Route GLB via `manage_geometry_reference`; modelling owns alignment and cleanup before `.bbmodel`. Details: `Experimental/route1-hunyuan-poc/README.md`.
 
 ## First-Call Invariants
 
