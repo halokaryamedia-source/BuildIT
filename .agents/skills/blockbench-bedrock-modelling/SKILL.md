@@ -11,12 +11,12 @@ Own geometry/form judgement, transform ownership, and whether reference-grounded
 
 - **No per-Cube inspection ceremony** without a diagnosed problem.
 - **No screenshot-per-mutation loop.** Build a judgeable whole form, then gate it.
-- Bounds are only for envelope/scale/ground/displacement.
+- Bounds are only for envelope/scale/ground/displacement. Otherwise skip the bounds call.
 - `UNVERIFIED` does not automatically require more calls.
 
 ## Reference Grounding Gate
 
-Reference-driven work requires the **actual approved reference image visible in active multimodal context**. Filename/path/manifest/prose/memory is not visual evidence. If unavailable, `BLOCKED`.
+Reference-driven work requires the **actual approved reference image visible in active multimodal context**. Filename/path/manifest/prose/memory is context, not visual evidence. If unavailable, `BLOCKED`.
 
 ```text
 user brief/target → identity/function
@@ -28,7 +28,7 @@ claim | observable requirement | supporting view | SUPPORTED | PROVISIONAL | CON
 
 For selected Route 1 work use **approved image + approved GLB together**; image-only vs image+GLB is not a decision gate. Requested dimensions remain numeric authority and raw GLB bounds remain observation only. Align the transient reference with **uniform FIT_ENVELOPE**, re-measure after scale, then center X/Z + ground Y. Never non-uniform stretch, rewrite the approved GLB, trace triangles, or infer target size from raw GLB bounds. Remove the reference before production `.bbmodel` export. Exact technical sequence lives in `Experimental/route1-hunyuan-poc/README.md`.
 
-Use a View Pair Map only when material front/back, left/right, mirrored, depth, or 3/4 ambiguity remains. Reference fidelity is Minecraft-first: recognizability, primary masses/counts, topology/attachment, important negative spaces, and buildability over exact real-world contour.
+Use a View Pair Map only to resolve materially ambiguous front/back, left/right, mirrored, depth, or 3/4 evidence that remains after image+GLB grounding. Reference fidelity is Minecraft-first: recognizability, primary masses/counts, topology/attachment, important negative spaces, and buildability over exact real-world contour.
 
 ## Simple Rigid Fast Path
 
@@ -70,7 +70,7 @@ Classify material primary masses `AXIS_ALIGNED | ROTATED | UNRESOLVED`. A visibl
 
 For every required attachment state its contact target/invariant before coordinates. Use an attachment/joint pivot when it owns the transform. AABB overlap, hierarchy, or numeric touching is not contact proof; important negative spaces stay open.
 
-## Primary Build / Difference-First Verdict
+## Primary Build / Difference-First Reference Fidelity Verdict
 
 Create the minimum coherent form: masses, counts, contacts, negative spaces, and required hierarchy before detail. Resolve minor discrepancy consistently:
 
@@ -103,7 +103,7 @@ MERGE/REMOVE compensatory geometry | ADD MASS genuinely missing declared volume
 
 Reuse fresh exact authored state; otherwise `inspect_element` once. State target UUID(s), cause, intended change, invariant, and expected visible/structural effect. TRANSLATE preserves size; RESIZE names changed axis + fixed anchor/center/contact; ROTATE preserves `from/to/size`, pivot role, and required attachment. `geometry_effect` must match intended structural change.
 
-Capture affected view(s) first; expand only for material cross-view risk. Classify `IMPROVED | UNCHANGED | REGRESSED`. Progress requires `IMPROVED` with no supported material claim regressed. If the same causal correction direction fails twice without new evidence, stop speculative mutation and reframe.
+Capture affected view(s) first; expand only for material cross-view risk. Classify `IMPROVED | UNCHANGED | REGRESSED`. Progress requires `IMPROVED` with no supported material claim regressed. A fix that helps one view while materially regressing another is rejected. If the same causal correction direction has failed twice without new evidence, stop speculative mutation and reframe.
 
 ## BLOCKED / Completion
 

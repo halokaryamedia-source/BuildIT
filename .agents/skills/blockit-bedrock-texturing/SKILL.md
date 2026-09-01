@@ -84,7 +84,7 @@ Use one base-color atlas for the model, not one per body part/Cube. Production l
 
 ## Texture Styling
 
-Define **palette roles**, value/hue ramp, material zones, face shading, contact/occlusion, edge, alpha, seam, identity, detail budget, and pixels per UV unit. Flat color is a **BASE PASS only**; reject random high-contrast noise.
+Define **palette roles**, value/hue ramp, material zones, face shading, contact/occlusion, edge, alpha, seam, **identity marks**, detail budget, and pixels per UV unit. Flat color is a **BASE PASS only**; reject random high-contrast noise.
 
 ```text
 BASE PASS             → draw_shape_tool / paint_fill_tool

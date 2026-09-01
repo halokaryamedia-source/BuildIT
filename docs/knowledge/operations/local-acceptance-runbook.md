@@ -4,7 +4,7 @@ Updated: 2026-09-01
 Owner: `LIVE_BLOCKBENCH` formal acceptance procedure  
 Active only when `docs/knowledge/next-action.md` explicitly reactivates local testing.
 
-Use this runbook only for claims repository CI cannot prove. Do not edit source until a reproducible failure identifies the first wrong owner.
+`LIVE_BLOCKBENCH` is an execution capability; it does not activate this procedure by itself. Use this runbook only for claims repository CI cannot prove. Do not edit source until a reproducible failure identifies the first wrong owner.
 
 ## 1. Acceptance Contract
 
@@ -17,7 +17,7 @@ Proof Required
 STOP Condition
 ```
 
-Static source/CI never proves installed Blockbench behavior or visual quality. **Static Footprint** is a guardrail; **Authoring Efficiency** is Cost to Accepted Result after the relevant quality gate passes.
+Static source/CI never proves installed Blockbench behavior or visual quality. **Static Footprint** is a separate guardrail and cannot prove runtime efficiency. **Authoring Efficiency is evaluated only after the relevant quality gate passes** and means Cost to Accepted Result.
 
 ## 2. Pin Local State
 
@@ -167,7 +167,7 @@ After Core/Geometry/Texturing/Animation owners are consolidated, regenerate prom
 
 ## 8. Authoring Efficiency
 
-Only after quality PASS, record observable work that can change a decision: meaningful MCP calls, discovery/lookups, repeated lookup, readbacks, corrections/rebuilds, recovery, phase handoffs/reloads, and elapsed workflow cost when measurable.
+Only after quality PASS, record observable work that can change a decision: meaningful MCP calls, discovery/lookups, repeated lookup, **redundant readbacks**, corrections/rebuilds, recovery, phase handoffs/reloads, and elapsed workflow cost when measurable.
 
 Classify material work when useful:
 

@@ -112,7 +112,7 @@ describe("Route 1 Hunyuan reproducibility contract", () => {
       "mesh-to-Blockbench converter",
     ]) expect(readme).toContain(marker);
 
-    expect(readme).toContain("image-only versus image+GLB");
+    expect(readme.toLowerCase()).toContain("image-only versus image+glb");
     expect(readme).not.toContain("BUILDIT MCP UNCHANGED");
   });
 });
