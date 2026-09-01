@@ -167,7 +167,7 @@ After Core/Geometry/Texturing/Animation owners are consolidated, regenerate prom
 
 ## 8. Authoring Efficiency
 
-Only after quality PASS, record observable work that can change a decision: meaningful MCP calls, discovery/lookups, repeated lookup, tool-search misses, **redundant readbacks**, correction attempts/rebuilds, recovery, phase handoffs/reloads, and elapsed workflow cost when measurable.
+Only after quality PASS, record observable work that can change a decision: meaningful MCP calls, discovery/lookups, repeated lookup, tool-search misses, **redundant readbacks**, correction attempts/rebuilds, same-cause retries, recovery, phase handoffs/reloads, and elapsed workflow cost when measurable.
 
 Classify material work when useful:
 

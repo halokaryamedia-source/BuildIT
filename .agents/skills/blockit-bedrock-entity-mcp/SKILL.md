@@ -65,7 +65,7 @@ rig IK/mirror                 → bone_rigging
 
 ## Route 1
 
-Selected path = **image + dimensions + shape-only `.glb`**. Route GLB via `manage_geometry_reference`; modelling owns alignment and cleanup before `.bbmodel`. Details: `Experimental/route1-hunyuan-poc/README.md`.
+Image + dimensions + shape-only GLB → `manage_geometry_reference`; modelling owns alignment/cleanup. See `Experimental/route1-hunyuan-poc/README.md`.
 
 ## First-Call Invariants
 
@@ -77,7 +77,7 @@ manage_locator create     → name+parent; update → id+authored change
 manage_null_object create → name+parent; update → id+parent/position
 ```
 
-Load conditional spec only when needed. Validation failure repairs the **same routed tool**.
+If conditional/action fields matter, load **that exact active-phase spec once** before mutation. Validation failure repairs the **same routed tool**.
 
 ## Search / Recovery
 
