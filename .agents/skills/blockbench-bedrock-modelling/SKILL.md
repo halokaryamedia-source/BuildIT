@@ -11,69 +11,28 @@ Own geometry/form judgement, transform ownership, and whether reference-grounded
 
 - **No per-Cube inspection ceremony** without a diagnosed problem.
 - **No screenshot-per-mutation loop.** Build a judgeable whole form, then gate it.
-- Bounds are only for envelope/scale/ground/displacement. Otherwise skip the bounds call.
+- Bounds are only for envelope/scale/ground/displacement.
 - `UNVERIFIED` does not automatically require more calls.
 
 ## Reference Grounding Gate
 
-Reference-driven work requires the **actual approved reference image visible in active multimodal context**. Filename/path/manifest/prose/memory is context, not visual evidence. If unavailable, enter `BLOCKED`.
+Reference-driven work requires the **actual approved reference image visible in active multimodal context**. Filename/path/manifest/prose/memory is not visual evidence. If unavailable, `BLOCKED`.
 
 ```text
 user brief/target → identity/function
 approved image → visual authority
 approved dimensions → numeric envelope authority
-approved Route 1 GLB → 3D depth/volume/attachment evidence
+approved Route 1 GLB → supporting depth/volume/attachment evidence
 claim | observable requirement | supporting view | SUPPORTED | PROVISIONAL | CONFLICTING | UNAVAILABLE
 ```
 
-For the selected Route 1 workflow, use **approved image + approved GLB together**. Image-only versus image+GLB is not a modelling decision gate. The GLB supports depth, volume, attachment, placement, and hidden-side interpretation; it never overrides the approved image or requested dimensions.
+For selected Route 1 work use **approved image + approved GLB together**; image-only vs image+GLB is not a decision gate. Requested dimensions remain numeric authority and raw GLB bounds remain observation only. Align the transient reference with **uniform FIT_ENVELOPE**, re-measure after scale, then center X/Z + ground Y. Never non-uniform stretch, rewrite the approved GLB, trace triangles, or infer target size from raw GLB bounds. Remove the reference before production `.bbmodel` export. Exact technical sequence lives in `Experimental/route1-hunyuan-poc/README.md`.
 
-When `manage_geometry_reference` is exposed, Route 1 grounding is:
-
-```text
-load approved .glb
-  origin=[0,0,0]
-  uniform_scale=1
-  source_front_direction from fixture
-→ read raw world bounds
-→ plan one uniform FIT_ENVELOPE scale from requested dimensions
-→ update uniform_scale only
-→ read fresh post-scale world bounds
-→ plan translation only
-   center X → target center X
-   min Y    → target ground Y
-   center Z → target center Z
-→ update origin only
-→ read fresh aligned evidence
-→ capture canonical GLB/model views
-```
-
-Default local-test anchor is `center X=0`, `ground Y=0`, `center Z=0` unless the approved fixture explicitly requires another target anchor.
-
-Alignment invariants:
-
-```text
-requested dimensions = numeric authority
-approved image        = visual authority
-raw GLB bounds        = observation only
-uniform scale only
-FIT_ENVELOPE = minimum target/observed axis ratio
-measure again after scale before translation
-unused target envelope space is allowed
-no X/Y/Z independent stretching
-no pre-scaling/rewriting approved-shape.glb
-no mesh repair/decimation for alignment
-no triangle → Cube conversion
-no scalar GLB quality score as authority
-```
-
-If the aligned GLB materially disagrees with the approved image, retain only supported 3D relationships from the GLB. Do not distort it to force agreement. Use explicit-envelope `capture_model_views`; never trace triangles or infer target size from raw GLB bounds. Remove the reference before production `.bbmodel` export.
-
-Use a View Pair Map only to resolve materially ambiguous front/back, left/right, mirrored, depth, or 3/4 evidence that remains after image+GLB grounding. Reference fidelity is Minecraft-first: recognizability, primary masses/counts, topology/attachment, important negative spaces, and buildability over exact real-world contour.
+Use a View Pair Map only when material front/back, left/right, mirrored, depth, or 3/4 ambiguity remains. Reference fidelity is Minecraft-first: recognizability, primary masses/counts, topology/attachment, important negative spaces, and buildability over exact real-world contour.
 
 ## Simple Rigid Fast Path
 
-When the approved reference is clear, the object is predominantly rigid, topology is simple, and no material cross-view conflict exists, **do not turn analysis ceremony into the work**.
+When reference evidence is clear, topology is simple, and the object is predominantly rigid:
 
 ```text
 identity + envelope + primary masses
@@ -84,13 +43,11 @@ identity + envelope + primary masses
 → diagnose only observed mismatch
 ```
 
-Keep one root Group plus only Groups/Bones that own a real shared transform, attachment, or articulation. Sequential rigid sections do **not** need a nested Group chain merely to create small local bends; use Cube-local rotation when the slope is local. Do not split a coherent known build into many placement calls just to check each part. One primary batch, or a second batch only after new evidence changes the decision, is preferred.
-
-This fast path changes ceremony, not quality: material ambiguity, attachment, depth, or cross-view conflict still requires the relevant evidence gate.
+Keep one root Group plus only Groups/Bones that own a real shared transform, attachment, or articulation. Sequential rigid sections do not need nested Groups merely for local bends; a local rigid slope may be **Cube-owned**. Do not split a coherent known build into many calls just to inspect each part.
 
 ## Semantic Form / Construction / Transform Gate
 
-Before exact `from/to/origin/rotation`, determine only the material facts:
+Before exact coordinates determine only material facts:
 
 ```text
 identity / recognizability
@@ -105,19 +62,17 @@ material evidence state
 
 A semantic label never authorizes coordinates. No orphan/filler Cube: each primary Cube implements a declared mass/landmark or justified split. `PROVISIONAL` may support a coarse hypothesis; placement never verifies it.
 
-Choose the simplest construction that preserves the visible requirement. Solid Cuboid, plane-like Cube, layered/inflated shell, linked segments, and texture-only are reasoning examples, not presets. Use volume for silhouette, planes for sheet-like form, linked segments for meaningful bends, and Locator for a required non-visible anchor.
+Choose the simplest construction preserving the visible requirement. Solid Cuboid, plane-like Cube, layered/inflated shell, linked segments, and texture-only are reasoning examples, not presets. Use volume for silhouette, planes for sheet-like form, linked segments for meaningful bends, and Locator for a required non-visible anchor.
 
 Decide transform ownership before rotation: shared semantic orientation/attachment/articulation is Group/Bone-owned; a local rigid slope may be Cube-owned. Form/contact/articulation-defining Groups/pivots may belong in primary blockout; neutral organization stays downstream. **Do not create hierarchy solely to increase depth, node count, or apparent sophistication.**
 
 Classify material primary masses `AXIS_ALIGNED | ROTATED | UNRESOLVED`. A visible slope requires `ROTATED` + explicit origin/pivot + role `MASS_CENTER | ATTACHMENT | JOINT | PARENT_TRANSFORM`. Material `UNRESOLVED` → `BLOCKED`.
 
-For every required attachment, state its contact target/invariant before coordinates. Use an attachment/joint pivot when it owns the transform. AABB overlap, hierarchy, or numeric touching is not contact proof; important negative spaces stay open.
+For every required attachment state its contact target/invariant before coordinates. Use an attachment/joint pivot when it owns the transform. AABB overlap, hierarchy, or numeric touching is not contact proof; important negative spaces stay open.
 
-## Primary Build / Difference-First Reference Fidelity Verdict
+## Primary Build / Difference-First Verdict
 
-Stay in the geometry lane unless a current decision requires another branch. Create the minimum coherent form: masses, counts, contacts, negative spaces, and required hierarchy before detail.
-
-A minor reference discrepancy does not change identity, required counts, topology/attachment, important negative space, buildability, or identity-critical material information. Resolve it consistently:
+Create the minimum coherent form: masses, counts, contacts, negative spaces, and required hierarchy before detail. Resolve minor discrepancy consistently:
 
 ```text
 explicit user requirement
@@ -128,9 +83,9 @@ explicit user requirement
 
 Do not average drift. Only unresolved material conflict becomes `BLOCKED`.
 
-Successful `place_cube`, `modify_cube`, or `modify_cubes_batch` is execution evidence only. Once the form is judgeable, capture the necessary views before secondary detail. Front agreement does not certify depth. After primary `PASS`, add identity-weighted secondary geometry only where silhouette, recognizability, contact/layering, or motion benefits.
+Successful `place_cube`, `modify_cube`, or `modify_cubes_batch` is execution evidence only. Once judgeable, capture necessary views before secondary detail. Front agreement does not certify depth. After primary `PASS`, add identity-weighted secondary geometry only where silhouette, recognizability, contact/layering, or motion benefits.
 
-Material verdict requires the approved reference and fresh current-revision model image(s) in the same comparison context:
+Material verdict requires approved reference + fresh current-revision model image(s) in the same comparison context:
 
 ```text
 claim | reference view | current view | observed difference | FAIL | UNVERIFIED | PASS
@@ -146,9 +101,9 @@ REATTACH contact/parent | SPLIT distinct volume/orientation
 MERGE/REMOVE compensatory geometry | ADD MASS genuinely missing declared volume
 ```
 
-Reuse fresh exact authored state already returned for the target; otherwise `inspect_element` once. State target UUID(s), cause, intended change, invariant, and expected visible/structural effect. TRANSLATE preserves size; RESIZE names changed axis + fixed anchor/center/contact; ROTATE preserves `from/to/size`, pivot role, and required attachment. `geometry_effect` must match the intended structural change.
+Reuse fresh exact authored state; otherwise `inspect_element` once. State target UUID(s), cause, intended change, invariant, and expected visible/structural effect. TRANSLATE preserves size; RESIZE names changed axis + fixed anchor/center/contact; ROTATE preserves `from/to/size`, pivot role, and required attachment. `geometry_effect` must match intended structural change.
 
-Capture affected view(s) first; expand only for material cross-view risk. Classify `IMPROVED | UNCHANGED | REGRESSED`. Progress requires `IMPROVED` with no supported material claim regressed. A fix that helps one view while materially regressing another is rejected. If the same causal correction direction has failed twice without new evidence, stop speculative mutation and reframe.
+Capture affected view(s) first; expand only for material cross-view risk. Classify `IMPROVED | UNCHANGED | REGRESSED`. Progress requires `IMPROVED` with no supported material claim regressed. If the same causal correction direction fails twice without new evidence, stop speculative mutation and reframe.
 
 ## BLOCKED / Completion
 
@@ -156,4 +111,4 @@ Capture affected view(s) first; expand only for material cross-view risk. Classi
 
 Primary-form hierarchy/pivots may precede `PASS`; secondary geometry and neutral organization wait. Production texture/animation waits for dependent geometry/hierarchy/pivots. Existing-asset work may use current geometry as baseline without claiming reference approval. Complete only claims supported by fresh evidence; report `UNVERIFIED` honestly.
 
-For Route 1 completion, remove the transient GLB before `.bbmodel` export and verify the production project contains no `reference_model` state.
+For Route 1 completion, remove the transient GLB before `.bbmodel` export and verify no `reference_model` state remains.

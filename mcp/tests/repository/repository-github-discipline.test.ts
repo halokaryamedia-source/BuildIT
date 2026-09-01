@@ -195,8 +195,9 @@ describe("repository GitHub discipline", () => {
     ]);
 
     expect(next.length).toBeLessThan(2_500);
-    expect(next).toContain("NO_ACTIVE_REPOSITORY_DEVELOPMENT");
-    expect(next).toContain("Route 1 live validation remains deferred");
+    expect(next).toContain("LOCAL_IMPLEMENTATION_REQUIRED");
+    expect(next).toContain("IMAGE_GLB_SELECTED");
+    expect(next).toContain("same-phase EXTENDED definitions");
     expect(validation).toContain("current proof interpretation");
     expect(validation).not.toContain("LATEST REPOSITORY VERIFY");
 

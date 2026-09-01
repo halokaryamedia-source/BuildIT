@@ -5,12 +5,12 @@ description: BlockIT Bedrock Entity asset router. Route active phase + intent + 
 
 # BlockIT Bedrock Entity MCP
 
-Target `bedrock`. Own phase/tool routing, preflight, state reuse, handoff, recovery. Judgement:
+Target `bedrock`. Own only **phase/tool routing**, preflight, state reuse, handoff, and bounded recovery. Domain judgement stays with:
 
 ```text
-geometry/rig/UV → blockbench-bedrock-modelling
-texture/PBR     → blockit-bedrock-texturing
-animation/motion→ blockit-bedrock-animation
+geometry/rig/UV judgement → `blockbench-bedrock-modelling`
+texture/PBR               → `blockit-bedrock-texturing`
+animation/motion          → `blockit-bedrock-animation`
 ```
 
 ## Fast Routing Contract
@@ -19,7 +19,7 @@ Normal asset work **must not begin by searching repository files**.
 
 `ACTIVE PHASE + intent + known state/UUIDs → exact exposed tool → execute → reuse fresh state`
 
-MCP `ACTIVE PHASE` + `tools/list` are the **routing authority for the first tool decision**; phase absence is not discovery failure.
+MCP `ACTIVE PHASE` + `tools/list` are the routing authority for the first tool decision. Tool absence caused by phase scoping is **not** a discovery failure.
 
 Bedrock: **1 Minecraft block = 16 Blockbench units**. Reuse `capture_model_views` `front_direction` when material.
 
@@ -29,11 +29,7 @@ Bedrock: **1 Minecraft block = 16 Blockbench units**. Reuse `capture_model_views
 
 Foreign-phase need → `HANDOFF_REQUIRED` with target_phase, reason, readiness, resume_from, phase switch/reload action → STOP. Do **not** `tool_search` or substitute it.
 
-## Authoring Stage Lock
-
-`DISCOVER → AUTHOR → VERIFY → CORRECT → VERIFY → DONE`
-
-`DISCOVER` only for unknown/stale identity or exact spec; fresh state must not regress.
+`DISCOVER → AUTHOR → VERIFY → CORRECT → VERIFY → DONE`; discovery is only for unknown/stale identity or exact spec.
 
 ## Tool Lane Discipline
 
@@ -65,71 +61,31 @@ Locator/Null create/edit      → manage_locator / manage_null_object
 rig IK/mirror                 → bone_rigging
 ```
 
-`bone_rigging` only for IK/mirror. Known coherent Cubes → one `place_cube(elements=[...])`; uncertainty → no batch. Known Cubes sharing one deterministic TRANSLATE/RESIZE intent → derive absolute targets once from fresh state → one `modify_cubes_batch`; never loop inspect→modify per Cube. Relative intent stays reasoning-layer arithmetic; writes stay absolute/fail-closed.
+`bone_rigging` only for IK/mirror. Known coherent Cubes → one placement batch; known deterministic multi-Cube correction → one `modify_cubes_batch`. Writes stay absolute/fail-closed.
 
-## Route 1 Selected Image + GLB Flow
+## Route 1
 
-The selected Route 1 reference workflow is **approved image + requested dimensions + approved shape-only `.glb`**. Do not reopen image-only versus image+GLB as an acceptance decision.
+Selected reference path is **approved image + requested dimensions + approved shape-only `.glb`**. Route to `manage_geometry_reference` when exposed, then modelling judgement owns fit-envelope/center-ground use. Image = visual authority; requested dimensions = numeric authority; GLB = supporting 3D evidence. Uniform scale only; fresh post-scale bounds are required before translation; remove the reference before `.bbmodel` export. Detailed contract: `Experimental/route1-hunyuan-poc/README.md`.
 
-When the GLB route is available:
-
-```text
-approved image visible
-+ requested dimensions known
-+ approved GLB path known
-→ manage_geometry_reference(load)
-   origin=[0,0,0]
-   uniform_scale=1
-   source_front_direction from fixture
-→ reuse returned raw reference bounds/evidence
-→ plan uniform FIT_ENVELOPE scale
-→ manage_geometry_reference(update uniform_scale only)
-→ reuse fresh post-scale bounds/evidence
-→ plan center-X/Z + ground-Y translation
-→ manage_geometry_reference(update origin only)
-→ reuse fresh aligned evidence
-→ capture_model_views canonical views
-→ normal semantic Group/Cube authoring
-→ manage_geometry_reference(remove)
-→ export_model(codec_id=project)
-```
-
-Authority and invariants:
-
-```text
-approved image        = visual authority
-requested dimensions  = numeric authority
-GLB                    = depth/volume/attachment evidence
-raw GLB bounds         = observation only
-uniform scale only
-measure again after scale before translating
-no non-uniform stretch
-no triangle → Cube conversion
-no mesh repair/decimation for alignment
-no scalar quality score as authority
-```
-
-The default local-test anchor is `center X=0`, `ground Y=0`, `center Z=0` unless the fixture explicitly requires another anchor.
-
-Do not add a new auto-align tool or new public alignment mode merely to reduce these calls. Use the existing reference lifecycle + pure alignment planning first; only a reproducible local failure may justify changing the runtime owner.
+Do not reopen image-only A/B, add mesh→Cube conversion, or create a new alignment tool without reproduced need.
 
 ## First-Call Invariants
 
 ```text
 place_cube rotation != 0  → origin required
 add_group                 → pass name OR groups, never both
-modify_cube               → id + at least one authored field change
+modify_cube               → id + authored change
 manage_locator create     → name+parent; update → id+authored change
 manage_null_object create → name+parent; update → id+parent/position
 ```
 
-If conditional/action fields matter, load **that exact active-phase spec once** before mutation. Validation failure repairs arguments for the **same routed tool**.
+If conditional/action fields matter, load that exact active-phase spec once before mutation.
 
 ## Search / Recovery
 
-`tool_search` is **deferred spec loading after routing** only for a tool that **belongs to the active phase**.
+`tool_search` is **deferred spec loading after routing** for an active-phase tool. Search **the exact selected tool name only**.
 
-**One precise search:** exact selected tool name. Miss → **reformulate once** with exact name + one domain noun; second miss → `BLOCKED`. Fallback is search-backend recovery, not re-routing. **A known foreign-phase tool must never enter this search path.**
+**One precise search:** exact selected tool name. Miss → reformulate once with exact name + one domain noun; second miss → `BLOCKED`. Fallback is search-backend recovery, **not re-routing**. **A known foreign-phase tool must never enter this search path**.
 
 ```text
 validation      → INVALID_INPUT       → repair args; same tool
@@ -144,11 +100,9 @@ unsupported     → CAPABILITY_MISMATCH → handoff once or BLOCKED
 
 - Known UUID → no discovery unless stale/ambiguous.
 - Fresh mutation → reuse returned state/`geometry_effect`; no confirmation readback.
-- **Do not automatically re-read fresh mutation targets with `inspect_element`.**
-- Route 1 is an explicit exception only where a **fresh post-transform world-bounds observation** is the designed input to the next alignment stage.
-- Validator gate → read `validator://status` first; zero problems means no detail-resource read.
+- Route 1 re-measure after transform is intentional evidence, not confirmation ceremony.
+- Validator → summary first; details only when nonzero.
 - `inspect_model_bounds` only for envelope/scale/ground/displacement.
-- Skip `get_project_info` after create/export unless lifecycle state is unknown/stale.
 - Same routed failure twice without new evidence → `BLOCKED`.
 
-`export_model`: Bedrock JSON (`bedrock`) or editable `.bbmodel` (`project`). Never emulate missing capability. Route 1 `.bbmodel` export happens only after the transient reference is removed.
+`export_model`: Bedrock JSON (`bedrock`) or editable `.bbmodel` (`project`). Never emulate missing capability.

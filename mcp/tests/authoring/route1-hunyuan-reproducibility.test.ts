@@ -93,14 +93,16 @@ describe("Route 1 Hunyuan reproducibility contract", () => {
     expect(result.status).toBe(0);
   });
 
-  test("Route 1 README names the executable bridge and keeps live proof pending", async () => {
+  test("Route 1 README locks selected image+GLB workflow while live proof remains pending", async () => {
     const readme = await source(
       "../Experimental/route1-hunyuan-poc/README.md"
     );
     for (const marker of [
+      "IMAGE + GLB SELECTED WORKFLOW LOCKED",
       "PREFERRED MULTIVIEW EXECUTABLE TRACKED",
       "GEOMETRY EVIDENCE BRIDGE STATIC SOURCE APPLIED",
-      "LIVE BLOCKBENCH BRIDGE PROOF PENDING",
+      "LOCAL BLOCKBENCH ALIGNMENT/BRIDGE TEST REQUIRED",
+      "NOT YET LIVE-PROVEN",
       "generate_multiview_shape.py",
       "guidance scale     5.0",
       "manage_geometry_reference",
@@ -108,9 +110,9 @@ describe("Route 1 Hunyuan reproducibility contract", () => {
       "raw Hunyuan bounds",
       "requested target dimensions",
       "mesh-to-Blockbench converter",
-      "NOT PRODUCTION",
     ]) expect(readme).toContain(marker);
 
+    expect(readme).toContain("image-only versus image+GLB");
     expect(readme).not.toContain("BUILDIT MCP UNCHANGED");
   });
 });

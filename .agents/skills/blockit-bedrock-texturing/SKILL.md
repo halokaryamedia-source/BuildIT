@@ -35,7 +35,7 @@ Reuse fresh state; load exact spec only when needed.
 ```text
 global UV/atlas readiness       → list_textures (`uv_audit.production_gate`)
 face-specific mapping           → inspect_element only when needed
-unlocked/invalid UV             → HANDOFF_REQUIRED(geometry)
+unlocked/invalid UV        → HANDOFF_REQUIRED(geometry)
 blank atlas resolution unknown  → get_project_info once; known handoff state skips it
 create atlas bitmap             → create_texture
 inventory/select                → list_textures / activate_texture
@@ -60,7 +60,7 @@ create_brush_preset | load_brush_preset | texture_selection | texture_layer_mana
 add_texture_group | import_texture_set | save_material_config
 ```
 
-Normal direct routes remain `create_pbr_material`, `configure_material`, `assign_texture_channel`, `draw_shape_tool`, `paint_fill_tool`, `gradient_tool`, `paint_with_brush`. Support tools do not justify extra discovery/readback.
+Support tools do not justify extra discovery/readback.
 
 ## First-Call Invariants
 
@@ -84,7 +84,7 @@ Use one base-color atlas for the model, not one per body part/Cube. Production l
 
 ## Texture Styling
 
-Define palette, value/hue ramp, material zones, face shading, contact/occlusion, edge, alpha, seam, identity, detail budget, and pixels per UV unit. Flat color is a **BASE PASS only**; reject random high-contrast noise.
+Define **palette roles**, value/hue ramp, material zones, face shading, contact/occlusion, edge, alpha, seam, identity, detail budget, and pixels per UV unit. Flat color is a **BASE PASS only**; reject random high-contrast noise.
 
 ```text
 BASE PASS             → draw_shape_tool / paint_fill_tool
