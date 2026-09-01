@@ -56,9 +56,206 @@ mcp/lib/animationPreviewState.ts
 mcp/tests/animation-preview-state.test.ts
 mcp/lib/bedrockAnimationSemantics.ts
 mcp/tests/bedrock-animation-semantics.test.ts
+mcp/lib/bedrockProjectSemantics.ts
+mcp/tests/bedrock-project-semantics.test.ts
 ```
 
 All remain **LOCAL PROOF REQUIRED** until Bun/local/live gates pass.
+
+---
+
+# Core / Cross-Phase — Final Gap Audit
+
+After the Geometry, Texturing, and Animation audits were complete, BlockIT was compared again against native Blockbench project/session/file behavior and public MCP lifecycle coverage. No new large authoring family was found, but several cross-phase gaps remain important.
+
+## Normal Core addition: `open_project`
+
+BlockIT can create projects and export editable `.bbmodel`, but the normal production surface still lacks a deterministic owner for resuming an existing asset.
+
+Add one normal Core tool:
+
+```text
+open_project
+```
+
+Target contract:
+
+```text
+path: absolute local path
+kind: auto | bbmodel | bedrock_geometry
+mode: new_tab | replace_current
+discard_unsaved?: boolean
+```
+
+Use native Blockbench codecs as authority:
+
+```text
+.bbmodel / project file → project codec
+.geo.json / Bedrock geometry → bedrock codec
+```
+
+No handwritten `.bbmodel` parser. The tool must preflight path/type/current-unsaved state before replacing any current project and must return exact selected-project identity after load.
+
+This is the only new **normal Core tool** from the post-phase audit.
+
+## `configure_project` additions
+
+### Rectangular logical UV resolution
+
+`create_project` and `configure_project` must not encode 128×128 or square texture dimensions as Minecraft validity rules. Keep 128×128 as the BlockIT default, but accept positive explicit logical width/height supported by the native Bedrock project.
+
+Project resolution change requires an explicit policy:
+
+```text
+logical_uv:
+  width
+  height
+  adjust: keep | rescale_uv
+```
+
+`keep` changes the logical UV canvas without moving authored UV coordinates.
+
+`rescale_uv` scales authored UV coordinates by the X/Y resolution ratio. Full preflight must verify every affected Cube/per-face UV and Box-UV offset before Undo; if an exact Box-UV grid would require rounding, fail instead of silently flooring. Use `mcp/lib/bedrockProjectSemantics.ts` as the pure planning foundation.
+
+Do not make logical-UV resize silently scale model geometry. Geometry scaling remains an explicit Geometry correction intent.
+
+### Bedrock visible bounds
+
+Native Blockbench already auto-calculates static Bedrock visible bounds from exported Cube geometry, so ordinary static models do **not** need another tool or mandatory manual bounds configuration.
+
+`configure_project` should nevertheless expose authored visible-bounds policy for cases where runtime motion extends beyond static geometry or an existing asset carries intentionally larger bounds:
+
+```text
+visible_bounds:
+  mode: auto_static | explicit | expand
+  width?
+  height?
+  offset_y?
+```
+
+Semantics:
+
+```text
+auto_static
+→ clear authored minimum/override state and let native Bedrock export calculate current static Cube bounds
+
+explicit
+→ author a requested minimum width/height/offset; native export may still expand to include static geometry
+
+expand
+→ expand current authored bounds to include a supplied/recommended envelope; never shrink existing coverage
+```
+
+`validate_animation_motion` may later return a recommended animation envelope, which can be passed to `configure_project`; do not couple animated-envelope calculation into a separate visible-bounds tool.
+
+`mcp/lib/bedrockProjectSemantics.ts` mirrors the native centered X/Z width and Y height/offset basis for deterministic planning. Runtime/live proof remains required.
+
+## Multi-project tab safety
+
+Native Blockbench supports multiple `ModelProject` tabs. Normal read safety should not require another list tool.
+
+Extend:
+
+```text
+get_project_info
+  scope: current | all
+```
+
+`scope=all` returns bounded project identity/lifecycle only:
+
+```text
+uuid
+name
+format
+selected
+saved
+save_path
+export_path
+```
+
+Conditional project-session owner:
+
+```text
+manage_project_session
+  switch
+  close
+  reload
+```
+
+`close`/`reload` must refuse unsaved state unless explicit discard consent is supplied. This stays conditional because normal authoring should remain pinned to one intended project.
+
+## Existing-owner efficiency additions
+
+### Whole Animation clone
+
+Extend normal `create_animation`:
+
+```text
+source_animation?: UUID/name
+```
+
+When present, native duplicate/clone semantics should copy complete authored Animation state—bones/keyframes/Molang/effects/native metadata—before assigning the requested new name. This is more efficient and less lossy than reconstructing a whole clip through `manage_keyframes`.
+
+### AnimationController / state duplication
+
+Keep inside `manage_animation_controller`:
+
+```text
+duplicate_controller
+duplicate_state
+```
+
+Require explicit new names and full collision/dependency preflight. Do not create separate public duplicate tools.
+
+### Animation visual sequence
+
+Extend `capture_animation_views` rather than adding a video/screenshot-sequence tool:
+
+```text
+output: frames | contact_sheet
+```
+
+A bounded contact sheet across explicit timestamps is the preferred normal temporal evidence because it exposes timing progression without video/GIF overhead. Animated GIF/video export remains evidence-gated rather than normal MCP surface.
+
+## Conditional 2D reference-image coverage
+
+Blockbench native project state supports 2D reference images separately from BlockIT's 3D Route-1 GLB reference.
+
+Add conditional Geometry/evidence owner only when needed:
+
+```text
+manage_reference_image
+  load
+  update
+  remove
+```
+
+Bounded fields may include absolute image source, name, mode/view, position, size/scale, opacity, visibility and lock state. This covers front/side blueprints and concept-art references without contaminating normal Geometry authoring.
+
+## Molang validation policy
+
+Do not add a normal `validate_molang` tool merely for parity. Every Molang-bearing mutation owner should validate the authored text using the strongest safe native/static parser available before Undo when possible.
+
+Potential conditional `validate_molang` remains evidence-gated for debugging only if real workflows repeatedly need standalone expression diagnosis.
+
+## Post-phase normal counts
+
+With `open_project` added to shared Core, approximate normal phase surfaces become:
+
+```text
+Geometry   ≈ 27 total
+Texturing  ≈ 25 total
+Animation  ≈ 24 total
+```
+
+Conditional additions from this final gap audit:
+
+```text
+manage_project_session
+manage_reference_image
+```
+
+No other new normal tool family is currently justified.
 
 ---
 
@@ -68,38 +265,39 @@ Geometry was re-audited against official Blockbench modeling/reference docs, nat
 
 ## Final normal Geometry surface target
 
-Target normal surface: **about 26 tools**.
+Target normal surface: **about 27 tools** after the shared Core `open_project` addition.
 
 ```text
 CORE / SETUP / EVIDENCE
 1  create_project
-2  configure_project
-3  get_project_info
-4  inspect_model_bounds
-5  undo
-6  redo
-7  get_undo_stack
-8  list_outline
-9  find_elements_by_criteria
-10 get_selection
-11 inspect_element
-12 capture_model_views
-13 export_model
-14 list_textures
+2  open_project
+3  configure_project
+4  get_project_info
+5  inspect_model_bounds
+6  undo
+7  redo
+8  get_undo_stack
+9  list_outline
+10 find_elements_by_criteria
+11 get_selection
+12 inspect_element
+13 capture_model_views
+14 export_model
+15 list_textures
 
 GEOMETRY AUTHORING / CORRECTION
-15 place_cube
-16 modify_cubes_batch
-17 add_group
-18 duplicate_element
-19 remove_element
-20 rename_element
-21 modify_group
-22 reparent_element
-23 manage_locator
-24 manage_geometry_reference
-25 measure_geometry
-26 manage_texture_mesh
+16 place_cube
+17 modify_cubes_batch
+18 add_group
+19 duplicate_element
+20 remove_element
+21 rename_element
+22 modify_group
+23 reparent_element
+24 manage_locator
+25 manage_geometry_reference
+26 measure_geometry
+27 manage_texture_mesh
 ```
 
 Remove from the normal Geometry surface after local consolidation:
@@ -117,9 +315,10 @@ Conditional / extended Geometry:
 ```text
 manage_bounding_box
 manage_item_display_transform
+manage_reference_image
 ```
 
-Remote-safe Geometry correctness work already on `Local` includes faithful native duplication, export-safe identity guards, complete structural preflight before Undo, exact Cube `inflate`/export inspection, world-space OBB extraction, and SAT contact classification. Geometry remains **LOCAL PROOF REQUIRED** until public consolidation, generated artifacts, local tests, and live E2E pass.
+Remote-safe Geometry correctness work already on `Local` includes faithful native duplication, export-safe identity guards, complete structural preflight before Undo, exact Cube `inflate`/export inspection, world-space OBB extraction, SAT contact classification, and project-resolution/visible-bounds planning. Geometry remains **LOCAL PROOF REQUIRED** until public consolidation, generated artifacts, local tests, and live E2E pass.
 
 ---
 
@@ -151,12 +350,12 @@ PBR / MATERIAL
 
 `list_textures` remains shared Core because Geometry uses its UV/atlas gate before Texturing handoff.
 
-After Core consolidation this implies roughly:
+After the final Core addition this implies roughly:
 
 ```text
-~14 shared Core/setup/evidence
+~15 shared Core/setup/evidence
 + 10 Texturing-specific
-= ~24 normal Texturing-phase tools
+= ~25 normal Texturing-phase tools
 ```
 
 instead of the current ~43.
@@ -287,12 +486,12 @@ INSPECTION / VERIFICATION / DELIVERY
 9  export_animation_file
 ```
 
-After Core consolidation this implies roughly:
+After the final Core addition this implies roughly:
 
 ```text
-~14 shared Core/setup/evidence
+~15 shared Core/setup/evidence
 + 9 Animation-specific
-= ~23 normal Animation-phase tools
+= ~24 normal Animation-phase tools
 ```
 
 The capability is broader than the current surface while normal tool ownership becomes simpler.
@@ -335,6 +534,7 @@ Local public redesign should support:
 
 ```text
 name
+source_animation?: UUID/name
 loop: once | loop | hold
 length?
 override_previous_animation?
@@ -357,6 +557,8 @@ effects:
   sound
   timeline/instruction
 ```
+
+`source_animation` uses native whole-animation duplicate/clone semantics and then applies the explicitly requested new identity/config changes. It must preserve complete authored keyframes, Molang, effects, interpolation/editor metadata, and native Animation properties without a lossy JSON reconstruction.
 
 `rotation_space=entity` maps to native Bedrock `relative_to.rotation=entity` / Blockbench `BoneAnimator.rotation_global`.
 
@@ -522,10 +724,14 @@ Required additions:
 
 ```text
 delete_controller
+duplicate_controller
+duplicate_state
 blend_transition_curve set/clear
 explicit transition target_index / reorder semantics
 explicit animation-link target_index / reorder semantics
 ```
+
+Duplicate operations require explicit new names and preserve full native state/controller payload through native copy semantics rather than reconstructing only currently exposed fields.
 
 Transition order is semantically significant in Minecraft because conditions are evaluated in array order.
 
@@ -604,6 +810,15 @@ Controller inspection retains state scripts/effects/transitions/links and `blend
 Use the prepared `mcp/lib/animationPreviewState.ts` transaction.
 
 Normal inputs should support explicit Animation + time(s) + canonical view(s), with bounded batching to avoid repeated state churn.
+
+Normal outputs:
+
+```text
+frames
+contact_sheet
+```
+
+A contact sheet is the preferred temporal sequence evidence for several timestamps because it exposes timing progression while avoiding video/GIF overhead.
 
 Required restoration boundary:
 
@@ -698,6 +913,7 @@ attachment/contact failures
 hierarchy/bounds issues
 motion envelope
 first failing sample
+recommended visible bounds envelope when current static bounds are insufficient
 ```
 
 Always restore editor state. Do not produce a subjective animation quality score.
@@ -735,6 +951,7 @@ bone_rigging absent from Animation surface
 
 ANIMATION LIFECYCLE
 create full loop modes and native metadata
+whole-animation clone
 rename/configure/delete
 identifier validation
 rotation_space entity/parent
@@ -752,7 +969,8 @@ EFFECTS
 particle/sound/instruction round trip
 
 CONTROLLERS
-controller delete
+controller delete/duplicate
+state duplicate
 ordered transitions
 ordered animation links
 blend_transition_curve
@@ -762,6 +980,7 @@ state variable/remap_curve conditional persistence decision
 READ / VERIFY
 inspect list + focused animation/controller/bone data
 capture_animation_views exact temporary pose + restoration
+contact-sheet sequence output
 Molang preview context restoration
 optional objective motion sweep only after primitive proof
 
@@ -798,6 +1017,7 @@ persistent UUID registries
 large generic routers/profiles/frameworks without evidence
 procedural biped/limb generators as default authoring
 destructive whole-animation replacement as the normal editing model
+hot-surface video/GIF generation when bounded frames/contact sheets provide sufficient evidence
 ```
 
 External repositories are references only. BlockIT implementation must follow this repository's rules, Bedrock constraints, source ownership, and proof boundaries.
