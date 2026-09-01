@@ -1,6 +1,6 @@
 # Next Action
 
-Updated: 2026-09-01 — full MCP coverage curated; capability loading now tiered HOT / LAZY / SPECIALIZED / NICHE; public consolidation/build/live proof remains local
+Updated: 2026-09-01 — full MCP coverage curated; capability loading vocabulary unified to PHASE_DEFAULT / ON_DEMAND; same-phase transitions clarified; public consolidation/build/live proof remains local
 
 Working branch: **`Local` only**.
 
@@ -8,7 +8,7 @@ This file owns **active continuation only**. Stable facts belong in `CONTEXT.md`
 
 ## Current Status
 
-`FULL_MCP_COVERAGE_CURATED_TIERED_LOADING_LOCAL_IMPLEMENTATION_REQUIRED`
+`FULL_MCP_COVERAGE_CURATED_PHASE_DEFAULT_ON_DEMAND_LOCAL_IMPLEMENTATION_REQUIRED`
 
 Geometry, Texturing, Animation, and Core/project lifecycle have been re-audited against official Blockbench documentation/native source, current Minecraft Bedrock behavior/schema, and surveyed public Blockbench MCP implementations.
 
@@ -19,58 +19,102 @@ full relevant Bedrock/Blockbench capability coverage
 +
 one obvious owner per normal intent
 +
-load only the capability tier needed by the current workflow
+load only what the current phase + current intent needs
 +
 no tool-count parity for its own sake
 ```
 
-Do **not** remove rare capability merely to reduce tool count. Reduce default context by routing it into an intent-loaded tier instead.
+Do **not** remove rare capability merely to reduce tool count. Keep it supported as `ON_DEMAND` when it is not appropriate for the default active-phase surface.
 
 Do **not** restart broad external feature hunting before local implementation unless a concrete missing production capability appears.
 
 ## Capability Loading Model
 
-Use four loading tiers:
+There are exactly **two capability categories**. These names are canonical in design, implementation, generated guidance, tests, and user-facing diagnostics.
 
 ```text
-HOT
-→ ordinary BlockIT authoring path
-→ loaded by default for the active phase
+PHASE_DEFAULT
+→ automatically available when its owning phase is active
+→ ordinary path for that phase
+→ no discovery/load step before use when exact route is known
 
-LAZY
-→ valid normal Minecraft/Blockbench capability, but not needed by most assets
-→ load when prompt/evidence requires it
-
-SPECIALIZED
-→ opt-in feature family with a distinct production workflow
-→ load only when the user explicitly requests or the current asset already uses that feature
-
-NICHE
-→ uncommon editor/integration/format-specific support
-→ never load by default; exact intent/evidence required
+ON_DEMAND
+→ not present in the default active-phase context
+→ loaded only when explicit intent or observed authored state requires that exact capability
+→ load the exact capability, never a broad pack "just in case"
 ```
 
-Full coverage remains in `docs/knowledge/mcp-capability-backlog.md`. This tiering changes **context exposure**, not capability ownership.
+Do **not** use `HOT`, `DEFERRED`, `LAZY`, `SPECIALIZED`, `NICHE`, `normal`, `conditional`, or `extended` as alternative capability-category names.
+
+`PHASE_DEFAULT` and `ON_DEMAND` classify capability exposure only. They are **not runtime modes**, do not create a second phase system, and do not change capability ownership.
 
 ### Routing invariant
 
 ```text
-ACTIVE PHASE HOT
+ACTIVE PHASE
 +
-only the smallest intent-matched LAZY/SPECIALIZED/NICHE pack
+PHASE_DEFAULT
++
+only the exact ON_DEMAND capability required by current intent/evidence
 ```
 
-Never load all optional packs “just in case”.
+No category-wide activation exists. No `ON_DEMAND` pack activation exists.
 
-If a HOT tool discovers an existing specialized artifact state, it may return an explicit continuation hint such as:
+### Same-phase transition contract
+
+Category transitions must not create reload/reconnect/reset churn.
 
 ```text
-CAPABILITY_PACK_REQUIRED
-pack: pbr | animated_texture | texture_layers | animation_controller | ...
-reason: <observed authored state>
+PHASE_DEFAULT → PHASE_DEFAULT
+→ call the exact next default capability directly
+
+PHASE_DEFAULT → ON_DEMAND
+→ explicit intent/evidence identifies one exact capability
+→ load that capability definition once
+→ execute
+→ keep PHASE_DEFAULT surface available
+→ no phase switch, reload, reconnect, or category reset
+
+ON_DEMAND → PHASE_DEFAULT
+→ call the exact default capability directly
+→ no unload/reset ceremony
+
+ON_DEMAND → ON_DEMAND
+→ only when the next intent/evidence requires another exact capability
+→ load that exact capability only
+→ never load every ON_DEMAND capability in the phase
 ```
 
-The follow-up session/search loads only that pack.
+An `ON_DEMAND` capability does not remain a mandatory dependency for later steps merely because it was used once. Reuse it when the next intent still needs it; otherwise continue through `PHASE_DEFAULT` without an explicit unload action.
+
+### Cross-phase transition contract
+
+Capability category never bypasses phase ownership.
+
+```text
+current intent belongs to ACTIVE PHASE
+→ use PHASE_DEFAULT or exact ON_DEMAND route
+
+current intent belongs to FOREIGN PHASE
+→ HANDOFF_REQUIRED
+→ preserve only resume-critical state
+→ switch owning phase
+→ reload/reconnect only because phase ownership changed
+→ new phase begins with PHASE_DEFAULT
+→ if the immediate next intent needs ON_DEMAND, load that one capability after reconnect
+```
+
+A known foreign-phase tool must never enter same-phase `ON_DEMAND` search. Phase absence is not a discovery miss.
+
+If a default capability detects authored state that needs an `ON_DEMAND` capability, return an explicit continuation hint:
+
+```text
+CAPABILITY_REQUIRED
+capability: <exact tool/capability owner>
+reason: <observed authored state or explicit requirement>
+```
+
+Do not return a category name, pack name, or broad family when one exact capability owner is known.
 
 ## Remote-safe foundations already on `Local`
 
@@ -99,13 +143,13 @@ All are **LOCAL PROOF REQUIRED** until Bun/local/live gates pass.
 
 ---
 
-# Locked target surfaces and loading tiers
+# Locked target surfaces
 
-Exact runtime counts must be measured after public consolidation. The lists below define routing intent, not a claim that those schemas are already implemented.
+Exact runtime counts must be measured after public consolidation. The lists below define target routing, not a claim that those schemas are already implemented.
 
 ## Shared Core / project lifecycle
 
-### HOT
+### PHASE_DEFAULT
 
 ```text
 create_project
@@ -132,33 +176,26 @@ get_project_info
   → scope=current|all for multi-project safety
 ```
 
-### LAZY recovery/support
+### ON_DEMAND
 
 ```text
 undo
 redo
 get_undo_stack
 get_selection
-```
-
-Normal successful bounded edits should not poll recovery/selection state repeatedly.
-
-### NICHE session management
-
-```text
 manage_project_session
   switch
   close
   reload
 ```
 
-Normal `.bbmodel` save remains `export_model(codec=project)`; do not add a duplicate `save_project` owner.
+Recovery/selection state is loaded only when current evidence requires it. Session management is loaded only for explicit multi-project/session intent. Normal `.bbmodel` save remains `export_model(codec=project)`; do not add a duplicate `save_project` owner.
 
 ---
 
 ## Geometry
 
-### HOT Geometry
+### PHASE_DEFAULT
 
 ```text
 list_outline
@@ -184,41 +221,38 @@ modify_cube              → modify_cubes_batch
 list_locator_elements    → find_elements_by_criteria
 manage_null_object       → manage_locator
 bone_rigging             → canonical Geometry owners
-select_all_of_type       → leave normal surface
+select_all_of_type       → leave production surface
 ```
 
-### LAZY Geometry pack
+### ON_DEMAND
 
 ```text
 manage_locator
-```
-
-Load for locator/null/attachment/socket/effect-origin/IK-target workflows.
-
-### SPECIALIZED Geometry pack
-
-```text
 manage_texture_mesh
-```
-
-Load only when native Bedrock TextureMesh is explicitly requested or already authored in the project.
-
-### NICHE Geometry/evidence pack
-
-```text
 manage_geometry_reference
 manage_bounding_box
 manage_item_display_transform
 manage_reference_image
 ```
 
-These remain supported but never belong in ordinary Cube/bone modeling context.
+Route exact intent only:
+
+```text
+locator/null/attachment/socket/effect-origin/IK-target → manage_locator
+native Bedrock TextureMesh                              → manage_texture_mesh
+3D Route-1 reference evidence                          → manage_geometry_reference
+explicit bounding-box editor state                     → manage_bounding_box
+item-display transform integration                     → manage_item_display_transform
+2D reference-image workflow                            → manage_reference_image
+```
+
+None of these should occupy ordinary Cube/bone authoring context without matching intent/evidence.
 
 ---
 
 ## Texturing
 
-### HOT Texturing
+### PHASE_DEFAULT
 
 Default classic Minecraft/Bedrock texture authoring is intentionally small:
 
@@ -233,13 +267,24 @@ export_texture
 
 `list_textures` remains shared Core because Geometry uses its UV/atlas gate before Texturing handoff.
 
-The existing Painter/UI-state wrappers leave the hot surface after replacement behavior is verified.
+The existing Painter/UI-state wrappers leave the production surface after replacement behavior is verified.
 
-### SPECIALIZED PBR pack
+### ON_DEMAND
 
-PBR is **not** default classic entity texturing. It is an opt-in Texture Set / RTX / Vibrant Visuals style workflow and therefore must not occupy default Texturing context.
+```text
+create_pbr_material
+configure_material
+list_materials
+get_material_info
+manage_texture_set
+manage_texture_layers
+manage_texture_group
+manage_animated_texture
+list_material_instances
+set_material_instances
+```
 
-Load this pack only for explicit/existing intents such as:
+Intent examples that require these routes include:
 
 ```text
 PBR
@@ -253,19 +298,12 @@ roughness
 emissive surface
 subsurface
 texture_set
+texture layers/groups
+animated texture
+per-face material instances
 ```
 
-Pack:
-
-```text
-create_pbr_material
-configure_material
-list_materials
-get_material_info
-manage_texture_set
-```
-
-PBR correctness remains mandatory whenever this pack is loaded:
+PBR correctness remains mandatory whenever its exact capability is loaded:
 
 ```text
 exclusive channel membership
@@ -274,32 +312,13 @@ MER vs MERS semantics
 one PBR correction owner
 ```
 
-### SPECIALIZED advanced-texture pack
-
-```text
-manage_texture_layers
-manage_texture_group
-manage_animated_texture
-```
-
-Load by explicit authored feature state/intent only.
-
-Normal `get_texture` / `paint_texture` remain frame-aware so animated textures do not create a second bitmap authoring model.
-
-### NICHE material-instance pack
-
-```text
-list_material_instances
-set_material_instances
-```
-
-Per-face material-instance metadata is specialized render/resource-pack integration and must not appear in ordinary entity atlas painting context.
+Normal `get_texture` / `paint_texture` remain frame-aware so animated textures do not create a second bitmap-authoring model.
 
 ---
 
 ## Animation
 
-### HOT Animation
+### PHASE_DEFAULT
 
 ```text
 create_animation
@@ -311,7 +330,7 @@ capture_animation_views
 export_animation_file
 ```
 
-Retire from HOT Animation after replacement contracts exist:
+Retire after replacement contracts exist:
 
 ```text
 animation_graph_editor
@@ -320,7 +339,7 @@ batch_keyframe_operations
 animation_copy_paste
 ```
 
-Additional efficiency requirements inside existing HOT owners:
+Additional efficiency requirements inside existing owners:
 
 ```text
 create_animation
@@ -330,23 +349,29 @@ capture_animation_views
   → frames | contact_sheet
 ```
 
-### LAZY Animation effects pack
+### ON_DEMAND
 
 ```text
 manage_animation_effects
+manage_animation_controller
+animation_playback
+manage_animation_curves
+import_animation_file
+validate_animation_motion
 ```
 
-Load only for particle/sound/timeline-instruction keyframes.
-
-### LAZY Animation Controller pack
+Route exact intent only:
 
 ```text
-manage_animation_controller
+particle/sound/timeline-instruction keyframes → manage_animation_effects
+state-driven runtime composition              → manage_animation_controller
+explicit editor playback                      → animation_playback
+Bezier/editor curve work                      → manage_animation_curves
+animation/controller file import              → import_animation_file
+objective sampled motion QA                    → validate_animation_motion
 ```
 
-Animation Controllers are first-class Bedrock behavior, but simple clips/models do not require them. Load for state-driven/entity-runtime animation composition.
-
-The owner still needs:
+`manage_animation_controller` still needs:
 
 ```text
 delete_controller
@@ -358,46 +383,9 @@ blend_transition_curve
 explicit Bedrock short keys
 ```
 
-### SPECIALIZED / NICHE Animation pack
-
-```text
-animation_playback
-manage_animation_curves
-import_animation_file
-validate_animation_motion
-```
-
-`manage_animation_curves` is editor-Bezier workflow and must retain the bake-before-Bedrock-delivery boundary.
-
-`validate_animation_motion` is objective sampled QA, not a subjective quality score.
+`manage_animation_curves` retains the bake-before-Bedrock-delivery boundary. `validate_animation_motion` is objective sampled QA, not a subjective quality score.
 
 `bone_rigging` remains Geometry-owned and is dismantled there.
-
----
-
-# Usage-frequency interpretation
-
-The tiering above is a design heuristic for BlockIT's intended Bedrock Entity workflow, not product telemetry.
-
-Approximate interpretation:
-
-```text
-HOT
-→ expected in ordinary asset authoring
-
-LAZY
-→ normal feature, but only some assets need it
-
-SPECIALIZED
-→ separate opt-in production path
-
-NICHE
-→ uncommon support/integration/editor workflow
-```
-
-Do not promote a rare tool to HOT solely because Blockbench exposes a UI button for it.
-
-Do not demote a capability below full support solely because it is rare.
 
 ---
 
@@ -441,7 +429,7 @@ revision stale-write guard before Undo
 one Undo + exact affected RGBA postcondition
 PNG/TGA standalone delivery
 
-when PBR pack is loaded:
+when PBR capability is loaded:
   exclusive PBR channel membership
   normal XOR height
   MER vs MERS semantics
@@ -469,7 +457,7 @@ keyframes:
   step via pre/post
   Bezier editor-only → bake before Bedrock delivery
 
-controllers when controller pack is loaded:
+controllers when controller capability is loaded:
   delete lifecycle
   duplicate controller/state
   ordered transitions
@@ -488,7 +476,7 @@ file delivery:
   unbaked Bezier blocks direct Bedrock export
 ```
 
-Minecraft controller state `variables/remap_curve` is a **conditional Bedrock extension gap** because current native Blockbench state objects do not ordinarily persist it. Do not claim support until local implementation proves import → project save/reopen → Undo → inspect → compile/export round trip. Fail explicitly rather than silently dropping it.
+Minecraft controller state `variables/remap_curve` is an **ON_DEMAND Bedrock extension gap** because current native Blockbench state objects do not ordinarily persist it. Do not claim support until local implementation proves import → project save/reopen → Undo → inspect → compile/export round trip. Fail explicitly rather than silently dropping it.
 
 ---
 
@@ -522,76 +510,75 @@ When the PC/local batch begins:
    create_project rectangular logical UV contract
    configure_project model_identifier + logical UV policy + visible bounds
    get_project_info current/all scope
-   conditional manage_project_session
+   ON_DEMAND manage_project_session
 
 7. Geometry public consolidation:
-   HOT owner consolidation
+   PHASE_DEFAULT owner consolidation
    modify_cubes_batch final owner + per-face UV
    universal finder/locator/null ownership
    reparent preserve local/world
    measure_geometry
-   specialized manage_texture_mesh
-   niche reference/bounding/item-display owners
+   ON_DEMAND TextureMesh/reference/bounding/item-display/reference-image owners
    retire duplicate Geometry routes
 
 8. Texturing public consolidation:
-   HOT classic texture surface only
+   PHASE_DEFAULT classic texture surface only
    create_texture dimension/clone contract
    configure_texture + remove_texture
    get_texture scoped/revision/frame reads
    unified paint_texture
    export_texture PNG/TGA
-   PBR as SPECIALIZED intent-loaded pack
-   advanced texture + material-instance optional packs
-   retire normal Painter/material-instance duplicates
+   PBR/advanced texture/material-instance routes as exact ON_DEMAND capabilities
+   retire duplicate Painter/material-instance routes
 
 9. Animation public consolidation:
-   HOT clip/keyframe/inspect/capture/export surface
+   PHASE_DEFAULT clip/keyframe/inspect/capture/export surface
    create_animation full native metadata/value coverage + source_animation clone
    configure_animation + remove_animation
    unified multi-target manage_keyframes
    remove Timeline-selection/global-clipboard dependency
-   effects + controllers as LAZY packs
+   effects/controllers/playback/curves/import/motion validation as exact ON_DEMAND capabilities
    controller delete/order/blend-curve/key-link + duplicate state/controller corrections
    expand inspect_animation list/focused coverage
    capture_animation_views + contact sheet
    export_animation_file
-   specialized playback/Bezier/import/motion validation pack
 
-10. implement capability-tier routing only after owner schemas/behavior are ready
-    HOT = default active-phase load
-    LAZY/SPECIALIZED/NICHE = intent/evidence loaded
+10. implement capability exposure after owner schemas/behavior are ready:
+    PHASE_DEFAULT = automatically available for active phase
+    ON_DEMAND = exact intent/evidence-loaded capability only
+    same-phase category transitions require no reload/reconnect/reset
     do not infer runtime counts from this document
 
-11. update specialist Skills / runtime prompt / phase routing from the measured tiered catalog
+11. update specialist Skills / runtime prompt / phase routing from the measured final catalog using the same PHASE_DEFAULT / ON_DEMAND vocabulary only
 
 12. bun run prompts:build
 13. bun run docs:build
 14. bun run docs:check
 15. bun run verify:mcp
 
-16. review generated + source diff for stale/dead tool names
-17. measure actual HOT and full available counts per phase
+16. review generated + source diff for stale/dead tool names or retired category terms
+17. measure actual PHASE_DEFAULT and full available counts per phase
 18. deploy/reload BlockIT
 
 19. LIVE open/save/reopen project lifecycle fixture
-20. LIVE Geometry HOT E2E
-21. LIVE Geometry optional-pack fixture(s)
-22. LIVE Texturing classic HOT E2E
-23. LIVE Texturing PBR specialized fixture
-24. LIVE Animation HOT E2E
-25. LIVE Animation effects/controller lazy fixture(s)
-26. cross-phase handoff E2E
-27. measure Cost to Accepted Result and context/tool-search cost
+20. LIVE Geometry PHASE_DEFAULT E2E
+21. LIVE Geometry ON_DEMAND fixture(s)
+22. LIVE Texturing classic PHASE_DEFAULT E2E
+23. LIVE Texturing PBR/advanced ON_DEMAND fixture(s)
+24. LIVE Animation PHASE_DEFAULT E2E
+25. LIVE Animation ON_DEMAND effects/controller fixture(s)
+26. same-phase PHASE_DEFAULT ↔ ON_DEMAND transition E2E with no reload/reconnect
+27. cross-phase handoff E2E
+28. measure Cost to Accepted Result and context/tool-search cost
 ```
 
 Do not split this into a new roadmap. This file remains the single continuation owner.
 
 ---
 
-# Cross-phase live proof additions
+# Cross-phase and category-transition live proof additions
 
-The local/live batch must now also prove:
+The local/live batch must prove:
 
 ```text
 .bbmodel export → open_project → exact project state survives
@@ -607,12 +594,18 @@ whole Animation clone
 controller/state duplicate
 contact-sheet capture + full editor-state restoration
 
-TIER ROUTING
-classic Texture session does not load PBR pack
-PBR intent loads only PBR pack + required HOT tools
-basic Animation clip does not load controller/effects packs
-controller intent loads controller pack without unrelated specialized packs
-basic Geometry does not load TextureMesh/reference/item-display packs
+CAPABILITY ROUTING
+PHASE_DEFAULT intent calls direct route with zero capability search
+ON_DEMAND intent resolves the exact capability once
+PHASE_DEFAULT → ON_DEMAND requires no phase switch/reload/reconnect
+ON_DEMAND → PHASE_DEFAULT requires no unload/reset/reconnect
+ON_DEMAND → ON_DEMAND loads only the next exact capability
+foreign-phase capability never enters ON_DEMAND search
+classic Texture session does not load PBR capability without matching intent/evidence
+PBR intent loads only exact PBR capability needed + existing PHASE_DEFAULT surface
+basic Animation clip does not load controller/effects capabilities
+controller intent loads controller capability without unrelated ON_DEMAND capabilities
+basic Geometry does not load TextureMesh/reference/item-display capabilities
 full capability remains discoverable when exact intent requires it
 ```
 
@@ -634,14 +627,17 @@ Final completion requires:
 
 ```text
 public ownership matches curated coverage
-HOT surface contains only ordinary authoring routes
-LAZY/SPECIALIZED/NICHE packs remain discoverable but absent by default
+only PHASE_DEFAULT and ON_DEMAND exist as capability-category vocabulary
+PHASE_DEFAULT surface contains only ordinary active-phase routes
+ON_DEMAND capability remains discoverable but absent from default context
+same-phase category transitions never require reload/reconnect/reset
 PBR absent from classic Texturing context unless requested/evidenced
 all generated prompt/docs current
 bun run verify:mcp PASS
 project open/save/reopen fixture PASS
-live HOT authoring fixtures PASS
-representative optional-pack fixtures PASS
+live PHASE_DEFAULT authoring fixtures PASS
+representative ON_DEMAND fixtures PASS
+same-phase category-transition fixtures PASS
 live evidence/restore fixtures PASS
 cross-phase handoffs PASS
 measured context/tool-search cost is lower than untiered surface

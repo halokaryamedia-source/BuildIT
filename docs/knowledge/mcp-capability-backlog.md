@@ -8,7 +8,7 @@ This file records capability gaps discovered from BlockIT audits against officia
 
 ## Goal
 
-Improve **Cost to Accepted Result** while keeping one obvious owner for each normal workflow.
+Improve **Cost to Accepted Result** while keeping one obvious owner for each ordinary workflow.
 
 Preserve:
 
@@ -19,7 +19,47 @@ Preserve:
 - Geometry → Texturing → Animation phase boundaries;
 - generated-doc discipline;
 - visual proof as final quality authority;
-- conditional/lazy coverage for uncommon native/editor features instead of bloating the hot tool surface.
+- full relevant capability coverage without bloating the default active-phase context.
+
+## Canonical capability categories
+
+There are exactly two routing categories across BlockIT:
+
+```text
+PHASE_DEFAULT
+→ automatically available when its owning phase is active
+→ ordinary path for that phase
+
+ON_DEMAND
+→ absent from the default active-phase context
+→ loaded only when explicit intent or observed authored state requires that exact capability
+```
+
+These names are canonical across design, implementation, generated docs/prompts, specialist guidance, tests, and diagnostics.
+
+Do **not** use `HOT`, `DEFERRED`, `LAZY`, `SPECIALIZED`, `NICHE`, `normal`, `conditional`, or `extended` as alternative capability-category labels. Domain terms keep their domain meaning; for example **normal map** is a texture type, not a routing category.
+
+Category is a static exposure classification, not a runtime mode. Same-phase movement between `PHASE_DEFAULT` and `ON_DEMAND` never requires phase switch, reload, reconnect, category reset, or pack activation.
+
+```text
+PHASE_DEFAULT → PHASE_DEFAULT
+  direct route
+
+PHASE_DEFAULT → ON_DEMAND
+  exact intent/evidence → load exact capability → execute
+
+ON_DEMAND → PHASE_DEFAULT
+  direct route; no unload ceremony
+
+ON_DEMAND → ON_DEMAND
+  load only the next exact capability when required
+
+FOREIGN PHASE
+  HANDOFF_REQUIRED → phase switch/reload/reconnect
+  new phase begins with PHASE_DEFAULT
+```
+
+No `ON_DEMAND` pack exists. A known foreign-phase capability must not enter same-phase capability search.
 
 ## Current Gate
 
@@ -33,6 +73,7 @@ REMOTE-SAFE FOUNDATION
 → bun run docs:check
 → bun run verify:mcp
 → LIVE Geometry → Texturing → Animation E2E
+→ LIVE PHASE_DEFAULT ↔ ON_DEMAND transition E2E
 → measure Cost to Accepted Result
 → evidence-gated follow-up work
 ```
@@ -68,11 +109,11 @@ All remain **LOCAL PROOF REQUIRED** until Bun/local/live gates pass.
 
 After the Geometry, Texturing, and Animation audits were complete, BlockIT was compared again against native Blockbench project/session/file behavior and public MCP lifecycle coverage. No new large authoring family was found, but several cross-phase gaps remain important.
 
-## Normal Core addition: `open_project`
+## PHASE_DEFAULT Core addition: `open_project`
 
-BlockIT can create projects and export editable `.bbmodel`, but the normal production surface still lacks a deterministic owner for resuming an existing asset.
+BlockIT can create projects and export editable `.bbmodel`, but the production surface still lacks a deterministic owner for resuming an existing asset.
 
-Add one normal Core tool:
+Add:
 
 ```text
 open_project
@@ -96,7 +137,7 @@ Use native Blockbench codecs as authority:
 
 No handwritten `.bbmodel` parser. The tool must preflight path/type/current-unsaved state before replacing any current project and must return exact selected-project identity after load.
 
-This is the only new **normal Core tool** from the post-phase audit.
+This is the only new `PHASE_DEFAULT` Core tool from the post-phase audit.
 
 ## `configure_project` additions
 
@@ -152,7 +193,7 @@ expand
 
 ## Multi-project tab safety
 
-Native Blockbench supports multiple `ModelProject` tabs. Normal read safety should not require another list tool.
+Native Blockbench supports multiple `ModelProject` tabs. Read safety should not require another list tool.
 
 Extend:
 
@@ -173,7 +214,7 @@ save_path
 export_path
 ```
 
-Conditional project-session owner:
+`ON_DEMAND` project-session owner:
 
 ```text
 manage_project_session
@@ -182,13 +223,13 @@ manage_project_session
   reload
 ```
 
-`close`/`reload` must refuse unsaved state unless explicit discard consent is supplied. This stays conditional because normal authoring should remain pinned to one intended project.
+`close`/`reload` must refuse unsaved state unless explicit discard consent is supplied. Keep this `ON_DEMAND` because ordinary authoring should remain pinned to one intended project.
 
 ## Existing-owner efficiency additions
 
 ### Whole Animation clone
 
-Extend normal `create_animation`:
+Extend `PHASE_DEFAULT` `create_animation`:
 
 ```text
 source_animation?: UUID/name
@@ -215,13 +256,13 @@ Extend `capture_animation_views` rather than adding a video/screenshot-sequence 
 output: frames | contact_sheet
 ```
 
-A bounded contact sheet across explicit timestamps is the preferred normal temporal evidence because it exposes timing progression without video/GIF overhead. Animated GIF/video export remains evidence-gated rather than normal MCP surface.
+A bounded contact sheet across explicit timestamps is the preferred temporal evidence because it exposes timing progression without video/GIF overhead. Animated GIF/video export remains evidence-gated rather than part of `PHASE_DEFAULT`.
 
-## Conditional 2D reference-image coverage
+## ON_DEMAND 2D reference-image coverage
 
 Blockbench native project state supports 2D reference images separately from BlockIT's 3D Route-1 GLB reference.
 
-Add conditional Geometry/evidence owner only when needed:
+Add only when needed:
 
 ```text
 manage_reference_image
@@ -230,32 +271,34 @@ manage_reference_image
   remove
 ```
 
-Bounded fields may include absolute image source, name, mode/view, position, size/scale, opacity, visibility and lock state. This covers front/side blueprints and concept-art references without contaminating normal Geometry authoring.
+Bounded fields may include absolute image source, name, mode/view, position, size/scale, opacity, visibility and lock state. This covers front/side blueprints and concept-art references without contaminating ordinary Geometry authoring.
 
 ## Molang validation policy
 
-Do not add a normal `validate_molang` tool merely for parity. Every Molang-bearing mutation owner should validate the authored text using the strongest safe native/static parser available before Undo when possible.
+Do not add a `PHASE_DEFAULT` `validate_molang` tool merely for parity. Every Molang-bearing mutation owner should validate authored text using the strongest safe native/static parser available before Undo when possible.
 
-Potential conditional `validate_molang` remains evidence-gated for debugging only if real workflows repeatedly need standalone expression diagnosis.
+A future `ON_DEMAND` `validate_molang` remains evidence-gated for debugging only if real workflows repeatedly need standalone expression diagnosis.
 
-## Post-phase normal counts
+## Post-phase PHASE_DEFAULT counts
 
-With `open_project` added to shared Core, approximate normal phase surfaces become:
+With `open_project` added to shared Core, approximate default phase surfaces become:
 
 ```text
-Geometry   ≈ 27 total
-Texturing  ≈ 25 total
-Animation  ≈ 24 total
+Geometry   ≈ 27 total before further PHASE_DEFAULT reduction
+Texturing  ≈ 25 total before ON_DEMAND separation
+Animation  ≈ 24 total before ON_DEMAND separation
 ```
 
-Conditional additions from this final gap audit:
+These historical estimates are input to the local consolidation, not final target counts. Final counts must be measured after the `PHASE_DEFAULT` / `ON_DEMAND` split.
+
+Additional `ON_DEMAND` Core/cross-phase coverage includes:
 
 ```text
 manage_project_session
 manage_reference_image
 ```
 
-No other new normal tool family is currently justified.
+No other new Core family is currently justified.
 
 ---
 
@@ -263,44 +306,44 @@ No other new normal tool family is currently justified.
 
 Geometry was re-audited against official Blockbench modeling/reference docs, native Bedrock codec/outliner behavior, current `minecraft:geometry` capabilities, and public MCP implementations.
 
-## Final normal Geometry surface target
-
-Target normal surface: **about 27 tools** after the shared Core `open_project` addition.
+## PHASE_DEFAULT Geometry target
 
 ```text
 CORE / SETUP / EVIDENCE
-1  create_project
-2  open_project
-3  configure_project
-4  get_project_info
-5  inspect_model_bounds
-6  undo
-7  redo
-8  get_undo_stack
-9  list_outline
-10 find_elements_by_criteria
-11 get_selection
-12 inspect_element
-13 capture_model_views
-14 export_model
-15 list_textures
+create_project
+open_project
+configure_project
+get_project_info
+list_outline
+find_elements_by_criteria
+inspect_element
+inspect_model_bounds
+capture_model_views
+export_model
+list_textures
 
 GEOMETRY AUTHORING / CORRECTION
-16 place_cube
-17 modify_cubes_batch
-18 add_group
-19 duplicate_element
-20 remove_element
-21 rename_element
-22 modify_group
-23 reparent_element
-24 manage_locator
-25 manage_geometry_reference
-26 measure_geometry
-27 manage_texture_mesh
+place_cube
+modify_cubes_batch
+add_group
+duplicate_element
+remove_element
+rename_element
+modify_group
+reparent_element
+measure_geometry
 ```
 
-Remove from the normal Geometry surface after local consolidation:
+Shared recovery/selection capabilities are `ON_DEMAND`, not automatically exposed merely because Geometry is active:
+
+```text
+undo
+redo
+get_undo_stack
+get_selection
+```
+
+Retire from the production surface after local consolidation:
 
 ```text
 modify_cube
@@ -310,12 +353,26 @@ manage_null_object
 bone_rigging
 ```
 
-Conditional / extended Geometry:
+## ON_DEMAND Geometry
 
 ```text
+manage_locator
+manage_texture_mesh
+manage_geometry_reference
 manage_bounding_box
 manage_item_display_transform
 manage_reference_image
+```
+
+Intent ownership:
+
+```text
+locator/null/attachment/socket/effect-origin/IK-target → manage_locator
+native Bedrock TextureMesh                              → manage_texture_mesh
+3D Route-1 reference evidence                          → manage_geometry_reference
+explicit bounding-box editor state                     → manage_bounding_box
+item-display transform integration                     → manage_item_display_transform
+2D reference-image workflow                            → manage_reference_image
 ```
 
 Remote-safe Geometry correctness work already on `Local` includes faithful native duplication, export-safe identity guards, complete structural preflight before Undo, exact Cube `inflate`/export inspection, world-space OBB extraction, SAT contact classification, and project-resolution/visible-bounds planning. Geometry remains **LOCAL PROOF REQUIRED** until public consolidation, generated artifacts, local tests, and live E2E pass.
@@ -326,41 +383,24 @@ Remote-safe Geometry correctness work already on `Local` includes faithful nativ
 
 Texturing was re-audited against official Blockbench Paint Mode/Texture/Layer/PBR/animated-texture behavior, native source, Minecraft Bedrock texture-set/Vibrant Visuals PBR semantics, and public Blockbench MCPs.
 
-## Final normal Texturing-specific surface target
+## PHASE_DEFAULT Texturing target
 
-Target: **about 10 Texturing-specific tools**, plus shared Core.
+Default classic Minecraft/Bedrock texturing stays intentionally small:
 
 ```text
-TEXTURE INVENTORY / LIFECYCLE
-1  create_texture
-2  configure_texture
-3  remove_texture
-4  get_texture
-5  export_texture
-
-BITMAP AUTHORING
-6  paint_texture
-
-PBR / MATERIAL
-7  create_pbr_material
-8  configure_material
-9  list_materials
-10 get_material_info
+create_texture
+configure_texture
+remove_texture
+get_texture
+paint_texture
+export_texture
 ```
 
 `list_textures` remains shared Core because Geometry uses its UV/atlas gate before Texturing handoff.
 
-After the final Core addition this implies roughly:
+The current Texturing surface is much larger because Painter/UI-state/PBR/material-instance routes are exposed together. Local consolidation must replace accepted-result behavior before retiring duplicates.
 
-```text
-~15 shared Core/setup/evidence
-+ 10 Texturing-specific
-= ~25 normal Texturing-phase tools
-```
-
-instead of the current ~43.
-
-Retire from the normal Texturing surface after replacements exist:
+Retire from the production surface after replacement contracts exist:
 
 ```text
 paint_fill_tool
@@ -386,15 +426,34 @@ import_texture_set
 save_material_config
 ```
 
-Conditional/lazy Texturing:
+## ON_DEMAND Texturing
 
 ```text
+create_pbr_material
+configure_material
+list_materials
+get_material_info
+manage_texture_set
 manage_texture_layers
 manage_texture_group
 manage_animated_texture
-manage_texture_set
 list_material_instances
 set_material_instances
+```
+
+These remain full supported capability, but exact intent/evidence must load the exact owner. There is no PBR pack, advanced-texture pack, or material-instance pack activation step.
+
+Intent examples:
+
+```text
+PBR / RTX / Vibrant Visuals
+normal map / height map
+MER / MERS
+metalness / roughness / emissive / subsurface
+texture_set
+texture layers/groups
+animated texture
+per-face material instances
 ```
 
 ## Texturing ownership summary
@@ -405,7 +464,7 @@ Remove provisional 16×16 defaults. Require width+height as a pair when explicit
 
 ### `configure_texture` / `remove_texture`
 
-One normal existing-Texture property/bitmap owner plus one explicit destructive lifecycle owner. Physical bitmap resizing must not silently mutate Geometry UV layout.
+One existing-Texture property/bitmap owner plus one explicit destructive lifecycle owner. Physical bitmap resizing must not silently mutate Geometry UV layout.
 
 ### `get_texture`
 
@@ -413,7 +472,7 @@ One readback owner with bounded scopes such as `full | frame | face | rect | pix
 
 ### `paint_texture`
 
-One normal bitmap mutation owner for atlas or face-local targets. Result-oriented operations may include fill/flood/rect/ellipse/line/stroke/pixels/gradient/erase/replace/copy/flip/quarter-turn. Global Painter selection/preset/stylus/mirror state is not normal agent ownership. Use shared face mapping, frame mapping, expected revision, one Undo, and exact affected-pixel postcondition.
+One bitmap mutation owner for atlas or face-local targets. Result-oriented operations may include fill/flood/rect/ellipse/line/stroke/pixels/gradient/erase/replace/copy/flip/quarter-turn. Global Painter selection/preset/stylus/mirror state is not agent-owned artifact state. Use shared face mapping, frame mapping, expected revision, one Undo, and exact affected-pixel postcondition.
 
 ### PBR
 
@@ -436,7 +495,7 @@ Animation was re-audited against:
 - current Minecraft Bedrock animation and animation-controller documentation/schema;
 - public Blockbench MCPs including SwagRee, sosadly, adhi-jp, XiaoNetwork-Astral and other surveyed implementations.
 
-The goal is **full relevant Bedrock Animation coverage with one direct owner for each authored result**, while keeping Blockbench-only editor aids conditional.
+The goal is **full relevant Bedrock Animation coverage with one direct owner for each authored result**, while editor-only aids stay out of `PHASE_DEFAULT`.
 
 ## Current Animation surface problem
 
@@ -467,38 +526,21 @@ animation_copy_paste
 
 all mutate transform keyframe cohorts, while `animation_timeline` mixes temporary editor playback/selection state with persistent authored Animation properties.
 
-## Final normal Animation-specific surface target
-
-Target: **about 9 Animation-specific tools**, plus shared Core.
+## PHASE_DEFAULT Animation target
 
 ```text
-ANIMATION LIFECYCLE / AUTHORING
-1  create_animation
-2  configure_animation
-3  remove_animation
-4  manage_keyframes
-5  manage_animation_effects
-6  manage_animation_controller
-
-INSPECTION / VERIFICATION / DELIVERY
-7  inspect_animation
-8  capture_animation_views
-9  export_animation_file
+create_animation
+configure_animation
+remove_animation
+manage_keyframes
+inspect_animation
+capture_animation_views
+export_animation_file
 ```
 
-After the final Core addition this implies roughly:
+The capability is broader than the current surface while default ownership becomes simpler.
 
-```text
-~15 shared Core/setup/evidence
-+ 9 Animation-specific
-= ~24 normal Animation-phase tools
-```
-
-The capability is broader than the current surface while normal tool ownership becomes simpler.
-
-## Retire / remove from the normal Animation surface
-
-After local replacement contracts exist:
+Retire after replacement contracts exist:
 
 ```text
 animation_graph_editor
@@ -511,16 +553,18 @@ animation_copy_paste
 
 Do not remove source behavior until replacement contracts, generated artifacts and regression/live proof exist.
 
-## Conditional / lazy Animation coverage
+## ON_DEMAND Animation
 
 ```text
+manage_animation_effects
+manage_animation_controller
 animation_playback
 manage_animation_curves
 import_animation_file
 validate_animation_motion
 ```
 
-Controller `variables/remap_curve` is a separate **conditional Bedrock-extension gap** discussed below; it should remain inside the controller owner rather than becoming another tool.
+Controller `variables/remap_curve` is a separate **ON_DEMAND Bedrock-extension gap** discussed below; it remains inside the controller owner rather than becoming another tool.
 
 ---
 
@@ -566,13 +610,13 @@ Creation should no longer require a second tool call merely to add native metada
 
 Identifiers must use the Bedrock naming grammar: begin with a letter and contain only letters, numbers, underscores and periods. Use `mcp/lib/bedrockAnimationSemantics.ts` as the pure naming/interpolation foundation.
 
-Do not add destructive whole-animation `upsert(replace=true)` as the normal editing model. Incremental explicit mutation remains safer for live Blockbench work.
+Do not add destructive whole-animation `upsert(replace=true)` as the ordinary editing model. Incremental explicit mutation remains safer for live Blockbench work.
 
 ### `configure_animation` — sole persistent Animation metadata owner
 
 Move persistent authored state out of `animation_timeline`.
 
-Normal fields:
+Fields:
 
 ```text
 name?
@@ -593,7 +637,7 @@ No-op updates fail before Undo. Rename must preserve deterministic controller re
 
 ### `remove_animation` — explicit destructive Animation lifecycle
 
-BlockIT currently creates animations but lacks a normal delete owner.
+BlockIT currently creates animations but lacks a delete owner.
 
 Before Undo:
 
@@ -611,16 +655,16 @@ Controller deletion remains an operation of `manage_animation_controller`, not a
 
 ### `manage_keyframes` — single transform-keyframe mutation owner
 
-Absorb the accepted-result semantics of:
+Absorb accepted-result semantics of:
 
 ```text
 manage_keyframes
 batch_keyframe_operations
 animation_copy_paste
-normal export-safe graph/interpolation edits
+export-safe graph/interpolation edits
 ```
 
-The new contract should be explicit and multi-target rather than selected-state driven:
+The contract should be explicit and multi-target rather than selected-state driven:
 
 ```text
 animation: explicit UUID/name
@@ -641,7 +685,7 @@ existing keyframe UUID when available
 otherwise exact bone + channel + unique time selector
 ```
 
-Do not require Timeline selection for normal batch work and do not use a persistent global animation clipboard. Direct copy carries source + target in the same call.
+Do not require Timeline selection for batch work and do not use a persistent global animation clipboard. Direct copy carries source + target in the same call.
 
 Required keyframe data coverage:
 
@@ -668,7 +712,7 @@ bake/sample
 explicit source→target copy with optional time offset/mirror
 ```
 
-All selected/range/pattern convenience must resolve to explicit live keyframes before Undo; `selection=selected` is not a canonical normal contract.
+All selected/range/pattern convenience must resolve to explicit live keyframes before Undo; `selection=selected` is not a canonical production contract.
 
 ### Bezier / Graph Editor boundary
 
@@ -685,13 +729,13 @@ step        → Blockbench compiles to Bedrock pre/post
 bezier      → Blockbench/editor preview only; bake before direct Bedrock delivery
 ```
 
-Normal `manage_keyframes` must not silently author direct-export Bezier as though it were Minecraft-safe. Keep explicit Bezier handle editing under conditional `manage_animation_curves`, or preserve existing editor curves, but `export_animation_file` must fail closed while unbaked Bezier remains.
+`PHASE_DEFAULT` `manage_keyframes` must not silently author direct-export Bezier as though it were Minecraft-safe. Keep explicit Bezier handle editing under `ON_DEMAND` `manage_animation_curves`, or preserve existing editor curves, but `export_animation_file` must fail closed while unbaked Bezier remains.
 
 Molang expressions also require caution with smooth/Bezier editor interpolation; preserve source text and do not claim preview equivalence without live evidence.
 
 ### `manage_animation_effects`
 
-Keep this focused owner. It already covers the native Bedrock effect channels:
+This `ON_DEMAND` owner covers native Bedrock effect channels:
 
 ```text
 particle
@@ -703,7 +747,7 @@ Retain bounded add/update/remove operations, full preflight and one Undo. Effect
 
 ### `manage_animation_controller`
 
-Keep one controller owner, but close several real coverage gaps.
+This `ON_DEMAND` owner keeps all controller lifecycle/composition behavior together.
 
 Already covered well:
 
@@ -753,9 +797,9 @@ The explicit key is authoritative for export. A loaded item is optional supporti
 
 Current Minecraft controller docs support per-state variables with Molang values and optional `remap_curve`. Current native Blockbench `AnimationControllerState` source does not expose/persist this field in its ordinary state model.
 
-Treat this as **conditional Bedrock extension work**, not a normal hot-surface field that may silently disappear.
+Treat this as **ON_DEMAND Bedrock extension work**, not a `PHASE_DEFAULT` field that may silently disappear.
 
-Before claiming support, LOCAL_CODE must prove a persistent plugin-owned round trip across:
+Before claiming support, `LOCAL_CODE` must prove a persistent plugin-owned round trip across:
 
 ```text
 JSON import
@@ -803,15 +847,15 @@ interpolation
 Bezier editor metadata when present
 ```
 
-Controller inspection retains state scripts/effects/transitions/links and `blend_transition_curve`, and later includes state variables only after the conditional persistence contract is proven.
+Controller inspection retains state scripts/effects/transitions/links and `blend_transition_curve`, and later includes state variables only after the ON_DEMAND persistence contract is proven.
 
 ### `capture_animation_views` — canonical motion evidence owner
 
 Use the prepared `mcp/lib/animationPreviewState.ts` transaction.
 
-Normal inputs should support explicit Animation + time(s) + canonical view(s), with bounded batching to avoid repeated state churn.
+Inputs should support explicit Animation + time(s) + canonical view(s), with bounded batching to avoid repeated state churn.
 
-Normal outputs:
+Outputs:
 
 ```text
 frames
@@ -832,11 +876,11 @@ camera/view state owned by capture path
 
 Optional temporary **Molang preview context / variable placeholders** should be supported only through Molang/value inputs and restored after capture. Never use arbitrary JavaScript to fake runtime state.
 
-A later conditional extension may capture one explicit controller state, but it must snapshot/restore controller selection and all dependent animation preview state just as strictly.
+A future `ON_DEMAND` extension may capture one explicit controller state, but it must snapshot/restore controller selection and all dependent animation preview state just as strictly.
 
-### `export_animation_file` — normal delivery owner
+### `export_animation_file` — delivery owner
 
-Standalone animation/controller JSON delivery is a normal production requirement; generic `export_model` intentionally does not own it.
+Standalone animation/controller JSON delivery is a production requirement; generic `export_model` intentionally does not own it.
 
 Use native AnimationCodec compilation as source of truth:
 
@@ -863,7 +907,7 @@ Do not silently bake or mutate the authored animation during export.
 
 ---
 
-# Conditional / extended Animation coverage
+# ON_DEMAND Animation behavior details
 
 ## `animation_playback`
 
@@ -877,25 +921,25 @@ set_time
 playback_speed
 ```
 
-This replaces the ephemeral portion of current `animation_timeline`. Normal verification uses `capture_animation_views`, not playback UI state.
+This replaces the ephemeral portion of current `animation_timeline`. Verification uses `capture_animation_views`, not playback UI state.
 
-Timeline keyframe selection, marker colors, onion-skin toggles and similar UI state are not normal accepted-result owners.
+Timeline keyframe selection, marker colors, onion-skin toggles and similar UI state are not accepted-result owners.
 
 ## `manage_animation_curves`
 
-Conditional Blockbench graph-editor workflow for Bezier handles/easing or other editor-only curve work. It must clearly state that Bezier requires baking before direct Bedrock animation JSON delivery.
+Blockbench graph-editor workflow for Bezier handles/easing or other editor-only curve work. It must clearly state that Bezier requires baking before direct Bedrock animation JSON delivery.
 
-Normal Bedrock-safe linear/catmullrom/step edits remain inside `manage_keyframes`.
+Bedrock-safe linear/catmullrom/step edits remain inside `manage_keyframes`.
 
 ## `import_animation_file`
 
-Conditional absolute-path import for `*.animation.json` and `*.animation_controllers.json` using native Bedrock AnimationCodec parsing/loading with explicit filters, collision preflight and one Undo.
+Absolute-path import for `*.animation.json` and `*.animation_controllers.json` using native Bedrock AnimationCodec parsing/loading with explicit filters, collision preflight and one Undo.
 
 Do not route import through generic risky file execution.
 
 ## `validate_animation_motion`
 
-Conditional read-only motion sweep built only after the Geometry measurement owner and temporary preview path are proven locally/live.
+Read-only motion sweep built only after the Geometry measurement owner and temporary preview path are proven locally/live.
 
 Bounded checks may sample:
 
@@ -920,15 +964,15 @@ Always restore editor state. Do not produce a subjective animation quality score
 
 ---
 
-# Animation editor features intentionally not normal MCP owners
+# Animation editor features intentionally outside PHASE_DEFAULT
 
 Blockbench exposes additional editor conveniences including timeline selection, markers, onion skin, keyframe colors, animation presets, graph-view toggles and panel filtering. These help a human use the UI but do not define the Bedrock animation artifact.
 
 Coverage policy:
 
 ```text
-selection / panel filters / graph toggle → no normal tool; explicit targets replace them
-markers / keyframe colors               → editor annotation only; conditional only if a real workflow proves value
+selection / panel filters / graph toggle → no production tool; explicit targets replace them
+markers / keyframe colors               → editor annotation only; add only if a real workflow proves value
 onion skin                              → visual editor aid; capture_animation_views owns agent verification
 animation presets                       → direct create/copy/manage_keyframes produces the same authored result
 ```
@@ -943,10 +987,10 @@ Do not call Animation complete until all of these are proven locally/live:
 
 ```text
 SURFACE / OWNERSHIP
-one normal persistent Animation configuration owner
-one normal transform-keyframe mutation owner
-no normal global clipboard / Timeline-selection dependency
-graph/playback editor tools conditional only
+one PHASE_DEFAULT persistent Animation configuration owner
+one PHASE_DEFAULT transform-keyframe mutation owner
+no global clipboard / Timeline-selection dependency
+playback/curve/import/motion-QA capabilities ON_DEMAND only
 bone_rigging absent from Animation surface
 
 ANIMATION LIFECYCLE
@@ -966,37 +1010,45 @@ Bezier direct-export rejection + explicit bake path
 copy/mirror/retime/reverse/smooth/bake one-Undo fixtures
 
 EFFECTS
-particle/sound/instruction round trip
+particle/sound/instruction round trip through ON_DEMAND effects owner
 
 CONTROLLERS
+ON_DEMAND controller owner loads only for controller intent/evidence
 controller delete/duplicate
 state duplicate
 ordered transitions
 ordered animation links
 blend_transition_curve
 external/vanilla/nested-controller short-key links
-state variable/remap_curve conditional persistence decision
+state variable/remap_curve ON_DEMAND persistence decision
 
 READ / VERIFY
 inspect list + focused animation/controller/bone data
 capture_animation_views exact temporary pose + restoration
 contact-sheet sequence output
 Molang preview context restoration
-optional objective motion sweep only after primitive proof
+objective motion sweep only after primitive proof
 
 DELIVERY
 native codec animation JSON compile/export
 native codec controller JSON compile/export
 unbaked Bezier blocks delivery
-conditional import round trip
+ON_DEMAND import round trip
+
+ROUTING
+PHASE_DEFAULT → ON_DEMAND no reload/reconnect
+ON_DEMAND → PHASE_DEFAULT no unload/reset
+ON_DEMAND → ON_DEMAND exact next capability only
+foreign-phase capability never enters ON_DEMAND search
 
 GATES
-Animation-only phase surface
+Animation-only phase ownership
 prompts:build PASS
 docs:build PASS
 docs:check PASS
 verify:mcp PASS
-LIVE Animation E2E PASS
+LIVE Animation PHASE_DEFAULT E2E PASS
+LIVE Animation ON_DEMAND E2E PASS
 ```
 
 Animation remains **LOCAL PROOF REQUIRED** until public consolidation, generated artifacts, tests and live Blockbench verification all pass.
@@ -1016,8 +1068,11 @@ generic UI-action bridges
 persistent UUID registries
 large generic routers/profiles/frameworks without evidence
 procedural biped/limb generators as default authoring
-destructive whole-animation replacement as the normal editing model
-hot-surface video/GIF generation when bounded frames/contact sheets provide sufficient evidence
+destructive whole-animation replacement as the ordinary editing model
+PHASE_DEFAULT video/GIF generation when bounded frames/contact sheets provide sufficient evidence
+category-specific reload/reconnect/reset behavior
+ON_DEMAND pack loaders or pack registries
+parallel capability-category vocabulary
 ```
 
 External repositories are references only. BlockIT implementation must follow this repository's rules, Bedrock constraints, source ownership, and proof boundaries.
