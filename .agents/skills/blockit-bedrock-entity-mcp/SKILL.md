@@ -77,7 +77,7 @@ manage_locator create     → name+parent; update → id+authored change
 manage_null_object create → name+parent; update → id+parent/position
 ```
 
-If conditional/action fields matter, load **that exact active-phase spec once** before mutation. Validation failure repairs the **same routed tool**.
+If conditional/action fields matter, load **that exact active-phase spec once** before mutation. Validation failure repairs arguments for the **same routed tool**.
 
 ## Search / Recovery
 
