@@ -1,6 +1,6 @@
 # Next Action
 
-Updated: 2026-09-01 — full MCP coverage curated; capability loading vocabulary unified to PHASE_DEFAULT / ON_DEMAND; same-phase retrieval/reuse and efficiency measurement clarified; public consolidation/build/live proof remains local
+Updated: 2026-09-01 — full MCP coverage curated; capability loading vocabulary unified to AUTO_LOADED / INTENT_LOADED; same-phase retrieval/reuse and efficiency measurement clarified; public consolidation/build/live proof remains local
 
 Working branch: **`Local` only**.
 
@@ -8,7 +8,7 @@ This file owns **active continuation only**. Stable facts belong in `CONTEXT.md`
 
 ## Current Status
 
-`FULL_MCP_COVERAGE_CURATED_PHASE_DEFAULT_ON_DEMAND_LOCAL_IMPLEMENTATION_REQUIRED`
+`FULL_MCP_COVERAGE_CURATED_AUTO_LOADED_INTENT_LOADED_LOCAL_IMPLEMENTATION_REQUIRED`
 
 Geometry, Texturing, Animation, and Core/project lifecycle have been re-audited against official Blockbench documentation/native source, current Minecraft Bedrock behavior/schema, and surveyed public Blockbench MCP implementations.
 
@@ -24,7 +24,7 @@ load only what the current phase + current intent needs
 no tool-count parity for its own sake
 ```
 
-Do **not** remove rare capability merely to reduce tool count. Keep it supported as `ON_DEMAND` when it is not appropriate for the default active-phase surface.
+Do **not** remove rare capability merely to reduce tool count. Keep it supported as `INTENT_LOADED` when it is not appropriate for the automatically loaded active-phase surface.
 
 Do **not** restart broad external feature hunting before local implementation unless a concrete missing production capability appears.
 
@@ -33,62 +33,62 @@ Do **not** restart broad external feature hunting before local implementation un
 There are exactly **two capability categories**. These names are canonical in design, implementation, generated guidance, tests, and user-facing diagnostics.
 
 ```text
-PHASE_DEFAULT
+AUTO_LOADED
 → automatically available when its owning phase is active
 → ordinary path for that phase
 → no discovery/load step before use when exact route is known
 
-ON_DEMAND
-→ not present in the default active-phase context
+INTENT_LOADED
+→ not present in the automatically loaded active-phase context
 → loaded only when explicit intent or observed authored state requires that capability
 ```
 
-Do **not** use `HOT`, `DEFERRED`, `LAZY`, `SPECIALIZED`, `NICHE`, `normal`, `conditional`, or `extended` as alternative capability-category names.
+Do **not** use `PHASE_DEFAULT`, `ON_DEMAND`, `HOT`, `DEFERRED`, `LAZY`, `SPECIALIZED`, `NICHE`, `normal`, `conditional`, or `extended` as alternative capability-category names.
 
-`PHASE_DEFAULT` and `ON_DEMAND` classify capability exposure only. They are **not runtime modes**, do not create a second phase system, and do not change capability ownership.
+`AUTO_LOADED` and `INTENT_LOADED` classify capability exposure only. They are **not runtime modes**, do not create a second phase system, and do not change capability ownership.
 
 ### Routing invariant
 
 ```text
 ACTIVE PHASE
 +
-PHASE_DEFAULT
+AUTO_LOADED
 +
-only ON_DEMAND capability definitions relevant to the current intent/evidence
+only INTENT_LOADED capability definitions relevant to the current intent/evidence
 ```
 
-No category-wide activation exists. No `ON_DEMAND` pack activation exists.
+No category-wide activation exists. No `INTENT_LOADED` pack activation exists.
 
 ### Same-phase transition contract
 
 Category transitions must not create reload/reconnect/reset churn.
 
 ```text
-PHASE_DEFAULT → PHASE_DEFAULT
-→ call the exact next default capability directly
+AUTO_LOADED → AUTO_LOADED
+→ call the exact next automatically loaded capability directly
 
-PHASE_DEFAULT → ON_DEMAND
+AUTO_LOADED → INTENT_LOADED
 → explicit intent/evidence triggers one narrow lookup when the capability definition is not already available
 → choose the exact owner
 → execute
-→ keep PHASE_DEFAULT surface available
+→ keep AUTO_LOADED surface available
 → no phase switch, reload, reconnect, or category reset
 
-ON_DEMAND → PHASE_DEFAULT
-→ call the exact default capability directly
+INTENT_LOADED → AUTO_LOADED
+→ call the exact automatically loaded capability directly
 → no unload/reset ceremony
 
-ON_DEMAND → ON_DEMAND
+INTENT_LOADED → INTENT_LOADED
 → reuse already available matching capability definitions first
 → if the next intent needs an unavailable capability, perform one narrow lookup for that intent
-→ never load every ON_DEMAND capability in the phase
+→ never load every INTENT_LOADED capability in the phase
 ```
 
-An `ON_DEMAND` capability does not become a mandatory dependency merely because it was used once. Reuse its available definition while the current phase/session context remains valid; otherwise continue through `PHASE_DEFAULT` without an explicit unload action.
+An `INTENT_LOADED` capability does not become a mandatory dependency merely because it was used once. Reuse its available definition while the current phase/session context remains valid; otherwise continue through `AUTO_LOADED` without an explicit unload action.
 
-### ON_DEMAND lookup and reuse contract
+### INTENT_LOADED lookup and reuse contract
 
-`ON_DEMAND` is a context-loading mechanism, not a reason to add extra routing ceremony.
+`INTENT_LOADED` is a context-loading mechanism, not a reason to add extra routing ceremony.
 
 ```text
 exact route already available
@@ -110,11 +110,11 @@ lookup miss
 
 A narrow lookup returning several closely related definitions does **not** create a pack, subgroup, or new category. It only avoids repeated lookup overhead inside one coherent workflow.
 
-Never re-run lookup merely for confirmation after a successful mutation. Never send a known foreign-phase capability through same-phase `ON_DEMAND` lookup.
+Never re-run lookup merely for confirmation after a successful mutation. Never send a known foreign-phase capability through same-phase `INTENT_LOADED` lookup.
 
 ### Category assignment rule
 
-`PHASE_DEFAULT` membership must be evidence-driven. Do not classify a tool only because it feels common or rare.
+`AUTO_LOADED` membership must be evidence-driven. Do not classify a tool only because it feels common or rare.
 
 Evaluate together:
 
@@ -123,7 +123,7 @@ intent frequency
 +
 schema/context cost
 +
-workflow adjacency with other PHASE_DEFAULT operations
+workflow adjacency with other AUTO_LOADED operations
 +
 lookup overhead
 +
@@ -136,16 +136,16 @@ Consequences:
 
 ```text
 small + frequently adjacent capability
-→ may remain PHASE_DEFAULT even if not used in every asset
+→ may remain AUTO_LOADED even if not used in every asset
 
 large + uncommon capability
-→ strong ON_DEMAND candidate
+→ strong INTENT_LOADED candidate
 
 rare but tiny capability
-→ benchmark before moving it out of PHASE_DEFAULT
+→ benchmark before moving it out of AUTO_LOADED
 
 frequent but very large/collision-prone capability
-→ benchmark before keeping it PHASE_DEFAULT
+→ benchmark before keeping it AUTO_LOADED
 ```
 
 There is no universal tool-count threshold. Final membership is decided from BlockIT measurements, not copied from another host/model/vendor.
@@ -156,20 +156,20 @@ Capability category never bypasses phase ownership.
 
 ```text
 current intent belongs to ACTIVE PHASE
-→ use PHASE_DEFAULT or ON_DEMAND route
+→ use AUTO_LOADED or INTENT_LOADED route
 
 current intent belongs to FOREIGN PHASE
 → HANDOFF_REQUIRED
 → preserve only resume-critical state
 → switch owning phase
 → reload/reconnect only because phase ownership changed
-→ new phase begins with PHASE_DEFAULT
-→ if the immediate next intent needs ON_DEMAND, load only relevant definitions after reconnect
+→ new phase begins with AUTO_LOADED
+→ if the immediate next intent needs INTENT_LOADED, load only relevant definitions after reconnect
 ```
 
-A known foreign-phase tool must never enter same-phase `ON_DEMAND` search. Phase absence is not a discovery miss.
+A known foreign-phase tool must never enter same-phase `INTENT_LOADED` search. Phase absence is not a discovery miss.
 
-If a default capability detects authored state that needs an `ON_DEMAND` capability, return an explicit continuation hint:
+If an automatically loaded capability detects authored state that needs an `INTENT_LOADED` capability, return an explicit continuation hint:
 
 ```text
 CAPABILITY_REQUIRED
@@ -229,7 +229,7 @@ Exact runtime counts must be measured after public consolidation. The lists belo
 
 ## Shared Core / project lifecycle
 
-### PHASE_DEFAULT
+### AUTO_LOADED
 
 ```text
 create_project
@@ -256,7 +256,7 @@ get_project_info
   → scope=current|all for multi-project safety
 ```
 
-### ON_DEMAND
+### INTENT_LOADED
 
 ```text
 undo
@@ -275,7 +275,7 @@ Recovery/selection state is loaded only when current evidence requires it. Sessi
 
 ## Geometry
 
-### PHASE_DEFAULT
+### AUTO_LOADED
 
 ```text
 list_outline
@@ -304,7 +304,7 @@ bone_rigging             → canonical Geometry owners
 select_all_of_type       → leave production surface
 ```
 
-### ON_DEMAND
+### INTENT_LOADED
 
 ```text
 manage_locator
@@ -332,7 +332,7 @@ None of these should occupy ordinary Cube/bone authoring context without matchin
 
 ## Texturing
 
-### PHASE_DEFAULT
+### AUTO_LOADED
 
 Default classic Minecraft/Bedrock texture authoring is intentionally small:
 
@@ -349,7 +349,7 @@ export_texture
 
 The existing Painter/UI-state wrappers leave the production surface after replacement behavior is verified.
 
-### ON_DEMAND
+### INTENT_LOADED
 
 ```text
 create_pbr_material
@@ -398,7 +398,7 @@ Normal `get_texture` / `paint_texture` remain frame-aware so animated textures d
 
 ## Animation
 
-### PHASE_DEFAULT
+### AUTO_LOADED
 
 ```text
 create_animation
@@ -429,7 +429,7 @@ capture_animation_views
   → frames | contact_sheet
 ```
 
-### ON_DEMAND
+### INTENT_LOADED
 
 ```text
 manage_animation_effects
@@ -556,7 +556,7 @@ file delivery:
   unbaked Bezier blocks direct Bedrock export
 ```
 
-Minecraft controller state `variables/remap_curve` is an **ON_DEMAND Bedrock extension gap** because current native Blockbench state objects do not ordinarily persist it. Do not claim support until local implementation proves import → project save/reopen → Undo → inspect → compile/export round trip. Fail explicitly rather than silently dropping it.
+Minecraft controller state `variables/remap_curve` is an **INTENT_LOADED Bedrock extension gap** because current native Blockbench state objects do not ordinarily persist it. Do not claim support until local implementation proves import → project save/reopen → Undo → inspect → compile/export round trip. Fail explicitly rather than silently dropping it.
 
 ---
 
@@ -590,48 +590,48 @@ When the PC/local batch begins:
    create_project rectangular logical UV contract
    configure_project model_identifier + logical UV policy + visible bounds
    get_project_info current/all scope
-   ON_DEMAND manage_project_session
+   INTENT_LOADED manage_project_session
 
 7. Geometry public consolidation:
-   PHASE_DEFAULT owner consolidation
+   AUTO_LOADED owner consolidation
    modify_cubes_batch final owner + per-face UV
    universal finder/locator/null ownership
    reparent preserve local/world
    measure_geometry
-   ON_DEMAND TextureMesh/reference/bounding/item-display/reference-image owners
+   INTENT_LOADED TextureMesh/reference/bounding/item-display/reference-image owners
    retire duplicate Geometry routes
 
 8. Texturing public consolidation:
-   PHASE_DEFAULT classic texture surface only
+   AUTO_LOADED classic texture surface only
    create_texture dimension/clone contract
    configure_texture + remove_texture
    get_texture scoped/revision/frame reads
    unified paint_texture
    export_texture PNG/TGA
-   PBR/advanced texture/material-instance routes as ON_DEMAND capabilities
+   PBR/advanced texture/material-instance routes as INTENT_LOADED capabilities
    retire duplicate Painter/material-instance routes
 
 9. Animation public consolidation:
-   PHASE_DEFAULT clip/keyframe/inspect/capture/export surface
+   AUTO_LOADED clip/keyframe/inspect/capture/export surface
    create_animation full native metadata/value coverage + source_animation clone
    configure_animation + remove_animation
    unified multi-target manage_keyframes
    remove Timeline-selection/global-clipboard dependency
-   effects/controllers/playback/curves/import/motion validation as ON_DEMAND capabilities
+   effects/controllers/playback/curves/import/motion validation as INTENT_LOADED capabilities
    controller delete/order/blend-curve/key-link + duplicate state/controller corrections
    expand inspect_animation list/focused coverage
    capture_animation_views + contact sheet
    export_animation_file
 
 10. implement capability exposure after owner schemas/behavior are ready:
-    PHASE_DEFAULT = automatically available for active phase
-    ON_DEMAND = narrow intent/evidence lookup only when needed
+    AUTO_LOADED = automatically available for active phase
+    INTENT_LOADED = narrow intent/evidence lookup only when needed
     one lookup may return a bounded closely relevant definition set; actions still use one exact owner
     same-phase category transitions require no reload/reconnect/reset
-    already available ON_DEMAND definitions are reused instead of searched again
+    already available INTENT_LOADED definitions are reused instead of searched again
     do not infer runtime counts from this document
 
-11. update specialist Skills / runtime prompt / phase routing from the measured final catalog using the same PHASE_DEFAULT / ON_DEMAND vocabulary only
+11. update specialist Skills / runtime prompt / phase routing from the measured final catalog using the same AUTO_LOADED / INTENT_LOADED vocabulary only
 
 12. bun run prompts:build
 13. bun run docs:build
@@ -639,24 +639,24 @@ When the PC/local batch begins:
 15. bun run verify:mcp
 
 16. review generated + source diff for stale/dead tool names or retired category terms
-17. measure actual PHASE_DEFAULT and full available counts per phase
+17. measure actual AUTO_LOADED and full available counts per phase
 18. deploy/reload BlockIT
 
 19. LIVE open/save/reopen project lifecycle fixture
-20. LIVE Geometry PHASE_DEFAULT E2E
-21. LIVE Geometry ON_DEMAND fixture(s)
-22. LIVE Texturing classic PHASE_DEFAULT E2E
-23. LIVE Texturing PBR/advanced ON_DEMAND fixture(s)
-24. LIVE Animation PHASE_DEFAULT E2E
-25. LIVE Animation ON_DEMAND effects/controller fixture(s)
-26. same-phase PHASE_DEFAULT ↔ ON_DEMAND transition E2E with no reload/reconnect
-27. ON_DEMAND reuse E2E: same capability twice with no second lookup
+20. LIVE Geometry AUTO_LOADED E2E
+21. LIVE Geometry INTENT_LOADED fixture(s)
+22. LIVE Texturing classic AUTO_LOADED E2E
+23. LIVE Texturing PBR/advanced INTENT_LOADED fixture(s)
+24. LIVE Animation AUTO_LOADED E2E
+25. LIVE Animation INTENT_LOADED effects/controller fixture(s)
+26. same-phase AUTO_LOADED ↔ INTENT_LOADED transition E2E with no reload/reconnect
+27. INTENT_LOADED reuse E2E: same capability twice with no second lookup
 28. cross-phase handoff E2E
 29. measure Cost to Accepted Result and context/tool-search cost
 30. compare three measured surfaces without creating new runtime categories:
     a. all retained active-phase capabilities exposed
-    b. proposed PHASE_DEFAULT + ON_DEMAND split
-    c. a deliberately smaller PHASE_DEFAULT candidate
+    b. proposed AUTO_LOADED + INTENT_LOADED split
+    c. a deliberately smaller AUTO_LOADED candidate
 31. keep the surface with the lowest Cost to Accepted Result while preserving accepted quality and full capability reachability
 ```
 
@@ -683,23 +683,23 @@ controller/state duplicate
 contact-sheet capture + full editor-state restoration
 
 CAPABILITY ROUTING
-PHASE_DEFAULT intent calls direct route with zero capability lookup
-first ON_DEMAND intent requires at most one narrow lookup for the coherent intent
-same ON_DEMAND capability reused later requires zero new lookup while current definition remains available
-PHASE_DEFAULT → ON_DEMAND requires no phase switch/reload/reconnect
-ON_DEMAND → PHASE_DEFAULT requires no unload/reset/reconnect
-ON_DEMAND → ON_DEMAND reuses available definitions first and performs a new lookup only for an unavailable needed capability
-foreign-phase capability never enters ON_DEMAND lookup
+AUTO_LOADED intent calls direct route with zero capability lookup
+first INTENT_LOADED intent requires at most one narrow lookup for the coherent intent
+same INTENT_LOADED capability reused later requires zero new lookup while current definition remains available
+AUTO_LOADED → INTENT_LOADED requires no phase switch/reload/reconnect
+INTENT_LOADED → AUTO_LOADED requires no unload/reset/reconnect
+INTENT_LOADED → INTENT_LOADED reuses available definitions first and performs a new lookup only for an unavailable needed capability
+foreign-phase capability never enters INTENT_LOADED lookup
 classic Texture session does not load PBR capability without matching intent/evidence
-PBR intent loads only closely relevant definitions + existing PHASE_DEFAULT surface
+PBR intent loads only closely relevant definitions + existing AUTO_LOADED surface
 basic Animation clip does not load controller/effects capabilities
-controller intent does not load unrelated ON_DEMAND capabilities
+controller intent does not load unrelated INTENT_LOADED capabilities
 basic Geometry does not load TextureMesh/reference/item-display capabilities
 full capability remains discoverable when exact intent requires it
 
 EFFICIENCY MEASUREMENT
 record initial tool/schema context cost
-record ON_DEMAND lookup count
+record INTENT_LOADED lookup count
 record repeated lookup count
 record wrong-route / wrong-phase attempts
 record mutation/readback/correction count
@@ -726,23 +726,23 @@ Final completion requires:
 
 ```text
 public ownership matches curated coverage
-only PHASE_DEFAULT and ON_DEMAND exist as capability-category vocabulary
-PHASE_DEFAULT surface contains only evidence-justified active-phase routes
-ON_DEMAND capability remains discoverable but absent from default context
-one narrow ON_DEMAND lookup may return bounded closely relevant definitions without creating a pack/category
-already available ON_DEMAND definitions are reused without repeated lookup
+only AUTO_LOADED and INTENT_LOADED exist as capability-category vocabulary
+AUTO_LOADED surface contains only evidence-justified active-phase routes
+INTENT_LOADED capability remains discoverable but absent from automatically loaded context
+one narrow INTENT_LOADED lookup may return bounded closely relevant definitions without creating a pack/category
+already available INTENT_LOADED definitions are reused without repeated lookup
 same-phase category transitions never require reload/reconnect/reset
 PBR absent from classic Texturing context unless requested/evidenced
 all generated prompt/docs current
 bun run verify:mcp PASS
 project open/save/reopen fixture PASS
-live PHASE_DEFAULT authoring fixtures PASS
-representative ON_DEMAND fixtures PASS
+live AUTO_LOADED authoring fixtures PASS
+representative INTENT_LOADED fixtures PASS
 same-phase category-transition fixtures PASS
-ON_DEMAND reuse fixture PASS
+INTENT_LOADED reuse fixture PASS
 live evidence/restore fixtures PASS
 cross-phase handoffs PASS
-PHASE_DEFAULT membership selected from measured Cost to Accepted Result rather than a copied tool-count threshold
+AUTO_LOADED membership selected from measured Cost to Accepted Result rather than a copied tool-count threshold
 phase reload/reconnect cost measured before any separate phase-switch redesign is considered
 measured context/tool-search cost is lower than the worse tested alternatives without accepted-quality regression
 no known P0/P1 correctness hole
