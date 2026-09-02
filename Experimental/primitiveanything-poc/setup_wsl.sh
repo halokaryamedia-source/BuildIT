@@ -41,14 +41,31 @@ if ! conda env list | awk '{print $1}' | grep -Fxq "$ENV_NAME"; then
 fi
 conda activate "$ENV_NAME"
 
+# Keep the pinned PyTorch 2.1/CUDA 11.8 stack from being replaced by newer
+# transitive releases in the upstream requirements file.
+REQ_TMP=""
+PIP_CONSTRAINT_TMP="$(mktemp)"
+trap 'rm -f "${REQ_TMP:-}" "$PIP_CONSTRAINT_TMP"' EXIT
+cat >"$PIP_CONSTRAINT_TMP" <<'EOF'
+numpy<2
+huggingface_hub<1
+omegaconf==2.3.0
+antlr4-python3-runtime==4.9.3
+PyOpenGL==3.1.0
+x-transformers==1.44.8
+rotary-embedding-torch==0.6.5
+torch-einops-utils==0.1.12
+transformers<4.40
+opencv-python<5
+EOF
+
 python -m pip install --upgrade pip setuptools wheel ninja
 conda install -y -n "$ENV_NAME" pytorch=2.1.0 torchvision=0.16.0 pytorch-cuda=11.8 -c pytorch -c nvidia
 conda install -y -n "$ENV_NAME" pytorch3d=0.7.8 -c pytorch3d -c pytorch -c nvidia
 REQ_TMP="$(mktemp)"
 grep -v '^git+https://github.com/facebookresearch/pytorch3d.git' "$PA_ROOT/requirements.txt" > "$REQ_TMP"
-python -m pip install -r "$REQ_TMP"
-rm -f "$REQ_TMP"
-python -m pip install huggingface_hub
+PIP_CONSTRAINT="$PIP_CONSTRAINT_TMP" python -m pip install -r "$REQ_TMP"
+PIP_CONSTRAINT="$PIP_CONSTRAINT_TMP" python -m pip install huggingface_hub
 
 python - "$PA_ROOT" "$PA_DATA_REV" "$PA_MODEL_REV" "$MICHELANGELO_REV" "$PA_WEIGHT_SHA256" "$MICHELANGELO_SHA256" <<'PY'
 from __future__ import annotations
