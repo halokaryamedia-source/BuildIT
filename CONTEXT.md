@@ -39,7 +39,7 @@ No parallel skill-routing or continuation system is active.
 
 BlockIT runs inside desktop Blockbench and exposes a loopback request-owned/stateless MCP endpoint.
 
-The retained normal Bedrock catalog contains **65 callable tools across authoring phases**, but startup exposes only **MCP Core + exactly one active authoring phase**. Default phase is **Geometry**, with current exposure of **28 tools**.
+The retained normal Bedrock catalog contains **51 callable tools across authoring phases**, but startup exposes only **MCP Core + exactly one active authoring phase**. Default phase is **Geometry**, with current exposure of **25 tools**.
 
 Phase ownership is strict:
 

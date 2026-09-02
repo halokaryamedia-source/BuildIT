@@ -255,7 +255,7 @@ Use `ADD MASS` only when evidence shows missing volume.
 
 ## Correction Accuracy Contract
 
-Reuse fresh exact authored state already returned for the target when sufficient. Call `inspect_element` once only when the required current state is missing or stale.
+Reuse fresh exact authored state already returned for the target when sufficient. Call `inspect_elements(mode=detail)` once only when the required current state is missing or stale.
 
 Before mutating a diagnosed local mismatch:
 
@@ -275,7 +275,7 @@ Keep this compact.
 - **ROTATE** — do not change `from/to/size`; use the existing known or explicitly justified pivot.
 - **REATTACH** — distinguish visual contact from hierarchy-parent correction; unsupported reparenting stays `BLOCKED`.
 
-After `modify_cube` / `modify_cubes_batch`, inspect returned `geometry_effect`:
+After `manage_cubes(operation=update|batch_update)`, inspect returned `geometry_effect`:
 
 ```text
 changed_fields

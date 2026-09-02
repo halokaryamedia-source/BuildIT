@@ -48,7 +48,7 @@ risky_eval                   disabled
 from_geo_json                disabled
 ```
 
-The normal Bedrock catalog retains **65 callable tools across authoring phases**. Plugin startup exposes **Core + exactly one authoring phase** so Geometry, Texturing, and Animation work do not overlap. The default **Geometry** surface currently exposes **28 tools**. Phase changes are deliberate handoffs through the `MCP Authoring Phase` setting and require BlockIT MCP reload plus client reconnect.
+The normal Bedrock catalog retains **51 callable tools across authoring phases**. Plugin startup exposes **Core + exactly one authoring phase** so Geometry, Texturing, and Animation work do not overlap. The default **Geometry** surface currently exposes **25 tools**. Phase changes are deliberate handoffs through `switch_authoring_phase`; reconnect the MCP client to refresh `tools/list`.
 
 ```text
 CORE + GEOMETRY
@@ -64,7 +64,7 @@ Geometry owns rig and UV Layout mutation. Texturing may inspect UV state but mus
 
 Normal source capability includes:
 
-- Cube placement/correction with coherent `place_cube(elements=[...])` batching;
+- Cube placement/correction with coherent `manage_cubes(operation=create|update|batch_update)` batching;
 - Group/bone creation including coherent `add_group(groups=[...])` batching;
 - project creation with logical UV resolution `128` by default and explicit `256` opt-in;
 - texture/Painter/PBR/material-instance authoring;
@@ -81,7 +81,7 @@ Protected gaps remain controller blend-curve mutation, TextureMesh direct author
 known target/tool → execute directly
 unknown/stale identity → focused discovery only
 fresh mutation result → reuse it
-known coherent Cubes → one place_cube(elements=[...]) call
+known coherent Cubes → one manage_cubes(operation=create, elements=[...]) call
 known coherent Groups → one add_group(groups=[...]) call
 visual correction → affected view(s) first
 phase boundary crossed → switch phase instead of borrowing another phase's mutation tools
@@ -93,8 +93,8 @@ Do not broad-search source for ordinary asset authoring, inspect every new Cube,
 ## Surface Guard
 
 ```text
-retained Bedrock callable catalog  65 tools
-default Geometry exposure           28 tools
+retained Bedrock callable catalog  51 tools
+default Geometry exposure           25 tools
 initialize instructions             <= 700 characters
 catalog tools/list budget           <= 82,000 characters
 catalog input schemas               <= 58,500 characters

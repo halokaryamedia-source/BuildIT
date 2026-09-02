@@ -149,9 +149,9 @@ reference ↔ model comparison.
 Principal views are orthographic comparison evidence; 3/4 views are volume/
 readability context. Successful capture is not `PASS`. It does not itself load/score the approved reference or judge resemblance.
 
-### `inspect_element`
+### `inspect_elements(mode=detail)`
 
-Returns exact authored Cube/Group state for a diagnosed local target. Reuse fresh exact state already returned for that target when sufficient; use `inspect_element` only when required state is unavailable, insufficient, or stale. Do not add a mandatory readback before every numeric correction.
+Returns exact authored Cube/Group state for a diagnosed local target. Reuse fresh exact state already returned for that target when sufficient; use `inspect_elements(mode=detail)` only when required state is unavailable, insufficient, or stale. Do not add a mandatory readback before every numeric correction.
 
 These are source-implemented capabilities. Their live integration/image delivery
 still remains `LOCAL PROOF REQUIRED` until tested locally.
@@ -299,7 +299,7 @@ GLOBAL
 
 LOCAL
 → locate exact UUID only if target identity is not already fresh/known
-→ reuse fresh exact authored state; inspect_element only if unavailable/insufficient/stale
+→ reuse fresh exact authored state; inspect_elements(mode=detail) only if unavailable/insufficient/stale
 → choose causal correction
 → retain relevant pre-correction paired evidence
 → mutate bounded relationship
@@ -315,7 +315,7 @@ Use:
 
 Do not default to adding another Cube.
 
-For one multi-Cube relationship, `modify_cubes_batch` may execute different
+For one multi-Cube relationship, `manage_cubes(operation=batch_update)` may execute different
 exact-UUID corrections as one recoverable operation. It does not plan or judge
 the correction.
 

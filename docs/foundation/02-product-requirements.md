@@ -63,7 +63,7 @@ Canonical model views
 Difference-first Reference ↔ model visual gate
 ↓
 GLOBAL failure? → revise/rebuild Semantic Form or Primary Form Hypothesis
-LOCAL failure?  → reuse fresh exact state, or inspect_element once if unavailable/stale
+LOCAL failure?  → reuse fresh exact state, or inspect_elements(mode=detail) once if unavailable/stale
                 → causal correction → fresh affected view(s) first
 ↓
 Identity-weighted secondary geometry / neutral organization
@@ -115,7 +115,7 @@ Before primary Cube authoring:
 
 Every new primary Cube must represent a known mass/necessary split.
 
-Normal `place_cube` creation requires:
+Normal `manage_cubes(operation=create)` creation requires:
 
 - explicit finite `from`;
 - explicit finite `to`;
@@ -167,7 +167,7 @@ Do not preserve a bad scaffold because many Cubes already exist.
 When whole form is sound but one bounded relationship is wrong:
 
 1. reuse known exact target identity when fresh; perform focused identity resolution only when missing/stale/ambiguous;
-2. reuse fresh exact authored state already returned for that target; use `inspect_element` once only when required state is unavailable or stale;
+2. reuse fresh exact authored state already returned for that target; use `inspect_elements(mode=detail)` once only when required state is unavailable or stale;
 3. classify the causal mismatch;
 4. apply one coherent correction;
 5. re-observe the affected view(s) first and expand only when material cross-view risk exists.
@@ -178,7 +178,7 @@ Use the causal vocabulary:
 
 Do not default to `ADD MASS`.
 
-For one relationship spanning multiple Cubes, `modify_cubes_batch` may apply
+For one relationship spanning multiple Cubes, `manage_cubes(operation=batch_update)` may apply
 different exact-UUID patches in one recoverable Undo unit.
 
 ### PR-009 — Gate Secondary Work After Primary Form Passes

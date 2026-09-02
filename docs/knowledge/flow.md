@@ -209,7 +209,7 @@ fresh box_uv_region / authored UV state
 
 UV Layout owns `uv_offset`, `autouv`, `mirror_uv`, per-face UV, `box_uv_region`, reuse, orientation, seams, and bounds. It owns no color/style decision.
 
-Reuse fresh `place_cube` UV state. Use `inspect_element` only when face-specific mapping/orientation is missing.
+Reuse fresh `manage_cubes(operation=create)` UV state. Use `inspect_elements(mode=detail)` only when face-specific mapping/orientation is missing.
 
 ### 3.4 Texture Atlas
 

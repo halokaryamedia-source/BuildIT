@@ -16,8 +16,8 @@ describe("current developer-facing documentation sync", () => {
     expect(flow).toContain("current proof state        → docs/knowledge/current-validation.md");
     expect(flow).not.toContain("docs/foundation/validation-report.md");
 
-    expect(llms).toContain("62 callable tools across authoring phases");
-    expect(llms).toContain("currently **29 exposed tools**");
+    expect(llms).toContain("51 callable tools across authoring phases");
+    expect(llms).toContain("currently **25 exposed tools**");
     expect(llms).toContain("77 declared source ToolSpecs");
     expect(llms).not.toContain("64 callable tools across authoring phases");
     expect(llms).not.toContain("currently **27 exposed tools**");
@@ -78,5 +78,31 @@ describe("current developer-facing documentation sync", () => {
 
     expect(runbook).toMatch(/LIVE_BLOCKBENCH[\s\S]*execution capability[\s\S]*does not activate/i);
     expect(runbook).toMatch(/targeted live debugging[\s\S]*formal Local Acceptance/i);
+  });
+
+  test("current Geometry guidance does not route through retired public tool names", async () => {
+    const files = await Promise.all([
+      text("../docs/knowledge/flow.md"),
+      text("../docs/foundation/02-product-requirements.md"),
+      text("../docs/foundation/03-modelling-workflow.md"),
+      text("../docs/foundation/05-geometry-standard.md"),
+      text("../docs/foundation/06-texture-standard.md"),
+      text("../docs/foundation/07-visual-validation.md"),
+      text("README.md"),
+      text("llms.txt"),
+    ]);
+    const retiredPublicNames = [
+      "place_cube",
+      "modify_cube",
+      "modify_cubes_batch",
+      "list_outline",
+      "find_elements_by_criteria",
+      "inspect_element",
+    ];
+    for (const file of files) {
+      for (const name of retiredPublicNames) {
+        expect(file).not.toMatch(new RegExp(`\\b${name}\\b`));
+      }
+    }
   });
 });

@@ -91,7 +91,7 @@ Box UV is a first-class Bedrock workflow.
 For fresh AI-authored Box UV:
 
 ```text
-place_cube
+manage_cubes(operation=create)
 → deterministic initial uv_offset / returned box_uv_region
 → geometry correction while autouv remains active
 → GEOMETRY PASS
@@ -101,7 +101,7 @@ place_cube
 → TEXTURE STYLING
 ```
 
-Do not manually recalculate a fresh `box_uv_region` already returned by `place_cube`. Use `inspect_element` only when face-specific mapping/orientation is actually required.
+Do not manually recalculate a fresh `box_uv_region` already returned by `manage_cubes`. Use `inspect_elements(mode=detail)` only when face-specific mapping/orientation is actually required.
 
 Per-face authored UV follows explicit face rectangles.
 

@@ -12,7 +12,7 @@ Own durable modelling-stage and evidence-economy rules. The single detailed curr
 
 ```text
 known current state + optional grounded reference when reference-driven
-→ fast-path when non-reference: intent → simple envelope → place_cube (skip full Semantic/View maps)
+→ fast-path when non-reference: intent → simple envelope → manage_cubes (skip full Semantic/View maps)
 → when reference-driven: Semantic Form → construction / transform ownership / contact invariants → Primary Form Hypothesis
 → minimum coherent primary Cubes + required primary Groups/pivots
 → only evidence that can change the next decision
@@ -23,7 +23,7 @@ known current state + optional grounded reference when reference-driven
 
 ## Minimum Necessary Evidence
 
-- Reuse fresh exact identity/authored state returned by prior calls when sufficient — `place_cube`/`modify_cube` return values are sufficient for immediate correction without `inspect_element`.
+- Reuse fresh exact identity/authored state returned by prior calls when sufficient — `manage_cubes` return values are sufficient for immediate correction without `inspect_elements(mode=detail)`.
 - Use focused discovery only for unknown, stale, or ambiguous state.
 - `inspect_elements(mode=detail)` is a fallback for missing/stale exact target state, not a mandatory pre-correction ritual.
 - `inspect_model_bounds` is only for material envelope/scale/ground/displacement questions; otherwise skip it.

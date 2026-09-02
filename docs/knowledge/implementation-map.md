@@ -74,7 +74,7 @@ For a named MCP-tool defect, inspect the mapped **source owner + primary regress
 | `manage_cubes` | `mcp/server/tools/cubes.ts` | `mcp/tests/model-effectiveness-correction-accuracy.test.ts` |
 | `add_group` | `mcp/server/tools/element.ts` | `mcp/tests/p1-core-ownership.test.ts` |
 | `list_outline`, `find_elements_by_criteria` | `mcp/server/tools/element.ts` | `mcp/tests/context-payload-cleanup.test.ts` |
-| `inspect_element` | `mcp/server/tools/element-inspection.ts` | `mcp/tests/model-effectiveness-correction-accuracy.test.ts` |
+| `inspect_elements` facade (`mode=detail`) | `mcp/server/tools.ts` → `mcp/server/tools/element-inspection.ts` | `mcp/tests/model-effectiveness-correction-accuracy.test.ts` |
 | `capture_model_views` | `mcp/server/tools/camera.ts` | `mcp/tests/camera-framing-contract.test.ts` |
 | `list_locator_elements`, `manage_locator`, `manage_null_object` | `mcp/server/tools/locators.ts` | `mcp/tests/bedrock-locator-coverage.test.ts` |
 | `create_texture`, `list_textures`, `get_texture`, `activate_texture` | `mcp/server/tools/texture.ts` | `mcp/tests/context-payload-cleanup.test.ts` |
@@ -140,7 +140,7 @@ Static Footprint cannot upgrade a runtime Authoring Efficiency or visual-quality
 
 ## MCP Catalog / Phase Exposure
 
-The current runtime Bedrock catalog retains **65 callable tools across phases**. It is not exposed to Codex all at once.
+The current runtime Bedrock catalog retains **51 callable tools across phases**. It is not exposed to Codex all at once.
 
 Generated API docs enumerate **77 declared source ToolSpecs**, including disabled/source-preserved definitions. That documentation inventory is not the retained callable catalog and is not an active client surface.
 
@@ -152,7 +152,7 @@ texturing  = Texture Atlas + Painter + PBR + material instances
 animation  = animation/keyframes/timeline/effects/controllers/inspection
 ```
 
-Default active phase is `geometry`; current Geometry exposure is **28 tools**. `manage_geometry_reference` is Geometry-owned and does not enter Texturing/Animation. `list_textures` is read-only MCP Core because Geometry needs the global UV audit before Texturing handoff. `remove_element` and `rename_element` are Geometry-owned structural mutation, not cross-phase Core.
+Default active phase is `geometry`; current Geometry exposure is **25 tools**. `manage_geometry_reference` is Geometry-owned and does not enter Texturing/Animation. `list_textures` is read-only MCP Core because Geometry needs the global UV audit before Texturing handoff. `remove_element` and `rename_element` are Geometry-owned structural mutation, not cross-phase Core.
 
 Runtime initialize instructions name `ACTIVE PHASE`, explain why foreign-phase tools are absent, and require:
 

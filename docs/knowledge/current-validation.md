@@ -10,7 +10,7 @@ Do not copy every passing workflow run, test count, or historical proof snapshot
 
 ```text
 BEDROCK CALLABLE CATALOG:        65 tools across phases
-DEFAULT CLIENT EXPOSURE:         MCP Core + Geometry (28 tools)
+DEFAULT CLIENT EXPOSURE:         MCP Core + Geometry (25 tools)
 KNOWN FULL MCP BASELINE:         PASS @ 5ecbf25608f8da879497e2f687854cb68781f3cd
 ACCEPTED LIVE BASELINE:          2026-08-12 Blockbench 5.1.6
 ROUTE 1 SELECTED WORKFLOW:       APPROVED IMAGE + GLB
@@ -34,8 +34,8 @@ GEOMETRY | TEXTURING | ANIMATION
 
 Static/current source contracts retain:
 
-- 65 callable Bedrock tools across phases;
-- default Core + Geometry exposure of 28 tools;
+- 51 callable Bedrock tools across phases;
+- default Core + Geometry exposure of 25 tools;
 - strict foreign-phase `HANDOFF_REQUIRED` behavior;
 - Route 1 as transient Geometry-owned reference evidence rather than production geometry;
 - fail-closed targeting, mutation, export, and phase boundaries;
