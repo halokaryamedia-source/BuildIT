@@ -50,7 +50,7 @@ describe("pre-local plugin runtime cleanup", () => {
     const status = await source("ui/statusBar.ts");
     const settings = await source("ui/settings.ts");
 
-    expect(index).toContain("httpServer.closeActiveSockets()");
+    expect(index).toContain("httpServer.closeAndWait()");
     expect(net).toContain("activeSockets");
     expect(net).toContain("closeActiveSockets");
     expect(ui).toContain("toolTestDialogTeardown()");
@@ -58,6 +58,15 @@ describe("pre-local plugin runtime cleanup", () => {
     expect(ui).toContain("panelCssHandle?.delete()");
     expect(status).toContain("statusBarCssHandle?.delete()");
     expect(settings).toContain("settings.splice(0)");
+  });
+
+  test("plugin unload waits for the MCP listener to close before clearing ownership", async () => {
+    const index = await source("index.ts");
+    const net = await source("server/net.ts");
+
+    expect(net).toContain("closeAndWait(): Promise<void>");
+    expect(index).toContain("await httpServer.closeAndWait()");
+    expect(index).not.toContain("httpServer.close();");
   });
 
   test("dead prompt CDN and stateless session settings are removed", async () => {

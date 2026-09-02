@@ -156,13 +156,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  if (!server?.listening) return;
-  await new Promise<void>((resolve, reject) => {
-    server.close((error) => {
-      if (error) reject(error);
-      else resolve();
-    });
-  });
+  await server?.closeAndWait();
 });
 
 describe("P1.4 raw-net stateless integration", () => {

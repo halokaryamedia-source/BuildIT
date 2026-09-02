@@ -191,9 +191,7 @@ BBPlugin.register("blockit_mcp", {
         `[MCP] Server failed to bind; BlockIT will not enter ready state: ${reason}`
       );
       startingServer.closeActiveSockets();
-      if (startingServer.listening) {
-        startingServer.close();
-      }
+      await startingServer.closeAndWait();
       httpServer = null;
       Blockbench.showQuickMessage(
         `BlockIT MCP failed to start: ${reason}. Close the old MCP instance or free port ${rawPort}.`,
@@ -211,15 +209,12 @@ BBPlugin.register("blockit_mcp", {
     });
   },
 
-  onunload() {
+  async onunload() {
     setMcpPhaseSwitchHandler(() => undefined);
     if (httpServer) {
-      // close() throws ERR_SERVER_NOT_RUNNING when listen never succeeded;
-      // socket teardown must stay unconditional.
-      if (httpServer.listening) {
-        httpServer.close();
-      }
-      httpServer.closeActiveSockets();
+      // Wait for the listener close callback before allowing a subsequent
+      // plugin load to claim the same port.
+      await httpServer.closeAndWait();
       httpServer = null;
     }
 

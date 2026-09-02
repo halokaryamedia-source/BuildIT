@@ -34,6 +34,7 @@ const BUILD_IDENTITY = normalizeBuildIdentity(
 
 export interface NetServer extends NodeNetServer {
   closeActiveSockets(): void
+  closeAndWait(): Promise<void>
 }
 
 function getStatusText (status: number): string {
@@ -604,6 +605,17 @@ export default function createNetServer (
       socket.destroy()
     }
     activeSockets.clear()
+  }
+
+  httpServer.closeAndWait = () => {
+    httpServer.closeActiveSockets()
+    if (!httpServer.listening) return Promise.resolve()
+    return new Promise<void>((resolve, reject) => {
+      httpServer.close((error?: Error) => {
+        if (error) reject(error)
+        else resolve()
+      })
+    })
   }
 
   httpServer.listen(port, host, () => {
