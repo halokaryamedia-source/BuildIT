@@ -298,27 +298,27 @@ const TOOL_DISCOVERY_INTENT_GROUPS = [
     "mirror paste animation data",
   ],
   [
-    "list_material_instances",
+    "manage_material_instances",
     "list material instance names and usage counts",
     "show all face material instances without detailed usages",
   ],
   [
-    "get_face_material_instances",
+    "manage_material_instances",
     "read material instances on this cube faces",
     "which material name is assigned to the north face",
   ],
   [
-    "set_face_material_instance",
+    "manage_material_instances",
     "set one material instance on these cube faces",
     "assign a material name to the north and south faces",
   ],
   [
-    "bulk_set_material_instances",
+    "manage_material_instances",
     "assign different material instances across several cubes",
     "bulk set face material names on multiple cubes",
   ],
   [
-    "clear_material_instances",
+    "manage_material_instances",
     "clear material instances from this cube",
     "remove all face material instance names",
   ],
@@ -565,17 +565,17 @@ export function assertToolDiscoveryEvalIntegrity(
 ): void {
   const failures: string[] = [];
 
-  if (report.enabled_tool_count !== 55) {
+  if (report.enabled_tool_count !== 51) {
     failures.push(
-      `enabled_tool_count=${report.enabled_tool_count}; expected 55`
+      `enabled_tool_count=${report.enabled_tool_count}; expected 51`
     );
   }
   if (report.case_count < 100 || report.case_count > 150) {
     failures.push(`case_count=${report.case_count}; expected 100..150`);
   }
-  if (report.expected_tool_count !== 42) {
+  if (report.expected_tool_count !== 38) {
     failures.push(
-      `expected_tool_count=${report.expected_tool_count}; expected 42`
+      `expected_tool_count=${report.expected_tool_count}; expected 38`
     );
   }
   if (report.missing_expected_tools.length > 0) {

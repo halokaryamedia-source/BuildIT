@@ -16,7 +16,7 @@ describe("current developer-facing documentation sync", () => {
     expect(flow).toContain("current proof state        → docs/knowledge/current-validation.md");
     expect(flow).not.toContain("docs/foundation/validation-report.md");
 
-    expect(llms).toContain("66 callable tools across authoring phases");
+    expect(llms).toContain("62 callable tools across authoring phases");
     expect(llms).toContain("currently **29 exposed tools**");
     expect(llms).toContain("77 declared source ToolSpecs");
     expect(llms).not.toContain("64 callable tools across authoring phases");

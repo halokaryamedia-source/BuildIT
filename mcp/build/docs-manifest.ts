@@ -19,7 +19,7 @@ import { uiToolDocs } from "../server/tools/ui";
 import { materialInstanceToolDocs } from "../server/tools/material-instances";
 import { historyToolDocs } from "../server/tools/history";
 import { exportToolDocs } from "../server/tools/export";
-import { consolidatedInspectionToolDocs, consolidatedMaterialToolDocs, consolidatedAnimationTimelineToolDocs } from "../server/tools";
+import { consolidatedInspectionToolDocs, consolidatedMaterialToolDocs, consolidatedAnimationTimelineToolDocs, consolidatedMaterialInstancesToolDocs } from "../server/tools";
 
 export interface CategoryGroup {
   category: string;
@@ -43,7 +43,7 @@ export const toolManifest: CategoryGroup[] = [
   { category: "Export", tools: exportToolDocs },
   { category: "History", tools: historyToolDocs },
   { category: "Import/Export", tools: importToolDocs },
-  { category: "Material Instances", tools: materialInstanceToolDocs },
+  { category: "Material Instances", tools: [consolidatedMaterialInstancesToolDocs, ...materialInstanceToolDocs.filter((tool) => !["get_face_material_instances", "set_face_material_instance", "list_material_instances", "bulk_set_material_instances", "clear_material_instances"].includes(tool.name))] },
   { category: "Paint Tools", tools: paintToolDocs },
   { category: "Project", tools: projectToolDocs },
   { category: "Textures", tools: [consolidatedMaterialToolDocs, ...textureToolDocs.filter((tool) => !["create_pbr_material", "configure_material", "assign_texture_channel", "save_material_config"].includes(tool.name))] },

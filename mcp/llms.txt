@@ -12,7 +12,7 @@ Default endpoint:
 
 Transport is loopback-only, stateless Streamable HTTP with JSON responses.
 
-The normal `bedrock_entity` profile retains **66 callable tools across authoring phases**, but they are **not exposed all at once**. Runtime exposure is:
+The normal `bedrock_entity` profile retains **62 callable tools across authoring phases**, but they are **not exposed all at once**. Runtime exposure is:
 
 ```text
 MCP CORE + exactly one ACTIVE PHASE

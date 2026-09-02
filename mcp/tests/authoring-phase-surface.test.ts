@@ -77,7 +77,7 @@ describe("authoring phase MCP surface", () => {
       "create_texture",
       "paint_with_brush",
       "manage_material",
-      "set_face_material_instance",
+      "manage_material_instances",
       "create_animation",
       "manage_animation_timeline",
       "manage_animation_controller",
@@ -176,7 +176,7 @@ describe("authoring phase MCP surface", () => {
       "create_texture",
       "paint_with_brush",
       "manage_material",
-      "set_face_material_instance",
+      "manage_material_instances",
     ]) {
       expect(texturing.has(tool), tool).toBe(true);
       expect(geometry.has(tool), tool).toBe(false);

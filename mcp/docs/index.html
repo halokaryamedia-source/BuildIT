@@ -18,7 +18,7 @@
 
       <div class="nav-group">
         <p class="nav-heading">Overview</p>
-        <a href="#tools" class="nav-link">Tools <span class="count">(66)</span></a>
+        <a href="#tools" class="nav-link">Tools <span class="count">(62)</span></a>
         <a href="#prompts" class="nav-link">Prompts <span class="count">(1)</span></a>
         <a href="#resources" class="nav-link">Resources <span class="count">(8)</span></a>
       </div>
@@ -32,7 +32,7 @@
         <a href="#cat-export" class="nav-link">Export <span class="count">(2)</span></a>
         <a href="#cat-history" class="nav-link">History <span class="count">(4)</span></a>
         <a href="#cat-import-export" class="nav-link">Import/Export <span class="count">(1)</span></a>
-        <a href="#cat-material-instances" class="nav-link">Material Instances <span class="count">(5)</span></a>
+        <a href="#cat-material-instances" class="nav-link">Material Instances <span class="count">(1)</span></a>
         <a href="#cat-paint-tools" class="nav-link">Paint Tools <span class="count">(12)</span></a>
         <a href="#cat-project" class="nav-link">Project <span class="count">(4)</span></a>
         <a href="#cat-textures" class="nav-link">Textures <span class="count">(10)</span></a>
@@ -45,7 +45,7 @@
         <h1>BlockIT — Bedrock Entity MCP</h1>
         <p class="subtitle">API Reference — v0.1.0</p>
         <nav class="stats">
-          <a href="#tools"><strong>66</strong> tools (28 stable, 38 experimental)</a>
+          <a href="#tools"><strong>62</strong> tools (27 stable, 35 experimental)</a>
           <a href="#prompts"><strong>1</strong> prompts</a>
           <a href="#resources"><strong>8</strong> resources</a>
         </nav>
@@ -1031,179 +1031,18 @@ bun run docs:check
         </section>
 <section id="cat-material-instances" class="category-section">
           <h3 class="category-title">Material Instances</h3>
-          <div id="tool-get_face_material_instances" class="card tool-card">
+          <div id="tool-manage_material_instances" class="card tool-card">
       <div class="card-header">
-        <h3 class="card-name">get_face_material_instances</h3>
+        <h3 class="card-name">manage_material_instances</h3>
         <div class="card-badges">
           <span class="badge badge-stable">stable</span>
-          <span class="badge badge-readonly">read-only</span>
-        </div>
-      </div>
-      <p class="card-title">Get Face Material Instances</p>
-      <p class="card-desc">Gets material-instance metadata from Bedrock cube faces. Blockbench's Bedrock geometry codec preserves this field on per-face UV data.</p>
-      <div class="overflow-x">
-        <table class="param-table">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Required</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody><tr>
-      <td class="col-name">cube_id</td>
-      <td class="col-type">string</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Exact Cube UUID or exact unique Cube name. If omitted, uses the first selected Cube. <span class="param-meta">[minLength: 1]</span></td>
-    </tr><tr>
-      <td class="col-name">faces</td>
-      <td class="col-type">&quot;north&quot; | &quot;south&quot; | &quot;east&quot; | &quot;west&quot; | &quot;up&quot; | &quot;down&quot;[]</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Specific non-empty face set to get/clear. If omitted, uses all faces. <span class="param-meta">[minItems: 1]</span></td>
-    </tr></tbody>
-    </table>
-      </div>
-    </div>
-<div id="tool-set_face_material_instance" class="card tool-card">
-      <div class="card-header">
-        <h3 class="card-name">set_face_material_instance</h3>
-        <div class="card-badges">
-          <span class="badge badge-experimental">experimental</span>
           <span class="badge badge-destructive">destructive</span>
         </div>
       </div>
-      <p class="card-title">Set Face Material Instance</p>
-      <p class="card-desc">Sets material-instance metadata on one or more Bedrock cube faces using the face field preserved by Blockbench's Bedrock geometry codec.</p>
+      <p class="card-title">Manage Material Instances</p>
+      <p class="card-desc">Lists, reads, assigns, bulk-assigns, or clears Bedrock face material instances through one focused boundary.</p>
       <div class="overflow-x">
-        <table class="param-table">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Required</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody><tr>
-      <td class="col-name">cube_id</td>
-      <td class="col-type">string</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Exact Cube UUID or exact unique Cube name. If omitted, applies to all selected Cubes. <span class="param-meta">[minLength: 1]</span></td>
-    </tr><tr>
-      <td class="col-name">material_name</td>
-      <td class="col-type">string</td>
-      <td><span class="param-required">required</span></td>
-      <td class="col-desc">The material instance name to assign. Use empty string to clear the material instance.</td>
-    </tr><tr>
-      <td class="col-name">faces</td>
-      <td class="col-type">&quot;north&quot; | &quot;south&quot; | &quot;east&quot; | &quot;west&quot; | &quot;up&quot; | &quot;down&quot;[]</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Faces to set the material instance on. Defaults to all faces. <span class="param-meta">(default: <code>[&quot;north&quot;,&quot;south&quot;,&quot;east&quot;,&quot;west&quot;,&quot;up&quot;,&quot;down&quot;]</code>) [minItems: 1]</span></td>
-    </tr></tbody>
-    </table>
-      </div>
-    </div>
-<div id="tool-list_material_instances" class="card tool-card">
-      <div class="card-header">
-        <h3 class="card-name">list_material_instances</h3>
-        <div class="card-badges">
-          <span class="badge badge-stable">stable</span>
-          <span class="badge badge-readonly">read-only</span>
-        </div>
-      </div>
-      <p class="card-title">List Material Instances</p>
-      <p class="card-desc">Lists unique material-instance names and usage counts. Cube/face locations are opt-in with `include_usages=true` and bounded per instance to avoid dumping all face assignments by default.</p>
-      <div class="overflow-x">
-        <table class="param-table">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Required</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody><tr>
-      <td class="col-name">include_usages</td>
-      <td class="col-type">boolean</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Include Cube/face usage locations. Keep false for summary-only discovery. <span class="param-meta">(default: <code>false</code>)</span></td>
-    </tr><tr>
-      <td class="col-name">usage_limit_per_instance</td>
-      <td class="col-type">integer</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Maximum usage locations returned per material instance when include_usages=true. <span class="param-meta">(default: <code>100</code>) [min: 1, max: 1000]</span></td>
-    </tr></tbody>
-    </table>
-      </div>
-    </div>
-<div id="tool-bulk_set_material_instances" class="card tool-card">
-      <div class="card-header">
-        <h3 class="card-name">bulk_set_material_instances</h3>
-        <div class="card-badges">
-          <span class="badge badge-experimental">experimental</span>
-          <span class="badge badge-destructive">destructive</span>
-        </div>
-      </div>
-      <p class="card-title">Bulk Set Material Instances</p>
-      <p class="card-desc">Sets material instance names on multiple cubes at once. Useful for assigning different material instances to different faces across the project.</p>
-      <div class="overflow-x">
-        <table class="param-table">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Required</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody><tr>
-      <td class="col-name">assignments</td>
-      <td class="col-type">object[]</td>
-      <td><span class="param-required">required</span></td>
-      <td class="col-desc">Array of material instance assignments. <span class="param-meta">[minItems: 1]</span></td>
-    </tr></tbody>
-    </table>
-      </div>
-    </div>
-<div id="tool-clear_material_instances" class="card tool-card">
-      <div class="card-header">
-        <h3 class="card-name">clear_material_instances</h3>
-        <div class="card-badges">
-          <span class="badge badge-experimental">experimental</span>
-          <span class="badge badge-destructive">destructive</span>
-        </div>
-      </div>
-      <p class="card-title">Clear Material Instances</p>
-      <p class="card-desc">Clears (removes) material instance names from cube faces. Useful for resetting material assignments.</p>
-      <div class="overflow-x">
-        <table class="param-table">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Required</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody><tr>
-      <td class="col-name">cube_id</td>
-      <td class="col-type">string</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Exact Cube UUID or exact unique Cube name. If omitted, clears from all selected Cubes. <span class="param-meta">[minLength: 1]</span></td>
-    </tr><tr>
-      <td class="col-name">faces</td>
-      <td class="col-type">&quot;north&quot; | &quot;south&quot; | &quot;east&quot; | &quot;west&quot; | &quot;up&quot; | &quot;down&quot;[]</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Specific faces to clear. If not provided, clears all faces. <span class="param-meta">[minItems: 1]</span></td>
-    </tr><tr>
-      <td class="col-name">all_cubes</td>
-      <td class="col-type">boolean</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">If true, clears material instances from all cubes in the project. <span class="param-meta">(default: <code>false</code>)</span></td>
-    </tr></tbody>
-    </table>
+        <p class="empty-params">No parameters</p>
       </div>
     </div>
         </section>
@@ -2538,7 +2377,7 @@ bun run docs:check
       </section>
 
       <footer class="page-footer">
-        Generated 2026-09-02T05:23:38.421Z from Zod schemas
+        Generated 2026-09-02T05:28:57.043Z from Zod schemas
       </footer>
     </main>
   </div>

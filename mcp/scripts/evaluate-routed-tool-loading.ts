@@ -91,7 +91,7 @@ console.log(
         "Use the exact selected tool name for the first deferred-spec query. A miss may be reformulated once with one distinguishing domain noun; that fallback is not modeled here.",
       phase_surface_contract:
         "phase-specific tools use their owning phase; Core tools use default Geometry",
-      catalog_enabled_tool_count: 66,
+      catalog_enabled_tool_count: 62,
       case_count: originalCases.length,
       phase_reports: phaseReports,
     },

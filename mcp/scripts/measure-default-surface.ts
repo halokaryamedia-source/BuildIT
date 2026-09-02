@@ -14,7 +14,7 @@ const PROTOCOL_VERSION = "2025-06-18";
 // 2026-09-02: Live phase orchestration adds one Core control tool. Catalog
 // count and aggregate input-schema ceiling move by the measured capability delta.
 const SURFACE_BUDGET = {
-  tool_count: 55,
+  tool_count: 51,
   initialize_instructions_chars: 700,
   tools_list_response_chars: 82_000,
   input_schema_chars: 58_700,

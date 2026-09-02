@@ -1,6 +1,6 @@
 {
   "version": "0.1.0",
-  "generatedAt": "2026-09-02T05:23:38.421Z",
+  "generatedAt": "2026-09-02T05:28:57.043Z",
   "tools": [
     {
       "name": "manage_cubes",
@@ -3384,263 +3384,278 @@
       }
     },
     {
-      "name": "get_face_material_instances",
-      "title": "Get Face Material Instances",
-      "description": "Gets material-instance metadata from Bedrock cube faces. Blockbench's Bedrock geometry codec preserves this field on per-face UV data.",
+      "name": "manage_material_instances",
+      "title": "Manage Material Instances",
+      "description": "Lists, reads, assigns, bulk-assigns, or clears Bedrock face material instances through one focused boundary.",
       "status": "stable",
-      "category": "Material Instances",
-      "annotations": {
-        "readOnlyHint": true
-      },
-      "parameters": {
-        "$ref": "#/definitions/get_face_material_instances",
-        "definitions": {
-          "get_face_material_instances": {
-            "type": "object",
-            "properties": {
-              "cube_id": {
-                "type": "string",
-                "minLength": 1,
-                "description": "Exact Cube UUID or exact unique Cube name. If omitted, uses the first selected Cube.",
-                "markdownDescription": "Exact Cube UUID or exact unique Cube name. If omitted, uses the first selected Cube."
-              },
-              "faces": {
-                "type": "array",
-                "items": {
-                  "type": "string",
-                  "enum": [
-                    "north",
-                    "south",
-                    "east",
-                    "west",
-                    "up",
-                    "down"
-                  ]
-                },
-                "minItems": 1,
-                "description": "Specific non-empty face set to get/clear. If omitted, uses all faces.",
-                "markdownDescription": "Specific non-empty face set to get/clear. If omitted, uses all faces."
-              }
-            },
-            "additionalProperties": false
-          }
-        },
-        "$schema": "http://json-schema.org/draft-07/schema#"
-      }
-    },
-    {
-      "name": "set_face_material_instance",
-      "title": "Set Face Material Instance",
-      "description": "Sets material-instance metadata on one or more Bedrock cube faces using the face field preserved by Blockbench's Bedrock geometry codec.",
-      "status": "experimental",
       "category": "Material Instances",
       "annotations": {
         "destructiveHint": true
       },
       "parameters": {
-        "$ref": "#/definitions/set_face_material_instance",
+        "$ref": "#/definitions/manage_material_instances",
         "definitions": {
-          "set_face_material_instance": {
-            "type": "object",
-            "properties": {
-              "cube_id": {
-                "type": "string",
-                "minLength": 1,
-                "description": "Exact Cube UUID or exact unique Cube name. If omitted, applies to all selected Cubes.",
-                "markdownDescription": "Exact Cube UUID or exact unique Cube name. If omitted, applies to all selected Cubes."
-              },
-              "material_name": {
-                "type": "string",
-                "description": "The material instance name to assign. Use empty string to clear the material instance.",
-                "markdownDescription": "The material instance name to assign. Use empty string to clear the material instance."
-              },
-              "faces": {
-                "type": "array",
-                "items": {
-                  "type": "string",
-                  "enum": [
-                    "north",
-                    "south",
-                    "east",
-                    "west",
-                    "up",
-                    "down"
-                  ]
-                },
-                "minItems": 1,
-                "default": [
-                  "north",
-                  "south",
-                  "east",
-                  "west",
-                  "up",
-                  "down"
-                ],
-                "description": "Faces to set the material instance on. Defaults to all faces.",
-                "markdownDescription": "Faces to set the material instance on. Defaults to all faces."
-              }
-            },
-            "required": [
-              "material_name"
-            ],
-            "additionalProperties": false
-          }
-        },
-        "$schema": "http://json-schema.org/draft-07/schema#"
-      }
-    },
-    {
-      "name": "list_material_instances",
-      "title": "List Material Instances",
-      "description": "Lists unique material-instance names and usage counts. Cube/face locations are opt-in with `include_usages=true` and bounded per instance to avoid dumping all face assignments by default.",
-      "status": "stable",
-      "category": "Material Instances",
-      "annotations": {
-        "readOnlyHint": true
-      },
-      "parameters": {
-        "$ref": "#/definitions/list_material_instances",
-        "definitions": {
-          "list_material_instances": {
-            "type": "object",
-            "properties": {
-              "include_usages": {
-                "type": "boolean",
-                "default": false,
-                "description": "Include Cube/face usage locations. Keep false for summary-only discovery.",
-                "markdownDescription": "Include Cube/face usage locations. Keep false for summary-only discovery."
-              },
-              "usage_limit_per_instance": {
-                "type": "integer",
-                "minimum": 1,
-                "maximum": 1000,
-                "default": 100,
-                "description": "Maximum usage locations returned per material instance when include_usages=true.",
-                "markdownDescription": "Maximum usage locations returned per material instance when include_usages=true."
-              }
-            },
-            "additionalProperties": false
-          }
-        },
-        "$schema": "http://json-schema.org/draft-07/schema#"
-      }
-    },
-    {
-      "name": "bulk_set_material_instances",
-      "title": "Bulk Set Material Instances",
-      "description": "Sets material instance names on multiple cubes at once. Useful for assigning different material instances to different faces across the project.",
-      "status": "experimental",
-      "category": "Material Instances",
-      "annotations": {
-        "destructiveHint": true
-      },
-      "parameters": {
-        "$ref": "#/definitions/bulk_set_material_instances",
-        "definitions": {
-          "bulk_set_material_instances": {
-            "type": "object",
-            "properties": {
-              "assignments": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "cube_id": {
-                      "type": "string",
-                      "minLength": 1,
-                      "description": "Cube UUID or name.",
-                      "markdownDescription": "Cube UUID or name."
-                    },
-                    "faces": {
-                      "type": "array",
-                      "items": {
+          "manage_material_instances": {
+            "anyOf": [
+              {
+                "allOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "include_usages": {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "Include Cube/face usage locations. Keep false for summary-only discovery.",
+                        "markdownDescription": "Include Cube/face usage locations. Keep false for summary-only discovery."
+                      },
+                      "usage_limit_per_instance": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 1000,
+                        "default": 100,
+                        "description": "Maximum usage locations returned per material instance when include_usages=true.",
+                        "markdownDescription": "Maximum usage locations returned per material instance when include_usages=true."
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "operation": {
                         "type": "string",
-                        "enum": [
+                        "const": "list"
+                      }
+                    },
+                    "required": [
+                      "operation"
+                    ]
+                  }
+                ]
+              },
+              {
+                "allOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "cube_id": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Exact Cube UUID or exact unique Cube name. If omitted, uses the first selected Cube.",
+                        "markdownDescription": "Exact Cube UUID or exact unique Cube name. If omitted, uses the first selected Cube."
+                      },
+                      "faces": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "north",
+                            "south",
+                            "east",
+                            "west",
+                            "up",
+                            "down"
+                          ]
+                        },
+                        "minItems": 1,
+                        "description": "Specific non-empty face set to get/clear. If omitted, uses all faces.",
+                        "markdownDescription": "Specific non-empty face set to get/clear. If omitted, uses all faces."
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "operation": {
+                        "type": "string",
+                        "const": "get"
+                      }
+                    },
+                    "required": [
+                      "operation"
+                    ]
+                  }
+                ]
+              },
+              {
+                "allOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "cube_id": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Exact Cube UUID or exact unique Cube name. If omitted, applies to all selected Cubes.",
+                        "markdownDescription": "Exact Cube UUID or exact unique Cube name. If omitted, applies to all selected Cubes."
+                      },
+                      "material_name": {
+                        "type": "string",
+                        "description": "The material instance name to assign. Use empty string to clear the material instance.",
+                        "markdownDescription": "The material instance name to assign. Use empty string to clear the material instance."
+                      },
+                      "faces": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "north",
+                            "south",
+                            "east",
+                            "west",
+                            "up",
+                            "down"
+                          ]
+                        },
+                        "minItems": 1,
+                        "default": [
                           "north",
                           "south",
                           "east",
                           "west",
                           "up",
                           "down"
-                        ]
-                      },
-                      "minItems": 1,
-                      "description": "Non-empty faces to set the material instance on.",
-                      "markdownDescription": "Non-empty faces to set the material instance on."
+                        ],
+                        "description": "Faces to set the material instance on. Defaults to all faces.",
+                        "markdownDescription": "Faces to set the material instance on. Defaults to all faces."
+                      }
                     },
-                    "material_name": {
-                      "type": "string",
-                      "description": "Material instance name to assign.",
-                      "markdownDescription": "Material instance name to assign."
+                    "required": [
+                      "material_name"
+                    ]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "operation": {
+                        "type": "string",
+                        "const": "set"
+                      }
+                    },
+                    "required": [
+                      "operation"
+                    ]
+                  }
+                ]
+              },
+              {
+                "allOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "assignments": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "cube_id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "description": "Cube UUID or name.",
+                              "markdownDescription": "Cube UUID or name."
+                            },
+                            "faces": {
+                              "type": "array",
+                              "items": {
+                                "type": "string",
+                                "enum": [
+                                  "north",
+                                  "south",
+                                  "east",
+                                  "west",
+                                  "up",
+                                  "down"
+                                ]
+                              },
+                              "minItems": 1,
+                              "description": "Non-empty faces to set the material instance on.",
+                              "markdownDescription": "Non-empty faces to set the material instance on."
+                            },
+                            "material_name": {
+                              "type": "string",
+                              "description": "Material instance name to assign.",
+                              "markdownDescription": "Material instance name to assign."
+                            }
+                          },
+                          "required": [
+                            "cube_id",
+                            "faces",
+                            "material_name"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "minItems": 1,
+                        "description": "Array of material instance assignments.",
+                        "markdownDescription": "Array of material instance assignments."
+                      }
+                    },
+                    "required": [
+                      "assignments"
+                    ]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "operation": {
+                        "type": "string",
+                        "const": "bulk_set"
+                      }
+                    },
+                    "required": [
+                      "operation"
+                    ]
+                  }
+                ]
+              },
+              {
+                "allOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "cube_id": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Exact Cube UUID or exact unique Cube name. If omitted, clears from all selected Cubes.",
+                        "markdownDescription": "Exact Cube UUID or exact unique Cube name. If omitted, clears from all selected Cubes."
+                      },
+                      "faces": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "north",
+                            "south",
+                            "east",
+                            "west",
+                            "up",
+                            "down"
+                          ]
+                        },
+                        "minItems": 1,
+                        "description": "Specific faces to clear. If not provided, clears all faces.",
+                        "markdownDescription": "Specific faces to clear. If not provided, clears all faces."
+                      },
+                      "all_cubes": {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "If true, clears material instances from all cubes in the project.",
+                        "markdownDescription": "If true, clears material instances from all cubes in the project."
+                      }
                     }
                   },
-                  "required": [
-                    "cube_id",
-                    "faces",
-                    "material_name"
-                  ],
-                  "additionalProperties": false
-                },
-                "minItems": 1,
-                "description": "Array of material instance assignments.",
-                "markdownDescription": "Array of material instance assignments."
+                  {
+                    "type": "object",
+                    "properties": {
+                      "operation": {
+                        "type": "string",
+                        "const": "clear"
+                      }
+                    },
+                    "required": [
+                      "operation"
+                    ]
+                  }
+                ]
               }
-            },
-            "required": [
-              "assignments"
-            ],
-            "additionalProperties": false
-          }
-        },
-        "$schema": "http://json-schema.org/draft-07/schema#"
-      }
-    },
-    {
-      "name": "clear_material_instances",
-      "title": "Clear Material Instances",
-      "description": "Clears (removes) material instance names from cube faces. Useful for resetting material assignments.",
-      "status": "experimental",
-      "category": "Material Instances",
-      "annotations": {
-        "destructiveHint": true
-      },
-      "parameters": {
-        "$ref": "#/definitions/clear_material_instances",
-        "definitions": {
-          "clear_material_instances": {
-            "type": "object",
-            "properties": {
-              "cube_id": {
-                "type": "string",
-                "minLength": 1,
-                "description": "Exact Cube UUID or exact unique Cube name. If omitted, clears from all selected Cubes.",
-                "markdownDescription": "Exact Cube UUID or exact unique Cube name. If omitted, clears from all selected Cubes."
-              },
-              "faces": {
-                "type": "array",
-                "items": {
-                  "type": "string",
-                  "enum": [
-                    "north",
-                    "south",
-                    "east",
-                    "west",
-                    "up",
-                    "down"
-                  ]
-                },
-                "minItems": 1,
-                "description": "Specific faces to clear. If not provided, clears all faces.",
-                "markdownDescription": "Specific faces to clear. If not provided, clears all faces."
-              },
-              "all_cubes": {
-                "type": "boolean",
-                "default": false,
-                "description": "If true, clears material instances from all cubes in the project.",
-                "markdownDescription": "If true, clears material instances from all cubes in the project."
-              }
-            },
-            "additionalProperties": false
+            ]
           }
         },
         "$schema": "http://json-schema.org/draft-07/schema#"

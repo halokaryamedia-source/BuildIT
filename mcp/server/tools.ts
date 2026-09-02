@@ -39,6 +39,7 @@ import { manageKeyframesParameters, animationGraphEditorParameters, animationTim
 import { listOutlineParameters, findElementsByCriteriaParameters } from "./tools/element";
 import { inspectElementParameters } from "./tools/element-inspection";
 import { createPbrMaterialParameters, configureMaterialParameters, assignTextureChannelParameters, saveMaterialConfigParameters } from "./tools/texture";
+import { listMaterialInstancesParametersSchema, getFaceMaterialInstancesParametersSchema, setFaceMaterialInstanceParametersSchema, bulkSetMaterialInstancesParametersSchema, clearMaterialInstancesParametersSchema } from "./tools/material-instances";
 
 // Core resource registrations
 import { registerValidatorResources } from "./resources/validator";
@@ -88,6 +89,22 @@ export const consolidatedAnimationTimelineToolDocs = {
   description: "Authors Bedrock animation keyframes, timing, graph/easing, batch edits, and copy/paste through one focused boundary.",
   annotations: { title: "Manage Animation Timeline", destructiveHint: true },
   parameters: consolidatedAnimationTimelineParameters,
+  status: "stable" as const,
+};
+
+const consolidatedMaterialInstancesParameters = z.union([
+  listMaterialInstancesParametersSchema.and(z.object({ operation: z.literal("list") })),
+  getFaceMaterialInstancesParametersSchema.and(z.object({ operation: z.literal("get") })),
+  setFaceMaterialInstanceParametersSchema.and(z.object({ operation: z.literal("set") })),
+  bulkSetMaterialInstancesParametersSchema.and(z.object({ operation: z.literal("bulk_set") })),
+  clearMaterialInstancesParametersSchema.and(z.object({ operation: z.literal("clear") })),
+]);
+
+export const consolidatedMaterialInstancesToolDocs = {
+  name: "manage_material_instances",
+  description: "Lists, reads, assigns, bulk-assigns, or clears Bedrock face material instances through one focused boundary.",
+  annotations: { title: "Manage Material Instances", destructiveHint: true },
+  parameters: consolidatedMaterialInstancesParameters,
   status: "stable" as const,
 };
 
@@ -162,6 +179,34 @@ function registerConsolidatedAnimationTimelineTool(): void {
   }
   toolRegistrationFamily.set("manage_animation_timeline", "animation");
   catalogToolEnabled.set("manage_animation_timeline", true);
+}
+
+function registerConsolidatedMaterialInstancesTool(): void {
+  if (tools.manage_material_instances) return;
+  createTool("manage_material_instances", {
+    ...consolidatedMaterialInstancesToolDocs,
+    async execute(request) {
+      const target = request.operation === "list"
+        ? "list_material_instances"
+        : request.operation === "get"
+          ? "get_face_material_instances"
+          : request.operation === "set"
+            ? "set_face_material_instance"
+            : request.operation === "bulk_set"
+              ? "bulk_set_material_instances"
+              : "clear_material_instances";
+      const definition = getAllToolDefinitions()[target];
+      if (!definition) throw new Error(`Material-instance executor ${target} is unavailable.`);
+      const { operation: _operation, ...args } = request;
+      return definition.execute(args);
+    },
+  }, "stable");
+  for (const legacy of ["list_material_instances", "get_face_material_instances", "set_face_material_instance", "bulk_set_material_instances", "clear_material_instances"]) {
+    if (tools[legacy]) tools[legacy].enabled = false;
+    catalogToolEnabled.set(legacy, false);
+  }
+  toolRegistrationFamily.set("manage_material_instances", "material_instances");
+  catalogToolEnabled.set("manage_material_instances", true);
 }
 
 function registerAnimationFamilyTools(): void {
@@ -297,6 +342,7 @@ export function registerMcpProfile(
   if (profile === DEFAULT_MCP_REGISTRATION_PROFILE) registerConsolidatedInspectionTool();
   if (profile === DEFAULT_MCP_REGISTRATION_PROFILE) registerConsolidatedMaterialTool();
   if (profile === DEFAULT_MCP_REGISTRATION_PROFILE) registerConsolidatedAnimationTimelineTool();
+  if (profile === DEFAULT_MCP_REGISTRATION_PROFILE) registerConsolidatedMaterialInstancesTool();
 
   phaseSurfaceCache.clear();
 }
