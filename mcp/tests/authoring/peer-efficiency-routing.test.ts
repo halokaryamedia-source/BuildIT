@@ -9,7 +9,7 @@ describe("peer-inspired authoring efficiency routing", () => {
     const router = await source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md");
     expect(router).toMatch(/Known Cubes sharing one deterministic TRANSLATE\/RESIZE intent/i);
     expect(router).toMatch(/derive absolute targets once from fresh state/i);
-    expect(router).toContain("modify_cubes_batch");
+    expect(router).toContain("manage_cubes(operation=batch_update)");
     expect(router).toMatch(/never loop inspect→modify per Cube/i);
     expect(router).toMatch(/reasoning-layer arithmetic/i);
     expect(router).toMatch(/absolute\/fail-closed/i);

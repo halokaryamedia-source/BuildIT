@@ -16,7 +16,7 @@ describe("pre-local usage optimization contract", () => {
 
   test("known coherent creation batches without turning uncertainty into a call-saving target", async () => {
     const router = await source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md");
-    expect(router).toContain("place_cube(elements=[...])");
+    expect(router).toContain("manage_cubes(operation=create, elements=[...])");
     expect(router).toContain("Known coherent Cubes");
     expect(router).toContain("uncertainty → no batch");
   });

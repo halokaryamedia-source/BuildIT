@@ -284,36 +284,18 @@ export const modifyCubesBatchParameters = z.object({
 
 export const cubeToolDocs: ToolSpec[] = [
   {
-    name: "place_cube",
+    name: "manage_cubes",
     description:
-      "Places Bedrock Cubes with explicit geometry, parent, inflate, and UV intent. Texture stays global. Success records authored state; reference fidelity is not evaluated.",
+      "Creates or updates Bedrock Cubes. Use operation=create for placement, update for one explicit UUID/name target, or batch_update for 1-32 UUID-targeted corrections. Texture stays global; reference fidelity is not evaluated.",
     annotations: {
       title: "Place Cube",
       destructiveHint: true,
     },
-    parameters: placeCubeParameters,
-    status: STATUS_STABLE,
-  },
-  {
-    name: "modify_cube",
-    description:
-      "Modifies one explicit Bedrock Cube transform/UV/inflate/visibility state. UUID is preferred; exact names must be unique. Generic Java-only shade/editor palette color controls are not accepted. Exact no-op requests fail before Undo; resulting state and `geometry_effect` record the authored change.",
-    annotations: {
-      title: "Modify Cube",
-      destructiveHint: true,
-    },
-    parameters: modifyCubeParameters,
-    status: STATUS_STABLE,
-  },
-  {
-    name: "modify_cubes_batch",
-    description:
-      "Applies 1-32 unique UUID-targeted Cube transform/Box-UV/visibility corrections in one Undo unit after full preflight. Unsupported fields and same-value targets fail before Undo; per-Cube before/after `geometry_effect` remains explicit. Execution success does not mean the geometry was corrected visually.",
-    annotations: {
-      title: "Modify Cubes Batch",
-      destructiveHint: true,
-    },
-    parameters: modifyCubesBatchParameters,
+    parameters: z.union([
+      placeCubeParameters.and(z.object({ operation: z.literal("create") })),
+      modifyCubeParameters.and(z.object({ operation: z.literal("update") })),
+      modifyCubesBatchParameters.and(z.object({ operation: z.literal("batch_update") })),
+    ]),
     status: STATUS_STABLE,
   },
 ];
@@ -511,6 +493,8 @@ function cubeGeometryEffect(before: CubeAuthoredState, after: CubeAuthoredState)
 }
 
 type ModifyCubeRequest = z.infer<typeof modifyCubeParameters>;
+type PlaceCubeRequest = z.infer<typeof placeCubeParameters>;
+type ModifyCubesBatchRequest = z.infer<typeof modifyCubesBatchParameters>;
 
 function modifyCubeRequestWouldChange(
   cube: Cube,
@@ -546,9 +530,7 @@ function resolvePlacementGroup(reference?: string): Group | "root" {
 }
 
 export function registerCubesTools() {
-  createTool(cubeToolDocs[0].name, {
-    ...cubeToolDocs[0],
-    async execute({ elements, faces, group }) {
+  const executeCreateCubes = async ({ elements, faces, group }: PlaceCubeRequest) => {
       requireOpenProject("placing Cubes");
       const defaultOutlinerGroup = resolvePlacementGroup(group);
       const placements: Array<{ element: PlaceCubeElement; outlinerGroup: Group | "root" }> = elements.map((element: PlaceCubeElement) => ({
@@ -673,12 +655,9 @@ export function registerCubesTools() {
         ],
         structuredContent: result,
       };
-    },
-  }, cubeToolDocs[0].status);
+    }
 
-  createTool(cubeToolDocs[1].name, {
-    ...cubeToolDocs[1],
-    async execute({
+  const executeUpdateCube = async ({
       id,
       name,
       origin,
@@ -690,7 +669,7 @@ export function registerCubesTools() {
       mirror_uv,
       inflate,
       visibility,
-    }) {
+    }: ModifyCubeRequest) => {
       requireOpenProject("modifying a Cube");
       const cubes = [resolveUniqueCube(id)];
       const before = finalCubeState(cubes[0]);
@@ -783,12 +762,9 @@ export function registerCubesTools() {
         ],
         structuredContent: result,
       };
-    },
-  }, cubeToolDocs[1].status);
+    }
 
-  createTool(cubeToolDocs[2].name, {
-    ...cubeToolDocs[2],
-    async execute({ updates }) {
+  const executeBatchUpdateCubes = async ({ updates }: ModifyCubesBatchRequest) => {
       requireOpenProject("modifying Cubes");
 
       const targets: Array<{
@@ -914,6 +890,14 @@ export function registerCubesTools() {
         ],
         structuredContent: result,
       };
+    }
+
+  createTool(cubeToolDocs[0].name, {
+    ...cubeToolDocs[0],
+    async execute(request) {
+      if (request.operation === "create") return executeCreateCubes(request);
+      if (request.operation === "update") return executeUpdateCube(request);
+      return executeBatchUpdateCubes(request);
     },
-  }, cubeToolDocs[2].status);
+  }, cubeToolDocs[0].status);
 }

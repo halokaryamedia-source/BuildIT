@@ -50,7 +50,7 @@ describe("Codex Bedrock agent legibility contract", () => {
     expect(router).toContain("Group pivot/rotation/visible  → modify_group");
     expect(router).toContain("rig IK/mirror                 → bone_rigging");
     expect(router).toContain("pass name OR groups, never both");
-    expect(router).toContain("modify_cube               → id + at least one authored field change");
+    expect(router).toContain("manage_cubes update       → id + at least one authored field change");
     expect(router).toContain("load **that exact active-phase spec once** before mutation");
     expect(router).toContain("repairs arguments for the **same routed tool**");
   });

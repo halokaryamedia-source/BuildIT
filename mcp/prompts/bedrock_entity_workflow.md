@@ -65,7 +65,7 @@ Correction: reuse fresh target state; otherwise `inspect_element` once. Diagnose
 
 UV Layout answers: **which atlas region does each surface read?**
 
-For fresh Box UV, reuse `place_cube` returned `box_uv_region`; do not rediscover it by ritual. Keep auto UV active during geometry correction. After geometry `PASS`, lock final Box-UV Cubes in one `modify_cubes_batch` with `autouv=0`, then call `list_textures` once for global UV audit.
+For fresh Box UV, reuse `manage_cubes(operation=create)` returned `box_uv_region`; do not rediscover it by ritual. Keep auto UV active during geometry correction. After geometry `PASS`, lock final Box-UV Cubes in one `manage_cubes(operation=batch_update)` with `autouv=0`, then call `list_textures` once for global UV audit.
 
 Require integer logical UV unless justified, no invalid/out-of-bounds UV, no accidental partial overlap, deliberate exact reuse/mirror, and stable seam/orientation. Use `inspect_element` only when face-specific mapping/orientation is actually needed; one Cube inspection returns all faces.
 
@@ -115,8 +115,8 @@ Texture mutation makes evidence stale. `FAIL` → smallest causal correction →
 
 ```text
 project absent              → create_project
-new reference geometry      → create_project → add_group/place_cube/modify_group/modify_cube → capture_model_views
-observed geometry mismatch  → inspect affected element → modify_cube/modify_cubes_batch/modify_group → affected capture_model_views
+new reference geometry      → create_project → add_group/manage_cubes/modify_group → capture_model_views
+observed geometry mismatch  → inspect affected element → manage_cubes/modify_group → affected capture_model_views
 UV Layout                   → returned box_uv_region → final UV lock → list_textures audit
 Texture Atlas               → create_texture / activate_texture
 Texture Styling             → Painter tools / material configuration

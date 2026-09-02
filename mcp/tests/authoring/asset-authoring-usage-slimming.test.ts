@@ -26,7 +26,7 @@ describe("pre-local asset-authoring usage slimming", () => {
       "State Reuse / Anti-Loop",
       "HANDOFF_REQUIRED",
       "capture_model_views",
-      "modify_cube",
+      "manage_cubes",
       "export_model",
       "geometry/rig/UV judgement",
     ]) expect(orchestrator).toContain(required);
@@ -109,8 +109,8 @@ describe("pre-local asset-authoring usage slimming", () => {
 
   test("Cube correction results avoid redundant state and identity copies", async () => {
     const cubes = await source("server/tools/cubes.ts");
-    const singleStart = cubes.indexOf("createTool(cubeToolDocs[1].name");
-    const batchStart = cubes.indexOf("createTool(cubeToolDocs[2].name", singleStart);
+    const singleStart = cubes.indexOf("const executeUpdateCube");
+    const batchStart = cubes.indexOf("const executeBatchUpdateCubes", singleStart);
     const single = cubes.slice(singleStart, batchStart);
     const batch = cubes.slice(batchStart);
     expect(single).toContain("after,");

@@ -83,7 +83,7 @@ explicit user requirement
 
 Do not average drift. Only unresolved material conflict becomes `BLOCKED`.
 
-Successful `place_cube`, `modify_cube`, or `modify_cubes_batch` is execution evidence only. Once judgeable, capture necessary views before secondary detail. Front agreement does not certify depth. After primary `PASS`, add identity-weighted secondary geometry only where silhouette, recognizability, contact/layering, or motion benefits.
+Successful `manage_cubes` execution is **Tool success** and execution evidence/mutation evidence only; it never authorizes visual `PASS`. Once judgeable, capture necessary views before secondary detail. Front agreement does not certify depth. After primary `PASS`, add identity-weighted secondary geometry only where silhouette, recognizability, contact/layering, or motion benefits.
 
 Material verdict requires approved reference + fresh current-revision model image(s) in the same comparison context:
 

@@ -71,8 +71,8 @@ describe("model creation effectiveness — correction accuracy", () => {
     const effectStart = cubes.indexOf("function cubeGeometryEffect");
     const effectEnd = cubes.indexOf("type ModifyCubeRequest", effectStart);
     const geometryEffect = cubes.slice(effectStart, effectEnd);
-    const start = cubes.indexOf("createTool(cubeToolDocs[1].name");
-    const end = cubes.indexOf("createTool(cubeToolDocs[2].name", start);
+    const start = cubes.indexOf("const executeUpdateCube");
+    const end = cubes.indexOf("const executeBatchUpdateCubes", start);
     const block = cubes.slice(start, end);
     expect(block).toContain("geometry_effect");
     expect(block).toContain("cubeGeometryEffect(before, after)");

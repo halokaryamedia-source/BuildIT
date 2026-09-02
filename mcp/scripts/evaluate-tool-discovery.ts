@@ -86,17 +86,17 @@ const TOOL_DISCOVERY_INTENT_GROUPS = [
     "hide update or remove the Route 1 model reference",
   ],
   [
-    "place_cube",
+    "manage_cubes",
     "add a new cube to the Bedrock model",
     "create cube geometry from explicit coordinates",
   ],
   [
-    "modify_cube",
+    "manage_cubes",
     "resize one existing cube by uuid",
     "move and rotate this known existing cube",
   ],
   [
-    "modify_cubes_batch",
+    "manage_cubes",
     "move several known cube uuids together",
     "batch resize multiple existing cubes in one correction",
   ],
@@ -565,7 +565,7 @@ export function assertToolDiscoveryEvalIntegrity(
 ): void {
   const failures: string[] = [];
 
-  if (report.enabled_tool_count !== 66) {
+  if (report.enabled_tool_count !== 64) {
     failures.push(
       `enabled_tool_count=${report.enabled_tool_count}; expected 66`
     );
@@ -573,7 +573,7 @@ export function assertToolDiscoveryEvalIntegrity(
   if (report.case_count < 100 || report.case_count > 150) {
     failures.push(`case_count=${report.case_count}; expected 100..150`);
   }
-  if (report.expected_tool_count !== 53) {
+  if (report.expected_tool_count !== 51) {
     failures.push(
       `expected_tool_count=${report.expected_tool_count}; expected 53`
     );

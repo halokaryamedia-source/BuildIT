@@ -51,9 +51,7 @@ file deliverable              → export_model
 GEOMETRY
 Route 1 GLB lifecycle         → manage_geometry_reference when exposed
 create normal bone/Group      → add_group
-create Cube                   → place_cube
-one known Cube fix            → modify_cube
-several known Cube fixes      → modify_cubes_batch
+ create/update Cubes            → manage_cubes(operation=create|update|batch_update)
 Group/bone parent move        → reparent_element
 Group pivot/rotation/visible  → modify_group
 structural delete/rename      → remove_element / rename_element
@@ -61,7 +59,7 @@ Locator/Null create/edit      → manage_locator / manage_null_object
 rig IK/mirror                 → bone_rigging
 ```
 
-`bone_rigging` only for IK/mirror. Known coherent Cubes → one `place_cube(elements=[...])`; uncertainty → no batch. Known Cubes sharing one deterministic TRANSLATE/RESIZE intent → derive absolute targets once from fresh state → one `modify_cubes_batch`; never loop inspect→modify per Cube. Relative intent stays reasoning-layer arithmetic; writes stay absolute/fail-closed.
+`bone_rigging` only for IK/mirror. Known coherent Cubes → one `manage_cubes(operation=create, elements=[...])`; uncertainty → no batch. Known Cubes sharing one deterministic TRANSLATE/RESIZE intent → derive absolute targets once from fresh state → one `manage_cubes(operation=batch_update)`; one known correction uses `operation=update`. Never loop inspect→modify per Cube. Relative intent stays reasoning-layer arithmetic; writes stay absolute/fail-closed.
 
 ## Route 1
 
@@ -70,9 +68,9 @@ Image + dimensions + shape-only GLB → `manage_geometry_reference`; modelling o
 ## First-Call Invariants
 
 ```text
-place_cube rotation != 0  → origin required
+manage_cubes create rotation != 0 → origin required
 add_group                 → pass name OR groups, never both
-modify_cube               → id + at least one authored field change
+manage_cubes update       → id + at least one authored field change
 manage_locator create     → name+parent; update → id+authored change
 manage_null_object create → name+parent; update → id+parent/position
 ```

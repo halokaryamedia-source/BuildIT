@@ -47,7 +47,7 @@ const GEOMETRY_ELEMENT_TOOLS = new Set([
 
 const GEOMETRY_MAINTENANCE_TOOLS = new Set([
   "add_group",
-  "place_cube",
+  "manage_cubes",
   "duplicate_element",
   "reparent_element",
   "manage_locator",
@@ -107,7 +107,7 @@ const PHASE_SUPPORT_ROUTING: Record<McpAuthoringPhase, string> = {
 };
 
 const GEOMETRY_SUBGROUP_ROUTING =
-  "Geometry intent routes: setup_and_hierarchy=create_project/get_project_info; geometry_authoring=add_group/place_cube/duplicate_element/reparent_element; correction_and_inspection=modify_cube/modify_cubes_batch/modify_group/remove_element/rename_element/list_outline/find_elements_by_criteria/inspect_element/inspect_model_bounds; checkpoint_and_export=capture_model_views/export_model. Legacy Geometry Plan and compiler routes are not part of the production surface. Selection, locator discovery, generic screenshots, format discovery, and history are conditional support only. Choose one direct route from the current intent.";
+  "Geometry intent routes: setup_and_hierarchy=create_project/get_project_info; geometry_authoring=add_group/manage_cubes(operation=create)/duplicate_element/reparent_element; correction_and_inspection=manage_cubes(operation=update|batch_update)/modify_group/remove_element/rename_element/list_outline/find_elements_by_criteria/inspect_element/inspect_model_bounds; checkpoint_and_export=capture_model_views/export_model. Legacy Geometry Plan and compiler routes are not part of the production surface. Selection, locator discovery, generic screenshots, format discovery, and history are conditional support only. Choose one direct route from the current intent.";
 
 export function isMcpAuthoringPhase(value: unknown): value is McpAuthoringPhase {
   return MCP_AUTHORING_PHASES.includes(value as McpAuthoringPhase);

@@ -10,9 +10,7 @@ const REQUIRED_GEOMETRY_TOOLS = [
   "create_project",
   "manage_geometry_reference",
   "add_group",
-  "place_cube",
-  "modify_cube",
-  "modify_cubes_batch",
+  "manage_cubes",
   "modify_group",
   "reparent_element",
   "capture_model_views",
@@ -23,9 +21,7 @@ const REQUIRED_GEOMETRY_TOOLS = [
 const PLAN_FREE_GEOMETRY_TOOLS = [
   "manage_geometry_reference",
   "add_group",
-  "place_cube",
-  "modify_cube",
-  "modify_cubes_batch",
+  "manage_cubes",
   "modify_group",
   "reparent_element",
 ] as const;
@@ -39,7 +35,7 @@ describe("local runtime gate source contract", () => {
     const names = getMcpSurfaceToolNames("bedrock_entity", "geometry");
     const definitions = getEnabledToolDefinitions();
 
-    expect(names.length).toBe(29);
+    expect(names.length).toBe(27);
     for (const toolName of REQUIRED_GEOMETRY_TOOLS) {
       expect(names, toolName).toContain(toolName);
       expect(definitions[toolName], toolName).toBeDefined();

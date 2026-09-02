@@ -30,9 +30,7 @@ describe("asset tool routing", () => {
     ]) expect(skill).toContain(intent);
 
     for (const tool of [
-      "place_cube",
-      "modify_cube",
-      "modify_cubes_batch",
+      "manage_cubes",
       "find_elements_by_criteria",
       "list_outline",
       "inspect_element",
@@ -127,7 +125,7 @@ describe("asset tool routing", () => {
       "do not re-list/re-read it only for confirmation",
     ]) expect(texturing.toLowerCase()).toContain(term.toLowerCase());
     expect(texturing).toContain(
-      "Never `tool_search` for `modify_cube`, `modify_cubes_batch`, `bone_rigging`"
+      "Never `tool_search` for `manage_cubes`, `bone_rigging`"
     );
 
     for (const term of [

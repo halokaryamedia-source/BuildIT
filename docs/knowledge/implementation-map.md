@@ -71,7 +71,7 @@ For a named MCP-tool defect, inspect the mapped **source owner + primary regress
 | Route 1 reference capture / production cleanup | `mcp/server/tools/camera.ts`, `mcp/server/tools/export.ts` | `mcp/tests/camera-framing-contract.test.ts`, `mcp/tests/geometry-reference-contract.test.ts` |
 | Route 1 Hunyuan MultiView reproducibility | `Experimental/route1-hunyuan-poc/generate_multiview_shape.py`, `Experimental/route1-hunyuan-poc/README.md` | `mcp/tests/authoring/route1-hunyuan-reproducibility.test.ts` |
 | Route 1 fixture preparation / packaging | `mcp/scripts/route1-fixture.ts`, `mcp/package.json` | `mcp/tests/route1-fixture-preparation.test.ts` |
-| `place_cube`, `modify_cube`, `modify_cubes_batch` | `mcp/server/tools/cubes.ts` | `mcp/tests/model-effectiveness-correction-accuracy.test.ts` |
+| `manage_cubes` | `mcp/server/tools/cubes.ts` | `mcp/tests/model-effectiveness-correction-accuracy.test.ts` |
 | `add_group` | `mcp/server/tools/element.ts` | `mcp/tests/p1-core-ownership.test.ts` |
 | `list_outline`, `find_elements_by_criteria` | `mcp/server/tools/element.ts` | `mcp/tests/context-payload-cleanup.test.ts` |
 | `inspect_element` | `mcp/server/tools/element-inspection.ts` | `mcp/tests/model-effectiveness-correction-accuracy.test.ts` |
@@ -199,7 +199,7 @@ Do not turn a professional sample, reference fixture, or one failed model into a
 ## Current Bedrock Ownership
 
 - MCP Core: lifecycle, focused discovery/inspection, selection, read-only global UV/atlas audit, history/recovery, canonical capture, export;
-- Geometry: `manage_geometry_reference`, Route 1 alignment planning, `place_cube`, `add_group`, `modify_cube`, `modify_cubes_batch`, structural delete/rename, Locator/Null mutation, `bone_rigging`, UV Layout mutation;
+- Geometry: `manage_geometry_reference`, Route 1 alignment planning, `manage_cubes`, `add_group`, structural delete/rename, Locator/Null mutation, `bone_rigging`, UV Layout mutation;
 - Texturing: Texture Atlas lifecycle, Painter, PBR, material instances, Texture Verify;
 - Animation: numeric/Molang transforms, keyframes/timeline, effect mutation, AnimationController state-machine/state-effect mutation, animation inspection.
 

@@ -41,7 +41,7 @@ describe("authoring phase MCP surface", () => {
 
   test("default Geometry surface is Core plus Geometry only", () => {
     const geometry = phaseSurface("geometry");
-    expect(geometry.size).toBe(29);
+    expect(geometry.size).toBe(27);
 
     for (const coreTool of [
       "create_project",
@@ -61,9 +61,7 @@ describe("authoring phase MCP surface", () => {
     }
 
     for (const geometryTool of [
-      "place_cube",
-      "modify_cube",
-      "modify_cubes_batch",
+      "manage_cubes",
       "add_group",
       "duplicate_element",
       "remove_element",
@@ -163,8 +161,7 @@ describe("authoring phase MCP surface", () => {
     }
 
     for (const structuralTool of [
-      "place_cube",
-      "modify_cubes_batch",
+      "manage_cubes",
       "add_group",
       "remove_element",
       "rename_element",
@@ -247,14 +244,14 @@ describe("authoring phase MCP surface", () => {
     expect(texturing).toContain("## Texture Styling");
     expect(texturing).toContain("## Texture Verify");
     expect(texturing).not.toContain("## Geometry / Visual Gate");
-    expect(texturing).not.toContain("modify_cubes_batch");
+    expect(texturing).not.toContain("manage_cubes");
     expect(texturing).not.toContain("create_animation");
 
     expect(animation).toContain("## Animation Workflow");
     expect(animation).toContain("create_animation");
     expect(animation).toContain("manage_keyframes");
     expect(animation).toContain("manage_animation_controller");
-    expect(animation).not.toContain("place_cube");
+    expect(animation).not.toContain("manage_cubes");
     expect(animation).not.toContain("create_texture");
   });
 
@@ -304,10 +301,10 @@ describe("authoring phase MCP surface", () => {
       "unlocked/invalid UV        → HANDOFF_REQUIRED(geometry)"
     );
     expect(texturing).not.toContain(
-      "final Box-UV lock        → modify_cubes_batch"
+      "final Box-UV lock        → manage_cubes(operation=batch_update)"
     );
     expect(texturing).toContain(
-      "Never `tool_search` for `modify_cube`, `modify_cubes_batch`, `bone_rigging`"
+      "Never `tool_search` for `manage_cubes`, `bone_rigging`"
     );
 
     expect(animation).not.toContain(

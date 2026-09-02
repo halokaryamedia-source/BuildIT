@@ -1,500 +1,517 @@
 {
   "version": "0.1.0",
-  "generatedAt": "2026-08-28T10:58:37.102Z",
+  "generatedAt": "2026-09-02T04:42:36.144Z",
   "tools": [
     {
-      "name": "place_cube",
+      "name": "manage_cubes",
       "title": "Place Cube",
-      "description": "Places Bedrock Cubes with explicit geometry, parent, inflate, and UV intent. Texture stays global. Success records authored state; reference fidelity is not evaluated.",
+      "description": "Creates or updates Bedrock Cubes. Use operation=create for placement, update for one explicit UUID/name target, or batch_update for 1-32 UUID-targeted corrections. Texture stays global; reference fidelity is not evaluated.",
       "status": "stable",
       "category": "Cubes",
       "annotations": {
         "destructiveHint": true
       },
       "parameters": {
-        "$ref": "#/definitions/place_cube",
+        "$ref": "#/definitions/manage_cubes",
         "definitions": {
-          "place_cube": {
-            "type": "object",
-            "properties": {
-              "elements": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "name": {
-                      "type": "string",
-                      "minLength": 1,
-                      "description": "Non-empty Cube name.",
-                      "markdownDescription": "Non-empty Cube name."
-                    },
-                    "origin": {
-                      "type": "array",
-                      "minItems": 3,
-                      "maxItems": 3,
-                      "items": [
-                        {
-                          "type": "number"
-                        },
-                        {
-                          "type": "number"
-                        },
-                        {
-                          "type": "number"
-                        }
-                      ],
-                      "description": "Cube pivot [x,y,z]. Required for non-zero rotation; optional otherwise.",
-                      "markdownDescription": "Cube pivot [x,y,z]. Required for non-zero rotation; optional otherwise."
-                    },
-                    "from": {
-                      "type": "array",
-                      "minItems": 3,
-                      "maxItems": 3,
-                      "items": [
-                        {
-                          "type": "number"
-                        },
-                        {
-                          "type": "number"
-                        },
-                        {
-                          "type": "number"
-                        }
-                      ],
-                      "description": "Required finite Cube start coordinates [x,y,z].",
-                      "markdownDescription": "Required finite Cube start coordinates [x,y,z]."
-                    },
-                    "to": {
-                      "type": "array",
-                      "minItems": 3,
-                      "maxItems": 3,
-                      "items": [
-                        {
-                          "type": "number"
-                        },
-                        {
-                          "type": "number"
-                        },
-                        {
-                          "type": "number"
-                        }
-                      ],
-                      "description": "Required finite Cube end coordinates [x,y,z].",
-                      "markdownDescription": "Required finite Cube end coordinates [x,y,z]."
-                    },
-                    "rotation": {
-                      "type": "array",
-                      "minItems": 3,
-                      "maxItems": 3,
-                      "items": [
-                        {
-                          "type": "number"
-                        },
-                        {
-                          "type": "number"
-                        },
-                        {
-                          "type": "number"
-                        }
-                      ],
-                      "default": [
-                        0,
-                        0,
-                        0
-                      ],
-                      "description": "Cube rotation in degrees [x,y,z]; non-zero rotation requires origin.",
-                      "markdownDescription": "Cube rotation in degrees [x,y,z]; non-zero rotation requires origin."
-                    },
-                    "group": {
-                      "type": "string",
-                      "minLength": 1,
-                      "description": "Optional per-Cube Group UUID or unique exact-name parent override; use `root` for explicit root. Omit to inherit the top-level group.",
-                      "markdownDescription": "Optional per-Cube Group UUID or unique exact-name parent override; use `root` for explicit root. Omit to inherit the top-level group."
-                    },
-                    "inflate": {
-                      "type": "number",
-                      "description": "Optional finite Bedrock Cube inflation authored at creation.",
-                      "markdownDescription": "Optional finite Bedrock Cube inflation authored at creation."
-                    }
-                  },
-                  "required": [
-                    "name",
-                    "from",
-                    "to"
-                  ],
-                  "additionalProperties": false
-                },
-                "minItems": 1,
-                "description": "Cubes to place. Each requires finite from/to; rotated Cubes also require origin.",
-                "markdownDescription": "Cubes to place. Each requires finite from/to; rotated Cubes also require origin."
-              },
-              "group": {
-                "type": "string",
-                "minLength": 1,
-                "description": "Optional Group UUID or unique exact name; omit/use `root` only for intentional root placement.",
-                "markdownDescription": "Optional Group UUID or unique exact name; omit/use `root` only for intentional root placement."
-              },
-              "faces": {
-                "anyOf": [
+          "manage_cubes": {
+            "anyOf": [
+              {
+                "allOf": [
                   {
-                    "type": "boolean",
-                    "const": true,
-                    "description": "Use inherited project UV mode; per-face UV Cubes receive native auto UV mapping.",
-                    "markdownDescription": "Use inherited project UV mode; per-face UV Cubes receive native auto UV mapping."
-                  },
-                  {
-                    "type": "array",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "face": {
-                          "type": "string",
-                          "enum": [
-                            "north",
-                            "south",
-                            "east",
-                            "west",
-                            "up",
-                            "down"
+                    "type": "object",
+                    "properties": {
+                      "elements": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string",
+                              "minLength": 1,
+                              "description": "Non-empty Cube name.",
+                              "markdownDescription": "Non-empty Cube name."
+                            },
+                            "origin": {
+                              "type": "array",
+                              "minItems": 3,
+                              "maxItems": 3,
+                              "items": [
+                                {
+                                  "type": "number"
+                                },
+                                {
+                                  "type": "number"
+                                },
+                                {
+                                  "type": "number"
+                                }
+                              ],
+                              "description": "Cube pivot [x,y,z]. Required for non-zero rotation; optional otherwise.",
+                              "markdownDescription": "Cube pivot [x,y,z]. Required for non-zero rotation; optional otherwise."
+                            },
+                            "from": {
+                              "type": "array",
+                              "minItems": 3,
+                              "maxItems": 3,
+                              "items": [
+                                {
+                                  "type": "number"
+                                },
+                                {
+                                  "type": "number"
+                                },
+                                {
+                                  "type": "number"
+                                }
+                              ],
+                              "description": "Required finite Cube start coordinates [x,y,z].",
+                              "markdownDescription": "Required finite Cube start coordinates [x,y,z]."
+                            },
+                            "to": {
+                              "type": "array",
+                              "minItems": 3,
+                              "maxItems": 3,
+                              "items": [
+                                {
+                                  "type": "number"
+                                },
+                                {
+                                  "type": "number"
+                                },
+                                {
+                                  "type": "number"
+                                }
+                              ],
+                              "description": "Required finite Cube end coordinates [x,y,z].",
+                              "markdownDescription": "Required finite Cube end coordinates [x,y,z]."
+                            },
+                            "rotation": {
+                              "type": "array",
+                              "minItems": 3,
+                              "maxItems": 3,
+                              "items": [
+                                {
+                                  "type": "number"
+                                },
+                                {
+                                  "type": "number"
+                                },
+                                {
+                                  "type": "number"
+                                }
+                              ],
+                              "default": [
+                                0,
+                                0,
+                                0
+                              ],
+                              "description": "Cube rotation in degrees [x,y,z]; non-zero rotation requires origin.",
+                              "markdownDescription": "Cube rotation in degrees [x,y,z]; non-zero rotation requires origin."
+                            },
+                            "group": {
+                              "type": "string",
+                              "minLength": 1,
+                              "description": "Optional per-Cube Group UUID or unique exact-name parent override; use `root` for explicit root. Omit to inherit the top-level group.",
+                              "markdownDescription": "Optional per-Cube Group UUID or unique exact-name parent override; use `root` for explicit root. Omit to inherit the top-level group."
+                            },
+                            "inflate": {
+                              "type": "number",
+                              "description": "Optional finite Bedrock Cube inflation authored at creation.",
+                              "markdownDescription": "Optional finite Bedrock Cube inflation authored at creation."
+                            }
+                          },
+                          "required": [
+                            "name",
+                            "from",
+                            "to"
                           ],
-                          "description": "Face whose per-face UV rectangle is overridden.",
-                          "markdownDescription": "Face whose per-face UV rectangle is overridden."
+                          "additionalProperties": false
                         },
-                        "uv": {
-                          "type": "array",
-                          "items": {
+                        "minItems": 1,
+                        "description": "Cubes to place. Each requires finite from/to; rotated Cubes also require origin.",
+                        "markdownDescription": "Cubes to place. Each requires finite from/to; rotated Cubes also require origin."
+                      },
+                      "group": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Optional Group UUID or unique exact name; omit/use `root` only for intentional root placement.",
+                        "markdownDescription": "Optional Group UUID or unique exact name; omit/use `root` only for intentional root placement."
+                      },
+                      "faces": {
+                        "anyOf": [
+                          {
+                            "type": "boolean",
+                            "const": true,
+                            "description": "Use inherited project UV mode; per-face UV Cubes receive native auto UV mapping.",
+                            "markdownDescription": "Use inherited project UV mode; per-face UV Cubes receive native auto UV mapping."
+                          },
+                          {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "face": {
+                                  "type": "string",
+                                  "enum": [
+                                    "north",
+                                    "south",
+                                    "east",
+                                    "west",
+                                    "up",
+                                    "down"
+                                  ],
+                                  "description": "Face whose per-face UV rectangle is overridden.",
+                                  "markdownDescription": "Face whose per-face UV rectangle is overridden."
+                                },
+                                "uv": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "number"
+                                  },
+                                  "minItems": 4,
+                                  "maxItems": 4,
+                                  "description": "Finite custom UV rectangle [u1,v1,u2,v2] for this face.",
+                                  "markdownDescription": "Finite custom UV rectangle [u1,v1,u2,v2] for this face."
+                                }
+                              },
+                              "required": [
+                                "face",
+                                "uv"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "minItems": 1,
+                            "maxItems": 6,
+                            "description": "Per-face UV overrides; creates the Cube in per-face UV mode; unlisted faces keep native default UV.",
+                            "markdownDescription": "Per-face UV overrides; creates the Cube in per-face UV mode; unlisted faces keep native default UV."
+                          }
+                        ],
+                        "default": true,
+                        "description": "UV intent: true/default = inherited project UV mode; explicit rectangles = per-face UV mode.",
+                        "markdownDescription": "UV intent: true/default = inherited project UV mode; explicit rectangles = per-face UV mode."
+                      }
+                    },
+                    "required": [
+                      "elements"
+                    ]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "operation": {
+                        "type": "string",
+                        "const": "create"
+                      }
+                    },
+                    "required": [
+                      "operation"
+                    ]
+                  }
+                ]
+              },
+              {
+                "allOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Required Cube UUID or unique exact name; selection is never an implicit target.",
+                        "markdownDescription": "Required Cube UUID or unique exact name; selection is never an implicit target."
+                      },
+                      "name": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "New non-empty Cube name.",
+                        "markdownDescription": "New non-empty Cube name."
+                      },
+                      "origin": {
+                        "type": "array",
+                        "minItems": 3,
+                        "maxItems": 3,
+                        "items": [
+                          {
                             "type": "number"
                           },
-                          "minItems": 4,
-                          "maxItems": 4,
-                          "description": "Finite custom UV rectangle [u1,v1,u2,v2] for this face.",
-                          "markdownDescription": "Finite custom UV rectangle [u1,v1,u2,v2] for this face."
-                        }
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ],
+                        "description": "Cube pivot; origin-only preserves position, with from/to/rotation it rewrites the transform.",
+                        "markdownDescription": "Cube pivot; origin-only preserves position, with from/to/rotation it rewrites the transform."
                       },
-                      "required": [
-                        "face",
-                        "uv"
-                      ],
-                      "additionalProperties": false
+                      "from": {
+                        "type": "array",
+                        "minItems": 3,
+                        "maxItems": 3,
+                        "items": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ],
+                        "description": "Starting point of the cube.",
+                        "markdownDescription": "Starting point of the cube."
+                      },
+                      "to": {
+                        "type": "array",
+                        "minItems": 3,
+                        "maxItems": 3,
+                        "items": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ],
+                        "description": "Ending point of the cube.",
+                        "markdownDescription": "Ending point of the cube."
+                      },
+                      "rotation": {
+                        "type": "array",
+                        "minItems": 3,
+                        "maxItems": 3,
+                        "items": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ],
+                        "description": "Cube rotation; activating non-zero requires origin; already-rotated may reuse its pivot.",
+                        "markdownDescription": "Cube rotation; activating non-zero requires origin; already-rotated may reuse its pivot."
+                      },
+                      "autouv": {
+                        "type": "string",
+                        "enum": [
+                          "0",
+                          "1",
+                          "2"
+                        ],
+                        "description": "Auto UV setting. 0 = disabled, 1 = enabled, 2 = relative auto UV.",
+                        "markdownDescription": "Auto UV setting. 0 = disabled, 1 = enabled, 2 = relative auto UV."
+                      },
+                      "uv_offset": {
+                        "type": "array",
+                        "minItems": 2,
+                        "maxItems": 2,
+                        "items": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ],
+                        "description": "Finite box-UV offset [u,v] exported by Bedrock when this Cube uses box UV.",
+                        "markdownDescription": "Finite box-UV offset [u,v] exported by Bedrock when this Cube uses box UV."
+                      },
+                      "mirror_uv": {
+                        "type": "boolean",
+                        "description": "Whether to mirror the UVs.",
+                        "markdownDescription": "Whether to mirror the UVs."
+                      },
+                      "inflate": {
+                        "type": "number",
+                        "description": "Finite Bedrock Cube inflation amount.",
+                        "markdownDescription": "Finite Bedrock Cube inflation amount."
+                      },
+                      "visibility": {
+                        "type": "boolean",
+                        "description": "Whether the cube is visible or not.",
+                        "markdownDescription": "Whether the cube is visible or not."
+                      }
                     },
-                    "minItems": 1,
-                    "maxItems": 6,
-                    "description": "Per-face UV overrides; creates the Cube in per-face UV mode; unlisted faces keep native default UV.",
-                    "markdownDescription": "Per-face UV overrides; creates the Cube in per-face UV mode; unlisted faces keep native default UV."
+                    "required": [
+                      "id"
+                    ]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "operation": {
+                        "type": "string",
+                        "const": "update"
+                      }
+                    },
+                    "required": [
+                      "operation"
+                    ]
                   }
-                ],
-                "default": true,
-                "description": "UV intent: true/default = inherited project UV mode; explicit rectangles = per-face UV mode.",
-                "markdownDescription": "UV intent: true/default = inherited project UV mode; explicit rectangles = per-face UV mode."
+                ]
+              },
+              {
+                "allOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "updates": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "description": "Exact Cube UUID; names and selection are not accepted for batch correction.",
+                              "markdownDescription": "Exact Cube UUID; names and selection are not accepted for batch correction."
+                            },
+                            "origin": {
+                              "type": "array",
+                              "minItems": 3,
+                              "maxItems": 3,
+                              "items": [
+                                {
+                                  "type": "number"
+                                },
+                                {
+                                  "type": "number"
+                                },
+                                {
+                                  "type": "number"
+                                }
+                              ],
+                              "description": "New pivot. Origin-only preserves visual position; with from/to/rotation it is an authored transform rewrite.",
+                              "markdownDescription": "New pivot. Origin-only preserves visual position; with from/to/rotation it is an authored transform rewrite."
+                            },
+                            "from": {
+                              "type": "array",
+                              "minItems": 3,
+                              "maxItems": 3,
+                              "items": [
+                                {
+                                  "type": "number"
+                                },
+                                {
+                                  "type": "number"
+                                },
+                                {
+                                  "type": "number"
+                                }
+                              ],
+                              "description": "New authored Cube from coordinates.",
+                              "markdownDescription": "New authored Cube from coordinates."
+                            },
+                            "to": {
+                              "type": "array",
+                              "minItems": 3,
+                              "maxItems": 3,
+                              "items": [
+                                {
+                                  "type": "number"
+                                },
+                                {
+                                  "type": "number"
+                                },
+                                {
+                                  "type": "number"
+                                }
+                              ],
+                              "description": "New authored Cube to coordinates.",
+                              "markdownDescription": "New authored Cube to coordinates."
+                            },
+                            "rotation": {
+                              "type": "array",
+                              "minItems": 3,
+                              "maxItems": 3,
+                              "items": [
+                                {
+                                  "type": "number"
+                                },
+                                {
+                                  "type": "number"
+                                },
+                                {
+                                  "type": "number"
+                                }
+                              ],
+                              "description": "New rotation in degrees. Activating non-zero rotation requires origin; an already-rotated Cube may reuse its pivot.",
+                              "markdownDescription": "New rotation in degrees. Activating non-zero rotation requires origin; an already-rotated Cube may reuse its pivot."
+                            },
+                            "uv_offset": {
+                              "type": "array",
+                              "minItems": 2,
+                              "maxItems": 2,
+                              "items": [
+                                {
+                                  "type": "number"
+                                },
+                                {
+                                  "type": "number"
+                                }
+                              ],
+                              "description": "Finite box-UV offset [u,v] for this Cube.",
+                              "markdownDescription": "Finite box-UV offset [u,v] for this Cube."
+                            },
+                            "autouv": {
+                              "type": "string",
+                              "enum": [
+                                "0",
+                                "1",
+                                "2"
+                              ],
+                              "description": "Auto UV setting: 0 disabled, 1 enabled, 2 relative.",
+                              "markdownDescription": "Auto UV setting: 0 disabled, 1 enabled, 2 relative."
+                            },
+                            "mirror_uv": {
+                              "type": "boolean",
+                              "description": "Whether to mirror Box UVs.",
+                              "markdownDescription": "Whether to mirror Box UVs."
+                            },
+                            "visibility": {
+                              "type": "boolean",
+                              "description": "New Cube visibility.",
+                              "markdownDescription": "New Cube visibility."
+                            }
+                          },
+                          "required": [
+                            "id"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "minItems": 1,
+                        "maxItems": 32,
+                        "description": "1-32 explicit Cube transform/Box-UV/visibility updates applied in one Undo unit.",
+                        "markdownDescription": "1-32 explicit Cube transform/Box-UV/visibility updates applied in one Undo unit."
+                      }
+                    },
+                    "required": [
+                      "updates"
+                    ]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "operation": {
+                        "type": "string",
+                        "const": "batch_update"
+                      }
+                    },
+                    "required": [
+                      "operation"
+                    ]
+                  }
+                ]
               }
-            },
-            "required": [
-              "elements"
-            ],
-            "additionalProperties": false
-          }
-        },
-        "$schema": "http://json-schema.org/draft-07/schema#"
-      }
-    },
-    {
-      "name": "modify_cube",
-      "title": "Modify Cube",
-      "description": "Modifies one explicit Bedrock Cube transform/UV/inflate/visibility state. UUID is preferred; exact names must be unique. Generic Java-only shade/editor palette color controls are not accepted. Exact no-op requests fail before Undo; resulting state and `geometry_effect` record the authored change.",
-      "status": "stable",
-      "category": "Cubes",
-      "annotations": {
-        "destructiveHint": true
-      },
-      "parameters": {
-        "$ref": "#/definitions/modify_cube",
-        "definitions": {
-          "modify_cube": {
-            "type": "object",
-            "properties": {
-              "id": {
-                "type": "string",
-                "minLength": 1,
-                "description": "Required Cube UUID or unique exact name; selection is never an implicit target.",
-                "markdownDescription": "Required Cube UUID or unique exact name; selection is never an implicit target."
-              },
-              "name": {
-                "type": "string",
-                "minLength": 1,
-                "description": "New non-empty Cube name.",
-                "markdownDescription": "New non-empty Cube name."
-              },
-              "origin": {
-                "type": "array",
-                "minItems": 3,
-                "maxItems": 3,
-                "items": [
-                  {
-                    "type": "number"
-                  },
-                  {
-                    "type": "number"
-                  },
-                  {
-                    "type": "number"
-                  }
-                ],
-                "description": "Cube pivot; origin-only preserves position, with from/to/rotation it rewrites the transform.",
-                "markdownDescription": "Cube pivot; origin-only preserves position, with from/to/rotation it rewrites the transform."
-              },
-              "from": {
-                "type": "array",
-                "minItems": 3,
-                "maxItems": 3,
-                "items": [
-                  {
-                    "type": "number"
-                  },
-                  {
-                    "type": "number"
-                  },
-                  {
-                    "type": "number"
-                  }
-                ],
-                "description": "Starting point of the cube.",
-                "markdownDescription": "Starting point of the cube."
-              },
-              "to": {
-                "type": "array",
-                "minItems": 3,
-                "maxItems": 3,
-                "items": [
-                  {
-                    "type": "number"
-                  },
-                  {
-                    "type": "number"
-                  },
-                  {
-                    "type": "number"
-                  }
-                ],
-                "description": "Ending point of the cube.",
-                "markdownDescription": "Ending point of the cube."
-              },
-              "rotation": {
-                "type": "array",
-                "minItems": 3,
-                "maxItems": 3,
-                "items": [
-                  {
-                    "type": "number"
-                  },
-                  {
-                    "type": "number"
-                  },
-                  {
-                    "type": "number"
-                  }
-                ],
-                "description": "Cube rotation; activating non-zero requires origin; already-rotated may reuse its pivot.",
-                "markdownDescription": "Cube rotation; activating non-zero requires origin; already-rotated may reuse its pivot."
-              },
-              "autouv": {
-                "type": "string",
-                "enum": [
-                  "0",
-                  "1",
-                  "2"
-                ],
-                "description": "Auto UV setting. 0 = disabled, 1 = enabled, 2 = relative auto UV.",
-                "markdownDescription": "Auto UV setting. 0 = disabled, 1 = enabled, 2 = relative auto UV."
-              },
-              "uv_offset": {
-                "type": "array",
-                "minItems": 2,
-                "maxItems": 2,
-                "items": [
-                  {
-                    "type": "number"
-                  },
-                  {
-                    "type": "number"
-                  }
-                ],
-                "description": "Finite box-UV offset [u,v] exported by Bedrock when this Cube uses box UV.",
-                "markdownDescription": "Finite box-UV offset [u,v] exported by Bedrock when this Cube uses box UV."
-              },
-              "mirror_uv": {
-                "type": "boolean",
-                "description": "Whether to mirror the UVs.",
-                "markdownDescription": "Whether to mirror the UVs."
-              },
-              "inflate": {
-                "type": "number",
-                "description": "Finite Bedrock Cube inflation amount.",
-                "markdownDescription": "Finite Bedrock Cube inflation amount."
-              },
-              "visibility": {
-                "type": "boolean",
-                "description": "Whether the cube is visible or not.",
-                "markdownDescription": "Whether the cube is visible or not."
-              }
-            },
-            "required": [
-              "id"
-            ],
-            "additionalProperties": false
-          }
-        },
-        "$schema": "http://json-schema.org/draft-07/schema#"
-      }
-    },
-    {
-      "name": "modify_cubes_batch",
-      "title": "Modify Cubes Batch",
-      "description": "Applies 1-32 unique UUID-targeted Cube transform/Box-UV/visibility corrections in one Undo unit after full preflight. Unsupported fields and same-value targets fail before Undo; per-Cube before/after `geometry_effect` remains explicit. Execution success does not mean the geometry was corrected visually.",
-      "status": "stable",
-      "category": "Cubes",
-      "annotations": {
-        "destructiveHint": true
-      },
-      "parameters": {
-        "$ref": "#/definitions/modify_cubes_batch",
-        "definitions": {
-          "modify_cubes_batch": {
-            "type": "object",
-            "properties": {
-              "updates": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "id": {
-                      "type": "string",
-                      "minLength": 1,
-                      "description": "Exact Cube UUID; names and selection are not accepted for batch correction.",
-                      "markdownDescription": "Exact Cube UUID; names and selection are not accepted for batch correction."
-                    },
-                    "origin": {
-                      "type": "array",
-                      "minItems": 3,
-                      "maxItems": 3,
-                      "items": [
-                        {
-                          "type": "number"
-                        },
-                        {
-                          "type": "number"
-                        },
-                        {
-                          "type": "number"
-                        }
-                      ],
-                      "description": "New pivot. Origin-only preserves visual position; with from/to/rotation it is an authored transform rewrite.",
-                      "markdownDescription": "New pivot. Origin-only preserves visual position; with from/to/rotation it is an authored transform rewrite."
-                    },
-                    "from": {
-                      "type": "array",
-                      "minItems": 3,
-                      "maxItems": 3,
-                      "items": [
-                        {
-                          "type": "number"
-                        },
-                        {
-                          "type": "number"
-                        },
-                        {
-                          "type": "number"
-                        }
-                      ],
-                      "description": "New authored Cube from coordinates.",
-                      "markdownDescription": "New authored Cube from coordinates."
-                    },
-                    "to": {
-                      "type": "array",
-                      "minItems": 3,
-                      "maxItems": 3,
-                      "items": [
-                        {
-                          "type": "number"
-                        },
-                        {
-                          "type": "number"
-                        },
-                        {
-                          "type": "number"
-                        }
-                      ],
-                      "description": "New authored Cube to coordinates.",
-                      "markdownDescription": "New authored Cube to coordinates."
-                    },
-                    "rotation": {
-                      "type": "array",
-                      "minItems": 3,
-                      "maxItems": 3,
-                      "items": [
-                        {
-                          "type": "number"
-                        },
-                        {
-                          "type": "number"
-                        },
-                        {
-                          "type": "number"
-                        }
-                      ],
-                      "description": "New rotation in degrees. Activating non-zero rotation requires origin; an already-rotated Cube may reuse its pivot.",
-                      "markdownDescription": "New rotation in degrees. Activating non-zero rotation requires origin; an already-rotated Cube may reuse its pivot."
-                    },
-                    "uv_offset": {
-                      "type": "array",
-                      "minItems": 2,
-                      "maxItems": 2,
-                      "items": [
-                        {
-                          "type": "number"
-                        },
-                        {
-                          "type": "number"
-                        }
-                      ],
-                      "description": "Finite box-UV offset [u,v] for this Cube.",
-                      "markdownDescription": "Finite box-UV offset [u,v] for this Cube."
-                    },
-                    "autouv": {
-                      "type": "string",
-                      "enum": [
-                        "0",
-                        "1",
-                        "2"
-                      ],
-                      "description": "Auto UV setting: 0 disabled, 1 enabled, 2 relative.",
-                      "markdownDescription": "Auto UV setting: 0 disabled, 1 enabled, 2 relative."
-                    },
-                    "mirror_uv": {
-                      "type": "boolean",
-                      "description": "Whether to mirror Box UVs.",
-                      "markdownDescription": "Whether to mirror Box UVs."
-                    },
-                    "visibility": {
-                      "type": "boolean",
-                      "description": "New Cube visibility.",
-                      "markdownDescription": "New Cube visibility."
-                    }
-                  },
-                  "required": [
-                    "id"
-                  ],
-                  "additionalProperties": false
-                },
-                "minItems": 1,
-                "maxItems": 32,
-                "description": "1-32 explicit Cube transform/Box-UV/visibility updates applied in one Undo unit.",
-                "markdownDescription": "1-32 explicit Cube transform/Box-UV/visibility updates applied in one Undo unit."
-              }
-            },
-            "required": [
-              "updates"
-            ],
-            "additionalProperties": false
+            ]
           }
         },
         "$schema": "http://json-schema.org/draft-07/schema#"

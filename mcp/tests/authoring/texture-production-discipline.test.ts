@@ -89,7 +89,7 @@ describe("professional texture production discipline", () => {
     expect(skill).toContain("box_uv_region");
     expect(skill).toContain("autouv=0");
     expect(skill).toContain("HANDOFF_REQUIRED(geometry)");
-    expect(skill).toContain("Never `tool_search` for `modify_cube`, `modify_cubes_batch`, `bone_rigging`");
+    expect(skill).toContain("Never `tool_search` for `manage_cubes`, `bone_rigging`");
   });
 
   test("UV Layout lock/audit remains Geometry-owned before Texture Styling", async () => {

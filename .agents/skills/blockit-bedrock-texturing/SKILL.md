@@ -48,7 +48,7 @@ fresh atlas image               → get_texture
 mapped model-view evidence      → capture_model_views
 ```
 
-Never `tool_search` for `modify_cube`, `modify_cubes_batch`, `bone_rigging`, or another Geometry mutation while Texturing is active.
+Never `tool_search` for `manage_cubes`, `bone_rigging`, or another Geometry mutation while Texturing is active.
 
 ## Conditional Support — Not Default Routing
 

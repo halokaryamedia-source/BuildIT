@@ -21,9 +21,7 @@ const FORBIDDEN_TOOLS = ["risky_eval", "from_geo_json"] as const;
 const REQUIRED_GEOMETRY_TOOLS = [
   "create_project",
   "add_group",
-  "place_cube",
-  "modify_cube",
-  "modify_cubes_batch",
+  "manage_cubes",
   "modify_group",
   "reparent_element",
   "capture_model_views",
@@ -32,9 +30,7 @@ const REQUIRED_GEOMETRY_TOOLS = [
 ] as const;
 const PLAN_FREE_GEOMETRY_TOOLS = [
   "add_group",
-  "place_cube",
-  "modify_cube",
-  "modify_cubes_batch",
+  "manage_cubes",
   "modify_group",
   "reparent_element",
 ] as const;

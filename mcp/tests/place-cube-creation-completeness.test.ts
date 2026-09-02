@@ -54,7 +54,7 @@ describe("place_cube creation completeness", () => {
 
   test("all explicit parent references are preflighted before Undo", async () => {
     const cubes = await source("server/tools/cubes.ts");
-    const start = cubes.indexOf("async execute({ elements, faces, group })");
+    const start = cubes.indexOf("const executeCreateCubes");
     const undo = cubes.indexOf("Undo.initEdit", start);
     const defaultPreflight = cubes.indexOf("resolvePlacementGroup(group)", start);
     const elementPreflight = cubes.indexOf("resolvePlacementGroup(element.group)", start);
@@ -69,9 +69,7 @@ describe("place_cube creation completeness", () => {
 
   test("Phase 3 extends the existing Cube tool instead of adding a new tool family", async () => {
     expect(cubeToolDocs.map(({ name }) => name)).toEqual([
-      "place_cube",
-      "modify_cube",
-      "modify_cubes_batch",
+      "manage_cubes",
     ]);
 
     const cubes = await source("server/tools/cubes.ts");
