@@ -13,12 +13,12 @@ import {
 const HOST = "127.0.0.1";
 const ENDPOINT = "/bb-mcp";
 const PROTOCOL_VERSION = "2025-06-18";
-const CATALOG_TOOL_COUNT = 65;
+const CATALOG_TOOL_COUNT = 66;
 
 const EXPECTED_PHASE_TOOL_COUNTS: Record<McpAuthoringPhase, number> = {
-  geometry: 28,
-  texturing: 43,
-  animation: 24,
+  geometry: 29,
+  texturing: 44,
+  animation: 25,
 };
 
 type ListedTool = {

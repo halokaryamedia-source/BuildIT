@@ -48,7 +48,9 @@ describe("pre-local generic semantics narrowing", () => {
     const skill = await source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md");
     expect(exportSource).toContain("exportToolDocs[0].status,\n    false");
     expect(exportSource).toContain("BLOCKIT_MODEL_CODEC_IDS = [\"bedrock\", \"project\"]");
-    expect(skill).toContain("`export_model`: Bedrock JSON (`bedrock`) or editable `.bbmodel` (`project`)");
+    expect(skill).toContain(
+      "`export_model`: `bedrock` JSON or `project` `.bbmodel`."
+    );
     expect(skill).not.toContain("list_export_formats");
   });
 

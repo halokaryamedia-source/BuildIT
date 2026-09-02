@@ -18,11 +18,9 @@ import {
   prompts,
   applyMcpToolSurface,
   registerMcpProfile,
+  setMcpPhaseSwitchHandler,
 } from "@/server/tools";
-import {
-  MCP_EXTENDED_FAMILIES_SETTING_ID,
-  resolveMcpRegistrationProfile,
-} from "@/lib/registrationProfile";
+import { resolveMcpRegistrationProfile } from "@/lib/registrationProfile";
 import {
   MCP_AUTHORING_PHASE_SETTING_ID,
   resolveMcpAuthoringPhase,
@@ -31,7 +29,12 @@ import {
 import { resources } from "@/server";
 import { registerReferenceModelsResource } from "@/server/resources";
 import { uiSetup, uiTeardown } from "@/ui";
-import { settingsSetup, settingsTeardown } from "@/ui/settings";
+import {
+  isExtendedMcpFamiliesEnabled,
+  setExtendedMcpFamiliesEnabled,
+  settingsSetup,
+  settingsTeardown,
+} from "@/ui/settings";
 import { setupI18n } from "@/ui/i18n";
 import { initPromptLoader } from "@/lib/promptLoader";
 import type { NetServer } from "@/server/net";
@@ -39,6 +42,32 @@ import createNetServer from "@/server/net";
 import { getIcon } from "@/macros/getIcon" with { type: "macro" };
 
 let httpServer: NetServer | null = null;
+let profileActions: Action[] = [];
+
+function setupProfileActions(): void {
+  profileActions = [
+    new Action("blockit_enable_extended", {
+      name: "Enable BlockIT EXTENDED MCP",
+      description: "Enable the opt-in generic Blockbench fallback families.",
+      icon: "extension",
+      plugin: "blockit_mcp",
+      click: () => setExtendedMcpFamiliesEnabled(true),
+    }),
+    new Action("blockit_disable_extended", {
+      name: "Disable BlockIT EXTENDED MCP",
+      description: "Return BlockIT to the default Bedrock Entity profile.",
+      icon: "extension",
+      plugin: "blockit_mcp",
+      click: () => setExtendedMcpFamiliesEnabled(false),
+    }),
+  ];
+  for (const action of profileActions) MenuBar.addAction(action, "tools");
+}
+
+function teardownProfileActions(): void {
+  for (const action of profileActions) action.delete();
+  profileActions = [];
+}
 
 BBPlugin.register("blockit_mcp", {
   version: VERSION,
@@ -74,6 +103,7 @@ BBPlugin.register("blockit_mcp", {
 
     setupI18n();
     settingsSetup();
+    setupProfileActions();
 
     const rawPort = Number(Settings.get("mcp_port") || 3000);
     if (!Number.isInteger(rawPort) || rawPort < 1 || rawPort > 65535) {
@@ -88,7 +118,7 @@ BBPlugin.register("blockit_mcp", {
     // may add generic fallback families, then authoring phase exposure narrows
     // the actual MCP surface to Core + exactly one phase for this plugin load.
     const registrationProfile = resolveMcpRegistrationProfile(
-      Settings.get(MCP_EXTENDED_FAMILIES_SETTING_ID)
+      isExtendedMcpFamiliesEnabled()
     );
     registerMcpProfile(registrationProfile);
 
@@ -106,6 +136,13 @@ BBPlugin.register("blockit_mcp", {
       return;
     }
     applyMcpToolSurface(registrationProfile, authoringPhase);
+    setMcpPhaseSwitchHandler((targetPhase) => {
+      applyMcpToolSurface(registrationProfile, targetPhase);
+      Blockbench.showQuickMessage(
+        `BlockIT MCP phase switched to ${targetPhase}. Reconnect the MCP client.`,
+        2000
+      );
+    });
 
     // Runtime-conditional resource (depends on the reference_models plugin).
     registerReferenceModelsResource();
@@ -175,6 +212,7 @@ BBPlugin.register("blockit_mcp", {
   },
 
   onunload() {
+    setMcpPhaseSwitchHandler(() => undefined);
     if (httpServer) {
       // close() throws ERR_SERVER_NOT_RUNNING when listen never succeeded;
       // socket teardown must stay unconditional.
@@ -186,6 +224,7 @@ BBPlugin.register("blockit_mcp", {
     }
 
     uiTeardown();
+    teardownProfileActions();
     settingsTeardown();
   },
 

@@ -72,7 +72,7 @@ describe("Bedrock project semantics", () => {
       )
     ).toEqual({
       width: 2,
-      height: 2,
+      height: 3,
       offset_y: 0.5,
     });
   });

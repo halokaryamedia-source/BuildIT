@@ -41,7 +41,7 @@ describe("P1.2 MCP family gates", () => {
     expect(settingsSetup).toBeGreaterThan(-1);
     expect(gatedRegistration).toBeGreaterThan(settingsSetup);
     expect(serverStartup).toBeGreaterThan(gatedRegistration);
-    expect(indexSource).toContain("Settings.get(MCP_EXTENDED_FAMILIES_SETTING_ID)");
+    expect(indexSource).toContain("isExtendedMcpFamiliesEnabled()");
   });
 
   test("registration root adds profiles idempotently by family", async () => {

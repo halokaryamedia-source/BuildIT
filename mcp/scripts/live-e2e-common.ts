@@ -2,7 +2,7 @@ import { PRODUCT_ID } from "@/lib/productIdentity";
 
 export const DEFAULT_MCP_URL = "http://127.0.0.1:3000/bb-mcp";
 export const DEFAULT_BUNDLE_PATH = "dist/blockit_mcp.js";
-export const EXPECTED_PROFILE = "bedrock_entity";
+export const EXPECTED_PROFILES = new Set(["bedrock_entity", "extended"]);
 export const PROTOCOL_VERSION = "2025-06-18";
 export const AUTHORING_E2E_PROJECT_NAME = "blockit_geometry_e2e_disposable";
 export const AUTHORING_E2E_BONE_NAME = "e2e_root";
@@ -215,8 +215,8 @@ export class LiveMcpClient {
 
     expect(product.id === PRODUCT_ID, `Wrong MCP product: ${String(product.id)}.`);
     expect(
-      product.profile === EXPECTED_PROFILE,
-      `Expected profile ${EXPECTED_PROFILE}; live=${String(product.profile)}.`
+      EXPECTED_PROFILES.has(String(product.profile)),
+      `Expected a Geometry-capable profile; live=${String(product.profile)}.`
     );
     expect(
       product.authoring_phase === this.expectedPhase,

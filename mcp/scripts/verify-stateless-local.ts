@@ -217,12 +217,12 @@ async function fetchHealth(): Promise<{ response: Response; body: JsonObject }> 
 }
 
 async function verify(): Promise<void> {
-  const phase = expectedPhase();
+  let phase = expectedPhase();
   const buildIdentity = await localBuildIdentity();
   const preflight = { reachable: false } as Parameters<typeof classifyPreflightFailure>[0];
 
   registerMcpProfile(EXPECTED_PROFILE);
-  const expectedNames = getMcpSurfaceToolNames(EXPECTED_PROFILE, phase).sort();
+  let expectedNames = getMcpSurfaceToolNames(EXPECTED_PROFILE, phase).sort();
 
   console.log(`BlockIT local diagnostic gate: ${targetUrl}`);
   console.log(
@@ -254,6 +254,10 @@ async function verify(): Promise<void> {
     profile?: unknown;
     authoring_phase?: unknown;
   };
+  if (!phaseArg && !process.env.BLOCKIT_EXPECTED_PHASE && isMcpAuthoringPhase(product.authoring_phase)) {
+    phase = product.authoring_phase;
+    expectedNames = getMcpSurfaceToolNames(EXPECTED_PROFILE, phase).sort();
+  }
   preflight.productMatches = product.id === PRODUCT_ID;
   code = classifyPreflightFailure(preflight);
   if (code) {

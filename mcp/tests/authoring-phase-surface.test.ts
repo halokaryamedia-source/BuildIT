@@ -41,7 +41,7 @@ describe("authoring phase MCP surface", () => {
 
   test("default Geometry surface is Core plus Geometry only", () => {
     const geometry = phaseSurface("geometry");
-    expect(geometry.size).toBe(28);
+    expect(geometry.size).toBe(29);
 
     for (const coreTool of [
       "create_project",
@@ -289,12 +289,10 @@ describe("authoring phase MCP surface", () => {
     for (const owner of [orchestrator, texturing, animation]) {
       expect(owner).toContain(MCP_HANDOFF_REQUIRED);
       expect(owner).toContain("target_phase");
-      expect(owner).toContain("reload BlockIT MCP");
+      expect(owner).toMatch(/reload BlockIT MCP|phase switch\/reload action/);
     }
 
-    expect(orchestrator).toContain(
-      "Tool absence caused by phase scoping is **not** a discovery failure"
-    );
+    expect(orchestrator).toContain("phase absence is not discovery failure");
     expect(orchestrator).toContain(
       "A known foreign-phase tool must never enter this search path"
     );

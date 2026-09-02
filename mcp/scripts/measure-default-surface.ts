@@ -11,13 +11,13 @@ const PROTOCOL_VERSION = "2025-06-18";
 // justify a bloated schema by itself.
 // 2026-08-24: add_group gained the user-mandated coherent `groups` batch;
 // ceilings were raised by its measured delta.
-// 2026-08-28: Route 1 adds exactly one Geometry evidence tool. Only catalog
+// 2026-09-02: Live phase orchestration adds one Core control tool. Catalog
 // count and aggregate input-schema ceiling move by the measured capability delta.
 const SURFACE_BUDGET = {
-  tool_count: 65,
+  tool_count: 66,
   initialize_instructions_chars: 700,
   tools_list_response_chars: 82_000,
-  input_schema_chars: 58_500,
+  input_schema_chars: 58_700,
   description_chars: 11_500,
   max_tool_payload_chars: 3_200,
 } as const;

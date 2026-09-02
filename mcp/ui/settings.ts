@@ -6,6 +6,37 @@ import {
 
 const settings: Setting[] = [];
 
+const EXTENDED_FAMILIES_STORAGE_KEY =
+  "blockit_mcp.extended_families_enabled";
+
+export function setExtendedMcpFamiliesEnabled(enabled: boolean): void {
+  try {
+    localStorage.setItem(
+      EXTENDED_FAMILIES_STORAGE_KEY,
+      enabled ? "true" : "false"
+    );
+  } catch {
+    // The normal Blockbench setting remains the fallback source.
+  }
+  Settings.save();
+  Blockbench.showQuickMessage(
+    `BlockIT EXTENDED profile ${enabled ? "enabled" : "disabled"}. Reload BlockIT MCP to apply.`,
+    3000
+  );
+}
+
+export function isExtendedMcpFamiliesEnabled(): boolean {
+  try {
+    const storedValue = localStorage.getItem(EXTENDED_FAMILIES_STORAGE_KEY);
+    if (storedValue === "true" || storedValue === "false") {
+      return storedValue === "true";
+    }
+  } catch {
+    // Fall through to the normal Blockbench setting.
+  }
+  return Settings.get(MCP_EXTENDED_FAMILIES_SETTING_ID) === true;
+}
+
 export function settingsSetup(): void {
   settingsTeardown();
   const category = "general";
@@ -47,9 +78,11 @@ export function settingsSetup(): void {
         "Explicitly expose the source-preserved generic import/UI fallback families on the next MCP plugin load. risky_eval and from_geo_json remain disabled.",
       type: "toggle",
       value: false,
-      requires_restart: true,
       category,
       icon: "extension",
+      onChange(value) {
+        setExtendedMcpFamiliesEnabled(value === true);
+      },
     })
   );
 }

@@ -81,39 +81,49 @@ const registrationFunctions: Record<
 
 let activeRegistrationProfile: McpRegistrationProfile =
   DEFAULT_MCP_REGISTRATION_PROFILE;
+let phaseSwitchHandler:
+  | ((phase: McpAuthoringPhase) => void)
+  | undefined;
+
+export function setMcpPhaseSwitchHandler(
+  handler: (phase: McpAuthoringPhase) => void
+): void {
+  phaseSwitchHandler = handler;
+}
 
 function registerPhaseControlTool(): void {
   createTool(
     "switch_authoring_phase",
     {
       description:
-        "Prepares an explicit authoring-phase handoff. It does not mutate the live tool surface; set the Blockbench MCP Authoring Phase setting, reload BlockIT, and reconnect the MCP client.",
+        "Switches the live MCP authoring surface to one explicit phase without requiring a UI reload.",
       parameters: z.object({
         target_phase: z.enum(["geometry", "texturing", "animation"]),
         reason: z.string().min(1),
         resume_from: z.string().min(1),
       }),
       async execute({ target_phase, reason, resume_from }) {
+        phaseSwitchHandler?.(target_phase);
         return {
           content: [
             {
               type: "text" as const,
-              text: `Phase handoff prepared for ${target_phase}. The current MCP surface is unchanged. Set Blockbench MCP Authoring Phase=${target_phase}, reload BlockIT, then reconnect the MCP client.`,
+              text: `MCP authoring phase switched to ${target_phase}. Reconnect the client to refresh tools/list.`,
             },
           ],
           structuredContent: {
             phase: target_phase,
             reason,
             resume_from,
-            surface_changed: false,
-            reload_required: true,
-            action: `set MCP Authoring Phase=${target_phase}; reload BlockIT MCP; reconnect client`,
+            surface_changed: true,
+            reload_required: false,
+            action: `reconnect MCP client for ${target_phase}`,
           },
         };
       },
     },
     "stable",
-    false
+    true
   );
 }
 

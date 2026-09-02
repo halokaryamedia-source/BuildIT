@@ -77,10 +77,14 @@ describe("Bedrock Locator / Null Object direct coverage", () => {
     expect(inspection).toContain("ik_source: element.ik_source || null");
   });
 
-  test("Null Object creation rejects duplicate exact names before Undo", async () => {
+  test("Null Object creation rejects duplicate exported keys before Undo", async () => {
     const locatorSource = await source("server/tools/locators.ts");
-    expect(locatorSource.slice(locatorSource.indexOf("locatorToolDocs[2].name")).indexOf("assertOutlinerNameAvailable")).toBeGreaterThan(-1);
-    expect(locatorSource).toContain("Names must remain unique across Locators, Null Objects, Cubes, and Groups");
+    expect(locatorSource).toContain(
+      'assertLocatorExportKeyAvailable(parent, "null_object", args.name)'
+    );
+    expect(locatorSource).toContain(
+      "Locator keys must be unique within each parent bone."
+    );
   });
 
   test("Null Object geometry round-trip distinction is documented", async () => {

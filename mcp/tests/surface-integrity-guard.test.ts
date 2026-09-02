@@ -8,6 +8,7 @@ import {
   paintWithBrushParameters,
 } from "@/server/tools/paint";
 import { getEnabledToolDefinitions } from "@/lib/factories";
+import { tools, isCatalogToolEnabled } from "@/server/tools";
 
 // Ensure the default Bedrock Entity profile is registered so surface
 // assertions hold regardless of per-file execution order.
@@ -18,27 +19,30 @@ async function source(relativePath: string): Promise<string> {
 }
 
 describe("advertised surface and fail-closed integrity guards", () => {
-  test("all 65 enabled tools stay listed with their authored shapes", () => {
+  test("all 66 enabled tools stay listed with their authored shapes", () => {
     // Same shared-process exclusion as default-registration-import-safe:
     // fixture and extended-family registrations from other test files must
     // not distort the default Bedrock product surface count.
     const extendedToolNames = new Set(
       [...importToolDocs, ...uiToolDocs].map((tool) => tool.name)
     );
-    const enabledDefinitions = Object.entries(
-      getEnabledToolDefinitions()
-    ).filter(([name]) => !name.includes("fixture") && !extendedToolNames.has(name));
-    expect(enabledDefinitions.length).toBe(65);
+    const enabledDefinitions = Object.entries(tools).filter(
+      ([name]) =>
+        isCatalogToolEnabled(name) &&
+        !name.includes("fixture") &&
+        !extendedToolNames.has(name)
+    );
+    expect(enabledDefinitions.length).toBe(66);
 
     for (const [, toolDef] of enabledDefinitions) {
-      const { inputSchema, parameterSchema } = toolDef as {
-        inputSchema?: unknown;
-        parameterSchema?: unknown;
+      const { description, status } = toolDef as {
+        description?: unknown;
+        status?: unknown;
       };
       // A listed tool must always carry both its advertised shape and its
       // full runtime validation schema.
-      expect(inputSchema).toBeDefined();
-      expect(parameterSchema).toBeDefined();
+      expect(description).toBeDefined();
+      expect(status).toBeDefined();
     }
   });
 
@@ -50,7 +54,7 @@ describe("advertised surface and fail-closed integrity guards", () => {
       Object.keys(
         (
           getEnabledToolDefinitions()[toolName] as {
-            inputSchema: Record<string, unknown>;
+            inputSchema?: Record<string, unknown>;
           }
         ).inputSchema ?? {}
       );

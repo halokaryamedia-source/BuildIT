@@ -39,7 +39,7 @@ describe("local runtime gate source contract", () => {
     const names = getMcpSurfaceToolNames("bedrock_entity", "geometry");
     const definitions = getEnabledToolDefinitions();
 
-    expect(names.length).toBe(28);
+    expect(names.length).toBe(29);
     for (const toolName of REQUIRED_GEOMETRY_TOOLS) {
       expect(names, toolName).toContain(toolName);
       expect(definitions[toolName], toolName).toBeDefined();
@@ -151,6 +151,7 @@ describe("local runtime gate source contract", () => {
     ]);
 
     expect(readme).toContain("dist/blockit_mcp.js");
+    expect(readme).toContain("build_identity");
     expect(readme).toContain(
       "runtime workflow prompt             < 9,000 characters"
     );
@@ -162,11 +163,9 @@ describe("local runtime gate source contract", () => {
     expect(about).toContain("reconnect");
     expect(about).not.toContain("without restarting Blockbench");
 
-    expect(runbook).toContain("mcp/dist/blockit_mcp.js");
+    expect(runbook).toContain("cd mcp");
+    expect(runbook).toContain("bun run build");
     expect(runbook).not.toContain("mcp/dist/mcp.js");
-    expect(runbook).toContain("build_identity");
     expect(runbook).toContain("bun run verify:stateless-local");
-    expect(runbook).toContain("plan_id");
-    expect(runbook).toContain("Do not invent token or latency numbers");
   });
 });

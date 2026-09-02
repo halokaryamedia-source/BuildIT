@@ -565,9 +565,9 @@ export function assertToolDiscoveryEvalIntegrity(
 ): void {
   const failures: string[] = [];
 
-  if (report.enabled_tool_count !== 65) {
+  if (report.enabled_tool_count !== 66) {
     failures.push(
-      `enabled_tool_count=${report.enabled_tool_count}; expected 65`
+      `enabled_tool_count=${report.enabled_tool_count}; expected 66`
     );
   }
   if (report.case_count < 100 || report.case_count > 150) {

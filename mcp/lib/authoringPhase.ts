@@ -26,6 +26,7 @@ const CORE_FAMILIES = new Set<McpRegistrationFamily>([
   "export",
   "history",
   "project",
+  "phase_control",
   // Generic fallback families are Core only when the explicit extended
   // registration profile makes them available. Their individually disabled
   // tools remain disabled at createTool().
@@ -193,6 +194,7 @@ export function classifyMcpToolPhase(
   toolName: string,
   family: McpRegistrationFamily
 ): McpToolPhaseCategory | null {
+  if (family === "phase_control") return "core";
   if (
     toolName === "capture_screenshot" ||
     toolName === "capture_app_screenshot" ||

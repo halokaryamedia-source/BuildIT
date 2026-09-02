@@ -38,11 +38,9 @@ describe("pre-local plugin runtime cleanup", () => {
     expect(failClosedReturn).toBeLessThan(readyUi);
     expect(listeningHook).toBeLessThan(readyUi);
 
-    expect(tools).not.toContain(
-      "applyMcpToolSurface(activeRegistrationProfile, target_phase)"
-    );
-    expect(tools).toContain("surface_changed: false");
-    expect(tools).toContain("reload_required: true");
+    expect(tools).toContain("phaseSwitchHandler?.(target_phase)");
+    expect(tools).toContain("surface_changed: true");
+    expect(tools).toContain("reload_required: false");
   });
 
   test("plugin unload owns sockets, CSS, dialogs and settings references", async () => {

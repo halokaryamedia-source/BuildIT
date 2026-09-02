@@ -18,12 +18,12 @@ describe("live Geometry E2E verifier source contract", () => {
     expect(script).toContain("--confirm-disposable");
     expect(script).toContain("requireDisposableConsent();");
     expect(script).toContain("discard_unsaved: true");
-    expect(script).toContain('const EXPECTED_PHASE = "geometry"');
+    expect(script).toContain('expectedPhase: "geometry"');
     expect(script).toContain("build_identity");
-    expect(script).toContain("ACTIVE PHASE: GEOMETRY");
+    expect(script).toContain('expectedPhase: "geometry"');
     expect(script).toContain('visual_quality: "not_evaluated"');
     expect(script).toContain(
-      "This proves live mutation/readback/render/Undo/Redo behavior, not reference fidelity or accepted model quality."
+      "Runtime/readback/render/history proof is not reference-fidelity proof."
     );
 
     expect(script).not.toContain("risky_eval");
@@ -35,17 +35,20 @@ describe("live Geometry E2E verifier source contract", () => {
     const script = await source("scripts/verify-geometry-live.ts");
 
     const consent = script.indexOf("requireDisposableConsent();");
-    const preflight = script.indexOf("await preflight();", consent);
-    const createProject = script.indexOf('callTool("create_project"', preflight);
-    const addGroup = script.indexOf('callTool("add_group"', createProject);
-    const placeCube = script.indexOf('callTool("place_cube"', addGroup);
-    const firstInspect = script.indexOf("await inspectCube(cubeUuid)", placeCube);
-    const firstCapture = script.indexOf("await captureFront()", firstInspect);
-    const modify = script.indexOf('callTool("modify_cube"', firstCapture);
-    const secondInspect = script.indexOf("await inspectCube(cubeUuid)", modify);
-    const secondCapture = script.indexOf("await captureFront()", secondInspect);
-    const undo = script.indexOf('callTool("undo"', secondCapture);
-    const redo = script.indexOf('callTool("redo"', undo);
+    const preflight = script.indexOf("await client.preflight();", consent);
+    const createProject = script.indexOf('"create_project",', preflight);
+    const addGroup = script.indexOf('"add_group",', createProject);
+    const placeCube = script.indexOf('"place_cube",', addGroup);
+    const firstInspect = script.indexOf("await inspectCube(client, cubeUuid)", placeCube);
+    const firstCapture = script.indexOf("await captureFront(client)", firstInspect);
+    const modify = script.indexOf('"modify_cube",', firstCapture);
+    const secondInspect = script.indexOf("await inspectCube(client, cubeUuid)", modify);
+    const secondCapture = script.indexOf("await captureFront(client)", secondInspect);
+    const undo = script.indexOf(
+      'await client.callTool("undo"',
+      secondCapture
+    );
+    const redo = script.indexOf('await client.callTool("redo"', undo);
 
     const ordered = [
       consent,

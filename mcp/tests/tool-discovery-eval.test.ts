@@ -96,14 +96,14 @@ describe("tool discovery eval", () => {
       )
     );
 
-    expect(raw.enabled_tool_count).toBe(65);
+    expect(raw.enabled_tool_count).toBe(66);
     expect(raw.expected_tool_count).toBe(53);
     expect(raw.case_count).toBe(106);
     expect(raw.missing_expected_tools).toEqual([]);
     expect(raw.upstream_reference.default_limit).toBe(8);
     expect(raw.proxy_note).toContain("not installed-client proof");
 
-    expect(routed.catalog_enabled_tool_count).toBe(65);
+    expect(routed.catalog_enabled_tool_count).toBe(66);
     expect(routed.case_count).toBe(raw.case_count);
     expect(routed.upstream_reference.commit).toBe(raw.upstream_reference.commit);
     expect(routed.routed_query_contract).toBe("<exact_selected_tool_name>");

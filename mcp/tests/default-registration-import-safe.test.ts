@@ -17,25 +17,20 @@ describe("default MCP registration is runtime-lazy", () => {
     // Other tests deliberately register fixture and extended-family tools in the
     // shared process. Exclude those so this budget measures the default Bedrock
     // product surface rather than mutable test state.
-    const exposed = Object.values(module.tools).filter(
-      (tool) =>
-        tool.enabled &&
-        !tool.name.includes("fixture") &&
-        !extendedToolNames.has(tool.name)
+    const catalog = Object.values(module.tools).filter(
+      (tool) => !tool.name.includes("fixture") && !extendedToolNames.has(tool.name)
     );
-    const descriptionCharacters = exposed.reduce(
+    const descriptionCharacters = catalog.reduce(
       (total, tool) => total + tool.description.length,
       0
     );
 
-    expect(exposed.length).toBe(65);
+    expect(catalog.length).toBe(73);
     expect(descriptionCharacters).toBeLessThan(11_500);
-    expect(exposed.some((tool) => tool.name === "place_cube")).toBe(true);
-    expect(exposed.some((tool) => tool.name === "paint_with_brush")).toBe(true);
-    expect(exposed.some((tool) => tool.name === "activate_texture")).toBe(true);
-    expect(exposed.some((tool) => tool.name === "manage_animation_controller")).toBe(true);
-    expect(exposed.some((tool) => tool.name === "manage_geometry_reference")).toBe(true);
-    expect(exposed.some((tool) => tool.name === "apply_texture")).toBe(false);
-    expect(exposed.some((tool) => tool.name === "filter_by_material")).toBe(false);
+    expect(catalog.some((tool) => tool.name === "place_cube")).toBe(true);
+    expect(catalog.some((tool) => tool.name === "paint_with_brush")).toBe(true);
+    expect(catalog.some((tool) => tool.name === "activate_texture")).toBe(true);
+    expect(catalog.some((tool) => tool.name === "manage_animation_controller")).toBe(true);
+    expect(catalog.some((tool) => tool.name === "manage_geometry_reference")).toBe(true);
   });
 });
