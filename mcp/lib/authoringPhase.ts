@@ -35,8 +35,7 @@ const CORE_FAMILIES = new Set<McpRegistrationFamily>([
 ]);
 
 const CORE_ELEMENT_TOOLS = new Set([
-  "list_outline",
-  "find_elements_by_criteria",
+  "inspect_elements",
 ]);
 
 const GEOMETRY_ELEMENT_TOOLS = new Set([

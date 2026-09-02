@@ -1,6 +1,6 @@
 {
   "version": "0.1.0",
-  "generatedAt": "2026-09-02T04:42:36.144Z",
+  "generatedAt": "2026-09-02T05:03:08.582Z",
   "tools": [
     {
       "name": "manage_cubes",
@@ -2137,6 +2137,209 @@
       }
     },
     {
+      "name": "inspect_elements",
+      "title": "Inspect Elements",
+      "description": "Inspects Bedrock elements through one focused boundary. Use mode=outline for hierarchy, search for bounded criteria discovery, or detail for one authored element with optional UV data.",
+      "status": "stable",
+      "category": "Elements",
+      "annotations": {
+        "readOnlyHint": true
+      },
+      "parameters": {
+        "$ref": "#/definitions/inspect_elements",
+        "definitions": {
+          "inspect_elements": {
+            "anyOf": [
+              {
+                "allOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "include_cubes": {
+                        "type": "boolean",
+                        "default": true,
+                        "description": "If true, include cubes as leaves. If false, return groups only.",
+                        "markdownDescription": "If true, include cubes as leaves. If false, return groups only."
+                      },
+                      "max_depth": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 32,
+                        "default": 8,
+                        "description": "Maximum tree depth. Default 8; increase only for deeper structure.",
+                        "markdownDescription": "Maximum tree depth. Default 8; increase only for deeper structure."
+                      },
+                      "max_nodes": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 5000,
+                        "default": 120,
+                        "description": "Maximum Cube/Group nodes returned. Default 120; raise explicitly when truncation matters.",
+                        "markdownDescription": "Maximum Cube/Group nodes returned. Default 120; raise explicitly when truncation matters."
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "mode": {
+                        "type": "string",
+                        "const": "outline"
+                      }
+                    },
+                    "required": [
+                      "mode"
+                    ]
+                  }
+                ]
+              },
+              {
+                "allOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "name_pattern": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Optional non-empty case-sensitive name regex; invalid/oversized/unsafe patterns are rejected.",
+                        "markdownDescription": "Optional non-empty case-sensitive name regex; invalid/oversized/unsafe patterns are rejected."
+                      },
+                      "name_contains": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Optional non-empty substring to match element names. Case-insensitive.",
+                        "markdownDescription": "Optional non-empty substring to match element names. Case-insensitive."
+                      },
+                      "type": {
+                        "type": "string",
+                        "enum": [
+                          "cube",
+                          "group",
+                          "any"
+                        ],
+                        "default": "any",
+                        "description": "Restrict to Cube or Group results.",
+                        "markdownDescription": "Restrict to Cube or Group results."
+                      },
+                      "parent_group": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Optional Group UUID or unique exact name whose descendant subtree scopes results.",
+                        "markdownDescription": "Optional Group UUID or unique exact name whose descendant subtree scopes results."
+                      },
+                      "min_size": {
+                        "type": "array",
+                        "minItems": 3,
+                        "maxItems": 3,
+                        "items": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ],
+                        "description": "Optional finite minimum Cube size [x,y,z].",
+                        "markdownDescription": "Optional finite minimum Cube size [x,y,z]."
+                      },
+                      "max_size": {
+                        "type": "array",
+                        "minItems": 3,
+                        "maxItems": 3,
+                        "items": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ],
+                        "description": "Optional finite maximum Cube size [x,y,z].",
+                        "markdownDescription": "Optional finite maximum Cube size [x,y,z]."
+                      },
+                      "selected_only": {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "Only consider currently selected Cubes/Groups.",
+                        "markdownDescription": "Only consider currently selected Cubes/Groups."
+                      },
+                      "limit": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 1000,
+                        "default": 50,
+                        "description": "Maximum results. Default 50; increase only when the search genuinely needs more.",
+                        "markdownDescription": "Maximum results. Default 50; increase only when the search genuinely needs more."
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "mode": {
+                        "type": "string",
+                        "const": "search"
+                      }
+                    },
+                    "required": [
+                      "mode"
+                    ]
+                  }
+                ]
+              },
+              {
+                "allOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Exact Cube, Group, Locator, or Null Object UUID, or exact unique name; prefer UUID after discovery.",
+                        "markdownDescription": "Exact Cube, Group, Locator, or Null Object UUID, or exact unique name; prefer UUID after discovery."
+                      },
+                      "detail": {
+                        "type": "string",
+                        "enum": [
+                          "geometry",
+                          "uv"
+                        ],
+                        "default": "geometry",
+                        "description": "Geometry transform by default; request `uv` only when UV mapping needs inspection.",
+                        "markdownDescription": "Geometry transform by default; request `uv` only when UV mapping needs inspection."
+                      }
+                    },
+                    "required": [
+                      "id"
+                    ]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "mode": {
+                        "type": "string",
+                        "const": "detail"
+                      }
+                    },
+                    "required": [
+                      "mode"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      }
+    },
+    {
       "name": "remove_element",
       "title": "Remove Element",
       "description": "Removes one explicit Cube, Group, or outliner target with Undo support.",
@@ -2309,50 +2512,6 @@
       }
     },
     {
-      "name": "list_outline",
-      "title": "List Outline",
-      "description": "Lists a bounded Cube/Group hierarchy and reports truncation.",
-      "status": "stable",
-      "category": "Elements",
-      "annotations": {
-        "readOnlyHint": true
-      },
-      "parameters": {
-        "$ref": "#/definitions/list_outline",
-        "definitions": {
-          "list_outline": {
-            "type": "object",
-            "properties": {
-              "include_cubes": {
-                "type": "boolean",
-                "default": true,
-                "description": "If true, include cubes as leaves. If false, return groups only.",
-                "markdownDescription": "If true, include cubes as leaves. If false, return groups only."
-              },
-              "max_depth": {
-                "type": "integer",
-                "minimum": 1,
-                "maximum": 32,
-                "default": 8,
-                "description": "Maximum tree depth. Default 8; increase only for deeper structure.",
-                "markdownDescription": "Maximum tree depth. Default 8; increase only for deeper structure."
-              },
-              "max_nodes": {
-                "type": "integer",
-                "minimum": 1,
-                "maximum": 5000,
-                "default": 120,
-                "description": "Maximum Cube/Group nodes returned. Default 120; raise explicitly when truncation matters.",
-                "markdownDescription": "Maximum Cube/Group nodes returned. Default 120; raise explicitly when truncation matters."
-              }
-            },
-            "additionalProperties": false
-          }
-        },
-        "$schema": "http://json-schema.org/draft-07/schema#"
-      }
-    },
-    {
       "name": "duplicate_element",
       "title": "Duplicate Element",
       "description": "Duplicates one explicit Cube/Group with optional offset and root name.",
@@ -2444,107 +2603,6 @@
               "id",
               "new_name"
             ],
-            "additionalProperties": false
-          }
-        },
-        "$schema": "http://json-schema.org/draft-07/schema#"
-      }
-    },
-    {
-      "name": "find_elements_by_criteria",
-      "title": "Find Elements by Criteria",
-      "description": "Searches Cubes/Groups by identity, type, parent, size, or selection with bounded results.",
-      "status": "stable",
-      "category": "Elements",
-      "annotations": {
-        "readOnlyHint": true
-      },
-      "parameters": {
-        "$ref": "#/definitions/find_elements_by_criteria",
-        "definitions": {
-          "find_elements_by_criteria": {
-            "type": "object",
-            "properties": {
-              "name_pattern": {
-                "type": "string",
-                "minLength": 1,
-                "description": "Optional non-empty case-sensitive name regex; invalid/oversized/unsafe patterns are rejected.",
-                "markdownDescription": "Optional non-empty case-sensitive name regex; invalid/oversized/unsafe patterns are rejected."
-              },
-              "name_contains": {
-                "type": "string",
-                "minLength": 1,
-                "description": "Optional non-empty substring to match element names. Case-insensitive.",
-                "markdownDescription": "Optional non-empty substring to match element names. Case-insensitive."
-              },
-              "type": {
-                "type": "string",
-                "enum": [
-                  "cube",
-                  "group",
-                  "any"
-                ],
-                "default": "any",
-                "description": "Restrict to Cube or Group results.",
-                "markdownDescription": "Restrict to Cube or Group results."
-              },
-              "parent_group": {
-                "type": "string",
-                "minLength": 1,
-                "description": "Optional Group UUID or unique exact name whose descendant subtree scopes results.",
-                "markdownDescription": "Optional Group UUID or unique exact name whose descendant subtree scopes results."
-              },
-              "min_size": {
-                "type": "array",
-                "minItems": 3,
-                "maxItems": 3,
-                "items": [
-                  {
-                    "type": "number"
-                  },
-                  {
-                    "type": "number"
-                  },
-                  {
-                    "type": "number"
-                  }
-                ],
-                "description": "Optional finite minimum Cube size [x,y,z].",
-                "markdownDescription": "Optional finite minimum Cube size [x,y,z]."
-              },
-              "max_size": {
-                "type": "array",
-                "minItems": 3,
-                "maxItems": 3,
-                "items": [
-                  {
-                    "type": "number"
-                  },
-                  {
-                    "type": "number"
-                  },
-                  {
-                    "type": "number"
-                  }
-                ],
-                "description": "Optional finite maximum Cube size [x,y,z].",
-                "markdownDescription": "Optional finite maximum Cube size [x,y,z]."
-              },
-              "selected_only": {
-                "type": "boolean",
-                "default": false,
-                "description": "Only consider currently selected Cubes/Groups.",
-                "markdownDescription": "Only consider currently selected Cubes/Groups."
-              },
-              "limit": {
-                "type": "integer",
-                "minimum": 1,
-                "maximum": 1000,
-                "default": 50,
-                "description": "Maximum results. Default 50; increase only when the search genuinely needs more.",
-                "markdownDescription": "Maximum results. Default 50; increase only when the search genuinely needs more."
-              }
-            },
             "additionalProperties": false
           }
         },
@@ -2765,47 +2823,6 @@
             "required": [
               "id",
               "parent"
-            ],
-            "additionalProperties": false
-          }
-        },
-        "$schema": "http://json-schema.org/draft-07/schema#"
-      }
-    },
-    {
-      "name": "inspect_element",
-      "title": "Inspect Authored Element",
-      "description": "Returns focused authored state for one explicit element. Defaults to compact geometry/hierarchy data; request UV detail only when mapping needs inspection.",
-      "status": "stable",
-      "category": "Elements",
-      "annotations": {
-        "readOnlyHint": true
-      },
-      "parameters": {
-        "$ref": "#/definitions/inspect_element",
-        "definitions": {
-          "inspect_element": {
-            "type": "object",
-            "properties": {
-              "id": {
-                "type": "string",
-                "minLength": 1,
-                "description": "Exact Cube, Group, Locator, or Null Object UUID, or exact unique name; prefer UUID after discovery.",
-                "markdownDescription": "Exact Cube, Group, Locator, or Null Object UUID, or exact unique name; prefer UUID after discovery."
-              },
-              "detail": {
-                "type": "string",
-                "enum": [
-                  "geometry",
-                  "uv"
-                ],
-                "default": "geometry",
-                "description": "Geometry transform by default; request `uv` only when UV mapping needs inspection.",
-                "markdownDescription": "Geometry transform by default; request `uv` only when UV mapping needs inspection."
-              }
-            },
-            "required": [
-              "id"
             ],
             "additionalProperties": false
           }

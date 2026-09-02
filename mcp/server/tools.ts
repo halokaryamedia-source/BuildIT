@@ -1,7 +1,7 @@
 /// <reference types="three" />
 /// <reference types="blockbench-types" />
 
-import { createTool, tools, prompts } from "@/lib/factories";
+import { createTool, tools, prompts, getAllToolDefinitions } from "@/lib/factories";
 import { z } from "zod";
 import {
   DEFAULT_MCP_REGISTRATION_PROFILE,
@@ -35,11 +35,56 @@ import { registerUITools } from "./tools/ui";
 import { registerMaterialInstanceTools } from "./tools/material-instances";
 import { registerHistoryTools } from "./tools/history";
 import { registerExportTools } from "./tools/export";
+import { listOutlineParameters, findElementsByCriteriaParameters } from "./tools/element";
+import { inspectElementParameters } from "./tools/element-inspection";
 
 // Core resource registrations
 import { registerValidatorResources } from "./resources/validator";
 
 type RegistrationFunction = () => void;
+
+const consolidatedInspectionParameters = z.union([
+  listOutlineParameters.and(z.object({ mode: z.literal("outline") })),
+  findElementsByCriteriaParameters.and(z.object({ mode: z.literal("search") })),
+  inspectElementParameters.and(z.object({ mode: z.literal("detail") })),
+]);
+
+export const consolidatedInspectionToolDocs = {
+  name: "inspect_elements",
+  description:
+    "Inspects Bedrock elements through one focused boundary. Use mode=outline for hierarchy, search for bounded criteria discovery, or detail for one authored element with optional UV data.",
+  annotations: { title: "Inspect Elements", readOnlyHint: true },
+  parameters: consolidatedInspectionParameters,
+  status: "stable" as const,
+};
+
+function registerConsolidatedInspectionTool(): void {
+  if (tools.inspect_elements) return;
+  createTool(
+    "inspect_elements",
+    {
+      ...consolidatedInspectionToolDocs,
+      async execute(request) {
+        const target = request.mode === "outline"
+          ? "list_outline"
+          : request.mode === "search"
+            ? "find_elements_by_criteria"
+            : "inspect_element";
+        const definition = getAllToolDefinitions()[target];
+        if (!definition) throw new Error(`Inspection executor ${target} is unavailable.`);
+        const { mode: _mode, ...args } = request;
+        return definition.execute(args);
+      },
+    },
+    "stable"
+  );
+  for (const legacy of ["list_outline", "find_elements_by_criteria", "inspect_element"]) {
+    if (tools[legacy]) tools[legacy].enabled = false;
+    catalogToolEnabled.set(legacy, false);
+  }
+  toolRegistrationFamily.set("inspect_elements", "element_inspection");
+  catalogToolEnabled.set("inspect_elements", true);
+}
 
 function registerAnimationFamilyTools(): void {
   registerAnimationTools();
@@ -171,6 +216,7 @@ export function registerMcpProfile(
   for (const family of getRegistrationFamilies(profile)) {
     registerFamily(family);
   }
+  if (profile === DEFAULT_MCP_REGISTRATION_PROFILE) registerConsolidatedInspectionTool();
 
   phaseSurfaceCache.clear();
 }

@@ -106,17 +106,17 @@ const TOOL_DISCOVERY_INTENT_GROUPS = [
     "add a bone under this parent group",
   ],
   [
-    "find_elements_by_criteria",
+    "inspect_elements",
     "find cubes whose name contains arm",
     "search groups by parent and size criteria",
   ],
   [
-    "list_outline",
+    "inspect_elements",
     "show the cube and group hierarchy",
     "list the model outliner tree",
   ],
   [
-    "inspect_element",
+    "inspect_elements",
     "show the exact transform of this known cube uuid",
     "inspect one known locator authored state by uuid",
   ],
@@ -565,17 +565,17 @@ export function assertToolDiscoveryEvalIntegrity(
 ): void {
   const failures: string[] = [];
 
-  if (report.enabled_tool_count !== 64) {
+  if (report.enabled_tool_count !== 62) {
     failures.push(
-      `enabled_tool_count=${report.enabled_tool_count}; expected 66`
+      `enabled_tool_count=${report.enabled_tool_count}; expected 62`
     );
   }
   if (report.case_count < 100 || report.case_count > 150) {
     failures.push(`case_count=${report.case_count}; expected 100..150`);
   }
-  if (report.expected_tool_count !== 51) {
+  if (report.expected_tool_count !== 49) {
     failures.push(
-      `expected_tool_count=${report.expected_tool_count}; expected 53`
+      `expected_tool_count=${report.expected_tool_count}; expected 49`
     );
   }
   if (report.missing_expected_tools.length > 0) {

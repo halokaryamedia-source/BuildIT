@@ -41,17 +41,16 @@ describe("authoring phase MCP surface", () => {
 
   test("default Geometry surface is Core plus Geometry only", () => {
     const geometry = phaseSurface("geometry");
-    expect(geometry.size).toBe(27);
+    expect(geometry.size).toBe(25);
 
     for (const coreTool of [
       "create_project",
       "undo",
       "redo",
-      "list_outline",
-      "find_elements_by_criteria",
+      "inspect_elements",
       "select_all_of_type",
       "get_selection",
-      "inspect_element",
+      "inspect_elements",
       "capture_model_views",
       "export_model",
       "list_locator_elements",
@@ -145,11 +144,10 @@ describe("authoring phase MCP surface", () => {
 
     for (const coreTool of [
       "undo",
-      "list_outline",
-      "find_elements_by_criteria",
+      "inspect_elements",
       "select_all_of_type",
       "get_selection",
-      "inspect_element",
+      "inspect_elements",
       "capture_model_views",
       "export_model",
       "list_locator_elements",

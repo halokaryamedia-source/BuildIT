@@ -19,6 +19,7 @@ import { uiToolDocs } from "../server/tools/ui";
 import { materialInstanceToolDocs } from "../server/tools/material-instances";
 import { historyToolDocs } from "../server/tools/history";
 import { exportToolDocs } from "../server/tools/export";
+import { consolidatedInspectionToolDocs } from "../server/tools";
 
 export interface CategoryGroup {
   category: string;
@@ -37,7 +38,7 @@ export const toolManifest: CategoryGroup[] = [
       ...animationInspectionToolDocs,
     ],
   },
-  { category: "Elements", tools: [...elementToolDocs, ...elementInspectionToolDocs, ...locatorToolDocs] },
+  { category: "Elements", tools: [consolidatedInspectionToolDocs, ...elementToolDocs.filter((tool) => !["list_outline", "find_elements_by_criteria"].includes(tool.name)), ...elementInspectionToolDocs.filter((tool) => tool.name !== "inspect_element"), ...locatorToolDocs] },
   { category: "Export", tools: exportToolDocs },
   { category: "History", tools: historyToolDocs },
   { category: "Import/Export", tools: importToolDocs },

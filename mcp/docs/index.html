@@ -18,7 +18,7 @@
 
       <div class="nav-group">
         <p class="nav-heading">Overview</p>
-        <a href="#tools" class="nav-link">Tools <span class="count">(75)</span></a>
+        <a href="#tools" class="nav-link">Tools <span class="count">(73)</span></a>
         <a href="#prompts" class="nav-link">Prompts <span class="count">(1)</span></a>
         <a href="#resources" class="nav-link">Resources <span class="count">(8)</span></a>
       </div>
@@ -28,7 +28,7 @@
         <a href="#cat-cubes" class="nav-link">Cubes <span class="count">(1)</span></a>
         <a href="#cat-camera-screenshots" class="nav-link">Camera &amp; Screenshots <span class="count">(4)</span></a>
         <a href="#cat-animation" class="nav-link">Animation <span class="count">(10)</span></a>
-        <a href="#cat-elements" class="nav-link">Elements <span class="count">(15)</span></a>
+        <a href="#cat-elements" class="nav-link">Elements <span class="count">(13)</span></a>
         <a href="#cat-export" class="nav-link">Export <span class="count">(2)</span></a>
         <a href="#cat-history" class="nav-link">History <span class="count">(4)</span></a>
         <a href="#cat-import-export" class="nav-link">Import/Export <span class="count">(1)</span></a>
@@ -45,7 +45,7 @@
         <h1>BlockIT — Bedrock Entity MCP</h1>
         <p class="subtitle">API Reference — v0.1.0</p>
         <nav class="stats">
-          <a href="#tools"><strong>75</strong> tools (28 stable, 47 experimental)</a>
+          <a href="#tools"><strong>73</strong> tools (26 stable, 47 experimental)</a>
           <a href="#prompts"><strong>1</strong> prompts</a>
           <a href="#resources"><strong>8</strong> resources</a>
         </nav>
@@ -675,7 +675,21 @@ bun run docs:check
         </section>
 <section id="cat-elements" class="category-section">
           <h3 class="category-title">Elements</h3>
-          <div id="tool-remove_element" class="card tool-card">
+          <div id="tool-inspect_elements" class="card tool-card">
+      <div class="card-header">
+        <h3 class="card-name">inspect_elements</h3>
+        <div class="card-badges">
+          <span class="badge badge-stable">stable</span>
+          <span class="badge badge-readonly">read-only</span>
+        </div>
+      </div>
+      <p class="card-title">Inspect Elements</p>
+      <p class="card-desc">Inspects Bedrock elements through one focused boundary. Use mode=outline for hierarchy, search for bounded criteria discovery, or detail for one authored element with optional UV data.</p>
+      <div class="overflow-x">
+        <p class="empty-params">No parameters</p>
+      </div>
+    </div>
+<div id="tool-remove_element" class="card tool-card">
       <div class="card-header">
         <h3 class="card-name">remove_element</h3>
         <div class="card-badges">
@@ -753,45 +767,6 @@ bun run docs:check
     </table>
       </div>
     </div>
-<div id="tool-list_outline" class="card tool-card">
-      <div class="card-header">
-        <h3 class="card-name">list_outline</h3>
-        <div class="card-badges">
-          <span class="badge badge-stable">stable</span>
-          <span class="badge badge-readonly">read-only</span>
-        </div>
-      </div>
-      <p class="card-title">List Outline</p>
-      <p class="card-desc">Lists a bounded Cube/Group hierarchy and reports truncation.</p>
-      <div class="overflow-x">
-        <table class="param-table">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Required</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody><tr>
-      <td class="col-name">include_cubes</td>
-      <td class="col-type">boolean</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">If true, include cubes as leaves. If false, return groups only. <span class="param-meta">(default: <code>true</code>)</span></td>
-    </tr><tr>
-      <td class="col-name">max_depth</td>
-      <td class="col-type">integer</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Maximum tree depth. Default 8; increase only for deeper structure. <span class="param-meta">(default: <code>8</code>) [min: 1, max: 32]</span></td>
-    </tr><tr>
-      <td class="col-name">max_nodes</td>
-      <td class="col-type">integer</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Maximum Cube/Group nodes returned. Default 120; raise explicitly when truncation matters. <span class="param-meta">(default: <code>120</code>) [min: 1, max: 5000]</span></td>
-    </tr></tbody>
-    </table>
-      </div>
-    </div>
 <div id="tool-duplicate_element" class="card tool-card">
       <div class="card-header">
         <h3 class="card-name">duplicate_element</h3>
@@ -861,70 +836,6 @@ bun run docs:check
       <td class="col-type">string</td>
       <td><span class="param-required">required</span></td>
       <td class="col-desc">Non-empty new name to assign. <span class="param-meta">[minLength: 1]</span></td>
-    </tr></tbody>
-    </table>
-      </div>
-    </div>
-<div id="tool-find_elements_by_criteria" class="card tool-card">
-      <div class="card-header">
-        <h3 class="card-name">find_elements_by_criteria</h3>
-        <div class="card-badges">
-          <span class="badge badge-stable">stable</span>
-          <span class="badge badge-readonly">read-only</span>
-        </div>
-      </div>
-      <p class="card-title">Find Elements by Criteria</p>
-      <p class="card-desc">Searches Cubes/Groups by identity, type, parent, size, or selection with bounded results.</p>
-      <div class="overflow-x">
-        <table class="param-table">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Required</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody><tr>
-      <td class="col-name">name_pattern</td>
-      <td class="col-type">string</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Optional non-empty case-sensitive name regex; invalid/oversized/unsafe patterns are rejected. <span class="param-meta">[minLength: 1]</span></td>
-    </tr><tr>
-      <td class="col-name">name_contains</td>
-      <td class="col-type">string</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Optional non-empty substring to match element names. Case-insensitive. <span class="param-meta">[minLength: 1]</span></td>
-    </tr><tr>
-      <td class="col-name">type</td>
-      <td class="col-type">&quot;cube&quot; | &quot;group&quot; | &quot;any&quot;</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Restrict to Cube or Group results. <span class="param-meta">(default: <code>&quot;any&quot;</code>)</span></td>
-    </tr><tr>
-      <td class="col-name">parent_group</td>
-      <td class="col-type">string</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Optional Group UUID or unique exact name whose descendant subtree scopes results. <span class="param-meta">[minLength: 1]</span></td>
-    </tr><tr>
-      <td class="col-name">min_size</td>
-      <td class="col-type">unknown[]</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Optional finite minimum Cube size [x,y,z]. <span class="param-meta">[minItems: 3, maxItems: 3]</span></td>
-    </tr><tr>
-      <td class="col-name">max_size</td>
-      <td class="col-type">unknown[]</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Optional finite maximum Cube size [x,y,z]. <span class="param-meta">[minItems: 3, maxItems: 3]</span></td>
-    </tr><tr>
-      <td class="col-name">selected_only</td>
-      <td class="col-type">boolean</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Only consider currently selected Cubes/Groups. <span class="param-meta">(default: <code>false</code>)</span></td>
-    </tr><tr>
-      <td class="col-name">limit</td>
-      <td class="col-type">integer</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Maximum results. Default 50; increase only when the search genuinely needs more. <span class="param-meta">(default: <code>50</code>) [min: 1, max: 1000]</span></td>
     </tr></tbody>
     </table>
       </div>
@@ -1095,40 +1006,6 @@ bun run docs:check
       <td class="col-type">string</td>
       <td><span class="param-required">required</span></td>
       <td class="col-desc">New parent Group UUID or unique exact name; use `root` for root placement. <span class="param-meta">[minLength: 1]</span></td>
-    </tr></tbody>
-    </table>
-      </div>
-    </div>
-<div id="tool-inspect_element" class="card tool-card">
-      <div class="card-header">
-        <h3 class="card-name">inspect_element</h3>
-        <div class="card-badges">
-          <span class="badge badge-stable">stable</span>
-          <span class="badge badge-readonly">read-only</span>
-        </div>
-      </div>
-      <p class="card-title">Inspect Authored Element</p>
-      <p class="card-desc">Returns focused authored state for one explicit element. Defaults to compact geometry/hierarchy data; request UV detail only when mapping needs inspection.</p>
-      <div class="overflow-x">
-        <table class="param-table">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Required</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody><tr>
-      <td class="col-name">id</td>
-      <td class="col-type">string</td>
-      <td><span class="param-required">required</span></td>
-      <td class="col-desc">Exact Cube, Group, Locator, or Null Object UUID, or exact unique name; prefer UUID after discovery. <span class="param-meta">[minLength: 1]</span></td>
-    </tr><tr>
-      <td class="col-name">detail</td>
-      <td class="col-type">&quot;geometry&quot; | &quot;uv&quot;</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Geometry transform by default; request `uv` only when UV mapping needs inspection. <span class="param-meta">(default: <code>&quot;geometry&quot;</code>)</span></td>
     </tr></tbody>
     </table>
       </div>
@@ -3084,7 +2961,7 @@ bun run docs:check
       </section>
 
       <footer class="page-footer">
-        Generated 2026-09-02T04:42:36.144Z from Zod schemas
+        Generated 2026-09-02T05:03:08.582Z from Zod schemas
       </footer>
     </main>
   </div>

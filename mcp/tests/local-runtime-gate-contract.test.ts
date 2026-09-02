@@ -35,7 +35,7 @@ describe("local runtime gate source contract", () => {
     const names = getMcpSurfaceToolNames("bedrock_entity", "geometry");
     const definitions = getEnabledToolDefinitions();
 
-    expect(names.length).toBe(27);
+    expect(names.length).toBe(25);
     for (const toolName of REQUIRED_GEOMETRY_TOOLS) {
       expect(names, toolName).toContain(toolName);
       expect(definitions[toolName], toolName).toBeDefined();
