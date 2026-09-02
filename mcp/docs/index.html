@@ -18,7 +18,7 @@
 
       <div class="nav-group">
         <p class="nav-heading">Overview</p>
-        <a href="#tools" class="nav-link">Tools <span class="count">(70)</span></a>
+        <a href="#tools" class="nav-link">Tools <span class="count">(66)</span></a>
         <a href="#prompts" class="nav-link">Prompts <span class="count">(1)</span></a>
         <a href="#resources" class="nav-link">Resources <span class="count">(8)</span></a>
       </div>
@@ -27,7 +27,7 @@
         <p class="nav-heading">Categories</p>
         <a href="#cat-cubes" class="nav-link">Cubes <span class="count">(1)</span></a>
         <a href="#cat-camera-screenshots" class="nav-link">Camera &amp; Screenshots <span class="count">(4)</span></a>
-        <a href="#cat-animation" class="nav-link">Animation <span class="count">(10)</span></a>
+        <a href="#cat-animation" class="nav-link">Animation <span class="count">(6)</span></a>
         <a href="#cat-elements" class="nav-link">Elements <span class="count">(13)</span></a>
         <a href="#cat-export" class="nav-link">Export <span class="count">(2)</span></a>
         <a href="#cat-history" class="nav-link">History <span class="count">(4)</span></a>
@@ -45,7 +45,7 @@
         <h1>BlockIT — Bedrock Entity MCP</h1>
         <p class="subtitle">API Reference — v0.1.0</p>
         <nav class="stats">
-          <a href="#tools"><strong>70</strong> tools (27 stable, 43 experimental)</a>
+          <a href="#tools"><strong>66</strong> tools (28 stable, 38 experimental)</a>
           <a href="#prompts"><strong>1</strong> prompts</a>
           <a href="#resources"><strong>8</strong> resources</a>
         </nav>
@@ -212,7 +212,21 @@ bun run docs:check
         </section>
 <section id="cat-animation" class="category-section">
           <h3 class="category-title">Animation</h3>
-          <div id="tool-create_animation" class="card tool-card">
+          <div id="tool-manage_animation_timeline" class="card tool-card">
+      <div class="card-header">
+        <h3 class="card-name">manage_animation_timeline</h3>
+        <div class="card-badges">
+          <span class="badge badge-stable">stable</span>
+          <span class="badge badge-destructive">destructive</span>
+        </div>
+      </div>
+      <p class="card-title">Manage Animation Timeline</p>
+      <p class="card-desc">Authors Bedrock animation keyframes, timing, graph/easing, batch edits, and copy/paste through one focused boundary.</p>
+      <div class="overflow-x">
+        <p class="empty-params">No parameters</p>
+      </div>
+    </div>
+<div id="tool-create_animation" class="card tool-card">
       <div class="card-header">
         <h3 class="card-name">create_animation</h3>
         <div class="card-badges">
@@ -221,7 +235,7 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">Create Animation</p>
-      <p class="card-desc">Creates a Bedrock animation with optional numeric bone transforms and particle/sound effects. Use manage_keyframes for later Molang or keyframe edits.</p>
+      <p class="card-desc">Creates a Bedrock animation with optional numeric bone transforms and particle/sound effects. Use manage_animation_timeline with operation=keyframes for later Molang or keyframe edits.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -266,114 +280,6 @@ bun run docs:check
     </table>
       </div>
     </div>
-<div id="tool-manage_keyframes" class="card tool-card">
-      <div class="card-header">
-        <h3 class="card-name">manage_keyframes</h3>
-        <div class="card-badges">
-          <span class="badge badge-experimental">experimental</span>
-          <span class="badge badge-destructive">destructive</span>
-        </div>
-      </div>
-      <p class="card-title">Manage Keyframes</p>
-      <p class="card-desc">Creates, edits, deletes, or selects keyframes for one animation bone and channel. Numeric and authored Molang values are preserved.</p>
-      <div class="overflow-x">
-        <table class="param-table">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Required</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody><tr>
-      <td class="col-name">animation_id</td>
-      <td class="col-type">string</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Animation UUID/name; omit for current animation when supported. <span class="param-meta">[minLength: 1]</span></td>
-    </tr><tr>
-      <td class="col-name">action</td>
-      <td class="col-type">&quot;create&quot; | &quot;delete&quot; | &quot;edit&quot; | &quot;select&quot;</td>
-      <td><span class="param-required">required</span></td>
-      <td class="col-desc">Action to perform on keyframes.</td>
-    </tr><tr>
-      <td class="col-name">bone_name</td>
-      <td class="col-type">string</td>
-      <td><span class="param-required">required</span></td>
-      <td class="col-desc">Group UUID or unique Group name. <span class="param-meta">[minLength: 1]</span></td>
-    </tr><tr>
-      <td class="col-name">channel</td>
-      <td class="col-type">&quot;rotation&quot; | &quot;position&quot; | &quot;scale&quot;</td>
-      <td><span class="param-required">required</span></td>
-      <td class="col-desc">Animation channel to modify.</td>
-    </tr><tr>
-      <td class="col-name">keyframes</td>
-      <td class="col-type">object[]</td>
-      <td><span class="param-required">required</span></td>
-      <td class="col-desc">One or more keyframes. <span class="param-meta">[minItems: 1]</span></td>
-    </tr></tbody>
-    </table>
-      </div>
-    </div>
-<div id="tool-animation_graph_editor" class="card tool-card">
-      <div class="card-header">
-        <h3 class="card-name">animation_graph_editor</h3>
-        <div class="card-badges">
-          <span class="badge badge-experimental">experimental</span>
-          <span class="badge badge-destructive">destructive</span>
-        </div>
-      </div>
-      <p class="card-title">Animation Graph Editor</p>
-      <p class="card-desc">Applies a curve/interpolation edit to one animation bone channel.</p>
-      <div class="overflow-x">
-        <table class="param-table">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Required</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody><tr>
-      <td class="col-name">animation_id</td>
-      <td class="col-type">string</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Animation UUID/name; omit for current animation when supported. <span class="param-meta">[minLength: 1]</span></td>
-    </tr><tr>
-      <td class="col-name">bone_name</td>
-      <td class="col-type">string</td>
-      <td><span class="param-required">required</span></td>
-      <td class="col-desc">Group UUID or unique Group name. <span class="param-meta">[minLength: 1]</span></td>
-    </tr><tr>
-      <td class="col-name">channel</td>
-      <td class="col-type">&quot;rotation&quot; | &quot;position&quot; | &quot;scale&quot;</td>
-      <td><span class="param-required">required</span></td>
-      <td class="col-desc">Animation channel to modify.</td>
-    </tr><tr>
-      <td class="col-name">axis</td>
-      <td class="col-type">&quot;x&quot; | &quot;y&quot; | &quot;z&quot; | string</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Bezier-handle axis; 'all' applies the same change to x/y/z. Interpolation stays keyframe-level. <span class="param-meta">(default: <code>&quot;all&quot;</code>)</span></td>
-    </tr><tr>
-      <td class="col-name">action</td>
-      <td class="col-type">&quot;smooth&quot; | &quot;linear&quot; | &quot;ease_in&quot; | &quot;ease_out&quot; | &quot;ease_in_out&quot; | &quot;stepped&quot; | &quot;custom&quot;</td>
-      <td><span class="param-required">required</span></td>
-      <td class="col-desc">Type of curve modification to apply.</td>
-    </tr><tr>
-      <td class="col-name">keyframe_range</td>
-      <td class="col-type">object</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Time range to apply the curve modification. If not provided, applies to all keyframes.</td>
-    </tr><tr>
-      <td class="col-name">custom_curve</td>
-      <td class="col-type">object</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Bezier left/right handle offsets for the axis or all axes ('custom' action only).</td>
-    </tr></tbody>
-    </table>
-      </div>
-    </div>
 <div id="tool-bone_rigging" class="card tool-card">
       <div class="card-header">
         <h3 class="card-name">bone_rigging</h3>
@@ -404,153 +310,6 @@ bun run docs:check
       <td class="col-type">object</td>
       <td><span class="param-required">required</span></td>
       <td class="col-desc">Bone configuration data.</td>
-    </tr></tbody>
-    </table>
-      </div>
-    </div>
-<div id="tool-animation_timeline" class="card tool-card">
-      <div class="card-header">
-        <h3 class="card-name">animation_timeline</h3>
-        <div class="card-badges">
-          <span class="badge badge-experimental">experimental</span>
-          <span class="badge badge-destructive">destructive</span>
-        </div>
-      </div>
-      <p class="card-title">Animation Timeline</p>
-      <p class="card-desc">Controls animation timeline state, length, snapping, loop, Molang time update, and blend weight.</p>
-      <div class="overflow-x">
-        <table class="param-table">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Required</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody><tr>
-      <td class="col-name">action</td>
-      <td class="col-type">&quot;play&quot; | &quot;pause&quot; | &quot;stop&quot; | &quot;set_time&quot; | &quot;set_length&quot; | &quot;set_fps&quot; | &quot;loop&quot; | &quot;select_range&quot; | &quot;set_anim_time_update&quot; | &quot;set_blend_weight&quot;</td>
-      <td><span class="param-required">required</span></td>
-      <td class="col-desc">Timeline or persistent authored-Animation property action.</td>
-    </tr><tr>
-      <td class="col-name">time</td>
-      <td class="col-type">number</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Time in seconds for set_time; finite, within Timeline.setTime() range 0..1000, not clamped to animation.length. <span class="param-meta">[min: 0, max: 1000]</span></td>
-    </tr><tr>
-      <td class="col-name">length</td>
-      <td class="col-type">number</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">set_length length in seconds; finite, 0..10000. Native setLength() may extend to the keyframe floor. <span class="param-meta">[min: 0, max: 10000]</span></td>
-    </tr><tr>
-      <td class="col-name">fps</td>
-      <td class="col-type">number</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Animation snapping rate in frames per second for set_fps; Blockbench supports 10 to 500. <span class="param-meta">[min: 10, max: 500]</span></td>
-    </tr><tr>
-      <td class="col-name">loop_mode</td>
-      <td class="col-type">&quot;once&quot; | &quot;loop&quot; | &quot;hold&quot;</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Loop mode for the animation.</td>
-    </tr><tr>
-      <td class="col-name">range</td>
-      <td class="col-type">object</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Inclusive time range for select_range.</td>
-    </tr><tr>
-      <td class="col-name">molang</td>
-      <td class="col-type">string | null</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Authored Molang for set_anim_time_update/set_blend_weight; null clears to native default. Text normalizes to one line, never evaluated.</td>
-    </tr></tbody>
-    </table>
-      </div>
-    </div>
-<div id="tool-batch_keyframe_operations" class="card tool-card">
-      <div class="card-header">
-        <h3 class="card-name">batch_keyframe_operations</h3>
-        <div class="card-badges">
-          <span class="badge badge-experimental">experimental</span>
-          <span class="badge badge-destructive">destructive</span>
-        </div>
-      </div>
-      <p class="card-title">Batch Keyframe Operations</p>
-      <p class="card-desc">Applies one bounded batch operation to selected, ranged, patterned, or all keyframes.</p>
-      <div class="overflow-x">
-        <table class="param-table">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Required</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody><tr>
-      <td class="col-name">selection</td>
-      <td class="col-type">&quot;all&quot; | &quot;selected&quot; | &quot;range&quot; | &quot;pattern&quot;</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Which keyframes to operate on. <span class="param-meta">(default: <code>&quot;selected&quot;</code>)</span></td>
-    </tr><tr>
-      <td class="col-name">range</td>
-      <td class="col-type">object</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Time range for keyframe selection.</td>
-    </tr><tr>
-      <td class="col-name">pattern</td>
-      <td class="col-type">object</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Pattern-based selection.</td>
-    </tr><tr>
-      <td class="col-name">operation</td>
-      <td class="col-type">&quot;offset&quot; | &quot;scale&quot; | &quot;reverse&quot; | &quot;mirror&quot; | &quot;smooth&quot; | &quot;bake&quot;</td>
-      <td><span class="param-required">required</span></td>
-      <td class="col-desc">Operation to perform on keyframes. Bake samples each selected animator's full channel range, even with selection=range/pattern subsets.</td>
-    </tr><tr>
-      <td class="col-name">parameters</td>
-      <td class="col-type">object</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Operation-specific parameters.</td>
-    </tr></tbody>
-    </table>
-      </div>
-    </div>
-<div id="tool-animation_copy_paste" class="card tool-card">
-      <div class="card-header">
-        <h3 class="card-name">animation_copy_paste</h3>
-        <div class="card-badges">
-          <span class="badge badge-experimental">experimental</span>
-          <span class="badge badge-destructive">destructive</span>
-        </div>
-      </div>
-      <p class="card-title">Animation Copy/Paste</p>
-      <p class="card-desc">Copies, pastes, or mirrors keyframes between animation bones. Copy/paste targets must be explicit; mirror_paste requires an axis.</p>
-      <div class="overflow-x">
-        <table class="param-table">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Required</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody><tr>
-      <td class="col-name">action</td>
-      <td class="col-type">&quot;copy&quot; | &quot;paste&quot; | &quot;mirror_paste&quot;</td>
-      <td><span class="param-required">required</span></td>
-      <td class="col-desc">Copy or paste action.</td>
-    </tr><tr>
-      <td class="col-name">source</td>
-      <td class="col-type">object</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Source data for copy operation.</td>
-    </tr><tr>
-      <td class="col-name">target</td>
-      <td class="col-type">object</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Target data for paste operation.</td>
     </tr></tbody>
     </table>
       </div>
@@ -2779,7 +2538,7 @@ bun run docs:check
       </section>
 
       <footer class="page-footer">
-        Generated 2026-09-02T05:12:35.745Z from Zod schemas
+        Generated 2026-09-02T05:23:38.421Z from Zod schemas
       </footer>
     </main>
   </div>

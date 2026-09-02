@@ -79,7 +79,7 @@ describe("authoring phase MCP surface", () => {
       "manage_material",
       "set_face_material_instance",
       "create_animation",
-      "manage_keyframes",
+      "manage_animation_timeline",
       "manage_animation_controller",
       "inspect_animation",
     ]) {
@@ -185,7 +185,7 @@ describe("authoring phase MCP surface", () => {
 
     for (const tool of [
       "create_animation",
-      "manage_keyframes",
+      "manage_animation_timeline",
       "manage_animation_effects",
       "manage_animation_controller",
       "inspect_animation",
@@ -247,7 +247,7 @@ describe("authoring phase MCP surface", () => {
 
     expect(animation).toContain("## Animation Workflow");
     expect(animation).toContain("create_animation");
-    expect(animation).toContain("manage_keyframes");
+    expect(animation).toContain("manage_animation_timeline");
     expect(animation).toContain("manage_animation_controller");
     expect(animation).not.toContain("manage_cubes");
     expect(animation).not.toContain("create_texture");

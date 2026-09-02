@@ -23,11 +23,7 @@ new animation                         → create_animation
 unknown animation/controller          → inspect_animation
 controller state/composition/effects  → manage_animation_controller
 existing animation effects            → manage_animation_effects
-transform keyframes / Molang values   → manage_keyframes
-curve change with evidence            → animation_graph_editor
-time/length/FPS/loop/Molang controls  → animation_timeline
-batch coherent operations             → batch_keyframe_operations
-explicit copy/paste/mirror            → animation_copy_paste
+all animation timeline/keyframe work → manage_animation_timeline (operation: keyframes|graph|timeline|batch|copy_paste)
 \`\`\`
 
 Reuse fresh UUID/state. A structural bone/pivot/IK/parenting defect requires HANDOFF_REQUIRED to Geometry; do not search for bone_rigging in Animation. Verify pose/readability → timing/phase → weight/contact → attachment/clipping → secondary motion → effect synchronization → loop seam/neutral return. Same causal correction direction failing twice without new evidence → BLOCKED.`;

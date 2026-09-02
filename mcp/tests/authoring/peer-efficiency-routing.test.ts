@@ -26,8 +26,8 @@ describe("peer-inspired authoring efficiency routing", () => {
 
   test("Animation uses one coherent batch transform instead of per-key loops", async () => {
     const skill = await source("../.agents/skills/blockit-bedrock-animation/SKILL.md");
-    expect(skill).toMatch(/coherent time\/value cohort transform\s+→ batch_keyframe_operations/i);
-    expect(skill).toMatch(/do not loop `manage_keyframes` per key/i);
+    expect(skill).toMatch(/manage_animation_timeline \(operation: keyframes\|graph\|timeline\|batch\|copy_paste\)/i);
+    expect(skill).toMatch(/use `batch` for one shared cohort intent instead of looping per key/i);
     expect(skill).toMatch(/Controller\/effect\/graph\/copy-paste tools are conditional/i);
   });
 });

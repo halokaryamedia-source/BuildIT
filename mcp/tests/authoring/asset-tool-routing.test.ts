@@ -132,11 +132,7 @@ describe("asset tool routing", () => {
       "## Direct Routing",
       "create_animation",
       "inspect_animation",
-      "manage_keyframes",
-      "animation_graph_editor",
-      "animation_timeline",
-      "batch_keyframe_operations",
-      "animation_copy_paste",
+      "manage_animation_timeline",
       "HANDOFF_REQUIRED",
     ]) expect(animation.toLowerCase()).toContain(term.toLowerCase());
     expect(animation).toContain("Do not `tool_search` for `bone_rigging`");

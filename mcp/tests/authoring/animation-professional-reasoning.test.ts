@@ -102,7 +102,7 @@ describe("professional animation reasoning contract", () => {
 
     expect(skill).toContain("existing animation effects            → manage_animation_effects");
     expect(skill).toContain("controller state/composition/effects  → manage_animation_controller");
-    expect(skill).toContain("time/length/FPS/loop/Molang controls  → animation_timeline");
+    expect(skill).toContain("all timeline/keyframe work            → manage_animation_timeline (operation: keyframes|graph|timeline|batch|copy_paste)");
     expect(policy).toContain("existing-animation particle/sound/timeline effect mutation");
     expect(policy).toContain("controller blend-curve mutation");
     expect(policy).toContain("bone-binding expressions");

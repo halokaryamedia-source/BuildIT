@@ -1,6 +1,6 @@
 {
   "version": "0.1.0",
-  "generatedAt": "2026-09-02T05:12:35.745Z",
+  "generatedAt": "2026-09-02T05:23:38.421Z",
   "tools": [
     {
       "name": "manage_cubes",
@@ -754,9 +754,715 @@
       }
     },
     {
+      "name": "manage_animation_timeline",
+      "title": "Manage Animation Timeline",
+      "description": "Authors Bedrock animation keyframes, timing, graph/easing, batch edits, and copy/paste through one focused boundary.",
+      "status": "stable",
+      "category": "Animation",
+      "annotations": {
+        "destructiveHint": true
+      },
+      "parameters": {
+        "$ref": "#/definitions/manage_animation_timeline",
+        "definitions": {
+          "manage_animation_timeline": {
+            "anyOf": [
+              {
+                "allOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "animation_id": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Animation UUID/name; omit for current animation when supported.",
+                        "markdownDescription": "Animation UUID/name; omit for current animation when supported."
+                      },
+                      "action": {
+                        "type": "string",
+                        "enum": [
+                          "create",
+                          "delete",
+                          "edit",
+                          "select"
+                        ],
+                        "description": "Action to perform on keyframes.",
+                        "markdownDescription": "Action to perform on keyframes."
+                      },
+                      "bone_name": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Group UUID or unique Group name.",
+                        "markdownDescription": "Group UUID or unique Group name."
+                      },
+                      "channel": {
+                        "type": "string",
+                        "enum": [
+                          "rotation",
+                          "position",
+                          "scale"
+                        ],
+                        "description": "Animation channel to modify.",
+                        "markdownDescription": "Animation channel to modify."
+                      },
+                      "keyframes": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "time": {
+                              "type": "number",
+                              "minimum": 0,
+                              "description": "Finite non-negative keyframe time in seconds.",
+                              "markdownDescription": "Finite non-negative keyframe time in seconds."
+                            },
+                            "values": {
+                              "anyOf": [
+                                {
+                                  "type": "array",
+                                  "items": {
+                                    "anyOf": [
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "string",
+                                        "description": "Authored non-empty Molang transform text.",
+                                        "markdownDescription": "Authored non-empty Molang transform text."
+                                      }
+                                    ]
+                                  },
+                                  "minItems": 3,
+                                  "maxItems": 3
+                                },
+                                {
+                                  "anyOf": [
+                                    {
+                                      "type": "number"
+                                    },
+                                    {
+                                      "type": "string",
+                                      "description": "Authored non-empty Molang transform text.",
+                                      "markdownDescription": "Authored non-empty Molang transform text."
+                                    }
+                                  ]
+                                }
+                              ],
+                              "description": "Authored [x,y,z] or uniform transform value. Each axis may be a finite number or explicit non-empty Molang string; strings are preserved, never evaluated by BlockIT.",
+                              "markdownDescription": "Authored [x,y,z] or uniform transform value. Each axis may be a finite number or explicit non-empty Molang string; strings are preserved, never evaluated by BlockIT."
+                            },
+                            "interpolation": {
+                              "type": "string",
+                              "enum": [
+                                "linear",
+                                "catmullrom",
+                                "bezier",
+                                "step"
+                              ],
+                              "description": "Optional interpolation change. Omit on edit to preserve the existing interpolation.",
+                              "markdownDescription": "Optional interpolation change. Omit on edit to preserve the existing interpolation."
+                            },
+                            "bezier_handles": {
+                              "type": "object",
+                              "properties": {
+                                "left_time": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "number"
+                                  },
+                                  "minItems": 3,
+                                  "maxItems": 3
+                                },
+                                "left_value": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "number"
+                                  },
+                                  "minItems": 3,
+                                  "maxItems": 3
+                                },
+                                "right_time": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "number"
+                                  },
+                                  "minItems": 3,
+                                  "maxItems": 3
+                                },
+                                "right_value": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "number"
+                                  },
+                                  "minItems": 3,
+                                  "maxItems": 3
+                                }
+                              },
+                              "additionalProperties": false,
+                              "description": "Finite per-axis Bezier handle offsets [x,y,z]; set interpolation=bezier when authoring handles.",
+                              "markdownDescription": "Finite per-axis Bezier handle offsets [x,y,z]; set interpolation=bezier when authoring handles."
+                            }
+                          },
+                          "required": [
+                            "time"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "minItems": 1,
+                        "description": "One or more keyframes.",
+                        "markdownDescription": "One or more keyframes."
+                      }
+                    },
+                    "required": [
+                      "action",
+                      "bone_name",
+                      "channel",
+                      "keyframes"
+                    ]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "operation": {
+                        "type": "string",
+                        "const": "keyframes"
+                      }
+                    },
+                    "required": [
+                      "operation"
+                    ]
+                  }
+                ]
+              },
+              {
+                "allOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "animation_id": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Animation UUID/name; omit for current animation when supported.",
+                        "markdownDescription": "Animation UUID/name; omit for current animation when supported."
+                      },
+                      "bone_name": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Group UUID or unique Group name.",
+                        "markdownDescription": "Group UUID or unique Group name."
+                      },
+                      "channel": {
+                        "type": "string",
+                        "enum": [
+                          "rotation",
+                          "position",
+                          "scale"
+                        ],
+                        "description": "Animation channel to modify.",
+                        "markdownDescription": "Animation channel to modify."
+                      },
+                      "axis": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "enum": [
+                              "x",
+                              "y",
+                              "z"
+                            ]
+                          },
+                          {
+                            "type": "string",
+                            "const": "all"
+                          }
+                        ],
+                        "default": "all",
+                        "description": "Bezier-handle axis; 'all' applies the same change to x/y/z. Interpolation stays keyframe-level.",
+                        "markdownDescription": "Bezier-handle axis; 'all' applies the same change to x/y/z. Interpolation stays keyframe-level."
+                      },
+                      "action": {
+                        "type": "string",
+                        "enum": [
+                          "smooth",
+                          "linear",
+                          "ease_in",
+                          "ease_out",
+                          "ease_in_out",
+                          "stepped",
+                          "custom"
+                        ],
+                        "description": "Type of curve modification to apply.",
+                        "markdownDescription": "Type of curve modification to apply."
+                      },
+                      "keyframe_range": {
+                        "type": "object",
+                        "properties": {
+                          "start": {
+                            "type": "number",
+                            "description": "Start time in seconds.",
+                            "markdownDescription": "Start time in seconds."
+                          },
+                          "end": {
+                            "type": "number",
+                            "description": "End time in seconds.",
+                            "markdownDescription": "End time in seconds."
+                          }
+                        },
+                        "required": [
+                          "start",
+                          "end"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Time range to apply the curve modification. If not provided, applies to all keyframes.",
+                        "markdownDescription": "Time range to apply the curve modification. If not provided, applies to all keyframes."
+                      },
+                      "custom_curve": {
+                        "type": "object",
+                        "properties": {
+                          "control_point_1": {
+                            "type": "array",
+                            "items": {
+                              "type": "number"
+                            },
+                            "minItems": 2,
+                            "maxItems": 2,
+                            "description": "Left Bezier handle offset [time, value]; time must be <= 0.",
+                            "markdownDescription": "Left Bezier handle offset [time, value]; time must be <= 0."
+                          },
+                          "control_point_2": {
+                            "type": "array",
+                            "items": {
+                              "type": "number"
+                            },
+                            "minItems": 2,
+                            "maxItems": 2,
+                            "description": "Right Bezier handle offset [time, value]; time must be >= 0.",
+                            "markdownDescription": "Right Bezier handle offset [time, value]; time must be >= 0."
+                          }
+                        },
+                        "required": [
+                          "control_point_1",
+                          "control_point_2"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Bezier left/right handle offsets for the axis or all axes ('custom' action only).",
+                        "markdownDescription": "Bezier left/right handle offsets for the axis or all axes ('custom' action only)."
+                      }
+                    },
+                    "required": [
+                      "bone_name",
+                      "channel",
+                      "action"
+                    ]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "operation": {
+                        "type": "string",
+                        "const": "graph"
+                      }
+                    },
+                    "required": [
+                      "operation"
+                    ]
+                  }
+                ]
+              },
+              {
+                "allOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "action": {
+                        "type": "string",
+                        "enum": [
+                          "play",
+                          "pause",
+                          "stop",
+                          "set_time",
+                          "set_length",
+                          "set_fps",
+                          "loop",
+                          "select_range",
+                          "set_anim_time_update",
+                          "set_blend_weight"
+                        ],
+                        "description": "Timeline or persistent authored-Animation property action.",
+                        "markdownDescription": "Timeline or persistent authored-Animation property action."
+                      },
+                      "time": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1000,
+                        "description": "Time in seconds for set_time; finite, within Timeline.setTime() range 0..1000, not clamped to animation.length.",
+                        "markdownDescription": "Time in seconds for set_time; finite, within Timeline.setTime() range 0..1000, not clamped to animation.length."
+                      },
+                      "length": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 10000,
+                        "description": "set_length length in seconds; finite, 0..10000. Native setLength() may extend to the keyframe floor.",
+                        "markdownDescription": "set_length length in seconds; finite, 0..10000. Native setLength() may extend to the keyframe floor."
+                      },
+                      "fps": {
+                        "type": "number",
+                        "minimum": 10,
+                        "maximum": 500,
+                        "description": "Animation snapping rate in frames per second for set_fps; Blockbench supports 10 to 500.",
+                        "markdownDescription": "Animation snapping rate in frames per second for set_fps; Blockbench supports 10 to 500."
+                      },
+                      "loop_mode": {
+                        "type": "string",
+                        "enum": [
+                          "once",
+                          "loop",
+                          "hold"
+                        ],
+                        "description": "Loop mode for the animation.",
+                        "markdownDescription": "Loop mode for the animation."
+                      },
+                      "range": {
+                        "type": "object",
+                        "properties": {
+                          "start": {
+                            "type": "number",
+                            "minimum": 0,
+                            "description": "Finite non-negative start time in seconds.",
+                            "markdownDescription": "Finite non-negative start time in seconds."
+                          },
+                          "end": {
+                            "type": "number",
+                            "minimum": 0,
+                            "description": "Finite non-negative end time in seconds.",
+                            "markdownDescription": "Finite non-negative end time in seconds."
+                          }
+                        },
+                        "required": [
+                          "start",
+                          "end"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Inclusive time range for select_range.",
+                        "markdownDescription": "Inclusive time range for select_range."
+                      },
+                      "molang": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "description": "Authored Molang for set_anim_time_update/set_blend_weight; null clears to native default. Text normalizes to one line, never evaluated.",
+                        "markdownDescription": "Authored Molang for set_anim_time_update/set_blend_weight; null clears to native default. Text normalizes to one line, never evaluated."
+                      }
+                    },
+                    "required": [
+                      "action"
+                    ]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "operation": {
+                        "type": "string",
+                        "const": "timeline"
+                      }
+                    },
+                    "required": [
+                      "operation"
+                    ]
+                  }
+                ]
+              },
+              {
+                "allOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "selection": {
+                        "type": "string",
+                        "enum": [
+                          "all",
+                          "selected",
+                          "range",
+                          "pattern"
+                        ],
+                        "default": "selected",
+                        "description": "Which keyframes to operate on.",
+                        "markdownDescription": "Which keyframes to operate on."
+                      },
+                      "range": {
+                        "type": "object",
+                        "properties": {
+                          "start": {
+                            "type": "number",
+                            "description": "Start time in seconds.",
+                            "markdownDescription": "Start time in seconds."
+                          },
+                          "end": {
+                            "type": "number",
+                            "description": "End time in seconds.",
+                            "markdownDescription": "End time in seconds."
+                          }
+                        },
+                        "required": [
+                          "start",
+                          "end"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Time range for keyframe selection.",
+                        "markdownDescription": "Time range for keyframe selection."
+                      },
+                      "pattern": {
+                        "type": "object",
+                        "properties": {
+                          "interval": {
+                            "type": "number",
+                            "exclusiveMinimum": 0,
+                            "description": "Finite positive time interval between keyframes.",
+                            "markdownDescription": "Finite positive time interval between keyframes."
+                          },
+                          "offset": {
+                            "type": "number",
+                            "default": 0,
+                            "description": "Finite time offset for the pattern.",
+                            "markdownDescription": "Finite time offset for the pattern."
+                          }
+                        },
+                        "required": [
+                          "interval"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Pattern-based selection.",
+                        "markdownDescription": "Pattern-based selection."
+                      },
+                      "operation": {
+                        "type": "string",
+                        "enum": [
+                          "offset",
+                          "scale",
+                          "reverse",
+                          "mirror",
+                          "smooth",
+                          "bake"
+                        ],
+                        "description": "Operation to perform on keyframes. Bake samples each selected animator's full channel range, even with selection=range/pattern subsets.",
+                        "markdownDescription": "Operation to perform on keyframes. Bake samples each selected animator's full channel range, even with selection=range/pattern subsets."
+                      },
+                      "parameters": {
+                        "type": "object",
+                        "properties": {
+                          "offset_time": {
+                            "type": "number",
+                            "description": "Finite time offset to apply.",
+                            "markdownDescription": "Finite time offset to apply."
+                          },
+                          "offset_values": {
+                            "type": "array",
+                            "items": {
+                              "type": "number"
+                            },
+                            "minItems": 3,
+                            "maxItems": 3,
+                            "description": "Finite value offset [x,y,z] to apply.",
+                            "markdownDescription": "Finite value offset [x,y,z] to apply."
+                          },
+                          "scale_factor": {
+                            "type": "number",
+                            "description": "Finite scale factor for keyframe time.",
+                            "markdownDescription": "Finite scale factor for keyframe time."
+                          },
+                          "scale_pivot": {
+                            "type": "number",
+                            "description": "Finite pivot point for scaling.",
+                            "markdownDescription": "Finite pivot point for scaling."
+                          },
+                          "mirror_axis": {
+                            "type": "string",
+                            "enum": [
+                              "x",
+                              "y",
+                              "z"
+                            ],
+                            "description": "Axis to mirror values across.",
+                            "markdownDescription": "Axis to mirror values across."
+                          },
+                          "bake_interval": {
+                            "type": "number",
+                            "exclusiveMinimum": 0,
+                            "description": "Strictly positive finite interval in seconds for baking keyframes.",
+                            "markdownDescription": "Strictly positive finite interval in seconds for baking keyframes."
+                          }
+                        },
+                        "additionalProperties": false,
+                        "description": "Operation-specific parameters.",
+                        "markdownDescription": "Operation-specific parameters."
+                      }
+                    },
+                    "required": [
+                      "operation"
+                    ]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "operation": {
+                        "type": "string",
+                        "const": "batch"
+                      }
+                    },
+                    "required": [
+                      "operation"
+                    ]
+                  }
+                ]
+              },
+              {
+                "allOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "action": {
+                        "type": "string",
+                        "enum": [
+                          "copy",
+                          "paste",
+                          "mirror_paste"
+                        ],
+                        "description": "Copy or paste action.",
+                        "markdownDescription": "Copy or paste action."
+                      },
+                      "source": {
+                        "type": "object",
+                        "properties": {
+                          "animation": {
+                            "type": "string",
+                            "description": "Source animation name or UUID.",
+                            "markdownDescription": "Source animation name or UUID."
+                          },
+                          "bone": {
+                            "type": "string",
+                            "description": "Exact source Group UUID or exact unique Group name.",
+                            "markdownDescription": "Exact source Group UUID or exact unique Group name."
+                          },
+                          "channels": {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "enum": [
+                                "rotation",
+                                "position",
+                                "scale"
+                              ]
+                            },
+                            "minItems": 1,
+                            "default": [
+                              "rotation",
+                              "position",
+                              "scale"
+                            ],
+                            "description": "One or more animation channels to copy.",
+                            "markdownDescription": "One or more animation channels to copy."
+                          },
+                          "time_range": {
+                            "type": "object",
+                            "properties": {
+                              "start": {
+                                "type": "number",
+                                "description": "Start time in seconds.",
+                                "markdownDescription": "Start time in seconds."
+                              },
+                              "end": {
+                                "type": "number",
+                                "description": "End time in seconds.",
+                                "markdownDescription": "End time in seconds."
+                              }
+                            },
+                            "required": [
+                              "start",
+                              "end"
+                            ],
+                            "additionalProperties": false,
+                            "description": "Time range to copy. If not provided, copies all keyframes.",
+                            "markdownDescription": "Time range to copy. If not provided, copies all keyframes."
+                          }
+                        },
+                        "required": [
+                          "bone"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Source data for copy operation.",
+                        "markdownDescription": "Source data for copy operation."
+                      },
+                      "target": {
+                        "type": "object",
+                        "properties": {
+                          "animation": {
+                            "type": "string",
+                            "description": "Target animation name or UUID.",
+                            "markdownDescription": "Target animation name or UUID."
+                          },
+                          "bone": {
+                            "type": "string",
+                            "description": "Exact target Group UUID or exact unique Group name.",
+                            "markdownDescription": "Exact target Group UUID or exact unique Group name."
+                          },
+                          "time_offset": {
+                            "type": "number",
+                            "default": 0,
+                            "description": "Finite time offset for pasted keyframes.",
+                            "markdownDescription": "Finite time offset for pasted keyframes."
+                          },
+                          "mirror_axis": {
+                            "type": "string",
+                            "enum": [
+                              "x",
+                              "y",
+                              "z"
+                            ],
+                            "description": "Axis to mirror across for mirror_paste.",
+                            "markdownDescription": "Axis to mirror across for mirror_paste."
+                          }
+                        },
+                        "required": [
+                          "bone"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Target data for paste operation.",
+                        "markdownDescription": "Target data for paste operation."
+                      }
+                    },
+                    "required": [
+                      "action"
+                    ]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "operation": {
+                        "type": "string",
+                        "const": "copy_paste"
+                      }
+                    },
+                    "required": [
+                      "operation"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      }
+    },
+    {
       "name": "create_animation",
       "title": "Create Animation",
-      "description": "Creates a Bedrock animation with optional numeric bone transforms and particle/sound effects. Use manage_keyframes for later Molang or keyframe edits.",
+      "description": "Creates a Bedrock animation with optional numeric bone transforms and particle/sound effects. Use manage_animation_timeline with operation=keyframes for later Molang or keyframe edits.",
       "status": "stable",
       "category": "Animation",
       "annotations": {
@@ -991,310 +1697,6 @@
       }
     },
     {
-      "name": "manage_keyframes",
-      "title": "Manage Keyframes",
-      "description": "Creates, edits, deletes, or selects keyframes for one animation bone and channel. Numeric and authored Molang values are preserved.",
-      "status": "experimental",
-      "category": "Animation",
-      "annotations": {
-        "destructiveHint": true
-      },
-      "parameters": {
-        "$ref": "#/definitions/manage_keyframes",
-        "definitions": {
-          "manage_keyframes": {
-            "type": "object",
-            "properties": {
-              "animation_id": {
-                "type": "string",
-                "minLength": 1,
-                "description": "Animation UUID/name; omit for current animation when supported.",
-                "markdownDescription": "Animation UUID/name; omit for current animation when supported."
-              },
-              "action": {
-                "type": "string",
-                "enum": [
-                  "create",
-                  "delete",
-                  "edit",
-                  "select"
-                ],
-                "description": "Action to perform on keyframes.",
-                "markdownDescription": "Action to perform on keyframes."
-              },
-              "bone_name": {
-                "type": "string",
-                "minLength": 1,
-                "description": "Group UUID or unique Group name.",
-                "markdownDescription": "Group UUID or unique Group name."
-              },
-              "channel": {
-                "type": "string",
-                "enum": [
-                  "rotation",
-                  "position",
-                  "scale"
-                ],
-                "description": "Animation channel to modify.",
-                "markdownDescription": "Animation channel to modify."
-              },
-              "keyframes": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "time": {
-                      "type": "number",
-                      "minimum": 0,
-                      "description": "Finite non-negative keyframe time in seconds.",
-                      "markdownDescription": "Finite non-negative keyframe time in seconds."
-                    },
-                    "values": {
-                      "anyOf": [
-                        {
-                          "type": "array",
-                          "items": {
-                            "anyOf": [
-                              {
-                                "type": "number"
-                              },
-                              {
-                                "type": "string",
-                                "description": "Authored non-empty Molang transform text.",
-                                "markdownDescription": "Authored non-empty Molang transform text."
-                              }
-                            ]
-                          },
-                          "minItems": 3,
-                          "maxItems": 3
-                        },
-                        {
-                          "anyOf": [
-                            {
-                              "type": "number"
-                            },
-                            {
-                              "type": "string",
-                              "description": "Authored non-empty Molang transform text.",
-                              "markdownDescription": "Authored non-empty Molang transform text."
-                            }
-                          ]
-                        }
-                      ],
-                      "description": "Authored [x,y,z] or uniform transform value. Each axis may be a finite number or explicit non-empty Molang string; strings are preserved, never evaluated by BlockIT.",
-                      "markdownDescription": "Authored [x,y,z] or uniform transform value. Each axis may be a finite number or explicit non-empty Molang string; strings are preserved, never evaluated by BlockIT."
-                    },
-                    "interpolation": {
-                      "type": "string",
-                      "enum": [
-                        "linear",
-                        "catmullrom",
-                        "bezier",
-                        "step"
-                      ],
-                      "description": "Optional interpolation change. Omit on edit to preserve the existing interpolation.",
-                      "markdownDescription": "Optional interpolation change. Omit on edit to preserve the existing interpolation."
-                    },
-                    "bezier_handles": {
-                      "type": "object",
-                      "properties": {
-                        "left_time": {
-                          "type": "array",
-                          "items": {
-                            "type": "number"
-                          },
-                          "minItems": 3,
-                          "maxItems": 3
-                        },
-                        "left_value": {
-                          "type": "array",
-                          "items": {
-                            "type": "number"
-                          },
-                          "minItems": 3,
-                          "maxItems": 3
-                        },
-                        "right_time": {
-                          "type": "array",
-                          "items": {
-                            "type": "number"
-                          },
-                          "minItems": 3,
-                          "maxItems": 3
-                        },
-                        "right_value": {
-                          "type": "array",
-                          "items": {
-                            "type": "number"
-                          },
-                          "minItems": 3,
-                          "maxItems": 3
-                        }
-                      },
-                      "additionalProperties": false,
-                      "description": "Finite per-axis Bezier handle offsets [x,y,z]; set interpolation=bezier when authoring handles.",
-                      "markdownDescription": "Finite per-axis Bezier handle offsets [x,y,z]; set interpolation=bezier when authoring handles."
-                    }
-                  },
-                  "required": [
-                    "time"
-                  ],
-                  "additionalProperties": false
-                },
-                "minItems": 1,
-                "description": "One or more keyframes.",
-                "markdownDescription": "One or more keyframes."
-              }
-            },
-            "required": [
-              "action",
-              "bone_name",
-              "channel",
-              "keyframes"
-            ],
-            "additionalProperties": false
-          }
-        },
-        "$schema": "http://json-schema.org/draft-07/schema#"
-      }
-    },
-    {
-      "name": "animation_graph_editor",
-      "title": "Animation Graph Editor",
-      "description": "Applies a curve/interpolation edit to one animation bone channel.",
-      "status": "experimental",
-      "category": "Animation",
-      "annotations": {
-        "destructiveHint": true
-      },
-      "parameters": {
-        "$ref": "#/definitions/animation_graph_editor",
-        "definitions": {
-          "animation_graph_editor": {
-            "type": "object",
-            "properties": {
-              "animation_id": {
-                "type": "string",
-                "minLength": 1,
-                "description": "Animation UUID/name; omit for current animation when supported.",
-                "markdownDescription": "Animation UUID/name; omit for current animation when supported."
-              },
-              "bone_name": {
-                "type": "string",
-                "minLength": 1,
-                "description": "Group UUID or unique Group name.",
-                "markdownDescription": "Group UUID or unique Group name."
-              },
-              "channel": {
-                "type": "string",
-                "enum": [
-                  "rotation",
-                  "position",
-                  "scale"
-                ],
-                "description": "Animation channel to modify.",
-                "markdownDescription": "Animation channel to modify."
-              },
-              "axis": {
-                "anyOf": [
-                  {
-                    "type": "string",
-                    "enum": [
-                      "x",
-                      "y",
-                      "z"
-                    ]
-                  },
-                  {
-                    "type": "string",
-                    "const": "all"
-                  }
-                ],
-                "default": "all",
-                "description": "Bezier-handle axis; 'all' applies the same change to x/y/z. Interpolation stays keyframe-level.",
-                "markdownDescription": "Bezier-handle axis; 'all' applies the same change to x/y/z. Interpolation stays keyframe-level."
-              },
-              "action": {
-                "type": "string",
-                "enum": [
-                  "smooth",
-                  "linear",
-                  "ease_in",
-                  "ease_out",
-                  "ease_in_out",
-                  "stepped",
-                  "custom"
-                ],
-                "description": "Type of curve modification to apply.",
-                "markdownDescription": "Type of curve modification to apply."
-              },
-              "keyframe_range": {
-                "type": "object",
-                "properties": {
-                  "start": {
-                    "type": "number",
-                    "description": "Start time in seconds.",
-                    "markdownDescription": "Start time in seconds."
-                  },
-                  "end": {
-                    "type": "number",
-                    "description": "End time in seconds.",
-                    "markdownDescription": "End time in seconds."
-                  }
-                },
-                "required": [
-                  "start",
-                  "end"
-                ],
-                "additionalProperties": false,
-                "description": "Time range to apply the curve modification. If not provided, applies to all keyframes.",
-                "markdownDescription": "Time range to apply the curve modification. If not provided, applies to all keyframes."
-              },
-              "custom_curve": {
-                "type": "object",
-                "properties": {
-                  "control_point_1": {
-                    "type": "array",
-                    "items": {
-                      "type": "number"
-                    },
-                    "minItems": 2,
-                    "maxItems": 2,
-                    "description": "Left Bezier handle offset [time, value]; time must be <= 0.",
-                    "markdownDescription": "Left Bezier handle offset [time, value]; time must be <= 0."
-                  },
-                  "control_point_2": {
-                    "type": "array",
-                    "items": {
-                      "type": "number"
-                    },
-                    "minItems": 2,
-                    "maxItems": 2,
-                    "description": "Right Bezier handle offset [time, value]; time must be >= 0.",
-                    "markdownDescription": "Right Bezier handle offset [time, value]; time must be >= 0."
-                  }
-                },
-                "required": [
-                  "control_point_1",
-                  "control_point_2"
-                ],
-                "additionalProperties": false,
-                "description": "Bezier left/right handle offsets for the axis or all axes ('custom' action only).",
-                "markdownDescription": "Bezier left/right handle offsets for the axis or all axes ('custom' action only)."
-              }
-            },
-            "required": [
-              "bone_name",
-              "channel",
-              "action"
-            ],
-            "additionalProperties": false
-          }
-        },
-        "$schema": "http://json-schema.org/draft-07/schema#"
-      }
-    },
-    {
       "name": "bone_rigging",
       "title": "Bone Rigging",
       "description": "Creates or edits Bedrock Group hierarchy, pivots, IK, and mirroring. Use for rig structure; use add_group for normal bone creation.",
@@ -1404,393 +1806,6 @@
             "required": [
               "action",
               "bone_data"
-            ],
-            "additionalProperties": false
-          }
-        },
-        "$schema": "http://json-schema.org/draft-07/schema#"
-      }
-    },
-    {
-      "name": "animation_timeline",
-      "title": "Animation Timeline",
-      "description": "Controls animation timeline state, length, snapping, loop, Molang time update, and blend weight.",
-      "status": "experimental",
-      "category": "Animation",
-      "annotations": {
-        "destructiveHint": true
-      },
-      "parameters": {
-        "$ref": "#/definitions/animation_timeline",
-        "definitions": {
-          "animation_timeline": {
-            "type": "object",
-            "properties": {
-              "action": {
-                "type": "string",
-                "enum": [
-                  "play",
-                  "pause",
-                  "stop",
-                  "set_time",
-                  "set_length",
-                  "set_fps",
-                  "loop",
-                  "select_range",
-                  "set_anim_time_update",
-                  "set_blend_weight"
-                ],
-                "description": "Timeline or persistent authored-Animation property action.",
-                "markdownDescription": "Timeline or persistent authored-Animation property action."
-              },
-              "time": {
-                "type": "number",
-                "minimum": 0,
-                "maximum": 1000,
-                "description": "Time in seconds for set_time; finite, within Timeline.setTime() range 0..1000, not clamped to animation.length.",
-                "markdownDescription": "Time in seconds for set_time; finite, within Timeline.setTime() range 0..1000, not clamped to animation.length."
-              },
-              "length": {
-                "type": "number",
-                "minimum": 0,
-                "maximum": 10000,
-                "description": "set_length length in seconds; finite, 0..10000. Native setLength() may extend to the keyframe floor.",
-                "markdownDescription": "set_length length in seconds; finite, 0..10000. Native setLength() may extend to the keyframe floor."
-              },
-              "fps": {
-                "type": "number",
-                "minimum": 10,
-                "maximum": 500,
-                "description": "Animation snapping rate in frames per second for set_fps; Blockbench supports 10 to 500.",
-                "markdownDescription": "Animation snapping rate in frames per second for set_fps; Blockbench supports 10 to 500."
-              },
-              "loop_mode": {
-                "type": "string",
-                "enum": [
-                  "once",
-                  "loop",
-                  "hold"
-                ],
-                "description": "Loop mode for the animation.",
-                "markdownDescription": "Loop mode for the animation."
-              },
-              "range": {
-                "type": "object",
-                "properties": {
-                  "start": {
-                    "type": "number",
-                    "minimum": 0,
-                    "description": "Finite non-negative start time in seconds.",
-                    "markdownDescription": "Finite non-negative start time in seconds."
-                  },
-                  "end": {
-                    "type": "number",
-                    "minimum": 0,
-                    "description": "Finite non-negative end time in seconds.",
-                    "markdownDescription": "Finite non-negative end time in seconds."
-                  }
-                },
-                "required": [
-                  "start",
-                  "end"
-                ],
-                "additionalProperties": false,
-                "description": "Inclusive time range for select_range.",
-                "markdownDescription": "Inclusive time range for select_range."
-              },
-              "molang": {
-                "anyOf": [
-                  {
-                    "type": "string"
-                  },
-                  {
-                    "type": "null"
-                  }
-                ],
-                "description": "Authored Molang for set_anim_time_update/set_blend_weight; null clears to native default. Text normalizes to one line, never evaluated.",
-                "markdownDescription": "Authored Molang for set_anim_time_update/set_blend_weight; null clears to native default. Text normalizes to one line, never evaluated."
-              }
-            },
-            "required": [
-              "action"
-            ],
-            "additionalProperties": false
-          }
-        },
-        "$schema": "http://json-schema.org/draft-07/schema#"
-      }
-    },
-    {
-      "name": "batch_keyframe_operations",
-      "title": "Batch Keyframe Operations",
-      "description": "Applies one bounded batch operation to selected, ranged, patterned, or all keyframes.",
-      "status": "experimental",
-      "category": "Animation",
-      "annotations": {
-        "destructiveHint": true
-      },
-      "parameters": {
-        "$ref": "#/definitions/batch_keyframe_operations",
-        "definitions": {
-          "batch_keyframe_operations": {
-            "type": "object",
-            "properties": {
-              "selection": {
-                "type": "string",
-                "enum": [
-                  "all",
-                  "selected",
-                  "range",
-                  "pattern"
-                ],
-                "default": "selected",
-                "description": "Which keyframes to operate on.",
-                "markdownDescription": "Which keyframes to operate on."
-              },
-              "range": {
-                "type": "object",
-                "properties": {
-                  "start": {
-                    "type": "number",
-                    "description": "Start time in seconds.",
-                    "markdownDescription": "Start time in seconds."
-                  },
-                  "end": {
-                    "type": "number",
-                    "description": "End time in seconds.",
-                    "markdownDescription": "End time in seconds."
-                  }
-                },
-                "required": [
-                  "start",
-                  "end"
-                ],
-                "additionalProperties": false,
-                "description": "Time range for keyframe selection.",
-                "markdownDescription": "Time range for keyframe selection."
-              },
-              "pattern": {
-                "type": "object",
-                "properties": {
-                  "interval": {
-                    "type": "number",
-                    "exclusiveMinimum": 0,
-                    "description": "Finite positive time interval between keyframes.",
-                    "markdownDescription": "Finite positive time interval between keyframes."
-                  },
-                  "offset": {
-                    "type": "number",
-                    "default": 0,
-                    "description": "Finite time offset for the pattern.",
-                    "markdownDescription": "Finite time offset for the pattern."
-                  }
-                },
-                "required": [
-                  "interval"
-                ],
-                "additionalProperties": false,
-                "description": "Pattern-based selection.",
-                "markdownDescription": "Pattern-based selection."
-              },
-              "operation": {
-                "type": "string",
-                "enum": [
-                  "offset",
-                  "scale",
-                  "reverse",
-                  "mirror",
-                  "smooth",
-                  "bake"
-                ],
-                "description": "Operation to perform on keyframes. Bake samples each selected animator's full channel range, even with selection=range/pattern subsets.",
-                "markdownDescription": "Operation to perform on keyframes. Bake samples each selected animator's full channel range, even with selection=range/pattern subsets."
-              },
-              "parameters": {
-                "type": "object",
-                "properties": {
-                  "offset_time": {
-                    "type": "number",
-                    "description": "Finite time offset to apply.",
-                    "markdownDescription": "Finite time offset to apply."
-                  },
-                  "offset_values": {
-                    "type": "array",
-                    "items": {
-                      "type": "number"
-                    },
-                    "minItems": 3,
-                    "maxItems": 3,
-                    "description": "Finite value offset [x,y,z] to apply.",
-                    "markdownDescription": "Finite value offset [x,y,z] to apply."
-                  },
-                  "scale_factor": {
-                    "type": "number",
-                    "description": "Finite scale factor for keyframe time.",
-                    "markdownDescription": "Finite scale factor for keyframe time."
-                  },
-                  "scale_pivot": {
-                    "type": "number",
-                    "description": "Finite pivot point for scaling.",
-                    "markdownDescription": "Finite pivot point for scaling."
-                  },
-                  "mirror_axis": {
-                    "type": "string",
-                    "enum": [
-                      "x",
-                      "y",
-                      "z"
-                    ],
-                    "description": "Axis to mirror values across.",
-                    "markdownDescription": "Axis to mirror values across."
-                  },
-                  "bake_interval": {
-                    "type": "number",
-                    "exclusiveMinimum": 0,
-                    "description": "Strictly positive finite interval in seconds for baking keyframes.",
-                    "markdownDescription": "Strictly positive finite interval in seconds for baking keyframes."
-                  }
-                },
-                "additionalProperties": false,
-                "description": "Operation-specific parameters.",
-                "markdownDescription": "Operation-specific parameters."
-              }
-            },
-            "required": [
-              "operation"
-            ],
-            "additionalProperties": false
-          }
-        },
-        "$schema": "http://json-schema.org/draft-07/schema#"
-      }
-    },
-    {
-      "name": "animation_copy_paste",
-      "title": "Animation Copy/Paste",
-      "description": "Copies, pastes, or mirrors keyframes between animation bones. Copy/paste targets must be explicit; mirror_paste requires an axis.",
-      "status": "experimental",
-      "category": "Animation",
-      "annotations": {
-        "destructiveHint": true
-      },
-      "parameters": {
-        "$ref": "#/definitions/animation_copy_paste",
-        "definitions": {
-          "animation_copy_paste": {
-            "type": "object",
-            "properties": {
-              "action": {
-                "type": "string",
-                "enum": [
-                  "copy",
-                  "paste",
-                  "mirror_paste"
-                ],
-                "description": "Copy or paste action.",
-                "markdownDescription": "Copy or paste action."
-              },
-              "source": {
-                "type": "object",
-                "properties": {
-                  "animation": {
-                    "type": "string",
-                    "description": "Source animation name or UUID.",
-                    "markdownDescription": "Source animation name or UUID."
-                  },
-                  "bone": {
-                    "type": "string",
-                    "description": "Exact source Group UUID or exact unique Group name.",
-                    "markdownDescription": "Exact source Group UUID or exact unique Group name."
-                  },
-                  "channels": {
-                    "type": "array",
-                    "items": {
-                      "type": "string",
-                      "enum": [
-                        "rotation",
-                        "position",
-                        "scale"
-                      ]
-                    },
-                    "minItems": 1,
-                    "default": [
-                      "rotation",
-                      "position",
-                      "scale"
-                    ],
-                    "description": "One or more animation channels to copy.",
-                    "markdownDescription": "One or more animation channels to copy."
-                  },
-                  "time_range": {
-                    "type": "object",
-                    "properties": {
-                      "start": {
-                        "type": "number",
-                        "description": "Start time in seconds.",
-                        "markdownDescription": "Start time in seconds."
-                      },
-                      "end": {
-                        "type": "number",
-                        "description": "End time in seconds.",
-                        "markdownDescription": "End time in seconds."
-                      }
-                    },
-                    "required": [
-                      "start",
-                      "end"
-                    ],
-                    "additionalProperties": false,
-                    "description": "Time range to copy. If not provided, copies all keyframes.",
-                    "markdownDescription": "Time range to copy. If not provided, copies all keyframes."
-                  }
-                },
-                "required": [
-                  "bone"
-                ],
-                "additionalProperties": false,
-                "description": "Source data for copy operation.",
-                "markdownDescription": "Source data for copy operation."
-              },
-              "target": {
-                "type": "object",
-                "properties": {
-                  "animation": {
-                    "type": "string",
-                    "description": "Target animation name or UUID.",
-                    "markdownDescription": "Target animation name or UUID."
-                  },
-                  "bone": {
-                    "type": "string",
-                    "description": "Exact target Group UUID or exact unique Group name.",
-                    "markdownDescription": "Exact target Group UUID or exact unique Group name."
-                  },
-                  "time_offset": {
-                    "type": "number",
-                    "default": 0,
-                    "description": "Finite time offset for pasted keyframes.",
-                    "markdownDescription": "Finite time offset for pasted keyframes."
-                  },
-                  "mirror_axis": {
-                    "type": "string",
-                    "enum": [
-                      "x",
-                      "y",
-                      "z"
-                    ],
-                    "description": "Axis to mirror across for mirror_paste.",
-                    "markdownDescription": "Axis to mirror across for mirror_paste."
-                  }
-                },
-                "required": [
-                  "bone"
-                ],
-                "additionalProperties": false,
-                "description": "Target data for paste operation.",
-                "markdownDescription": "Target data for paste operation."
-              }
-            },
-            "required": [
-              "action"
             ],
             "additionalProperties": false
           }

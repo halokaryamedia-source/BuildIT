@@ -78,7 +78,7 @@ describe("model creation effectiveness — texture/animation sequencing", () => 
       "no universal fps, duration, amplitude, phase, keyframe count, or bezier target"
     );
     expect(normalizedAnimation).toContain("animation quality score");
-    expect(normalizedAnimation).toContain("manage_keyframes");
+    expect(normalizedAnimation).toContain("manage_animation_timeline");
     expect(normalizedAnimation).toContain("molang");
   });
 

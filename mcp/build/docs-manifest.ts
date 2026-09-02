@@ -19,7 +19,7 @@ import { uiToolDocs } from "../server/tools/ui";
 import { materialInstanceToolDocs } from "../server/tools/material-instances";
 import { historyToolDocs } from "../server/tools/history";
 import { exportToolDocs } from "../server/tools/export";
-import { consolidatedInspectionToolDocs, consolidatedMaterialToolDocs } from "../server/tools";
+import { consolidatedInspectionToolDocs, consolidatedMaterialToolDocs, consolidatedAnimationTimelineToolDocs } from "../server/tools";
 
 export interface CategoryGroup {
   category: string;
@@ -32,7 +32,8 @@ export const toolManifest: CategoryGroup[] = [
   {
     category: "Animation",
     tools: [
-      ...animationToolDocs,
+      consolidatedAnimationTimelineToolDocs,
+      ...animationToolDocs.filter((tool) => !["manage_keyframes", "animation_graph_editor", "animation_timeline", "batch_keyframe_operations", "animation_copy_paste"].includes(tool.name)),
       ...animationEffectToolDocs,
       ...animationControllerToolDocs,
       ...animationInspectionToolDocs,

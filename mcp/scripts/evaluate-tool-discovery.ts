@@ -268,12 +268,12 @@ const TOOL_DISCOVERY_INTENT_GROUPS = [
     "update or remove an authored animation effect by keyframe identity",
   ],
   [
-    "manage_keyframes",
+    "manage_animation_timeline",
     "add a rotation keyframe to this bone",
     "edit keyframe values at this time",
   ],
   [
-    "animation_graph_editor",
+    "manage_animation_timeline",
     "change keyframe easing to ease in out",
     "adjust Bezier interpolation handles",
   ],
@@ -283,17 +283,17 @@ const TOOL_DISCOVERY_INTENT_GROUPS = [
     "set the pivot of this animation bone",
   ],
   [
-    "animation_timeline",
+    "manage_animation_timeline",
     "scrub animation time to two seconds",
     "play or loop the animation timeline",
   ],
   [
-    "batch_keyframe_operations",
+    "manage_animation_timeline",
     "offset several keyframes in time",
     "scale the timing of selected keyframes",
   ],
   [
-    "animation_copy_paste",
+    "manage_animation_timeline",
     "copy keyframes from one bone to another",
     "mirror paste animation data",
   ],
@@ -565,17 +565,17 @@ export function assertToolDiscoveryEvalIntegrity(
 ): void {
   const failures: string[] = [];
 
-  if (report.enabled_tool_count !== 59) {
+  if (report.enabled_tool_count !== 55) {
     failures.push(
-      `enabled_tool_count=${report.enabled_tool_count}; expected 59`
+      `enabled_tool_count=${report.enabled_tool_count}; expected 55`
     );
   }
   if (report.case_count < 100 || report.case_count > 150) {
     failures.push(`case_count=${report.case_count}; expected 100..150`);
   }
-  if (report.expected_tool_count !== 46) {
+  if (report.expected_tool_count !== 42) {
     failures.push(
-      `expected_tool_count=${report.expected_tool_count}; expected 46`
+      `expected_tool_count=${report.expected_tool_count}; expected 42`
     );
   }
   if (report.missing_expected_tools.length > 0) {

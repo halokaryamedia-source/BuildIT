@@ -35,6 +35,7 @@ import { registerUITools } from "./tools/ui";
 import { registerMaterialInstanceTools } from "./tools/material-instances";
 import { registerHistoryTools } from "./tools/history";
 import { registerExportTools } from "./tools/export";
+import { manageKeyframesParameters, animationGraphEditorParameters, animationTimelineParameters, batchKeyframeOperationsParameters, animationCopyPasteParameters } from "./tools/animation";
 import { listOutlineParameters, findElementsByCriteriaParameters } from "./tools/element";
 import { inspectElementParameters } from "./tools/element-inspection";
 import { createPbrMaterialParameters, configureMaterialParameters, assignTextureChannelParameters, saveMaterialConfigParameters } from "./tools/texture";
@@ -71,6 +72,22 @@ export const consolidatedMaterialToolDocs = {
   description: "Creates, configures, assigns channels, or saves one Bedrock PBR material through one focused boundary.",
   annotations: { title: "Manage Material", destructiveHint: true },
   parameters: consolidatedMaterialParameters,
+  status: "stable" as const,
+};
+
+const consolidatedAnimationTimelineParameters = z.union([
+  manageKeyframesParameters.and(z.object({ operation: z.literal("keyframes") })),
+  animationGraphEditorParameters.and(z.object({ operation: z.literal("graph") })),
+  animationTimelineParameters.and(z.object({ operation: z.literal("timeline") })),
+  batchKeyframeOperationsParameters.and(z.object({ operation: z.literal("batch") })),
+  animationCopyPasteParameters.and(z.object({ operation: z.literal("copy_paste") })),
+]);
+
+export const consolidatedAnimationTimelineToolDocs = {
+  name: "manage_animation_timeline",
+  description: "Authors Bedrock animation keyframes, timing, graph/easing, batch edits, and copy/paste through one focused boundary.",
+  annotations: { title: "Manage Animation Timeline", destructiveHint: true },
+  parameters: consolidatedAnimationTimelineParameters,
   status: "stable" as const,
 };
 
@@ -120,6 +137,31 @@ function registerConsolidatedMaterialTool(): void {
   }
   toolRegistrationFamily.set("manage_material", "textures");
   catalogToolEnabled.set("manage_material", true);
+}
+
+function registerConsolidatedAnimationTimelineTool(): void {
+  if (tools.manage_animation_timeline) return;
+  createTool("manage_animation_timeline", {
+    ...consolidatedAnimationTimelineToolDocs,
+    async execute(request) {
+      let target: string = "animation_copy_paste";
+      const operation = String(request.operation);
+      if (operation === "keyframes") target = "manage_keyframes";
+      else if (operation === "graph") target = "animation_graph_editor";
+      else if (operation === "timeline") target = "animation_timeline";
+      else if (operation === "batch") target = "batch_keyframe_operations";
+      const definition = getAllToolDefinitions()[target];
+      if (!definition) throw new Error(`Animation timeline executor ${target} is unavailable.`);
+      const { operation: _operation, ...args } = request;
+      return definition.execute(args);
+    },
+  }, "stable");
+  for (const legacy of ["manage_keyframes", "animation_graph_editor", "animation_timeline", "batch_keyframe_operations", "animation_copy_paste"]) {
+    if (tools[legacy]) tools[legacy].enabled = false;
+    catalogToolEnabled.set(legacy, false);
+  }
+  toolRegistrationFamily.set("manage_animation_timeline", "animation");
+  catalogToolEnabled.set("manage_animation_timeline", true);
 }
 
 function registerAnimationFamilyTools(): void {
@@ -254,6 +296,7 @@ export function registerMcpProfile(
   }
   if (profile === DEFAULT_MCP_REGISTRATION_PROFILE) registerConsolidatedInspectionTool();
   if (profile === DEFAULT_MCP_REGISTRATION_PROFILE) registerConsolidatedMaterialTool();
+  if (profile === DEFAULT_MCP_REGISTRATION_PROFILE) registerConsolidatedAnimationTimelineTool();
 
   phaseSurfaceCache.clear();
 }
