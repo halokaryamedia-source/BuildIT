@@ -68,7 +68,7 @@ UPPER: SIDE | FRONT | BACK
 LOWER: TOP / FOOTPRINT | FRONT-SIDE 3/4
 ```
 
-Use the source-supported LEFT/RIGHT side consistently and label it explicitly when known. The source-nearest orthographic view is the anchor.
+Use the source-supported LEFT/RIGHT side consistently. Keep the board layout fixed and store view identity in the brief/metadata, not in the pixels. The source-nearest orthographic view is the anchor.
 
 - SIDE / FRONT / BACK / TOP are orthographic construction evidence.
 - TOP should show useful footprint/depth relationships, but need not be an engineering projection.
@@ -77,11 +77,11 @@ Use the source-supported LEFT/RIGHT side consistently and label it explicitly wh
 
 A discrepancy is **material** only when it changes identity, a primary mass or required part count, topology/attachment, an important negative space, Minecraft buildability, or identity-critical texture/material information. Material contradiction → **NOT READY / NEEDS REVIEW**.
 
-### Presentation / Handoff
+### Clean Board Presentation / Handoff
 
 Neutral sheet; uncropped subject; low-noise Minecraft pixel texture; neutral planar lighting. No cinematic scene, Blockbench UI/gizmos/grid/wireframe/bounds, gameplay UI, photoreal baked lighting, or random dithering.
 
-**Only panel/view labels may appear by default.** No title/header/subtitle/note/scale/dimensions/target-use text unless explicitly requested. Nonvisual constraints stay **outside the image**.
+The default board is segmentation-friendly: no panel borders, grid lines, dividers, labels, titles, headers, subtitles, notes, scale text, dimensions, or target-use text. Use a uniform background, consistent subject scale, generous empty separation between views, and never allow a subject, shadow, or prop to cross into another view area. Keep the fixed five-view layout known externally in the brief/metadata. Nonvisual constraints stay **outside the image**.
 
 ## Visual Gate
 
