@@ -1,6 +1,6 @@
 # BlockIT Flow
 
-Updated: 2026-09-01
+Updated: 2026-09-03
 
 This is the **single detailed current flow**. Root `AGENTS.md` owns execution-context and task routing.
 
@@ -21,6 +21,25 @@ LOCAL ACCEPTANCE      → formal procedure; inactive unless next-action.md expli
 
 Execution context describes available capability, not product/UI identity and not procedure activation. `LIVE_BLOCKBENCH` permits targeted live debugging when the task requires it; it does **not** activate the formal Local Acceptance runbook. Hardening never silently continues into image generation. After hardening/verification, **STOP AND REPORT**; generation requires a fresh explicit user instruction.
 
+### Default path selection
+
+The main authoring path is object-agnostic and image-reference-first. GLB and PrimitiveAnything are optional evidence/experiments; they must never block the main path.
+
+```text
+IMAGE ONLY
+→ Main Image-Reference Path
+→ semantic Bedrock Groups/Cubes
+
+IMAGE + CLEAN SINGLE-OBJECT GLB
+→ Optional 3D-Assisted Path
+→ GLB alignment + optional PrimitiveAnything POC
+→ semantic Bedrock Groups/Cubes
+
+FRAGMENTED / MULTIVIEW GLB
+→ do not send to PrimitiveAnything
+→ use the Main Image-Reference Path
+```
+
 ## 2. Reference Preparation
 
 ```text
@@ -37,7 +56,7 @@ SOURCE IMAGE + USER INTENT
 → EXECUTION CONSENT GATE
    ├─ no fresh instruction → STOP; WAIT FOR USER
    └─ fresh instruction → ONE CLEAN FIVE-PREVIEW DRAFT
-        → labels only by default
+        → clean unlabeled board by default
         → gate: recognizability
                 geometry buildability
                 texture usability
@@ -73,9 +92,28 @@ If no persistent package exists and the user wants retention, create one compact
 
 Choose the smallest evidence path that can change the model decision.
 
-### Route 1 selected reference path — approved image + GLB
+### Main Image-Reference Path
 
-For Route 1 reference-driven modelling, the selected production evidence is **approved image + requested dimensions + approved shape-only `.glb`**. Image-only versus image+GLB is not a current decision gate and is not repeated during local acceptance.
+This is the default and does not require a GLB, Hunyuan, PrimitiveAnything, Ubuntu, CUDA, or mesh-to-Cube conversion.
+
+```text
+ACTUAL APPROVED IMAGE + HANDOFF CONSTRAINTS
+→ identity + envelope + primary masses
+→ CONSTRUCTION + TRANSFORM OWNERSHIP
+→ minimum meaningful hierarchy
+→ PRIMARY BLOCKOUT: coherent Cubes + REQUIRED PRIMARY GROUPS/PIVOTS
+→ CANONICAL FRONT / SIDE / TOP / ISOMETRIC VIEWS
+→ DIFFERENCE-FIRST REFERENCE ↔ MODEL COMPARISON
+→ FAIL | UNVERIFIED | PASS
+→ one targeted correction when material
+→ secondary geometry only after Geometry PASS
+```
+
+Image-only modelling remains valid when the approved image clearly supports identity, primary masses, attachments, negative spaces, and a Blockbench-buildable interpretation. The image is visual authority; requested dimensions remain numeric authority. Do not invent hidden structure or use object-specific templates.
+
+### Optional 3D-Assisted Path — approved image + GLB
+
+This path is optional. It is appropriate only when a clean single-object GLB exists and its additional depth/volume evidence justifies the setup cost. Image-only work must not be routed here by default.
 
 Authority is fixed:
 
@@ -139,7 +177,7 @@ no scalar quality score as visual authority
 
 If the aligned GLB disagrees materially with the approved image, the approved image and requested dimensions remain authoritative. Use the GLB only for supported 3D relationships; do not distort it to force every target dimension to match.
 
-For a clear predominantly rigid reference after Route 1 grounding:
+For a clear predominantly rigid reference after optional GLB grounding:
 
 ```text
 ACTUAL APPROVED REFERENCE + ALIGNED GLB + HANDOFF CONSTRAINTS
@@ -181,6 +219,8 @@ fresh target state
 After Geometry `PASS`, add identity-weighted secondary geometry only when silhouette, recognizability, contact/layering, or motion benefits.
 
 Before production `.bbmodel` export, any BlockIT-owned Route 1 reference must be removed. A production `.bbmodel` must contain no `reference_model` state.
+
+Both paths converge before UV Layout at the same Geometry `PASS` and use the same downstream UV, Texture, Animation, and export flow. PrimitiveAnything remains isolated under `Experimental/primitiveanything-poc/`; a failed optional experiment returns to the Main Image-Reference Path.
 
 ### 3.2 Canonical UV / Texture Vocabulary
 

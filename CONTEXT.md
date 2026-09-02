@@ -21,6 +21,7 @@ Root `AGENTS.md` owns task selection.
 - **UV Layout** is geometry-to-atlas mapping such as `uv_offset`, `autouv`, `mirror_uv`, and per-face UV. It is distinct from bitmap styling.
 - **Texture Atlas** stores pixels; **Texture Styling** owns authored color/material/detail; **Texture Verify** is fresh visual validation after final mapping.
 - Static source/CI evidence never upgrades a live Blockbench, runtime, or visual-quality claim.
+- The Main Image-Reference Path is the default object-agnostic authoring route; a 3D-Assisted Path is optional and must not block it.
 
 ## Repository Shape
 

@@ -1,6 +1,6 @@
 # Next Action
 
-Updated: 2026-09-02 — PrimitiveAnything Cuboid POC prepared; local geometry proof required before any production integration
+Updated: 2026-09-03 — generic image-reference main path established; PrimitiveAnything remains optional
 
 Working branch: **`Local` only**.
 
@@ -9,11 +9,12 @@ This file owns active continuation only. Stable facts → `CONTEXT.md`; complete
 ## Current Status
 
 ```text
-ROUTE 1: IMAGE_GLB_SELECTED → GLB_REFERENCE_LOADED → PRIMITIVEANYTHING_POC_PREPARED → LOCAL_POC_REQUIRED
+MAIN: IMAGE_REFERENCE_SELECTED → GENERIC_REFERENCE_READY → LOCAL_IMPLEMENTATION_REQUIRED
+OPTIONAL ROUTE 1: IMAGE_GLB_SELECTED → GLB_REFERENCE_LOADED → PRIMITIVEANYTHING_POC_PREPARED → LOCAL_POC_REQUIRED
 MCP: BASE_EXTENDED_DESIGN_LOCKED → LOCAL_IMPLEMENTATION_REQUIRED
 ```
 
-Do not reopen Route 1 image-only vs image+GLB selection. Do not restart broad feature research while the current PrimitiveAnything gate is unresolved.
+The Main Image-Reference Path is the default, object-agnostic route and does not require GLB, Hunyuan, PrimitiveAnything, Ubuntu, or CUDA. The Optional Route 1 POC remains isolated and must not block main-path implementation. Do not restart broad feature research while its current gate is unresolved.
 
 ## Local Order
 
