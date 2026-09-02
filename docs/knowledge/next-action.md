@@ -1,6 +1,6 @@
 # Next Action
 
-Updated: 2026-09-01 — Route 1 selected; BASE / EXTENDED design locked; local implementation/proof remains
+Updated: 2026-09-02 — Route 1 stopped at approved GLB Reference load; Cube authoring intentionally deferred
 
 Working branch: **`Local` only**.
 
@@ -9,7 +9,7 @@ This file owns active continuation only. Stable facts → `CONTEXT.md`; complete
 ## Current Status
 
 ```text
-ROUTE 1: IMAGE_GLB_SELECTED → LOCAL_TEST_REQUIRED
+ROUTE 1: IMAGE_GLB_SELECTED → GLB_REFERENCE_LOADED → EXTERNAL_SOLUTION_SEARCH
 MCP: BASE_EXTENDED_DESIGN_LOCKED → LOCAL_IMPLEMENTATION_REQUIRED
 ```
 
@@ -25,7 +25,7 @@ Do not reopen Route 1 image-only vs image+GLB selection. Do not restart broad fe
 5. prove how same-phase EXTENDED definitions are made reachable with the current client/transport before broad routing implementation
    → do not combine this with an SDK/transport migration unless current mechanics cannot satisfy the contract
 6. Core/project lifecycle consolidation
-7. Geometry consolidation + selected Route 1 image+GLB live test
+7. Route 1 sample GLB load into Blockbench — completed; stop before Geometry/Cube authoring
 8. Texturing consolidation
 9. Animation consolidation
 10. implement final BASE / EXTENDED exposure/reuse from the consolidated owners
@@ -46,3 +46,11 @@ Public ToolSpec/schema/runtime-prompt changes require LOCAL_CODE + Bun generator
 ```
 
 Completion is proof-bound: static/source ready ≠ local PASS ≠ live PASS.
+
+## User-deferred boundary
+
+The current Route 1 work intentionally ends after the approved elephant GLB is
+loaded as a normal, transient Blockbench Reference Model. Do not create, fit,
+voxelize, infer, or correct Bedrock Cubes from that sample in this repository
+until the user supplies a different method. The discarded direct-GLB-to-Cube,
+voxel, cuboid-fit, and semantic-guess experiments are not continuation steps.

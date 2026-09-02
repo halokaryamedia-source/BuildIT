@@ -1,6 +1,6 @@
 # Current Validation
 
-Updated: 2026-09-01
+Updated: 2026-09-02
 
 This file owns **current proof interpretation**. Active continuation belongs in `docs/knowledge/next-action.md`; stable product facts belong in `CONTEXT.md`; exact source/test ownership belongs in `docs/knowledge/implementation-map.md`.
 
@@ -14,9 +14,9 @@ DEFAULT CLIENT EXPOSURE:         MCP Core + Geometry (25 tools)
 KNOWN FULL MCP BASELINE:         PASS @ 5ecbf25608f8da879497e2f687854cb68781f3cd
 ACCEPTED LIVE BASELINE:          2026-08-12 Blockbench 5.1.6
 ROUTE 1 SELECTED WORKFLOW:       APPROVED IMAGE + GLB
-ROUTE 1 ALIGNMENT FOUNDATION:    SOURCE PREPARED — LOCAL TEST + LIVE PROOF REQUIRED
-CURRENT ROUTE 1 LIVE RETEST:     REACTIVATED — LOCAL PROOF REQUIRED
-CURRENT MODEL-QUALITY CLAIM:     LOCAL PROOF REQUIRED
+ROUTE 1 ALIGNMENT FOUNDATION:    SOURCE PREPARED — REFERENCE LOAD VERIFIED
+CURRENT ROUTE 1 LIVE RETEST:     STOPPED AFTER GLB REFERENCE LOAD
+CURRENT MODEL-QUALITY CLAIM:     NONE — CUBE AUTHORING DEFERRED
 ```
 
 `KNOWN FULL MCP BASELINE` is the last deliberately retained full canonical executable/source baseline, not a claim that this file tracks the newest CI run. Current workflow status must be read from the exact current commit/run when it matters.
@@ -51,7 +51,7 @@ observed GLB bounds + requested Minecraft dimensions
 → center X/Z + ground Y translation plan
 ```
 
-The pure planner does **not** prove Blockbench Reference Model transform semantics. It does not change `manage_geometry_reference`, does not pre-scale the GLB artifact, does not add non-uniform scaling, and does not convert mesh triangles to Bedrock Cubes. The public/runtime contract remains unchanged until local/live evidence justifies any consolidation.
+The pure planner does **not** prove Blockbench Reference Model transform semantics. It does not change `manage_geometry_reference`, does not pre-scale the GLB artifact, does not add non-uniform scaling, and does not convert mesh triangles to Bedrock Cubes. The user has explicitly stopped Route 1 after the sample GLB enters Blockbench; no Cube reconstruction claim is active.
 
 Exact regression ownership and protected capability gaps live in `docs/knowledge/implementation-map.md`; this file does not duplicate them.
 
@@ -97,19 +97,17 @@ Static source/CI evidence can prove the contracts it actually executes, such as 
 
 It **cannot prove visual fidelity**, installed-plugin freshness, fresh client registry state, desktop GLB rendering, live Reference Model scale/origin behavior, live Blockbench Undo/playback/persistence, or model-quality improvement unless those surfaces actually ran.
 
-Route 1 live validation is explicitly reactivated. The local proof uses one approved representative fixture and verifies:
+The completed live boundary for Route 1 is only:
 
 ```text
-canonical GLB load
-→ raw bounds evidence
-→ uniform fit-envelope scale
-→ fresh post-scale bounds
-→ center X/Z + ground Y translation
-→ fresh aligned evidence
-→ canonical captures with approved image visible
-→ normal semantic Groups/Cubes in the same coordinate frame
-→ reference cleanup
-→ .bbmodel export with no reference_model state
+canonical GLB load into Blockbench as transient Reference Model
+→ normal preview restored
+```
+
+Everything after that boundary is intentionally deferred:
+
+```text
+Cube authoring, fitting, correction, reference cleanup, and .bbmodel export
 ```
 
 If that selected path passes, Route 1 acceptance is complete for the tested claim. Do not add an image-only A/B gate afterward.

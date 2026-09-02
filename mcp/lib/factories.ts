@@ -225,6 +225,8 @@ function extractShape(schema: z.ZodType): Record<string, z.ZodType> {
   const def = schema._def as {
     typeName?: string;
     schema?: z.ZodType;
+    left?: z.ZodType;
+    right?: z.ZodType;
     shape?: () => Record<string, z.ZodType>;
     options?: z.ZodType[];
   };
@@ -237,7 +239,17 @@ function extractShape(schema: z.ZodType): Record<string, z.ZodType> {
     return extractShape(def.schema);
   }
 
-  if (def.typeName === "ZodDiscriminatedUnion" && def.options) {
+  if (def.typeName === "ZodIntersection" && def.left && def.right) {
+    return {
+      ...extractShape(def.left),
+      ...extractShape(def.right),
+    };
+  }
+
+  if (
+    (def.typeName === "ZodUnion" || def.typeName === "ZodDiscriminatedUnion") &&
+    def.options
+  ) {
     const optionShapes = def.options.map(extractShape);
     const fieldNames = new Set(optionShapes.flatMap((shape) => Object.keys(shape)));
 
@@ -248,7 +260,7 @@ function extractShape(schema: z.ZodType): Record<string, z.ZodType> {
           .filter((field): field is z.ZodType => field !== undefined);
         const [first, second, ...rest] = variants;
         if (!first) {
-          throw new Error(`Discriminated union field "${fieldName}" has no schema.`);
+          throw new Error(`Union field "${fieldName}" has no schema.`);
         }
 
         const field = second

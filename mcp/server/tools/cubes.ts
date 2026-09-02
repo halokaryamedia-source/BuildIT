@@ -282,6 +282,20 @@ export const modifyCubesBatchParameters = z.object({
     ),
 }).strict();
 
+function withCubeOperation<T extends z.ZodType>(
+  schema: T,
+  operation: "create" | "update" | "batch_update"
+) {
+  return z.intersection(
+    z.object({ operation: z.literal(operation) }),
+    z.preprocess((value) => {
+      if (!value || typeof value !== "object" || Array.isArray(value)) return value;
+      const { operation: _operation, ...payload } = value as Record<string, unknown>;
+      return payload;
+    }, schema)
+  );
+}
+
 export const cubeToolDocs: ToolSpec[] = [
   {
     name: "manage_cubes",
@@ -292,9 +306,9 @@ export const cubeToolDocs: ToolSpec[] = [
       destructiveHint: true,
     },
     parameters: z.union([
-      placeCubeParameters.and(z.object({ operation: z.literal("create") })),
-      modifyCubeParameters.and(z.object({ operation: z.literal("update") })),
-      modifyCubesBatchParameters.and(z.object({ operation: z.literal("batch_update") })),
+      withCubeOperation(placeCubeParameters, "create"),
+      withCubeOperation(modifyCubeParameters, "update"),
+      withCubeOperation(modifyCubesBatchParameters, "batch_update"),
     ]),
     status: STATUS_STABLE,
   },

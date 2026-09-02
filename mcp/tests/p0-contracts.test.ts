@@ -231,6 +231,31 @@ describe("P0 MCP contract regressions", () => {
     });
   });
 
+  test("ordinary unions with intersections advertise their fields", () => {
+    const capture = createCaptureServer();
+    const parameters = z.union([
+      z.object({ elements: z.array(z.object({ from: z.array(z.number()), to: z.array(z.number()) })) })
+        .and(z.object({ operation: z.literal("create") })),
+      z.object({ id: z.string(), name: z.string().optional() })
+        .and(z.object({ operation: z.literal("update") })),
+    ]);
+    createTool("p0_union_intersection_contract_fixture", {
+      description: "Ordinary union/intersection contract fixture",
+      parameters,
+      async execute(args) {
+        return args.operation;
+      },
+    });
+    registerToolsOnServer(capture.server);
+
+    const registration = capture.registrations.get("p0_union_intersection_contract_fixture");
+    expect(registration).toBeDefined();
+    if (!registration) throw new Error("Union/intersection fixture was not registered.");
+
+    expect(Object.keys(registration.definition.inputSchema as Record<string, unknown>).sort())
+      .toEqual(["elements", "id", "name", "operation"].sort());
+  });
+
   test("dangerous default tools remain disabled while other UI tools register", () => {
     const capture = createCaptureServer();
     registerUITools();
