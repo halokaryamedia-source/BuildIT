@@ -37,6 +37,247 @@ Do not reopen Route 1 image-only vs image+GLB selection. Do not restart broad fe
 
 Route 1 exact alignment/test flow lives in `Experimental/route1-hunyuan-poc/README.md` and the local runbook. The new bounded external-solver experiment lives in `Experimental/primitiveanything-poc/README.md`. Alignment math is already prepared in `mcp/lib/route1ReferenceAlignment.ts` with `mcp/tests/route1-reference-alignment.test.ts`.
 
+## Local Handoff — PrimitiveAnything Cuboid POC
+
+```text
+FROM_CONTEXT: REMOTE_GITHUB
+TO_CONTEXT: LOCAL_CODE
+repository: halokaryamedia-source/BuildIT
+branch/ref: Local
+POC source commit: abfe4a63af35c6de00d502094084527538ef9428
+status: SOURCE PREPARED / LOCAL PROOF REQUIRED
+```
+
+### Goal
+
+Prove or reject one specific Route 1 bridge:
+
+```text
+approved elephant GLB
+→ stock PrimitiveAnything learned primitive decomposition
+→ deterministic all-Cuboid substitution
+→ native Blockbench Cubes
+→ .bbmodel only after visual PASS
+```
+
+The target is **not** to make the final production elephant yet. The target is to answer whether this method produces a materially better, recognizable Cube scaffold from the already-approved GLB without LLM coordinate guessing.
+
+### Success metric
+
+The experiment passes only when all of the following are true:
+
+1. PrimitiveAnything stock output still clearly reads as the same elephant.
+2. The all-Cuboid substitution still preserves the elephant identity and major negative spaces.
+3. Four leg volumes remain distinguishable.
+4. Head, ears, trunk, and body remain readable enough to guide Minecraft modelling.
+5. The generated Bedrock geometry opens in Blockbench as **native editable Cubes/Groups**, not Mesh production geometry.
+6. Front, side, top, and isometric visual inspection is acceptable against the approved GLB/reference.
+7. Only after that visual PASS is a `.bbmodel` saved as proof.
+
+A clean script exit, valid JSON, valid GLB, or successful Blockbench import alone is **not** a visual PASS.
+
+### Forbidden proxy / non-goal
+
+Do not treat any of these as success:
+
+```text
+file exists
+script returns 0
+geo.json parses
+Blockbench opens the project
+cuboid count is small
+bounds approximately match
+```
+
+Do not expand into:
+
+```text
+MCP integration
+texture
+animation
+semantic bone inference
+manual Cube cleanup
+new voxel/visual-hull experiments
+CoACD/OBB retry
+LLM semantic coordinate guessing
+new Route 1 formats
+```
+
+until Gate 0 and Gate 1 pass.
+
+### Exact local procedure
+
+Use **WSL2 Ubuntu + NVIDIA CUDA** for the first proof. Do not spend the first attempt debugging a native-Windows PrimitiveAnything installation.
+
+From the BuildIT checkout:
+
+```bash
+git switch Local
+git pull --ff-only
+cd Experimental/primitiveanything-poc
+chmod +x setup_wsl.sh run_poc.sh
+./setup_wsl.sh
+```
+
+Before running inference, confirm inside WSL:
+
+```bash
+nvidia-smi
+```
+
+Then run the **same approved elephant GLB that already passed Route 1 GLB selection**:
+
+```bash
+./run_poc.sh /mnt/c/path/to/approved-elephant.glb elephant-test
+```
+
+Optional POC display envelope only:
+
+```bash
+TARGET_LONGEST=48 ./run_poc.sh /mnt/c/path/to/approved-elephant.glb elephant-test
+```
+
+`TARGET_LONGEST` is not a production dimension and must not replace user-approved target dimensions.
+
+### Gate 0 — stock PrimitiveAnything
+
+Open:
+
+```text
+Experimental/primitiveanything-poc/
+runs/elephant-test/pa/output_<input-name>.glb
+```
+
+Inspect whether the learned primitive decomposition itself preserves:
+
+```text
+body
+head
+four distinct leg volumes
+ears
+trunk / trunk segments
+overall elephant silhouette
+```
+
+Decision:
+
+```text
+Gate 0 materially fails
+→ STOP PrimitiveAnything path
+→ do not tune the Cuboid converter to compensate
+```
+
+### Gate 1 — deterministic all-Cuboid substitution
+
+If Gate 0 passes, open:
+
+```text
+Experimental/primitiveanything-poc/
+runs/elephant-test/cuboid/<input-name>_pa_poc.cuboid-preview.glb
+```
+
+Every PrimitiveAnything primitive is replaced by the oriented bounding Cuboid of its actual canonical primitive PLY while preserving predicted position, scale, and orientation. This stage must not identify body parts, fit new geometry, voxelize, or ask an LLM for coordinates.
+
+Decision:
+
+```text
+Gate 0 passes + Gate 1 materially fails
+→ STOP all-Cuboid substitution path
+→ only then may cube-only constrained decoding be proposed as a separate experiment
+```
+
+### Native Blockbench proof
+
+If Gate 1 passes, open:
+
+```text
+Experimental/primitiveanything-poc/
+runs/elephant-test/cuboid/<input-name>_pa_poc.geo.json
+```
+
+Expected structure:
+
+```text
+root
+├─ pa_000 [Group/bone]
+│  └─ Cube
+├─ pa_001 [Group/bone]
+│  └─ Cube
+└─ ...
+```
+
+There should be no production Mesh elements.
+
+Inspect real Blockbench views:
+
+```text
+Front
+Side
+Top
+Isometric
+```
+
+If visually accepted:
+
+```text
+File → Save Project As → elephant-pa-poc.bbmodel
+```
+
+That `.bbmodel` is the first acceptable proof that this bridge reaches native editable Blockbench Cubes.
+
+### Expected local outputs
+
+```text
+Experimental/primitiveanything-poc/runs/<run>/
+├─ pa/
+│  ├─ processed_<input>.glb
+│  ├─ output_<input>.glb
+│  └─ output_<input>.json
+└─ cuboid/
+   ├─ <id>.cuboids.json
+   ├─ <id>.cuboid-preview.glb
+   ├─ <id>.geo.json
+   └─ <id>.summary.json
+```
+
+`runs/`, external weights, Conda/Python caches, and generated proof artifacts remain local/ignored and are not committed to `Local`.
+
+### What the local session should report back
+
+Return only evidence needed to make the next decision:
+
+```text
+1. setup/inference success or exact environment/install error
+2. Gate 0 screenshot(s) or clear visual result
+3. Gate 1 screenshot(s) or clear visual result
+4. Blockbench native Cube/Group proof if Gate 1 passes
+5. front / side / top / isometric screenshots if available
+6. saved .bbmodel existence only after visual PASS
+```
+
+Classify failures precisely:
+
+```text
+setup/CUDA/dependency failure → ENVIRONMENT / INSTALL
+Gate 0 bad decomposition      → PrimitiveAnything method FAIL
+Gate 1 bad substitution       → Cuboid substitution FAIL
+Gate 1 good, import wrong     → converter/export mapping defect
+Gate 1 + native Cube PASS     → LOCAL geometry proof achieved
+```
+
+Do not blur one failure into another.
+
+### First local action
+
+```text
+Read Experimental/primitiveanything-poc/README.md
+→ run setup_wsl.sh
+→ run the approved elephant GLB
+→ inspect Gate 0 before touching anything else
+```
+
+Do **not** repeat the external-method research that led to this POC unless Gate 0/1 evidence disproves the current method.
+
 ## Locked Boundaries
 
 ```text
