@@ -37,6 +37,7 @@ import { registerHistoryTools } from "./tools/history";
 import { registerExportTools } from "./tools/export";
 import { listOutlineParameters, findElementsByCriteriaParameters } from "./tools/element";
 import { inspectElementParameters } from "./tools/element-inspection";
+import { createPbrMaterialParameters, configureMaterialParameters, assignTextureChannelParameters, saveMaterialConfigParameters } from "./tools/texture";
 
 // Core resource registrations
 import { registerValidatorResources } from "./resources/validator";
@@ -55,6 +56,21 @@ export const consolidatedInspectionToolDocs = {
     "Inspects Bedrock elements through one focused boundary. Use mode=outline for hierarchy, search for bounded criteria discovery, or detail for one authored element with optional UV data.",
   annotations: { title: "Inspect Elements", readOnlyHint: true },
   parameters: consolidatedInspectionParameters,
+  status: "stable" as const,
+};
+
+const consolidatedMaterialParameters = z.union([
+  createPbrMaterialParameters.and(z.object({ operation: z.literal("create") })),
+  configureMaterialParameters.and(z.object({ operation: z.literal("configure") })),
+  assignTextureChannelParameters.and(z.object({ operation: z.literal("assign_channel") })),
+  saveMaterialConfigParameters.and(z.object({ operation: z.literal("save") })),
+]);
+
+export const consolidatedMaterialToolDocs = {
+  name: "manage_material",
+  description: "Creates, configures, assigns channels, or saves one Bedrock PBR material through one focused boundary.",
+  annotations: { title: "Manage Material", destructiveHint: true },
+  parameters: consolidatedMaterialParameters,
   status: "stable" as const,
 };
 
@@ -84,6 +100,26 @@ function registerConsolidatedInspectionTool(): void {
   }
   toolRegistrationFamily.set("inspect_elements", "element_inspection");
   catalogToolEnabled.set("inspect_elements", true);
+}
+
+function registerConsolidatedMaterialTool(): void {
+  if (tools.manage_material) return;
+  createTool("manage_material", {
+    ...consolidatedMaterialToolDocs,
+    async execute(request) {
+      const target = request.operation === "create" ? "create_pbr_material" : request.operation === "configure" ? "configure_material" : request.operation === "assign_channel" ? "assign_texture_channel" : "save_material_config";
+      const definition = getAllToolDefinitions()[target];
+      if (!definition) throw new Error(`Material executor ${target} is unavailable.`);
+      const { operation: _operation, ...args } = request;
+      return definition.execute(args);
+    },
+  }, "stable");
+  for (const legacy of ["create_pbr_material", "configure_material", "assign_texture_channel", "save_material_config"]) {
+    if (tools[legacy]) tools[legacy].enabled = false;
+    catalogToolEnabled.set(legacy, false);
+  }
+  toolRegistrationFamily.set("manage_material", "textures");
+  catalogToolEnabled.set("manage_material", true);
 }
 
 function registerAnimationFamilyTools(): void {
@@ -217,6 +253,7 @@ export function registerMcpProfile(
     registerFamily(family);
   }
   if (profile === DEFAULT_MCP_REGISTRATION_PROFILE) registerConsolidatedInspectionTool();
+  if (profile === DEFAULT_MCP_REGISTRATION_PROFILE) registerConsolidatedMaterialTool();
 
   phaseSurfaceCache.clear();
 }

@@ -13,11 +13,11 @@ import {
 const HOST = "127.0.0.1";
 const ENDPOINT = "/bb-mcp";
 const PROTOCOL_VERSION = "2025-06-18";
-const CATALOG_TOOL_COUNT = 62;
+const CATALOG_TOOL_COUNT = 59;
 
 const EXPECTED_PHASE_TOOL_COUNTS: Record<McpAuthoringPhase, number> = {
   geometry: 25,
-  texturing: 42,
+  texturing: 39,
   animation: 23,
 };
 

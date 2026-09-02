@@ -32,7 +32,7 @@ describe("advertised surface and fail-closed integrity guards", () => {
         !name.includes("fixture") &&
         !extendedToolNames.has(name)
     );
-    expect(enabledDefinitions.length).toBe(62);
+    expect(enabledDefinitions.length).toBe(59);
 
     for (const [, toolDef] of enabledDefinitions) {
       const { description, status } = toolDef as {

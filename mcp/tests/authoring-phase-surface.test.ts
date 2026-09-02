@@ -76,7 +76,7 @@ describe("authoring phase MCP surface", () => {
     for (const foreignTool of [
       "create_texture",
       "paint_with_brush",
-      "create_pbr_material",
+      "manage_material",
       "set_face_material_instance",
       "create_animation",
       "manage_keyframes",
@@ -175,7 +175,7 @@ describe("authoring phase MCP surface", () => {
     for (const tool of [
       "create_texture",
       "paint_with_brush",
-      "create_pbr_material",
+      "manage_material",
       "set_face_material_instance",
     ]) {
       expect(texturing.has(tool), tool).toBe(true);

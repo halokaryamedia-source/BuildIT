@@ -173,12 +173,12 @@ const TOOL_DISCOVERY_INTENT_GROUPS = [
     "select the default working texture",
   ],
   [
-    "create_pbr_material",
+    "manage_material",
     "create a new PBR material texture group",
     "make a material with color normal and MER sources",
   ],
   [
-    "configure_material",
+    "manage_material",
     "edit an existing PBR material",
     "change this material from a normal texture to a height texture",
   ],
@@ -193,7 +193,7 @@ const TOOL_DISCOVERY_INTENT_GROUPS = [
     "show detailed PBR information for this material",
   ],
   [
-    "assign_texture_channel",
+    "manage_material",
     "assign this texture to the normal channel",
     "set the MER texture on this material",
   ],
@@ -203,7 +203,7 @@ const TOOL_DISCOVERY_INTENT_GROUPS = [
     "load a Bedrock texture_set configuration",
   ],
   [
-    "save_material_config",
+    "manage_material",
     "save this material texture set json",
     "write the PBR material config to disk",
   ],
@@ -565,17 +565,17 @@ export function assertToolDiscoveryEvalIntegrity(
 ): void {
   const failures: string[] = [];
 
-  if (report.enabled_tool_count !== 62) {
+  if (report.enabled_tool_count !== 59) {
     failures.push(
-      `enabled_tool_count=${report.enabled_tool_count}; expected 62`
+      `enabled_tool_count=${report.enabled_tool_count}; expected 59`
     );
   }
   if (report.case_count < 100 || report.case_count > 150) {
     failures.push(`case_count=${report.case_count}; expected 100..150`);
   }
-  if (report.expected_tool_count !== 49) {
+  if (report.expected_tool_count !== 46) {
     failures.push(
-      `expected_tool_count=${report.expected_tool_count}; expected 49`
+      `expected_tool_count=${report.expected_tool_count}; expected 46`
     );
   }
   if (report.missing_expected_tools.length > 0) {
