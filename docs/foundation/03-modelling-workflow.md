@@ -25,7 +25,7 @@ known current state + optional grounded reference when reference-driven
 
 - Reuse fresh exact identity/authored state returned by prior calls when sufficient — `place_cube`/`modify_cube` return values are sufficient for immediate correction without `inspect_element`.
 - Use focused discovery only for unknown, stale, or ambiguous state.
-- `inspect_element` is a fallback for missing/stale exact target state, not a mandatory pre-correction ritual.
+- `inspect_elements(mode=detail)` is a fallback for missing/stale exact target state, not a mandatory pre-correction ritual.
 - `inspect_model_bounds` is only for material envelope/scale/ground/displacement questions; otherwise skip it.
 - Do not inspect every newly placed Cube or capture after every mutation.
 - `UNVERIFIED` is an evidence state, not a command to create more calls — for non-reference tasks it becomes `PROVISIONAL` and work continues with a marked hypothesis.

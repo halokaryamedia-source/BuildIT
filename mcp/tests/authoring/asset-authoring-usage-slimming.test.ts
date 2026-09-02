@@ -104,7 +104,7 @@ describe("pre-local asset-authoring usage slimming", () => {
     expect(locatorSource).toContain("function mutationResult(");
     expect(locatorSource).toContain("structuredContent: summary");
     const orchestrator = await source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md");
-    expect(orchestrator).toContain("Do not automatically re-read fresh mutation targets with `inspect_element`");
+    expect(orchestrator).toContain("Do not automatically re-read fresh mutation targets with `inspect_elements(mode=detail)`");
   });
 
   test("Cube correction results avoid redundant state and identity copies", async () => {

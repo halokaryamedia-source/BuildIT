@@ -96,7 +96,7 @@ describe("model creation effectiveness — correction accuracy", () => {
     }
     expect(modelling).toContain("State target UUID(s), cause, intended change, invariant");
     expect(modelling).toContain(
-      "Reuse fresh exact authored state; otherwise `inspect_element` once."
+      "Reuse fresh exact authored state; otherwise `inspect_elements(mode=detail)` once."
     );
   });
 });

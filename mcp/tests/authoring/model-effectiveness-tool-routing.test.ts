@@ -14,10 +14,10 @@ describe("model creation effectiveness — tool routing", () => {
     ]);
     const geometryRuntime = selectMcpPhaseWorkflowBody(workflow, "geometry");
 
-    for (const tool of ["get_project_info", "manage_cubes", "capture_model_views", "inspect_element", "export_model"]) {
+    for (const tool of ["get_project_info", "manage_cubes", "capture_model_views", "inspect_elements", "export_model"]) {
       expect(orchestrator).toContain(tool);
     }
-    for (const tool of ["manage_cubes", "inspect_element"]) {
+    for (const tool of ["manage_cubes", "inspect_elements"]) {
       expect(geometryRuntime).toContain(tool);
     }
     expect(geometryRuntime).toContain("fresh model views");

@@ -1,6 +1,6 @@
 {
   "version": "0.1.0",
-  "generatedAt": "2026-09-02T05:28:57.043Z",
+  "generatedAt": "2026-09-02T06:29:56.178Z",
   "tools": [
     {
       "name": "manage_cubes",
@@ -4835,7 +4835,7 @@
     {
       "name": "get_project_info",
       "title": "Get Project Info",
-      "description": "Returns project lifecycle, format, logical UV resolution, and element counts. Use list_outline only when hierarchy detail is needed.",
+      "description": "Returns project lifecycle, format, logical UV resolution, and element counts. Use inspect_elements(mode=outline) only when hierarchy detail is needed.",
       "status": "stable",
       "category": "Project",
       "annotations": {

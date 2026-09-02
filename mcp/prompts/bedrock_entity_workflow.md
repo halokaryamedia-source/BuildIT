@@ -59,7 +59,7 @@ PASS       = no critical/major supported mismatch
 
 **Front PASS is not full 3D PASS** when depth evidence is missing or fails. Coordinates, bounds, hierarchy, export success, or similarity scores cannot create visual `PASS`.
 
-Correction: reuse fresh target state; otherwise `inspect_element` once. Diagnose `TRANSLATE | RESIZE | ROTATE | REATTACH | SPLIT | MERGE/REMOVE | ADD MASS`, mutate, verify `geometry_effect`, then compare `IMPROVED | UNCHANGED | REGRESSED`. Capture affected view(s) first. Same causal correction failing twice without new evidence → `BLOCKED`.
+Correction: reuse fresh target state; otherwise `inspect_elements(mode=detail)` once. Diagnose `TRANSLATE | RESIZE | ROTATE | REATTACH | SPLIT | MERGE/REMOVE | ADD MASS`, mutate, verify `geometry_effect`, then compare `IMPROVED | UNCHANGED | REGRESSED`. Capture affected view(s) first. Same causal correction failing twice without new evidence → `BLOCKED`.
 
 ## UV Layout
 
@@ -67,7 +67,7 @@ UV Layout answers: **which atlas region does each surface read?**
 
 For fresh Box UV, reuse `manage_cubes(operation=create)` returned `box_uv_region`; do not rediscover it by ritual. Keep auto UV active during geometry correction. After geometry `PASS`, lock final Box-UV Cubes in one `manage_cubes(operation=batch_update)` with `autouv=0`, then call `list_textures` once for global UV audit.
 
-Require integer logical UV unless justified, no invalid/out-of-bounds UV, no accidental partial overlap, deliberate exact reuse/mirror, and stable seam/orientation. Use `inspect_element` only when face-specific mapping/orientation is actually needed; one Cube inspection returns all faces.
+Require integer logical UV unless justified, no invalid/out-of-bounds UV, no accidental partial overlap, deliberate exact reuse/mirror, and stable seam/orientation. Use `inspect_elements(mode=detail)` only when face-specific mapping/orientation is actually needed; one Cube inspection returns all faces.
 
 ## Texture Atlas
 

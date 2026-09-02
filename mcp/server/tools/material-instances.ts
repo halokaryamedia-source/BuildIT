@@ -104,7 +104,7 @@ export const clearMaterialInstancesParametersSchema = z.object({
 function findCubeOrThrow(id: string): Cube {
   return resolveCoreCube(
     id,
-    "Use list_outline or find_elements_by_criteria to confirm the intended Cube UUID before changing material instances."
+    "Use inspect_elements with mode=outline/search to confirm the intended Cube UUID before changing material instances."
   );
 }
 

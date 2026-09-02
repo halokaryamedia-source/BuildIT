@@ -169,7 +169,7 @@ export const projectToolDocs: ToolSpec[] = [
   {
     name: "get_project_info",
     description:
-      "Returns project lifecycle, format, logical UV resolution, and element counts. Use list_outline only when hierarchy detail is needed.",
+      "Returns project lifecycle, format, logical UV resolution, and element counts. Use inspect_elements(mode=outline) only when hierarchy detail is needed.",
     annotations: {
       title: "Get Project Info",
       readOnlyHint: true,

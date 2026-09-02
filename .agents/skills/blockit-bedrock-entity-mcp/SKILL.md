@@ -5,7 +5,7 @@ description: Route Bedrock Entity intents to exact active-phase tools.
 
 # BlockIT Bedrock Entity MCP
 
-Target `bedrock`. Own only **phase/tool routing**, state reuse, handoff, recovery:
+Target bedrock. Own only **phase/tool routing**, state reuse, handoff, recovery:
 
 ```text
 geometry/rig/UV judgement → `blockbench-bedrock-modelling`
@@ -19,7 +19,7 @@ Normal asset work **must not begin by searching repository files**.
 
 `ACTIVE PHASE + intent + known state/UUIDs → exact exposed tool → execute → reuse fresh state`
 
-`ACTIVE PHASE` + `tools/list` are the **routing authority for the first tool decision**; phase absence is not discovery failure. **1 Minecraft block = 16 Blockbench units**. Reuse `capture_model_views` `front_direction` when material.
+`ACTIVE PHASE` + `tools/list` are the **routing authority for the first tool decision**; phase absence is not discovery failure. **1 Minecraft block = 16 Blockbench units**. Reuse `front_direction` when relevant.
 
 ## Active Phase Contract
 
@@ -37,9 +37,9 @@ Foreign-phase need → `HANDOFF_REQUIRED` with target_phase, reason, readiness, 
 CORE
 no project                    → create_project
 lifecycle unknown             → get_project_info
-target identity unknown       → find_elements_by_criteria
-hierarchy question            → list_outline
-known target detail           → inspect_element
+target identity unknown       → inspect_elements(mode=search)
+hierarchy question            → inspect_elements(mode=outline)
+known target detail           → inspect_elements(mode=detail)
 visible/reference comparison  → capture_model_views
 numeric envelope/scale/ground → inspect_model_bounds
 structural validation gate    → validator://status; details only when nonzero
@@ -96,7 +96,7 @@ unsupported     → CAPABILITY_MISMATCH → handoff once or BLOCKED
 
 - Known UUID → no discovery unless stale/ambiguous.
 - Fresh mutation → reuse returned state/`geometry_effect`; no confirmation readback.
-- **Do not automatically re-read fresh mutation targets with `inspect_element`.**
+- **Do not automatically re-read fresh mutation targets with `inspect_elements(mode=detail)`.**
 - Validator gate → read `validator://status` first; zero problems means no detail-resource read.
 - `inspect_model_bounds` only for envelope/scale/ground/displacement.
 - Skip `get_project_info` after create/export unless lifecycle state is unknown/stale.

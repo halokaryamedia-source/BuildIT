@@ -91,7 +91,7 @@ describe("pre-local usage optimization contract", () => {
       source("../docs/foundation/07-visual-validation.md"),
     ]);
     expect(requirements).toContain("Use `inspect_model_bounds` only when the numeric whole-model envelope materially matters");
-    expect(workflowPolicy).toContain("`inspect_element` is a fallback for missing/stale exact target state");
+    expect(workflowPolicy).toContain("`inspect_elements(mode=detail)` is a fallback for missing/stale exact target state");
     expect(geometry).toContain("Reuse fresh exact authored state already returned for the target when sufficient");
     expect(validation).toContain("Use `inspect_model_bounds` only when envelope/scale/ground/displacement materially affects the current decision");
   });

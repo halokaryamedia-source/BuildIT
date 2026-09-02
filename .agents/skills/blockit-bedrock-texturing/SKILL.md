@@ -34,7 +34,7 @@ Reuse fresh state; load exact spec only when needed.
 
 ```text
 global UV/atlas readiness       → list_textures (`uv_audit.production_gate`)
-face-specific mapping           → inspect_element only when needed
+face-specific mapping           → inspect_elements(mode=detail) only when needed
 unlocked/invalid UV        → HANDOFF_REQUIRED(geometry)
 blank atlas resolution unknown  → get_project_info once; known handoff state skips it
 create atlas bitmap             → create_texture

@@ -31,9 +31,9 @@ describe("asset tool routing", () => {
 
     for (const tool of [
       "manage_cubes",
-      "find_elements_by_criteria",
-      "list_outline",
-      "inspect_element",
+      "inspect_elements(mode=search)",
+      "inspect_elements(mode=outline)",
+      "inspect_elements(mode=detail)",
       "list_locator_elements",
       "manage_locator",
       "manage_null_object",

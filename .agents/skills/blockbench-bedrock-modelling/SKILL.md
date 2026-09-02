@@ -101,7 +101,7 @@ REATTACH contact/parent | SPLIT distinct volume/orientation
 MERGE/REMOVE compensatory geometry | ADD MASS genuinely missing declared volume
 ```
 
-Reuse fresh exact authored state; otherwise `inspect_element` once. State target UUID(s), cause, intended change, invariant, and expected visible/structural effect. TRANSLATE preserves size; RESIZE names changed axis + fixed anchor/center/contact; ROTATE preserves `from/to/size`, pivot role, and required attachment. `geometry_effect` must match intended structural change.
+Reuse fresh exact authored state; otherwise `inspect_elements(mode=detail)` once. State target UUID(s), cause, intended change, invariant, and expected visible/structural effect. TRANSLATE preserves size; RESIZE names changed axis + fixed anchor/center/contact; ROTATE preserves `from/to/size`, pivot role, and required attachment. `geometry_effect` must match intended structural change.
 
 Capture affected view(s) first; expand only for material cross-view risk. Classify `IMPROVED | UNCHANGED | REGRESSED`. Progress requires `IMPROVED` with no supported material claim regressed. A fix that helps one view while materially regressing another is rejected. If the same causal correction direction has failed twice without new evidence, stop speculative mutation and reframe.
 

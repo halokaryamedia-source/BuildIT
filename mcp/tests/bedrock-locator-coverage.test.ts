@@ -100,7 +100,7 @@ describe("Bedrock Locator / Null Object direct coverage", () => {
     ]);
     expect(orchestrator).toContain("list_locator_elements");
     expect(orchestrator).toContain("manage_locator / manage_null_object");
-    expect(orchestrator).toContain("Do not automatically re-read fresh mutation targets with `inspect_element`");
+    expect(orchestrator).toContain("Do not automatically re-read fresh mutation targets with `inspect_elements(mode=detail)`");
     expect(implementation).toContain("mcp/tests/bedrock-locator-coverage.test.ts");
     expect(implementation).toContain("TextureMesh direct authoring/inspection");
     expect(implementation).toContain("controller blend-curve mutation");

@@ -90,7 +90,7 @@ export function resolveTextureIdentity<T extends CoreTextureIdentityRecord>(
 export function resolveCoreCube(
   reference: string,
   notFoundHint =
-    "Use list_outline or find_elements_by_criteria, then inspect_element to confirm the intended Cube UUID."
+    "Use inspect_elements with mode=outline/search, then mode=detail to confirm the intended Cube UUID."
 ) {
   return resolveUuidOrUniqueName(Cube.all ?? [], reference, {
     kind: "Cube",
@@ -100,7 +100,7 @@ export function resolveCoreCube(
 
 export function resolveCoreGroup(
   reference: string,
-  notFoundHint = "Use list_outline to confirm the intended Group UUID."
+  notFoundHint = "Use inspect_elements with mode=outline to confirm the intended Group UUID."
 ) {
   return resolveUuidOrUniqueName(Group.all ?? [], reference, {
     kind: "Group",
@@ -111,7 +111,7 @@ export function resolveCoreGroup(
 export function resolveCoreCubeOrGroup(
   reference: string,
   notFoundHint =
-    "Use list_outline or find_elements_by_criteria to confirm the intended Cube/Group UUID."
+    "Use inspect_elements with mode=outline/search to confirm the intended Cube/Group UUID."
 ) {
   return resolveUuidOrUniqueName(
     [...(Cube.all ?? []), ...(Group.all ?? [])] as Array<Cube | Group>,
