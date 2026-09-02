@@ -1,6 +1,6 @@
 {
   "version": "0.1.0",
-  "generatedAt": "2026-09-02T05:03:08.582Z",
+  "generatedAt": "2026-09-02T05:12:35.745Z",
   "tools": [
     {
       "name": "manage_cubes",
@@ -4936,6 +4936,275 @@
       }
     },
     {
+      "name": "manage_material",
+      "title": "Manage Material",
+      "description": "Creates, configures, assigns channels, or saves one Bedrock PBR material through one focused boundary.",
+      "status": "stable",
+      "category": "Textures",
+      "annotations": {
+        "destructiveHint": true
+      },
+      "parameters": {
+        "$ref": "#/definitions/manage_material",
+        "definitions": {
+          "manage_material": {
+            "anyOf": [
+              {
+                "allOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Non-empty material name.",
+                        "markdownDescription": "Non-empty material name."
+                      },
+                      "color_texture": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Optional color Texture UUID, exact ID, or unique exact name.",
+                        "markdownDescription": "Optional color Texture UUID, exact ID, or unique exact name."
+                      },
+                      "normal_texture": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Optional normal Texture UUID, exact ID, or unique exact name.",
+                        "markdownDescription": "Optional normal Texture UUID, exact ID, or unique exact name."
+                      },
+                      "height_texture": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Optional height Texture UUID, exact ID, or unique exact name.",
+                        "markdownDescription": "Optional height Texture UUID, exact ID, or unique exact name."
+                      },
+                      "mer_texture": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Optional MER Texture UUID, exact ID, or unique exact name.",
+                        "markdownDescription": "Optional MER Texture UUID, exact ID, or unique exact name."
+                      },
+                      "color_value": {
+                        "type": "array",
+                        "items": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 255
+                        },
+                        "minItems": 4,
+                        "maxItems": 4,
+                        "description": "Uniform RGBA color [R,G,B,A] when no color texture is provided.",
+                        "markdownDescription": "Uniform RGBA color [R,G,B,A] when no color texture is provided."
+                      },
+                      "mer_value": {
+                        "type": "array",
+                        "items": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 255
+                        },
+                        "minItems": 3,
+                        "maxItems": 3,
+                        "description": "Uniform MER values [Metalness, Emissive, Roughness] (0-255) when no MER texture is provided.",
+                        "markdownDescription": "Uniform MER values [Metalness, Emissive, Roughness] (0-255) when no MER texture is provided."
+                      },
+                      "subsurface_value": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 255,
+                        "description": "Subsurface scattering value (0-255) for Bedrock 1.21.30+ materials.",
+                        "markdownDescription": "Subsurface scattering value (0-255) for Bedrock 1.21.30+ materials."
+                      }
+                    },
+                    "required": [
+                      "name"
+                    ]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "operation": {
+                        "type": "string",
+                        "const": "create"
+                      }
+                    },
+                    "required": [
+                      "operation"
+                    ]
+                  }
+                ]
+              },
+              {
+                "allOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "material": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Required material/TextureGroup UUID or unique exact name.",
+                        "markdownDescription": "Required material/TextureGroup UUID or unique exact name."
+                      },
+                      "color_texture": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Color Texture UUID/ID/unique name, or `none` for uniform color.",
+                        "markdownDescription": "Color Texture UUID/ID/unique name, or `none` for uniform color."
+                      },
+                      "normal_texture": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Normal Texture UUID/ID/unique name, or `none` to remove.",
+                        "markdownDescription": "Normal Texture UUID/ID/unique name, or `none` to remove."
+                      },
+                      "height_texture": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Height Texture UUID/ID/unique name, or `none` to remove.",
+                        "markdownDescription": "Height Texture UUID/ID/unique name, or `none` to remove."
+                      },
+                      "mer_texture": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "MER Texture UUID/ID/unique name, or `none` for uniform values.",
+                        "markdownDescription": "MER Texture UUID/ID/unique name, or `none` for uniform values."
+                      },
+                      "color_value": {
+                        "type": "array",
+                        "items": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 255
+                        },
+                        "minItems": 4,
+                        "maxItems": 4,
+                        "description": "Uniform RGBA color [R,G,B,A] when no color texture.",
+                        "markdownDescription": "Uniform RGBA color [R,G,B,A] when no color texture."
+                      },
+                      "mer_value": {
+                        "type": "array",
+                        "items": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 255
+                        },
+                        "minItems": 3,
+                        "maxItems": 3,
+                        "description": "Uniform MER values [Metalness, Emissive, Roughness] (0-255).",
+                        "markdownDescription": "Uniform MER values [Metalness, Emissive, Roughness] (0-255)."
+                      },
+                      "subsurface_value": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 255,
+                        "description": "Subsurface scattering value (0-255).",
+                        "markdownDescription": "Subsurface scattering value (0-255)."
+                      }
+                    },
+                    "required": [
+                      "material"
+                    ]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "operation": {
+                        "type": "string",
+                        "const": "configure"
+                      }
+                    },
+                    "required": [
+                      "operation"
+                    ]
+                  }
+                ]
+              },
+              {
+                "allOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "material": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Material/texture group target for channel assignment; UUID preferred, exact name only when unique.",
+                        "markdownDescription": "Material/texture group target for channel assignment; UUID preferred, exact name only when unique."
+                      },
+                      "texture": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Explicit texture target; UUID preferred, then texture ID, then unique name.",
+                        "markdownDescription": "Explicit texture target; UUID preferred, then texture ID, then unique name."
+                      },
+                      "channel": {
+                        "type": "string",
+                        "enum": [
+                          "color",
+                          "normal",
+                          "height",
+                          "mer"
+                        ],
+                        "description": "PBR channel to assign the texture to.",
+                        "markdownDescription": "PBR channel to assign the texture to."
+                      }
+                    },
+                    "required": [
+                      "material",
+                      "texture",
+                      "channel"
+                    ]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "operation": {
+                        "type": "string",
+                        "const": "assign_channel"
+                      }
+                    },
+                    "required": [
+                      "operation"
+                    ]
+                  }
+                ]
+              },
+              {
+                "allOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "material": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Material/texture group target to save; UUID preferred, exact name only when unique.",
+                        "markdownDescription": "Material/texture group target to save; UUID preferred, exact name only when unique."
+                      }
+                    },
+                    "required": [
+                      "material"
+                    ]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "operation": {
+                        "type": "string",
+                        "const": "save"
+                      }
+                    },
+                    "required": [
+                      "operation"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      }
+    },
+    {
       "name": "create_texture",
       "title": "Create Texture",
       "description": "Creates a texture and returns compact metadata. Use get_texture only when image data is needed.",
@@ -5208,178 +5477,6 @@
       }
     },
     {
-      "name": "create_pbr_material",
-      "title": "Create PBR Material",
-      "description": "Creates a uniquely named PBR material TextureGroup.",
-      "status": "experimental",
-      "category": "Textures",
-      "annotations": {
-        "destructiveHint": true
-      },
-      "parameters": {
-        "$ref": "#/definitions/create_pbr_material",
-        "definitions": {
-          "create_pbr_material": {
-            "type": "object",
-            "properties": {
-              "name": {
-                "type": "string",
-                "minLength": 1,
-                "description": "Non-empty material name.",
-                "markdownDescription": "Non-empty material name."
-              },
-              "color_texture": {
-                "type": "string",
-                "minLength": 1,
-                "description": "Optional color Texture UUID, exact ID, or unique exact name.",
-                "markdownDescription": "Optional color Texture UUID, exact ID, or unique exact name."
-              },
-              "normal_texture": {
-                "type": "string",
-                "minLength": 1,
-                "description": "Optional normal Texture UUID, exact ID, or unique exact name.",
-                "markdownDescription": "Optional normal Texture UUID, exact ID, or unique exact name."
-              },
-              "height_texture": {
-                "type": "string",
-                "minLength": 1,
-                "description": "Optional height Texture UUID, exact ID, or unique exact name.",
-                "markdownDescription": "Optional height Texture UUID, exact ID, or unique exact name."
-              },
-              "mer_texture": {
-                "type": "string",
-                "minLength": 1,
-                "description": "Optional MER Texture UUID, exact ID, or unique exact name.",
-                "markdownDescription": "Optional MER Texture UUID, exact ID, or unique exact name."
-              },
-              "color_value": {
-                "type": "array",
-                "items": {
-                  "type": "number",
-                  "minimum": 0,
-                  "maximum": 255
-                },
-                "minItems": 4,
-                "maxItems": 4,
-                "description": "Uniform RGBA color [R,G,B,A] when no color texture is provided.",
-                "markdownDescription": "Uniform RGBA color [R,G,B,A] when no color texture is provided."
-              },
-              "mer_value": {
-                "type": "array",
-                "items": {
-                  "type": "number",
-                  "minimum": 0,
-                  "maximum": 255
-                },
-                "minItems": 3,
-                "maxItems": 3,
-                "description": "Uniform MER values [Metalness, Emissive, Roughness] (0-255) when no MER texture is provided.",
-                "markdownDescription": "Uniform MER values [Metalness, Emissive, Roughness] (0-255) when no MER texture is provided."
-              },
-              "subsurface_value": {
-                "type": "number",
-                "minimum": 0,
-                "maximum": 255,
-                "description": "Subsurface scattering value (0-255) for Bedrock 1.21.30+ materials.",
-                "markdownDescription": "Subsurface scattering value (0-255) for Bedrock 1.21.30+ materials."
-              }
-            },
-            "required": [
-              "name"
-            ],
-            "additionalProperties": false
-          }
-        },
-        "$schema": "http://json-schema.org/draft-07/schema#"
-      }
-    },
-    {
-      "name": "configure_material",
-      "title": "Configure Material",
-      "description": "Applies authored changes to one PBR material.",
-      "status": "experimental",
-      "category": "Textures",
-      "annotations": {
-        "destructiveHint": true
-      },
-      "parameters": {
-        "$ref": "#/definitions/configure_material",
-        "definitions": {
-          "configure_material": {
-            "type": "object",
-            "properties": {
-              "material": {
-                "type": "string",
-                "minLength": 1,
-                "description": "Required material/TextureGroup UUID or unique exact name.",
-                "markdownDescription": "Required material/TextureGroup UUID or unique exact name."
-              },
-              "color_texture": {
-                "type": "string",
-                "minLength": 1,
-                "description": "Color Texture UUID/ID/unique name, or `none` for uniform color.",
-                "markdownDescription": "Color Texture UUID/ID/unique name, or `none` for uniform color."
-              },
-              "normal_texture": {
-                "type": "string",
-                "minLength": 1,
-                "description": "Normal Texture UUID/ID/unique name, or `none` to remove.",
-                "markdownDescription": "Normal Texture UUID/ID/unique name, or `none` to remove."
-              },
-              "height_texture": {
-                "type": "string",
-                "minLength": 1,
-                "description": "Height Texture UUID/ID/unique name, or `none` to remove.",
-                "markdownDescription": "Height Texture UUID/ID/unique name, or `none` to remove."
-              },
-              "mer_texture": {
-                "type": "string",
-                "minLength": 1,
-                "description": "MER Texture UUID/ID/unique name, or `none` for uniform values.",
-                "markdownDescription": "MER Texture UUID/ID/unique name, or `none` for uniform values."
-              },
-              "color_value": {
-                "type": "array",
-                "items": {
-                  "type": "number",
-                  "minimum": 0,
-                  "maximum": 255
-                },
-                "minItems": 4,
-                "maxItems": 4,
-                "description": "Uniform RGBA color [R,G,B,A] when no color texture.",
-                "markdownDescription": "Uniform RGBA color [R,G,B,A] when no color texture."
-              },
-              "mer_value": {
-                "type": "array",
-                "items": {
-                  "type": "number",
-                  "minimum": 0,
-                  "maximum": 255
-                },
-                "minItems": 3,
-                "maxItems": 3,
-                "description": "Uniform MER values [Metalness, Emissive, Roughness] (0-255).",
-                "markdownDescription": "Uniform MER values [Metalness, Emissive, Roughness] (0-255)."
-              },
-              "subsurface_value": {
-                "type": "number",
-                "minimum": 0,
-                "maximum": 255,
-                "description": "Subsurface scattering value (0-255).",
-                "markdownDescription": "Subsurface scattering value (0-255)."
-              }
-            },
-            "required": [
-              "material"
-            ],
-            "additionalProperties": false
-          }
-        },
-        "$schema": "http://json-schema.org/draft-07/schema#"
-      }
-    },
-    {
       "name": "list_materials",
       "title": "List Materials",
       "description": "Lists all PBR materials (texture groups with is_material=true) and their assigned textures per channel.",
@@ -5455,88 +5552,6 @@
             },
             "required": [
               "path"
-            ],
-            "additionalProperties": false
-          }
-        },
-        "$schema": "http://json-schema.org/draft-07/schema#"
-      }
-    },
-    {
-      "name": "assign_texture_channel",
-      "title": "Assign Texture Channel",
-      "description": "Assigns one texture to one PBR channel.",
-      "status": "experimental",
-      "category": "Textures",
-      "annotations": {
-        "destructiveHint": true
-      },
-      "parameters": {
-        "$ref": "#/definitions/assign_texture_channel",
-        "definitions": {
-          "assign_texture_channel": {
-            "type": "object",
-            "properties": {
-              "material": {
-                "type": "string",
-                "minLength": 1,
-                "description": "Material/texture group target for channel assignment; UUID preferred, exact name only when unique.",
-                "markdownDescription": "Material/texture group target for channel assignment; UUID preferred, exact name only when unique."
-              },
-              "texture": {
-                "type": "string",
-                "minLength": 1,
-                "description": "Explicit texture target; UUID preferred, then texture ID, then unique name.",
-                "markdownDescription": "Explicit texture target; UUID preferred, then texture ID, then unique name."
-              },
-              "channel": {
-                "type": "string",
-                "enum": [
-                  "color",
-                  "normal",
-                  "height",
-                  "mer"
-                ],
-                "description": "PBR channel to assign the texture to.",
-                "markdownDescription": "PBR channel to assign the texture to."
-              }
-            },
-            "required": [
-              "material",
-              "texture",
-              "channel"
-            ],
-            "additionalProperties": false
-          }
-        },
-        "$schema": "http://json-schema.org/draft-07/schema#"
-      }
-    },
-    {
-      "name": "save_material_config",
-      "title": "Save Material Config",
-      "description": "Saves one material as a Bedrock texture_set.json file.",
-      "status": "experimental",
-      "category": "Textures",
-      "annotations": {
-        "destructiveHint": true,
-        "openWorldHint": true
-      },
-      "parameters": {
-        "$ref": "#/definitions/save_material_config",
-        "definitions": {
-          "save_material_config": {
-            "type": "object",
-            "properties": {
-              "material": {
-                "type": "string",
-                "minLength": 1,
-                "description": "Material/texture group target to save; UUID preferred, exact name only when unique.",
-                "markdownDescription": "Material/texture group target to save; UUID preferred, exact name only when unique."
-              }
-            },
-            "required": [
-              "material"
             ],
             "additionalProperties": false
           }
