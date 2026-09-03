@@ -89,5 +89,5 @@ Repository source/docs/CI work may be performed through ChatGPT/GitHub or a loca
 - active asset continuity → `workspace/active/<project>/README.md`
 - asset workspace rules → `workspace/README.md`
 - local acceptance procedure → `docs/knowledge/operations/local-acceptance-runbook.md` only when explicitly reactivated
-- 3D-Assisted procedure/reproducibility → `Experimental/route1-hunyuan-poc/README.md`
+- 3D-Assisted procedure/reproducibility → `Experimental/three-d-assisted-hunyuan-poc/README.md`
 - experimental research → `Experimental/`

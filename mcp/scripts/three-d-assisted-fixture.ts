@@ -5,8 +5,8 @@ import { dirname, isAbsolute, relative, resolve } from "node:path";
 import { z } from "zod";
 import { version as packageVersion } from "../package.json";
 
-export const ROUTE1_FIXTURE_SCHEMA_VERSION = 1;
-export const ROUTE1_CANONICAL_HUNYUAN = {
+export const THREE_D_ASSISTED_FIXTURE_SCHEMA_VERSION = 1;
+export const THREE_D_ASSISTED_CANONICAL_HUNYUAN = {
   pipeline: "hunyuan3d-2mv",
   upstream_source_commit: "f8db63096c8282cb27354314d896feba5ba6ff8a",
   model_id: "tencent/Hunyuan3D-2mv",
@@ -45,14 +45,14 @@ const glbPath = relativePath.refine(
 );
 
 const hunyuanSchema = z.object({
-  pipeline: z.literal(ROUTE1_CANONICAL_HUNYUAN.pipeline),
+  pipeline: z.literal(THREE_D_ASSISTED_CANONICAL_HUNYUAN.pipeline),
   upstream_source_commit: z.literal(
-    ROUTE1_CANONICAL_HUNYUAN.upstream_source_commit
+    THREE_D_ASSISTED_CANONICAL_HUNYUAN.upstream_source_commit
   ),
-  model_id: z.literal(ROUTE1_CANONICAL_HUNYUAN.model_id),
-  model_revision: z.literal(ROUTE1_CANONICAL_HUNYUAN.model_revision),
-  model_subfolder: z.literal(ROUTE1_CANONICAL_HUNYUAN.model_subfolder),
-  variant: z.literal(ROUTE1_CANONICAL_HUNYUAN.variant),
+  model_id: z.literal(THREE_D_ASSISTED_CANONICAL_HUNYUAN.model_id),
+  model_revision: z.literal(THREE_D_ASSISTED_CANONICAL_HUNYUAN.model_revision),
+  model_subfolder: z.literal(THREE_D_ASSISTED_CANONICAL_HUNYUAN.model_subfolder),
+  variant: z.literal(THREE_D_ASSISTED_CANONICAL_HUNYUAN.variant),
   views: z.tuple([z.literal("front"), z.literal("left"), z.literal("back")]),
   inference_steps: z.literal(50),
   guidance_scale: z.literal(5),
@@ -62,8 +62,8 @@ const hunyuanSchema = z.object({
   texture: z.literal(false),
 }).strict();
 
-export const route1FixtureSchema = z.object({
-  schema_version: z.literal(ROUTE1_FIXTURE_SCHEMA_VERSION),
+export const threeDAssistedFixtureSchema = z.object({
+  schema_version: z.literal(THREE_D_ASSISTED_FIXTURE_SCHEMA_VERSION),
   fixture_id: z.string().regex(
     /^[a-z0-9][a-z0-9_-]{0,63}$/,
     "fixture_id must be a generic lower-case slug."
@@ -172,15 +172,15 @@ async function assertGlb2(file: PreparedFile): Promise<void> {
   }
 }
 
-export async function inspectRoute1Fixture(fixtureDir: string) {
+export async function inspectThreeDAssistedFixture(fixtureDir: string) {
   let root: string;
   try {
     root = await realpath(resolve(fixtureDir));
   } catch {
-    throw new Error(`Route 1 fixture directory not found: ${fixtureDir}`);
+    throw new Error(`3D-Assisted fixture directory not found: ${fixtureDir}`);
   }
   if (!(await stat(root)).isDirectory()) {
-    throw new Error(`Route 1 fixture path is not a directory: ${fixtureDir}`);
+    throw new Error(`3D-Assisted fixture path is not a directory: ${fixtureDir}`);
   }
 
   const fixtureJson = await inspectFile(root, "fixture.json");
@@ -189,16 +189,16 @@ export async function inspectRoute1Fixture(fixtureDir: string) {
     raw = JSON.parse(await Bun.file(fixtureJson.source_path).text());
   } catch (error) {
     throw new Error(
-      `Invalid Route 1 fixture.json JSON: ${error instanceof Error ? error.message : String(error)}`
+      `Invalid 3D-Assisted fixture.json JSON: ${error instanceof Error ? error.message : String(error)}`
     );
   }
 
-  const parsed = route1FixtureSchema.safeParse(raw);
+  const parsed = threeDAssistedFixtureSchema.safeParse(raw);
   if (!parsed.success) {
     const detail = parsed.error.issues
       .map((issue) => `${issue.path.join(".") || "(root)"}: ${issue.message}`)
       .join("; ");
-    throw new Error(`Invalid Route 1 fixture.json: ${detail}`);
+    throw new Error(`Invalid 3D-Assisted fixture.json: ${detail}`);
   }
 
   const fixture = parsed.data;
@@ -307,12 +307,12 @@ function repositoryHead(repoRoot: string): string {
   return commit;
 }
 
-export async function prepareRoute1State(
+export async function prepareThreeDAssistedState(
   fixtureDir: string,
   repoRoot: string
 ) {
   const [fixture, blockit] = await Promise.all([
-    inspectRoute1Fixture(fixtureDir),
+    inspectThreeDAssistedFixture(fixtureDir),
     inspectBlockItArtifact(repoRoot),
   ]);
   return {
@@ -322,8 +322,8 @@ export async function prepareRoute1State(
   };
 }
 
-export type Route1PreparedState = Awaited<
-  ReturnType<typeof prepareRoute1State>
+export type ThreeDAssistedPreparedState = Awaited<
+  ReturnType<typeof prepareThreeDAssistedState>
 >;
 
 function packagedFile(file: PreparedFile) {
@@ -334,11 +334,11 @@ function packagedFile(file: PreparedFile) {
   };
 }
 
-export function buildRoute1PackageManifest(prepared: Route1PreparedState) {
+export function buildThreeDAssistedPackageManifest(prepared: ThreeDAssistedPreparedState) {
   const source = prepared.fixture;
   return {
     manifest_version: 1 as const,
-    fixture_schema_version: ROUTE1_FIXTURE_SCHEMA_VERSION,
+    fixture_schema_version: THREE_D_ASSISTED_FIXTURE_SCHEMA_VERSION,
     fixture_id: source.fixture.fixture_id,
     repository_head_at_prepare: prepared.repository_head_at_prepare,
     blockbench_units_per_block: 16 as const,
@@ -376,12 +376,12 @@ export function buildRoute1PackageManifest(prepared: Route1PreparedState) {
   };
 }
 
-type Manifest = ReturnType<typeof buildRoute1PackageManifest>;
+type Manifest = ReturnType<typeof buildThreeDAssistedPackageManifest>;
 
 function runMarkdown(manifest: Manifest): string {
   const size = manifest.fixture.requested_dimensions_blocks;
   const inputs = manifest.fixture.hunyuan_inputs;
-  return `# Route 1 Prepared Fixture
+  return `# 3D-Assisted Prepared Fixture
 
 Fixture ID: \`${manifest.fixture_id}\`
 
@@ -412,14 +412,14 @@ load plugin/blockit_mcp.js
 → Geometry phase
 → open/create intended Bedrock project
 → load fixture approved_glb with source_front_direction
-→ inspect quantitative Route 1 evidence
+→ inspect quantitative 3D-Assisted evidence
 → capture explicit GLB views
 → author Groups/Cubes from approved reference + requested dimensions
-→ remove transient Route 1 reference
+→ remove transient 3D-Assisted reference
 → export clean production .bbmodel
 \`\`\`
 
-Exact artifact/input hashes are in \`manifest.json\`. \`repository_head_at_prepare\` is context only; the packaged BlockIT artifact is identified by its embedded build identity plus bundle SHA-256. Package creation does not prove live rendering, visual fidelity, or Route 1 quality improvement.
+Exact artifact/input hashes are in \`manifest.json\`. \`repository_head_at_prepare\` is context only; the packaged BlockIT artifact is identified by its embedded build identity plus bundle SHA-256. Package creation does not prove live rendering, visual fidelity, or 3D-Assisted quality improvement.
 `;
 }
 
@@ -446,13 +446,13 @@ async function copyFixtureFile(
   await copyFile(file.source_path, destination);
 }
 
-export async function writeRoute1Package(
-  prepared: Route1PreparedState,
+export async function writeThreeDAssistedPackage(
+  prepared: ThreeDAssistedPreparedState,
   outputDir: string
 ) {
   const output = resolve(outputDir);
   if (await exists(output)) {
-    throw new Error(`Route 1 package output already exists: ${output}`);
+    throw new Error(`3D-Assisted package output already exists: ${output}`);
   }
   await mkdir(dirname(output), { recursive: true });
 
@@ -475,7 +475,7 @@ export async function writeRoute1Package(
       copyFixtureFile(fixtureRoot, prepared.fixture.files.hunyuan_inputs.back),
     ]);
 
-    const manifest = buildRoute1PackageManifest(prepared);
+    const manifest = buildThreeDAssistedPackageManifest(prepared);
     await Bun.write(
       resolve(temp, "manifest.json"),
       `${JSON.stringify(manifest, null, 2)}\n`
@@ -505,11 +505,11 @@ async function main(): Promise<void> {
   }
 
   const root = repoRoot();
-  const prepared = await prepareRoute1State(fixtureDir, root);
+  const prepared = await prepareThreeDAssistedState(fixtureDir, root);
   if (command === "prepare") {
-    const manifest = buildRoute1PackageManifest(prepared);
+    const manifest = buildThreeDAssistedPackageManifest(prepared);
     console.log(JSON.stringify({
-      status: "ROUTE1_FIXTURE_PREPARED",
+      status: "THREE_D_ASSISTED_FIXTURE_PREPARED",
       fixture_id: manifest.fixture_id,
       repository_head_at_prepare: manifest.repository_head_at_prepare,
       blockit: manifest.blockit,
@@ -523,7 +523,7 @@ async function main(): Promise<void> {
     output = resolve(
       root,
       "Experimental",
-      "route1-hunyuan-poc",
+      "three-d-assisted-hunyuan-poc",
       ".cache",
       "test-ready",
       prepared.fixture.fixture.fixture_id
@@ -534,9 +534,9 @@ async function main(): Promise<void> {
     throw new Error("package accepts only optional `--output <directory>`.");
   }
 
-  const packaged = await writeRoute1Package(prepared, output);
+  const packaged = await writeThreeDAssistedPackage(prepared, output);
   console.log(JSON.stringify({
-    status: "ROUTE1_TEST_READY_PACKAGE_CREATED",
+    status: "THREE_D_ASSISTED_TEST_READY_PACKAGE_CREATED",
     fixture_id: packaged.manifest.fixture_id,
     output_dir: packaged.output_dir,
     blockit_build_identity: packaged.manifest.blockit.build_identity,
@@ -547,7 +547,7 @@ async function main(): Promise<void> {
 if (import.meta.main) {
   main().catch((error) => {
     console.error(
-      `[route1] ${error instanceof Error ? error.message : String(error)}`
+      `[3d-assisted] ${error instanceof Error ? error.message : String(error)}`
     );
     process.exit(1);
   });

@@ -112,7 +112,7 @@ The product choice is already locked:
 approved image + requested dimensions + approved shape-only GLB
 ```
 
-Do **not** run image-only A/B again. Detailed generation/alignment contract lives in `Experimental/route1-hunyuan-poc/README.md`.
+Do **not** run image-only A/B again. Detailed generation/alignment contract lives in `Experimental/three-d-assisted-hunyuan-poc/README.md`.
 
 Required local path:
 
@@ -120,7 +120,7 @@ Required local path:
 1. approved image visible; fixture dimensions/front direction known
 2. manage_geometry_reference(load): origin=[0,0,0], uniform_scale=1
 3. record raw world bounds
-4. plan uniform FIT_ENVELOPE with mcp/lib/route1ReferenceAlignment.ts
+4. plan uniform FIT_ENVELOPE with mcp/lib/threeDAssistedReferenceAlignment.ts
 5. update uniform_scale only
 6. obtain FRESH post-scale bounds
 7. plan center X/Z + ground Y translation
@@ -185,7 +185,7 @@ First wrong owner examples:
 ```text
 AGENT_REASONING | SKILL_INSTRUCTION | MCP_PUBLIC_CONTRACT | MCP_RESULT_QUALITY
 MCP_PHASE / HANDOFF | STATE_DISCOVERY | VISUAL_FEEDBACK | BLOCKBENCH_RUNTIME
-ENVIRONMENT / INSTALL | ROUTE1_ALIGNMENT | TEXTURE / PBR | ANIMATION
+ENVIRONMENT / INSTALL | THREE_D_ASSISTED_ALIGNMENT | TEXTURE / PBR | ANIMATION
 PERSISTENCE / EXPORT | UNKNOWN
 ```
 

@@ -75,7 +75,7 @@ describe("cross-agent repository handoff", () => {
 
     expect(context).toMatch(/stable project facts only/i);
     expect(next).toContain("LOCAL_IMPLEMENTATION_REQUIRED");
-    expect(next).toContain("IMAGE_GLB_SELECTED");
+    expect(next).toContain("IMAGE REFERENCE ROUTE");
     expect(validation).toMatch(/current proof interpretation/i);
     expect(implementation).toMatch(/no active task status/i);
     expect(runbook).toMatch(/explicitly reactivates local testing/i);

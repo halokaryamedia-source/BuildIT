@@ -11,6 +11,7 @@ import {
 } from "@/lib/registrationProfile";
 import {
   DEFAULT_MCP_AUTHORING_PHASE,
+  getActiveMcpAuthoringPhase,
   isMcpToolExposedForPhase,
   setActiveMcpAuthoringPhase,
   type McpAuthoringPhase,

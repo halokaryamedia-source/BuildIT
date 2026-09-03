@@ -3,10 +3,10 @@
 import { createResource, resources } from "@/lib/factories";
 import { findByResourceId, makeResourceUri } from "@/lib/resourceUri";
 import {
-  isBlockItRoute1Reference,
-  readRoute1ReferenceEvidence,
+  isBlockItThreeDAssistedReference,
+  readThreeDAssistedReferenceEvidence,
   type ReferenceModelRuntime,
-  type Route1FrontDirection,
+  type ThreeDAssistedFrontDirection,
 } from "@/server/tools/project";
 
 // Register projects resource using the factory pattern
@@ -284,16 +284,16 @@ function normalizeHalfTurn(yaw: unknown): 0 | 180 | null {
   return null;
 }
 
-function recoverRoute1Alignment(reference: ReferenceModelRuntime) {
+function recoverThreeDAssistedAlignment(reference: ReferenceModelRuntime) {
   const rawProjectFront =
     (Format as { forward_direction?: string } | undefined)?.forward_direction ??
     "-z";
-  const projectFront: Route1FrontDirection | null =
+  const projectFront: ThreeDAssistedFrontDirection | null =
     rawProjectFront === "+z" || rawProjectFront === "-z"
       ? rawProjectFront
       : null;
   const yaw = normalizeHalfTurn(reference.rotation?.[1]);
-  const sourceFront: Route1FrontDirection | null =
+  const sourceFront: ThreeDAssistedFrontDirection | null =
     projectFront === null || yaw === null
       ? null
       : yaw === 0
@@ -393,7 +393,7 @@ export function registerReferenceModelsResource(): void {
       // parallel registry.
       const getReferenceModelInfo = (model: OutlinerElement) => {
         const refModel = model as ReferenceModelRuntime;
-        const route1Owned = isBlockItRoute1Reference(model);
+        const threeDAssistedOwned = isBlockItThreeDAssistedReference(model);
         const loaded = Boolean(refModel.mesh?.children.length);
         return {
           uuid: refModel.uuid,
@@ -407,13 +407,13 @@ export function registerReferenceModelsResource(): void {
           locked: refModel.locked ?? false,
           export: refModel.export !== false,
           loaded,
-          route1_owned: route1Owned,
-          reference_only: route1Owned ? true : null,
-          production_geometry: route1Owned ? false : null,
-          alignment: route1Owned ? recoverRoute1Alignment(refModel) : null,
+          three_d_assisted_owned: threeDAssistedOwned,
+          reference_only: threeDAssistedOwned ? true : null,
+          production_geometry: threeDAssistedOwned ? false : null,
+          alignment: threeDAssistedOwned ? recoverThreeDAssistedAlignment(refModel) : null,
           evidence:
-            route1Owned && loaded
-              ? readRoute1ReferenceEvidence(refModel)
+            threeDAssistedOwned && loaded
+              ? readThreeDAssistedReferenceEvidence(refModel)
               : null,
         };
       };

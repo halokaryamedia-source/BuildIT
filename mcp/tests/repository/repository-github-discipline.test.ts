@@ -122,7 +122,7 @@ describe("repository GitHub discipline", () => {
     expect(repository).toContain('"mcp/tests/repository/**"');
     expect(authoring).not.toContain('"mcp/package.json"');
     expect(authoring).toContain('"mcp/tests/authoring/**"');
-    expect(authoring).toContain('"Experimental/route1-hunyuan-poc/**"');
+    expect(authoring).toContain('"Experimental/three-d-assisted-hunyuan-poc/**"');
     expect(mcp).toContain('"mcp/**"');
     expect(mcp).toContain('"!mcp/tests/repository/**"');
     expect(mcp).toContain('"!mcp/tests/authoring/**"');
@@ -147,7 +147,7 @@ describe("repository GitHub discipline", () => {
       "model-effectiveness-reference-grounding.test.ts",
       "texture-production-discipline.test.ts",
       "animation-professional-reasoning.test.ts",
-      "route1-hunyuan-reproducibility.test.ts",
+      "three-d-assisted-hunyuan-reproducibility.test.ts",
     ]) {
       expect(await Bun.file(`tests/authoring/${name}`).exists(), name).toBe(true);
       expect(await Bun.file(`tests/${name}`).exists(), name).toBe(false);
@@ -196,8 +196,8 @@ describe("repository GitHub discipline", () => {
 
     expect(next.length).toBeLessThan(2_500);
     expect(next).toContain("LOCAL_IMPLEMENTATION_REQUIRED");
-    expect(next).toContain("IMAGE_GLB_SELECTED");
-    expect(next).toContain("same-phase EXTENDED definitions");
+    expect(next).toContain("IMAGE REFERENCE ROUTE");
+    expect(next).toContain("same-phase Standard ↔ Extended");
     expect(validation).toContain("current proof interpretation");
     expect(validation).not.toContain("LATEST REPOSITORY VERIFY");
 

@@ -1,19 +1,19 @@
 import { describe, expect, test } from "bun:test";
 import {
-  BLOCKIT_ROUTE1_REFERENCE_PREFIX,
-  assertRoute1ReferenceInvariant,
-  isBlockItRoute1Reference,
+  BLOCKIT_THREE_D_ASSISTED_REFERENCE_PREFIX,
+  assertThreeDAssistedReferenceInvariant,
+  isBlockItThreeDAssistedReference,
   manageGeometryReferenceParameters,
   projectToolDocs,
-  route1ReferenceYawDegrees,
-  summarizeRoute1WorldBounds,
+  threeDAssistedReferenceYawDegrees,
+  summarizeThreeDAssistedWorldBounds,
 } from "@/server/tools/project";
 
 async function source(path: string): Promise<string> {
   return Bun.file(path).text();
 }
 
-describe("Route 1 geometry reference contract", () => {
+describe("3D-Assisted geometry reference contract", () => {
   test("accepts one local GLB load contract and rejects broader importer semantics", () => {
     expect(
       manageGeometryReferenceParameters.safeParse({
@@ -64,15 +64,15 @@ describe("Route 1 geometry reference contract", () => {
     ).toBe(false);
   });
 
-  test("front registration is deterministic for the Route 1 +Z/-Z contract", () => {
-    expect(route1ReferenceYawDegrees("+z", "+z")).toBe(0);
-    expect(route1ReferenceYawDegrees("-z", "-z")).toBe(0);
-    expect(route1ReferenceYawDegrees("+z", "-z")).toBe(180);
-    expect(route1ReferenceYawDegrees("-z", "+z")).toBe(180);
+  test("front registration is deterministic for the 3D-Assisted +Z/-Z contract", () => {
+    expect(threeDAssistedReferenceYawDegrees("+z", "+z")).toBe(0);
+    expect(threeDAssistedReferenceYawDegrees("-z", "-z")).toBe(0);
+    expect(threeDAssistedReferenceYawDegrees("+z", "-z")).toBe(180);
+    expect(threeDAssistedReferenceYawDegrees("-z", "+z")).toBe(180);
   });
 
   test("summarizes finite raw world bounds without promoting them to target dimensions", () => {
-    const summary = summarizeRoute1WorldBounds(
+    const summary = summarizeThreeDAssistedWorldBounds(
       [-16, 0, -8],
       [16, 32, 8],
       16
@@ -93,10 +93,10 @@ describe("Route 1 geometry reference contract", () => {
     });
 
     expect(() =>
-      summarizeRoute1WorldBounds([0, 0, 0], [0, 1, 1], 16)
+      summarizeThreeDAssistedWorldBounds([0, 0, 0], [0, 1, 1], 16)
     ).toThrow("positive finite 3D span");
     expect(() =>
-      summarizeRoute1WorldBounds([0, 0, 0], [1, 1, 1], 0)
+      summarizeThreeDAssistedWorldBounds([0, 0, 0], [1, 1, 1], 0)
     ).toThrow("block size must be finite and positive");
   });
 
@@ -104,26 +104,26 @@ describe("Route 1 geometry reference contract", () => {
     const owned = {
       type: "reference_model",
       name: "renamed-reference",
-      route1_owned: true,
+      three_d_assisted_owned: true,
       parent: "root",
       locked: true,
       export: false,
       scale: [1, 1, 1],
     } as any;
-    expect(isBlockItRoute1Reference(owned)).toBe(true);
-    expect(() => assertRoute1ReferenceInvariant(owned)).not.toThrow();
+    expect(isBlockItThreeDAssistedReference(owned)).toBe(true);
+    expect(() => assertThreeDAssistedReferenceInvariant(owned)).not.toThrow();
 
     expect(() =>
-      assertRoute1ReferenceInvariant({ ...owned, parent: {} } as any)
+      assertThreeDAssistedReferenceInvariant({ ...owned, parent: {} } as any)
     ).toThrow("must remain at the outliner root");
     expect(() =>
-      assertRoute1ReferenceInvariant({ ...owned, locked: false } as any)
+      assertThreeDAssistedReferenceInvariant({ ...owned, locked: false } as any)
     ).toThrow("must remain locked");
     expect(() =>
-      assertRoute1ReferenceInvariant({ ...owned, export: true } as any)
+      assertThreeDAssistedReferenceInvariant({ ...owned, export: true } as any)
     ).toThrow("must remain export=false");
     expect(() =>
-      assertRoute1ReferenceInvariant({ ...owned, scale: [1, 2, 1] } as any)
+      assertThreeDAssistedReferenceInvariant({ ...owned, scale: [1, 2, 1] } as any)
     ).toThrow("uniform positive scale");
   });
 
@@ -133,22 +133,22 @@ describe("Route 1 geometry reference contract", () => {
     );
     expect(tool).toBeDefined();
     expect(tool?.status).toBe("experimental");
-    expect(tool?.description).toContain("transient 3D evidence");
+    expect(tool?.description).toContain("3D-Assisted Evidence");
     expect(tool?.description).toContain("never converts mesh triangles");
-    expect(BLOCKIT_ROUTE1_REFERENCE_PREFIX).toBe("blockit_route1__");
+    expect(BLOCKIT_THREE_D_ASSISTED_REFERENCE_PREFIX).toBe("blockit_3d_assisted__");
   });
 
   test("runtime owner is root-only, fail-closed, transient, and evidence-bearing", async () => {
     const project = await source("server/tools/project.ts");
     expect(project).toContain("types?.reference_model");
     expect(project).toContain('reference.addTo("root")');
-    expect(project).toContain("reference.route1_owned = true");
+    expect(project).toContain("reference.three_d_assisted_owned = true");
     expect(project).toContain("locked: true");
     expect(project).toContain("export: false");
-    expect(project).toContain("assertRoute1ReferenceInvariant(reference)");
+    expect(project).toContain("assertThreeDAssistedReferenceInvariant(reference)");
     expect(project).toContain("await waitForReferenceLoad(reference)");
     expect(project).toContain("Undo.cancelEdit(true)");
-    expect(project).toContain("v1 supports one active Route 1 reference");
+    expect(project).toContain("v1 supports one active 3D-Assisted Evidence reference");
     expect(project).toContain(
       "new THREE.Box3().setFromObject(reference.mesh, true)"
     );
@@ -156,25 +156,25 @@ describe("Route 1 geometry reference contract", () => {
     expect(project).toContain("dimensions_blockbench_units");
     expect(project).toContain("dimensions_blocks");
     expect(project).toContain("triangle_count");
-    expect(project).toContain("readRoute1ReferenceEvidence(reference);");
+    expect(project).toContain("readThreeDAssistedReferenceEvidence(reference);");
     expect(project).toContain("reference_only: true");
     expect(project).toContain("production_geometry: false");
-    expect(project).not.toContain("route1ReferenceRegistry");
+    expect(project).not.toContain("threeDAssistedReferenceRegistry");
     expect(project).not.toContain("voxelize");
     expect(project).not.toContain("decimat");
   });
 
-  test("existing reference_models resource preserves Route 1 reconnect evidence", async () => {
+  test("existing reference_models resource preserves 3D-Assisted reconnect evidence", async () => {
     const resource = await source("server/resources.ts");
-    expect(resource).toContain("isBlockItRoute1Reference");
-    expect(resource).toContain("readRoute1ReferenceEvidence");
-    expect(resource).toContain("recoverRoute1Alignment");
-    expect(resource).toContain("route1_owned: route1Owned");
-    expect(resource).toContain("reference_only: route1Owned ? true : null");
-    expect(resource).toContain("production_geometry: route1Owned ? false : null");
-    expect(resource).toContain("alignment: route1Owned ? recoverRoute1Alignment(refModel) : null");
-    expect(resource).toContain("route1Owned && loaded");
-    expect(resource).toContain("readRoute1ReferenceEvidence(refModel)");
-    expect(resource).not.toContain("route1ReferenceRegistry");
+    expect(resource).toContain("isBlockItThreeDAssistedReference");
+    expect(resource).toContain("readThreeDAssistedReferenceEvidence");
+    expect(resource).toContain("recoverThreeDAssistedAlignment");
+    expect(resource).toContain("three_d_assisted_owned: threeDAssistedOwned");
+    expect(resource).toContain("reference_only: threeDAssistedOwned ? true : null");
+    expect(resource).toContain("production_geometry: threeDAssistedOwned ? false : null");
+    expect(resource).toContain("alignment: threeDAssistedOwned ? recoverThreeDAssistedAlignment(refModel) : null");
+    expect(resource).toContain("threeDAssistedOwned && loaded");
+    expect(resource).toContain("readThreeDAssistedReferenceEvidence(refModel)");
+    expect(resource).not.toContain("threeDAssistedReferenceRegistry");
   });
 });

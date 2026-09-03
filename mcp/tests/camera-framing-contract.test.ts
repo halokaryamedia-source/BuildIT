@@ -14,15 +14,15 @@ describe("capture_model_views explicit framing contract", () => {
     expect(cameraSource).toContain("min[2] + size[2] / 2");
     expect(cameraSource).not.toContain("(min[0] + max[0]) / 2");
   });
-  test("keeps model framing Cube-owned while explicit framing can use a loaded Route 1 reference", async () => {
+  test("keeps model framing Cube-owned while explicit framing can use loaded 3D-Assisted evidence", async () => {
     const cameraSource = await Bun.file(
       new URL("../server/tools/camera.ts", import.meta.url)
     ).text();
-    expect(cameraSource).toContain("hasVisibleLoadedBlockItRoute1Reference");
+    expect(cameraSource).toContain("hasVisibleLoadedBlockItThreeDAssistedReference");
     expect(cameraSource).toContain('framingInput.mode === "model"');
     expect(cameraSource).toContain("Model framing requires visible Cube geometry");
     expect(cameraSource).toContain(
-      "Explicit framing requires visible Cube geometry or a loaded visible BlockIT Route 1 geometry reference."
+      "Explicit framing requires visible Cube geometry or a loaded visible BlockIT 3D-Assisted Evidence reference."
     );
   });
 

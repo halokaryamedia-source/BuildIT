@@ -15,10 +15,10 @@ function availablePython(): string | null {
   return null;
 }
 
-describe("Route 1 Hunyuan reproducibility contract", () => {
+describe("3D-Assisted Hunyuan reproducibility contract", () => {
   test("preferred MultiView executable matches the pinned accepted evidence path", async () => {
     const script = await source(
-      "../Experimental/route1-hunyuan-poc/generate_multiview_shape.py"
+      "../Experimental/three-d-assisted-hunyuan-poc/generate_multiview_shape.py"
     );
 
     for (const marker of [
@@ -54,7 +54,7 @@ describe("Route 1 Hunyuan reproducibility contract", () => {
 
   test("single-view baseline remains fixed and fail-closed rather than replacing MultiView", async () => {
     const script = await source(
-      "../Experimental/route1-hunyuan-poc/generate_shape.py"
+      "../Experimental/three-d-assisted-hunyuan-poc/generate_shape.py"
     );
     for (const marker of [
       'MODEL_ID = "tencent/Hunyuan3D-2"',
@@ -71,14 +71,14 @@ describe("Route 1 Hunyuan reproducibility contract", () => {
     ]) expect(script).toContain(marker);
   });
 
-  test("tracked Route 1 Python entrypoints parse when Python is available", () => {
+  test("tracked 3D-Assisted Python entrypoints parse when Python is available", () => {
     const python = availablePython();
     if (!python) return;
 
     const files = [
-      "../Experimental/route1-hunyuan-poc/generate_shape.py",
-      "../Experimental/route1-hunyuan-poc/generate_multiview_shape.py",
-      "../Experimental/route1-hunyuan-poc/render_contact_sheet.py",
+      "../Experimental/three-d-assisted-hunyuan-poc/generate_shape.py",
+      "../Experimental/three-d-assisted-hunyuan-poc/generate_multiview_shape.py",
+      "../Experimental/three-d-assisted-hunyuan-poc/render_contact_sheet.py",
     ];
     const checker =
       "from pathlib import Path; import sys; [compile(Path(p).read_text(encoding='utf-8'), p, 'exec') for p in sys.argv[1:]]";
@@ -87,15 +87,15 @@ describe("Route 1 Hunyuan reproducibility contract", () => {
     });
     if (result.error || result.status !== 0) {
       throw new Error(
-        `Route 1 Python syntax check failed: ${result.stderr || result.stdout || result.error?.message}`
+        `3D-Assisted Python syntax check failed: ${result.stderr || result.stdout || result.error?.message}`
       );
     }
     expect(result.status).toBe(0);
   });
 
-  test("Route 1 README locks selected image+GLB workflow while live proof remains pending", async () => {
+  test("3D-Assisted README locks selected image+GLB workflow while live proof remains pending", async () => {
     const readme = await source(
-      "../Experimental/route1-hunyuan-poc/README.md"
+      "../Experimental/three-d-assisted-hunyuan-poc/README.md"
     );
     for (const marker of [
       "IMAGE + GLB SELECTED WORKFLOW LOCKED",

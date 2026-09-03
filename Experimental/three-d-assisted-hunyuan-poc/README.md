@@ -1,11 +1,11 @@
-# Route 1 — Hunyuan3D Mesh Evidence
+# 3D-Assisted — Hunyuan3D Mesh Evidence
 
 Status:
 
 ```text
 IMAGE + GLB SELECTED WORKFLOW LOCKED
 EXPERIMENTAL SOURCE FOUNDATION APPLIED
-ROUTE 1 GATE 1 PASS
+3D-ASSISTED GATE 1 PASS
 PREFERRED MULTIVIEW EXECUTABLE TRACKED
 GEOMETRY EVIDENCE BRIDGE STATIC SOURCE APPLIED
 REFERENCE ALIGNMENT PURE FOUNDATION TRACKED
@@ -14,7 +14,7 @@ LOCAL BLOCKBENCH ALIGNMENT/BRIDGE TEST REQUIRED
 NOT YET LIVE-PROVEN
 ```
 
-Route 1 now has a selected product path:
+3D-Assisted now has a selected product path:
 
 > **Approved image + requested dimensions + approved shape-only GLB** are used together for reference-driven Blockbench geometry authoring.
 
@@ -44,7 +44,7 @@ approved Minecraft reference
 → production .bbmodel export
 ```
 
-The bridge does not voxelize, segment, repair, decimate, score, or convert Hunyuan triangles into Bedrock geometry. No semantic mesh parser, cuboid solver, IoU gate, provider router, texture generator, or autonomous correction is part of Route 1.
+The bridge does not voxelize, segment, repair, decimate, score, or convert Hunyuan triangles into Bedrock geometry. No semantic mesh parser, cuboid solver, IoU gate, provider router, texture generator, or autonomous correction is part of 3D-Assisted.
 
 ---
 
@@ -75,7 +75,7 @@ subfolder  hunyuan3d-dit-v2-mv
 variant    fp16
 ```
 
-The upstream `from_pretrained` helper does not expose a Hugging Face `revision` parameter to its internal download path. Route 1 therefore requires the pinned model snapshot to be downloaded locally first and `HY3DGEN_MODELS` to point at that local root. Both generation scripts fail before pipeline construction when required local files are absent.
+The upstream `from_pretrained` helper does not expose a Hugging Face `revision` parameter to its internal download path. 3D-Assisted therefore requires the pinned model snapshot to be downloaded locally first and `HY3DGEN_MODELS` to point at that local root. Both generation scripts fail before pipeline construction when required local files are absent.
 
 ## Fixed generation settings
 
@@ -89,7 +89,7 @@ seed               12345
 texture            disabled
 ```
 
-`guidance scale = 5.0` is explicit in both scripts so the accepted Route 1 path does not depend on an implicit upstream FlowMatching default.
+`guidance scale = 5.0` is explicit in both scripts so the accepted 3D-Assisted path does not depend on an implicit upstream FlowMatching default.
 
 Do not tune Fast/Turbo, octree 380+, multiple seeds, extra views, cleanup passes, or texture generation without a new runtime failure identifying a specific bottleneck.
 
@@ -109,13 +109,13 @@ pip install -r requirements.txt
 pip install -e .
 ```
 
-Download the pinned model subfolders into a local root. Model weights stay local/transient and are not part of a Route 1 package.
+Download the pinned model subfolders into a local root. Model weights stay local/transient and are not part of a 3D-Assisted package.
 
 ```python
 from pathlib import Path
 from huggingface_hub import snapshot_download
 
-models_root = Path(r"D:\Work\AI Stuff\BuildIT\Experimental\route1-hunyuan-poc\.cache\models")
+models_root = Path(r"D:\Work\AI Stuff\BuildIT\Experimental\three-d-assisted-hunyuan-poc\.cache\models")
 
 snapshot_download(
     repo_id="tencent/Hunyuan3D-2",
@@ -141,10 +141,10 @@ snapshot_download(
 PowerShell example:
 
 ```powershell
-$env:HY3DGEN_MODELS="D:\Work\AI Stuff\BuildIT\Experimental\route1-hunyuan-poc\.cache\models"
+$env:HY3DGEN_MODELS="D:\Work\AI Stuff\BuildIT\Experimental\three-d-assisted-hunyuan-poc\.cache\models"
 ```
 
-The local experiment environment may stay under `Experimental/route1-hunyuan-poc/.cache/venv`.
+The local experiment environment may stay under `Experimental/three-d-assisted-hunyuan-poc/.cache/venv`.
 
 ---
 
@@ -161,16 +161,16 @@ input/separated-reference/back.png   → back
 Canonical command:
 
 ```bash
-python Experimental/route1-hunyuan-poc/generate_multiview_shape.py \
-  Experimental/route1-hunyuan-poc/input/separated-reference/front.png \
-  Experimental/route1-hunyuan-poc/input/separated-reference/side.png \
-  Experimental/route1-hunyuan-poc/input/separated-reference/back.png
+python Experimental/three-d-assisted-hunyuan-poc/generate_multiview_shape.py \
+  Experimental/three-d-assisted-hunyuan-poc/input/separated-reference/front.png \
+  Experimental/three-d-assisted-hunyuan-poc/input/separated-reference/side.png \
+  Experimental/three-d-assisted-hunyuan-poc/input/separated-reference/back.png
 ```
 
 Default output:
 
 ```text
-Experimental/route1-hunyuan-poc/.cache/source-multiview-separated.glb
+Experimental/three-d-assisted-hunyuan-poc/.cache/source-multiview-separated.glb
 ```
 
 The executable is intentionally fixed to FRONT + LEFT + BACK. It does not silently add a right view or tune generation parameters. Its expected Blockbench/front convention is `+z`.
@@ -178,10 +178,10 @@ The executable is intentionally fixed to FRONT + LEFT + BACK. It does not silent
 Render the contact sheet:
 
 ```bash
-python Experimental/route1-hunyuan-poc/render_contact_sheet.py \
-  Experimental/route1-hunyuan-poc/.cache/source-multiview-separated.glb \
+python Experimental/three-d-assisted-hunyuan-poc/render_contact_sheet.py \
+  Experimental/three-d-assisted-hunyuan-poc/.cache/source-multiview-separated.glb \
   --front-direction=+z \
-  --output Experimental/route1-hunyuan-poc/.cache/contact-sheet-multiview-separated.png
+  --output Experimental/three-d-assisted-hunyuan-poc/.cache/contact-sheet-multiview-separated.png
 ```
 
 ---
@@ -248,16 +248,16 @@ From `mcp/`:
 
 ```bash
 bun run build
-bun run route1:prepare <fixture-directory>
-bun run route1:package <fixture-directory>
+bun run three-d-assisted:prepare <fixture-directory>
+bun run three-d-assisted:package <fixture-directory>
 ```
 
-`route1:prepare` is read-only. It verifies the strict fixture contract, portable in-root file paths, non-empty inputs, GLB 2.0 header/length, SHA-256 hashes, pinned Hunyuan provenance, and the canonical `mcp/dist/blockit_mcp.js` embedded build identity.
+`three-d-assisted:prepare` is read-only. It verifies the strict fixture contract, portable in-root file paths, non-empty inputs, GLB 2.0 header/length, SHA-256 hashes, pinned Hunyuan provenance, and the canonical `mcp/dist/blockit_mcp.js` embedded build identity.
 
-`route1:package` performs the same preflight and creates a portable preparation package. Default output:
+`three-d-assisted:package` performs the same preflight and creates a portable preparation package. Default output:
 
 ```text
-Experimental/route1-hunyuan-poc/.cache/test-ready/<fixture_id>/
+Experimental/three-d-assisted-hunyuan-poc/.cache/test-ready/<fixture_id>/
 ```
 
 The package contains the exact BlockIT artifact, `fixture.json`, approved reference, approved GLB, contact sheet, FRONT/LEFT/BACK Hunyuan inputs, `manifest.json`, and `RUN.md`. Existing outputs are never silently overwritten. The manifest records each file hash/size plus the BlockIT embedded build identity and full bundle SHA-256. `repository_head_at_prepare` is context only; artifact identity comes from the packaged bundle itself.
@@ -271,10 +271,10 @@ These commands are Bun preparation utilities, **not MCP callable tools**. They d
 The original one-image generator remains in the repository only for reproducibility/history:
 
 ```bash
-python Experimental/route1-hunyuan-poc/generate_shape.py path/to/approved-3q.png
+python Experimental/three-d-assisted-hunyuan-poc/generate_shape.py path/to/approved-3q.png
 ```
 
-It is **not** part of current Route 1 acceptance and does not need to be rerun to justify the selected image+GLB workflow.
+It is **not** part of current 3D-Assisted acceptance and does not need to be rerun to justify the selected image+GLB workflow.
 
 ---
 
@@ -294,26 +294,26 @@ After Gate 1, the approved GLB is loaded through the Geometry-owned `manage_geom
 
 BuildIT keeps the GLB as a locked, root-only, `export=false` Reference Model. It reports raw world-space AABB, dimensions in Blockbench units/blocks, and mesh/vertex/triangle diagnostics. These numbers are evidence only: **raw Hunyuan bounds** may include reconstruction fragments and never become **requested target dimensions**.
 
-The existing `reference_models://...` resource exposes the same Route 1 evidence and recovered front alignment after a fresh MCP/client connection. `capture_model_views` can use explicit target framing before Cubes exist when a loaded invariant-valid Route 1 reference is visible.
+The existing `reference_models://...` resource exposes the same 3D-Assisted evidence and recovered front alignment after a fresh MCP/client connection. `capture_model_views` can use explicit target framing before Cubes exist when a loaded invariant-valid 3D-Assisted reference is visible.
 
-Production geometry remains normal Groups/Cubes. Editable `.bbmodel` export is blocked while a tool-owned Route 1 reference remains active; remove the reference before production export.
+Production geometry remains normal Groups/Cubes. Editable `.bbmodel` export is blocked while a tool-owned 3D-Assisted reference remains active; remove the reference before production export.
 
 ---
 
 ## Reference alignment contract
 
-The GLB is normalized reconstruction evidence, not a physical-size authority. Route 1 aligns the displayed reference to the **requested Minecraft dimensions** without editing the GLB file and without non-uniform deformation.
+The GLB is normalized reconstruction evidence, not a physical-size authority. 3D-Assisted aligns the displayed reference to the **requested Minecraft dimensions** without editing the GLB file and without non-uniform deformation.
 
 Pure planning owner:
 
 ```text
-mcp/lib/route1ReferenceAlignment.ts
+mcp/lib/threeDAssistedReferenceAlignment.ts
 ```
 
 Targeted regression contract:
 
 ```text
-mcp/tests/route1-reference-alignment.test.ts
+mcp/tests/threeDAssisted-reference-alignment.test.ts
 ```
 
 Canonical sequence:
@@ -410,7 +410,7 @@ next origin
 expected translated bounds
 ```
 
-Do not add multiple alignment modes, a one-call auto-align API, or new public ToolSpec fields merely to reduce call count. First test the selected sequence using the existing Geometry reference owner. A reproducible local failure may justify a targeted runtime correction; absent such failure, no further Route 1 development is required.
+Do not add multiple alignment modes, a one-call auto-align API, or new public ToolSpec fields merely to reduce call count. First test the selected sequence using the existing Geometry reference owner. A reproducible local failure may justify a targeted runtime correction; absent such failure, no further 3D-Assisted development is required.
 
 ---
 
@@ -436,7 +436,7 @@ build/verify current Local
 → verify no reference_model remains
 ```
 
-Do **not** add an image-only A/B run after this. Do **not** redesign Route 1 unless the selected path produces a reproducible failure with a clear wrong owner.
+Do **not** add an image-only A/B run after this. Do **not** redesign 3D-Assisted unless the selected path produces a reproducible failure with a clear wrong owner.
 
 ---
 
@@ -445,7 +445,7 @@ Do **not** add an image-only A/B run after this. Do **not** redesign Route 1 unl
 Do not add these without a new evidenced requirement:
 
 ```text
-OBJ / PLY / STL Route 1 inputs
+OBJ / PLY / STL 3D-Assisted inputs
 non-uniform reference scaling
 GLB pre-scaling/rewrite step
 mesh repair / decimation pipeline

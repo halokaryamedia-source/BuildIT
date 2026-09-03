@@ -9,9 +9,9 @@ LOCAL PROOF REQUIRED
 NOT PRODUCTION
 ```
 
-This POC tests one specific Route 1 question:
+This POC tests one specific 3D-Assisted question:
 
-> Can the already-approved Route 1 GLB be decomposed by PrimitiveAnything and then deterministically substituted into pure oriented Cuboids that Blockbench opens as native editable Cubes?
+> Can the already-approved 3D-Assisted GLB be decomposed by PrimitiveAnything and then deterministically substituted into pure oriented Cuboids that Blockbench opens as native editable Cubes?
 
 It does **not** use an LLM to choose Cube coordinates. It does **not** modify `mcp/**` and it does not promote any result into production BlockIT.
 
@@ -88,7 +88,7 @@ shapevae-256.ckpt SHA-256:
 
 ## 2. Run the approved elephant GLB
 
-Pass the exact GLB that already passed Route 1 GLB-reference selection. A Windows file is accessible from WSL through `/mnt/<drive>/...`.
+Pass the exact GLB that already passed 3D-Assisted GLB-reference selection. A Windows file is accessible from WSL through `/mnt/<drive>/...`.
 
 Example:
 
@@ -249,4 +249,4 @@ Gate 1 + native Cube import pass
 → save .bbmodel and report LOCAL proof before any MCP integration
 ```
 
-Do not expand this POC into texture, animation, semantic bone inference, Cube cleanup, MCP integration, or production Route 1 changes before the elephant geometry passes.
+Do not expand this POC into texture, animation, semantic bone inference, Cube cleanup, MCP integration, or production 3D-Assisted changes before the elephant geometry passes.

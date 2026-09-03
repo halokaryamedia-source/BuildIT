@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Render a deterministic four-view contact sheet from a Route 1 source mesh."""
+"""Render a deterministic four-view contact sheet from a 3D-Assisted source mesh."""
 
 from __future__ import annotations
 

@@ -4,14 +4,14 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, test } from "bun:test";
 import {
-  ROUTE1_CANONICAL_HUNYUAN,
-  buildRoute1PackageManifest,
+  THREE_D_ASSISTED_CANONICAL_HUNYUAN,
+  buildThreeDAssistedPackageManifest,
   inspectBlockItBundleContent,
-  inspectRoute1Fixture,
-  route1FixtureSchema,
-  writeRoute1Package,
-  type Route1PreparedState,
-} from "../scripts/route1-fixture";
+  inspectThreeDAssistedFixture,
+  threeDAssistedFixtureSchema,
+  writeThreeDAssistedPackage,
+  type ThreeDAssistedPreparedState,
+} from "../scripts/three-d-assisted-fixture";
 
 const tempRoots: string[] = [];
 
@@ -30,8 +30,8 @@ function fixture(id = "sample-asset") {
     source_front_direction: "+z",
     requested_dimensions_blocks: { width: 2, height: 3, length: 4 },
     hunyuan: {
-      ...ROUTE1_CANONICAL_HUNYUAN,
-      views: [...ROUTE1_CANONICAL_HUNYUAN.views],
+      ...THREE_D_ASSISTED_CANONICAL_HUNYUAN,
+      views: [...THREE_D_ASSISTED_CANONICAL_HUNYUAN.views],
     },
   };
 }
@@ -50,7 +50,7 @@ function minimalGlb(): Buffer {
   return glb;
 }
 
-function fakeBundle(body = 'console.log("route1");\n') {
+function fakeBundle(body = 'console.log("3d-assisted");\n') {
   const digest = createHash("sha256").update(body).digest("hex");
   return `/* v0.1.0 build ${digest.slice(0, 12)} */
 globalThis.__BLOCKIT_BUILD_ID__ = "sha256:${digest}";
@@ -58,7 +58,7 @@ let process = requireNativeModule('process');${body}`;
 }
 
 async function makeFixture() {
-  const root = await mkdtemp(join(tmpdir(), "route1-fixture-"));
+    const root = await mkdtemp(join(tmpdir(), "three-d-assisted-fixture-"));
   tempRoots.push(root);
   await mkdir(join(root, "input"));
   await Bun.write(join(root, "approved-reference.png"), new Uint8Array([1]));
@@ -82,25 +82,25 @@ afterEach(async () => {
   );
 });
 
-describe("Route 1 generic fixture preparation", () => {
+  describe("3D-Assisted generic fixture preparation", () => {
   test("contract stays object-agnostic and pins the accepted MultiView provenance", () => {
     const sample = fixture("representative-asset");
-    expect(route1FixtureSchema.safeParse(sample).success).toBe(true);
+    expect(threeDAssistedFixtureSchema.safeParse(sample).success).toBe(true);
 
     expect(
-      route1FixtureSchema.safeParse({
+      threeDAssistedFixtureSchema.safeParse({
         ...sample,
         object_specific: { special_part: true },
       }).success
     ).toBe(false);
     expect(
-      route1FixtureSchema.safeParse({
+      threeDAssistedFixtureSchema.safeParse({
         ...sample,
         approved_glb: "../outside.glb",
       }).success
     ).toBe(false);
     expect(
-      route1FixtureSchema.safeParse({
+      threeDAssistedFixtureSchema.safeParse({
         ...sample,
         hunyuan_inputs: {
           ...sample.hunyuan_inputs,
@@ -109,7 +109,7 @@ describe("Route 1 generic fixture preparation", () => {
       }).success
     ).toBe(false);
     expect(
-      route1FixtureSchema.safeParse({
+      threeDAssistedFixtureSchema.safeParse({
         ...sample,
         hunyuan: { ...sample.hunyuan, seed: 1 },
       }).success
@@ -118,7 +118,7 @@ describe("Route 1 generic fixture preparation", () => {
 
   test("prepare inspection verifies portable files, hashes, MultiView inputs, and GLB 2.0 header", async () => {
     const root = await makeFixture();
-    const prepared = await inspectRoute1Fixture(root);
+    const prepared = await inspectThreeDAssistedFixture(root);
     expect(prepared.fixture.fixture_id).toBe("sample-asset");
     expect(prepared.files.approved_glb.sha256).toHaveLength(64);
     expect(prepared.files.hunyuan_inputs.front.sha256).toHaveLength(64);
@@ -127,7 +127,7 @@ describe("Route 1 generic fixture preparation", () => {
     expect(prepared.fixture_json.sha256).toHaveLength(64);
 
     await Bun.write(join(root, "approved-shape.glb"), new Uint8Array(12));
-    await expect(inspectRoute1Fixture(root)).rejects.toThrow(
+    await expect(inspectThreeDAssistedFixture(root)).rejects.toThrow(
       "valid glTF binary v2 header"
     );
   });
@@ -143,9 +143,9 @@ describe("Route 1 generic fixture preparation", () => {
 
   test("package contains the generic fixture inputs, exact plugin artifact, manifest, and run handoff", async () => {
     const fixtureRoot = await makeFixture();
-    const inspected = await inspectRoute1Fixture(fixtureRoot);
+    const inspected = await inspectThreeDAssistedFixture(fixtureRoot);
 
-    const artifactRoot = await mkdtemp(join(tmpdir(), "route1-artifact-"));
+    const artifactRoot = await mkdtemp(join(tmpdir(), "threeDAssisted-artifact-"));
     tempRoots.push(artifactRoot);
     const bundlePath = join(artifactRoot, "blockit_mcp.js");
     const bundle = fakeBundle();
@@ -161,15 +161,15 @@ describe("Route 1 generic fixture preparation", () => {
         bundle_sha256: createHash("sha256").update(bundle).digest("hex"),
       },
       fixture: inspected,
-    } satisfies Route1PreparedState;
+    } satisfies ThreeDAssistedPreparedState;
 
-    const manifest = buildRoute1PackageManifest(prepared);
+    const manifest = buildThreeDAssistedPackageManifest(prepared);
     expect(manifest.authority.glb_role).toBe("supporting_3d_evidence_only");
     expect(manifest.fixture_id).toBe("sample-asset");
     expect(manifest.repository_head_at_prepare).toBe("a".repeat(40));
 
-    const output = join(artifactRoot, "Route1-Test-Ready");
-    await writeRoute1Package(prepared, output);
+    const output = join(artifactRoot, "ThreeDAssisted-Test-Ready");
+    await writeThreeDAssistedPackage(prepared, output);
 
     const packaged = JSON.parse(
       await Bun.file(join(output, "manifest.json")).text()
@@ -198,23 +198,23 @@ describe("Route 1 generic fixture preparation", () => {
     expect(run).toContain("Reproducible MultiView inputs");
     expect(run).toContain("repository_head_at_prepare");
 
-    await expect(writeRoute1Package(prepared, output)).rejects.toThrow(
+    await expect(writeThreeDAssistedPackage(prepared, output)).rejects.toThrow(
       "output already exists"
     );
   });
 
   test("package scripts expose preparation without changing MCP tool surface", async () => {
     const pkg = await Bun.file("package.json").json();
-    expect(pkg.scripts["route1:prepare"]).toBe(
-      "bun run ./scripts/route1-fixture.ts prepare"
+    expect(pkg.scripts["three-d-assisted:prepare"]).toBe(
+      "bun run ./scripts/three-d-assisted-fixture.ts prepare"
     );
-    expect(pkg.scripts["route1:package"]).toBe(
-      "bun run ./scripts/route1-fixture.ts package"
+    expect(pkg.scripts["three-d-assisted:package"]).toBe(
+      "bun run ./scripts/three-d-assisted-fixture.ts package"
     );
 
-    const source = await Bun.file("./scripts/route1-fixture.ts").text();
-    expect(source).toContain("ROUTE1_FIXTURE_PREPARED");
-    expect(source).toContain("ROUTE1_TEST_READY_PACKAGE_CREATED");
+    const source = await Bun.file("./scripts/three-d-assisted-fixture.ts").text();
+    expect(source).toContain("THREE_D_ASSISTED_FIXTURE_PREPARED");
+    expect(source).toContain("THREE_D_ASSISTED_TEST_READY_PACKAGE_CREATED");
     expect(source).toContain("repository_head_at_prepare");
     expect(source).not.toContain("manage_geometry_reference");
   });

@@ -38,7 +38,7 @@ mcp/server/                    transport/tools/resources/prompts
 mcp/server/tools/              authored operations
 mcp/lib/                       schemas/factories/identity/result helpers
 mcp/lib/authoringPhase.ts      Core/phase classification + active-phase/handoff contract
-mcp/lib/route1ReferenceAlignment.ts
+mcp/lib/threeDAssistedReferenceAlignment.ts
                                pure 3D-Assisted Evidence fit-envelope + center/ground planning
 mcp/ui/                        Blockbench panel/settings
 mcp/prompts/                   canonical workflow body + generated manifest
@@ -66,11 +66,11 @@ For a named MCP-tool defect, inspect the mapped **source owner + primary regress
 | `get_project_info` | `mcp/server/tools/project.ts` | `mcp/tests/authoring/static-footprint-budget.test.ts` |
 | `inspect_model_bounds` | `mcp/server/tools/project.ts` | `mcp/tests/rendered-model-bounds-numeric-safety.test.ts` |
 | `manage_geometry_reference` | `mcp/server/tools/project.ts` | `mcp/tests/geometry-reference-contract.test.ts` |
-| 3D-Assisted Evidence alignment math | `mcp/lib/route1ReferenceAlignment.ts` | `mcp/tests/route1-reference-alignment.test.ts` |
+| 3D-Assisted Evidence alignment math | `mcp/lib/threeDAssistedReferenceAlignment.ts` | `mcp/tests/three-d-assisted-reference-alignment.test.ts` |
 | 3D-Assisted Evidence quantitative/reconnect evidence | `mcp/server/tools/project.ts`, `mcp/server/resources.ts` | `mcp/tests/geometry-reference-contract.test.ts` |
 | 3D-Assisted Evidence reference capture / production cleanup | `mcp/server/tools/camera.ts`, `mcp/server/tools/export.ts` | `mcp/tests/camera-framing-contract.test.ts`, `mcp/tests/geometry-reference-contract.test.ts` |
-| 3D-Assisted Evidence Hunyuan MultiView reproducibility | `Experimental/route1-hunyuan-poc/generate_multiview_shape.py`, `Experimental/route1-hunyuan-poc/README.md` | `mcp/tests/authoring/route1-hunyuan-reproducibility.test.ts` |
-| 3D-Assisted Evidence fixture preparation / packaging | `mcp/scripts/route1-fixture.ts`, `mcp/package.json` | `mcp/tests/route1-fixture-preparation.test.ts` |
+| 3D-Assisted Evidence Hunyuan MultiView reproducibility | `Experimental/three-d-assisted-hunyuan-poc/generate_multiview_shape.py`, `Experimental/three-d-assisted-hunyuan-poc/README.md` | `mcp/tests/authoring/three-d-assisted-hunyuan-reproducibility.test.ts` |
+| 3D-Assisted Evidence fixture preparation / packaging | `mcp/scripts/three-d-assisted-fixture.ts`, `mcp/package.json` | `mcp/tests/three-d-assisted-fixture-preparation.test.ts` |
 | `manage_cubes` | `mcp/server/tools/cubes.ts` | `mcp/tests/model-effectiveness-correction-accuracy.test.ts` |
 | `add_group` | `mcp/server/tools/element.ts` | `mcp/tests/p1-core-ownership.test.ts` |
 | `list_outline`, `find_elements_by_criteria` | `mcp/server/tools/element.ts` | `mcp/tests/context-payload-cleanup.test.ts` |
@@ -84,7 +84,7 @@ For a named MCP-tool defect, inspect the mapped **source owner + primary regress
 | `get_undo_stack`, `undo`, `redo` | `mcp/server/tools/history.ts` | `mcp/tests/authoring/static-footprint-budget.test.ts` for compact recovery state; targeted history tests for behavior |
 | `export_model` | `mcp/server/tools/export.ts` | `mcp/tests/prelocal-generic-semantics.test.ts` |
 
-`route1:prepare` and `route1:package` are Bun preparation commands, not MCP callable tools. They do not change the retained catalog or active Geometry surface.
+`three-d-assisted:prepare` and `three-d-assisted:package` are Bun preparation commands, not MCP callable tools. They do not change the retained catalog or active Geometry surface.
 
 ## 3D-Assisted Evidence Ownership
 
@@ -95,10 +95,10 @@ approved image + requested dimensions
 + approved shape-only GLB
 → manage_geometry_reference
 → raw bounds observation
-→ route1ReferenceAlignment fit-envelope plan
+→ threeDAssistedReferenceAlignment fit-envelope plan
 → uniform scale update
 → fresh bounds observation
-→ route1ReferenceAlignment center-X/Z + ground-Y plan
+→ threeDAssistedReferenceAlignment center-X/Z + ground-Y plan
 → origin update
 → canonical aligned captures
 → semantic Groups/Cubes
@@ -111,9 +111,9 @@ Ownership is deliberately split:
 ```text
 approved image / visual authority        → reference + modelling judgement
 requested dimensions / numeric authority → user/fixture requirement
-GLB generation/provenance                 → Experimental/route1-hunyuan-poc
+GLB generation/provenance                 → Experimental/three-d-assisted-hunyuan-poc
 GLB lifecycle / live evidence             → mcp/server/tools/project.ts
-alignment math                            → mcp/lib/route1ReferenceAlignment.ts
+alignment math                            → mcp/lib/threeDAssistedReferenceAlignment.ts
 visual framing                            → mcp/server/tools/camera.ts
 production cleanup/export                 → mcp/server/tools/export.ts
 semantic Minecraft geometry               → normal Geometry owners

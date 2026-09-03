@@ -18,7 +18,7 @@ on:
       - "docs/knowledge/operations/local-acceptance-runbook.md"
       - "workspace/README.md"
       - "workspace/active/README.md"
-      - "Experimental/route1-hunyuan-poc/**"
+      - "Experimental/three-d-assisted-hunyuan-poc/**"
       - "mcp/tests/authoring/**"
       - ".github/workflows/authoring-policy-verify.yml"
   workflow_dispatch:

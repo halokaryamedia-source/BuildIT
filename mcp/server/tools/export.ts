@@ -4,7 +4,7 @@ import { z } from "zod";
 import { createTool, type ToolSpec } from "@/lib/factories";
 import { STATUS_EXPERIMENTAL, STATUS_STABLE } from "@/lib/constants";
 import { isAbsoluteFilesystemPath } from "@/lib/util";
-import { listBlockItRoute1References } from "./project";
+import { listBlockItThreeDAssistedReferences } from "./project";
 
 export const BLOCKIT_MODEL_CODEC_IDS = ["bedrock", "project"] as const;
 const blockitModelCodecEnum = z.enum(BLOCKIT_MODEL_CODEC_IDS);
@@ -206,10 +206,10 @@ export function registerExportTools() {
       async execute({ codec_id, options, path, overwrite, max_content_length }) {
         requireBedrockEntityProject();
         if (codec_id === "project") {
-          const activeRoute1References = listBlockItRoute1References();
-          if (activeRoute1References.length > 0) {
+          const activeThreeDAssistedReferences = listBlockItThreeDAssistedReferences();
+          if (activeThreeDAssistedReferences.length > 0) {
             throw new Error(
-              `Refusing editable .bbmodel export while ${activeRoute1References.length} transient BlockIT 3D-Assisted Evidence reference(s) are active. Remove them with manage_geometry_reference before project export; Bedrock geometry export is unaffected.`
+              `Refusing editable .bbmodel export while ${activeThreeDAssistedReferences.length} transient BlockIT 3D-Assisted Evidence reference(s) are active. Remove them with manage_geometry_reference before project export; Bedrock geometry export is unaffected.`
             );
           }
         }

@@ -6,7 +6,7 @@ import { captureScreenshot, captureAppScreenshot, imageContent } from "@/lib/uti
 import { readRenderedModelBounds, type RenderedModelBounds, type Vec3 } from "@/lib/renderedModelBounds";
 import { STATUS_EXPERIMENTAL, STATUS_STABLE } from "@/lib/constants";
 import { vector3Schema, projectionEnum } from "@/lib/zodObjects";
-import { hasVisibleLoadedBlockItRoute1Reference } from "./project";
+import { hasVisibleLoadedBlockItThreeDAssistedReference } from "./project";
 
 const CAPTURE_SIZE = 512;
 const FRAME_PADDING = 0.12;
@@ -430,7 +430,7 @@ export function registerCameraTools() {
         }
       } else if (
         observed.rendered_cube_count === 0 &&
-        !hasVisibleLoadedBlockItRoute1Reference()
+        !hasVisibleLoadedBlockItThreeDAssistedReference()
       ) {
         throw new Error(
           "Explicit framing requires visible Cube geometry or a loaded visible BlockIT 3D-Assisted Evidence reference."

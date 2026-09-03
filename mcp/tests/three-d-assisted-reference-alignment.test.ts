@@ -1,12 +1,12 @@
 import { describe, expect, test } from "bun:test";
 import {
-  planRoute1CenterGroundTranslation,
-  planRoute1FitEnvelopeScale,
-} from "@/lib/route1ReferenceAlignment";
+  planThreeDAssistedCenterGroundTranslation,
+  planThreeDAssistedFitEnvelopeScale,
+} from "@/lib/threeDAssistedReferenceAlignment";
 
-describe("Route 1 reference alignment", () => {
+describe("3D-Assisted reference alignment", () => {
   test("fits observed GLB bounds inside requested Minecraft dimensions with uniform scale", () => {
-    const plan = planRoute1FitEnvelopeScale({
+    const plan = planThreeDAssistedFitEnvelopeScale({
       observed_bounds: {
         min: [-16, 0, -24],
         max: [16, 48, 24],
@@ -41,7 +41,7 @@ describe("Route 1 reference alignment", () => {
   });
 
   test("returns the next absolute uniform scale from the currently observed scale", () => {
-    const plan = planRoute1FitEnvelopeScale({
+    const plan = planThreeDAssistedFitEnvelopeScale({
       observed_bounds: {
         min: [-32, 0, -48],
         max: [32, 96, 48],
@@ -65,7 +65,7 @@ describe("Route 1 reference alignment", () => {
   });
 
   test("never requires non-uniform scaling to fit the requested envelope", () => {
-    const plan = planRoute1FitEnvelopeScale({
+    const plan = planThreeDAssistedFitEnvelopeScale({
       observed_bounds: {
         min: [0, 0, 0],
         max: [30, 52, 71],
@@ -86,7 +86,7 @@ describe("Route 1 reference alignment", () => {
   });
 
   test("centers X/Z and grounds Y after the scaled bounds are measured again", () => {
-    const plan = planRoute1CenterGroundTranslation({
+    const plan = planThreeDAssistedCenterGroundTranslation({
       observed_bounds_after_scale: {
         min: [2, -5, 10],
         max: [6, 7, 18],
@@ -103,7 +103,7 @@ describe("Route 1 reference alignment", () => {
   });
 
   test("supports an explicit non-zero target anchor without changing the policy", () => {
-    const plan = planRoute1CenterGroundTranslation({
+    const plan = planThreeDAssistedCenterGroundTranslation({
       observed_bounds_after_scale: {
         min: [-2, 0, -4],
         max: [2, 12, 4],
@@ -124,7 +124,7 @@ describe("Route 1 reference alignment", () => {
 
   test("rejects malformed bounds, dimensions, block size, and scale", () => {
     expect(() =>
-      planRoute1FitEnvelopeScale({
+      planThreeDAssistedFitEnvelopeScale({
         observed_bounds: {
           min: [1, 0, 0],
           max: [1, 1, 1],
@@ -139,7 +139,7 @@ describe("Route 1 reference alignment", () => {
     ).toThrow();
 
     expect(() =>
-      planRoute1FitEnvelopeScale({
+      planThreeDAssistedFitEnvelopeScale({
         observed_bounds: {
           min: [0, 0, 0],
           max: [1, 1, 1],
@@ -154,7 +154,7 @@ describe("Route 1 reference alignment", () => {
     ).toThrow();
 
     expect(() =>
-      planRoute1FitEnvelopeScale({
+      planThreeDAssistedFitEnvelopeScale({
         observed_bounds: {
           min: [0, 0, 0],
           max: [1, 1, 1],
@@ -169,7 +169,7 @@ describe("Route 1 reference alignment", () => {
     ).toThrow();
 
     expect(() =>
-      planRoute1FitEnvelopeScale({
+      planThreeDAssistedFitEnvelopeScale({
         observed_bounds: {
           min: [0, 0, 0],
           max: [1, 1, 1],

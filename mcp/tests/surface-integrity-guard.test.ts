@@ -135,7 +135,7 @@ describe("advertised surface and fail-closed integrity guards", () => {
     expect(exportSource).toContain(
       "Refusing to replace the existing .bbmodel"
     );
-    expect(exportSource).toContain("listBlockItRoute1References");
+    expect(exportSource).toContain("listBlockItThreeDAssistedReferences");
     expect(exportSource).toContain(
       "Remove them with manage_geometry_reference before project export"
     );

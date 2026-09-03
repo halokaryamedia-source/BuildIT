@@ -7,7 +7,7 @@ import { readRenderedModelBounds, type Vec3 } from "@/lib/renderedModelBounds";
 import { isAbsoluteFilesystemPath } from "@/lib/util";
 
 export const DEFAULT_BEDROCK_UV_RESOLUTION = 128;
-export const BLOCKIT_ROUTE1_REFERENCE_PREFIX = "blockit_route1__";
+export const BLOCKIT_THREE_D_ASSISTED_REFERENCE_PREFIX = "blockit_3d_assisted__";
 
 const finiteReferenceVec3Schema = z.tuple([
   z.number().finite(),
@@ -15,8 +15,8 @@ const finiteReferenceVec3Schema = z.tuple([
   z.number().finite(),
 ]);
 
-export const route1FrontDirectionSchema = z.enum(["+z", "-z"]);
-export type Route1FrontDirection = z.infer<typeof route1FrontDirectionSchema>;
+export const threeDAssistedFrontDirectionSchema = z.enum(["+z", "-z"]);
+export type ThreeDAssistedFrontDirection = z.infer<typeof threeDAssistedFrontDirectionSchema>;
 
 const localGlbPathSchema = z
   .string()
@@ -63,7 +63,7 @@ export const manageGeometryReferenceParameters = z
       .describe(
         "Tool-owned 3D-Assisted Evidence reference UUID or unique exact name; required for update/remove."
       ),
-    source_front_direction: route1FrontDirectionSchema
+    source_front_direction: threeDAssistedFrontDirectionSchema
       .optional()
       .describe(
         "Required load-time front direction encoded by the approved 3D-Assisted Evidence GLB."
@@ -256,7 +256,7 @@ export type ReferenceModelRuntime = OutlinerElement & {
   wireframe?: boolean;
   locked?: boolean;
   export?: boolean;
-  route1_owned?: boolean;
+  three_d_assisted_owned?: boolean;
   mesh?: THREE.Object3D;
   preview_controller?: {
     updateTransform?: (element: ReferenceModelRuntime) => void;
@@ -271,7 +271,7 @@ type ReferenceModelConstructor = new (
   uuid?: string
 ) => ReferenceModelRuntime;
 
-export type Route1ReferenceBoundsSummary = {
+export type ThreeDAssistedReferenceBoundsSummary = {
   bounds_basis: "raw_reference_world_aabb";
   blockbench_units_per_block: number;
   world_bounds: {
@@ -292,7 +292,7 @@ export type Route1ReferenceBoundsSummary = {
   };
 };
 
-export type Route1ReferenceEvidence = Route1ReferenceBoundsSummary & {
+export type ThreeDAssistedReferenceEvidence = ThreeDAssistedReferenceBoundsSummary & {
   scene_stats: {
     mesh_count: number;
     vertex_count: number;
@@ -322,11 +322,11 @@ function requireBedrockReferenceProject(): void {
   }
 }
 
-function projectFrontDirection(): Route1FrontDirection {
+function projectFrontDirection(): ThreeDAssistedFrontDirection {
   const direction =
     (Format as { forward_direction?: string } | undefined)?.forward_direction ??
     "-z";
-  const parsed = route1FrontDirectionSchema.safeParse(direction);
+  const parsed = threeDAssistedFrontDirectionSchema.safeParse(direction);
   if (!parsed.success) {
     throw new Error(
       `Unsupported Blockbench forward direction ${direction} for 3D-Assisted Evidence v1.`
@@ -335,18 +335,18 @@ function projectFrontDirection(): Route1FrontDirection {
   return parsed.data;
 }
 
-export function route1ReferenceYawDegrees(
-  source: Route1FrontDirection,
-  target: Route1FrontDirection
+export function threeDAssistedReferenceYawDegrees(
+  source: ThreeDAssistedFrontDirection,
+  target: ThreeDAssistedFrontDirection
 ): number {
   return source === target ? 0 : 180;
 }
 
-export function summarizeRoute1WorldBounds(
+export function summarizeThreeDAssistedWorldBounds(
   min: Vec3,
   max: Vec3,
   blockSize: number
-): Route1ReferenceBoundsSummary {
+): ThreeDAssistedReferenceBoundsSummary {
   if (!Number.isFinite(blockSize) || blockSize <= 0) {
     throw new Error("3D-Assisted Evidence reference block size must be finite and positive.");
   }
@@ -394,33 +394,33 @@ export function summarizeRoute1WorldBounds(
   };
 }
 
-export function isBlockItRoute1Reference(
+export function isBlockItThreeDAssistedReference(
   element: unknown
 ): element is ReferenceModelRuntime {
   if (!element || typeof element !== "object") return false;
   const value = element as {
     type?: unknown;
     name?: unknown;
-    route1_owned?: unknown;
+    three_d_assisted_owned?: unknown;
   };
   return (
     value.type === "reference_model" &&
-    (value.route1_owned === true ||
+    (value.three_d_assisted_owned === true ||
       (typeof value.name === "string" &&
-        value.name.startsWith(BLOCKIT_ROUTE1_REFERENCE_PREFIX)))
+        value.name.startsWith(BLOCKIT_THREE_D_ASSISTED_REFERENCE_PREFIX)))
   );
 }
 
-export function listBlockItRoute1References(): ReferenceModelRuntime[] {
+export function listBlockItThreeDAssistedReferences(): ReferenceModelRuntime[] {
   if (typeof Outliner === "undefined") return [];
-  return (Outliner.elements ?? []).filter(isBlockItRoute1Reference);
+  return (Outliner.elements ?? []).filter(isBlockItThreeDAssistedReference);
 }
 
 function isLoadedReference(reference: ReferenceModelRuntime): boolean {
   return Boolean(reference.mesh && reference.mesh.children.length > 0);
 }
 
-export function assertRoute1ReferenceInvariant(
+export function assertThreeDAssistedReferenceInvariant(
   reference: ReferenceModelRuntime
 ): void {
   if (reference.parent !== "root") {
@@ -453,10 +453,10 @@ export function assertRoute1ReferenceInvariant(
   }
 }
 
-export function readRoute1ReferenceEvidence(
+export function readThreeDAssistedReferenceEvidence(
   reference: ReferenceModelRuntime
-): Route1ReferenceEvidence {
-  assertRoute1ReferenceInvariant(reference);
+): ThreeDAssistedReferenceEvidence {
+  assertThreeDAssistedReferenceInvariant(reference);
   if (!reference.mesh || !isLoadedReference(reference)) {
     throw new Error(
       `3D-Assisted Evidence reference ${reference.name || reference.uuid} is not fully loaded.`
@@ -479,7 +479,7 @@ export function readRoute1ReferenceEvidence(
     rawBlockSize > 0
       ? rawBlockSize
       : 16;
-  const summary = summarizeRoute1WorldBounds(
+  const summary = summarizeThreeDAssistedWorldBounds(
     [box.min.x, box.min.y, box.min.z],
     [box.max.x, box.max.y, box.max.z],
     blockSize
@@ -534,18 +534,18 @@ export function readRoute1ReferenceEvidence(
   };
 }
 
-export function hasVisibleLoadedBlockItRoute1Reference(): boolean {
-  return listBlockItRoute1References().some((reference) => {
+export function hasVisibleLoadedBlockItThreeDAssistedReference(): boolean {
+  return listBlockItThreeDAssistedReferences().some((reference) => {
     if (reference.visibility === false || !isLoadedReference(reference)) {
       return false;
     }
-    assertRoute1ReferenceInvariant(reference);
+    assertThreeDAssistedReferenceInvariant(reference);
     return true;
   });
 }
 
-function resolveBlockItRoute1Reference(id: string): ReferenceModelRuntime {
-  const references = listBlockItRoute1References();
+function resolveBlockItThreeDAssistedReference(id: string): ReferenceModelRuntime {
+  const references = listBlockItThreeDAssistedReferences();
   const uuidMatch = references.find((reference) => reference.uuid === id);
   if (uuidMatch) return uuidMatch;
 
@@ -594,7 +594,7 @@ function referenceName(path: string): string {
       .replace(/\.glb$/i, "")
       .replace(/[^A-Za-z0-9._-]+/g, "_")
       .slice(0, 80) || "reference";
-  return `${BLOCKIT_ROUTE1_REFERENCE_PREFIX}${stem}`;
+  return `${BLOCKIT_THREE_D_ASSISTED_REFERENCE_PREFIX}${stem}`;
 }
 
 function sameVec3(a: readonly number[], b: readonly number[]): boolean {
@@ -631,7 +631,7 @@ function referenceState(reference: ReferenceModelRuntime) {
     uuid: reference.uuid,
     name: reference.name,
     path: reference.path ?? null,
-    route1_owned: true,
+    three_d_assisted_owned: true,
     reference_only: true,
     production_geometry: false,
     loaded: isLoadedReference(reference),
@@ -644,7 +644,7 @@ function referenceState(reference: ReferenceModelRuntime) {
     export: reference.export !== false,
     parent: reference.parent === "root" ? "root" : "non_root",
     evidence: isLoadedReference(reference)
-      ? readRoute1ReferenceEvidence(reference)
+      ? readThreeDAssistedReferenceEvidence(reference)
       : null,
     warning:
       "GLB is depth/volume/attachment evidence only. evidence.world_bounds includes every loaded mesh fragment; requested dimensions and the approved Minecraft reference remain authoritative, and raw reconstruction bounds must not define target size.",
@@ -792,7 +792,7 @@ export function registerProjectTools() {
       const parsed = manageGeometryReferenceParameters.parse(input);
 
       if (parsed.action === "load") {
-        if (listBlockItRoute1References().length > 0) {
+        if (listBlockItThreeDAssistedReferences().length > 0) {
           throw new Error(
             "A BlockIT 3D-Assisted Evidence reference is already active. Update or remove it before loading another."
           );
@@ -806,7 +806,7 @@ export function registerProjectTools() {
 
         const sourceFront = parsed.source_front_direction!;
         const targetFront = projectFrontDirection();
-        const yaw = route1ReferenceYawDegrees(sourceFront, targetFront);
+        const yaw = threeDAssistedReferenceYawDegrees(sourceFront, targetFront);
         const uniformScale = parsed.uniform_scale ?? 1;
         const ReferenceModel = referenceConstructor();
         let reference: ReferenceModelRuntime | null = null;
@@ -824,13 +824,13 @@ export function registerProjectTools() {
             locked: true,
             export: false,
           }).init() as ReferenceModelRuntime;
-          reference.route1_owned = true;
+          reference.three_d_assisted_owned = true;
           reference.addTo("root");
           await waitForReferenceLoad(reference);
           reference.locked = true;
           reference.export = false;
           refreshReference(reference);
-          readRoute1ReferenceEvidence(reference);
+          readThreeDAssistedReferenceEvidence(reference);
           Undo.finishEdit("Load 3D-Assisted Evidence reference", {
             outliner: true,
             elements: [reference],
@@ -874,7 +874,7 @@ export function registerProjectTools() {
         };
       }
 
-      const reference = resolveBlockItRoute1Reference(parsed.id!);
+      const reference = resolveBlockItThreeDAssistedReference(parsed.id!);
       if (parsed.action === "remove") {
         const removed = {
           uuid: reference.uuid,
@@ -917,7 +917,7 @@ export function registerProjectTools() {
         );
       }
 
-      readRoute1ReferenceEvidence(reference);
+      readThreeDAssistedReferenceEvidence(reference);
       Undo.initEdit({ elements: [reference] });
       const patch = {
         origin: nextOrigin,
@@ -927,7 +927,7 @@ export function registerProjectTools() {
       };
       if (typeof reference.extend === "function") reference.extend(patch);
       else Object.assign(reference, patch);
-      reference.route1_owned = true;
+      reference.three_d_assisted_owned = true;
       reference.locked = true;
       reference.export = false;
       refreshReference(reference);
