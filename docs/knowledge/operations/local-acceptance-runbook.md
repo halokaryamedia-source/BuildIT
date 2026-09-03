@@ -82,7 +82,7 @@ HANDOFF_REQUIRED
 → continue
 ```
 
-Same-phase future BASE ↔ EXTENDED routing must not be treated as a phase handoff.
+Same-phase future STANDARD ↔ EXTENDED routing must not be treated as a phase handoff.
 
 ## 5. Representative Runtime Proof
 
@@ -149,21 +149,24 @@ Non-goals: image-only comparison, extra 3D formats, non-uniform stretch, GLB rew
 
 Failure → identify first wrong owner → fix only that owner → rerun failing step first → rerun the 3D-Assisted Route → STOP.
 
-## 7. Standard / Extended MCP Profile Local Proof
+## 7. Standard MCP Profile / Extended MCP Profile Local Proof
 
-Before broad implementation, resolve the legacy registration-profile naming collision with capability `EXTENDED` and prove how same-phase EXTENDED definitions are reachable with the current client/transport.
+When this parked proof is explicitly reactivated, verify how same-phase
+`EXTENDED` definitions are reachable with the current client/transport. The
+profile names are **Standard MCP Profile** and **Extended MCP Profile**; do not
+introduce a second profile vocabulary.
 
 Do not combine owner consolidation with an SDK/transport migration. Consider protocol/SDK changes only if the current mechanism cannot satisfy:
 
 ```text
-BASE direct route → zero lookup
+STANDARD direct route → zero lookup
 first EXTENDED need → bounded lookup/load
 same EXTENDED capability again → reuse, zero second lookup
-BASE ↔ EXTENDED same phase → no reload/reconnect/reset
+STANDARD ↔ EXTENDED same phase → no reload/reconnect/reset
 foreign phase → HANDOFF_REQUIRED
 ```
 
-After Core/Geometry/Texturing/Animation owners are consolidated, regenerate prompts/docs and run one final `bun run verify:mcp`, then live-test representative BASE, EXTENDED, reuse, and cross-phase handoff paths.
+After Core/Geometry/Texturing/Animation owners are consolidated, regenerate prompts/docs and run one final `bun run verify:mcp`, then live-test representative STANDARD, EXTENDED, reuse, and cross-phase handoff paths.
 
 ## 8. Authoring Efficiency
 

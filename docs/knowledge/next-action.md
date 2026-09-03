@@ -12,7 +12,7 @@ canonical owner.
 ## Current Status
 
 ```text
-IMAGE REFERENCE ROUTE: SELECTED → GENERIC_REFERENCE_READY → LOCAL_IMPLEMENTATION_REQUIRED
+IMAGE REFERENCE ROUTE: SELECTED → GENERIC_REFERENCE_READY → SOURCE_READY
 3D-ASSISTED ROUTE: PARKED — do not reactivate during Image Reference Route implementation
 EXTENDED PROFILE PROOF: PARKED — do not reactivate during Image Reference Route implementation
 ```
@@ -27,8 +27,8 @@ Route must never block it.
 2. cd mcp && bun install --frozen-lockfile
 3. tidy canonical flow, skills, prompts, and continuation
 4. run the final verifier once after the rules are coherent
-5. implement Geometry → Texture → optional Animation in the Image Reference Route
-6. regenerate derived prompts/docs and verify final surfaces
+5. finish source/rule cleanup for Geometry → Texture → optional Animation in the Image Reference Route
+6. run the final verifier once after all source/rule cleanup is complete
 7. deploy/reconnect only when live Blockbench proof is explicitly reactivated
 ```
 

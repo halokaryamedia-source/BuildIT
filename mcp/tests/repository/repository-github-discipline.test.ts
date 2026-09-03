@@ -195,7 +195,7 @@ describe("repository GitHub discipline", () => {
     ]);
 
     expect(next.length).toBeLessThan(2_500);
-    expect(next).toContain("LOCAL_IMPLEMENTATION_REQUIRED");
+    expect(next).toContain("SOURCE_READY");
     expect(next).toContain("IMAGE REFERENCE ROUTE");
     expect(next).toContain("same-phase Standard ↔ Extended");
     expect(validation).toContain("current proof interpretation");

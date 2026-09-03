@@ -19,36 +19,40 @@ Preserve:
 - Geometry → Texturing → Animation phase boundaries;
 - generated-doc discipline;
 - visual proof as final quality authority;
-- full relevant capability coverage without bloating the BASE active-phase context.
+- full relevant capability coverage without bloating the STANDARD active-phase context.
 
 ## Canonical capability categories
 
 There are exactly two routing categories across BlockIT:
 
 ```text
-BASE
+STANDARD
 → automatically available when its owning phase is active
 → ordinary path for that phase
 
 EXTENDED
-→ absent from the BASE active-phase context
+→ absent from the STANDARD active-phase context
 → loaded only when explicit intent or observed authored state requires that exact capability
 ```
+
+`STANDARD` is the code-safe label for the user-facing **Standard MCP Profile**;
+`EXTENDED` is the code-safe label for the user-facing **Extended MCP Profile**.
+These are the only two MCP profile names.
 
 These names are canonical across design, implementation, generated docs/prompts, specialist guidance, tests, and diagnostics.
 
 Do **not** use `PHASE_DEFAULT`, `ON_DEMAND`, `AUTO_LOADED`, `INTENT_LOADED`, `HOT`, `DEFERRED`, `LAZY`, `SPECIALIZED`, `NICHE`, `normal`, or `conditional` as alternative capability-category labels. Domain terms keep their domain meaning; for example **normal map** is a texture type, not a routing category.
 
-Category is a static exposure classification, not a runtime mode. Same-phase movement between `BASE` and `EXTENDED` never requires phase switch, reload, reconnect, category reset, or pack activation.
+Category is a static exposure classification, not a runtime mode. Same-phase movement between `STANDARD` and `EXTENDED` never requires phase switch, reload, reconnect, category reset, or pack activation.
 
 ```text
-BASE → BASE
+STANDARD → STANDARD
   direct route
 
-BASE → EXTENDED
+STANDARD → EXTENDED
   exact intent/evidence → load exact capability → execute
 
-EXTENDED → BASE
+EXTENDED → STANDARD
   direct route; no unload ceremony
 
 EXTENDED → EXTENDED
@@ -56,7 +60,7 @@ EXTENDED → EXTENDED
 
 FOREIGN PHASE
   HANDOFF_REQUIRED → phase switch/reload/reconnect
-  new phase begins with BASE
+  new phase begins with STANDARD
 ```
 
 No `EXTENDED` pack exists. A known foreign-phase capability must not enter same-phase capability search.
@@ -73,7 +77,7 @@ REMOTE-SAFE FOUNDATION
 → bun run docs:check
 → bun run verify:mcp
 → LIVE Geometry → Texturing → Animation E2E
-→ LIVE BASE ↔ EXTENDED transition E2E
+→ LIVE STANDARD ↔ EXTENDED transition E2E
 → measure Cost to Accepted Result
 → evidence-gated follow-up work
 ```
@@ -109,7 +113,7 @@ All remain **LOCAL PROOF REQUIRED** until Bun/local/live gates pass.
 
 After the Geometry, Texturing, and Animation audits were complete, BlockIT was compared again against native Blockbench project/session/file behavior and public MCP lifecycle coverage. No new large authoring family was found, but several cross-phase gaps remain important.
 
-## BASE Core addition: `open_project`
+## STANDARD Core addition: `open_project`
 
 BlockIT can create projects and export editable `.bbmodel`, but the production surface still lacks a deterministic owner for resuming an existing asset.
 
@@ -137,7 +141,7 @@ Use native Blockbench codecs as authority:
 
 No handwritten `.bbmodel` parser. The tool must preflight path/type/current-unsaved state before replacing any current project and must return exact selected-project identity after load.
 
-This is the only new `BASE` Core tool from the post-phase audit.
+This is the only new `STANDARD` Core tool from the post-phase audit.
 
 ## `configure_project` additions
 
@@ -229,7 +233,7 @@ manage_project_session
 
 ### Whole Animation clone
 
-Extend `BASE` `create_animation`:
+Extend `STANDARD` `create_animation`:
 
 ```text
 source_animation?: UUID/name
@@ -256,11 +260,11 @@ Extend `capture_animation_views` rather than adding a video/screenshot-sequence 
 output: frames | contact_sheet
 ```
 
-A bounded contact sheet across explicit timestamps is the preferred temporal evidence because it exposes timing progression without video/GIF overhead. Animated GIF/video export remains evidence-gated rather than part of `BASE`.
+A bounded contact sheet across explicit timestamps is the preferred temporal evidence because it exposes timing progression without video/GIF overhead. Animated GIF/video export remains evidence-gated rather than part of `STANDARD`.
 
 ## EXTENDED 2D reference-image coverage
 
-Blockbench native project state supports 2D reference images separately from BlockIT's 3D Route-1 GLB reference.
+Blockbench native project state supports 2D reference images separately from BlockIT's 3D-Assisted Evidence.
 
 Add only when needed:
 
@@ -275,21 +279,21 @@ Bounded fields may include absolute image source, name, mode/view, position, siz
 
 ## Molang validation policy
 
-Do not add a `BASE` `validate_molang` tool merely for parity. Every Molang-bearing mutation owner should validate authored text using the strongest safe native/static parser available before Undo when possible.
+Do not add a `STANDARD` `validate_molang` tool merely for parity. Every Molang-bearing mutation owner should validate authored text using the strongest safe native/static parser available before Undo when possible.
 
 A future `EXTENDED` `validate_molang` remains evidence-gated for debugging only if real workflows repeatedly need standalone expression diagnosis.
 
-## Post-phase BASE counts
+## Post-phase STANDARD counts
 
-With `open_project` added to shared Core, approximate BASE phase surfaces become:
+With `open_project` added to shared Core, approximate STANDARD phase surfaces become:
 
 ```text
-Geometry   ≈ 27 total before further BASE reduction
+Geometry   ≈ 27 total before further STANDARD reduction
 Texturing  ≈ 25 total before EXTENDED separation
 Animation  ≈ 24 total before EXTENDED separation
 ```
 
-These historical estimates are input to the local consolidation, not final target counts. Final counts must be measured after the `BASE` / `EXTENDED` split.
+These historical estimates are input to the local consolidation, not final target counts. Final counts must be measured after the `STANDARD` / `EXTENDED` split.
 
 Additional `EXTENDED` Core/cross-phase coverage includes:
 
@@ -306,7 +310,7 @@ No other new Core family is currently justified.
 
 Geometry was re-audited against official Blockbench modeling/reference docs, native Bedrock codec/outliner behavior, current `minecraft:geometry` capabilities, and public MCP implementations.
 
-## BASE Geometry target
+## STANDARD Geometry target
 
 ```text
 CORE / SETUP / EVIDENCE
@@ -369,7 +373,7 @@ Intent ownership:
 ```text
 locator/null/attachment/socket/effect-origin/IK-target → manage_locator
 native Bedrock TextureMesh                              → manage_texture_mesh
-3D Route-1 reference evidence                          → manage_geometry_reference
+3D-Assisted Evidence                                    → manage_geometry_reference
 explicit bounding-box editor state                     → manage_bounding_box
 item-display transform integration                     → manage_item_display_transform
 2D reference-image workflow                            → manage_reference_image
@@ -383,7 +387,7 @@ Remote-safe Geometry correctness work already on `Local` includes faithful nativ
 
 Texturing was re-audited against official Blockbench Paint Mode/Texture/Layer/PBR/animated-texture behavior, native source, Minecraft Bedrock texture-set/Vibrant Visuals PBR semantics, and public Blockbench MCPs.
 
-## BASE Texturing target
+## STANDARD Texturing target
 
 Default classic Minecraft/Bedrock texturing stays intentionally small:
 
@@ -495,7 +499,7 @@ Animation was re-audited against:
 - current Minecraft Bedrock animation and animation-controller documentation/schema;
 - public Blockbench MCPs including SwagRee, sosadly, adhi-jp, XiaoNetwork-Astral and other surveyed implementations.
 
-The goal is **full relevant Bedrock Animation coverage with one direct owner for each authored result**, while editor-only aids stay out of `BASE`.
+The goal is **full relevant Bedrock Animation coverage with one direct owner for each authored result**, while editor-only aids stay out of `STANDARD`.
 
 ## Current Animation surface problem
 
@@ -526,7 +530,7 @@ animation_copy_paste
 
 all mutate transform keyframe cohorts, while `animation_timeline` mixes temporary editor playback/selection state with persistent authored Animation properties.
 
-## BASE Animation target
+## STANDARD Animation target
 
 ```text
 create_animation
@@ -538,7 +542,7 @@ capture_animation_views
 export_animation_file
 ```
 
-The capability is broader than the current surface while BASE ownership becomes simpler.
+The capability is broader than the current surface while STANDARD ownership becomes simpler.
 
 Retire after replacement contracts exist:
 
@@ -729,7 +733,7 @@ step        → Blockbench compiles to Bedrock pre/post
 bezier      → Blockbench/editor preview only; bake before direct Bedrock delivery
 ```
 
-`BASE` `manage_keyframes` must not silently author direct-export Bezier as though it were Minecraft-safe. Keep explicit Bezier handle editing under `EXTENDED` `manage_animation_curves`, or preserve existing editor curves, but `export_animation_file` must fail closed while unbaked Bezier remains.
+`STANDARD` `manage_keyframes` must not silently author direct-export Bezier as though it were Minecraft-safe. Keep explicit Bezier handle editing under `EXTENDED` `manage_animation_curves`, or preserve existing editor curves, but `export_animation_file` must fail closed while unbaked Bezier remains.
 
 Molang expressions also require caution with smooth/Bezier editor interpolation; preserve source text and do not claim preview equivalence without live evidence.
 
@@ -797,7 +801,7 @@ The explicit key is authoritative for export. A loaded item is optional supporti
 
 Current Minecraft controller docs support per-state variables with Molang values and optional `remap_curve`. Current native Blockbench `AnimationControllerState` source does not expose/persist this field in its ordinary state model.
 
-Treat this as **EXTENDED Bedrock extension work**, not a `BASE` field that may silently disappear.
+Treat this as **EXTENDED Bedrock extension work**, not a `STANDARD` field that may silently disappear.
 
 Before claiming support, `LOCAL_CODE` must prove a persistent plugin-owned round trip across:
 
@@ -964,7 +968,7 @@ Always restore editor state. Do not produce a subjective animation quality score
 
 ---
 
-# Animation editor features intentionally outside BASE
+# Animation editor features intentionally outside STANDARD
 
 Blockbench exposes additional editor conveniences including timeline selection, markers, onion skin, keyframe colors, animation presets, graph-view toggles and panel filtering. These help a human use the UI but do not define the Bedrock animation artifact.
 
@@ -987,8 +991,8 @@ Do not call Animation complete until all of these are proven locally/live:
 
 ```text
 SURFACE / OWNERSHIP
-one BASE persistent Animation configuration owner
-one BASE transform-keyframe mutation owner
+one STANDARD persistent Animation configuration owner
+one STANDARD transform-keyframe mutation owner
 no global clipboard / Timeline-selection dependency
 playback/curve/import/motion-QA capabilities EXTENDED only
 bone_rigging absent from Animation surface
@@ -1036,8 +1040,8 @@ unbaked Bezier blocks delivery
 EXTENDED import round trip
 
 ROUTING
-BASE → EXTENDED no reload/reconnect
-EXTENDED → BASE no unload/reset
+STANDARD → EXTENDED no reload/reconnect
+EXTENDED → STANDARD no unload/reset
 EXTENDED → EXTENDED exact next capability only
 foreign-phase capability never enters EXTENDED search
 
@@ -1047,7 +1051,7 @@ prompts:build PASS
 docs:build PASS
 docs:check PASS
 verify:mcp PASS
-LIVE Animation BASE E2E PASS
+LIVE Animation STANDARD E2E PASS
 LIVE Animation EXTENDED E2E PASS
 ```
 
@@ -1069,7 +1073,7 @@ persistent UUID registries
 large generic routers/profiles/frameworks without evidence
 procedural biped/limb generators as default authoring
 destructive whole-animation replacement as the ordinary editing model
-BASE video/GIF generation when bounded frames/contact sheets provide sufficient evidence
+STANDARD video/GIF generation when bounded frames/contact sheets provide sufficient evidence
 category-specific reload/reconnect/reset behavior
 EXTENDED pack loaders or pack registries
 parallel capability-category vocabulary

@@ -121,7 +121,7 @@ semantic Minecraft geometry               → normal Geometry owners
 
 The 3D-Assisted Evidence is transient evidence, never production geometry. It remains root-only, locked, `export=false`, and uniformly scaled. Raw GLB bounds do not define target dimensions. No mesh-to-Cube conversion, voxelizer, repair/decimation pipeline, non-uniform scale, or quality score belongs in the 3D-Assisted workflow without a new explicitly evidenced requirement.
 
-The image + 3D-Assisted Evidence workflow is already selected for that optional route. Image-only versus image + evidence is **not** a current acceptance gate.
+The Image Reference Route is the default. The image + 3D-Assisted Evidence workflow is optional and must never block it. Image-only versus image + evidence is **not** an acceptance gate.
 
 ## Effectiveness / Footprint Evidence Ownership
 

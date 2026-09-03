@@ -1,6 +1,6 @@
 # Current Validation
 
-Updated: 2026-09-02
+Updated: 2026-09-03
 
 This file owns **current proof interpretation**. Active continuation belongs in `docs/knowledge/next-action.md`; stable product facts belong in `CONTEXT.md`; exact source/test ownership belongs in `docs/knowledge/implementation-map.md`.
 
@@ -13,7 +13,8 @@ BEDROCK CALLABLE CATALOG:        65 tools across phases
 DEFAULT CLIENT EXPOSURE:         MCP Core + Geometry (25 tools)
 KNOWN FULL MCP BASELINE:         PASS @ 5ecbf25608f8da879497e2f687854cb68781f3cd
 ACCEPTED LIVE BASELINE:          2026-08-12 Blockbench 5.1.6
-3D-ASSISTED SELECTED WORKFLOW:   APPROVED IMAGE + 3D-ASSISTED EVIDENCE
+IMAGE REFERENCE ACTIVE ROUTE:    APPROVED IMAGE ONLY BY DEFAULT
+3D-ASSISTED ROUTE STATUS:         OPTIONAL / PARKED
 3D-ASSISTED ALIGNMENT FOUNDATION: SOURCE PREPARED — REFERENCE LOAD VERIFIED
 CURRENT 3D-ASSISTED LIVE RETEST: STOPPED AFTER EVIDENCE REFERENCE LOAD
 CURRENT MODEL-QUALITY CLAIM:     NONE — CUBE AUTHORING DEFERRED
@@ -21,7 +22,7 @@ CURRENT MODEL-QUALITY CLAIM:     NONE — CUBE AUTHORING DEFERRED
 
 `KNOWN FULL MCP BASELINE` is the last deliberately retained full canonical executable/source baseline, not a claim that this file tracks the newest CI run. Current workflow status must be read from the exact current commit/run when it matters.
 
-The 3D-Assisted product decision is already made: **approved image + 3D-Assisted Evidence** is the selected optional workflow. Image-only versus image+evidence is no longer an acceptance decision or A/B gate for the current batch. Local work tests the selected workflow; it does not reopen that choice.
+The Image Reference Route is the default object-agnostic workflow. 3D-Assisted Evidence is optional and must never block it. Image-only versus image+evidence is not an A/B gate; the optional evidence path is activated only when the user explicitly supplies clean supporting evidence and requests it.
 
 ## Current Agent-Contract Proof
 
