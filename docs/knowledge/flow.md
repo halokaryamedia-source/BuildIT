@@ -223,7 +223,7 @@ Geometry efficiency rules:
 
 ```text
 do not create a per-Cube plan or inspect every mutation
-do not add detail that does not improve silhouette, identity, contact, layering, or motion
+add secondary detail only when it is identity-weighted and improves silhouette, identity, contact, layering, or motion
 use one combined canonical capture for the visual gate
 make corrections only after fresh evidence identifies the first wrong owner
 do not repeat the whole phase for a local defect
