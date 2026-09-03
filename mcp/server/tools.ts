@@ -68,6 +68,23 @@ const consolidatedMaterialParameters = z.union([
   saveMaterialConfigParameters.and(z.object({ operation: z.literal("save") })),
 ]);
 
+const consolidatedMaterialInputSchema: Record<string, z.ZodType> = {
+  operation: z
+    .enum(["create", "configure", "assign_channel", "save"])
+    .describe("Material operation; provide the fields required by that operation."),
+  name: z.string().optional().describe("Material name for create."),
+  material: z.string().optional().describe("Material UUID or exact unique name."),
+  channel: z.string().optional().describe("Texture channel."),
+  texture: z.unknown().optional().describe("Texture reference or channel payload."),
+  color_texture: z.string().optional().describe("Color texture reference."),
+  normal_texture: z.string().optional().describe("Normal texture reference."),
+  height_texture: z.string().optional().describe("Height texture reference."),
+  mer_texture: z.string().optional().describe("MER texture reference."),
+  color_value: z.unknown().optional().describe("Uniform RGBA value."),
+  mer_value: z.unknown().optional().describe("Uniform MER value."),
+  subsurface_value: z.number().optional().describe("Subsurface value."),
+};
+
 export const consolidatedMaterialToolDocs = {
   name: "manage_material",
   description: "Creates, configures, assigns channels, or saves one Bedrock PBR material through one focused boundary.",
@@ -83,6 +100,31 @@ const consolidatedAnimationTimelineParameters = z.union([
   batchKeyframeOperationsParameters.and(z.object({ operation: z.literal("batch") })),
   animationCopyPasteParameters.and(z.object({ operation: z.literal("copy_paste") })),
 ]);
+
+const consolidatedAnimationTimelineInputSchema: Record<string, z.ZodType> = {
+  operation: z
+    .enum(["keyframes", "graph", "timeline", "batch", "copy_paste"])
+    .describe("Animation operation; provide the fields required by that operation."),
+  animation_id: z.string().optional().describe("Animation UUID or exact unique name."),
+  action: z.string().optional().describe("Operation-specific action."),
+  bone_name: z.string().optional().describe("Operation-specific Group UUID or name."),
+  channel: z.string().optional().describe("Operation-specific animation channel."),
+  keyframes: z.unknown().optional().describe("Operation-specific keyframe payload."),
+  keyframe_range: z.unknown().optional().describe("Operation-specific keyframe range."),
+  parameters: z.unknown().optional().describe("Operation-specific graph parameters."),
+  selection: z.string().optional().describe("Batch selection mode."),
+  range: z.unknown().optional().describe("Operation-specific time range."),
+  pattern: z.unknown().optional().describe("Batch pattern selection."),
+  source: z.unknown().optional().describe("Copy/paste source animation bone."),
+  target: z.unknown().optional().describe("Copy/paste target animation bone."),
+  axis: z.string().optional().describe("Mirror axis."),
+  time: z.number().optional().describe("Timeline time in seconds."),
+  length: z.number().optional().describe("Animation length in seconds."),
+  fps: z.number().optional().describe("Animation snapping rate."),
+  loop_mode: z.string().optional().describe("Animation loop mode."),
+  molang: z.unknown().optional().describe("Authored Molang value or null."),
+  custom_curve: z.unknown().optional().describe("Operation-specific custom curve."),
+};
 
 export const consolidatedAnimationTimelineToolDocs = {
   name: "manage_animation_timeline",
@@ -140,6 +182,7 @@ function registerConsolidatedMaterialTool(): void {
   if (tools.manage_material) return;
   createTool("manage_material", {
     ...consolidatedMaterialToolDocs,
+    inputSchema: consolidatedMaterialInputSchema,
     async execute(request) {
       const target = request.operation === "create" ? "create_pbr_material" : request.operation === "configure" ? "configure_material" : request.operation === "assign_channel" ? "assign_texture_channel" : "save_material_config";
       const definition = getAllToolDefinitions()[target];
@@ -160,6 +203,7 @@ function registerConsolidatedAnimationTimelineTool(): void {
   if (tools.manage_animation_timeline) return;
   createTool("manage_animation_timeline", {
     ...consolidatedAnimationTimelineToolDocs,
+    inputSchema: consolidatedAnimationTimelineInputSchema,
     async execute(request) {
       let target: string = "animation_copy_paste";
       const operation = String(request.operation);

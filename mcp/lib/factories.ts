@@ -341,6 +341,7 @@ export function createTool<T extends z.ZodType>(
     description: string;
     annotations?: ToolAnnotations;
     parameters: T;
+    inputSchema?: Record<string, z.ZodType>;
     execute: (args: z.infer<T>, context?: ToolContext) => Promise<ToolResult>;
   },
   status: IMCPTool["status"] = "stable",
@@ -350,7 +351,7 @@ export function createTool<T extends z.ZodType>(
     throw new Error(`Tool with name "${name}" already exists.`);
   }
 
-  const inputSchema = extractShape(tool.parameters);
+  const inputSchema = tool.inputSchema ?? extractShape(tool.parameters);
 
   const toolDef: ToolDefinition = {
     title: tool.annotations?.title ?? tool.description,

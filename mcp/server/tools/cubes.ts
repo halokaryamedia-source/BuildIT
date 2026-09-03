@@ -314,6 +314,27 @@ export const cubeToolDocs: ToolSpec[] = [
   },
 ];
 
+const cubeToolInputSchema: Record<string, z.ZodType> = {
+  operation: z
+    .enum(["create", "update", "batch_update"])
+    .describe("Cube operation; provide the fields required by that operation."),
+  elements: z.unknown().optional().describe("Cube placement payload."),
+  updates: z.unknown().optional().describe("Bounded Cube correction payload."),
+  group: z.string().optional().describe("Parent Group UUID or exact name."),
+  faces: z.unknown().optional().describe("Optional per-face UV payload."),
+  id: z.string().optional().describe("Cube UUID or exact unique name."),
+  name: z.string().optional().describe("New Cube name."),
+  origin: z.unknown().optional().describe("Cube pivot."),
+  from: z.unknown().optional().describe("Cube start coordinates."),
+  to: z.unknown().optional().describe("Cube end coordinates."),
+  rotation: z.unknown().optional().describe("Cube rotation."),
+  autouv: z.string().optional().describe("Box-UV auto mode."),
+  uv_offset: z.unknown().optional().describe("Box-UV offset."),
+  mirror_uv: z.boolean().optional().describe("Mirror Cube UVs."),
+  inflate: z.number().optional().describe("Cube inflation."),
+  visibility: z.boolean().optional().describe("Cube visibility."),
+};
+
 type PlaceCubeElement = z.infer<typeof placeCubeElementSchema>;
 type BatchUpdate = z.infer<typeof cubeCorrectionUpdateSchema>;
 
@@ -908,6 +929,7 @@ export function registerCubesTools() {
 
   createTool(cubeToolDocs[0].name, {
     ...cubeToolDocs[0],
+    inputSchema: cubeToolInputSchema,
     async execute(request) {
       if (request.operation === "create") return executeCreateCubes(request);
       if (request.operation === "update") return executeUpdateCube(request);
