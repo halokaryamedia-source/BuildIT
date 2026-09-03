@@ -9,7 +9,7 @@ Create **one Minecraft / Blockbench reference image** whose primary goal is a **
 
 ## User Contract
 
-A usable source image is enough; extra facts are optional. Do not ask for Cube counts, pivots, UVs, animation, or MCP details. Never infer numeric scale from pixels. Prefer **zero clarification**.
+A source image is enough; extra facts are optional. Do not ask for Cube counts, pivots, UVs, animation, or MCP details. Never infer numeric scale from pixels. Prefer **zero clarification**.
 
 Resolve: explicit user fact → visible fact → leave optional unknowns unset → one clarification round only for material ambiguity, at most **three material items**. Never invent identity-changing hidden structure. Remaining material ambiguity → **NEEDS REVIEW**.
 

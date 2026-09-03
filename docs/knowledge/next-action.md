@@ -17,9 +17,8 @@ OPTIONAL ROUTE 1: IMAGE_GLB_SELECTED → GLB_REFERENCE_LOADED → PRIMITIVEANYTH
 MCP: BASE_EXTENDED_DESIGN_LOCKED → LOCAL_IMPLEMENTATION_REQUIRED
 ```
 
-The Main Image-Reference Path is the default, object-agnostic route. It does
-not require GLB, Hunyuan, PrimitiveAnything, Ubuntu, or CUDA. The optional
-Route 1 POC must never block the main path.
+The Main Image-Reference Path is the default object-agnostic route and the
+optional Route 1 POC must never block it.
 
 ## Local Order
 
@@ -29,30 +28,25 @@ Route 1 POC must never block the main path.
 3. tidy canonical flow, skills, prompts, and continuation
 4. run the final verifier once after the rules are coherent
 5. resolve the legacy registration-profile collision with capability EXTENDED
-6. prove same-phase EXTENDED reachability with the current client/transport
+6. prove how same-phase EXTENDED definitions are reachable with the current client/transport
 7. consolidate Core/project lifecycle
 8. implement Geometry → Texture → optional Animation main path
 9. regenerate derived prompts/docs and verify final surfaces
 10. deploy/reconnect only when live Blockbench proof is explicitly reactivated
 ```
 
-Do not combine same-phase reachability work with an SDK/transport migration
-unless current mechanics cannot satisfy the contract.
-
 ## Optional Route 1
 
-The bounded PrimitiveAnything experiment is prepared but remains local proof
-only. Its exact setup, Gate 0, Gate 1, native-Cube inspection, and stop rules
+PrimitiveAnything remains a local-proof experiment. Its exact setup and gates
 are owned by:
 
 ```text
 Experimental/primitiveanything-poc/README.md
 ```
 
-Run it only when the approved clean single-object GLB is intentionally selected
-for the optional path. A fragmented or multiview GLB returns to the Main
-Image-Reference Path. Do not integrate, texture, animate, or clean up its
-output for production before its local visual gates pass.
+Run it only for an approved clean single-object GLB. Fragmented or multiview
+GLB returns to the Main Image-Reference Path. No production integration before
+local visual gates pass.
 
 ## Locked Boundaries
 

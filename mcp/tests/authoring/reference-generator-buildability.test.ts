@@ -76,7 +76,7 @@ describe("reference Minecraft-first coverage", () => {
     expect(skill).toContain("stable natural neutral stance");
     expect(skill).toContain("bilateral alignment");
     expect(skill).toContain("direction/bend");
-    expect(skill).toContain("only panel/view labels may appear by default");
+    expect(skill).toContain("no panel borders, grid lines, dividers, labels");
     expect(guide).toContain("outside the image");
     expect(skill).toContain("first draft = maximum 1");
     expect(skill).toContain("targeted correction = maximum 1");
