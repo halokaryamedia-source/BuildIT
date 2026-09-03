@@ -21,7 +21,7 @@ export function setExtendedMcpFamiliesEnabled(enabled: boolean): void {
   }
   Settings.save();
   Blockbench.showQuickMessage(
-    `BlockIT EXTENDED profile ${enabled ? "enabled" : "disabled"}. MCP surface updated.`,
+    `BlockIT Extended MCP Profile ${enabled ? "enabled" : "disabled"}. MCP surface updated.`,
     3000
   );
   extendedProfileHandler?.(enabled);
@@ -85,7 +85,7 @@ export function settingsSetup(): void {
       category,
     }),
     new Setting(MCP_EXTENDED_FAMILIES_SETTING_ID, {
-      name: "Extended MCP Families",
+      name: "Extended MCP Profile",
       description:
         "Explicitly expose the source-preserved generic import/UI fallback families immediately. risky_eval and from_geo_json remain disabled.",
       type: "toggle",

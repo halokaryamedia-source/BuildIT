@@ -23,21 +23,21 @@ Execution context describes available capability, not product/UI identity and no
 
 ### Default path selection
 
-The main authoring path is object-agnostic and image-reference-first. GLB and PrimitiveAnything are optional evidence/experiments; they must never block the main path.
+The Image Reference Route is object-agnostic and image-reference-first. GLB and PrimitiveAnything are optional 3D-Assisted Evidence; they must never block the Image Reference Route.
 
 ```text
 IMAGE ONLY
-→ Main Image-Reference Path
+→ Image Reference Route
 → semantic Bedrock Groups/Cubes
 
 IMAGE + CLEAN SINGLE-OBJECT GLB
-→ Optional 3D-Assisted Path
-→ GLB alignment + optional PrimitiveAnything POC
+→ 3D-Assisted Route
+→ GLB alignment + optional Primitive Decomposition
 → semantic Bedrock Groups/Cubes
 
 FRAGMENTED / MULTIVIEW GLB
 → do not send to PrimitiveAnything
-→ use the Main Image-Reference Path
+→ use the Image Reference Route
 ```
 
 ## 2. Reference Preparation
@@ -94,7 +94,7 @@ Geometry owns the complete model shape and the minimum hierarchy required by
 shape, attachment, contact, and possible future motion. Choose the smallest
 evidence path that can change the model decision.
 
-### Main Image-Reference Path
+### Image Reference Route
 
 This is the default and does not require a GLB, Hunyuan, PrimitiveAnything, Ubuntu, CUDA, or mesh-to-Cube conversion.
 
@@ -114,25 +114,25 @@ ACTUAL APPROVED IMAGE + HANDOFF CONSTRAINTS
 
 Image-only modelling remains valid when the approved image clearly supports identity, primary masses, attachments, negative spaces, and a Blockbench-buildable interpretation. The image is visual authority; requested dimensions remain numeric authority. Do not invent hidden structure or use object-specific templates.
 
-### Optional 3D-Assisted Path — approved image + GLB
+### 3D-Assisted Route — approved image + 3D-Assisted Evidence
 
-This path is optional. It is appropriate only when a clean single-object GLB exists and its additional depth/volume evidence justifies the setup cost. Image-only work must not be routed here by default.
+This route is optional. It is appropriate only when clean 3D-Assisted Evidence exists and its additional depth/volume evidence justifies the setup cost. Image-only work must not be routed here by default.
 
 Authority is fixed:
 
 ```text
 approved image        → visual authority
 requested dimensions  → numeric envelope authority
-approved GLB          → depth / volume / attachment / hidden-side evidence
+3D-Assisted Evidence  → depth / volume / attachment / hidden-side evidence
 raw GLB bounds        → observation only
 ```
 
 The GLB never becomes production geometry and never defines target size. It is loaded as a transient Reference Model through `manage_geometry_reference` when that Geometry capability is exposed.
 
-Canonical Route 1 alignment:
+Canonical 3D-Assisted Evidence alignment:
 
 ```text
-load approved GLB
+load approved 3D-Assisted Evidence
   origin=[0,0,0]
   uniform_scale=1
   source_front_direction from fixture
@@ -234,9 +234,9 @@ Primary and secondary geometry are authored in this phase. A separate
 secondary-geometry gate is unnecessary; the single Geometry Visual Gate covers
 the complete shape.
 
-Before production `.bbmodel` export, any BlockIT-owned Route 1 reference must be removed. A production `.bbmodel` must contain no `reference_model` state.
+Before production `.bbmodel` export, any BlockIT-owned 3D-Assisted Evidence reference must be removed. A production `.bbmodel` must contain no `reference_model` state.
 
-Both paths converge before UV Layout at the same Geometry `PASS` and use the same downstream UV, Texture, Animation, and export flow. PrimitiveAnything remains isolated under `Experimental/primitiveanything-poc/`; a failed optional experiment returns to the Main Image-Reference Path.
+Both routes converge before UV Layout at the same Geometry `PASS` and use the same downstream UV, Texture, Animation, and export flow. Primitive Decomposition remains isolated under `Experimental/primitiveanything-poc/`; a failed 3D-Assisted attempt returns to the Image Reference Route.
 
 ### 3.2 Canonical UV / Texture Vocabulary
 
@@ -362,7 +362,7 @@ not rebuild unrelated geometry or texture.
 After `Texture PASS` and, when applicable, `Animation PASS`:
 
 ```text
-→ remove transient Route 1 reference state
+→ remove transient 3D-Assisted Evidence reference state
 → validate Bedrock structure and asset references
 → save the final `.bbmodel`
 → ONE FINAL VISUAL GATE

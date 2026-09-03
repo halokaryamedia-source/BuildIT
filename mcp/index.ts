@@ -51,14 +51,14 @@ let profileActions: Action[] = [];
 function setupProfileActions(): void {
   profileActions = [
     new Action("blockit_enable_extended", {
-      name: "Enable BlockIT EXTENDED MCP",
+      name: "Enable BlockIT Extended MCP Profile",
       description: "Enable the opt-in generic Blockbench fallback families.",
       icon: "extension",
       plugin: "blockit_mcp",
       click: () => setExtendedMcpFamiliesEnabled(true),
     }),
     new Action("blockit_disable_extended", {
-      name: "Disable BlockIT EXTENDED MCP",
+      name: "Disable BlockIT Extended MCP Profile",
       description: "Return BlockIT to the default Bedrock Entity profile.",
       icon: "extension",
       plugin: "blockit_mcp",

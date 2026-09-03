@@ -61,7 +61,7 @@ CI on `Local` is an asynchronous regression safety net, not a blocking permissio
 - After a normal `Local` commit, continue work without waiting for queued/in-progress CI unless its result is required for the next decision.
 - Only a failure on the current relevant `Local` HEAD needs diagnosis; cancelled or superseded runs can be ignored.
 - `Repository Verify` owns repository/routing/security/static infrastructure contracts.
-- `Authoring Policy Verify` owns static authoring policy, specialist routing, and Route 1 source/reproducibility contracts.
+- `Authoring Policy Verify` owns static authoring policy, specialist routing, and 3D-Assisted Evidence source/reproducibility contracts.
 - `MCP Verify` owns executable/public MCP source, build, generated-doc, and full package regressions.
 - `Release Verify` runs the canonical release gate for `main` pull requests and stable-branch pushes.
 

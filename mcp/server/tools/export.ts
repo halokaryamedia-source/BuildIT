@@ -209,7 +209,7 @@ export function registerExportTools() {
           const activeRoute1References = listBlockItRoute1References();
           if (activeRoute1References.length > 0) {
             throw new Error(
-              `Refusing editable .bbmodel export while ${activeRoute1References.length} transient BlockIT Route 1 geometry reference(s) are active. Remove them with manage_geometry_reference before project export; Bedrock geometry export is unaffected.`
+              `Refusing editable .bbmodel export while ${activeRoute1References.length} transient BlockIT 3D-Assisted Evidence reference(s) are active. Remove them with manage_geometry_reference before project export; Bedrock geometry export is unaffected.`
             );
           }
         }

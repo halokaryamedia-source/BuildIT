@@ -1,6 +1,6 @@
 {
   "version": "0.1.0",
-  "generatedAt": "2026-09-03T05:07:10.670Z",
+  "generatedAt": "2026-09-03T05:40:05.235Z",
   "tools": [
     {
       "name": "manage_cubes",
@@ -634,7 +634,7 @@
     {
       "name": "capture_model_views",
       "title": "Capture Model Views",
-      "description": "Captures 1-5 deterministic labeled 512×512 canonical views without changing the active editor camera. Model framing requires visible Cubes; explicit framing can also capture a loaded visible Route 1 3D reference before blockout. Returns observation only; no score/PASS/FAIL.",
+      "description": "Captures 1-5 deterministic labeled 512×512 canonical views without changing the active editor camera. Model framing requires visible Cubes; explicit framing can also capture a loaded visible 3D-Assisted Evidence reference before blockout. Returns observation only; no score/PASS/FAIL.",
       "status": "stable",
       "category": "Camera & Screenshots",
       "annotations": {
@@ -4876,8 +4876,8 @@
     },
     {
       "name": "manage_geometry_reference",
-      "title": "Manage Route 1 Geometry Reference",
-      "description": "Loads, updates, or removes one approved local Route 1 .glb as transient 3D evidence through Blockbench Reference Models. It never converts mesh triangles to Bedrock geometry.",
+      "title": "Manage 3D-Assisted Evidence Reference",
+      "description": "Loads, updates, or removes one approved local 3D-Assisted Evidence .glb through Blockbench Reference Models. It never converts mesh triangles to Bedrock geometry.",
       "status": "experimental",
       "category": "Project",
       "annotations": {
@@ -4897,8 +4897,8 @@
                   "update",
                   "remove"
                 ],
-                "description": "Route 1 reference lifecycle action.",
-                "markdownDescription": "Route 1 reference lifecycle action."
+                "description": "3D-Assisted Evidence reference lifecycle action.",
+                "markdownDescription": "3D-Assisted Evidence reference lifecycle action."
               },
               "path": {
                 "type": "string",
@@ -4909,8 +4909,8 @@
               "id": {
                 "type": "string",
                 "minLength": 1,
-                "description": "Tool-owned Route 1 reference UUID or unique exact name; required for update/remove.",
-                "markdownDescription": "Tool-owned Route 1 reference UUID or unique exact name; required for update/remove."
+                "description": "Tool-owned 3D-Assisted Evidence reference UUID or unique exact name; required for update/remove.",
+                "markdownDescription": "Tool-owned 3D-Assisted Evidence reference UUID or unique exact name; required for update/remove."
               },
               "source_front_direction": {
                 "type": "string",
@@ -4918,8 +4918,8 @@
                   "+z",
                   "-z"
                 ],
-                "description": "Required load-time front direction encoded by the approved Route 1 GLB.",
-                "markdownDescription": "Required load-time front direction encoded by the approved Route 1 GLB."
+                "description": "Required load-time front direction encoded by the approved 3D-Assisted Evidence GLB.",
+                "markdownDescription": "Required load-time front direction encoded by the approved 3D-Assisted Evidence GLB."
               },
               "origin": {
                 "type": "array",

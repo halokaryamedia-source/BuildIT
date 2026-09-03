@@ -17,11 +17,20 @@ Root `AGENTS.md` owns task selection.
 
 - **Source Image** is visual authority for reference-driven modelling when visual fidelity matters; a path, filename, README, manifest, or memory is not a substitute for the actual image.
 - **Requested Dimensions** are user-approved target dimensions; `1 block = 16 Blockbench units`.
-- **Route 1 Geometry Reference** is a transient approved shape-only local GLB used only as supporting 3D evidence for depth/volume/attachment/placement/hidden-side interpretation. Raw GLB bounds/statistics are observations, not target dimensions or production geometry.
+- **3D-Assisted Evidence** is transient approved GLB/Primitive Decomposition evidence used only for depth/volume/attachment/placement/hidden-side interpretation. Raw GLB bounds/statistics are observations, not target dimensions or production geometry.
 - **UV Layout** is geometry-to-atlas mapping such as `uv_offset`, `autouv`, `mirror_uv`, and per-face UV. It is distinct from bitmap styling.
 - **Texture Atlas** stores pixels; **Texture Styling** owns authored color/material/detail; **Texture Verify** is fresh visual validation after final mapping.
 - Static source/CI evidence never upgrades a live Blockbench, runtime, or visual-quality claim.
-- The Main Image-Reference Path is the default object-agnostic authoring route; a 3D-Assisted Path is optional and must not block it.
+- The Image Reference Route is the default object-agnostic authoring route; the 3D-Assisted Route is optional and must not block it.
+
+## Canonical Naming
+
+- **Image Reference Route** is the default authoring route using an approved image reference.
+- **3D-Assisted Route** is the optional authoring route using **3D-Assisted Evidence**.
+- **3D-Assisted Evidence** is one combined category: an approved clean GLB, with optional Primitive Decomposition when useful. GLB and Primitive Decomposition are not separate routes.
+- **Standard MCP Profile** is the normal public MCP surface; **Extended MCP Profile** is the explicit opt-in expanded surface.
+- Authoring phases always remain **Geometry → Texture → Animation**; Animation is optional when the asset has no motion requirement.
+- The final deliverable is the validated Blockbench `.bbmodel`; the main flow ends at the Blockbench file.
 
 ## Repository Shape
 
@@ -48,14 +57,14 @@ Phase ownership is strict:
 Core       lifecycle, focused discovery/inspection, selection,
            read-only global UV audit, history, canonical capture, export
 Geometry   Cube/Group/rig/Locator/Null mutation, structural delete/rename,
-           UV Layout mutation, transient Route 1 reference lifecycle
+           UV Layout mutation, transient 3D-Assisted Evidence lifecycle
 Texturing  Texture Atlas, Painter, PBR, material-instance work
 Animation  animation/keyframe/effect/controller work
 ```
 
 A foreign-phase need is not a discovery miss. Runtime returns `HANDOFF_REQUIRED` with compact resume-critical state; the active phase is changed/reloaded rather than emulating a foreign mutation.
 
-`manage_geometry_reference` reuses Blockbench Reference Models. Route 1 references remain transient authoring evidence and must not become Bedrock production geometry or remain in final production `.bbmodel` output.
+`manage_geometry_reference` reuses Blockbench Reference Models. 3D-Assisted Evidence remains transient authoring evidence and must not become Bedrock production geometry or remain in final production `.bbmodel` output.
 
 Generated MCP API docs are secondary to canonical source and generator output; generated entries are not hand-authored.
 
@@ -80,5 +89,5 @@ Repository source/docs/CI work may be performed through ChatGPT/GitHub or a loca
 - active asset continuity → `workspace/active/<project>/README.md`
 - asset workspace rules → `workspace/README.md`
 - local acceptance procedure → `docs/knowledge/operations/local-acceptance-runbook.md` only when explicitly reactivated
-- Route 1 procedure/reproducibility → `Experimental/route1-hunyuan-poc/README.md`
+- 3D-Assisted procedure/reproducibility → `Experimental/route1-hunyuan-poc/README.md`
 - experimental research → `Experimental/`

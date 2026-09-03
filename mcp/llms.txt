@@ -53,7 +53,7 @@ Protected gaps remain controller blend-curve mutation, TextureMesh direct author
 ## Security Boundary
 - `risky_eval` is disabled.
 - `from_geo_json` is disabled.
-- Generic fallback families require explicit `Extended MCP Families`; that setting does not re-enable the two disabled tools above.
+- Generic fallback families require the explicit `Extended MCP Profile`; that profile does not re-enable the two disabled tools above.
 - Do not broaden network exposure beyond loopback without a separately reviewed authentication design.
 
 ## Prompt / Agent Contract

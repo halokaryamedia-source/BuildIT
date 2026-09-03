@@ -41,9 +41,9 @@ Do **not** use the upstream hosted plugin as runtime authority for this reposito
 
 ```text
 endpoint                     http://127.0.0.1:3000/bb-mcp
-default profile              bedrock_entity
+default profile              Standard MCP Profile
 default authoring phase      geometry
-Extended MCP Families        OFF
+Extended MCP Profile         OFF
 risky_eval                   disabled
 from_geo_json                disabled
 ```

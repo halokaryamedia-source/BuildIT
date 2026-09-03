@@ -23,10 +23,10 @@ const localGlbPathSchema = z
   .min(1)
   .refine(isAbsoluteFilesystemPath, {
     message:
-      "Route 1 geometry reference path must be an absolute local filesystem path.",
+      "3D-Assisted Evidence reference path must be an absolute local filesystem path.",
   })
   .refine((path) => /\.glb$/i.test(path), {
-    message: "Route 1 geometry reference supports local .glb files only.",
+    message: "3D-Assisted Evidence supports local .glb files only.",
   });
 
 export const createProjectParameters = z
@@ -52,7 +52,7 @@ export const manageGeometryReferenceParameters = z
   .object({
     action: z
       .enum(["load", "update", "remove"])
-      .describe("Route 1 reference lifecycle action."),
+      .describe("3D-Assisted Evidence reference lifecycle action."),
     path: localGlbPathSchema
       .optional()
       .describe("Absolute local .glb path; required only for load."),
@@ -61,12 +61,12 @@ export const manageGeometryReferenceParameters = z
       .min(1)
       .optional()
       .describe(
-        "Tool-owned Route 1 reference UUID or unique exact name; required for update/remove."
+        "Tool-owned 3D-Assisted Evidence reference UUID or unique exact name; required for update/remove."
       ),
     source_front_direction: route1FrontDirectionSchema
       .optional()
       .describe(
-        "Required load-time front direction encoded by the approved Route 1 GLB."
+        "Required load-time front direction encoded by the approved 3D-Assisted Evidence GLB."
       ),
     origin: finiteReferenceVec3Schema
       .optional()
@@ -113,7 +113,7 @@ export const manageGeometryReferenceParameters = z
       }
       reject(
         "id",
-        "load does not accept id; v1 supports one active Route 1 reference."
+        "load does not accept id; v1 supports one active 3D-Assisted Evidence reference."
       );
       return;
     }
@@ -191,9 +191,9 @@ export const projectToolDocs: ToolSpec[] = [
   {
     name: "manage_geometry_reference",
     description:
-      "Loads, updates, or removes one approved local Route 1 .glb as transient 3D evidence through Blockbench Reference Models. It never converts mesh triangles to Bedrock geometry.",
+      "Loads, updates, or removes one approved local 3D-Assisted Evidence .glb through Blockbench Reference Models. It never converts mesh triangles to Bedrock geometry.",
     annotations: {
-      title: "Manage Route 1 Geometry Reference",
+      title: "Manage 3D-Assisted Evidence Reference",
       destructiveHint: true,
       openWorldHint: true,
     },
@@ -303,7 +303,7 @@ export type Route1ReferenceEvidence = Route1ReferenceBoundsSummary & {
 function requireBedrockReferenceProject(): void {
   if (!Project) {
     throw new Error(
-      "Open or create the intended Bedrock project before managing Route 1 geometry evidence."
+      "Open or create the intended Bedrock project before managing 3D-Assisted Evidence."
     );
   }
   const format = Format as
@@ -311,13 +311,13 @@ function requireBedrockReferenceProject(): void {
     | undefined;
   if (format?.id !== "bedrock") {
     throw new Error(
-      `Route 1 geometry reference requires bedrock format; current format is ${format?.id ?? "unknown"}.`
+      `3D-Assisted Evidence requires bedrock format; current format is ${format?.id ?? "unknown"}.`
     );
   }
   const direction = format.forward_direction ?? "-z";
   if (direction !== "+z" && direction !== "-z") {
     throw new Error(
-      `Route 1 v1 supports Bedrock project front +z/-z only; current forward direction is ${String(direction)}.`
+      `3D-Assisted Evidence v1 supports Bedrock project front +z/-z only; current forward direction is ${String(direction)}.`
     );
   }
 }
@@ -329,7 +329,7 @@ function projectFrontDirection(): Route1FrontDirection {
   const parsed = route1FrontDirectionSchema.safeParse(direction);
   if (!parsed.success) {
     throw new Error(
-      `Unsupported Blockbench forward direction ${direction} for Route 1 v1.`
+      `Unsupported Blockbench forward direction ${direction} for 3D-Assisted Evidence v1.`
     );
   }
   return parsed.data;
@@ -348,10 +348,10 @@ export function summarizeRoute1WorldBounds(
   blockSize: number
 ): Route1ReferenceBoundsSummary {
   if (!Number.isFinite(blockSize) || blockSize <= 0) {
-    throw new Error("Route 1 reference block size must be finite and positive.");
+    throw new Error("3D-Assisted Evidence reference block size must be finite and positive.");
   }
   if (![...min, ...max].every(Number.isFinite)) {
-    throw new Error("Route 1 reference world bounds must be finite.");
+    throw new Error("3D-Assisted Evidence reference world bounds must be finite.");
   }
 
   const size: Vec3 = [
@@ -361,7 +361,7 @@ export function summarizeRoute1WorldBounds(
   ];
   if (size.some((value) => !Number.isFinite(value) || value <= 0)) {
     throw new Error(
-      "Route 1 reference must have positive finite 3D span on X, Y, and Z."
+      "3D-Assisted Evidence reference must have positive finite 3D span on X, Y, and Z."
     );
   }
 
@@ -425,17 +425,17 @@ export function assertRoute1ReferenceInvariant(
 ): void {
   if (reference.parent !== "root") {
     throw new Error(
-      `Route 1 geometry reference ${reference.name || reference.uuid} must remain at the outliner root. Remove and reload it with manage_geometry_reference.`
+      `3D-Assisted Evidence reference ${reference.name || reference.uuid} must remain at the outliner root. Remove and reload it with manage_geometry_reference.`
     );
   }
   if (reference.locked !== true) {
     throw new Error(
-      `Route 1 geometry reference ${reference.name || reference.uuid} must remain locked. Remove and reload it with manage_geometry_reference.`
+      `3D-Assisted Evidence reference ${reference.name || reference.uuid} must remain locked. Remove and reload it with manage_geometry_reference.`
     );
   }
   if (reference.export !== false) {
     throw new Error(
-      `Route 1 geometry reference ${reference.name || reference.uuid} must remain export=false. Remove and reload it with manage_geometry_reference.`
+      `3D-Assisted Evidence reference ${reference.name || reference.uuid} must remain export=false. Remove and reload it with manage_geometry_reference.`
     );
   }
 
@@ -448,7 +448,7 @@ export function assertRoute1ReferenceInvariant(
     Math.abs(sx - sz) > 1e-9
   ) {
     throw new Error(
-      `Route 1 geometry reference ${reference.name || reference.uuid} must keep uniform positive scale. Remove and reload it with manage_geometry_reference.`
+      `3D-Assisted Evidence reference ${reference.name || reference.uuid} must keep uniform positive scale. Remove and reload it with manage_geometry_reference.`
     );
   }
 }
@@ -459,7 +459,7 @@ export function readRoute1ReferenceEvidence(
   assertRoute1ReferenceInvariant(reference);
   if (!reference.mesh || !isLoadedReference(reference)) {
     throw new Error(
-      `Route 1 geometry reference ${reference.name || reference.uuid} is not fully loaded.`
+      `3D-Assisted Evidence reference ${reference.name || reference.uuid} is not fully loaded.`
     );
   }
 
@@ -468,7 +468,7 @@ export function readRoute1ReferenceEvidence(
   const box = new THREE.Box3().setFromObject(reference.mesh, true);
   if (box.isEmpty()) {
     throw new Error(
-      `Route 1 geometry reference ${reference.name || reference.uuid} has no measurable 3D bounds.`
+      `3D-Assisted Evidence reference ${reference.name || reference.uuid} has no measurable 3D bounds.`
     );
   }
 
@@ -520,7 +520,7 @@ export function readRoute1ReferenceEvidence(
 
   if (meshCount === 0 || vertexCount === 0 || triangleCount === 0) {
     throw new Error(
-      `Route 1 geometry reference ${reference.name || reference.uuid} loaded without usable triangle-mesh evidence.`
+      `3D-Assisted Evidence reference ${reference.name || reference.uuid} loaded without usable triangle-mesh evidence.`
     );
   }
 
@@ -553,10 +553,10 @@ function resolveBlockItRoute1Reference(id: string): ReferenceModelRuntime {
   if (nameMatches.length === 1) return nameMatches[0];
   if (nameMatches.length > 1) {
     throw new Error(
-      `Route 1 geometry reference name "${id}" is ambiguous. Use the UUID.`
+      `3D-Assisted Evidence reference name "${id}" is ambiguous. Use the UUID.`
     );
   }
-  throw new Error(`Route 1 geometry reference "${id}" not found.`);
+  throw new Error(`3D-Assisted Evidence reference "${id}" not found.`);
 }
 
 function referenceConstructor(): ReferenceModelConstructor {
@@ -577,11 +577,11 @@ function referenceConstructor(): ReferenceModelConstructor {
 function localReferenceFilesystem(): ReferenceFilesystem {
   // @ts-ignore - requireNativeModule is a Blockbench desktop global.
   const fs = requireNativeModule("fs", {
-    message: "BlockIT Route 1 needs read access to the approved local GLB",
+    message: "BlockIT needs read access to the approved local 3D-Assisted Evidence GLB",
   }) as ReferenceFilesystem | null;
   if (!fs) {
     throw new Error(
-      "File system access was denied for the approved local Route 1 GLB."
+      "File system access was denied for the approved local 3D-Assisted Evidence GLB."
     );
   }
   return fs;
@@ -794,14 +794,14 @@ export function registerProjectTools() {
       if (parsed.action === "load") {
         if (listBlockItRoute1References().length > 0) {
           throw new Error(
-            "A BlockIT Route 1 reference is already active. Update or remove it before loading another."
+            "A BlockIT 3D-Assisted Evidence reference is already active. Update or remove it before loading another."
           );
         }
 
         const path = parsed.path!;
         const fs = localReferenceFilesystem();
         if (!fs.existsSync(path) || !fs.statSync(path).isFile()) {
-          throw new Error(`Route 1 GLB file not found: ${path}`);
+          throw new Error(`3D-Assisted Evidence GLB file not found: ${path}`);
         }
 
         const sourceFront = parsed.source_front_direction!;
@@ -831,7 +831,7 @@ export function registerProjectTools() {
           reference.export = false;
           refreshReference(reference);
           readRoute1ReferenceEvidence(reference);
-          Undo.finishEdit("Load Route 1 geometry reference", {
+          Undo.finishEdit("Load 3D-Assisted Evidence reference", {
             outliner: true,
             elements: [reference],
             selection: true,
@@ -867,7 +867,7 @@ export function registerProjectTools() {
           content: [
             {
               type: "text" as const,
-              text: `Loaded transient Route 1 GLB reference ${reference.name} (${reference.uuid}); source ${sourceFront} aligned to project ${targetFront} with Y yaw ${yaw}°.`,
+              text: `Loaded transient 3D-Assisted Evidence GLB reference ${reference.name} (${reference.uuid}); source ${sourceFront} aligned to project ${targetFront} with Y yaw ${yaw}°.`,
             },
           ],
           structuredContent: result,
@@ -883,7 +883,7 @@ export function registerProjectTools() {
         };
         Undo.initEdit({ outliner: true, elements: [reference], selection: true });
         reference.remove();
-        Undo.finishEdit("Remove Route 1 geometry reference", {
+        Undo.finishEdit("Remove 3D-Assisted Evidence reference", {
           outliner: true,
           elements: [reference],
           selection: true,
@@ -892,7 +892,7 @@ export function registerProjectTools() {
           content: [
             {
               type: "text" as const,
-              text: `Removed transient Route 1 geometry reference ${removed.name} (${removed.uuid}).`,
+              text: `Removed transient 3D-Assisted Evidence reference ${removed.name} (${removed.uuid}).`,
             },
           ],
           structuredContent: { action: "remove" as const, removed },
@@ -913,7 +913,7 @@ export function registerProjectTools() {
         (reference.wireframe ?? false) === nextWireframe
       ) {
         throw new Error(
-          "Route 1 geometry reference update is an exact no-op."
+          "3D-Assisted Evidence reference update is an exact no-op."
         );
       }
 
@@ -931,7 +931,7 @@ export function registerProjectTools() {
       reference.locked = true;
       reference.export = false;
       refreshReference(reference);
-      Undo.finishEdit("Update Route 1 geometry reference", {
+      Undo.finishEdit("Update 3D-Assisted Evidence reference", {
         elements: [reference],
       });
 
@@ -939,7 +939,7 @@ export function registerProjectTools() {
         content: [
           {
             type: "text" as const,
-            text: `Updated transient Route 1 geometry reference ${reference.name} (${reference.uuid}).`,
+            text: `Updated transient 3D-Assisted Evidence reference ${reference.name} (${reference.uuid}).`,
           },
         ],
         structuredContent: {

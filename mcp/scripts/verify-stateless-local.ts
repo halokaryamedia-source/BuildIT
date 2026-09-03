@@ -62,7 +62,7 @@ const DIAGNOSTICS = {
   MCP_HEALTH_CONTRACT_MISMATCH: ["MCP_PUBLIC_CONTRACT", "The fresh bundle is running but its health transport contract differs from source."],
   MCP_INITIALIZE_CONTRACT_MISMATCH: ["MCP_PUBLIC_CONTRACT", "The fresh bundle failed initialize semantics; inspect that contract owner first."],
   SURFACE_MISMATCH: ["MCP_PUBLIC_CONTRACT", "Capture missing/unexpected live tool names and fix only the first surface owner."],
-  GEOMETRY_CAPABILITY_MISSING: ["MCP_PUBLIC_CONTRACT", "Fix the missing Geometry registration/surface owner before Route 1."],
+  GEOMETRY_CAPABILITY_MISSING: ["MCP_PUBLIC_CONTRACT", "Fix the missing Geometry registration/surface owner before 3D-Assisted Evidence."],
   RETIRED_PLAN_ID_EXPOSED: ["MCP_PUBLIC_CONTRACT", "Fix the Direct Geometry schema owner before authoring."],
 } as const satisfies Record<LocalSmokeDiagnosticCode, readonly [string, string]>;
 

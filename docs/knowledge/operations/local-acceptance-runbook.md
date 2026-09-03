@@ -104,7 +104,7 @@ approved reference visible
 
 Tool success, coordinates, export success, low call count, or scalar scores cannot override **QUALITY FAIL**.
 
-## 6. Route 1 — Selected Image + GLB Test
+## 6. 3D-Assisted Route — Selected Image + Evidence Test
 
 The product choice is already locked:
 
@@ -147,9 +147,9 @@ Acceptance requires uniform scale only, fresh measurement after scale, intended 
 
 Non-goals: image-only comparison, extra 3D formats, non-uniform stretch, GLB rewrite, mesh repair/decimation, voxelizer, triangle→Cube conversion, semantic mesh parser, cuboid solver, new alignment tool/modes, Reference Models fork, scalar GLB quality authority.
 
-Failure → identify first wrong owner → fix only that owner → rerun failing step first → rerun Route 1 path → STOP.
+Failure → identify first wrong owner → fix only that owner → rerun failing step first → rerun the 3D-Assisted Route → STOP.
 
-## 7. BASE / EXTENDED Local Proof
+## 7. Standard / Extended MCP Profile Local Proof
 
 Before broad implementation, resolve the legacy registration-profile naming collision with capability `EXTENDED` and prove how same-phase EXTENDED definitions are reachable with the current client/transport.
 

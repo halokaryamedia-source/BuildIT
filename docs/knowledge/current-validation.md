@@ -13,15 +13,15 @@ BEDROCK CALLABLE CATALOG:        65 tools across phases
 DEFAULT CLIENT EXPOSURE:         MCP Core + Geometry (25 tools)
 KNOWN FULL MCP BASELINE:         PASS @ 5ecbf25608f8da879497e2f687854cb68781f3cd
 ACCEPTED LIVE BASELINE:          2026-08-12 Blockbench 5.1.6
-ROUTE 1 SELECTED WORKFLOW:       APPROVED IMAGE + GLB
-ROUTE 1 ALIGNMENT FOUNDATION:    SOURCE PREPARED — REFERENCE LOAD VERIFIED
-CURRENT ROUTE 1 LIVE RETEST:     STOPPED AFTER GLB REFERENCE LOAD
+3D-ASSISTED SELECTED WORKFLOW:   APPROVED IMAGE + 3D-ASSISTED EVIDENCE
+3D-ASSISTED ALIGNMENT FOUNDATION: SOURCE PREPARED — REFERENCE LOAD VERIFIED
+CURRENT 3D-ASSISTED LIVE RETEST: STOPPED AFTER EVIDENCE REFERENCE LOAD
 CURRENT MODEL-QUALITY CLAIM:     NONE — CUBE AUTHORING DEFERRED
 ```
 
 `KNOWN FULL MCP BASELINE` is the last deliberately retained full canonical executable/source baseline, not a claim that this file tracks the newest CI run. Current workflow status must be read from the exact current commit/run when it matters.
 
-The Route 1 product decision is already made: **approved image + approved GLB** is the selected reference-driven workflow. Image-only versus image+GLB is no longer an acceptance decision or A/B gate for the current Route 1 batch. Local work tests the selected workflow; it does not reopen that choice.
+The 3D-Assisted product decision is already made: **approved image + 3D-Assisted Evidence** is the selected optional workflow. Image-only versus image+evidence is no longer an acceptance decision or A/B gate for the current batch. Local work tests the selected workflow; it does not reopen that choice.
 
 ## Current Agent-Contract Proof
 
@@ -37,12 +37,12 @@ Static/current source contracts retain:
 - 51 callable Bedrock tools across phases;
 - default Core + Geometry exposure of 25 tools;
 - strict foreign-phase `HANDOFF_REQUIRED` behavior;
-- Route 1 as transient Geometry-owned reference evidence rather than production geometry;
+- 3D-Assisted Evidence as transient Geometry-owned reference evidence rather than production geometry;
 - fail-closed targeting, mutation, export, and phase boundaries;
 - generated API/prompt ownership through canonical source + generator;
 - repository, authoring-policy, executable MCP, experimental runtime, and release verification as separate proof surfaces.
 
-Route 1 alignment planning has a pure source foundation for two deliberately separate operations:
+3D-Assisted Evidence alignment planning has a pure source foundation for two deliberately separate operations:
 
 ```text
 observed GLB bounds + requested Minecraft dimensions
@@ -51,7 +51,7 @@ observed GLB bounds + requested Minecraft dimensions
 → center X/Z + ground Y translation plan
 ```
 
-The pure planner does **not** prove Blockbench Reference Model transform semantics. It does not change `manage_geometry_reference`, does not pre-scale the GLB artifact, does not add non-uniform scaling, and does not convert mesh triangles to Bedrock Cubes. The user has explicitly stopped Route 1 after the sample GLB enters Blockbench; no Cube reconstruction claim is active.
+The pure planner does **not** prove Blockbench Reference Model transform semantics. It does not change `manage_geometry_reference`, does not pre-scale the GLB artifact, does not add non-uniform scaling, and does not convert mesh triangles to Bedrock Cubes. The user has explicitly stopped the 3D-Assisted workflow after the sample GLB enters Blockbench; no Cube reconstruction claim is active.
 
 Exact regression ownership and protected capability gaps live in `docs/knowledge/implementation-map.md`; this file does not duplicate them.
 
@@ -64,18 +64,18 @@ The following cannot create visual `PASS` by themselves:
 - successful MCP/tool execution;
 - static source or CI success;
 - valid coordinates/hierarchy/export;
-- a Route 1 GLB or raw GLB bounds;
+- 3D-Assisted Evidence or raw GLB bounds;
 - a scalar similarity score;
 - a saved artifact whose visual result was not inspected.
 
 Front-view agreement does not prove hidden depth or full 3D fidelity. If required evidence is unavailable, the correct state is `UNVERIFIED` or `LOCAL PROOF REQUIRED`, not inferred success.
 
-For Route 1 specifically:
+For 3D-Assisted Evidence specifically:
 
 ```text
 requested dimensions = numeric authority
 approved image        = visual authority
-approved GLB          = 3D depth/volume/attachment evidence
+3D-Assisted Evidence  = 3D depth/volume/attachment evidence
 raw GLB bounds        = observation only
 ```
 
@@ -89,7 +89,7 @@ Authoring Efficiency means **Cost to Accepted Result**: the justified work neede
 
 Runtime Authoring Efficiency or model-quality claims require the matching local acceptance procedure and accepted artifact evidence.
 
-For the selected Route 1 workflow, local acceptance measures only whether the image+GLB path reaches an accepted result efficiently and correctly. It does **not** require an image-only comparison run.
+For the selected 3D-Assisted workflow, local acceptance measures only whether the image + evidence path reaches an accepted result efficiently and correctly. It does **not** require an image-only comparison run.
 
 ## Evidence Limits
 
@@ -97,7 +97,7 @@ Static source/CI evidence can prove the contracts it actually executes, such as 
 
 It **cannot prove visual fidelity**, installed-plugin freshness, fresh client registry state, desktop GLB rendering, live Reference Model scale/origin behavior, live Blockbench Undo/playback/persistence, or model-quality improvement unless those surfaces actually ran.
 
-The completed live boundary for Route 1 is only:
+The completed live boundary for 3D-Assisted Evidence is only:
 
 ```text
 canonical GLB load into Blockbench as transient Reference Model
@@ -110,4 +110,4 @@ Everything after that boundary is intentionally deferred:
 Cube authoring, fitting, correction, reference cleanup, and .bbmodel export
 ```
 
-If that selected path passes, Route 1 acceptance is complete for the tested claim. Do not add an image-only A/B gate afterward.
+If that selected path passes, 3D-Assisted acceptance is complete for the tested claim. Do not add an image-only A/B gate afterward.

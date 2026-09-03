@@ -39,7 +39,7 @@ mcp/server/tools/              authored operations
 mcp/lib/                       schemas/factories/identity/result helpers
 mcp/lib/authoringPhase.ts      Core/phase classification + active-phase/handoff contract
 mcp/lib/route1ReferenceAlignment.ts
-                               pure Route 1 fit-envelope + center/ground planning
+                               pure 3D-Assisted Evidence fit-envelope + center/ground planning
 mcp/ui/                        Blockbench panel/settings
 mcp/prompts/                   canonical workflow body + generated manifest
 mcp/build/                     build/docs/manifest generation + developer watch policy
@@ -66,11 +66,11 @@ For a named MCP-tool defect, inspect the mapped **source owner + primary regress
 | `get_project_info` | `mcp/server/tools/project.ts` | `mcp/tests/authoring/static-footprint-budget.test.ts` |
 | `inspect_model_bounds` | `mcp/server/tools/project.ts` | `mcp/tests/rendered-model-bounds-numeric-safety.test.ts` |
 | `manage_geometry_reference` | `mcp/server/tools/project.ts` | `mcp/tests/geometry-reference-contract.test.ts` |
-| Route 1 alignment math | `mcp/lib/route1ReferenceAlignment.ts` | `mcp/tests/route1-reference-alignment.test.ts` |
-| Route 1 quantitative/reconnect evidence | `mcp/server/tools/project.ts`, `mcp/server/resources.ts` | `mcp/tests/geometry-reference-contract.test.ts` |
-| Route 1 reference capture / production cleanup | `mcp/server/tools/camera.ts`, `mcp/server/tools/export.ts` | `mcp/tests/camera-framing-contract.test.ts`, `mcp/tests/geometry-reference-contract.test.ts` |
-| Route 1 Hunyuan MultiView reproducibility | `Experimental/route1-hunyuan-poc/generate_multiview_shape.py`, `Experimental/route1-hunyuan-poc/README.md` | `mcp/tests/authoring/route1-hunyuan-reproducibility.test.ts` |
-| Route 1 fixture preparation / packaging | `mcp/scripts/route1-fixture.ts`, `mcp/package.json` | `mcp/tests/route1-fixture-preparation.test.ts` |
+| 3D-Assisted Evidence alignment math | `mcp/lib/route1ReferenceAlignment.ts` | `mcp/tests/route1-reference-alignment.test.ts` |
+| 3D-Assisted Evidence quantitative/reconnect evidence | `mcp/server/tools/project.ts`, `mcp/server/resources.ts` | `mcp/tests/geometry-reference-contract.test.ts` |
+| 3D-Assisted Evidence reference capture / production cleanup | `mcp/server/tools/camera.ts`, `mcp/server/tools/export.ts` | `mcp/tests/camera-framing-contract.test.ts`, `mcp/tests/geometry-reference-contract.test.ts` |
+| 3D-Assisted Evidence Hunyuan MultiView reproducibility | `Experimental/route1-hunyuan-poc/generate_multiview_shape.py`, `Experimental/route1-hunyuan-poc/README.md` | `mcp/tests/authoring/route1-hunyuan-reproducibility.test.ts` |
+| 3D-Assisted Evidence fixture preparation / packaging | `mcp/scripts/route1-fixture.ts`, `mcp/package.json` | `mcp/tests/route1-fixture-preparation.test.ts` |
 | `manage_cubes` | `mcp/server/tools/cubes.ts` | `mcp/tests/model-effectiveness-correction-accuracy.test.ts` |
 | `add_group` | `mcp/server/tools/element.ts` | `mcp/tests/p1-core-ownership.test.ts` |
 | `list_outline`, `find_elements_by_criteria` | `mcp/server/tools/element.ts` | `mcp/tests/context-payload-cleanup.test.ts` |
@@ -86,9 +86,9 @@ For a named MCP-tool defect, inspect the mapped **source owner + primary regress
 
 `route1:prepare` and `route1:package` are Bun preparation commands, not MCP callable tools. They do not change the retained catalog or active Geometry surface.
 
-## Route 1 Ownership
+## 3D-Assisted Evidence Ownership
 
-The selected Route 1 production reference path is:
+The selected 3D-Assisted Evidence production reference path is:
 
 ```text
 approved image + requested dimensions
@@ -119,9 +119,9 @@ production cleanup/export                 → mcp/server/tools/export.ts
 semantic Minecraft geometry               → normal Geometry owners
 ```
 
-The GLB is transient evidence, never production geometry. It remains root-only, locked, `export=false`, and uniformly scaled. Raw GLB bounds do not define target dimensions. No mesh-to-Cube conversion, voxelizer, repair/decimation pipeline, non-uniform scale, or quality score belongs in Route 1 without a new explicitly evidenced requirement.
+The 3D-Assisted Evidence is transient evidence, never production geometry. It remains root-only, locked, `export=false`, and uniformly scaled. Raw GLB bounds do not define target dimensions. No mesh-to-Cube conversion, voxelizer, repair/decimation pipeline, non-uniform scale, or quality score belongs in the 3D-Assisted workflow without a new explicitly evidenced requirement.
 
-The image+GLB workflow is already selected. Image-only versus image+GLB is **not** a current acceptance gate.
+The image + 3D-Assisted Evidence workflow is already selected for that optional route. Image-only versus image + evidence is **not** a current acceptance gate.
 
 ## Effectiveness / Footprint Evidence Ownership
 
@@ -147,7 +147,7 @@ Generated API docs enumerate **77 declared source ToolSpecs**, including disable
 ```text
 MCP CORE + exactly one active phase
 
-geometry   = Cube/Group/rig/Locator/Null + Route 1 reference evidence + structural delete/rename + UV Layout mutation
+geometry   = Cube/Group/rig/Locator/Null + 3D-Assisted Evidence lifecycle + structural delete/rename + UV Layout mutation
 texturing  = Texture Atlas + Painter + PBR + material instances
 animation  = animation/keyframes/timeline/effects/controllers/inspection
 ```
@@ -199,11 +199,11 @@ Do not turn a professional sample, reference fixture, or one failed model into a
 ## Current Bedrock Ownership
 
 - MCP Core: lifecycle, focused discovery/inspection, selection, read-only global UV/atlas audit, history/recovery, canonical capture, export;
-- Geometry: `manage_geometry_reference`, Route 1 alignment planning, `manage_cubes`, `add_group`, structural delete/rename, Locator/Null mutation, `bone_rigging`, UV Layout mutation;
+- Geometry: `manage_geometry_reference`, 3D-Assisted Evidence alignment planning, `manage_cubes`, `add_group`, structural delete/rename, Locator/Null mutation, `bone_rigging`, UV Layout mutation;
 - Texturing: Texture Atlas lifecycle, Painter, PBR, material instances, Texture Verify;
 - Animation: numeric/Molang transforms, keyframes/timeline, effect mutation, AnimationController state-machine/state-effect mutation, animation inspection.
 
-Route 1 reference evidence is transient authoring state: approved image/dimensions remain authority, raw GLB bounds are observation only, and the tool-owned reference must be removed before production `.bbmodel` export. Runtime ownership survives rename; non-root, unlocked, export-enabled, or non-uniformly scaled Route 1 references fail closed until removed/reloaded.
+3D-Assisted Evidence is transient authoring state: approved image/dimensions remain authority, raw GLB bounds are observation only, and the tool-owned reference must be removed before production `.bbmodel` export. Runtime ownership survives rename; non-root, unlocked, export-enabled, or non-uniformly scaled evidence references fail closed until removed/reloaded.
 
 Protected gaps remain controller blend-curve mutation, TextureMesh direct authoring/inspection, native visible bounding-box fields, animated textures, and bone-binding expressions.
 

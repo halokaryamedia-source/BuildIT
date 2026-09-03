@@ -49,7 +49,7 @@ recover change                → undo / redo
 file deliverable              → export_model
 
 GEOMETRY
-Route 1 GLB lifecycle         → manage_geometry_reference when exposed
+3D-Assisted Evidence lifecycle → manage_geometry_reference when exposed
 create normal bone/Group      → add_group
  create/update Cubes            → manage_cubes(operation=create|update|batch_update)
 Group/bone parent move        → reparent_element
@@ -61,9 +61,9 @@ rig IK/mirror                 → bone_rigging
 
 `bone_rigging` only for IK/mirror. Known coherent Cubes → one `manage_cubes(operation=create, elements=[...])`; uncertainty → no batch. Known Cubes sharing one deterministic TRANSLATE/RESIZE intent → derive absolute targets once from fresh state → one `manage_cubes(operation=batch_update)`; one known correction uses `operation=update`. Never loop inspect→modify per Cube. Relative intent stays reasoning-layer arithmetic; writes stay absolute/fail-closed.
 
-## Route 1
+## 3D-Assisted Route
 
-Image + dimensions + shape-only GLB → `manage_geometry_reference`; modelling owns alignment/cleanup. See `Experimental/route1-hunyuan-poc/README.md`.
+Image + dimensions + clean GLB + optional Primitive Decomposition → `manage_geometry_reference`; modelling owns alignment/cleanup. GLB and Primitive Decomposition are one 3D-Assisted Evidence category, not separate routes. See `Experimental/route1-hunyuan-poc/README.md`.
 
 ## First-Call Invariants
 

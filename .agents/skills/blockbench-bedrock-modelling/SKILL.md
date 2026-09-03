@@ -22,11 +22,11 @@ Reference-driven work requires the **actual approved reference image visible in 
 user brief/target → identity/function
 approved image → visual authority
 approved dimensions → numeric envelope authority
-approved Route 1 GLB → supporting depth/volume/attachment evidence
+3D-Assisted Evidence → supporting depth/volume/attachment evidence
 claim | observable requirement | supporting view | SUPPORTED | PROVISIONAL | CONFLICTING | UNAVAILABLE
 ```
 
-For selected Route 1 work use **approved image + approved GLB together**; image-only vs image+GLB is not a decision gate. Requested dimensions remain numeric authority and raw GLB bounds remain observation only. Align the transient reference with **uniform FIT_ENVELOPE**, re-measure after scale, then center X/Z + ground Y. Never non-uniform stretch, rewrite the approved GLB, trace triangles, or infer target size from raw GLB bounds. Remove the reference before production `.bbmodel` export. Exact technical sequence lives in `Experimental/route1-hunyuan-poc/README.md`.
+For selected 3D-Assisted Route work use **approved image + approved 3D-Assisted Evidence together**; the evidence is one combined category consisting of a clean GLB and optional Primitive Decomposition. Image-only vs image+evidence is not a decision gate. Requested dimensions remain numeric authority and raw GLB bounds remain observation only. Align the transient reference with **uniform FIT_ENVELOPE**, re-measure after scale, then center X/Z + ground Y. Never non-uniform stretch, rewrite the approved GLB, trace triangles, or infer target size from raw GLB bounds. Remove the reference before production `.bbmodel` export. Exact technical sequence lives in `Experimental/route1-hunyuan-poc/README.md` (legacy internal path).
 
 Use a View Pair Map only to resolve materially ambiguous front/back, left/right, mirrored, depth, or 3/4 evidence that remains after image+GLB grounding. Reference fidelity is Minecraft-first: recognizability, primary masses/counts, topology/attachment, important negative spaces, and buildability over exact real-world contour.
 
@@ -111,4 +111,4 @@ Capture affected view(s) first; expand only for material cross-view risk. Classi
 
 Primary-form hierarchy/pivots may precede `PASS`; secondary geometry and neutral organization wait. Production texture/animation waits for dependent geometry/hierarchy/pivots. Existing-asset work may use current geometry as baseline without claiming reference approval. Complete only claims supported by fresh evidence; report `UNVERIFIED` honestly.
 
-For Route 1 completion, remove the transient GLB before `.bbmodel` export and verify no `reference_model` state remains.
+For 3D-Assisted Route completion, remove the transient 3D-Assisted Evidence before `.bbmodel` export and verify no `reference_model` state remains.

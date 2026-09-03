@@ -24,6 +24,6 @@ Default MCP endpoint after the plugin is running:
 http://127.0.0.1:3000/bb-mcp
 ```
 
-Keep **Extended MCP Families** off for the normal Bedrock Entity baseline. `risky_eval` and `from_geo_json` remain disabled.
+Keep the **Extended MCP Profile** off for the normal Bedrock Entity baseline. `risky_eval` and `from_geo_json` remain disabled.
 
 For the current repository acceptance procedure, follow root `docs/knowledge/next-action.md` and `docs/knowledge/operations/local-acceptance-runbook.md`. This install fragment only owns local build/load guidance; it does not replace repository task routing.

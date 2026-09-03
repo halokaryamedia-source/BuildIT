@@ -83,7 +83,7 @@ const TOOL_DISCOVERY_INTENT_GROUPS = [
   [
     "manage_geometry_reference",
     "load an approved GLB as a 3D geometry reference",
-    "hide update or remove the Route 1 model reference",
+    "hide update or remove the 3D-Assisted Evidence model reference",
   ],
   [
     "manage_cubes",

@@ -143,7 +143,7 @@ export const cameraToolDocs: ToolSpec[] = [
   {
     name: "capture_model_views",
     description:
-      "Captures 1-5 deterministic labeled 512×512 canonical views without changing the active editor camera. Model framing requires visible Cubes; explicit framing can also capture a loaded visible Route 1 3D reference before blockout. Returns observation only; no score/PASS/FAIL.",
+      "Captures 1-5 deterministic labeled 512×512 canonical views without changing the active editor camera. Model framing requires visible Cubes; explicit framing can also capture a loaded visible 3D-Assisted Evidence reference before blockout. Returns observation only; no score/PASS/FAIL.",
     annotations: {
       title: "Capture Model Views",
       readOnlyHint: true,
@@ -433,7 +433,7 @@ export function registerCameraTools() {
         !hasVisibleLoadedBlockItRoute1Reference()
       ) {
         throw new Error(
-          "Explicit framing requires visible Cube geometry or a loaded visible BlockIT Route 1 geometry reference."
+          "Explicit framing requires visible Cube geometry or a loaded visible BlockIT 3D-Assisted Evidence reference."
         );
       }
 

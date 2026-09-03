@@ -387,7 +387,7 @@ export function registerReferenceModelsResource(): void {
         return defaultValue;
       };
 
-      // Helper to extract reference model info. Tool-owned Route 1 references
+      // Helper to extract reference model info. Tool-owned 3D-Assisted Evidence references
       // also expose the same quantitative evidence needed after a fresh MCP/Codex
       // connection, without creating a second discovery tool or persisting a
       // parallel registry.
