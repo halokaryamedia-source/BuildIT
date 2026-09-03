@@ -90,7 +90,9 @@ If no persistent package exists and the user wants retention, create one compact
 
 ### 3.1 Geometry
 
-Choose the smallest evidence path that can change the model decision.
+Geometry owns the complete model shape and the minimum hierarchy required by
+shape, attachment, contact, and possible future motion. Choose the smallest
+evidence path that can change the model decision.
 
 ### Main Image-Reference Path
 
@@ -101,12 +103,13 @@ ACTUAL APPROVED IMAGE + HANDOFF CONSTRAINTS
 → identity + envelope + primary masses
 → CONSTRUCTION + TRANSFORM OWNERSHIP
 → minimum meaningful hierarchy
-→ PRIMARY BLOCKOUT: coherent Cubes + REQUIRED PRIMARY GROUPS/PIVOTS
-→ CANONICAL FRONT / SIDE / TOP / ISOMETRIC VIEWS
-→ DIFFERENCE-FIRST REFERENCE ↔ MODEL COMPARISON
-→ FAIL | UNVERIFIED | PASS
-→ one targeted correction when material
-→ secondary geometry only after Geometry PASS
+→ PRIMARY + SECONDARY GEOMETRY: coherent Cubes + required Groups/Pivots
+→ ONE GEOMETRY VISUAL GATE
+   canonical front / side / top / isometric views
+   difference-first reference ↔ model comparison
+→ PASS | FAIL | UNVERIFIED
+→ at most one targeted correction for the first wrong owner
+→ fresh affected evidence
 ```
 
 Image-only modelling remains valid when the approved image clearly supports identity, primary masses, attachments, negative spaces, and a Blockbench-buildable interpretation. The image is visual authority; requested dimensions remain numeric authority. Do not invent hidden structure or use object-specific templates.
@@ -216,7 +219,20 @@ fresh target state
 → IMPROVED | UNCHANGED | REGRESSED
 ```
 
-After Geometry `PASS`, add identity-weighted secondary geometry only when silhouette, recognizability, contact/layering, or motion benefits.
+Geometry efficiency rules:
+
+```text
+do not create a per-Cube plan or inspect every mutation
+do not add detail that does not improve silhouette, identity, contact, layering, or motion
+use one combined canonical capture for the visual gate
+make corrections only after fresh evidence identifies the first wrong owner
+do not repeat the whole phase for a local defect
+lock the approved shape after Geometry `PASS`
+```
+
+Primary and secondary geometry are authored in this phase. A separate
+secondary-geometry gate is unnecessary; the single Geometry Visual Gate covers
+the complete shape.
 
 Before production `.bbmodel` export, any BlockIT-owned Route 1 reference must be removed. A production `.bbmodel` must contain no `reference_model` state.
 
@@ -294,7 +310,77 @@ fresh Texture Atlas image
 
 Texture Verify is evidence, not another authoring stage. A paint-tool success cannot create visual `PASS`.
 
-After Texture Verify `PASS`: animation if required → final validation/export.
+Texture efficiency rules:
+
+```text
+one base-color atlas first; no speculative atlas variants
+default to 128; opt into 256 only when the approved result requires it
+do not create PBR atlases unless the project explicitly needs them
+do not style before UV Layout is stable
+verify the fresh atlas on affected model views, not every paint operation
+return only to UV Layout or Texture Styling according to the first wrong owner
+```
+
+### 3.7 Animation (optional)
+
+Animation follows the fixed authoring order:
+
+```text
+GEOMETRY → TEXTURE → ANIMATION
+```
+
+Animation is activated only when the user or project requirements call for
+motion. A static object completes this phase with `ANIMATION NOT REQUIRED`.
+
+When required:
+
+```text
+TEXTURE PASS
+→ ANIMATION INTENT
+→ reuse Geometry Groups/Pivots
+→ minimum required keyframes / controller / Molang
+→ ONE ANIMATION VISUAL CHECK
+→ ANIMATION PASS | FAIL | UNVERIFIED
+```
+
+Animation rules:
+
+```text
+do not create animation merely because the phase exists
+do not add a controller when a direct animation is sufficient
+do not add unused states, effects, or timelines
+do not redesign Geometry to solve a purely animation-owned defect
+verify only the required poses, transitions, and moving parts
+```
+
+If an animation exposes a missing or incorrect pivot, return the defect to
+Geometry, correct it there, then re-run the affected downstream evidence. Do
+not rebuild unrelated geometry or texture.
+
+### 3.8 Blockbench finalization and final visual gate
+
+After `Texture PASS` and, when applicable, `Animation PASS`:
+
+```text
+→ remove transient Route 1 reference state
+→ validate Bedrock structure and asset references
+→ save the final `.bbmodel`
+→ ONE FINAL VISUAL GATE
+→ BLOCKBENCH_READY | FAIL | UNVERIFIED
+```
+
+Finalization owns hierarchy/material/reference cleanup, valid Bedrock
+structure, and persistence of the Blockbench file. The final visual gate is
+the last quality decision and checks the required front, back, side, top,
+bottom, and 3/4 views. In-game preview is outside this flow.
+
+Finalization rules:
+
+```text
+save only the deliberate final `.bbmodel` and required assets
+do not create duplicate model versions or checkpoint files
+do not claim visual PASS from JSON validity or successful save alone
+```
 
 For persistent projects, save the current `.bbmodel` and deliberate deliverables at meaningful handoff/resume/park/completion boundaries, not after every mutation/capture. Keep README to one current next step plus real blockers. Git history owns prior revisions. Move completed/parked packages to `workspace/saved/`.
 
