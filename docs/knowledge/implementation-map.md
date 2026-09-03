@@ -203,6 +203,8 @@ Do not turn a professional sample, reference fixture, or one failed model into a
 - Texturing: Texture Atlas lifecycle, Painter, PBR, material instances, Texture Verify;
 - Animation: numeric/Molang transforms, keyframes/timeline, effect mutation, AnimationController state-machine/state-effect mutation, animation inspection.
 
+Project lifecycle is the implementation owner for `create_project` and `get_project_info`; their phase category is MCP Core. Core observation owns `inspect_model_bounds`, while project lifecycle does not own geometry mutation. This is the intentional boundary—no duplicate Core/Project facade or wrapper is required.
+
 3D-Assisted Evidence is transient authoring state: approved image/dimensions remain authority, raw GLB bounds are observation only, and the tool-owned reference must be removed before production `.bbmodel` export. Runtime ownership survives rename; non-root, unlocked, export-enabled, or non-uniformly scaled evidence references fail closed until removed/reloaded.
 
 Protected gaps remain controller blend-curve mutation, TextureMesh direct authoring/inspection, native visible bounding-box fields, animated textures, and bone-binding expressions.
