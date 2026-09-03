@@ -17,7 +17,10 @@ import {
   getActiveMcpAuthoringPhase,
   type McpAuthoringPhase
 } from '@/lib/authoringPhase'
-import { getMcpSurfaceToolNames } from '@/server/tools'
+import {
+  getActiveMcpRegistrationProfile,
+  getMcpSurfaceToolNames
+} from '@/server/tools'
 
 const INSTANCE_ID = crypto.randomUUID()
 const STARTUP_TIME = new Date().toISOString()
@@ -409,12 +412,15 @@ export default function createNetServer (
               JSON.stringify({
                 status: 'ok',
                 timestamp: new Date().toISOString(),
-                product: createProductIdentity(profile, getActiveMcpAuthoringPhase()),
+                product: createProductIdentity(
+                  getActiveMcpRegistrationProfile(),
+                  getActiveMcpAuthoringPhase()
+                ),
                 build_identity: BUILD_IDENTITY,
                 instance_id: INSTANCE_ID,
                 startup_time: STARTUP_TIME,
                 exposed_tool_count: getMcpSurfaceToolNames(
-                  profile,
+                  getActiveMcpRegistrationProfile(),
                   getActiveMcpAuthoringPhase()
                 ).length,
                 transport: {
@@ -500,7 +506,7 @@ export default function createNetServer (
             const response = await handleStatelessMcpRequest(
               webRequest,
               getActiveMcpAuthoringPhase(),
-              profile
+              getActiveMcpRegistrationProfile()
             )
             const sent = sendResponse(
               socket,

@@ -17,8 +17,10 @@ import {
   tools,
   prompts,
   applyMcpToolSurface,
+  applyMcpRegistrationProfile,
   registerMcpProfile,
   setMcpPhaseSwitchHandler,
+  setMcpProfileSwitchHandler,
 } from "@/server/tools";
 import { resolveMcpRegistrationProfile } from "@/lib/registrationProfile";
 import {
@@ -32,6 +34,8 @@ import { uiSetup, uiTeardown } from "@/ui";
 import {
   isExtendedMcpFamiliesEnabled,
   setExtendedMcpFamiliesEnabled,
+  setExtendedMcpProfileHandler,
+  clearExtendedMcpProfileHandler,
   settingsSetup,
   settingsTeardown,
 } from "@/ui/settings";
@@ -104,6 +108,12 @@ BBPlugin.register("blockit_mcp", {
     setupI18n();
     settingsSetup();
     setupProfileActions();
+    setMcpProfileSwitchHandler((profile) => {
+      Blockbench.showQuickMessage(
+        `BlockIT MCP profile switched to ${profile}. New MCP requests use the updated surface.`,
+        2000
+      );
+    });
 
     const rawPort = Number(Settings.get("mcp_port") || 3000);
     if (!Number.isInteger(rawPort) || rawPort < 1 || rawPort > 65535) {
@@ -121,6 +131,9 @@ BBPlugin.register("blockit_mcp", {
       isExtendedMcpFamiliesEnabled()
     );
     registerMcpProfile(registrationProfile);
+    setExtendedMcpProfileHandler((enabled) => {
+      applyMcpRegistrationProfile(resolveMcpRegistrationProfile(enabled));
+    });
 
     let authoringPhase: McpAuthoringPhase;
     try {
@@ -211,6 +224,8 @@ BBPlugin.register("blockit_mcp", {
 
   async onunload() {
     setMcpPhaseSwitchHandler(() => undefined);
+    setMcpProfileSwitchHandler(() => undefined);
+    clearExtendedMcpProfileHandler();
     if (httpServer) {
       // Wait for the listener close callback before allowing a subsequent
       // plugin load to claim the same port.

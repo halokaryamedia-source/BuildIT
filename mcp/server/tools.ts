@@ -296,11 +296,20 @@ let activeRegistrationProfile: McpRegistrationProfile =
 let phaseSwitchHandler:
   | ((phase: McpAuthoringPhase) => void)
   | undefined;
+let profileSwitchHandler:
+  | ((profile: McpRegistrationProfile) => void)
+  | undefined;
 
 export function setMcpPhaseSwitchHandler(
   handler: (phase: McpAuthoringPhase) => void
 ): void {
   phaseSwitchHandler = handler;
+}
+
+export function setMcpProfileSwitchHandler(
+  handler: (profile: McpRegistrationProfile) => void
+): void {
+  profileSwitchHandler = handler;
 }
 
 function registerPhaseControlTool(): void {
@@ -389,6 +398,18 @@ export function registerMcpProfile(
   if (profile === DEFAULT_MCP_REGISTRATION_PROFILE) registerConsolidatedMaterialInstancesTool();
 
   phaseSurfaceCache.clear();
+}
+
+export function getActiveMcpRegistrationProfile(): McpRegistrationProfile {
+  return activeRegistrationProfile;
+}
+
+export function applyMcpRegistrationProfile(
+  profile: McpRegistrationProfile
+): void {
+  registerMcpProfile(profile);
+  applyMcpToolSurface(profile, getActiveMcpAuthoringPhase());
+  profileSwitchHandler?.(profile);
 }
 
 export function getToolRegistrationFamily(

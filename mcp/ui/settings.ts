@@ -5,6 +5,7 @@ import {
 } from "@/lib/authoringPhase";
 
 const settings: Setting[] = [];
+let extendedProfileHandler: ((enabled: boolean) => void) | undefined;
 
 const EXTENDED_FAMILIES_STORAGE_KEY =
   "blockit_mcp.extended_families_enabled";
@@ -20,9 +21,20 @@ export function setExtendedMcpFamiliesEnabled(enabled: boolean): void {
   }
   Settings.save();
   Blockbench.showQuickMessage(
-    `BlockIT EXTENDED profile ${enabled ? "enabled" : "disabled"}. Reload BlockIT MCP to apply.`,
+    `BlockIT EXTENDED profile ${enabled ? "enabled" : "disabled"}. MCP surface updated.`,
     3000
   );
+  extendedProfileHandler?.(enabled);
+}
+
+export function setExtendedMcpProfileHandler(
+  handler: (enabled: boolean) => void
+): void {
+  extendedProfileHandler = handler;
+}
+
+export function clearExtendedMcpProfileHandler(): void {
+  extendedProfileHandler = undefined;
 }
 
 export function isExtendedMcpFamiliesEnabled(): boolean {
@@ -75,7 +87,7 @@ export function settingsSetup(): void {
     new Setting(MCP_EXTENDED_FAMILIES_SETTING_ID, {
       name: "Extended MCP Families",
       description:
-        "Explicitly expose the source-preserved generic import/UI fallback families on the next MCP plugin load. risky_eval and from_geo_json remain disabled.",
+        "Explicitly expose the source-preserved generic import/UI fallback families immediately. risky_eval and from_geo_json remain disabled.",
       type: "toggle",
       value: false,
       category,
