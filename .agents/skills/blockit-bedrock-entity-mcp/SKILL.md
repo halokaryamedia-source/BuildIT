@@ -126,3 +126,5 @@ OUTCOME_UNKNOWN     → inspect state before retry
 - `inspect_model_bounds` only for envelope/scale/ground/displacement.
 - Skip `get_project_info` after create/export unless lifecycle state is unknown/stale.
 - Same routed failure twice without new evidence → `BLOCKED`.
+
+`export_model`: `bedrock` JSON or `project` `.bbmodel`.

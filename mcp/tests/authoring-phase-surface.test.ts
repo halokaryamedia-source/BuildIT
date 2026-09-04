@@ -161,7 +161,9 @@ describe("authoring phase MCP surface", () => {
       expect(owner).not.toContain("reload BlockIT MCP");
     }
 
-    expect(orchestrator).toContain("optional 3D Evidence");
+    expect(orchestrator).toContain("3D_ASSISTED");
+    expect(orchestrator).toContain("manage_geometry_reference");
+    expect(orchestrator).not.toContain("optional 3D Evidence");
     expect(orchestrator).not.toContain("3D-Assisted Route");
     expect(texturing).toContain("manage_material");
     expect(texturing).not.toContain("create_pbr_material / configure_material / assign_texture_channel");

@@ -29,7 +29,7 @@ Entry: **final Box UV locked with `autouv=0`**, no invalid/out-of-bounds/partial
 
 ## Direct Routing
 
-Reuse fresh state.
+Reuse fresh state. Atlas lifecycle uses `list_textures / activate_texture`; read/create only when the current decision requires it.
 
 ```text
 global UV/atlas readiness      → list_textures (`uv_audit.production_gate`)

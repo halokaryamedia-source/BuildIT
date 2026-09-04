@@ -156,9 +156,23 @@ A future scaffold materializer is a Geometry Runtime capability behind the exist
 | `manage_cubes` | `mcp/server/tools/cubes.ts` | `mcp/tests/model-effectiveness-correction-accuracy.test.ts` |
 | `inspect_elements` | `mcp/server/tools.ts` | `mcp/tests/model-effectiveness-correction-accuracy.test.ts` |
 | `capture_model_views` | `mcp/server/tools/camera.ts` | `mcp/tests/camera-framing-contract.test.ts` |
+| `manage_locator`, `manage_null_object` | `mcp/server/tools/locators.ts` | `mcp/tests/bedrock-locator-coverage.test.ts` |
+| `manage_animation_controller` | `mcp/server/tools/animation-controller.ts` | `mcp/tests/animation-controller-mutation-contract.test.ts` |
 | `export_model` | `mcp/server/tools/export.ts` | `mcp/tests/prelocal-generic-semantics.test.ts` |
 | future 3D-Assisted orchestrator | production owner not yet created; current `Experimental/` | new static + later local proof |
 | future scaffold materializer | Geometry Runtime owner not yet created | new targeted contract + live Undo proof |
+
+## Protected Capability Map
+
+Protected gaps remain explicit and must not be bypassed through generic UI/eval fallback:
+
+- controller blend-curve mutation;
+- TextureMesh direct authoring/inspection;
+- native visible bounding-box fields;
+- animated textures;
+- bone-binding expressions.
+
+Locator/Null is available through `manage_locator` / `manage_null_object`; material instances are available through `manage_material_instances`; animation controller lifecycle is available through `manage_animation_controller`.
 
 ## Protected Boundary
 

@@ -116,7 +116,7 @@ Install the exact current plugin bundle:
 bun run deploy:local -- /absolute/path/to/blockit_mcp.js
 ```
 
-The helper builds first, copies exact bytes, verifies build identity, and does not reload Blockbench automatically.
+The helper builds first, copies exact bytes, verifies build identity, and does not reload Blockbench automatically. Runtime health exposes `build_identity`; use it to confirm the installed bundle matches the exact local artifact before reusing live proof.
 
 Gateway:
 
