@@ -80,7 +80,7 @@ Painter coordinates  → texture pixels; keep in bounds
 
 Current `create_texture` has a provisional **16×16** blank default. Production authoring must therefore **not omit blank Atlas size**; reuse project resolution. Existing base-color atlas → reuse its UUID.
 
-Known capability → invoke. Unknown/stale → one `search_capabilities`; exact schema → `describe_capability` once. **Do not re-list/re-read it only for confirmation.**
+Known identity must not fall back to broad hierarchy discovery or confirmation reads. Known capability → invoke. Unknown/stale → one `search_capabilities`; exact schema → `describe_capability` once. **Do not re-list/re-read it only for confirmation.**
 
 ## Texture Atlas / Styling
 
