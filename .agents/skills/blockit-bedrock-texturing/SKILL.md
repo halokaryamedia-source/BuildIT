@@ -58,7 +58,7 @@ manage_material | manage_material_instances | capture_model_views
 
 ## Conditional Support — Not Default Routing
 
-These must not enter the normal hot path unless intent requires:
+These must not enter the normal hot path unless user intent specifically requires them:
 
 ```text
 gradient_tool | color_picker_tool | copy_brush_tool | paint_settings
@@ -96,7 +96,7 @@ SECONDARY DETAIL PASS → controlled detail
 VERIFY                → Texture Verify
 ```
 
-`gradient_tool` only for reference-supported continuous transition. Same-color detail → one `paint_with_brush` batch.
+`gradient_tool` is only for reference-supported continuous transition. Same-color detail → one `paint_with_brush` batch with `connect_strokes=false`.
 
 ## Texture Verify / Visual Convergence
 

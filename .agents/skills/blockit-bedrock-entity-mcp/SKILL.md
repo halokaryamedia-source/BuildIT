@@ -80,7 +80,7 @@ rig IK/mirror                  → bone_rigging
 
 ```text
 add_group                   → pass name OR groups, never both
-manage_cubes update         → id + authored change
+manage_cubes update       → id + at least one authored field change
 manage_cubes rotated create → origin required
 manage_locator create       → name+parent; update → id+authored change
 manage_null_object create   → name+parent; update → id+parent/position
