@@ -5,7 +5,7 @@ description: Minecraft Bedrock Entity animation specialist for authored motion, 
 
 # BlockIT Bedrock Animation
 
-Use when `ACTIVE PHASE: ANIMATION`, `Animation Required = YES`, Texturing approved, hierarchy/pivots suitable.
+Use when `ACTIVE PHASE: ANIMATION`, `Animation Required = YES`, Texturing approved, and participating hierarchy/pivots are suitable.
 
 ## Phase Boundary
 
@@ -53,7 +53,7 @@ manage_animation_controller
 
 Known capability → invoke via Gateway. Unknown/stale → `search_capabilities`; schema → `describe_capability` once. **Reuse fresh UUID/state; known identity must not fall back to broad hierarchy discovery or confirmation reads.**
 
-Route timeline/keyframe work through `manage_animation_timeline`; use `batch` for one cohort intent. Controller/effect/graph/copy-paste tools are conditional.
+Route timeline/keyframe work through `manage_animation_timeline`. Use `batch` for one shared cohort intent instead of looping per key. Controller/effect/graph/copy-paste tools are conditional.
 
 ## Motion Design Contract
 

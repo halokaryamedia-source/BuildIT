@@ -76,7 +76,7 @@ Animation:
 
 `INVALIDATED` is only for a previously approved stage whose approval became materially invalid because an upstream approved stage changed. `INTERNAL_VERIFY` is transient and is not persisted.
 
-`front_direction` is the canonical object front for `capture_model_views`: `+z` or `-z`. Record it once when material and reuse it. Requested dimensions stay in Minecraft blocks plus resolved Blockbench units when resume-critical (`1 block = 16 Blockbench units`).
+`front_direction` means the canonical object front used by `capture_model_views`: `+z` or `-z`. Record it once when material and reuse it. Requested dimensions stay in Minecraft blocks plus resolved Blockbench units when resume-critical (`1 block = 16 Blockbench units`).
 
 When phase reload/resume is pending, keep only:
 
@@ -103,7 +103,7 @@ Animation APPROVED → checkpoint save
 Finalization PASS  → final save + COMPLETE
 ```
 
-Do **not** save/checkpoint after every MCP mutation or capture; mutation count alone is not a checkpoint trigger. Before first Geometry approval, a new model has no authoritative `.bbmodel` checkpoint in workspace.
+Do **not** save/checkpoint after every MCP mutation or capture. Mutation count alone is not a checkpoint trigger. Before first Geometry approval, a new model has no authoritative `.bbmodel` checkpoint in workspace.
 
 ## Existing `.bbmodel` Intake
 

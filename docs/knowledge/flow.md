@@ -223,6 +223,17 @@ Cleanup must leave coherent silhouette, dimensions, parts, attachments, orientat
 
 ## 7. Geometry Readiness / Future Animation
 
+Canonical downstream vocabulary remains distinct:
+
+```text
+UV Layout       = geometry-to-atlas mapping
+Texture Atlas   = bitmap/PNG canvas
+Texture Styling = authored color/material/detail
+Texture Verify  = atlas + mapped-model validation
+```
+
+Construction forms are examples, not presets. Decide transform ownership before coordinates. Form/contact/articulation-defining **REQUIRED PRIMARY GROUPS/PIVOTS** may belong in the **PRIMARY BLOCKOUT**; neutral organization stays downstream. After primary PASS, add identity-weighted secondary geometry only where it materially improves silhouette, contact, layering, editability, or motion.
+
 All Geometry should be future-animation-friendly:
 
 - meaningful semantic hierarchy;

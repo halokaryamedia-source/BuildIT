@@ -5,7 +5,7 @@ description: Route Bedrock Entity intents through Gateway.
 
 # BlockIT Bedrock Entity MCP
 
-Own **phase/tool routing**, Gateway reuse, handoff, recovery:
+Own only **phase/tool routing**, Gateway reuse, handoff, recovery:
 
 ```text
 geometry/rig/UV judgement → `blockbench-bedrock-modelling`
@@ -35,7 +35,7 @@ ACTIVE PHASE + intent + known state/UUIDs
 → reuse fresh returned state
 ```
 
-Known → invoke. Unknown/stale → `search_capabilities`; schema needed → `describe_capability` once. **1 Minecraft block = 16 Blockbench units.** Reuse `front_direction`.
+Known → invoke. Unknown/stale → `search_capabilities`; schema needed → `describe_capability` once before mutation. **1 Minecraft block = 16 Blockbench units.** Reuse `front_direction`.
 
 ## Phase Handoff
 
@@ -43,9 +43,7 @@ Foreign phase → `HANDOFF_REQUIRED`: `target_phase`, `reason`, `readiness`, `re
 
 ```text
 switch_authoring_phase through Gateway
-→ refresh Runtime catalog
-→ load target specialist
-→ continue same task/chat
+→ refresh Runtime catalog → load target specialist → continue same task/chat
 ```
 
 Forward handoff waits for explicit user approval + checkpoint. `HANDOFF_REQUIRED` stops prior-phase mutations only.
@@ -60,6 +58,7 @@ Internal `PASS` → `READY_FOR_USER_REVIEW`; user explicitly approves live Block
 
 ```text
 CORE / SHARED
+project lifecycle unknown     → get_project_info
 target identity unknown       → inspect_elements(mode=search)
 hierarchy question            → inspect_elements(mode=outline)
 known target detail           → inspect_elements(mode=detail)
@@ -83,13 +82,13 @@ Locator/Null create/edit       → manage_locator / manage_null_object
 rig IK/mirror                  → bone_rigging
 ```
 
-`bone_rigging` only for IK/mirror. Known coherent Cubes → one `manage_cubes(operation=create, elements=[...])`; uncertainty → no batch. Known Cubes sharing one deterministic TRANSLATE/RESIZE intent → absolute targets from fresh state → one `manage_cubes(operation=batch_update)`. Never inspect→modify per Cube; writes stay absolute/fail-closed.
+`bone_rigging` only for IK/mirror. Known coherent Cubes → one `manage_cubes(operation=create, elements=[...])`; uncertainty → no batch. Known Cubes sharing one deterministic TRANSLATE/RESIZE intent → derive absolute targets once from fresh state → one `manage_cubes(operation=batch_update)`. Never inspect→modify per Cube; writes stay absolute/fail-closed.
 
 ## First-Call Invariants
 
 ```text
 add_group                   → pass name OR groups, never both
-manage_cubes update         → id + at least one authored field change
+manage_cubes update       → id + at least one authored field change
 manage_cubes rotated create → origin required
 manage_locator create       → name+parent; update → id+authored change
 manage_null_object create   → name+parent; update → id+parent/position
@@ -124,9 +123,9 @@ OUTCOME_UNKNOWN     → inspect state before retry
 - Known UUID → no discovery unless stale/ambiguous.
 - Fresh mutation → reuse returned state/`geometry_effect`; no confirmation readback.
 - Do not automatically re-read fresh mutation targets with `inspect_elements(mode=detail)`.
-- `validator://status` first; zero → no detail read.
-- Bounds only for envelope/scale/ground/displacement.
-- Skip project reread unless lifecycle stale.
+- Validator gate → read `validator://status` first; zero problems means no detail-resource read.
+- `inspect_model_bounds` only for envelope/scale/ground/displacement.
+- Skip `get_project_info` after create/export unless lifecycle state is unknown/stale.
 - Same routed failure twice without new evidence → `BLOCKED`.
 
 `export_model`: `bedrock` JSON or editable `project` `.bbmodel`.
