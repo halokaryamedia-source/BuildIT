@@ -5,7 +5,7 @@ description: Bedrock Texture/Painter/PBR specialist.
 
 # BlockIT Bedrock Texturing
 
-`ACTIVE PHASE: TEXTURING` only. Geometry owns geometry/rig/UV mutation; Texturing may inspect UV but **must not borrow Cube mutation**. Enter after Geometry approval.
+`ACTIVE PHASE: TEXTURING` only. Geometry owns geometry/rig/UV mutation; **must not borrow Cube mutation**. Enter after Geometry approval.
 
 ## Phase Boundary
 
@@ -16,9 +16,7 @@ UV/geometry/rig correction required
   reason: <defect>
   readiness: <failed gate>
   resume_from: <current target>
-→ switch_authoring_phase through Gateway
-→ refresh Runtime catalog
-→ continue same task
+→ switch_authoring_phase through Gateway → refresh catalog → continue same task
 ```
 
 Entry: **final Box UV locked with `autouv=0`**, no invalid/out-of-bounds/partial-overlap blocker, reuse `box_uv_region`.
@@ -29,7 +27,7 @@ Entry: **final Box UV locked with `autouv=0`**, no invalid/out-of-bounds/partial
 
 ## Direct Routing
 
-Reuse fresh state. Atlas lifecycle uses `list_textures / activate_texture`; read/create only when the current decision requires it.
+Reuse fresh state; atlas lifecycle: `list_textures / activate_texture`.
 
 ```text
 global UV/atlas readiness      → list_textures (`uv_audit.production_gate`)
@@ -58,7 +56,7 @@ manage_material | manage_material_instances | capture_model_views
 
 ## Conditional Support — Not Default Routing
 
-These must not enter the normal hot path unless user intent specifically requires them:
+Must not enter the normal hot path unless user intent specifically requires them:
 
 ```text
 gradient_tool | color_picker_tool | copy_brush_tool | paint_settings
