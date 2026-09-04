@@ -266,3 +266,341 @@ historical rationale       → Git history / GitHub issues and PRs
 ```
 
 Do not create duplicate route systems, authoring profiles, roadmap/review indexes, decision logs, manifest layers, or parallel workspace-state systems.
+
+## 7. Practical Usage Flow
+
+This is the developer/user mental model for normal BlockIT authoring. The client should think about **intent and phase**, not the native Runtime tool catalog.
+
+### 7.1 Start an asset task
+
+If an approved reference already exists:
+
+```text
+USER REQUEST + APPROVED IMAGE + DIMENSIONS/CONSTRAINTS
+→ AI client stays connected to BlockIT Gateway
+→ Geometry is the default authoring phase
+→ use the active specialist
+→ execute the smallest exact capability needed
+→ verify the phase result
+→ hand off only when the next phase is ready
+```
+
+If the reference does not exist yet:
+
+```text
+USER REQUEST
+→ Reference Preparation
+→ USER APPROVAL
+→ approved image becomes visual authority
+→ start normal authoring at Geometry
+```
+
+If optional 3D Evidence does not already exist or is not materially useful, skip it entirely. Do not generate 3D merely because the feature exists.
+
+Static asset:
+
+```text
+Geometry PASS
+→ Texturing PASS
+→ Finalization
+```
+
+Animated asset:
+
+```text
+Geometry PASS
+→ Texturing PASS
+→ Animation PASS
+→ Finalization
+```
+
+### 7.2 Gateway tool usage
+
+The AI client has only four stable Gateway tools:
+
+| Gateway tool | Use it when |
+|---|---|
+| `status` | Runtime availability/build/phase is uncertain, especially around development reload/restart or debugging. |
+| `search_capabilities` | The required Runtime capability is genuinely unknown or stale. Do not use it as the first step when the exact capability is already known. |
+| `describe_capability` | The current input schema is needed before a call. Load it once, then act. |
+| `invoke_capability` | Normal execution path for known Runtime capabilities. Most authoring work should end here. |
+
+Normal hot path:
+
+```text
+known intent + known capability
+→ invoke_capability
+```
+
+Deferred discovery path:
+
+```text
+known intent + unknown/stale capability
+→ search_capabilities
+→ describe_capability only if schema is needed
+→ invoke_capability
+```
+
+Do not turn `search_capabilities` into a second router. Phase/specialist ownership decides the route first; discovery only loads missing capability information afterward.
+
+### 7.3 Phase changes during the same task
+
+Example Geometry → Texturing:
+
+```text
+Geometry reaches readiness
+→ HANDOFF_REQUIRED(texturing)
+→ preserve target_phase + reason + readiness + resume_from
+→ invoke `switch_authoring_phase` through Gateway
+→ Gateway refreshes the Runtime catalog
+→ load Texturing specialist
+→ continue the same task/chat
+```
+
+The same rule applies Texturing → Animation and any return to Geometry.
+
+Do **not** add instructions such as:
+
+```text
+restart Codex
+open a new chat
+reconnect MCP because the phase changed
+```
+
+Those are not normal authoring steps.
+
+### 7.4 Runtime/plugin development reloads
+
+The connection boundary remains:
+
+```text
+AI client → Gateway → Runtime/Blockbench
+```
+
+During development, Runtime/Blockbench may be rebuilt or restarted while Gateway remains the client boundary. A Runtime change does not automatically justify changing client configuration or creating a new task/chat.
+
+When Runtime state is uncertain after a development reload:
+
+```text
+Gateway status
+→ Runtime available?
+   NO  → report backend unavailable; do not invent capability
+   YES → continue
+→ search/describe only if the required capability definition changed or is unknown
+→ invoke current capability
+```
+
+Direct Runtime MCP remains an Inspector/conformance/debug surface, not the normal AI authoring connection.
+
+## 8. How to Continue Developing Safely
+
+The safest rule is:
+
+> **Expand Runtime capability behind the existing Gateway/phase model before expanding architecture.**
+
+A new tool, schema, provider, or experiment should not automatically create a new route, profile, phase, or client-facing Gateway tool.
+
+Use `docs/knowledge/implementation-map.md` for the exact current source owner of each boundary.
+
+### 8.1 Adding a Runtime capability
+
+Use this decision tree first:
+
+```text
+NEW CAPABILITY
+→ What user intent does it satisfy?
+→ Which existing owner is responsible?
+   shared lifecycle/read/recovery → Core
+   geometry/rig/UV/evidence       → Geometry
+   texture/PBR/Painter            → Texturing
+   motion/keyframes/controllers   → Animation
+→ Which routing tier?
+   frequent canonical hot path    → PRIMARY
+   conditional valid operation    → SUPPORT
+   explicit research/evidence     → EXPERIMENTAL
+   debug/legacy fallback          → MAINTENANCE
+→ implement in the existing Runtime owner
+→ classify it in the existing phase model
+→ expose it through Gateway discovery/invocation
+→ update only the specialist guidance that needs to know it
+→ add/update regression coverage
+```
+
+Important rules:
+
+1. **Do not add a fifth Gateway tool** just because a new Runtime capability exists. The Gateway remains `status`, `search_capabilities`, `describe_capability`, `invoke_capability`.
+2. **Do not create a new authoring profile** for a normal capability. The internal `extended` identifier is compatibility/debug only.
+3. **Do not create a new phase** when the capability clearly belongs to Geometry, Texturing, Animation, or Core.
+4. New capabilities default conceptually to **Support** unless there is a clear reason they belong on the normal hot path.
+5. Promote to **Primary** only when the capability is a normal canonical operation that should rank highly during routine authoring.
+6. Use **Experimental** for opt-in evidence/research behavior, not merely because a tool is new.
+7. Use **Maintenance** for generic UI/debug/legacy fallback behavior; maintenance must never outrank authored BlockIT operations.
+
+Current implementation boundaries:
+
+```text
+phase ownership/classification → mcp/lib/authoringPhase.ts
+Gateway tier/ranking           → mcp/gateway/contract.ts
+exact Runtime operation        → existing owner under mcp/server/tools/ or mcp/server/tools.ts
+specialist decision guidance   → .agents/skills/<active specialist>/SKILL.md
+source/regression lookup       → docs/knowledge/implementation-map.md
+```
+
+### 8.2 Changing a capability schema
+
+If the user-facing semantic operation is still the same, keep the same capability name.
+
+```text
+same semantic capability
+→ evolve input/output schema
+→ update description when needed
+→ update executor + tests
+→ let describe_capability expose the current schema
+```
+
+Do **not** create `tool_v2`, a second profile, or another authoring route only because the schema changed.
+
+A new capability name is justified when the semantic operation/ownership is materially different, not merely because parameters changed.
+
+### 8.3 Renaming a capability
+
+Treat rename as a contract migration, not a text-only cleanup.
+
+```text
+rename Runtime capability
+→ update registration/executor owner
+→ update phase classification
+→ update Gateway tier classification when explicitly tiered
+→ update specialist routing references
+→ update regression tests
+→ update generated/reference docs through the normal build path
+→ remove stale canonical name
+```
+
+Keep a compatibility alias only when there is a proven compatibility requirement. Do not permanently keep two names for the same normal operation because it makes discovery and agent choice worse.
+
+### 8.4 Removing a capability
+
+Before deletion, answer:
+
+```text
+Does a supported user intent still depend on this capability?
+```
+
+If **no**:
+
+```text
+remove implementation
+→ remove registration/phase exposure
+→ remove specialist routing references
+→ remove/update tests and generated docs
+```
+
+If **yes**, replace the missing semantic operation with an authored capability before removing the old one.
+
+Never silently replace a removed real capability with `trigger_action`, `emulate_clicks`, `fill_dialog`, or `risky_eval` in normal authoring.
+
+### 8.5 Moving a capability between phases
+
+Move a capability only when its semantic owner changes.
+
+Examples:
+
+```text
+Cube/Group/rig/UV mutation     → Geometry
+Texture Atlas/Painter/PBR      → Texturing
+keyframe/timeline/controller   → Animation
+shared read/recovery/lifecycle → Core when genuinely cross-phase
+```
+
+Do not make a mutation Core merely to avoid a phase handoff. Phase boundaries exist to keep the authoring surface legible.
+
+If a capability changes owner, update `mcp/lib/authoringPhase.ts`, specialist guidance, readiness/handoff behavior, and regression coverage together.
+
+### 8.6 Adding another 3D/reference provider
+
+A provider is not an authoring phase.
+
+Correct model:
+
+```text
+Hunyuan / PrimitiveAnything / future provider / manual GLB
+→ evidence-production or research layer
+→ optional clean evidence artifact
+→ Geometry consumes it through manage_geometry_reference when useful
+→ normal Geometry production remains semantic Groups/Cubes
+```
+
+Do not create:
+
+```text
+Hunyuan Profile
+PrimitiveAnything Profile
+3D-Assisted Authoring Phase
+Provider-specific Gateway tools
+```
+
+unless a future, repeatedly proven product requirement demonstrates that the existing evidence boundary cannot represent the need.
+
+### 8.7 When architecture expansion is justified
+
+Before introducing a new phase, route, profile, Gateway tool, persistent state system, or abstraction layer, require a concrete capability gap that cannot fit the current model.
+
+Valid reason:
+
+```text
+repeated real user intent
++ cannot be represented safely in Core/Geometry/Texturing/Animation
++ existing Gateway invocation cannot express the operation
++ capability loss or reliability problem is demonstrated
+```
+
+Invalid reasons:
+
+```text
+tool count feels large
+one experiment has a different provider
+one schema became more complex
+one capability was renamed
+a direct Runtime tools/list changed
+an implementation file is large
+```
+
+## 9. Development Guardrails Checklist
+
+Before finishing a capability change, check these questions:
+
+```text
+[ ] Does normal authoring still read as one flow:
+    approved image + optional 3D Evidence → Geometry → Texturing → optional Animation?
+
+[ ] Is the AI client boundary still the four-tool Gateway?
+
+[ ] Does the changed capability have one clear owner:
+    Core, Geometry, Texturing, or Animation?
+
+[ ] Is its tier intentional:
+    Primary, Support, Experimental, or Maintenance?
+
+[ ] Can a known capability still be invoked directly without mandatory search?
+
+[ ] Does foreign-phase work use HANDOFF_REQUIRED + switch_authoring_phase
+    instead of borrowing mutation tools?
+
+[ ] Did schema-only evolution keep the same semantic capability name?
+
+[ ] Did rename/remove work delete stale canonical references rather than
+    leaving duplicate normal tools indefinitely?
+
+[ ] Did no provider/research feature leak into a new normal authoring route/profile?
+
+[ ] Did no normal instruction reintroduce MCP reconnect/new-chat as a phase step?
+
+[ ] Are generic UI/eval fallbacks still debug/maintenance only?
+
+[ ] Are capability counts being treated as observations, not optimization targets?
+
+[ ] Did the exact source owner + regression owner get updated together?
+```
+
+If the answer to one of the architectural questions is **no**, stop before adding another abstraction. First determine whether the problem is actually a missing Runtime capability, a phase-ownership mistake, a Gateway ranking issue, or only stale documentation.
