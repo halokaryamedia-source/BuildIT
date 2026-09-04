@@ -112,7 +112,7 @@ catalog tools/list budget              <= 82,000 characters
 catalog input schemas                  <= 58,500 characters
 catalog descriptions                   <= 11,500 characters
 max per-tool payload                   <= 3,200 characters
-runtime workflow prompt                < 9,000 characters
+runtime workflow prompt             < 9,000 characters
 ```
 
 `gateway-contract.test.ts` owns the fixed Gateway boundary and recovery invariants. `authoring-phase-surface.test.ts` owns native phase-exposure correctness. `measure:surface` remains the full callable-catalog/static payload guard. `measure:phases` measures source-owned Core + active-phase native `tools/list` payloads over the loopback Runtime transport. These are static/source measurements: none is installed-client token usage or Authoring Efficiency proof.
