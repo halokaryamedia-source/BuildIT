@@ -2,7 +2,7 @@
 
 Current intent owns the task; current source and relevant proof own behavior.
 
-## Branch and boot
+## Branch and Boot
 
 - `Local` is working authority; `main` changes only on explicit user request.
 - Material GitHub work follows `GITHUB_RULES.md`.
@@ -13,21 +13,12 @@ Current intent owns the task; current source and relevant proof own behavior.
 Classify by **actual capability**, not product/UI name, before task class or implementation.
 
 ```text
-CONTEXT: REMOTE_GITHUB
-CONTEXT: LOCAL_CODE
-CONTEXT: LIVE_BLOCKBENCH
-SWITCH CONTEXT: <REMOTE_GITHUB | LOCAL_CODE | LIVE_BLOCKBENCH>
-```
-
-A marker states intended context, not proof. Confirm capability. If it overstates capability, use the highest provable context and report the mismatch. Without a marker, choose the lowest sufficient provable context. Never infer `LOCAL_CODE` from “Codex” or a local-sounding task; never infer `LIVE_BLOCKBENCH` because Blockbench is mentioned. `LIVE_BLOCKBENCH` is never assumed.
-
-```text
 REMOTE_GITHUB   = GitHub repository + CI; no local worktree/Bun/installed Blockbench
 LOCAL_CODE      = local checkout + Bun/tests/build/generators/filesystem
 LIVE_BLOCKBENCH = LOCAL_CODE + deployed BlockIT runtime + functioning Gateway/runtime connection
 ```
 
-Context persists until explicit switch or capability changes. Proof ceiling: `REMOTE_GITHUB` = source/static/CI; `LOCAL_CODE` adds local build/test/generator/filesystem; `LIVE_BLOCKBENCH` adds installed/live Blockbench proof.
+A context marker states intended context, not proof. Use the highest actually provable context and never infer `LIVE_BLOCKBENCH` merely because Blockbench is mentioned.
 
 ```text
 required acceptance <= current proof ceiling → continue
@@ -37,7 +28,7 @@ bounded source result complete here → deliver + remaining proof = LOCAL PROOF 
 
 CI does not replace generator-owned committed output or live Blockbench proof.
 
-### Observe / recover context
+### Observe / Recover
 
 For read-only `amati`, inspect, audit, or recovery:
 
@@ -59,70 +50,120 @@ AGENTS.md → GITHUB_RULES.md Core Rules → EXECUTION CONTEXT
 
 For a named MCP-tool defect, use `docs/knowledge/implementation-map.md` **Hot-Path Defect Index** first.
 
-#### Development Execution Gate
-
-**Bounded contract**
-```text
-Goal
-Failure Classification / first wrong owner
-Acceptance
-Proof Required
-STOP Condition
-```
-
-**Standard contract**
-```text
-Goal
-Success Metric
-First Evidence Required / first wrong owner
-In Scope / Out of Scope
-Proof Required
-STOP Condition
-```
-
-Escalate to `development-brief` only for architecture/redesign, cross-owner/material ambiguity, non-obvious public contract design, unresolved success criteria, or quality/efficiency work. The brief keeps `Forbidden Proxy / Non-Goal` explicit. **Authoring Efficiency** is cost to an accepted result; **Static Footprint** is only a guardrail.
-
-### Bounded Maintenance
-
-A concrete bug, stale rule/test, CI-routing defect, or behavior-preserving cleanup may start at its exact owner. Load continuity/brief only when it can change scope or acceptance.
-
-### Standard Development
-
-Use the standard contract when requirement and likely owner are clear but work exceeds bounded maintenance. Recover continuity only when material; add one specialist only when useful.
-
-### Complex / Ambiguous Development
-
-Use `.agents/skills/development-brief/SKILL.md` for architecture/redesign, unclear/cross-owner requirements, material public-contract design, quality/efficiency optimization, or unresolved success criteria. Recover `CONTEXT.md` + `next-action.md` before implementation.
+Use `.agents/skills/development-brief/SKILL.md` for architecture/redesign, unclear or cross-owner requirements, material public-contract design, unresolved success criteria, or quality/efficiency optimization. Normal asset authoring is not software Development.
 
 ## Task Class After Context
 
 ### Reference Preparation
 
-```text
-source image / user intent → blockbench-reference-generator
-→ readiness → one Draft → visual gate → user approval
-```
-
-Reference preparation creates an approved visual reference. It does not choose between separate authoring routes.
-
-### Asset Authoring
-
-Normal authoring has one mental model:
+Operational reference-image creation belongs in **ChatGPT**.
 
 ```text
-current request / approved reference
-→ persistent workspace when needed
-→ BlockIT Gateway
-→ Reference Grounding: approved image + optional 3D Evidence
-→ ACTIVE PHASE → active specialist only
-→ Geometry → Texturing → Animation when required
+source image / user intent
+→ ChatGPT reference generation using the canonical five-view contract
+→ user review/correction
+→ user approval
+→ actual approved image handed to Codex
 ```
 
-The approved image remains visual authority. Optional 3D Evidence is Geometry-only supporting evidence, not a second route and never production geometry.
+`.agents/skills/blockbench-reference-generator/SKILL.md` is the reference-generation specification; normal Codex asset authoring consumes the approved image rather than trying to reproduce the generation stage.
 
-Do not preload later-phase specialists. On `HANDOFF_REQUIRED`, retain resume-critical state, invoke `switch_authoring_phase` through the Gateway, let the Gateway refresh its Runtime catalog, then load only the next specialist and continue the **same task/chat**. Do not treat a phase handoff as a reconnect/new-chat boundary.
+### New Asset Authoring
 
-For normal asset authoring, do not automatically load repository continuation/history/foundation docs. Asset authoring is not software **Development**; do not route it through `development-brief` unless repository/plugin behavior changes.
+Normal new-model authoring is strictly ordered:
+
+```text
+approved image arrives
+→ create Active Workspace
+→ mandatory Requirement Gate
+→ all required values complete
+→ create Blockbench project
+→ Geometry
+→ user approval
+→ Texturing
+→ user approval
+→ Animation only when required
+→ user approval when present
+→ Finalization
+→ final save
+```
+
+Mandatory new-model intake:
+
+```text
+Asset
+Approved Reference
+Dimensions
+Geometry Strategy: DIRECT | 3D_ASSISTED
+Animation Required: YES | NO
+```
+
+`Geometry Strategy` is a **user decision**. Never infer/default/auto-switch it. Ask for all missing mandatory values in one batch and ask follow-up only for unresolved/material ambiguity.
+
+No Blockbench model authoring begins until the Requirement Gate passes.
+
+The two Geometry strategies are:
+
+```text
+DIRECT
+→ normal reference-guided Geometry
+
+3D_ASSISTED
+→ one indivisible package:
+   Approved Reference → Shape Reconstruction → PrimitiveAnything
+   → deterministic Cuboid Scaffold → semantic Geometry cleanup
+```
+
+Do not invent GLB-only, PrimitiveAnything-only, provider-specific, or automatic-fallback routes. The production 3D-Assisted orchestrator/materializer is currently design-locked but not yet promoted; when unavailable, report the exact blocker rather than emulating it.
+
+### Stage Review / Handoff
+
+Codex owns internal readiness; user owns final stage approval.
+
+```text
+AUTHOR
+→ internal technical + visual verify
+→ correct material defects
+→ READY_FOR_USER_REVIEW
+→ user inspects live Blockbench
+   ├─ revise → same owning stage
+   └─ explicit approve → checkpoint save → next required stage
+```
+
+Internal captures may be used by Codex but do not need to be shown to the user. Never send obviously unfinished work to user review. Same material causal correction failing twice without new evidence → `BLOCKED`, not an approval request.
+
+An approved stage reopens only for a material downstream blocker owned by that stage. Invalidate only materially affected downstream approvals.
+
+Do not preload later-phase specialists. On an actual phase change, retain resume-critical state, invoke `switch_authoring_phase` through the Gateway, let the Gateway refresh its Runtime catalog, then load only the target specialist and continue the same task/chat.
+
+### Existing Asset Update
+
+```text
+user supplies/identifies .bbmodel + change request
+→ recover/create Active Workspace
+→ if externally supplied and untracked, persist it as current baseline before mutation
+→ inspect existing model
+→ determine affected stage(s)
+→ ask only material missing information
+→ update owning stage(s)
+→ internal verify
+→ user approval for affected stage(s)
+→ Finalization when all required states are approved
+```
+
+Reference is required only when success depends on visual/fidelity judgement. For a tracked asset, reuse stored Geometry Strategy. For an untracked external model, ask strategy only if Geometry authoring is required and the strategy is unknown.
+
+## Gateway Routing
+
+Normal AI-client boundary remains:
+
+```text
+AI client → BlockIT Gateway → phase-filtered Runtime → Blockbench
+```
+
+Known exact capability → invoke directly. Unknown/stale capability → `search_capabilities`; use `describe_capability` only when current schema is needed. Capability discovery is deferred spec loading, not a second router.
+
+Do not treat a normal phase handoff as a reconnect/new-chat boundary.
 
 ## GitHub Work
 
@@ -137,7 +178,8 @@ current user → current source/proof → root/nearest `AGENTS.md` → foundatio
 - Inspect owner/caller/pattern first; make the minimum complete change.
 - Do not broaden scope or add fallback/framework/profile/compatibility layers without proved need.
 - Stop the same failed direction after two attempts without new evidence.
-- `No change required` is valid. Never claim proof above the current execution-context ceiling.
+- `No change required` is valid.
+- Never claim proof above the current execution-context ceiling.
 - Update status/continuity only when its owned state changed.
 
 ```text
@@ -148,7 +190,7 @@ UNSUPPORTED
 UNKNOWN
 ```
 
-Source/CI proof never upgrades live visual/runtime proof. Artifact existence is not visual approval until inspected.
+Source/CI proof never upgrades live visual/runtime proof.
 
 ## Product Boundary
 
@@ -156,6 +198,6 @@ Minecraft Bedrock Entity (`bedrock`) remains default. Tool/file/coordinate succe
 
 ## Canonical Owners
 
-GitHub → `GITHUB_RULES.md`; flow → `docs/knowledge/flow.md`; continuation → `docs/knowledge/next-action.md`; assets → `workspace/active/<project>/README.md`; stable facts → `CONTEXT.md`; source ownership → `docs/knowledge/implementation-map.md`; proof → `docs/knowledge/current-validation.md`; durable policy → `docs/foundation/`; local acceptance → `docs/knowledge/operations/local-acceptance-runbook.md` when reactivated; research → `Experimental/`.
+GitHub → `GITHUB_RULES.md`; detailed flow → `docs/knowledge/flow.md`; continuation → `docs/knowledge/next-action.md`; active asset state → `workspace/active/<asset>/README.md`; workspace contract → `workspace/README.md`; stable facts → `CONTEXT.md`; source ownership → `docs/knowledge/implementation-map.md`; proof → `docs/knowledge/current-validation.md`; durable policy → `docs/foundation/`; research → `Experimental/`.
 
-Do not create duplicate navigation, review archives, decision logs, roadmaps, or parallel state systems.
+Do not create duplicate routing, approval, continuation, provider, or workspace-state systems.

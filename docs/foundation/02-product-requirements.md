@@ -1,303 +1,234 @@
 # BlockIT — Product Requirements
 
 **Status:** Active Policy  
-**Version:** 1.4  
-**Updated:** 2026-08-14  
+**Version:** 2.0  
+**Updated:** 2026-09-05  
 **Primary Output:** editable Minecraft Bedrock Entity `.bbmodel`
 
 ## 1. Product Objective
 
-A user can provide a simple natural-language request plus an approved visual
-Modelling Brief, and BlockIT can create/revise a clean Bedrock model without
-requiring the user to specify professional modelling or MCP details.
+A user can create an approved Minecraft/Blockbench reference in ChatGPT, hand it to Codex with a normal message, choose the modelling strategy, and have BlockIT create or revise a clean Bedrock model through explicit stage approval without requiring the user to specify MCP/tool details.
 
-The system must prefer evidence-backed modelling decisions over assumptions.
+The system must prefer evidence-backed modelling decisions over assumptions and must not silently change user-selected modelling strategy.
 
-## 2. Required Input
+## 2. New-Model Required Input
 
-- user goal/request;
-- approved Modelling Brief, or sufficient input to prepare one first.
-
-Optional input:
-
-- requested dimensions / target scale;
-- explicit pose requirement;
-- target use;
-- texture style;
-- animation requirement;
-- design notes;
-- suggested technical method.
-
-A suggested method is not automatically a requirement. Preserve the user's goal
-while rejecting a method that conflicts with current evidence or would reduce
-quality.
-
-Nonvisual user constraints such as target scale/height, target use, and other
-downstream facts stay **outside the image** by default. Carry them as compact
-Handoff Constraints alongside the approved Modelling Brief rather than forcing
-them into captions, dimension text, manifests, or extra panels.
-
-## 3. Canonical Product Flow
+Before Blockbench project authoring begins, a new model requires:
 
 ```text
-Request
-↓
-Approved Modelling Brief + relevant Handoff Constraints
-↓
-View Pair Map + Reference Evidence Map
-↓
-Semantic Form
-↓
-Coordinate frame + target envelope when approved
-↓
-Construction + transform ownership + contact invariants
-↓
-Primary Form Hypothesis
-↓
-Coarse primary Cubes + required primary Groups/pivots
-↓
-Conditional structural observation only when it can change the decision
-↓
-Canonical model views
-↓
-Difference-first Reference ↔ model visual gate
-↓
-GLOBAL failure? → revise/rebuild Semantic Form or Primary Form Hypothesis
-LOCAL failure?  → reuse fresh exact state, or inspect_elements(mode=detail) once if unavailable/stale
-                → causal correction → fresh affected view(s) first
-↓
-Identity-weighted secondary geometry / neutral organization
-↓
-Full geometry review
-↓
-UV / texture when required
-↓
-Optional animation when required
-↓
-Final validation
-↓
-Save `.bbmodel` when in scope
+Asset
+Approved Reference Image
+Requested Dimensions: width × height × length in Minecraft blocks
+Geometry Strategy: DIRECT | 3D_ASSISTED
+Animation Required: YES | NO
 ```
 
-Durable workflow policy: [03-modelling-workflow.md](03-modelling-workflow.md). Detailed current sequence: [Current Flow](../knowledge/flow.md).
+The user owns `Geometry Strategy`. Codex must not infer/default/auto-switch it.
 
-## 4. Core Requirements
+If mandatory values are missing, ask for all missing values in one batch. Ask additional questions only when a material ambiguity would change the asset. Complete, non-conflicting intake authorizes Blockbench project creation without another confirmation step.
 
-### PR-001 — Understand Intent
+## 3. Reference Handoff
 
-Identify the intended asset, Bedrock Entity target, expected output, required
-scope, and only the material ambiguities that repository/reference evidence
-cannot resolve.
-
-### PR-002 — Use Reference Honestly
-
-Use the approved Modelling Brief for visible silhouette, proportions, masses,
-pose, contacts, orientation, and style. Use approved Handoff Constraints for
-nonvisual facts such as target scale/height or target use.
-
-Do not convert reference pixels/panel size into Cube coordinates or invent hidden
-features from ambiguous evidence.
-
-### PR-003 — Establish Spatial Contract Before Exact Transforms
-
-Before primary Cube authoring:
-
-- check cross-view consistency and explicit view pairing;
-- for articulated subjects, confirm required limb/appendage count, pose state,
-  attachment, negative-space, and ground/support consistency across views;
-- form a Semantic Form for material masses/landmarks/count/topology before exact coordinates;
-- establish X/Y/Z interpretation, front direction, and ground relation;
-- establish target envelope when approved dimensions exist;
-- identify construction/transform ownership and material contact invariants;
-- form a temporary Primary Form Hypothesis for the major masses.
-
-### PR-004 — Author Intentional Primary Geometry
-
-Every new primary Cube must represent a known mass/necessary split.
-
-Normal `manage_cubes(operation=create)` creation requires:
-
-- explicit finite `from`;
-- explicit finite `to`;
-- explicit parent when a specific Group/bone is intended;
-- explicit origin/pivot when initial rotation is non-zero.
-
-Unrotated Cubes do not need pivot ceremony.
-
-These input rules require intentional geometry but do not automatically prove it
-is visually correct.
-
-### PR-005 — Use Rotation/Pivot Causally
-
-Rotation requires a visible form/slope or required-motion reason.
-
-A material pivot requires an intended rotation center, joint, attachment, or
-parent-transform reason. Do not use arbitrary/distant/copy-pasted pivots.
-
-Pivot-only correction and geometry rewrite are different intents:
+Reference-image creation belongs in ChatGPT. Canonical board:
 
 ```text
-Cube origin only
-→ preserve visual position through pivot transfer
-
-Cube origin + from/to/rotation
-→ intentional authored transform rewrite
+UPPER: LEFT | FRONT | BACK
+LOWER: TOP  | FRONT-LEFT 3/4
 ```
 
-### PR-006 — Observe Before Approval
+Normal handoff is only:
 
-Use only observation that can change the next decision.
+```text
+actual approved reference image + user message
+```
 
-Current Local source provides:
+No sidecar JSON, ZIP, manifest, coordinate sheet, or modelling blueprint is required. An image explicitly handed to Codex for modelling is approved unless the user marks it draft/not ready.
 
-- `inspect_model_bounds` for envelope/scale/ground/displacement questions;
-- `capture_model_views` for canonical visual evidence.
+## 4. Canonical New-Model Flow
 
-Use `inspect_model_bounds` only when the numeric whole-model envelope materially matters. Do not call it as a ritual step after every blockout or correction. Successful observation calls are not visual `PASS`.
+```text
+Approved Reference handed to Codex
+↓
+Active Workspace created
+↓
+Requirement Gate
+↓
+create Blockbench project
+↓
+Geometry using user-selected DIRECT or 3D_ASSISTED
+↓
+Codex internal verify
+↓
+READY_FOR_USER_REVIEW
+↓
+user inspects live Blockbench and explicitly approves
+↓
+checkpoint save
+↓
+Texturing
+↓
+internal verify → user approve → checkpoint save
+↓
+Animation only when required
+↓
+internal verify → user approve → checkpoint save
+↓
+Finalization technical gate
+↓
+final save → COMPLETE
+```
 
-### PR-007 — Reject Bad Primary Scaffolds
+A completed asset remains active until the user explicitly archives it.
 
-If the whole object is unrecognizable or several primary relationships are wrong
-together, revise/rebuild the Semantic Form or Primary Form Hypothesis and coarse blockout.
+## 5. Geometry Strategies
 
-Do not preserve a bad scaffold because many Cubes already exist.
+### DIRECT
 
-### PR-008 — Correct Local Problems From Exact State
+Normal reference-guided semantic Geometry using native Blockbench Groups/Cubes.
 
-When whole form is sound but one bounded relationship is wrong:
+### 3D_ASSISTED
 
-1. reuse known exact target identity when fresh; perform focused identity resolution only when missing/stale/ambiguous;
-2. reuse fresh exact authored state already returned for that target; use `inspect_elements(mode=detail)` once only when required state is unavailable or stale;
-3. classify the causal mismatch;
-4. apply one coherent correction;
-5. re-observe the affected view(s) first and expand only when material cross-view risk exists.
+One indivisible package:
 
-Use the causal vocabulary:
+```text
+Approved Reference
+→ deterministic LEFT/FRONT/BACK extraction
+→ Shape Reconstruction
+→ Shape GLB Gate
+→ PrimitiveAnything
+→ Primitive Decomposition Gate
+→ deterministic Cuboid Materialization
+→ Cuboid Materialization Gate
+→ Semantic Geometry Cleanup
+→ final Geometry internal verify
+```
 
-`TRANSLATE`, `RESIZE`, `ROTATE`, `REATTACH`, `SPLIT`, `MERGE/REMOVE`, `ADD MASS`.
+There is no normal GLB-only, PrimitiveAnything-only, user-supplied-GLB, provider-selection, or automatic fallback route.
 
-Do not default to `ADD MASS`.
+Architecture term: `Shape Reconstruction`. Hunyuan3D is the single v1 implementation; do not add a provider framework until another real implementation is required.
 
-For one relationship spanning multiple Cubes, `manage_cubes(operation=batch_update)` may apply
-different exact-UUID patches in one recoverable Undo unit.
+### 3D-Assisted authority
 
-### PR-009 — Gate Secondary Work After Primary Form Passes
+```text
+Approved Reference  → visual authority
+Requested Dimensions → numeric authority
+Shape GLB            → intermediate reconstructed shape
+PrimitiveAnything    → intermediate decomposition
+Cuboid Scaffold      → editable starting hypothesis
+```
 
-Form/contact/articulation-defining Groups and pivots may belong in the primary blockout when they own the judged form. After primary `PASS`, add only grounded secondary geometry and neutral organization. Texture support and optional animation must not be used to compensate for unresolved primary-form errors.
+Neither GLB nor scaffold is final model authority.
 
-### PR-010 — Texture Supports Geometry
+## 6. Internal Readiness vs User Approval
 
-UV/texture are applied after geometry is coherent. Texture must not hide wrong
-silhouette/proportion.
+Codex must understand and validate what it authored before requesting review.
 
-### PR-011 — Animation Only When Required
+Internal validation may use current Blockbench state, focused structural reads, and fresh model captures. Those captures are for Codex and do not need to be shown to the user.
 
-Do not animate by default. Required animation must use meaningful hierarchy and
-pivots and be visually checked for clipping/detachment/motion quality.
+```text
+material defect remains → correct internally
+same causal correction fails twice without new evidence → BLOCKED
+no material blocker remains → READY_FOR_USER_REVIEW
+```
 
-### PR-012 — Separate Structural And Visual Proof
+Only explicit user approval advances the stage. User reviews the live Blockbench result directly.
 
-The following do not prove visual correctness by themselves:
+## 7. Geometry Quality / Editability
 
-- tool success;
-- valid coordinates;
-- all Cubes existing;
-- technical attachment/overlap;
-- valid hierarchy;
-- successful bounds check;
-- valid rotation/pivot values;
-- saved/reopenable file;
-- numeric similarity score.
+Geometry must preserve:
 
-Visual claims require fresh current-revision images compared with the reference.
+- recognizable whole form and primary proportions;
+- requested dimensions;
+- required parts/counts/orientations/attachments;
+- important negative spaces;
+- semantic hierarchy and meaningful transform ownership;
+- UV readiness;
+- future editability.
 
-### PR-013 — Honest Runtime Claims
+Naturally movable, structurally distinct parts should remain separately transformable even for a static model, without speculative full rigging.
 
-ChatGPT→GitHub can establish source contracts only. Live Blockbench/MCP behavior,
-visual transport, Undo behavior, persistence, and visual model quality require
-local runtime/visual proof before being reported as verified.
+When `Animation Required = YES`, participating hierarchy/Bones/pivots/attachments must be animation-ready before Geometry user approval.
 
-### PR-014 — Save/Editability
+## 8. Texturing
 
-When saving is part of scope, produce a clean understandable `.bbmodel` through
-the currently verified workflow. Claim reopen fidelity only when actually tested.
+Texturing starts only after Geometry is explicitly approved and checkpointed. Texture must not conceal unresolved Geometry.
 
-## 5. In Scope
+Codex internally verifies UV/atlas/material/identity readability before user review. User approval is required before advancing.
 
-- request normalization;
-- approved-reference-driven Cuboid modelling;
-- project/geometry observation;
-- Cube creation/correction;
-- Group/hierarchy/pivot work when justified;
-- UV/texture;
-- optional animation;
-- structural and visual validation;
-- saving `.bbmodel` when requested/available.
+## 9. Animation
 
-## 6. Out Of Scope
+Animation is authored only when `Animation Required = YES`. Required motion must use the already prepared Geometry hierarchy/pivots, remain attached/readable, and be internally verified before user review.
 
-Unless separately requested/proven:
+If a material rig/pivot/hierarchy blocker appears, reopen Geometry at the exact owner instead of compensating in Animation.
 
-- full behavior/resource-pack integration;
-- gameplay scripting;
-- Marketplace publishing;
-- realistic sculpt/render pipelines;
-- unrelated engines/Hytale production;
-- automatic image/mesh→Cuboid reconstruction;
-- SF3D geometry authority;
-- IoU/projection/similarity approval;
-- automatic pivot/joint planner;
-- all-in-one model builder that bypasses the fidelity loop.
+## 10. Downstream Invalidation
 
-## 7. Quality Requirements
+An approved upstream stage reopens only for a material blocker owned by that stage. After correction, invalidate only downstream approvals materially affected by the change.
 
-### Visual
+```text
+unaffected downstream stage → keep APPROVED
+affected downstream stage   → INVALIDATED → repair → user approval again
+```
 
-- recognizable whole form;
-- coherent silhouette and primary proportions;
-- correct major orientation/contacts;
-- articulated subjects preserve approved pose, limb count/attachment, ground
-  contact/support, and important negative spaces;
-- important rotations justified by form/motion;
-- meaningful pivots justified by transform relationships.
+## 11. Finalization / Save
 
-### Structural
+Stage approval triggers checkpoint save. After the last required authored stage is approved, run one technical Finalization gate.
 
-- explicit/intentional authored transforms;
-- clean hierarchy and semantic naming;
-- exact target identity where mutation matters;
-- recoverable bounded edits where practical;
-- no accidental temporary/compensating geometry.
+Finalization checks format/current dimensions/references/hierarchy/UV/textures/animation references and absence of unintended temporary/debug state. It must not silently change an approved visual result.
 
-### Efficiency
+A material Finalization defect reopens its exact owner stage and requires user approval again after repair. If Finalization passes without material change, final save happens automatically; no extra user approval is needed.
 
-- minimum meaningful Cuboids;
-- minimum useful observation/proof;
-- reuse fresh returned state instead of ritual readback;
-- no per-Cube screenshot/approval ceremony;
-- no repeated full review for genuinely local changes;
-- stop repeated failed correction direction after two attempts without new
-  evidence.
+## 12. Existing Model Update
 
-## 8. Definition Of Done
+For an existing `.bbmodel`:
 
-A modelling task is complete when:
+```text
+recover/create Active Workspace
+→ if untracked, persist supplied file as the current baseline before mutation
+→ inspect current model
+→ determine affected stage(s)
+→ ask only material missing information
+→ update smallest owning stage(s)
+→ internal verify
+→ user approval for affected stage(s)
+→ Finalization
+```
 
-- request/scope, approved reference, and material Handoff Constraints are understood;
-- whole primary form passed the required visual gate;
-- required primary hierarchy/pivots are established when form-defining;
-- required secondary geometry and neutral organization are complete;
-- texture/animation are complete only when in scope;
-- no unresolved critical/major visual issue remains;
-- required structural and visual evidence exists;
-- save/output is complete when part of scope;
-- unavailable local-only proof is reported rather than inferred.
+Reference is required only when success depends on visual/fidelity judgement. A tracked model reuses its stored Geometry Strategy. An untracked external model needs strategy only if Geometry authoring is required.
 
-## 9. Evidence Boundary
+Only the user may change strategy.
 
-Current Local source contains the main Reference Fidelity observation,
-correction, targeting, and pivot/initial-placement safety mechanisms. Their live
-Blockbench/MCP integration is `LOCAL PROOF REQUIRED` until deliberately tested.
+## 13. 3D-Assisted Production Requirements
 
-See [Current Validation](../knowledge/current-validation.md) and
-[Implementation Map](../knowledge/implementation-map.md).
+External Shape Reconstruction + PrimitiveAnything belong to local tooling controlled by Codex. The target normal-use entrypoint is one thin resumable orchestrator, not a workflow engine/provider router.
+
+Canonical machine state and artifacts:
+
+```text
+workspace/active/<asset>/3d-assisted/
+├─ state.json
+├─ shape.glb
+└─ primitive-decomposition.json
+```
+
+Passed artifacts persist gate-by-gate. A changed Approved Reference invalidates/removes derived current GLB/decomposition artifacts while preserving the user-selected strategy.
+
+The target Blockbench materializer is one dedicated Geometry capability behind the existing Gateway. It must validate canonical workspace state before mutation and materialize the complete scaffold as one atomic Undo transaction. Do not use generic `from_geo_json` or arbitrary primitive payloads.
+
+## 14. Efficiency / Anti-Overdevelopment
+
+- one Gateway, not another transport;
+- two Geometry strategies only;
+- no automatic strategy classifier;
+- one current editable `.bbmodel` per asset;
+- Git history owns old revisions;
+- internal captures are targeted, not screenshot-per-mutation;
+- capability discovery is deferred and focused;
+- no provider framework with only one provider;
+- no generic importer to solve a dedicated scaffold contract;
+- stop same failed causal direction after two attempts without new evidence;
+- invalidate the smallest downstream scope.
+
+## 15. Proof Boundary
+
+Static source/docs/CI cannot prove live Blockbench behavior, visual quality, external GPU pipeline quality, materializer Undo behavior, or Gateway lifecycle stability. Those remain local/live proof until deliberately tested.

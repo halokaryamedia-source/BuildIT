@@ -1,6 +1,6 @@
 # Next Action
 
-Updated: 2026-09-04 — Gateway + authoring taxonomy gate
+Updated: 2026-09-05 — approved authoring-flow contract
 
 Working branch: **`Local` only**. Continuation only; stable facts → `CONTEXT.md`, proof → `current-validation.md`, ownership → `implementation-map.md`.
 
@@ -8,43 +8,178 @@ Working branch: **`Local` only**. Continuation only; stable facts → `CONTEXT.m
 
 ```text
 BLOCKIT GATEWAY: SOURCE_READY
-AUTHORING TAXONOMY: SOURCE_READY — one Reference-Grounded flow
-LIVE GATEWAY PROOF: PENDING — requires local Codex + Blockbench
-OPTIONAL 3D EVIDENCE: AVAILABLE / EXPERIMENTAL / GEOMETRY-ONLY
-LEGACY UI FALLBACKS: DEBUG/MAINTENANCE ONLY
+DIRECT AUTHORING FLOW: SOURCE_READY
+USER-SELECTED STRATEGY CONTRACT: DESIGN_LOCKED
+REFERENCE GENERATION OWNERSHIP: CHATGPT
+ACTIVE WORKSPACE CONTRACT: DESIGN_LOCKED
+STAGE USER-APPROVAL CONTRACT: DESIGN_LOCKED
+3D_ASSISTED TARGET PIPELINE: DESIGN_LOCKED / PRODUCTION IMPLEMENTATION PENDING
+LIVE GATEWAY PROOF: PENDING
 ```
 
-Canonical client/authoring path:
+Canonical user mental model:
 
 ```text
-Codex → stdio Gateway → loopback BlockIT Runtime → Blockbench
-Approved image + optional 3D Evidence → Geometry → Texturing → Animation when required
+ChatGPT Reference
+→ Codex Active Workspace + Requirement Gate
+→ user selects DIRECT | 3D_ASSISTED
+→ create Blockbench project
+→ Geometry → user approve
+→ Texturing → user approve
+→ Animation when required → user approve
+→ Finalization → final save
 ```
 
-There is no normal Image-vs-3D route choice and no Standard-vs-Extended authoring profile choice. Runtime phase handoff must refresh only the Gateway backend catalog and keep the same client task alive.
+The user owns Geometry Strategy and final stage approval. Codex owns internal readiness and must not send materially broken work to user review.
 
-## Next Live Gate
+## Locked New-Model Intake
+
+Before Blockbench authoring:
 
 ```text
-1. git switch Local && git pull --ff-only
-2. Configure Codex MCP `blockit` to run `mcp/gateway/index.ts` via Bun stdio; disable the old direct Blockbench MCP entry.
-3. With Blockbench closed: Gateway tools remain callable; status reports Runtime offline.
-4. Open Blockbench: same Codex task reports Runtime online and can search/describe current capabilities.
-5. In the same Codex task, switch Geometry → Texturing → Geometry and verify no client reconnect/new chat is required.
-6. Repeat plugin reload and Blockbench close/open cycles.
-7. Change/rebuild one backend tool surface, reload BlockIT, and verify the same Gateway task reads the refreshed catalog.
+Asset
+Approved Reference
+Dimensions
+Geometry Strategy: DIRECT | 3D_ASSISTED
+Animation Required: YES | NO
 ```
 
-PASS only when the Codex-facing Gateway survives those cycles, phase handoff continues the same task, and interrupted mutations are never blindly retried.
+Ask all missing mandatory values in one batch. Do not infer/default strategy and do not ask for redundant final confirmation when intake is complete and non-conflicting.
 
-After PASS, resume `elevator_image_reference_6x5x5` from preserved project state and continue Geometry → Texturing → optional Animation → validated `.bbmodel`.
+## Locked 3D-Assisted Target
 
-## Locked Boundaries
+`3D_ASSISTED` is one indivisible package:
 
 ```text
-Blockbench owns model/project/Undo state; Gateway owns routing/recovery only.
-Native Runtime MCP remains available for Inspector/conformance/debugging.
-Optional 3D Evidence never becomes production geometry.
-Legacy UI Fallbacks never become a normal authoring profile.
-No new chat/restart recommendation as normal BlockIT recovery.
+Approved Reference Board
+→ fixed LEFT/FRONT/BACK extraction + validation
+→ Shape Reconstruction
+→ Shape GLB Gate
+→ persist shape.glb
+→ PrimitiveAnything
+→ Primitive Decomposition Gate
+→ persist primitive-decomposition.json
+→ dedicated atomic Cuboid Materialization
+→ Materialization Gate
+→ Semantic Geometry Cleanup
+→ remove live GLB reference
+→ final Geometry internal verify
+→ user Geometry approval
 ```
+
+Architecture term: `Shape Reconstruction`. V1 implementation: Hunyuan3D only. Do not add provider abstraction/router.
+
+External Shape Reconstruction + PrimitiveAnything belong to local tooling controlled by Codex. Blockbench Runtime owns materialization/production Geometry.
+
+## Production Implementation Still Required
+
+Do **not** claim 3D-Assisted production readiness until these exact missing owners are implemented:
+
+### 1. Canonical external orchestrator
+
+One thin resumable local entrypoint that:
+
+```text
+reads current Active Workspace
+→ validates fixed board extraction
+→ runs Shape Reconstruction
+→ bounded GLB gate/retry
+→ persists canonical shape.glb + hash/state
+→ runs PrimitiveAnything
+→ decomposition gate
+→ persists canonical primitive-decomposition.json + hash/state
+```
+
+Canonical machine state:
+
+```text
+workspace/active/<asset>/3d-assisted/state.json
+```
+
+It must not become a general workflow engine or provider framework.
+
+### 2. Dedicated Geometry scaffold materializer
+
+One Runtime capability behind the existing Gateway that:
+
+- receives Active Workspace project path only;
+- reads only canonical validated `state.json` + `primitive-decomposition.json`;
+- fully validates before mutation;
+- materializes one temporary Group/Bone + Cube per primitive;
+- uses one atomic reversible Undo transaction;
+- leaves complete scaffold or no accepted scaffold state;
+- does not revive generic `from_geo_json` or accept arbitrary primitive payloads.
+
+Capability name/schema should be chosen during implementation at the narrow MCP/Runtime owner; do not prebuild extra abstraction now.
+
+### 3. Routing / regression alignment
+
+After executable owners exist:
+
+- expose materializer only in Geometry;
+- keep Gateway client surface at four tools;
+- classify it experimental until production proof;
+- add only targeted regressions for workspace validation, atomic materialization, phase exposure, and stale artifact rejection;
+- update generated MCP docs through canonical generators.
+
+## Existing Project Flow
+
+Existing `.bbmodel` update remains shorter than new-model flow:
+
+```text
+recover/create Active Workspace
+→ persist external baseline before first mutation when untracked
+→ inspect current model
+→ determine affected stage(s)
+→ ask only material missing information
+→ update + internal verify
+→ user approve affected stage(s)
+→ invalidate only materially dependent downstream approvals
+→ Finalization
+```
+
+Tracked models reuse stored Geometry Strategy. Untracked external models require strategy only if Geometry authoring is needed.
+
+## Save / Lifecycle Contract
+
+```text
+stage approve → checkpoint save
+last required stage approve → Finalization
+Finalization PASS → final save → COMPLETE
+COMPLETE remains in workspace/active/
+move to workspace/saved/ only on explicit user request
+```
+
+## Local / Live Proof
+
+The user has explicitly deferred local/live testing for now. **Do not start the formal Local Acceptance or live Gateway gate unless the user explicitly requests it.**
+
+When later requested, separate these proof tracks:
+
+```text
+A. Gateway lifecycle / phase refresh / interrupted mutation recovery
+B. 3D-Assisted external orchestrator runtime
+C. atomic scaffold materialization + Undo + stale-artifact rejection
+D. end-to-end DIRECT and 3D_ASSISTED authoring with user stage approval
+```
+
+Static/source design work must not be reported as those live proofs.
+
+## Do Not Expand
+
+Do not add:
+
+```text
+third Geometry strategy
+automatic strategy classifier
+GLB-only route
+PrimitiveAnything-only route
+user-supplied GLB v1 path
+provider registry/router
+fifth Gateway tool
+generic JSON/geo importer
+parallel project-state database
+screenshot/tool-call history in workspace
+```
+
+unless a future evidenced requirement explicitly changes the product contract.
