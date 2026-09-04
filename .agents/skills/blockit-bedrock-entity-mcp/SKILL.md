@@ -28,7 +28,7 @@ ACTIVE PHASE + intent + known state/UUIDs
 → reuse fresh returned state
 ```
 
-Known capability → invoke. Unknown/stale → `search_capabilities`; schema → `describe_capability` once. **1 Minecraft block = 16 Blockbench units.** Reuse `front_direction`.
+Known capability → invoke. Unknown/stale → `search_capabilities`; if schema is needed, use `describe_capability` once before mutation. **1 Minecraft block = 16 Blockbench units.** Reuse `front_direction`.
 
 ## Phase Handoff
 

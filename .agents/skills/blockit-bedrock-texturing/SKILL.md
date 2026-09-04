@@ -66,7 +66,7 @@ create_brush_preset | load_brush_preset | texture_selection | texture_layer_mana
 add_texture_group | list_materials | get_material_info | import_texture_set
 ```
 
-Support tools never outrank primary authoring.
+Support tools do not justify extra discovery/readback and never outrank primary authoring.
 
 ## First-Call Invariants
 
