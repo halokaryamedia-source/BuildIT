@@ -75,7 +75,7 @@ Locator/Null create/edit       → manage_locator / manage_null_object
 rig IK/mirror                  → bone_rigging
 ```
 
-Known coherent Cubes → one `manage_cubes(operation=create, elements=[...])`; uncertainty → no batch. Shared deterministic correction → one `manage_cubes(operation=batch_update)`. Never loop inspect→modify per Cube.
+`bone_rigging` only for IK/mirror. Known coherent Cubes → one `manage_cubes(operation=create, elements=[...])`; uncertainty → no batch. Known Cubes sharing one deterministic TRANSLATE/RESIZE intent → derive absolute targets once from fresh state → one `manage_cubes(operation=batch_update)`. Relative intent stays reasoning-layer arithmetic; writes stay absolute/fail-closed.
 
 ## First-Call Invariants
 
@@ -99,7 +99,7 @@ unknown/stale capability → one precise search_capabilities query
 schema needed            → describe_capability once
 ```
 
-One precise search miss → reformulate once; second miss → `BLOCKED`. Known foreign-phase capability → hand off instead.
+One precise search miss → reformulate once; second miss → `BLOCKED`. known foreign-phase capability is never a discovery miss; hand off instead.
 
 ```text
 validation      → INVALID_INPUT       → repair args; same capability

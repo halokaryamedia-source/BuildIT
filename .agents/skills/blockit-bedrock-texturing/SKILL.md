@@ -47,7 +47,7 @@ face material instances        → manage_material_instances
 mapped model-view evidence     → capture_model_views
 ```
 
-## Primary / Conditional Capability
+## Primary vs Support Capabilities
 
 ```text
 PRIMARY
