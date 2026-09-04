@@ -24,7 +24,7 @@ Current `Local` source/ownership only. This map contains **no active task status
 | architecture/redesign contract | `.agents/skills/development-brief/` |
 | MCP public/schema/result/transport | `.agents/skills/mcp-server-development/` |
 | Blockbench API/lifecycle/UI/Undo | `.agents/skills/blockbench-runtime-development/` |
-| MCP TypeScript/Bun mechanics | `mcp/AGENTS.md` + exact source/build owner |
+| MCP TypeScript/Bun implementation mechanics | `mcp/AGENTS.md` + exact source/build owner |
 
 ## Canonical Authoring Taxonomy
 
@@ -131,7 +131,7 @@ describe_capability
 invoke_capability
 ```
 
-Current Runtime callable union is **51 tools**; current native phase surfaces remain Geometry 25, Texturing 35, Animation 19 until the local public materializer binding deliberately changes Geometry/union counts. Generated API inventory includes disabled/source-preserved ToolSpecs and is not the active client surface. A materializer is a Runtime capability behind the existing Gateway, never a fifth Gateway tool.
+Current Runtime callable union is **51 tools**; current native phase surfaces remain Geometry 25, Texturing 35, Animation 19 until the local public materializer binding deliberately changes Geometry/union counts. Generated API inventory contains **77 declared source ToolSpecs**, including disabled/source-preserved definitions; that inventory is not the active client surface. A materializer is a Runtime capability behind the existing Gateway, never a fifth Gateway tool.
 
 ## Hot-Path Defect Index
 

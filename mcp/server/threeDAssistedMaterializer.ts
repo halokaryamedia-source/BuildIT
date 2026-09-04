@@ -30,8 +30,14 @@ type NativeCrypto = {
   };
 };
 
-function requireNative<T>(name: string): T {
-  const module = requireNativeModule(name) as T | undefined;
+type NativeModuleName = "fs" | "path" | "crypto";
+
+const loadNativeModule = requireNativeModule as unknown as (
+  name: NativeModuleName
+) => unknown;
+
+function requireNative<T>(name: NativeModuleName): T {
+  const module = loadNativeModule(name) as T | undefined;
   if (!module) {
     throw new Error(
       `3D-Assisted materialization requires Blockbench native module permission for ${name}.`
@@ -133,7 +139,6 @@ function assertScaffoldNamesAvailable(
     cubes.set(item.cube_name.toLowerCase(), item.cube_name);
   }
 }
-
 
 function vec3Matches(
   actual: readonly number[] | undefined,
