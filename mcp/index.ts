@@ -31,6 +31,7 @@ import {
 import { resources } from "@/server";
 import { registerReferenceModelsResource } from "@/server/resources";
 import { uiSetup, uiTeardown } from "@/ui";
+import { setStatusBarState } from "@/ui/statusBar";
 import {
   isExtendedMcpFamiliesEnabled,
   setExtendedMcpFamiliesEnabled,
@@ -47,9 +48,94 @@ import { getIcon } from "@/macros/getIcon" with { type: "macro" };
 
 let httpServer: NetServer | null = null;
 let profileActions: Action[] = [];
+let nativeNet: Parameters<typeof createNetServer>[0] | null = null;
+let serverConfig: {
+  port: number;
+  endpoint: string;
+  profile: ReturnType<typeof resolveMcpRegistrationProfile>;
+  phase: McpAuthoringPhase;
+} | null = null;
+let restartInProgress: Promise<void> | null = null;
+
+async function waitForServerListening(server: NetServer): Promise<void> {
+  if (server.listening) return;
+
+  await new Promise<void>((resolve, reject) => {
+    const cleanup = () => {
+      server.off("listening", onListening);
+      server.off("error", onError);
+    };
+    const onListening = () => {
+      cleanup();
+      resolve();
+    };
+    const onError = (error: Error) => {
+      cleanup();
+      reject(error);
+    };
+    server.once("listening", onListening);
+    server.once("error", onError);
+  });
+}
+
+async function startMcpServer(): Promise<boolean> {
+  if (!nativeNet || !serverConfig || httpServer) return false;
+
+  const config = serverConfig;
+  setStatusBarState("starting", `binding ${config.port}`);
+  const candidate = createNetServer(nativeNet, config);
+
+  try {
+    await waitForServerListening(candidate);
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : String(error);
+    candidate.closeActiveSockets();
+    await candidate.closeAndWait();
+    setStatusBarState("failed", reason);
+    Blockbench.showQuickMessage(
+      `BlockIT MCP failed to start: ${reason}. Close the old MCP instance or free port ${config.port}.`,
+      6000
+    );
+    return false;
+  }
+
+  httpServer = candidate;
+  setStatusBarState("running", `${config.port}${config.endpoint}`);
+  return true;
+}
+
+async function restartMcpServer(): Promise<void> {
+  if (restartInProgress || !nativeNet || !serverConfig) return;
+
+  restartInProgress = (async () => {
+    setStatusBarState("starting", "restarting");
+    const current = httpServer;
+    httpServer = null;
+    if (current) await current.closeAndWait();
+
+    const started = await startMcpServer();
+    if (started) {
+      Blockbench.showQuickMessage(
+        "BlockIT MCP server restarted. Reconnect the Codex MCP client.",
+        4000
+      );
+    }
+  })().finally(() => {
+    restartInProgress = null;
+  });
+
+  await restartInProgress;
+}
 
 function setupProfileActions(): void {
   profileActions = [
+    new Action("blockit_restart_mcp_server", {
+      name: "Restart BlockIT MCP Server",
+      description: "Safely close MCP sockets and bind the local server again.",
+      icon: "refresh",
+      plugin: "blockit_mcp",
+      click: () => void restartMcpServer(),
+    }),
     new Action("blockit_enable_extended", {
       name: "Enable BlockIT Extended MCP Profile",
       description: "Enable the opt-in generic Blockbench fallback families.",
@@ -104,6 +190,7 @@ BBPlugin.register("blockit_mcp", {
       Blockbench.showQuickMessage("MCP Server requires network permission", 3000);
       return;
     }
+    nativeNet = net;
 
     setupI18n();
     settingsSetup();
@@ -167,51 +254,14 @@ BBPlugin.register("blockit_mcp", {
     // P1.4 default transport is request-owned/stateless Streamable HTTP on
     // loopback. No session timeout, ping, heartbeat, or Mcp-Session-Id state is
     // configured at plugin lifecycle level.
-    httpServer = createNetServer(net, {
+    serverConfig = {
       port: rawPort,
       endpoint: String(Settings.get("mcp_endpoint") || "/bb-mcp"),
-      host: "127.0.0.1",
       profile: registrationProfile,
       phase: authoringPhase,
-    });
+    };
 
-    // A plugin instance is not ready merely because createNetServer returned.
-    // Wait for the actual TCP bind. If an older BlockIT/MCP instance still owns
-    // the port, fail closed instead of showing a fresh UI backed by a stale server.
-    const startingServer = httpServer;
-    try {
-      if (!startingServer.listening) {
-        await new Promise<void>((resolve, reject) => {
-          const cleanup = () => {
-            startingServer.off("listening", onListening);
-            startingServer.off("error", onError);
-          };
-          const onListening = () => {
-            cleanup();
-            resolve();
-          };
-          const onError = (error: Error) => {
-            cleanup();
-            reject(error);
-          };
-          startingServer.once("listening", onListening);
-          startingServer.once("error", onError);
-        });
-      }
-    } catch (error) {
-      const reason = error instanceof Error ? error.message : String(error);
-      console.error(
-        `[MCP] Server failed to bind; BlockIT will not enter ready state: ${reason}`
-      );
-      startingServer.closeActiveSockets();
-      await startingServer.closeAndWait();
-      httpServer = null;
-      Blockbench.showQuickMessage(
-        `BlockIT MCP failed to start: ${reason}. Close the old MCP instance or free port ${rawPort}.`,
-        6000
-      );
-      return;
-    }
+    if (!(await startMcpServer())) return;
 
     uiSetup({
       tools,
@@ -226,12 +276,22 @@ BBPlugin.register("blockit_mcp", {
     setMcpPhaseSwitchHandler(() => undefined);
     setMcpProfileSwitchHandler(() => undefined);
     clearExtendedMcpProfileHandler();
+    if (restartInProgress) {
+      try {
+        await restartInProgress;
+      } catch {
+        // The restart path already reports its own failure; teardown continues.
+      }
+    }
     if (httpServer) {
       // Wait for the listener close callback before allowing a subsequent
       // plugin load to claim the same port.
       await httpServer.closeAndWait();
       httpServer = null;
     }
+    nativeNet = null;
+    serverConfig = null;
+    restartInProgress = null;
 
     uiTeardown();
     teardownProfileActions();

@@ -1,6 +1,6 @@
 # Next Action
 
-Updated: 2026-09-03 — Image Reference Route is the active priority
+Updated: 2026-09-04 — Image Reference Route paused on Codex MCP registry refresh
 
 Working branch: **`Local` only**.
 
@@ -12,9 +12,27 @@ canonical owner.
 ## Current Status
 
 ```text
-IMAGE REFERENCE ROUTE: SELECTED → GENERIC_REFERENCE_READY → SOURCE_READY
+IMAGE REFERENCE ROUTE: SELECTED → GENERIC_REFERENCE_READY → SOURCE_READY → LOCAL_VERIFIED
 3D-ASSISTED ROUTE: PARKED — do not reactivate during Image Reference Route implementation
 EXTENDED PROFILE PROOF: PARKED — do not reactivate during Image Reference Route implementation
+LIVE BLOCKBENCH AUTHORING: BLOCKED — BlockIT server healthy, current Codex task MCP registry unavailable
+```
+
+## Resume BlockIT Elevator Authoring
+
+Current live evidence: BlockIT reports product `blockit-bedrock-entity-mcp`, version
+`0.1.0`, profile `bedrock_entity`, phase `geometry`, and 25 exposed tools; the
+current Codex task does not receive that tool registry after full app exit/reopen.
+Do not author through a partial or absent MCP surface and do not emulate missing
+tools through raw HTTP.
+
+```text
+1. Reconnect/refresh the MCP registry for this existing task when Codex exposes that capability.
+2. Verify add_group, manage_cubes, inspect_elements, capture_model_views, and validator are callable.
+3. Recheck project elevator_image_reference_6x5x5; preserve it and do not discard other projects.
+4. Build coherent primary Geometry for 6×5×5 blocks (96×80×80 units), including the left transparent glass panel.
+5. Capture model views and compare against the attached reference before claiming visual PASS.
+6. Continue Texture, optional Animation, validation, and export of the final `.bbmodel`.
 ```
 
 The Image Reference Route is the default object-agnostic route. The 3D-Assisted
@@ -24,12 +42,7 @@ Route must never block it.
 
 ```text
 1. git switch Local && git pull --ff-only
-2. cd mcp && bun install --frozen-lockfile
-3. tidy canonical flow, skills, prompts, and continuation
-4. run the final verifier once after the rules are coherent
-5. finish source/rule cleanup for Geometry → Texture → optional Animation in the Image Reference Route
-6. run the final verifier once after all source/rule cleanup is complete
-7. deploy/reconnect only when live Blockbench proof is explicitly reactivated
+2. deploy/reconnect only when live Blockbench proof is explicitly reactivated
 ```
 
 ## Parked Work

@@ -2,6 +2,22 @@ import statusBarCSS from "@/ui/statusBar.css";
 
 let statusBarElement: HTMLDivElement | undefined;
 let statusBarCssHandle: { delete(): void } | undefined;
+let statusDot: HTMLDivElement | undefined;
+let statusText: HTMLSpanElement | undefined;
+
+export type McpServerStatus = "running" | "starting" | "failed";
+
+export function setStatusBarState(
+  state: McpServerStatus,
+  detail?: string
+): void {
+  if (!statusDot || !statusText) return;
+
+  statusDot.className = `mcp-status-dot ${state}`;
+  statusText.textContent = detail
+    ? `${tl("mcp.status.server")} — ${detail}`
+    : `${tl("mcp.status.server")} — ${state}`;
+}
 
 export function statusBarSetup(): void {
   statusBarTeardown();
@@ -25,12 +41,12 @@ export function statusBarSetup(): void {
   statusIndicator.className = "mcp-status-indicator";
   statusIndicator.title = tl("mcp.tooltip.click_to_view_panel");
 
-  const statusDot = document.createElement("div");
-  statusDot.className = "mcp-status-dot";
+  statusDot = document.createElement("div");
+  statusDot.className = "mcp-status-dot running";
 
-  const statusText = document.createElement("span");
+  statusText = document.createElement("span");
   statusText.className = "mcp-status-text";
-  statusText.textContent = tl("mcp.status.server");
+  statusText.textContent = `${tl("mcp.status.server")} — running`;
 
   const serverInfo = document.createElement("span");
   serverInfo.className = "mcp-server-info";
@@ -58,6 +74,8 @@ export function statusBarSetup(): void {
 export function statusBarTeardown(): void {
   statusBarElement?.remove();
   statusBarElement = undefined;
+  statusDot = undefined;
+  statusText = undefined;
   statusBarCssHandle?.delete();
   statusBarCssHandle = undefined;
 }

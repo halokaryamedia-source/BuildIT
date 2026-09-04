@@ -31,14 +31,18 @@
     transition: background-color 0.3s;
 }
 
-#mcp-status-bar .mcp-status-dot.connected {
+#mcp-status-bar .mcp-status-dot.running {
     background-color: #4caf50;
     box-shadow: 0 0 8px rgba(76, 175, 80, 0.6);
     animation: pulse 2s ease-in-out infinite;
 }
 
-#mcp-status-bar .mcp-status-dot.disconnected {
+#mcp-status-bar .mcp-status-dot.failed {
     background-color: #f44336;
+}
+
+#mcp-status-bar .mcp-status-dot.starting {
+    background-color: #ff9800;
 }
 
 @keyframes pulse {

@@ -508,12 +508,15 @@ export default function createNetServer (
               getActiveMcpAuthoringPhase(),
               getActiveMcpRegistrationProfile()
             )
+            // Stateless MCP has no session state to preserve across requests.
+            // Close each MCP response so a client-side keep-alive socket cannot
+            // remain poisoned when a previous Blockbench operation stalls.
             const sent = sendResponse(
               socket,
               response.status,
               response.headers,
               response.body,
-              headers['connection']
+              'close'
             )
             if (!sent) {
               awaitingDrain = true
@@ -530,7 +533,7 @@ export default function createNetServer (
                 error: { code: -32603, message: 'Internal server error' },
                 id: null
               }),
-              headers['connection']
+              'close'
             )
           }
         }
@@ -546,7 +549,7 @@ export default function createNetServer (
               error: { code: -32603, message: 'Internal server error' },
               id: null
             }),
-            undefined
+            'close'
           )
         }
       } finally {

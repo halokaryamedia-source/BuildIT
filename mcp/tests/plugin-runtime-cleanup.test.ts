@@ -22,11 +22,11 @@ describe("pre-local plugin runtime cleanup", () => {
     const index = await source("index.ts");
     const tools = await source("server/tools.ts");
 
-    const listeningHook = index.indexOf('startingServer.once("listening"');
-    const errorHook = index.indexOf('startingServer.once("error"');
-    const bindCleanup = index.indexOf("startingServer.closeActiveSockets()", errorHook);
-    const resetServer = index.indexOf("httpServer = null", bindCleanup);
-    const failClosedReturn = index.indexOf("return;", resetServer);
+    const listeningHook = index.indexOf('server.once("listening"');
+    const errorHook = index.indexOf('server.once("error"');
+    const bindCleanup = index.indexOf("candidate.closeActiveSockets()", errorHook);
+    const resetServer = index.indexOf("return false;", bindCleanup);
+    const failClosedReturn = index.indexOf("if (!(await startMcpServer())) return;");
     const readyUi = index.indexOf("uiSetup({");
 
     expect(index).toContain('BBPlugin.register("blockit_mcp"');
@@ -67,6 +67,17 @@ describe("pre-local plugin runtime cleanup", () => {
     expect(net).toContain("closeAndWait(): Promise<void>");
     expect(index).toContain("await httpServer.closeAndWait()");
     expect(index).not.toContain("httpServer.close();");
+  });
+
+  test("manual MCP restart closes the old listener before rebinding", async () => {
+    const index = await source("index.ts");
+
+    expect(index).toContain('blockit_restart_mcp_server');
+    expect(index).toContain('setStatusBarState("starting", "restarting")');
+    expect(index).toContain("const current = httpServer;");
+    expect(index).toContain("if (current) await current.closeAndWait();");
+    expect(index).toContain("const started = await startMcpServer();");
+    expect(index).toContain("Reconnect the Codex MCP client");
   });
 
   test("dead prompt CDN and stateless session settings are removed", async () => {

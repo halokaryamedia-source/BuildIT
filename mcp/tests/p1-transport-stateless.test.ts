@@ -23,6 +23,8 @@ describe("P1.4 stateless Streamable HTTP ownership", () => {
     expect(source).not.toContain("sseHeartbeat");
     expect(source).not.toContain("setKeepAlive(");
     expect(source).not.toContain("socket.setTimeout(");
+    expect(source).toContain("Close each MCP response so a client-side keep-alive socket cannot");
+    expect(source).toContain("response.body,\n              'close'");
   });
 
   test("standalone SSE and session DELETE are not offered by the default endpoint", async () => {
@@ -66,7 +68,8 @@ describe("P1.4 stateless Streamable HTTP ownership", () => {
     expect(indexSource).not.toContain("sessionTransports");
     expect(indexSource).not.toContain("mcp_session_timeout");
     expect(indexSource).not.toContain("mcp_sse_heartbeat");
-    expect(indexSource).toContain("httpServer = createNetServer(net");
+    expect(indexSource).toContain("const candidate = createNetServer(nativeNet, config)");
+    expect(indexSource).toContain("await waitForServerListening(candidate)");
 
     expect(settingsSource).not.toContain("mcp_session_timeout");
     expect(settingsSource).not.toContain("mcp_sse_heartbeat");

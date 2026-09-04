@@ -32,12 +32,11 @@ describe("P1.2 MCP family gates", () => {
 
     expect(settingsSource).toContain(`new Setting(MCP_EXTENDED_FAMILIES_SETTING_ID, {`);
     const settingStart = settingsSource.indexOf("new Setting(MCP_EXTENDED_FAMILIES_SETTING_ID");
-    const nextSetting = settingsSource.indexOf('new Setting("mcp_session_timeout"', settingStart);
-    expect(settingsSource.slice(settingStart, nextSetting)).toContain("value: false");
+    expect(settingsSource.slice(settingStart)).toContain("value: false");
 
     const settingsSetup = indexSource.indexOf("settingsSetup();");
     const gatedRegistration = indexSource.indexOf("registerMcpProfile(");
-    const serverStartup = indexSource.indexOf("createNetServer(net");
+    const serverStartup = indexSource.indexOf("if (!(await startMcpServer())) return;");
     expect(settingsSetup).toBeGreaterThan(-1);
     expect(gatedRegistration).toBeGreaterThan(settingsSetup);
     expect(serverStartup).toBeGreaterThan(gatedRegistration);

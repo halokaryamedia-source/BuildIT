@@ -346,6 +346,30 @@ describe("P1.4 raw-net stateless integration", () => {
     expect(socket.destroyed).toBe(true);
   });
 
+  test("MCP responses close the client socket so a stuck request cannot poison reuse", async () => {
+    const response = await fetch(`${baseUrl}${ENDPOINT}`, {
+      method: "POST",
+      headers: {
+        accept: "application/json, text/event-stream",
+        "content-type": "application/json",
+        connection: "keep-alive",
+      },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: 50,
+        method: "initialize",
+        params: {
+          protocolVersion: PROTOCOL_VERSION,
+          capabilities: {},
+          clientInfo: { name: "p1-connection-reset", version: "1.0.0" },
+        },
+      }),
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("connection")).toBe("close");
+  });
+
   test("p95 request-sequence latency remains bounded with warm request-owned registration cache", async () => {
     const coldSamples = await measureRequestSequence(1000, 6);
     const warmSamples = await measureRequestSequence(2000, 24);
