@@ -1,11 +1,11 @@
 ---
 name: blockit-bedrock-entity-mcp
-description: Route Bedrock Entity intents through Gateway.
+description: Route Bedrock Entity intents.
 ---
 
 # BlockIT Bedrock Entity MCP
 
-Own only **phase/tool routing**, Gateway reuse, handoff, recovery:
+Own only **phase/tool routing**, handoff, recovery:
 
 ```text
 geometry/rig/UV judgement → `blockbench-bedrock-modelling`
@@ -15,7 +15,7 @@ animation/motion          → `blockit-bedrock-animation`
 
 ## Reference Grounding / Strategy Gate
 
-Approved image = visual authority. User selects `DIRECT | 3D_ASSISTED`; never infer/default/auto-switch.
+approved image = visual authority. Geometry Strategy is user-selected: `DIRECT | 3D_ASSISTED`; never auto-switch.
 
 ```text
 DIRECT      → normal Geometry
@@ -35,7 +35,7 @@ ACTIVE PHASE + intent + known state/UUIDs
 → reuse fresh returned state
 ```
 
-Known → invoke. Unknown/stale → `search_capabilities`; schema needed → `describe_capability` once before mutation. **1 Minecraft block = 16 Blockbench units.** Reuse `front_direction`.
+Schema needed → `describe_capability` once before mutation. **1 Minecraft block = 16 Blockbench units.** Reuse `front_direction`.
 
 ## Phase Handoff
 
@@ -81,7 +81,7 @@ Locator/Null create/edit       → manage_locator / manage_null_object
 rig IK/mirror                  → bone_rigging
 ```
 
-`bone_rigging` only for IK/mirror. Known coherent Cubes → one `manage_cubes(operation=create, elements=[...])`; uncertainty → no batch. Known Cubes sharing one deterministic TRANSLATE/RESIZE intent → derive absolute targets once from fresh state → one `manage_cubes(operation=batch_update)`. Never loop inspect→modify per Cube; writes stay absolute/fail-closed.
+`bone_rigging` only for IK/mirror. Known coherent Cubes → one `manage_cubes(operation=create, elements=[...])`; uncertainty → no batch. Known Cubes sharing one deterministic TRANSLATE/RESIZE intent → derive absolute targets once from fresh state → one `manage_cubes(operation=batch_update)`. Never loop inspect→modify per Cube; relative intent stays reasoning-layer arithmetic; writes stay absolute/fail-closed.
 
 ## First-Call Invariants
 
@@ -97,7 +97,13 @@ Validation failure repairs arguments for the **same capability**.
 
 ## Capability Discovery / Recovery
 
-Capability discovery is **deferred spec loading after routing**, not a second router. Known → invoke directly; unknown/stale → one precise `search_capabilities`; schema → `describe_capability` once.
+Capability discovery is **deferred spec loading after routing**, not a second router.
+
+```text
+known exact capability   → invoke directly
+unknown/stale capability → one precise search_capabilities query
+schema needed            → describe_capability once
+```
 
 One precise search miss → reformulate once; second miss → `BLOCKED`. A known foreign-phase capability is never a discovery miss; hand off.
 
@@ -120,5 +126,3 @@ OUTCOME_UNKNOWN     → inspect state before retry
 - `inspect_model_bounds` only for envelope/scale/ground/displacement.
 - Skip `get_project_info` after create/export unless lifecycle state is unknown/stale.
 - Same routed failure twice without new evidence → `BLOCKED`.
-
-`export_model`: `bedrock` JSON or editable `project` `.bbmodel`.
