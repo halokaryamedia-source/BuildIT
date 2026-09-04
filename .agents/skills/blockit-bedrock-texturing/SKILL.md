@@ -21,7 +21,7 @@ UV/geometry/rig correction required
 → continue same task
 ```
 
-Entry: **final Box UV locked with `autouv=0`**, no invalid/out-of-bounds/partial-overlap blocker, reusable `box_uv_region`.
+Entry: **final Box UV locked with `autouv=0`**, no invalid/out-of-bounds/partial-overlap blocker, reuse `box_uv_region`.
 
 ## Canonical Vocabulary
 
@@ -58,7 +58,7 @@ manage_material | manage_material_instances | capture_model_views
 
 ## Conditional Support — Not Default Routing
 
-These **must not enter the normal hot path unless user intent specifically requires** them:
+Use only when intent specifically requires:
 
 ```text
 gradient_tool | color_picker_tool | copy_brush_tool | paint_settings
@@ -66,7 +66,7 @@ create_brush_preset | load_brush_preset | texture_selection | texture_layer_mana
 add_texture_group | list_materials | get_material_info | import_texture_set
 ```
 
-Support tools do not justify extra discovery/readback or outrank primary authoring.
+Support tools never outrank primary authoring or justify extra discovery/readback.
 
 ## First-Call / Discovery Invariants
 
@@ -78,9 +78,9 @@ pbr_channel          → material TextureGroup `group` required
 Painter coordinates  → texture pixels; keep in bounds
 ```
 
-Current `create_texture` has a provisional **16×16** blank default. Production authoring must therefore **not omit blank Atlas size**; reuse project resolution. Existing base-color atlas → reuse its UUID.
+`create_texture` has a provisional **16×16** blank default. Production authoring must **not omit blank Atlas size**; reuse project resolution. Existing base-color atlas → reuse its UUID.
 
-Known identity must not fall back to broad hierarchy discovery or confirmation reads. Known capability → invoke. Unknown/stale → one `search_capabilities`; exact schema → `describe_capability` once. **Do not re-list/re-read it only for confirmation.**
+Known identity must not fall back to broad hierarchy discovery or confirmation reads. Known capability → invoke. Unknown/stale → one `search_capabilities`; schema → `describe_capability` once. **Do not re-list/re-read it only for confirmation.**
 
 ## Texture Atlas / Styling
 
@@ -96,10 +96,10 @@ SECONDARY DETAIL PASS → controlled detail
 VERIFY                → Texture Verify
 ```
 
-`gradient_tool` is only for reference-supported continuous transition. Same-color detail → one `paint_with_brush` batch with `connect_strokes=false`.
+`gradient_tool` only for reference-supported continuous transition. Same-color detail → one `paint_with_brush` batch with `connect_strokes=false`.
 
 ## Texture Verify / Visual Convergence
 
-Use approved reference + fresh `get_texture` + `capture_model_views`. Review UV → material → form → identity → microdetail. Verdict: `FAIL | UNVERIFIED | PASS`. `FAIL` → smallest bounded causal correction → fresh affected evidence → `IMPROVED | UNCHANGED | REGRESSED`; same causal direction twice → `BLOCKED`.
+Use approved reference + fresh `get_texture` + `capture_model_views`. Review UV → material → form → identity → microdetail. Verdict: `FAIL | UNVERIFIED | PASS`. `FAIL` → smallest causal correction → fresh affected evidence → `IMPROVED | UNCHANGED | REGRESSED`; same causal direction twice → `BLOCKED`.
 
 Texture `PASS` + required motion → `switch_authoring_phase` through Gateway; static assets may finish with `ANIMATION NOT REQUIRED`.

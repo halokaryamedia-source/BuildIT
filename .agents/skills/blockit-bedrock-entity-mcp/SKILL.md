@@ -15,20 +15,20 @@ animation/motion          → `blockit-bedrock-animation`
 
 ## Reference Grounding
 
-Normal authoring is **approved image + optional 3D Evidence → Geometry → Texturing → optional Animation**. Optional 3D Evidence supports Geometry; it is not a second route.
+Normal authoring: **approved image + optional 3D Evidence → Geometry → Texturing → optional Animation**. 3D Evidence supports Geometry; it is not a second route.
 
-## Fast Routing
+## Fast Routing Contract
 
 Normal asset work **must not begin by searching repository files**.
 
 ```text
 ACTIVE PHASE + intent + known state/UUIDs
-→ exact current Runtime capability
+→ exact known Runtime capability
 → execute through Gateway
 → reuse fresh returned state
 ```
 
-Known capability → invoke directly. Unknown/stale → `search_capabilities`; exact current schema → `describe_capability` once. **1 Minecraft block = 16 Blockbench units.** Reuse `front_direction` when relevant.
+Known capability → invoke. Unknown/stale → `search_capabilities`; schema → `describe_capability` once. **1 Minecraft block = 16 Blockbench units.** Reuse `front_direction`.
 
 ## Phase Handoff
 
@@ -43,7 +43,11 @@ switch_authoring_phase through Gateway
 
 `HANDOFF_REQUIRED` stops current-phase mutation routing, not the whole task.
 
-## Tool Lanes
+## Authoring Stage Lock
+
+`DISCOVER → AUTHOR → VERIFY → CORRECT → VERIFY → DONE`
+
+## Tool Lane Discipline
 
 ```text
 CORE / SHARED
@@ -52,7 +56,7 @@ hierarchy question            → inspect_elements(mode=outline)
 known target detail           → inspect_elements(mode=detail)
 visible/reference comparison  → capture_model_views
 numeric envelope/scale/ground → inspect_model_bounds
-structural validation         → validator://status; detail only when nonzero
+structural validation gate    → validator://status; details only when nonzero
 Locator identity unknown      → list_locator_elements
 global UV/atlas readiness     → list_textures
 recovery                      → undo / redo
@@ -61,32 +65,32 @@ phase change                  → switch_authoring_phase
 
 GEOMETRY
 optional 3D Evidence          → manage_geometry_reference
-create bone/Group             → add_group
+create normal bone/Group      → add_group
 create/update Cubes           → manage_cubes(operation=create|update|batch_update)
-parent move                   → reparent_element
-Group pivot/rotation/visible  → modify_group
-structural delete/rename      → remove_element / rename_element
-Locator/Null create/edit      → manage_locator / manage_null_object
-IK/mirror                     → bone_rigging
+Group/bone parent move         → reparent_element
+Group pivot/rotation/visible   → modify_group
+structural delete/rename       → remove_element / rename_element
+Locator/Null create/edit       → manage_locator / manage_null_object
+rig IK/mirror                  → bone_rigging
 ```
 
-`bone_rigging` is only for IK/mirror. Known coherent Cubes → one `manage_cubes(operation=create, elements=[...])`; uncertainty → no batch. Known Cubes sharing one deterministic TRANSLATE/RESIZE intent → derive absolute targets once from fresh state → one `manage_cubes(operation=batch_update)`. **Never loop inspect→modify per Cube.** Writes stay absolute/fail-closed.
+`bone_rigging` only for IK/mirror. Known coherent Cubes → one `manage_cubes(operation=create, elements=[...])`; uncertainty → no batch. Known Cubes sharing one deterministic TRANSLATE/RESIZE intent → derive absolute targets once from fresh state → one `manage_cubes(operation=batch_update)`. Never loop inspect→modify per Cube. Relative intent stays reasoning-layer arithmetic; writes stay absolute/fail-closed.
 
 ## First-Call Invariants
 
 ```text
 add_group                   → pass name OR groups, never both
-manage_cubes update         → id + at least one authored change
+manage_cubes update         → id + authored change
 manage_cubes rotated create → origin required
 manage_locator create       → name+parent; update → id+authored change
 manage_null_object create   → name+parent; update → id+parent/position
 ```
 
-Validation failure repairs arguments for the **same capability**.
+Validation failure repairs args for the same capability.
 
-## Discovery / Recovery
+## Capability Discovery / Recovery
 
-Capability discovery is deferred spec loading, not a second router.
+Capability discovery is **deferred spec loading after routing**, not a second router.
 
 ```text
 known exact capability   → invoke directly
@@ -94,7 +98,7 @@ unknown/stale capability → one precise search_capabilities query
 schema needed            → describe_capability once
 ```
 
-One precise search miss → reformulate once; second miss → `BLOCKED`. A known foreign-phase capability is a handoff, never a discovery miss.
+One precise search miss → reformulate once; second miss → `BLOCKED`. A known foreign-phase capability is never a discovery miss; hand off instead.
 
 ```text
 INVALID_INPUT       → repair args; same capability
@@ -110,10 +114,10 @@ OUTCOME_UNKNOWN     → inspect state before retry
 
 - Known UUID → no discovery unless stale/ambiguous.
 - Fresh mutation → reuse returned state/`geometry_effect`; no confirmation readback.
-- Do not automatically re-read fresh mutation targets with `inspect_elements(mode=detail)`.
-- Validator: read `validator://status` first; zero problems means no detail read.
+- Do not automatically re-read fresh targets with `inspect_elements(mode=detail)`.
+- Validator: `validator://status` first; zero problems → no detail read.
 - `inspect_model_bounds` only for envelope/scale/ground/displacement.
 - Skip `get_project_info` after create/export unless lifecycle state is unknown/stale.
 - Same routed failure twice without new evidence → `BLOCKED`.
 
-`export_model`: `bedrock` JSON or editable `project` `.bbmodel`. Never emulate missing capability through generic UI actions.
+`export_model`: `bedrock` JSON or editable `project` `.bbmodel`. Never emulate missing capability via generic UI actions.
