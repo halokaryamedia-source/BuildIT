@@ -13,6 +13,8 @@ texture/PBR               → `blockit-bedrock-texturing`
 animation/motion          → `blockit-bedrock-animation`
 ```
 
+## Reference Grounding
+
 Normal authoring: **approved image + optional 3D Evidence → Geometry → Texturing → optional Animation**. Optional 3D Evidence supports Geometry; it is not a second route.
 
 ## Fast Routing Contract
