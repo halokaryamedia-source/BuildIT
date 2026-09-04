@@ -43,6 +43,17 @@ describe("pre-local plugin runtime cleanup", () => {
     expect(tools).toContain("reload_required: false");
   });
 
+  test("phase switching follows the current profile and keeps Gateway clients stable", async () => {
+    const index = await source("index.ts");
+
+    expect(index).toContain("const activeProfile = getActiveMcpRegistrationProfile();");
+    expect(index).toContain("applyMcpToolSurface(activeProfile, targetPhase);");
+    expect(index).not.toContain("applyMcpToolSurface(registrationProfile, targetPhase);");
+    expect(index).toContain("serverConfig.profile = activeProfile;");
+    expect(index).toContain("serverConfig.phase = targetPhase;");
+    expect(index).toContain("Gateway clients refresh automatically");
+  });
+
   test("plugin unload owns sockets, CSS, dialogs and settings references", async () => {
     const index = await source("index.ts");
     const net = await source("server/net.ts");
@@ -77,7 +88,8 @@ describe("pre-local plugin runtime cleanup", () => {
     expect(index).toContain("const current = httpServer;");
     expect(index).toContain("if (current) await current.closeAndWait();");
     expect(index).toContain("const started = await startMcpServer();");
-    expect(index).toContain("Reconnect the Codex MCP client");
+    expect(index).toContain("Gateway clients reconnect automatically");
+    expect(index).not.toContain("Reconnect the Codex MCP client");
   });
 
   test("dead prompt CDN and stateless session settings are removed", async () => {

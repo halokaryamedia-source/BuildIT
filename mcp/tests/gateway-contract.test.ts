@@ -94,6 +94,15 @@ describe("BlockIT Gateway contract", () => {
     });
   });
 
+  test("phase handoff invalidates only the backend catalog, not the Codex-facing Gateway", async () => {
+    const backendSource = await Bun.file("gateway/backend.ts").text();
+
+    expect(backendSource).toContain('capability === "switch_authoring_phase"');
+    expect(backendSource).toContain("await this.closeConnectionUnsafe()");
+    expect(backendSource).toContain("gateway_catalog_invalidated: true");
+    expect(backendSource).toContain("client_reconnect_required: false");
+  });
+
   test("stdio Gateway is a first-class package command and does not log protocol traffic to stdout", async () => {
     const packageJson = await Bun.file("package.json").json();
     const source = await Bun.file("gateway/index.ts").text();

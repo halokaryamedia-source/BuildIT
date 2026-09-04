@@ -18,6 +18,7 @@ import {
   prompts,
   applyMcpToolSurface,
   applyMcpRegistrationProfile,
+  getActiveMcpRegistrationProfile,
   registerMcpProfile,
   setMcpPhaseSwitchHandler,
   setMcpProfileSwitchHandler,
@@ -116,7 +117,7 @@ async function restartMcpServer(): Promise<void> {
     const started = await startMcpServer();
     if (started) {
       Blockbench.showQuickMessage(
-        "BlockIT MCP server restarted. Reconnect the Codex MCP client.",
+        "BlockIT MCP server restarted. Gateway clients reconnect automatically; direct native MCP clients may need to refresh.",
         4000
       );
     }
@@ -196,8 +197,9 @@ BBPlugin.register("blockit_mcp", {
     settingsSetup();
     setupProfileActions();
     setMcpProfileSwitchHandler((profile) => {
+      if (serverConfig) serverConfig.profile = profile;
       Blockbench.showQuickMessage(
-        `BlockIT MCP profile switched to ${profile}. New MCP requests use the updated surface.`,
+        `BlockIT MCP profile switched to ${profile}. Gateway clients refresh automatically.`,
         2000
       );
     });
@@ -237,9 +239,14 @@ BBPlugin.register("blockit_mcp", {
     }
     applyMcpToolSurface(registrationProfile, authoringPhase);
     setMcpPhaseSwitchHandler((targetPhase) => {
-      applyMcpToolSurface(registrationProfile, targetPhase);
+      const activeProfile = getActiveMcpRegistrationProfile();
+      applyMcpToolSurface(activeProfile, targetPhase);
+      if (serverConfig) {
+        serverConfig.profile = activeProfile;
+        serverConfig.phase = targetPhase;
+      }
       Blockbench.showQuickMessage(
-        `BlockIT MCP phase switched to ${targetPhase}. Reconnect the MCP client.`,
+        `BlockIT MCP phase switched to ${targetPhase}. Gateway clients refresh automatically.`,
         2000
       );
     });

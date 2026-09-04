@@ -1,78 +1,47 @@
 # Next Action
 
-Updated: 2026-09-04 — Image Reference Route paused on Codex MCP registry refresh
+Updated: 2026-09-04 — Gateway stability gate
 
-Working branch: **`Local` only**.
-
-This file owns active continuation only. Stable facts → `CONTEXT.md`; proof →
-`docs/knowledge/current-validation.md`; source ownership →
-`docs/knowledge/implementation-map.md`; detailed procedures stay with their
-canonical owner.
+Working branch: **`Local` only**. Continuation only; stable facts → `CONTEXT.md`, proof → `current-validation.md`, ownership → `implementation-map.md`.
 
 ## Current Status
 
 ```text
-IMAGE REFERENCE ROUTE: SELECTED → GENERIC_REFERENCE_READY → SOURCE_READY → LOCAL_VERIFIED
-3D-ASSISTED ROUTE: PARKED — do not reactivate during Image Reference Route implementation
-EXTENDED PROFILE PROOF: PARKED — do not reactivate during Image Reference Route implementation
-LIVE BLOCKBENCH AUTHORING: BLOCKED — BlockIT server healthy, current Codex task MCP registry unavailable
+BLOCKIT GATEWAY: SOURCE/STATIC FOUNDATION READY
+LIVE GATEWAY PROOF: PENDING — requires local Codex + Blockbench
+IMAGE REFERENCE ROUTE: PAUSED UNTIL CONNECTION GATE PASSES
+3D-ASSISTED ROUTE: PARKED
+EXTENDED PROFILE PROOF: PARKED
 ```
 
-## Resume BlockIT Elevator Authoring
-
-Current live evidence: BlockIT reports product `blockit-bedrock-entity-mcp`, version
-`0.1.0`, profile `bedrock_entity`, phase `geometry`, and 25 exposed tools; the
-current Codex task does not receive that tool registry after full app exit/reopen.
-Do not author through a partial or absent MCP surface and do not emulate missing
-tools through raw HTTP.
+The Gateway is the candidate stable client boundary:
 
 ```text
-1. Reconnect/refresh the MCP registry for this existing task when Codex exposes that capability.
-2. Verify add_group, manage_cubes, inspect_elements, capture_model_views, and validator are callable.
-3. Recheck project elevator_image_reference_6x5x5; preserve it and do not discard other projects.
-4. Build coherent primary Geometry for 6×5×5 blocks (96×80×80 units), including the left transparent glass panel.
-5. Capture model views and compare against the attached reference before claiming visual PASS.
-6. Continue Texture, optional Animation, validation, and export of the final `.bbmodel`.
+Codex → stdio Gateway → loopback BlockIT Runtime → Blockbench
 ```
 
-The Image Reference Route is the default object-agnostic route. The 3D-Assisted
-Route must never block it.
+Gateway startup must not depend on Blockbench. Runtime reload/profile/phase changes must refresh only the Gateway backend catalog, never require a new Codex chat.
 
-## Local Order
+## Next Live Gate
 
 ```text
 1. git switch Local && git pull --ff-only
-2. deploy/reconnect only when live Blockbench proof is explicitly reactivated
+2. Configure Codex MCP `blockit` to run `mcp/gateway/index.ts` via Bun stdio; disable the old direct Blockbench MCP entry.
+3. With Blockbench closed: Gateway tools remain callable; status reports runtime offline.
+4. Open Blockbench: same Codex task reports runtime online and can search/describe current capabilities.
+5. In the same Codex task, repeat plugin reload and Blockbench close/open cycles. No Codex restart, new chat, or manual MCP reconnect is allowed.
+6. Change/rebuild one backend tool surface, reload BlockIT, and verify the same Gateway task reads the refreshed capability catalog.
 ```
 
-## Parked Work
+PASS only when the Codex-facing Gateway stays available through those cycles and interrupted mutations are never blindly retried.
 
-The following work is intentionally deferred while the Image Reference Route is active:
-
-```text
-Experimental/primitiveanything-poc/README.md
-```
-
-```text
-3D-Assisted Evidence proof (GLB + Primitive Decomposition)
-Standard ↔ Extended same-phase proof
-```
-
-Their detailed procedures remain in the existing owner documents. Do not
-restart them or add production integration until the Image Reference Route reaches a
-stable `.bbmodel` result.
+After PASS, resume `elevator_image_reference_6x5x5` from its preserved project state and continue Geometry → Texture → optional Animation → validated `.bbmodel`.
 
 ## Locked Boundaries
 
 ```text
-main authoring order = Geometry → Texture → optional Animation
-final output boundary = validated `.bbmodel`
-In-Game Preview is outside the main flow
-Standard / Extended are the MCP Profile names
-same-phase Standard ↔ Extended must not require reload/reconnect/reset
-foreign phase uses HANDOFF_REQUIRED
-registration is idempotent by family; Extended adds only retained fallback families
-no production mesh→Cube conversion before the optional POC proves its bridge
+Blockbench owns model/project/Undo state; Gateway owns routing/recovery only.
+Native Runtime MCP remains available for Inspector/conformance/debugging.
+No production domain façade expansion before the connection gate passes.
+No new chat/restart recommendation as normal BlockIT recovery.
 ```
-
-Completion is proof-bound: static/source ready ≠ local PASS ≠ live PASS.

@@ -86,6 +86,30 @@ function normalizeRuntimeCallResult(result: unknown): GatewayRuntimeCallResult {
   };
 }
 
+function normalizeGatewayManagedResult(
+  capability: string,
+  result: GatewayRuntimeCallResult
+): GatewayRuntimeCallResult {
+  if (capability !== "switch_authoring_phase" || result.isError === true) {
+    return result;
+  }
+
+  return {
+    ...result,
+    content: [
+      {
+        type: "text",
+        text: "BlockIT authoring phase switched. The Gateway invalidated its backend catalog and will refresh automatically on the next capability request.",
+      },
+    ],
+    structuredContent: {
+      ...(isRecord(result.structuredContent) ? result.structuredContent : {}),
+      gateway_catalog_invalidated: true,
+      client_reconnect_required: false,
+    },
+  };
+}
+
 export class BlockitRuntimeBackend {
   readonly runtimeUrl: string;
   private readonly healthTimeoutMs: number;
@@ -323,7 +347,11 @@ export class BlockitRuntimeBackend {
           name: capability,
           arguments: args,
         });
-        return normalizeRuntimeCallResult(result);
+        const normalized = normalizeRuntimeCallResult(result);
+        if (capability === "switch_authoring_phase" && normalized.isError !== true) {
+          await this.closeConnectionUnsafe();
+        }
+        return normalizeGatewayManagedResult(capability, normalized);
       } catch (error) {
         const classification = classifyInterruptedCall(tool);
         const message = errorMessage(error);
