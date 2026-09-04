@@ -5,7 +5,7 @@ description: Minecraft Bedrock Entity animation specialist for authored motion, 
 
 # BlockIT Bedrock Animation
 
-Use only when `ACTIVE PHASE: ANIMATION`, `Animation Required = YES`, Texturing is user-approved, and participating hierarchy/pivots are suitable.
+Use when `ACTIVE PHASE: ANIMATION`, `Animation Required = YES`, Texturing approved, hierarchy/pivots suitable.
 
 ## Phase Boundary
 
@@ -15,7 +15,7 @@ Animation owns motion, not structural rig mutation.
 bone/pivot/IK/parenting structure must change
 → HANDOFF_REQUIRED
   target_phase: geometry
-  reason: <material rig blocker>
+  reason: <observed rig defect>
   readiness: <failed hierarchy/pivot/IK prerequisite>
   resume_from: <current project + immediate animation/bone target>
 → invoke switch_authoring_phase through Gateway
@@ -23,7 +23,7 @@ bone/pivot/IK/parenting structure must change
 → continue same task with Geometry specialist
 ```
 
-Reopen Geometry only for a material blocker that prevents required Animation; do not bounce phases for optional structure improvements. Do not search for `bone_rigging` while Animation is active. No normal phase handoff requires reconnect, Blockbench reload, or a new chat.
+Do not search for `bone_rigging` while Animation is active. No normal phase handoff requires reconnect, Blockbench reload, or a new chat.
 
 ## Direct Routing
 
@@ -51,9 +51,9 @@ manage_animation_effects
 manage_animation_controller
 ```
 
-Known exact capability → invoke through Gateway. Unknown/stale capability → one focused `search_capabilities`; exact current schema needed → `describe_capability` once. **Reuse fresh UUID/state; known identity must not fall back to broad hierarchy discovery or confirmation reads.**
+Known capability → invoke via Gateway. Unknown/stale → `search_capabilities`; schema → `describe_capability` once. **Reuse fresh UUID/state; known identity must not fall back to broad hierarchy discovery or confirmation reads.**
 
-Route all timeline/keyframe intents through `manage_animation_timeline`; use `batch` for one shared cohort intent instead of looping per key. Controller/effect/graph/copy-paste tools are conditional; use them only when behavior is requested or evidenced.
+Route timeline/keyframe work through `manage_animation_timeline`; use `batch` for one cohort intent. Controller/effect/graph/copy-paste tools are conditional.
 
 ## Motion Design Contract
 
@@ -69,7 +69,7 @@ causal event for sound/particle
 loop seam or neutral/controller handoff
 ```
 
-Archetypes are categories, not presets. No universal FPS, duration, amplitude, phase, keyframe count, or Bezier target. Do not reduce acceptance to an animation quality score.
+Archetypes are categories, **not presets**. No universal FPS, duration, amplitude, phase, keyframe count, or Bezier target. Do not reduce acceptance to an **animation quality score**.
 
 ## Procedural Math / Molang
 
@@ -82,9 +82,9 @@ q.modified_move_speed     → speed/intensity response
 controller blend value    → conditional layer weight
 ```
 
-Periodic motion tracks base + amplitude + frequency + phase. Chains use driver → delayed followers, deliberate phase/amplitude hierarchy, and attachment continuity.
+Periodic motion tracks base + amplitude + frequency + phase. Chains use **driver → delayed followers**, deliberate phase/amplitude hierarchy, and attachment continuity.
 
-## Action / Internal Verification
+## Action / Effects / Verification
 
 When material: `anticipation → acceleration/action → impact/contact → overshoot/follow-through → recovery → neutral/handoff`.
 
@@ -92,23 +92,15 @@ Bind particles/sounds to named causal events, not time zero unless start is the 
 
 `DISCOVER → AUTHOR → VERIFY → CORRECT → VERIFY → DONE`
 
-Internally review pose/readability → timing/phase → weight/contact → attachment/clipping → secondary motion → effect synchronization → loop seam/neutral return. Internal visual/playback evidence may be captured for Codex judgement and does not need to be shown to the user.
+Review pose/readability → timing/phase → weight/contact → attachment/clipping → secondary motion → effect synchronization → loop seam/neutral return.
 
 Correction verdict: `IMPROVED | UNCHANGED | REGRESSED`; tool success is not motion quality. Same causal correction direction failing twice without new evidence → `BLOCKED`.
 
-## User Approval / Completion
+## Completion / Handoff
 
-Requested Animation scope is internally complete only when required motion/effect behavior is verified. Internal `PASS` means `READY_FOR_USER_REVIEW`, not approval.
+Internal Animation `PASS` means `READY_FOR_USER_REVIEW`; user inspects live Blockbench. Revision → continue Animation. Explicit approve → checkpoint save → Finalization.
 
-```text
-user inspects live Blockbench animation
-├─ revision request → continue Animation
-└─ explicit approve → Animation APPROVED → checkpoint save
-```
-
-Only after explicit user approval may the router proceed to Finalization.
-
-If Finalization or another stage later exposes a material rig/pivot defect, return through the Gateway to Geometry, correct only the owning scope, internally verify, obtain user approval again, and invalidate only materially dependent downstream approval.
+If a material rig/pivot/hierarchy blocker is found, return to Geometry through Gateway, repair the owning structure, and re-approve only materially affected stages.
 
 ## Protected Gaps
 

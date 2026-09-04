@@ -18,7 +18,7 @@ describe("asset tool routing", () => {
     expect(skill).toContain("DISCOVER → AUTHOR → VERIFY → CORRECT → VERIFY → DONE");
   });
 
-  test("reference grounding is one flow with optional 3D Evidence", async () => {
+  test("Geometry strategy is explicit, user-selected, and keeps 3D-Assisted indivisible", async () => {
     const [router, modelling] = await Promise.all([
       source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md"),
       source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
@@ -26,10 +26,14 @@ describe("asset tool routing", () => {
 
     for (const owner of [router, modelling]) {
       expect(owner).toContain("approved image");
-      expect(owner).toContain("optional 3D Evidence");
-      expect(owner).not.toContain("3D-Assisted Route");
+      expect(owner).toContain("DIRECT");
+      expect(owner).toContain("3D_ASSISTED");
+      expect(owner).toMatch(/user-selected|user.*selected/i);
+      expect(owner).not.toContain("optional 3D Evidence");
       expect(owner).not.toContain("Image Reference Route");
     }
+    expect(router).toContain("Shape Reconstruction");
+    expect(router).toContain("PrimitiveAnything");
     expect(router).toContain("manage_geometry_reference");
   });
 

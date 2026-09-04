@@ -5,7 +5,7 @@ async function read(path: string) {
 }
 
 describe("reference Minecraft-first coverage", () => {
-  test("execution consent stays bounded in the reference owners", async () => {
+  test("execution consent stays bounded at the ChatGPT reference owner", async () => {
     const [skill, flow] = await Promise.all([
       read("../.agents/skills/blockbench-reference-generator/SKILL.md"),
       read("../docs/knowledge/flow.md"),
@@ -14,23 +14,24 @@ describe("reference Minecraft-first coverage", () => {
     expect(skill).toContain("generation is output, not discovery");
     expect(skill).toContain("readiness is not permission to generate");
     expect(skill).toContain("fresh explicit user instruction");
-    expect(flow).toContain("execution consent gate");
-    expect(flow).toContain("fresh instruction");
+    expect(flow).toContain("chatgpt generates one canonical five-preview board");
+    expect(flow).toContain("user approves");
   });
 
-  test("default board has five broad preview positions", async () => {
+  test("default board has five fixed broad preview positions", async () => {
     const [skill, guide, flow] = await Promise.all([
       read("../.agents/skills/blockbench-reference-generator/SKILL.md"),
       read("../docs/foundation/04-reference-guide.md"),
       read("../docs/knowledge/flow.md"),
     ]);
     for (const text of [skill, guide, flow]) {
-      expect(text).toContain("five-preview");
-      expect(text).toContain("side | front | back");
-      expect(text).toContain("top / footprint | front-side 3/4");
+      expect(text).toContain("left | front | back");
+      expect(text).toContain("top | front-left 3/4");
     }
+    expect(skill).toContain("five-preview");
+    expect(flow).toContain("five-preview");
     expect(skill).toContain("source-nearest orthographic anchor");
-    expect(guide).toContain("not five exact technical drawings");
+    expect(guide).toContain("not five exact engineering drawings");
   });
 
   test("goal is recognizable Blockbench geometry plus Minecraft-readable texture", async () => {

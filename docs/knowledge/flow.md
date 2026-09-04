@@ -2,18 +2,36 @@
 
 Updated: 2026-09-05
 
-This file is the **single detailed product flow**. Root `AGENTS.md` owns task routing, `workspace/README.md` owns persistent asset continuity, and `docs/knowledge/next-action.md` owns implementation continuation.
+This is the **single detailed current flow**. Root `AGENTS.md` owns task routing; `workspace/README.md` owns asset continuity; `next-action.md` owns implementation continuation.
 
-## 1. Product Boundary
+## 1. Route / Proof Ceiling
 
 ```text
-REFERENCE CREATION  → ChatGPT
-ASSET AUTHORING     → Codex → BlockIT Gateway → BlockIT Runtime → Blockbench
-PERSISTENT STATE    → workspace/active/<asset>/
-FINAL USER REVIEW   → user inspects the live Blockbench result
+PIN CURRENT AUTHORITY
+→ EXECUTION CONTEXT
+   REMOTE_GITHUB | LOCAL_CODE | LIVE_BLOCKBENCH
+→ PROOF CEILING
+→ TASK CLASS
 ```
 
-The normal client still sees only the four stable Gateway tools:
+```text
+REMOTE_GITHUB   = repository/source/docs/static/CI evidence
+LOCAL_CODE      = REMOTE_GITHUB + local build/generator/filesystem evidence
+LIVE_BLOCKBENCH = LOCAL_CODE + installed BlockIT + functioning Gateway/runtime/model evidence
+```
+
+Asset authoring that needs live Blockbench belongs to `LIVE_BLOCKBENCH`; this does not activate formal Local Acceptance unless explicitly requested.
+
+## 2. Product Boundary
+
+```text
+REFERENCE CREATION → ChatGPT
+ASSET AUTHORING    → Codex → BlockIT Gateway → Runtime → Blockbench
+PERSISTENCE        → workspace/active/<asset>/
+USER STAGE REVIEW  → live Blockbench
+```
+
+Gateway client surface stays fixed:
 
 ```text
 status
@@ -22,424 +40,293 @@ describe_capability
 invoke_capability
 ```
 
-Do not create a second Gateway, Standard/Extended authoring mode, PrimitiveAnything phase, provider route, or alternate Texturing/Animation path.
+## 3. Reference Preparation
 
-## 2. Reference Creation and Handoff
-
-Reference-image generation belongs in **ChatGPT**, not normal Codex authoring.
-
-Canonical board layout:
+ChatGPT generates one canonical five-preview board:
 
 ```text
 UPPER: LEFT | FRONT | BACK
 LOWER: TOP  | FRONT-LEFT 3/4
 ```
 
-The layout uses fixed normalized regions; image resolution may vary. No panel labels, borders, dimensions, or technical metadata are required in the pixels. The actual board remains the visual authority.
+Use fixed normalized regions, crop-safe spacing, uniform background, no panel labels/borders/technical metadata. Minor cross-view drift is acceptable unless it changes identity, primary mass/count, topology/attachment, important negative space, articulation, or buildability.
 
 ```text
-SOURCE IMAGE + USER INTENT
-→ ChatGPT creates canonical five-view board
-→ user reviews/corrects
+source image + user intent
+→ ChatGPT draft/correction
 → user approves
-→ user sends the actual approved image to Codex
+→ actual approved image handed to Codex
 ```
 
-Handoff is intentionally simple:
+Handoff is only the actual image + normal user message. No sidecar/manifest/ZIP is required. An image explicitly sent for modelling is approved unless the user marks it draft/not ready.
 
-```text
-ACTUAL APPROVED REFERENCE IMAGE
-+
-USER MESSAGE
-```
-
-No JSON sidecar, ZIP, modelling blueprint, coordinate sheet, or manifest is required. An image explicitly sent by the user for modelling is treated as the **Approved Reference** unless the user marks it draft/not ready.
-
-## 3. New Model Intake
-
-Codex creates the **Active Workspace before the Blockbench project**, then performs one mandatory intake gate.
+## 4. New Model Intake
 
 ```text
 Approved Reference arrives
-→ create workspace/active/<asset>/
-→ store reference + current continuity
+→ create Active Workspace
 → no .bbmodel yet
 → REQUIREMENT GATE
 ```
 
-Five fields are mandatory for a new model:
+Mandatory:
 
 ```text
-1. Asset
-2. Approved Reference
-3. Dimensions — width × height × length in Minecraft blocks
-4. Geometry Strategy — DIRECT | 3D_ASSISTED
-5. Animation Required — YES | NO
+Asset
+Approved Reference
+Dimensions: width × height × length in Minecraft blocks
+Geometry Strategy: DIRECT | 3D_ASSISTED
+Animation Required: YES | NO
 ```
 
-The user is the authority for `Geometry Strategy`. Codex must **not infer, default, or auto-switch** strategy from object category, apparent complexity, failed modelling, or available tooling.
+Geometry Strategy is decided by the user. Codex must not infer/default/auto-switch it from object type, complexity, failed modelling, or available tools.
 
-If fields are missing, ask for **all missing mandatory fields in one batch**. Ask follow-up only for fields still unresolved. Additional technical questions are allowed only when a material ambiguity would change the model.
+Missing fields → ask all missing values in one batch. Ask again only unresolved/material items. Complete + non-conflicting intake proceeds automatically; no redundant final confirmation.
 
-```text
-missing/conflicting required input
-→ AUTHORING BLOCKED
-→ ask user
-
-all required input complete + non-conflicting
-→ proceed automatically
-```
-
-There is no redundant “ready to start?” confirmation after the gate passes.
-
-## 4. Create Blockbench Project
-
-Only after the Requirement Gate passes:
+Only after the gate passes:
 
 ```text
 create Blockbench project
-→ start GEOMETRY
+→ start Geometry
 ```
 
-Before this point there must be no authored `.bbmodel`, Cubes, Groups, Shape GLB generation, or PrimitiveAnything execution.
+Before that: no `.bbmodel`, Cubes/Groups, Shape Reconstruction, or PrimitiveAnything execution.
 
-## 5. Stage Lifecycle and Approval
+## 5. Stage Lifecycle
 
-Each authored stage uses the same lifecycle:
+Each authored stage:
 
 ```text
 IN_PROGRESS
 → INTERNAL VERIFY
+→ correct clear material defects
 → READY_FOR_USER_REVIEW
-→ USER REVIEW IN LIVE BLOCKBENCH
-   ├─ revision request → IN_PROGRESS
+→ user inspects live Blockbench
+   ├─ revision → IN_PROGRESS
    └─ explicit “approve” → APPROVED
-→ CHECKPOINT SAVE
+→ checkpoint save
 → next required stage
 ```
 
-`INTERNAL VERIFY` is transient working state; persistent workspace stage state stays compact.
+Codex uses current Blockbench state and internal `capture_model_views` when visual evidence is needed. Internal captures are not the user approval surface.
 
-Codex must use actual current Blockbench state and internal visual captures when needed to understand what it authored. Internal captures are **not** the user approval surface. The user performs final stage judgement directly in Blockbench.
+Do not send materially broken work to user review. Same material causal correction failing twice without new evidence → `BLOCKED`; request user direction.
 
-Codex must not send obviously unfinished or materially broken work to the user for approval. If the same material causal correction fails twice without new evidence, the stage becomes `BLOCKED`; Codex explains the blocker and requests user direction instead of looping or marking it ready.
+## 6. Geometry Strategies
 
-`READY_FOR_USER_REVIEW` is not `APPROVED`. Only an explicit user approval advances the stage.
-
-### Checkpoint policy
-
-```text
-Geometry APPROVED  → checkpoint save + workspace update
-Texturing APPROVED → checkpoint save + workspace update
-Animation APPROVED → checkpoint save + workspace update
-```
-
-Do not save/checkpoint after every mutation, capture, or successful tool call.
-
-## 6. Geometry Strategy
-
-There are exactly two user-selected Geometry strategies.
-
-### 6.1 DIRECT
+### DIRECT
 
 ```text
 Approved Reference + Dimensions + Requirements
-→ normal BlockIT Geometry authoring
-→ internal structural + visual verification
+→ normal semantic Geometry
+→ internal verify
 → READY_FOR_USER_REVIEW
 ```
 
-`DIRECT` is not synonymous with “simple” or “mechanical”. It means the user chose normal reference-guided Geometry without the 3D-Assisted preparation package.
+`DIRECT` describes the user-selected method, not an object-category classifier.
 
-### 6.2 3D_ASSISTED
+### 3D_ASSISTED
 
-`3D_ASSISTED` is **one indivisible Geometry package**:
+One indivisible package:
 
 ```text
 Approved Reference Board
-→ deterministic LEFT / FRONT / BACK extraction
-→ extraction validation
+→ deterministic LEFT/FRONT/BACK extraction + validation
 → Shape Reconstruction
 → Shape GLB Gate
 → persist shape.glb
 → PrimitiveAnything
 → Primitive Decomposition Gate
 → persist primitive-decomposition.json
-→ dedicated Cuboid Materialization
+→ atomic Cuboid Materialization
 → Cuboid Materialization Gate
 → Semantic Geometry Cleanup
-→ remove live Shape GLB reference
+→ remove live Shape GLB
 → final Geometry internal verify
 → READY_FOR_USER_REVIEW
 ```
 
-There is no normal GLB-only, PrimitiveAnything-only, user-supplied-GLB, skip-PrimitiveAnything, or automatic fallback path.
+No GLB-only, PrimitiveAnything-only, user-supplied-GLB v1, skip-PrimitiveAnything, provider selection, or automatic fallback path.
 
-The architecture calls the first stage **Shape Reconstruction**. The v1 implementation is Hunyuan3D, but Hunyuan is not a user-facing route and v1 does not need a provider interface/router.
+Architecture term = `Shape Reconstruction`; Hunyuan3D is the single v1 implementation. Do not build a provider framework until another real implementation is required.
 
-### 6.3 View extraction
+### 3D-Assisted external ownership
 
-The approved board is canonical authority. For 3D-Assisted, Codex/local tooling deterministically extracts the fixed normalized `LEFT`, `FRONT`, and `BACK` regions. `TOP` and `FRONT-LEFT 3/4` remain additional validation evidence.
-
-Extraction must be validated for usable uncropped subject coverage. If extraction is unusable, do not invent a different crop, detect alternate panels, substitute another view, or continue with damaged input. `3D_ASSISTED` becomes `BLOCKED` and the user is asked to repair/regenerate the board in ChatGPT.
-
-### 6.4 External 3D-Assisted orchestrator
-
-Shape Reconstruction and PrimitiveAnything belong to **external local tooling controlled by Codex**, not the Blockbench Runtime.
-
-Normal use has one thin canonical orchestrator:
+External local tooling controlled by Codex owns:
 
 ```text
-extract views
-→ Shape Reconstruction
-→ GLB Gate
-→ persist valid GLB
-→ PrimitiveAnything
-→ Decomposition Gate
-→ persist valid decomposition
-→ READY_FOR_BLOCKBENCH_MATERIALIZATION
+fixed view extraction
+Shape Reconstruction
+GLB Gate
+PrimitiveAnything
+Decomposition Gate
 ```
 
-It must be resumable from the last valid gate. Individual Hunyuan/PrimitiveAnything scripts remain implementation/debug tools, not normal authoring steps.
+Normal use should have one thin resumable orchestrator. Individual Hunyuan/PrimitiveAnything scripts stay debug/development helpers.
 
-Machine resume state lives only in:
+Persistent canonical state:
 
 ```text
-3d-assisted/state.json
+workspace/active/<asset>/3d-assisted/
+├─ state.json
+├─ shape.glb
+└─ primitive-decomposition.json
 ```
 
-It stores current reference identity/hash, gate state, canonical artifact identity/hash, and last valid external resume point. It is not a second project-state system and does not own Blockbench stage approval.
+`state.json` owns reference/artifact hashes and last valid external gate only. Passed artifacts persist immediately after their gate. Failed/temp crops, meshes, renders, contact sheets, logs stay in `.cache/`.
 
-### 6.5 Canonical 3D-Assisted artifacts
+Reference replacement keeps the user-selected strategy but removes current derived GLB/decomposition; Git history owns old versions.
 
-Persistent:
+### Internal gates
+
+**Shape GLB Gate**: identity, primary masses, required part count, attachments, major pose/orientation, useful depth/volume, no material hallucination. It does not judge Minecraft/blocky styling.
+
+**Primitive Decomposition Gate**: useful primary-mass separation, identity-critical parts, bends/orientation, attachments, negative spaces, useful fragmentation. Primitive count alone is not authority.
+
+**Cuboid Materialization Gate**: faithful conversion only—complete primitives, no missing/duplicates, preserved translation/rotation/scale/spatial relationships, correct orientation, native editable Group/Bone + Cube, no production Mesh. It does not judge final Minecraft quality.
+
+No user approval occurs at internal 3D-Assisted gates.
+
+### Retry
 
 ```text
-3d-assisted/state.json
-3d-assisted/shape.glb
-3d-assisted/primitive-decomposition.json
+Shape quality fail → maximum one targeted regeneration → still fail = BLOCKED
+PrimitiveAnything quality fail → no blind rerun → BLOCKED
+known-incomplete technical failure → maximum one safe retry
+same failure again → BLOCKED
 ```
 
-`shape.glb` is persisted only after Shape GLB Gate PASS. `primitive-decomposition.json` is persisted only after Primitive Decomposition Gate PASS. The Cuboid Scaffold is **not** a separate canonical file; after materialization it lives only as current Blockbench geometry.
+### Target materializer
 
-Temporary renders, processed meshes, extraction crops, contact sheets, logs, and debugging output belong in `.cache/`.
-
-If the Approved Reference changes, `Geometry Strategy` remains the user’s current choice, but dependent Shape GLB and decomposition artifacts are invalidated and removed from the canonical workspace. Git history owns older versions.
-
-### 6.6 Internal gates
-
-**Shape GLB Gate** evaluates structural 3D fidelity to the Approved Reference: identity, primary masses, required part count, attachment, major pose/orientation, useful depth/volume, and absence of material hallucination. It does not require Minecraft/blocky styling.
-
-**Primitive Decomposition Gate** evaluates whether PrimitiveAnything preserves useful primary-mass separation, identity-critical parts, major orientations/bends, attachments, important negative spaces, and a decomposition useful for later scaffold cleanup. Primitive count alone is not a pass/fail threshold.
-
-**Cuboid Materialization Gate** evaluates only faithful conversion from the accepted decomposition into native editable Blockbench `Group/Bone + Cube` scaffold: complete expected primitives, no missing/duplicate primitive, preserved translation/rotation/scale/spatial relationships, correct orientation, and no production Mesh elements. It does not judge final Minecraft quality.
-
-No user approval is required at these internal gates. A failed internal gate blocks the 3D-Assisted package; it does not silently switch strategy.
-
-### 6.7 Bounded retry
+Target production contract: one dedicated Geometry Runtime capability behind the existing Gateway.
 
 ```text
-Shape quality failure
-→ initial generation + maximum one targeted regeneration
-→ still fail = BLOCKED
-
-PrimitiveAnything quality failure
-→ no blind quality rerun
-→ BLOCKED
-
-confirmed transient technical/environment failure
-→ maximum one safe retry when prior execution is known incomplete
-→ same failure again = BLOCKED
+Active Workspace path
+→ validate state.json + primitive-decomposition.json + hashes
+→ full pre-validation
+→ one atomic Undo transaction
+→ one temporary pa_<id> Group/Bone + Cube per primitive
+→ complete scaffold or no accepted scaffold state
 ```
 
-### 6.8 Dedicated Blockbench materialization
+Do not accept arbitrary primitive arrays/path overrides and do not revive generic `from_geo_json`.
 
-Target production contract: one dedicated **Geometry** Runtime capability consumes the current Active Workspace, reads only the canonical validated `3d-assisted/state.json` + `primitive-decomposition.json`, and materializes the complete temporary scaffold.
+**Current status:** target orchestrator/state contract + atomic materializer are design-locked but not yet production-implemented/promoted.
 
-It must not accept arbitrary primitive arrays or arbitrary decomposition file paths. Full schema/hash validation occurs before mutation. Materialization is one atomic reversible Blockbench Undo transaction: complete scaffold or no accepted scaffold state.
+### Semantic Geometry Cleanup
 
-Each decomposition primitive initially becomes:
+Materialized scaffold is a starting hypothesis. Codex may rename/reparent/merge/delete/split/resize/translate/rotate/replace/add Cubes, construct semantic hierarchy, and repair pivots.
 
-```text
-pa_<id> [temporary Group/Bone]
-└─ Cube
-```
+Approved Reference = visual authority; requested dimensions = numeric authority. Shape GLB may remain locked/non-export during cleanup as supporting depth evidence, then must be removed from live Blockbench before final Geometry verify/user review.
 
-This preserves transform fidelity. Merge/simplify/semantic restructuring belongs later to Semantic Geometry Cleanup.
+Cleanup must leave coherent silhouette, dimensions, parts, attachments, orientation, semantic hierarchy, future editability, and UV readiness.
 
-**Implementation status:** this dedicated production capability and the canonical external orchestrator are design-locked but not yet implemented/promoted in current Runtime source.
+## 7. Geometry Readiness / Future Animation
 
-### 6.9 Semantic Geometry Cleanup
+All Geometry should be future-animation-friendly:
 
-After Materialization PASS, Codex may substantially rewrite the scaffold:
+- meaningful semantic hierarchy;
+- naturally movable structurally distinct parts remain separately transformable;
+- sensible pivots/transform ownership;
+- no destructive structure requiring full rebuild later;
+- no speculative full rig for static scope.
 
-```text
-rename / reparent / merge / delete / split
-resize / translate / rotate / replace
-add missing Cubes
-build semantic Groups/Bones
-repair pivots and transform ownership
-```
+If `Animation Required = YES`, participating hierarchy/Bones/pivots/attachments must be animation-ready before Geometry user approval.
 
-The scaffold is a starting hypothesis, not authority. Final authority remains user requirements + Approved Reference + requested dimensions + current Blockbench result.
-
-During cleanup the passed Shape GLB may remain loaded as a locked, non-export supporting 3D reference. The Approved Reference Image remains visual authority. Remove the live GLB reference before final Geometry internal verification and before user review; keep the canonical GLB file in the workspace.
-
-Cleanup is ready for final Geometry verify only when silhouette/primary parts/dimensions/attachments/orientation/hierarchy/editability/UV readiness are coherent and temporary `pa_*` structure has been removed or converted into meaningful production structure.
-
-## 7. Geometry Readiness and Future Animation
-
-Geometry must be designed for future editability regardless of `Animation Required`.
-
-For every asset:
-
-- use meaningful semantic hierarchy;
-- isolate structurally distinct naturally movable parts;
-- give those parts sensible transform/pivot ownership;
-- avoid structures that would require destructive rebuild merely to animate later;
-- do not build a speculative full rig when animation is not required.
-
-If `Animation Required = YES`, Geometry must additionally be animation-ready before user Geometry approval: participating hierarchy, Groups/Bones, pivots, attachments, and transform ownership must support the required motion.
+Geometry internal PASS + UV readiness → user review. Explicit approve → checkpoint → `switch_authoring_phase` through Gateway → Texturing in the same task/chat.
 
 ## 8. Texturing
 
-After explicit Geometry approval and checkpoint save:
-
 ```text
-switch to Texturing through Gateway
-→ author UV/Texture/PBR state
+Geometry APPROVED
+→ Texturing
 → internal technical + visual verify
-→ correct material defects
 → READY_FOR_USER_REVIEW
-→ user reviews live Blockbench
-→ explicit approve
+→ user approve
 → checkpoint save
 ```
 
-A structural Geometry/UV blocker may reopen Geometry only when it is a material owner defect that prevents correct Texturing. Prevent upstream problems before handoff; do not bounce phases for optional improvements.
+Return to Geometry only for a material Geometry/UV blocker that prevents correct Texturing, not optional improvement.
 
 ## 9. Animation
 
-If `Animation Required = NO`, skip Animation after Texturing approval.
+If `Animation Required = NO`, skip after Texturing approval.
 
-If `YES`:
+If YES:
 
 ```text
 Texturing APPROVED
 → Animation
-→ author motion
-→ internal technical + visual verify/playback
+→ internal playback/technical/visual verify
 → READY_FOR_USER_REVIEW
-→ user reviews live Blockbench
-→ explicit approve
+→ user approve
 → checkpoint save
 ```
 
-Return to Geometry only for a material rig/pivot/hierarchy blocker. Do not reopen Geometry for an optional nicer structure.
+Return to Geometry only for material rig/pivot/hierarchy blockers.
 
 ## 10. Downstream Invalidation
 
-An approved upstream stage may be reopened only when a downstream stage finds a **material blocker owned by that upstream stage**.
-
-After an upstream correction, perform an impact check:
+Approved upstream stage reopens only for a material blocker owned by it.
 
 ```text
 downstream unaffected → keep APPROVED
-downstream materially affected → INVALIDATED → repair → approval again
+downstream affected   → INVALIDATED → repair → user approval again
 ```
 
-Invalidate the smallest dependent scope. Do not reset all downstream stages automatically.
+Invalidate minimum dependent scope; prevent before handoff rather than bouncing stages.
 
 ## 11. Finalization
 
-After every required authored stage is `APPROVED`:
+After all required stages are approved:
 
 ```text
 FINALIZATION
 → technical validation only
-→ verify correct project/format/current dimensions
-→ verify hierarchy/references/UV/textures/animation references
+→ format/dimensions/hierarchy/references/UV/textures/animation refs
 → no live Shape GLB/reference_model
 → no unintended temporary/debug elements
-→ workspace state consistent
+→ workspace consistent
 ```
 
-Finalization must not silently change an approved visual/material result. If a material defect is found, reopen its exact owning stage, repair it, internally verify it, obtain user approval again, then return to Finalization.
+Finalization cannot silently alter approved visual work. Material defect → reopen exact owner → fix → internal verify → user re-approve → Finalization again.
 
-If Finalization passes without material changes:
-
-```text
-Final Save
-→ project status COMPLETE
-→ remain in workspace/active/
-```
-
-No extra user approval is required after the last required stage approval. A completed project moves to `workspace/saved/` only on explicit user instruction.
+PASS with no material change → Final Save → `COMPLETE`. No extra final approval. Project remains under `workspace/active/` until user explicitly moves it to `saved/`.
 
 ## 12. Existing Model / Improvement Flow
 
 ```text
-user supplies .bbmodel + requested change
-→ recover known Active Workspace OR create one
-→ if external/untracked: persist supplied .bbmodel as initial baseline before mutation
+user supplies/identifies .bbmodel + change
+→ recover/create Active Workspace
+→ if untracked: persist supplied .bbmodel as baseline before mutation
 → inspect current model
 → determine affected stage(s)
 → ask only material missing information
 → update smallest owning stage(s)
 → internal verify
-→ user review/approval for affected stage(s)
-→ checkpoint/finalization as applicable
+→ user approve affected stage(s)
+→ Finalization
 ```
 
-Use one current editable `.bbmodel`; Git history owns older baselines.
+Use one current editable `.bbmodel`; Git history owns prior versions.
 
-An Approved Reference is required only when success depends on visual/fidelity judgement. Deterministic instructions such as explicit numeric movement, color change, or timing change may proceed from current model + explicit instruction alone.
+Reference is required only for visual/fidelity success criteria. Deterministic numeric/color/timing changes may proceed from current model + explicit instruction.
 
-For an existing tracked asset, reuse its stored Geometry Strategy even for a major Geometry overhaul. Codex may recommend another strategy but never switches it automatically.
+Tracked asset reuses stored Geometry Strategy. External untracked model needs strategy only if Geometry authoring is required.
 
-For an external `.bbmodel` with unknown strategy:
+Only user changes strategy. Before Geometry approval, a strategy change discards unapproved Geometry, removes 3D-Assisted canonical state when leaving it, recreates a clean Blockbench project from the same intake/workspace, then starts the new strategy. After Geometry approval, keep approved production Geometry and use the new strategy for future Geometry work.
+
+## 13. Evidence / Continuity
 
 ```text
-update does not touch Geometry → strategy may remain unknown
-update touches Geometry        → STRATEGY_REQUIRED → ask user
+repository continuation    → docs/knowledge/next-action.md
+active asset continuity    → workspace/active/<asset>/README.md
+asset workspace rules      → workspace/README.md
+stable facts               → CONTEXT.md
+current proof state        → docs/knowledge/current-validation.md
+current source ownership   → docs/knowledge/implementation-map.md
+formal local acceptance    → docs/knowledge/operations/local-acceptance-runbook.md only when reactivated
+historical rationale       → Git history
 ```
 
-### Strategy change
-
-Only the user may change strategy.
-
-Before current Geometry approval:
-
-```text
-user changes strategy
-→ discard all unapproved Geometry from old strategy
-→ if leaving 3D_ASSISTED, remove its current canonical artifacts/state
-→ recreate Blockbench project from clean state using the same intake/workspace
-→ start Geometry with new strategy
-```
-
-Active Workspace, Approved Reference, dimensions, animation requirement, and user constraints remain.
-
-After Geometry has already been approved, keep the approved production Geometry. Persist the user’s new strategy for future Geometry work; do not destroy already approved geometry merely because the method changed.
-
-## 13. Workspace Continuity
-
-`workspace/README.md` is the canonical persistence contract. Active project README stores only current resume-critical state, including mandatory intake, strategy, stage states, current model, next step, and blocker. `3d-assisted/state.json` owns only machine-readable external 3D-Assisted gate/artifact state.
-
-Do not store tool-call transcripts, screenshot histories, speculative plans, or duplicate versioned `.bbmodel` files.
-
-## 14. Development Safety
-
-Before adding capability or architecture, ask whether the requirement fits the existing model:
-
-```text
-Gateway
-+ Active Workspace
-+ DIRECT | 3D_ASSISTED Geometry Strategy
-+ Geometry / Texturing / Animation
-+ internal capability tier
-```
-
-If yes, do not add another route/profile/phase/client boundary/provider framework.
-
-Current production source still lacks the target 3D-Assisted orchestrator/state contract and dedicated atomic scaffold materializer. Implement those exact missing owners before claiming 3D-Assisted production readiness. Live Gateway/Blockbench proof remains separate and must not be inferred from this design contract.
+Do not create duplicate route/profile/provider/approval/workspace-state systems.

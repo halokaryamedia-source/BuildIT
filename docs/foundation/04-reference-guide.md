@@ -8,7 +8,7 @@
 
 Own durable Source Image → Approved Reference semantics. Operational image generation belongs in **ChatGPT** using `.agents/skills/blockbench-reference-generator/SKILL.md` as the specification. Codex/BlockIT consumes the approved output.
 
-The goal is a recognizable, Minecraft-appropriate, Blockbench-buildable interpretation, not exact real-world reconstruction.
+The goal is a recognizable, Minecraft-appropriate, Blockbench-buildable interpretation, not exact real-world reconstruction. The approved reference **does not need to be 100% identical** to the source when a simpler Minecraft interpretation preserves identity and buildability.
 
 ## Authority / Evidence
 
@@ -20,21 +20,19 @@ approved numeric dimensions     → whole-model scale/envelope
 user technical constraints      → downstream facts outside the image
 ```
 
-The **actual approved reference image** must be available as multimodal input when it is used for reference-driven visual reasoning. A path itself is not visual evidence. A manifest, prose summary, filename, or memory is context only.
+The **actual approved reference image** must be available as multimodal input when used for reference-driven visual reasoning. A path itself is not visual evidence. A manifest, prose summary, filename, or memory is context only.
 
 ## Execution Boundary
 
 Repository/policy work, audit, CI, or Codex asset authoring never implicitly authorizes reference generation. Generate/edit only from a fresh explicit user instruction in ChatGPT.
 
-After approval, normal handoff to Codex is simply:
+After approval, normal handoff to Codex is:
 
 ```text
 actual approved reference image + user message
 ```
 
-Do not require a ZIP, JSON sidecar, manifest, coordinate sheet, or modelling blueprint.
-
-An image explicitly sent by the user to Codex for modelling is treated as approved unless the user marks it draft/not ready.
+No ZIP, JSON sidecar, manifest, coordinate sheet, or modelling blueprint is required. An image explicitly sent to Codex for modelling is approved unless the user marks it draft/not ready.
 
 ## Minecraft-First Fidelity
 
@@ -42,13 +40,11 @@ Reference fidelity is identity-first and buildability-first, not pixel-copy-firs
 
 ### Geometry
 
-Preserve recognizable silhouette, major masses, defining part count, attachments/topology, important negative spaces, and identity-critical features. Prefer the simplest Blockbench-buildable form that preserves those requirements.
+Preserve recognizable silhouette, major masses, defining part count, attachments/topology, important negative spaces, and identity-critical features. Prefer the simplest Blockbench-buildable form preserving those requirements.
 
 ### Texture
 
-Preserve base palette, major color/material regions, part separation, and identity-critical markings. Texture supports geometry; it must not fake required silhouette or missing structure.
-
-Minor shade/noise/marking drift between views is acceptable when identity and material reading remain clear.
+Preserve base palette, major color/material regions, part separation, and identity-critical markings. Texture supports geometry; it must not fake required silhouette or missing structure. Minor shade/noise/marking drift is acceptable when identity/material reading remains clear.
 
 ## Pose / Articulation
 
@@ -72,25 +68,17 @@ Do not dynamically choose RIGHT, use generic `SIDE`, or reorder views per asset.
 - five views describe one intended Minecraft model, not five exact engineering drawings.
 - image resolution may vary; normalized region identity remains fixed.
 
-The board is intentionally crop-safe for later 3D-Assisted use. Keep each subject fully inside its region with a neutral uniform background, consistent subject scale, and generous separation. Do not allow subject/shadow/prop content to cross into another region.
+The board is crop-safe for later 3D-Assisted use. Keep each subject fully inside its region with neutral uniform background, consistent scale, and generous separation. Do not allow subject/shadow/prop content to cross into another region.
 
 Default board contains no panel border, divider, label, title, header, note, dimensions, target-use text, Blockbench UI/gizmos, gameplay UI, or cinematic scene.
 
 ## 3D-Assisted Derived Views
 
-If the user later chooses `3D_ASSISTED`, Codex/local tooling may deterministically derive:
-
-```text
-LEFT
-FRONT
-BACK
-```
-
-from the known normalized board regions. `TOP` and `FRONT-LEFT 3/4` remain additional validation evidence.
+If the user later chooses `3D_ASSISTED`, Codex/local tooling deterministically derives `LEFT`, `FRONT`, and `BACK` from known normalized regions. `TOP` and `FRONT-LEFT 3/4` remain additional validation evidence.
 
 Derived crops are **not new authority**. The full actual approved reference image remains visual authority.
 
-If deterministic extraction is unusable because a subject crosses slots, is materially cropped, or the required view is not represented correctly, the 3D-Assisted flow is `BLOCKED`. Do not improvise a different crop, substitute another view, or create an automatic layout detector; ask the user to repair/regenerate the board in ChatGPT.
+If deterministic extraction is unusable because subject crosses slots, is materially cropped, or required view is wrong, 3D-Assisted becomes `BLOCKED`. Do not improvise a crop, substitute another view, or create an automatic layout detector; ask user to repair/regenerate the board in ChatGPT.
 
 ## Material Consistency
 
@@ -135,20 +123,13 @@ Ambiguous/mirrored pairing remains `UNVERIFIED`; do not silently compare the clo
 
 ## Visual Gate
 
-A Draft is acceptable only when it is:
-
-- recognizable;
-- geometry-buildable;
-- texture-useful;
-- free of material cross-view contradiction;
-- crop-safe in the canonical layout;
-- approved by the user.
+A Draft is acceptable only when it is recognizable, geometry-buildable, texture-useful, free of material cross-view contradiction, crop-safe, and approved by the user.
 
 For one unchanged Internal Generation Brief / review cycle:
 
 ```text
-first draft          = maximum 1
-targeted correction  = maximum 1
+first draft            = maximum 1
+targeted correction    = maximum 1
 automatic alternatives = 0
 ```
 
@@ -156,9 +137,7 @@ A materially new user-approved source, pose, target, or requirement begins a new
 
 ## Image Content / Completion
 
-Requested dimensions and other technical constraints normally stay **outside the image** and are collected by Codex during the new-model Requirement Gate.
-
-Reference validity never proves final model fidelity.
+Requested dimensions and technical constraints stay **outside the image** and are collected by Codex during the new-model Requirement Gate. Reference validity never proves final model fidelity.
 
 ## Related
 

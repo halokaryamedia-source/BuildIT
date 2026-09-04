@@ -5,35 +5,29 @@ description: Bedrock Texture/Painter/PBR specialist.
 
 # BlockIT Bedrock Texturing
 
-`ACTIVE PHASE: TEXTURING` only. Geometry owns geometry/rig/UV mutation; Texturing may inspect UV but **must not borrow Cube mutation**.
+`ACTIVE PHASE: TEXTURING` only. Geometry owns geometry/rig/UV mutation; Texturing may inspect UV but **must not borrow Cube mutation**. Enter after Geometry approval.
 
-## Entry / Phase Boundary
-
-Enter only after Geometry is explicitly user-approved and checkpointed.
+## Phase Boundary
 
 ```text
 UV/geometry/rig correction required
 → HANDOFF_REQUIRED
   target_phase: geometry
-  reason: <material blocker>
-  readiness: <failed prerequisite>
+  reason: <defect>
+  readiness: <failed gate>
   resume_from: <current target>
 → switch_authoring_phase through Gateway
 → refresh Runtime catalog
 → continue same task
 ```
 
-Reopen Geometry only for a material Geometry-owned blocker that prevents correct Texturing; do not bounce phases for optional improvements.
-
-Entry technical prerequisite: final Box UV locked with `autouv=0`, no invalid/out-of-bounds/partial-overlap blocker, reuse `box_uv_region`.
+Entry: **final Box UV locked with `autouv=0`**, no invalid/out-of-bounds/partial-overlap blocker, reuse `box_uv_region`.
 
 ## Canonical Vocabulary
 
 `UV Layout` = geometry→atlas; `Texture Atlas` = bitmap; `Texture Styling` = color/material/detail; `Texture Verify` = atlas + mapped-model validation. `manage_material_instances` owns face `material_instance` state.
 
 ## Direct Routing
-
-Reuse fresh state.
 
 ```text
 global UV/atlas readiness      → list_textures (`uv_audit.production_gate`)
@@ -51,7 +45,7 @@ face material instances        → manage_material_instances
 mapped model-view evidence     → capture_model_views
 ```
 
-## Primary vs Support
+## Primary vs Support Capabilities
 
 ```text
 PRIMARY
@@ -60,7 +54,9 @@ paint_fill_tool | draw_shape_tool | paint_with_brush | eraser_tool
 manage_material | manage_material_instances | capture_model_views
 ```
 
-Conditional support only when user intent specifically requires it:
+## Conditional Support — Not Default Routing
+
+These must not enter the normal hot path unless user intent specifically requires them:
 
 ```text
 gradient_tool | color_picker_tool | copy_brush_tool | paint_settings
@@ -68,7 +64,7 @@ create_brush_preset | load_brush_preset | texture_selection | texture_layer_mana
 add_texture_group | list_materials | get_material_info | import_texture_set
 ```
 
-Support tools do not justify extra discovery/readback and never outrank primary authoring.
+Support tools do not justify extra discovery/readback.
 
 ## First-Call Invariants
 
@@ -80,15 +76,15 @@ pbr_channel          → material TextureGroup `group` required
 Painter coordinates  → texture pixels; keep in bounds
 ```
 
-`create_texture` has a provisional 16×16 blank default. Production authoring must therefore **not omit blank Atlas size**; reuse project resolution. Existing base-color atlas → reuse its UUID.
+`create_texture` has a provisional **16×16** blank default. Production authoring must therefore **not omit blank Atlas size**; reuse project resolution. Existing base-color atlas → reuse its UUID.
 
-Known capability → invoke. Unknown/stale → one `search_capabilities`; schema → `describe_capability` once. **Do not re-list/re-read it only for confirmation.**
+Known → invoke. Unknown/stale → `search_capabilities`; schema → `describe_capability` once. **Do not re-list/re-read it only for confirmation.**
 
 ## Texture Atlas / Styling
 
-Use one base-color atlas, not one per body part/Cube. Production UV is **128×128 default, 256×256 opt-in**. Pin atlas UUID and pass `texture_id` when multiple textures are loaded.
+Use one **base-color atlas**. Production UV is **128×128 default, 256×256 opt-in**. Pin `texture_id` when needed.
 
-Define palette roles, value/hue ramp, material zones, face shading, contact/occlusion, edge, alpha, seam, identity marks, detail budget, and pixels per UV unit. Flat color is BASE PASS only; reject random high-contrast noise.
+Define palette roles, value/hue ramp, material zones, face shading, contact/occlusion, edge/alpha/seam, identity marks, detail budget, pixels per UV unit. Flat color is BASE PASS only; reject random high-contrast noise.
 
 ```text
 BASE PASS             → draw_shape_tool / paint_fill_tool
@@ -100,17 +96,8 @@ VERIFY                → Texture Verify
 
 `gradient_tool` is only for reference-supported continuous transition. Same-color detail → one `paint_with_brush` batch with `connect_strokes=false`.
 
-## Internal Verify / User Approval
+## Texture Verify / Visual Convergence
 
-Use the Approved Reference + fresh `get_texture` + internal `capture_model_views` when visual comparison is needed. Review UV → material → form → identity → microdetail.
+Use approved reference + fresh `get_texture` + `capture_model_views`. Review UV → material → form → identity → microdetail. Verdict: `FAIL | UNVERIFIED | PASS`. `FAIL` → smallest bounded causal correction → fresh affected evidence → `IMPROVED | UNCHANGED | REGRESSED`; same causal direction twice → `BLOCKED`.
 
-Internal verdict: `FAIL | UNVERIFIED | PASS`. `FAIL` → smallest bounded causal correction → fresh affected evidence → `IMPROVED | UNCHANGED | REGRESSED`; same causal direction twice without new evidence → `BLOCKED`.
-
-Internal Texture `PASS` means **READY_FOR_USER_REVIEW**, not approval. User inspects the live Blockbench result.
-
-```text
-revision request → continue Texturing
-explicit approve → Texturing APPROVED → checkpoint save
-```
-
-Only after explicit approval may the router hand off to Animation when required or proceed to Finalization for static assets.
+Internal Texture `PASS` means `READY_FOR_USER_REVIEW`; user inspects live Blockbench. Revision → continue Texturing. Explicit approve → checkpoint save, then Animation when required or Finalization when not.

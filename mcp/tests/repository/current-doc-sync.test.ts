@@ -80,7 +80,7 @@ describe("current developer-facing documentation sync", () => {
     expect(runbook).toMatch(/targeted live debugging[\s\S]*formal Local Acceptance/i);
   });
 
-  test("canonical authoring taxonomy stays one-flow and Gateway-aware", async () => {
+  test("canonical authoring taxonomy keeps explicit user strategy and Gateway-aware stages", async () => {
     const [root, context, flow, implementation, router, texturing, animation, settings] = await Promise.all([
       text("../AGENTS.md"),
       text("../CONTEXT.md"),
@@ -93,8 +93,10 @@ describe("current developer-facing documentation sync", () => {
     ]);
 
     for (const owner of [root, context, flow, implementation, router]) {
-      expect(owner).toMatch(/Reference[- ]Ground/i);
-      expect(owner).toContain("optional 3D Evidence");
+      expect(owner).toContain("Geometry Strategy");
+      expect(owner).toContain("DIRECT");
+      expect(owner).toContain("3D_ASSISTED");
+      expect(owner).not.toContain("optional 3D Evidence");
     }
 
     for (const owner of [root, flow, router, texturing, animation]) {
@@ -110,6 +112,8 @@ describe("current developer-facing documentation sync", () => {
       expect(owner).not.toContain("Extended MCP Profile");
     }
 
+    expect(router).toContain("Shape Reconstruction");
+    expect(router).toContain("PrimitiveAnything");
     expect(settings).toContain('name: "Legacy UI Fallbacks (Debug)"');
     expect(settings).toContain("not an authoring profile");
     expect(texturing).toContain("manage_material");

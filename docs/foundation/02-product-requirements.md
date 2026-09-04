@@ -121,9 +121,9 @@ Neither GLB nor scaffold is final model authority.
 
 ## 6. Internal Readiness vs User Approval
 
-Codex must understand and validate what it authored before requesting review.
+Codex must understand and validate what it authored before requesting review. Internal validation may use current Blockbench state, focused structural reads, and fresh model captures; those captures are for Codex and do not need to be shown to the user.
 
-Internal validation may use current Blockbench state, focused structural reads, and fresh model captures. Those captures are for Codex and do not need to be shown to the user.
+Use `inspect_model_bounds` only when the numeric whole-model envelope materially matters.
 
 ```text
 material defect remains → correct internally
@@ -135,15 +135,7 @@ Only explicit user approval advances the stage. User reviews the live Blockbench
 
 ## 7. Geometry Quality / Editability
 
-Geometry must preserve:
-
-- recognizable whole form and primary proportions;
-- requested dimensions;
-- required parts/counts/orientations/attachments;
-- important negative spaces;
-- semantic hierarchy and meaningful transform ownership;
-- UV readiness;
-- future editability.
+Geometry must preserve recognizable whole form/proportions, requested dimensions, required parts/count/orientation/attachments, important negative spaces, semantic hierarchy/transform ownership, UV readiness, and future editability.
 
 Naturally movable, structurally distinct parts should remain separately transformable even for a static model, without speculative full rigging.
 
@@ -151,15 +143,11 @@ When `Animation Required = YES`, participating hierarchy/Bones/pivots/attachment
 
 ## 8. Texturing
 
-Texturing starts only after Geometry is explicitly approved and checkpointed. Texture must not conceal unresolved Geometry.
-
-Codex internally verifies UV/atlas/material/identity readability before user review. User approval is required before advancing.
+Texturing starts only after Geometry is explicitly approved and checkpointed. Texture must not conceal unresolved Geometry. Codex internally verifies UV/atlas/material/identity readability before user review; user approval is required before advancing.
 
 ## 9. Animation
 
-Animation is authored only when `Animation Required = YES`. Required motion must use the already prepared Geometry hierarchy/pivots, remain attached/readable, and be internally verified before user review.
-
-If a material rig/pivot/hierarchy blocker appears, reopen Geometry at the exact owner instead of compensating in Animation.
+Animation is authored only when `Animation Required = YES`. Required motion must use the prepared Geometry hierarchy/pivots, remain attached/readable, and be internally verified before user review. A material rig/pivot/hierarchy blocker reopens Geometry at the exact owner.
 
 ## 10. Downstream Invalidation
 
@@ -176,15 +164,13 @@ Stage approval triggers checkpoint save. After the last required authored stage 
 
 Finalization checks format/current dimensions/references/hierarchy/UV/textures/animation references and absence of unintended temporary/debug state. It must not silently change an approved visual result.
 
-A material Finalization defect reopens its exact owner stage and requires user approval again after repair. If Finalization passes without material change, final save happens automatically; no extra user approval is needed.
+A material Finalization defect reopens its exact owner stage and requires user approval again. If Finalization passes without material change, final save happens automatically; no extra user approval is needed.
 
 ## 12. Existing Model Update
 
-For an existing `.bbmodel`:
-
 ```text
 recover/create Active Workspace
-→ if untracked, persist supplied file as the current baseline before mutation
+→ if untracked, persist supplied .bbmodel as current baseline before mutation
 → inspect current model
 → determine affected stage(s)
 → ask only material missing information
@@ -194,15 +180,11 @@ recover/create Active Workspace
 → Finalization
 ```
 
-Reference is required only when success depends on visual/fidelity judgement. A tracked model reuses its stored Geometry Strategy. An untracked external model needs strategy only if Geometry authoring is required.
-
-Only the user may change strategy.
+Reference is required only when success depends on visual/fidelity judgement. A tracked model reuses its stored Geometry Strategy. An untracked external model needs strategy only if Geometry authoring is required. Only the user may change strategy.
 
 ## 13. 3D-Assisted Production Requirements
 
-External Shape Reconstruction + PrimitiveAnything belong to local tooling controlled by Codex. The target normal-use entrypoint is one thin resumable orchestrator, not a workflow engine/provider router.
-
-Canonical machine state and artifacts:
+External Shape Reconstruction + PrimitiveAnything belong to local tooling controlled by Codex. Target normal use is one thin resumable orchestrator, not a workflow engine/provider router.
 
 ```text
 workspace/active/<asset>/3d-assisted/
@@ -211,23 +193,23 @@ workspace/active/<asset>/3d-assisted/
 └─ primitive-decomposition.json
 ```
 
-Passed artifacts persist gate-by-gate. A changed Approved Reference invalidates/removes derived current GLB/decomposition artifacts while preserving the user-selected strategy.
+Passed artifacts persist gate-by-gate. A changed Approved Reference removes derived current GLB/decomposition while preserving user-selected strategy.
 
-The target Blockbench materializer is one dedicated Geometry capability behind the existing Gateway. It must validate canonical workspace state before mutation and materialize the complete scaffold as one atomic Undo transaction. Do not use generic `from_geo_json` or arbitrary primitive payloads.
+Target Blockbench materializer is one dedicated Geometry capability behind the existing Gateway. It validates canonical workspace state before mutation and materializes complete scaffold as one atomic Undo transaction. Do not use generic `from_geo_json` or arbitrary primitive payloads.
 
 ## 14. Efficiency / Anti-Overdevelopment
 
-- one Gateway, not another transport;
+- one Gateway;
 - two Geometry strategies only;
 - no automatic strategy classifier;
 - one current editable `.bbmodel` per asset;
 - Git history owns old revisions;
-- internal captures are targeted, not screenshot-per-mutation;
-- capability discovery is deferred and focused;
-- no provider framework with only one provider;
-- no generic importer to solve a dedicated scaffold contract;
-- stop same failed causal direction after two attempts without new evidence;
-- invalidate the smallest downstream scope.
+- targeted internal captures, not screenshot-per-mutation;
+- deferred focused capability discovery;
+- no provider framework with one provider;
+- no generic importer for a dedicated scaffold contract;
+- same causal failure twice without new evidence → stop;
+- invalidate smallest downstream scope.
 
 ## 15. Proof Boundary
 

@@ -1,11 +1,11 @@
 ---
 name: blockbench-reference-generator
-description: Specification for one canonical Minecraft / Blockbench reference image generated in ChatGPT.
+description: Generate one canonical Minecraft / Blockbench reference image in ChatGPT.
 ---
 
 # Blockbench Reference Generator
 
-This skill is the **reference-generation specification**. Operational generation belongs in **ChatGPT**, not normal Codex/BlockIT authoring. Codex consumes the user-approved image rather than reproducing this stage.
+This skill is the reference-generation specification. Operational generation belongs in **ChatGPT**; normal Codex/BlockIT authoring consumes the user-approved image.
 
 Create **one Minecraft / Blockbench reference image** whose primary goal is a recognizable, Blockbench-buildable Minecraft interpretation, not exact real-world reconstruction.
 
@@ -13,84 +13,98 @@ Create **one Minecraft / Blockbench reference image** whose primary goal is a re
 
 A source image is enough; extra facts are optional. Do not ask for Cube counts, pivots, UVs, animation, MCP details, or modelling method. Never infer numeric scale from pixels. Prefer zero clarification.
 
-Resolve: explicit user fact → visible fact → leave optional unknowns unset → one clarification round only for material ambiguity, at most three material items. Never invent identity-changing hidden structure. Remaining material ambiguity → `NEEDS REVIEW`.
+Resolve: explicit user fact → visible fact → leave optional unknowns unset → one clarification round only for material ambiguity, at most three material items. Never invent identity-changing hidden structure. Remaining material ambiguity → **NEEDS REVIEW**.
 
 ## Execution Consent Gate
 
-Readiness is not permission to generate. Repository/policy hardening, audit, CI, or `next-action.md` never authorizes image generation. Generate/edit only after a fresh explicit user instruction.
+**Readiness is not permission to generate.** Repository/policy hardening, audit, CI, or `next-action.md` never authorizes image generation. Generate/edit only after a **fresh explicit user instruction**.
 
-## Internal Generation Brief
+## Pre-Generation Readiness
 
-Lock only material image-generation facts:
+**Generation is output, not discovery.** Lock an Internal Generation Brief with:
 
-- identity and recognizable silhouette;
-- major masses/features and attachments/asymmetry;
-- stable/readable pose and articulated feature state;
-- simplest Minecraft/Blockbench-buildable geometry language;
-- Minecraft-readable palette/material regions/identity markings;
-- source-supported visible structure without invented hidden precision.
+- identity, identity-bearing silhouette, major masses/features, attachments/asymmetry;
+- one **source-nearest orthographic anchor**;
+- stable pose + limb/appendage state when articulated;
+- simplest recognizable Blockbench-buildable geometry target;
+- Minecraft-readable palette/material regions/identity-critical markings;
+- nonvisual constraints kept outside image pixels.
 
-Requested dimensions and downstream technical requirements stay outside image pixels and are collected by Codex during authoring intake.
+The original **Source Image remains** visual authority regardless of camera angle. Generated previews normalize camera projection instead of copying lens distortion.
 
-## Canonical Five-View Board
-
-The layout is fixed and uses normalized regions so downstream 3D-Assisted extraction is deterministic:
+`READY` means no ambiguity remains that could materially change identity, primary geometry, required attachment/topology, Minecraft buildability, or identity-critical texture information.
 
 ```text
-UPPER: LEFT | FRONT | BACK
-LOWER: TOP  | FRONT-LEFT 3/4
+READY + fresh instruction → generate once
+READY without it           → STOP; wait for user
+NOT READY                  → clarify once
+still material             → NEEDS REVIEW
 ```
-
-Do not use generic `SIDE`, dynamically choose right/left, or change the panel order per asset.
-
-- `LEFT`, `FRONT`, `BACK`, and `TOP` are orthographic construction evidence.
-- `FRONT-LEFT 3/4` is supplemental volume/readability evidence.
-- All five views describe one intended Minecraft model.
-- Minor cross-view drift is allowed when it does not change identity, primary mass/count, topology/attachment, important negative space, or Minecraft buildability.
-
-The approved board is the visual authority. Downstream crops are derived inputs, not new authority.
-
-### Crop-safe presentation
-
-Use a neutral uniform background, consistent subject scale, and generous empty separation between slots. Keep the subject and shadow fully inside its intended region. Do not allow one view to cross into another region.
-
-Default board contains no panel borders, grid lines, dividers, labels, title, header, notes, dimensions, target-use text, Blockbench UI/gizmos, gameplay UI, or cinematic scene.
-
-The board need not be pixel-perfect engineering projection; it must be structurally coherent and crop-safe enough for deterministic normalized extraction of `LEFT`, `FRONT`, and `BACK` when 3D-Assisted is later selected.
 
 ## Minecraft-First Geometry / Texture
 
 ### Geometry
 
-Choose the simplest Blockbench-buildable representation preserving recognizable silhouette, major masses, important part count, attachments, negative spaces, and defining features. Use few meaningful segments. Never lazy-voxelize or chase organic contour with unit-Cube clutter.
+Choose the **simplest Blockbench-buildable representation that preserves the visible requirement**. Preserve recognizable silhouette, major masses, important part count, attachments, negative spaces, and defining features. Cuboids, rotated/stepped masses, plane-like Cubes, layered/inflated forms, and linked segments are examples, not presets. Use few meaningful segments; never lazy-voxelize organic contour with unit-Cube clutter.
 
 ### Texture
 
-Texture supports geometry; it does not replace required form. Preserve base palette, major material regions, part separation, and identity-critical markings. Prefer Minecraft-readable pixel treatment over photoreal micro-detail, dense noise, wrinkles, or baked lighting.
+Texture supports geometry; it does not replace required form. Preserve base palette, major color/material regions, part separation, and identity-critical markings. Prefer Minecraft-readable pixel treatment over photoreal wrinkles, dense noise, baked lighting, or micro-detail. Minor shade/noise/marking drift is acceptable when identity/material reading remain clear.
 
 ## Pose / Articulation
 
-Choose a structurally readable stable pose unless another state is required. Preserve identity-bearing silhouette/major masses and visible root → direction/bend → terminal intent for identity-critical articulated features. Do not invent hidden joint precision.
+Choose the most structurally readable stable pose unless another state is required. Grounded load-bearing subjects default to a **stable natural neutral stance**. Do not force **bilateral alignment** merely because it is easier to generate.
 
-Duplicated, missing, merged, floating, relocated, or structurally redefined required parts are material failures.
+Preserve identity-bearing silhouette/major masses and visible root → direction/bend → terminal intent for identity-critical articulated features without inventing hidden joint precision. Duplicated, missing, merged, floating, relocated, or structurally redefined required parts are material failures.
+
+## Five-Preview Coverage Board
+
+Use one fixed **five-preview** layout so downstream 3D-Assisted extraction is deterministic:
+
+```text
+UPPER: LEFT | FRONT | BACK
+LOWER: TOP | FRONT-LEFT 3/4
+```
+
+Do not use generic SIDE, dynamically swap LEFT/RIGHT, or reorder views per asset.
+
+- LEFT / FRONT / BACK / TOP are orthographic construction evidence.
+- FRONT-LEFT 3/4 is supplemental volume/readability evidence, not authority over orthographic/source evidence.
+- The five previews describe one intended Minecraft model; minor cross-view drift is allowed when it does not change identity, primary mass/count, topology/attachment, important negative space, or buildability.
+
+### Crop-Safe Presentation / Handoff
+
+Neutral uniform sheet; uncropped subject; consistent subject scale; generous empty separation. Keep each subject/shadow/prop inside its normalized region.
+
+No panel borders, grid lines, dividers, labels, titles, notes, dimensions, target-use text, Blockbench UI/gizmos, gameplay UI, or cinematic scene.
+
+The board may vary in resolution; normalized slot identity remains fixed. Requested dimensions/technical constraints stay outside the image and are collected by Codex later.
 
 ## Visual Gate
 
-Review in this order:
+Review the actual board in this order:
 
 1. recognizability / source identity;
 2. geometry buildability;
 3. texture usability;
-4. major structural consistency across five views;
+4. major structural consistency;
 5. crop-safe presentation/readability.
 
-A discrepancy is material only when it changes identity, primary mass/required part count, topology/attachment, important negative space, Minecraft buildability, or identity-critical texture/material information.
+A discrepancy is material only when it changes identity, primary mass/required part count, topology/attachment, important negative space, Minecraft buildability, or identity-critical texture/material information. Minor preview imperfections are not failure.
 
 ## Targeted Correction
 
-Correction is only for a material board-level defect. Source Image + locked brief remain authority; failed draft is defect evidence, not geometry authority.
+Correction is for a material board-level defect, not minor drift. Source Image + locked Brief remain authority; failed Draft is defect evidence, not geometry authority.
 
-For one unchanged review cycle:
+- name only failed material invariant(s);
+- regenerate the whole five-preview board, never patch one panel independently;
+- preserve relationships that already work.
+
+Material conflict after correction → **NEEDS REVIEW**.
+
+## Budget / Output
+
+For one unchanged Internal Generation Brief / review cycle:
 
 ```text
 first draft          = maximum 1
@@ -98,8 +112,6 @@ targeted correction  = maximum 1
 automatic variants   = 0
 ```
 
-Regenerate the whole five-view board rather than patching one panel independently. Material conflict after the allowed correction → `NEEDS REVIEW`.
+A materially new user-approved source, pose, target, or requirement starts a new cycle. Do not start a new cycle automatically to bypass a failed correction.
 
-## Output / Handoff
-
-Return **one image only** and stop for user review. After user approval, the user may send that actual image directly to Codex with a normal message. Do not generate ZIPs, JSON sidecars, manifests, coordinate sheets, or modelling blueprints.
+Return **one image only** and stop for user review. After approval, the user may send the actual approved reference image directly to Codex with a normal message. Do not generate ZIPs, JSON sidecars, manifests, coordinate sheets, or modelling blueprints.
