@@ -5,7 +5,7 @@ description: Bedrock Texture/Painter/PBR specialist.
 
 # BlockIT Bedrock Texturing
 
-`ACTIVE PHASE: TEXTURING` only. Geometry owns geometry/rig/UV mutation; **must not borrow Cube mutation**. Enter after Geometry approval.
+`ACTIVE PHASE: TEXTURING` only. Geometry owns geometry/rig/UV mutation; **must not borrow Cube mutation**. Geometry approved.
 
 ## Phase Boundary
 

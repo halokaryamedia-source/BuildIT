@@ -147,6 +147,7 @@ catalog input schemas                  <= 58,500 characters
 catalog descriptions                   <= 11,500 characters
 max per-tool payload                   <= 3,200 characters
 runtime workflow prompt             < 9,000 characters
+Texturing specialist guidance       < 4,500 characters
 ```
 
 ## Current Capability Shape
