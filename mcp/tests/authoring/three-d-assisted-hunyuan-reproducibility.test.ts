@@ -93,26 +93,27 @@ describe("3D-Assisted Hunyuan reproducibility contract", () => {
     expect(result.status).toBe(0);
   });
 
-  test("3D-Assisted README locks selected image+GLB workflow while live proof remains pending", async () => {
+  test("3D-Assisted README scopes Hunyuan to Shape Reconstruction before PrimitiveAnything", async () => {
     const readme = await source(
       "../Experimental/three-d-assisted-hunyuan-poc/README.md"
     );
     for (const marker of [
-      "IMAGE + GLB SELECTED WORKFLOW LOCKED",
+      "SHAPE RECONSTRUCTION STAGE",
       "PREFERRED MULTIVIEW EXECUTABLE TRACKED",
-      "GEOMETRY EVIDENCE BRIDGE STATIC SOURCE APPLIED",
-      "LOCAL BLOCKBENCH ALIGNMENT/BRIDGE TEST REQUIRED",
-      "NOT YET LIVE-PROVEN",
+      "LOCAL ORCHESTRATOR PROOF REQUIRED",
+      "PRIMITIVEANYTHING HANDOFF REQUIRED",
+      "NOT END-TO-END PRODUCTION READY",
       "generate_multiview_shape.py",
       "guidance scale     5.0",
+      "shape.glb",
+      "PrimitiveAnything",
       "manage_geometry_reference",
-      "reference_models://...",
-      "raw Hunyuan bounds",
-      "requested target dimensions",
-      "mesh-to-Blockbench converter",
+      "supporting comparison evidence",
     ]) expect(readme).toContain(marker);
 
-    expect(readme.toLowerCase()).toContain("image-only versus image+glb");
-    expect(readme).not.toContain("BUILDIT MCP UNCHANGED");
+    expect(readme).toContain("does not directly author production Blockbench Cubes");
+    expect(readme).toContain("provider router/interface");
+    expect(readme).not.toContain("IMAGE + GLB SELECTED WORKFLOW LOCKED");
+    expect(readme).not.toContain("image-only versus image+GLB");
   });
 });

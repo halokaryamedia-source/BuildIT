@@ -1,6 +1,6 @@
 # BlockIT
 
-BlockIT is an AI-assisted **Minecraft Bedrock Entity** modelling workspace built around a local Blockbench MCP plugin.
+BlockIT is an AI-assisted **Minecraft Bedrock Entity** authoring workspace built around a local Blockbench MCP Runtime and a stable Codex-facing Gateway.
 
 **Project snapshot:** `v0.1` (separate from the MCP package version).
 
@@ -11,38 +11,81 @@ Local  → active development / working authority
 main   → stable / release authority; changes only by explicit promotion
 ```
 
-Routine repository development uses `Local`. Repository behavior is routed by `AGENTS.md`; GitHub execution/history/CI rules are owned by `GITHUB_RULES.md`. Promotion to `main` uses the full `Release Verify` workflow.
+Routine repository development uses `Local`. Repository behavior is routed by `AGENTS.md`; GitHub execution/history/CI rules are owned by `GITHUB_RULES.md`.
 
-## Product Flow
+## Canonical Product Flow
 
 ```text
-1. PREPARE REFERENCE
-2. AUTHOR BEDROCK MODEL
-3. FINISH ASSET
+ChatGPT reference
+→ Active Workspace + Requirement Gate
+→ user selects Geometry Strategy: DIRECT | 3D_ASSISTED
+→ Geometry
+→ user approve + checkpoint
+→ Texturing
+→ user approve + checkpoint
+→ Animation when required
+→ user approve + checkpoint
+→ Finalization
+→ final .bbmodel save
 ```
 
-Reference-driven work is Minecraft-first: preserve recognizability, primary masses/counts, topology/attachment, important negative spaces, texture identity, and Blockbench/Bedrock buildability. Tool success is execution evidence, not visual approval.
+The approved image is visual authority. Requested dimensions are numeric authority. Codex never infers, defaults, or auto-switches Geometry Strategy.
+
+### DIRECT
+
+Normal reference-guided Blockbench Geometry using the existing Geometry specialist and Runtime capabilities.
+
+### 3D_ASSISTED
+
+Target production package:
+
+```text
+Approved Reference
+→ deterministic LEFT/FRONT/BACK extraction
+→ Shape Reconstruction (Hunyuan3D v1)
+→ Shape GLB Gate
+→ PrimitiveAnything
+→ Primitive Decomposition Gate
+→ dedicated atomic Cuboid Materialization
+→ Semantic Geometry Cleanup
+→ normal Texturing / optional Animation
+```
+
+`3D_ASSISTED` is **design-locked but not yet production-implemented end-to-end**. There is no normal GLB-only, PrimitiveAnything-only, provider-selection, or automatic fallback route.
 
 ## Current Product Surface
 
-The retained normal Bedrock catalog contains **65 callable tools across authoring phases**. Startup exposes only **MCP Core + exactly one active authoring phase**; default **Geometry** currently exposes **28 tools**.
+```text
+Gateway client surface           4 fixed tools
+Runtime callable union          51 tools
+Geometry native surface         25 tools
+Texturing native surface        35 tools
+Animation native surface        19 tools
+```
 
-Current source covers Cube/Group authoring, texture/Painter/PBR/material instances, Bedrock animation and AnimationController mutation, Locator/Null Object lifecycle, Undo/history, editable `.bbmodel`, and Bedrock geometry export.
+Gateway tools are always:
 
-Retained hardening includes coherent Cube placement batching, coherent Group batching, explicit project UV resolution selection (`128` default, `256` opt-in), source-level texture/paint fixes, and compact result/discovery discipline. Generic fallback families remain opt-in; `risky_eval` and `from_geo_json` remain disabled.
+```text
+status
+search_capabilities
+describe_capability
+invoke_capability
+```
 
-Protected gaps remain controller blend-curve mutation, TextureMesh direct authoring/inspection, native visible bounding-box fields, animated-texture authoring, and bone-binding expressions.
+Normal authoring has no Standard/Extended profile choice. Internal `extended` remains Legacy UI Fallback compatibility only; `risky_eval` and `from_geo_json` remain disabled.
 
 ## Evidence Boundary
 
-Do not encode transient continuation or CI state here.
+Static source/CI proof can establish routing, contracts, schemas, deterministic build output, and fail-closed source behavior. It does **not** prove installed Blockbench state, live Gateway survival, visual fidelity, Undo behavior, external GPU quality, or end-to-end 3D-Assisted quality.
+
+Current state owners:
 
 - stable project facts → `CONTEXT.md`
+- product flow → `docs/knowledge/flow.md`
 - repository/plugin continuation → `docs/knowledge/next-action.md`
 - current proof state → `docs/knowledge/current-validation.md`
-- exact current source/tool ownership → `docs/knowledge/implementation-map.md`
-
-Static source/CI proof does not prove live Blockbench visual fidelity, playback, persistence, or model-quality improvement unless that exact surface actually ran.
+- exact source/tool ownership → `docs/knowledge/implementation-map.md`
+- asset continuity → `workspace/README.md`
 
 ## Repository Map
 
@@ -50,20 +93,12 @@ Static source/CI proof does not prove live Blockbench visual fidelity, playback,
 .agents/skills/    task/domain specialists loaded only when relevant
 docs/foundation/  durable authoring policy
 docs/knowledge/   current flow, continuation, source ownership, proof, local procedure
-mcp/              Blockbench MCP plugin/runtime/build/tests/generated API docs
+mcp/              Blockbench MCP plugin/runtime/Gateway/build/tests/generated API docs
 workspace/        persistent active/saved asset packages
-Experimental/     bounded research/proof harnesses only
+Experimental/     bounded implementation evidence and proof harnesses only
 ```
 
-Generated/transient captures and sample renders are not repository-root source artifacts. Persistent visual/project evidence belongs with its owning workspace or experimental package; temporary output stays in ignored cache paths.
-
-## Asset Workspace
-
-Persistent asset continuity lives under `workspace/`. `workspace/README.md` is the workspace contract.
-
-An active package should contain only resume-critical current state. Prefer one current editable `.bbmodel` per asset package; Git history owns discarded iterations and transient test models. Stored reference paths are provenance only until the actual image is visible in the active modelling context.
-
-## MCP Development
+## Local Development
 
 From `mcp/`:
 
@@ -72,21 +107,25 @@ bun install --frozen-lockfile
 bun run verify:mcp
 ```
 
-`mcp/package.json` owns verifier composition. Use targeted tests during iteration; use `verify:repository`, `verify:authoring`, `verify:mcp`, or `verify:release` only for the proof surface that changed.
-
-Development watch mode builds only:
+Development watch:
 
 ```bash
 bun run dev:watch
 ```
 
-Deployment/loading into desktop Blockbench is a separate explicit local action; a normal watch build must not silently overwrite the installed plugin.
+Deployment into desktop Blockbench is explicit:
+
+```bash
+bun run deploy:local -- /absolute/path/to/blockit_mcp.js
+```
+
+Normal Codex use connects through the Gateway. See `mcp/gateway/README.md`.
 
 ## Contributing
 
 Repository development conventions, verification routing, commit discipline, and transient-file rules are documented in `CONTRIBUTING.md`.
 
-Historical audits, test-model iterations, retired decisions, and obsolete continuation belong in Git history rather than parallel current-state files.
+Historical audits, retired product paths, test-model iterations, and obsolete continuation belong in Git history rather than parallel current-state files.
 
 ## License
 

@@ -1,21 +1,20 @@
 # Next Action
 
-Updated: 2026-09-05 — user-driven authoring contract
+Updated: 2026-09-05 — local/Codex handoff activated
 
 Working branch: **`Local` only**. Continuation only; facts → `CONTEXT.md`, proof → `current-validation.md`, ownership → `implementation-map.md`.
 
 ## Current Status
 
 ```text
-BLOCKIT GATEWAY: SOURCE_READY
+BLOCKIT GATEWAY: SOURCE_READY / LIVE PROOF NEXT
 AUTHORING TAXONOMY: DESIGN_LOCKED — user-selected DIRECT | 3D_ASSISTED
-DIRECT AUTHORING: SOURCE_READY
+DIRECT AUTHORING: SOURCE_READY / LOCAL SMOKE NEXT
 3D_ASSISTED TARGET PIPELINE: DESIGN_LOCKED / IMPLEMENTATION PENDING
-OPTIONAL 3D EVIDENCE: RETIRED — replaced by 3D_ASSISTED package
 REFERENCE GENERATION: CHATGPT
 STAGE APPROVAL: USER IN LIVE BLOCKBENCH
 LEGACY UI FALLBACKS: DEBUG/MAINTENANCE ONLY
-LIVE GATEWAY PROOF: PENDING
+LOCAL/CODEX HANDOFF: READY FOR DEVELOPMENT BASELINE
 ```
 
 Canonical flow:
@@ -30,24 +29,132 @@ ChatGPT reference → Active Workspace + Requirement Gate
 → Finalization → final save
 ```
 
-## Implementation Still Required
+## Next Step 1 — Establish Local/Codex Baseline
 
-3D-Assisted is not production-ready until both exist:
+Do this before 3D-Assisted implementation so Gateway/runtime/environment defects are isolated first.
 
-1. **Thin resumable external orchestrator**
-   fixed LEFT/FRONT/BACK extraction → Shape Reconstruction/Hunyuan3D v1 → bounded GLB gate → `shape.glb` → PrimitiveAnything/decomposition gate → `primitive-decomposition.json` + `state.json`.
+```bash
+git switch Local
+git pull --ff-only
+git status --short
+git rev-parse HEAD
 
-2. **Dedicated Geometry scaffold materializer**
-   Active Workspace path only → validate canonical state/schema/hashes → one temporary Group/Bone + Cube per primitive → one atomic Undo transaction → complete scaffold or no accepted scaffold.
+cd mcp
+bun install --frozen-lockfile
+bun run verify:mcp
+bun run deploy:local -- /absolute/path/to/blockit_mcp.js
+```
 
-Keep Gateway at four tools. No `from_geo_json`, arbitrary primitive payload, provider router, or automatic strategy classifier. Materializer remains experimental until proof; update generated MCP docs through canonical generators.
+Then configure Codex to use `mcp/gateway/index.ts` through the four-tool stdio Gateway. Do not point Codex directly at the Runtime endpoint.
 
-## Existing Model Contract
+Required continuous-session proof:
 
-Tracked `.bbmodel` reuses strategy. Untracked model asks strategy only for Geometry work. Persist external baseline before first mutation. Reopen/approve only affected stages; invalidate only materially dependent downstream approvals.
+```text
+Blockbench closed → Gateway status Runtime offline
+→ open Blockbench → same Codex task Runtime online
+→ search/describe/invoke one safe Geometry capability
+→ switch Geometry → Texturing
+→ same task sees Texturing capabilities
+→ switch Texturing → Geometry
+→ reload BlockIT plugin and recover
+→ close/open Blockbench and recover
+```
 
-## Local / Live Proof
+PASS requires zero manual MCP reconnect and zero new chat after initial Gateway configuration.
 
-User deferred local/live testing. **Do not activate formal Local Acceptance or live Gateway/3D-Assisted proof until explicitly requested.**
+## Next Step 2 — DIRECT Smoke
 
-Later proof tracks stay separate: Gateway lifecycle; external orchestrator; atomic materialization/Undo/stale rejection; end-to-end DIRECT/3D_ASSISTED approval.
+Use one small disposable reference-driven asset to prove the normal product path before adding 3D complexity:
+
+```text
+Approved Reference + Dimensions
++ Geometry Strategy = DIRECT
++ Animation Required = NO
+→ Geometry internal verify
+→ user review/approve
+→ checkpoint
+→ Texturing
+→ user review/approve
+→ Finalization
+→ editable .bbmodel
+```
+
+This is a smoke proof, not a model-quality benchmark suite.
+
+## Next Step 3 — Implement Thin 3D-Assisted External Orchestrator
+
+Create one normal-use resumable local entrypoint. Do not build a provider framework.
+
+```text
+Active Workspace
+→ validate approved reference + dimensions + strategy
+→ deterministic LEFT/FRONT/BACK extraction
+→ Hunyuan3D v1 Shape Reconstruction
+→ bounded Shape GLB Gate
+→ persist 3d-assisted/shape.glb
+→ PrimitiveAnything
+→ bounded Primitive Decomposition Gate
+→ persist primitive-decomposition.json + state.json
+```
+
+The orchestrator owns only external pipeline state/hashes/resume. It does not author Blockbench Cubes.
+
+Implementation should reuse the pinned Hunyuan and PrimitiveAnything POCs; those directories are implementation evidence, not alternate product routes.
+
+## Next Step 4 — Prove External 3D Pipeline Locally
+
+Before Runtime materializer work, prove one representative fixture reaches an acceptable decomposition:
+
+```text
+approved board
+→ shape.glb PASS
+→ PrimitiveAnything decomposition PASS
+→ canonical state/artifact hashes valid
+```
+
+If Shape Reconstruction or PrimitiveAnything fails materially, stop at that owner. Do not build Runtime compensation for bad external decomposition.
+
+## Next Step 5 — Implement Dedicated Geometry Scaffold Materializer
+
+Only after Step 4 passes.
+
+Target contract:
+
+```text
+Active Workspace path only
+→ validate state.json + primitive-decomposition.json + hashes/schema
+→ full pre-validation
+→ one atomic Undo transaction
+→ one temporary pa_<id> Group/Bone + Cube per primitive
+→ complete scaffold or no accepted scaffold state
+```
+
+Keep Gateway at four tools. The materializer is one Geometry Runtime capability, not a fifth Gateway tool. No `from_geo_json`, arbitrary primitive arrays, generic UI import, or custom `.bbmodel` serializer.
+
+## Next Step 6 — End-to-End 3D_ASSISTED
+
+```text
+Approved Reference + Dimensions + 3D_ASSISTED
+→ external orchestrator
+→ atomic Cuboid Scaffold
+→ Semantic Geometry Cleanup
+→ remove live Shape GLB
+→ Geometry review/approve
+→ Texturing review/approve
+→ optional Animation
+→ Finalization
+```
+
+Proof must include atomic failure behavior, Undo, stale/hash rejection, no production Mesh/reference_model, and user-visible final fidelity.
+
+## Stop / Non-Goals
+
+Do not add:
+
+- automatic strategy classifier;
+- provider router/interface before a second real Shape Reconstruction implementation exists;
+- GLB-only or PrimitiveAnything-only product routes;
+- fifth Gateway tool;
+- generic `from_geo_json` revival;
+- automatic fallback from `3D_ASSISTED` to `DIRECT`;
+- large benchmark/profile systems before one representative end-to-end local proof.

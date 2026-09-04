@@ -14,20 +14,24 @@ BlockIT Gateway
 BlockIT Runtime inside Blockbench
 ```
 
-## Canonical authoring model
+## Canonical Authoring Model
 
-The Gateway does not create a second authoring workflow. Normal authoring remains:
+Gateway does not choose the modelling strategy. Normal authoring is:
 
 ```text
-approved image + optional 3D Evidence
+Approved Reference + Dimensions + Requirements
+→ user selects DIRECT | 3D_ASSISTED
 → Geometry
 → Texturing
 → Animation when required
+→ Finalization
 ```
 
-Optional 3D Evidence is a Geometry-only Runtime capability, not a separate route.
+`DIRECT` is normal reference-guided Geometry.
 
-## Stable client surface
+`3D_ASSISTED` is one package: Shape Reconstruction → PrimitiveAnything → dedicated atomic Cuboid Materialization → Semantic Geometry Cleanup. `manage_geometry_reference` may be used as supporting comparison evidence inside 3D-Assisted Geometry, but it is not a separate route.
+
+## Stable Client Surface
 
 ```text
 status
@@ -38,7 +42,7 @@ invoke_capability
 
 Blockbench/plugin reload and Runtime phase changes do not change this client-facing `tools/list`.
 
-## Capability discovery
+## Capability Discovery
 
 The live Runtime catalog is phase-filtered. Gateway search assigns internal priority only for discovery:
 
@@ -49,11 +53,9 @@ EXPERIMENTAL explicit matching intent only
 MAINTENANCE  legacy/debug fallback; de-prioritized
 ```
 
-Tiering never deletes capability. Exact intent can still discover an exposed support/experimental/maintenance capability. Empty discovery omits maintenance fallbacks.
+Tiering never deletes capability. Exact intent may still discover an exposed support/experimental/maintenance capability.
 
-`manage_geometry_reference` is experimental optional 3D Evidence. Generic UI compatibility such as `trigger_action`, `emulate_clicks`, and `fill_dialog` is maintenance/debug fallback and must not outrank authored BlockIT operations.
-
-## Phase handoff
+## Phase Handoff
 
 A successful Runtime `switch_authoring_phase` call is Gateway-managed:
 
@@ -65,9 +67,9 @@ invoke switch_authoring_phase
 → continue same task/chat
 ```
 
-The Gateway normalizes the result with `client_reconnect_required=false` and `new_chat_required=false`. Direct Runtime clients used for debug/conformance bypass this protection.
+Gateway normalizes the result with `client_reconnect_required=false` and `new_chat_required=false`. Direct Runtime clients used for debug/conformance bypass this protection.
 
-## Reliability invariants
+## Reliability Invariants
 
 - Gateway startup does not require Blockbench to be open.
 - Blockbench/plugin reload does not terminate the Gateway process.
@@ -80,7 +82,7 @@ The Gateway normalizes the result with `client_reconnect_required=false` and `ne
 - Gateway connects only to localhost/loopback Runtime URLs.
 - Native Runtime MCP remains available for Inspector/conformance/debugging.
 
-## Run locally
+## Run Locally
 
 From `mcp/`:
 
@@ -100,7 +102,7 @@ Optional loopback override:
 BLOCKIT_RUNTIME_URL=http://127.0.0.1:3000/bb-mcp
 ```
 
-## Codex configuration
+## Codex Configuration
 
 Use the Gateway instead of pointing Codex directly at Blockbench. Use an absolute repository path.
 
@@ -112,6 +114,18 @@ args = ["run", "C:/absolute/path/to/BuildIT/mcp/gateway/index.ts"]
 
 Codex owns the Gateway process lifecycle. Reloading/closing Blockbench does not replace the Codex-facing MCP process.
 
-## Proof boundary
+## Current Surface
 
-Source/static tests can prove fixed Gateway surface, loopback containment, capability priority, catalog invalidation, and retry semantics. The live acceptance gate remains one continuous Codex task surviving Runtime phase switches, plugin reloads, Blockbench close/open, and backend rebuilds without Codex restart/new chat/manual MCP reconnect.
+```text
+Gateway client tools     4
+Runtime callable union  51
+Geometry surface        25
+Texturing surface       35
+Animation surface       19
+```
+
+## Proof Boundary
+
+Source/static tests prove the fixed Gateway surface, loopback containment, capability priority, catalog invalidation, and retry semantics. They do not prove the live client survives Runtime lifecycle changes.
+
+The next local gate is one continuous Codex task that starts with Blockbench closed, observes Runtime offline→online, switches Geometry↔Texturing, survives plugin reload and Blockbench close/open, and performs no manual Codex MCP reconnect or new chat.
