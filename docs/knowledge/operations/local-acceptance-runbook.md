@@ -4,6 +4,8 @@ Updated: 2026-09-05
 Owner: `LIVE_BLOCKBENCH` formal acceptance procedure  
 Current state: **reactivated by `docs/knowledge/next-action.md` for local/Codex handoff**.
 
+This procedure is active only when `docs/knowledge/next-action.md` **explicitly reactivates local testing**. `LIVE_BLOCKBENCH` is an execution capability; it **does not activate** this procedure by itself. Targeted live debugging may use that capability without activating formal Local Acceptance.
+
 Use this runbook only for claims repository CI cannot prove. Do not edit source until a reproducible local failure identifies the first wrong owner.
 
 ## 1. Acceptance Contract
@@ -32,9 +34,22 @@ Require a clean tree before reusing proof.
 
 ## 3. Source Proof + Build
 
-From `mcp/`:
+### Fast path — reuse exact green MCP Verify
+
+Use only when the current clean HEAD has an exact successful MCP Verify and no local source/package edits follow it. Then:
 
 ```bash
+cd mcp
+bun install --frozen-lockfile
+bun run build
+```
+
+### Full path
+
+Otherwise:
+
+```bash
+cd mcp
 bun install --frozen-lockfile
 bun run verify:mcp
 ```
@@ -120,81 +135,47 @@ Approved Reference visible
 + requested dimensions
 + Geometry Strategy = DIRECT
 + Animation Required = NO
-→ Geometry
-→ internal verify
-→ user approve
-→ checkpoint
-→ Texturing
-→ internal verify
-→ user approve
-→ checkpoint
-→ Finalization
-→ editable .bbmodel
+→ Geometry → internal verify → user approve → checkpoint
+→ Texturing → internal verify → user approve → checkpoint
+→ Finalization → editable .bbmodel
 ```
 
-This gate proves route/handoff/persistence behavior, not broad model-quality superiority.
-
-Visual PASS still requires the actual approved reference + fresh current model evidence. Tool success, export success, low call count, or a scalar score cannot override QUALITY FAIL.
+This gate proves route/handoff/persistence behavior, not broad model-quality superiority. Visual PASS still requires the actual approved reference + fresh current model evidence. Tool success, export success, low call count, or a scalar score cannot override QUALITY FAIL.
 
 ## 8. 3D_ASSISTED External Pipeline Gate
 
 Run only after Gateway/DIRECT baseline is stable.
 
-Canonical external sequence:
-
 ```text
 Approved Reference Board
 → deterministic LEFT/FRONT/BACK extraction
 → Hunyuan3D v1 Shape Reconstruction
-→ Shape GLB Gate
-→ workspace/.../3d-assisted/shape.glb
+→ Shape GLB Gate → shape.glb/state
 → PrimitiveAnything
-→ Primitive Decomposition Gate
-→ primitive-decomposition.json + state.json
+→ Primitive Decomposition Gate → primitive-decomposition.json/state
 ```
 
-Authority:
-
-```text
-approved image       = visual authority
-requested dimensions = numeric authority
-shape.glb            = intermediate reconstructed shape
-PrimitiveAnything    = intermediate decomposition
-```
-
-Gate rules:
+Approved image is visual authority; requested dimensions are numeric authority. `shape.glb` and PrimitiveAnything output are intermediate evidence only.
 
 - maximum one targeted Hunyuan regeneration for a diagnosed reconstruction issue;
-- no blind PrimitiveAnything reruns to chase a prettier result;
-- invalid/bad external output must stop before Runtime materialization;
-- external state persists only accepted gate artifacts/hashes; temp crops/renders/logs stay in `.cache/`.
+- no blind PrimitiveAnything reruns;
+- bad external output stops before Runtime materialization;
+- accepted artifacts/hashes persist; temp crops/renders/logs stay in `.cache/`.
 
 ## 9. Dedicated Materializer Gate
 
-Do this only after the external decomposition gate passes.
-
-Target Runtime behavior:
+Only after the external decomposition gate passes:
 
 ```text
 Active Workspace path
 → validate strategy + state schema + current hashes
-→ validate complete decomposition before mutation
+→ prevalidate complete decomposition
 → one atomic Undo transaction
 → one temporary pa_<id> Group/Bone + Cube per primitive
 → complete scaffold OR no accepted scaffold state
 ```
 
-Required proof:
-
-```text
-valid decomposition → expected native editable Cubes
-invalid/stale hash  → fail before mutation
-partial conversion  → not accepted
-Undo                → one operation restores pre-materialization state
-no production Mesh
-no generic UI import
-no from_geo_json
-```
+Required proof: valid decomposition creates expected native editable Cubes; invalid/stale hash fails before mutation; partial conversion is not accepted; one Undo restores pre-materialization state; no production Mesh, generic UI import, or `from_geo_json`.
 
 ## 10. End-to-End 3D_ASSISTED Gate
 
@@ -204,21 +185,17 @@ Approved Reference + Dimensions + 3D_ASSISTED
 → materializer PASS
 → Semantic Geometry Cleanup
 → remove live Shape GLB/reference_model
-→ Geometry internal PASS
-→ user approve/checkpoint
+→ Geometry approve/checkpoint
 → Texturing approve/checkpoint
 → optional Animation approve/checkpoint
-→ Finalization
-→ final editable .bbmodel
+→ Finalization → final editable .bbmodel
 ```
 
-Shape GLB may be loaded through `manage_geometry_reference` as supporting comparison during semantic cleanup, but it is not a separate route and must not remain in production export.
+`manage_geometry_reference` may support comparison during cleanup, but it is not a separate route and must not remain in production export.
 
 ## 11. Legacy UI Fallback Proof — Debug Only
 
-Normal authoring has no two-profile proof matrix. Internal `extended` compatibility exists only for explicit Legacy UI Fallback debugging/maintenance.
-
-Do not use generic UI fallback as a substitute for a missing authored BlockIT capability.
+Internal `extended` exists only for explicit Legacy UI Fallback debugging/maintenance. Do not use generic UI fallback as a substitute for a missing authored BlockIT capability.
 
 ## 12. Authoring Efficiency
 
