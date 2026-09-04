@@ -1,6 +1,8 @@
 # BlockIT — Bedrock Entity MCP
 
-BlockIT uses a stable MCP **Gateway** for normal AI-client connections and a Minecraft **Bedrock Entity-focused** runtime/plugin inside desktop Blockbench. `Local` is the development authority.
+BlockIT uses a stable MCP **Gateway** for normal AI-client connections and a Minecraft **Bedrock Entity-focused** Runtime/plugin inside desktop Blockbench. `Local` is the development authority.
+
+Do **not** use the upstream hosted plugin as runtime authority for this repository; upstream contributors remain credited in package metadata, while BlockIT source/builds come from this repository.
 
 ## Build / Verify
 
@@ -11,46 +13,25 @@ bun install --frozen-lockfile
 bun run verify:mcp
 ```
 
-`package.json` owns verifier composition. Use `verify:repository` for repository/static contracts, `verify:authoring` for authoring-policy contracts, `verify:mcp` for executable/public MCP changes, and `verify:release` for the `main` release boundary. `verify:mcp` typechecks both the Blockbench runtime and the isolated Gateway project. During iteration, run only the smallest targeted test or primitive command that can falsify the change.
+`package.json` owns verifier composition. `verify:mcp` typechecks both the Runtime and isolated Gateway project, runs the recursive tests, measures native surfaces, builds the plugin, and checks generated docs.
 
-Production plugin: `dist/blockit_mcp.js`. The filename must match the stable `blockit_mcp` plugin ID. `dist/` is generated output; package version alone is not artifact-freshness proof.
+Production plugin: `dist/blockit_mcp.js`. The filename must match the stable `blockit_mcp` plugin ID. `bun run build` embeds deterministic SHA-256 `build_identity` into the production bundle.
 
-`bun run build` embeds a deterministic SHA-256 `build_identity` into the production bundle. When the desktop plugin is running, `bun run verify:stateless-local` compares that exact local bundle identity, expected profile/phase, and live native `tools/list`. It does not replace the later Gateway-stability or visual acceptance gates.
-
-## Local Development Loop
-
-`bun run typecheck` remains the authoritative Runtime TypeScript check; `bun run typecheck:gateway` checks the separate Gateway graph. TypeScript reuses ignored local state at `mcp/.cache/tsconfig.tsbuildinfo` on repeated Runtime checks; CI starts from a clean checkout. Use `bun run typecheck:profile` only when compiler timing itself needs diagnosis.
-
-```bash
-bun run dev:watch
-```
-
-Watch mode builds once, then observes only production runtime inputs (`index.ts`, runtime source directories, icon/about assets, and the canonical Bedrock workflow prompt). Tests, generated docs, caches, Gateway source, and unrelated package files do not trigger plugin rebuilds. Editing `prompts/bedrock_entity_workflow.md` regenerates `prompts/manifest.json` before the plugin rebuild so the running artifact cannot silently lag the canonical prompt. Restart watch mode after changing build tooling, dependencies, or package metadata.
-
-Installing the built artifact remains explicit. To copy the exact production bundle into a known local Blockbench plugin file:
-
-```bash
-bun run deploy:local -- /absolute/path/to/blockit_mcp.js
-```
-
-The destination must be an existing directory plus an absolute file path ending in `blockit_mcp.js`. `BLOCKIT_PLUGIN_PATH` may be used instead of the positional path. The helper builds first, copies exact bytes, verifies the embedded `build_identity`, prints the deployed identity, and **does not** reload Blockbench automatically. Reload the plugin when needed; a normal Gateway client stays connected and refreshes its Runtime backend lazily. A client connected directly to the native Runtime endpoint is a debug/conformance path and may need its own refresh.
-
-Do **not** use the upstream hosted plugin as runtime authority for this repository; upstream contributors remain credited in package metadata, while BlockIT source/builds come from this repository.
-
-## Client Boundary / Runtime Containment
+## Normal Client Boundary
 
 ```text
-normal client boundary          stdio Gateway (`bun run gateway`)
-Gateway public surface          4 stable tools
-runtime/debug endpoint          http://127.0.0.1:3000/bb-mcp
-default runtime profile         Standard MCP Profile
-default authoring phase         geometry
-Extended MCP Profile            OFF
-risky_eval                      disabled
-from_geo_json                   disabled
+AI client
+  ↓ stdio
+BlockIT Gateway
+  ↓ loopback Streamable HTTP
+BlockIT Runtime
+  ↓
+Blockbench
 ```
 
-The normal Bedrock Runtime catalog retains **51 callable tools across authoring phases**. The plugin exposes **Core + exactly one authoring phase**; the default native **Geometry** surface currently exposes **25 tools**. Normal AI clients do not consume that changing native `tools/list` directly. The Gateway keeps a fixed client surface:
+Configure normal Codex/AI-client use through `bun run gateway`, not directly against the Runtime endpoint.
+
+Gateway client surface stays fixed:
 
 ```text
 status
@@ -59,47 +40,96 @@ describe_capability
 invoke_capability
 ```
 
-A phase change through `switch_authoring_phase` invalidates the Gateway's Runtime connection/catalog and the next capability request refreshes it automatically. The Codex-facing Gateway process and chat remain alive. Direct native MCP clients used for debugging/conformance bypass this protection and may need to refresh their own `tools/list`.
+Native Runtime/debug endpoint:
 
 ```text
-RUNTIME: CORE + GEOMETRY
-or
-RUNTIME: CORE + TEXTURING
-or
-RUNTIME: CORE + ANIMATION
+http://127.0.0.1:3000/bb-mcp
 ```
 
-Geometry owns rig and UV Layout mutation. Texturing may inspect UV state but must hand back to Geometry when UV/geometry requires correction. Animation likewise hands structural rig changes back to Geometry.
+Use direct Runtime access only for Inspector, conformance, and focused debugging.
 
-## Current Capability
+## Authoring Model
 
-Normal Runtime source capability includes:
-
-- Cube placement/correction with coherent `manage_cubes(operation=create|update|batch_update)` batching;
-- Group/bone creation including coherent `add_group(groups=[...])` batching;
-- project creation with logical UV resolution `128` by default and explicit `256` opt-in;
-- texture/Painter/PBR/material-instance authoring;
-- Bedrock animation with numeric/Molang values, existing-animation effects, controller state-machine and state-effect mutation;
-- Locator/Null Object lifecycle;
-- Undo/history;
-- editable `.bbmodel` persistence and Bedrock geometry export.
-
-Protected gaps remain controller blend-curve mutation, TextureMesh direct authoring/inspection, native visible bounding-box fields, animated textures, and bone-binding expressions.
-
-## Usage Discipline
+Normal authoring has one flow:
 
 ```text
-known current capability → invoke directly
-unknown/stale capability → focused Gateway search/describe
-fresh mutation result → reuse it
-known coherent Cubes → one manage_cubes(operation=create, elements=[...]) call
-known coherent Groups → one add_group(groups=[...]) call
-visual correction → affected view(s) first
-phase boundary crossed → switch Runtime phase; Gateway client stays alive
-same causal failure twice without new evidence → BLOCKED
+approved image + optional 3D Evidence
+→ Geometry
+→ Texturing
+→ Animation when required
+→ validated .bbmodel
 ```
 
-Do not broad-search source for ordinary asset authoring, inspect every new Cube, capture after every mutation, or add fallback/profile/framework layers to hide an unsupported gap.
+Optional 3D Evidence is Geometry-only supporting evidence. It is not a second route and never becomes production geometry.
+
+The Runtime retains **51 callable tools across authoring phases**:
+
+```text
+Geometry   25 exposed tools
+Texturing  35 exposed tools
+Animation  19 exposed tools
+```
+
+Phase-scoped routing remains deliberate because it materially improves tool selection. Gateway keeps the client connection stable while Runtime phase changes.
+
+```text
+foreign-phase need
+→ HANDOFF_REQUIRED
+→ invoke switch_authoring_phase through Gateway
+→ Gateway invalidates backend catalog
+→ next capability request refreshes
+→ continue same task/chat
+```
+
+No normal phase handoff requires a new chat or MCP reconnect.
+
+## Capability Priority
+
+Gateway discovery classifies Runtime capabilities internally:
+
+```text
+PRIMARY      normal authoring hot path
+SUPPORT      conditional but valid capability
+EXPERIMENTAL explicit matching intent only
+MAINTENANCE  debug/legacy fallback, de-prioritized
+```
+
+Capability tiering changes discovery priority only; it does not delete Runtime capability.
+
+Texturing is intentionally the largest phase. Do not merge/remove tools merely to reduce count. Consolidation requires evidence that it lowers **Cost to Accepted Result** without quality/capability loss.
+
+## Legacy UI Fallbacks
+
+Normal authoring has no Standard/Extended profile choice.
+
+The source still retains the internal `bedrock_entity | extended` registration identifiers for compatibility. `bedrock_entity` is the normal Runtime implementation profile. Internal `extended` only enables **Legacy UI Fallback** families (`import` + `ui`) for debug/maintenance.
+
+The Blockbench setting is therefore presented as **Legacy UI Fallbacks (Debug)**, not an authoring profile. `risky_eval` and `from_geo_json` remain disabled.
+
+## Local Development Loop
+
+```bash
+bun run dev:watch
+```
+
+Watch mode rebuilds production Runtime inputs. Gateway source is intentionally separate so ordinary plugin reload does not replace the Codex-facing Gateway process.
+
+To install the exact current plugin bundle:
+
+```bash
+bun run deploy:local -- /absolute/path/to/blockit_mcp.js
+```
+
+The helper builds first, copies exact bytes, verifies `build_identity`, and does **not** reload Blockbench automatically. Reload the plugin when needed; a normal Gateway client remains alive and refreshes Runtime state lazily.
+
+For native Runtime proof:
+
+```bash
+bun run verify:stateless-local
+bun run verify:geometry-live -- --confirm-disposable
+```
+
+`verify:stateless-local` proves native installed Runtime identity/surface only. It does not prove the separate Gateway reload-survival gate or visual quality.
 
 ## Surface Guard
 
@@ -115,18 +145,21 @@ max per-tool payload                   <= 3,200 characters
 runtime workflow prompt             < 9,000 characters
 ```
 
-`gateway-contract.test.ts` owns the fixed Gateway boundary and recovery invariants. `authoring-phase-surface.test.ts` owns native phase-exposure correctness. `measure:surface` remains the full callable-catalog/static payload guard. `measure:phases` measures source-owned Core + active-phase native `tools/list` payloads over the loopback Runtime transport. These are static/source measurements: none is installed-client token usage or Authoring Efficiency proof.
+`gateway-contract.test.ts` owns Gateway stability/ranking contracts. `authoring-phase-surface.test.ts` owns native phase exposure and handoff semantics. `measure:surface` and `measure:phases` remain static/source footprint guards, not Authoring Efficiency proof.
 
-## Live Geometry E2E
+## Current Capability Shape
 
-After building, explicitly deploying/reloading BlockIT, and confirming Geometry is active, the disposable live verifier can prove the basic native authoring path:
+Normal authoring includes:
 
-```bash
-bun run verify:stateless-local
-bun run verify:geometry-live -- --confirm-disposable
-```
+- Cube placement/correction through `manage_cubes`;
+- Group/bone hierarchy, transform, rig, Locator/Null authoring;
+- optional `manage_geometry_reference` evidence during Geometry;
+- one base-color Texture Atlas workflow plus Painter styling;
+- consolidated `manage_material` PBR operations and `manage_material_instances`;
+- Bedrock animation through `create_animation`, `manage_animation_timeline`, optional effects/controllers;
+- Undo/history, canonical capture, `.bbmodel` persistence, and Bedrock geometry export.
 
-`verify:geometry-live` intentionally replaces/discards the active Blockbench project, then checks create → Group/Cube authoring → exact readback → fixed-frame render change → Undo → Redo. It leaves the disposable project open. Passing this gate proves those live Runtime effects only; it does **not** prove the separate Codex-facing Gateway reload-survival gate, score visual similarity, or establish accepted model quality.
+Protected gaps remain tracked in `docs/knowledge/implementation-map.md`.
 
 ## Source Layout
 
@@ -134,7 +167,7 @@ bun run verify:geometry-live -- --confirm-disposable
 gateway/      stable client boundary + Runtime adapter
 index.ts      Blockbench plugin entry/lifecycle
 server/       Runtime transport/tools/resources/prompts
-lib/          shared schemas/factories/runtime helpers
+lib/          shared schemas/factories/identity/runtime helpers
 ui/           Blockbench panel/settings
 prompts/      runtime workflow + generated manifest
 build/        build/docs/manifest tooling
@@ -143,8 +176,8 @@ tests/        contract/integration regressions
 docs/         generated Runtime API documentation
 ```
 
-Generated API/prompt artifacts follow source generators and must never be hand-edited as the implementation.
+Generated API/prompt artifacts follow canonical source + generator output and must never be hand-edited.
 
 ## Proof Boundary
 
-Current continuation lives in `../docs/knowledge/next-action.md`; current proof interpretation lives in `../docs/knowledge/current-validation.md`. Gateway source/static contracts can pass without proving that a real Codex process survives repeated Blockbench reload/close/open cycles. Source or CI success also does not by itself prove live Blockbench rendering, visual fidelity, playback, or current installed-plugin behavior.
+Current continuation lives in `../docs/knowledge/next-action.md`; current proof interpretation lives in `../docs/knowledge/current-validation.md`. Source/static success cannot prove live Gateway survival, installed Runtime freshness, Blockbench persistence/playback, or visual fidelity unless those surfaces actually ran.

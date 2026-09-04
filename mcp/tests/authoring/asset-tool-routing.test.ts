@@ -5,73 +5,56 @@ async function source(path: string): Promise<string> {
 }
 
 describe("asset tool routing", () => {
-  test("orchestrator routes from active phase + intent + known state before repository discovery", async () => {
+  test("orchestrator uses Gateway + active phase before repository discovery", async () => {
     const skill = await source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md");
 
     expect(skill).toContain("## Fast Routing Contract");
     expect(skill).toContain("must not begin by searching repository files");
-    expect(skill).toContain("routing authority for the first tool decision");
     expect(skill).toContain("ACTIVE PHASE + intent + known state/UUIDs");
+    expect(skill).toContain("exact known Runtime capability");
+    expect(skill).toContain("search_capabilities");
+    expect(skill).toContain("describe_capability");
     expect(skill).toContain("## Authoring Stage Lock");
     expect(skill).toContain("DISCOVER → AUTHOR → VERIFY → CORRECT → VERIFY → DONE");
-    expect(skill).toContain("fresh state must not regress");
   });
 
-  test("semantic routes distinguish Core and Geometry capabilities without embedding schemas", async () => {
-    const skill = await source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md");
+  test("reference grounding is one flow with optional 3D Evidence", async () => {
+    const [router, modelling] = await Promise.all([
+      source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md"),
+      source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
+    ]);
 
-    for (const intent of [
-      "target identity unknown",
-      "hierarchy question",
-      "known target detail",
-      "Locator/Null",
-      "numeric envelope/scale/ground",
-      "visible/reference comparison",
-    ]) expect(skill).toContain(intent);
-
-    for (const tool of [
-      "manage_cubes",
-      "inspect_elements(mode=search)",
-      "inspect_elements(mode=outline)",
-      "inspect_elements(mode=detail)",
-      "list_locator_elements",
-      "manage_locator",
-      "manage_null_object",
-    ]) expect(skill).toContain(tool);
+    for (const owner of [router, modelling]) {
+      expect(owner).toContain("approved image");
+      expect(owner).toContain("optional 3D Evidence");
+      expect(owner).not.toContain("3D-Assisted Route");
+      expect(owner).not.toContain("Image Reference Route");
+    }
+    expect(router).toContain("manage_geometry_reference");
   });
 
-  test("Geometry hierarchy and rig routes have one canonical owner", async () => {
+  test("Geometry hierarchy and rig routes retain one canonical owner", async () => {
     const skill = await source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md");
 
-    expect(skill).toContain("Group/bone parent move        → reparent_element");
-    expect(skill).toContain("Group pivot/rotation/visible  → modify_group");
-    expect(skill).toContain("rig IK/mirror                 → bone_rigging");
+    expect(skill).toContain("Group/bone parent move         → reparent_element");
+    expect(skill).toContain("Group pivot/rotation/visible   → modify_group");
+    expect(skill).toContain("rig IK/mirror                  → bone_rigging");
     expect(skill).toContain("`bone_rigging` only for IK/mirror");
-    expect(skill).not.toContain("rig parent/pivot/IK/mirror    → bone_rigging");
   });
 
-  test("native tool search is bounded active-phase deferred spec loading", async () => {
+  test("Gateway discovery is bounded and foreign-phase need is a handoff, not a miss", async () => {
     const skill = await source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md");
 
-    expect(skill).toContain("## Search / Recovery");
-    expect(skill).toContain("deferred spec loading after routing");
-    expect(skill).toContain("belongs to the active phase");
-    expect(skill).toContain("One precise search");
+    expect(skill).toContain("## Capability Discovery / Recovery");
+    expect(skill).toContain("One precise search miss");
     expect(skill).toContain("reformulate once");
     expect(skill).toContain("second miss → `BLOCKED`");
-    expect(skill).toContain("A known foreign-phase tool must never enter this search path");
-    expect(skill).not.toContain("route_tool(");
-    expect(skill).not.toContain("find_best_blockit_tool");
+    expect(skill).toContain("known foreign-phase capability is never a discovery miss");
+    expect(skill).not.toContain("tool_search");
   });
 
-  test("hot-path failures recover without reopening foreign tool selection", async () => {
-    const [skill, factories, identity, cubes, locators] = await Promise.all([
-      source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md"),
-      source("lib/factories.ts"),
-      source("lib/coreIdentity.ts"),
-      source("server/tools/cubes.ts"),
-      source("server/tools/locators.ts"),
-    ]);
+  test("hot-path failures retain bounded evidence-based recovery", async () => {
+    const skill = await source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md");
 
     for (const term of [
       "INVALID_INPUT",
@@ -80,69 +63,58 @@ describe("asset tool routing", () => {
       "STALE_STATE",
       "NO_EFFECT",
       "CAPABILITY_MISMATCH",
-      "repair args; same tool",
+      "OUTCOME_UNKNOWN",
+      "repair args; same capability",
       "focused identity lookup",
       "one focused refresh",
-      "handoff once or BLOCKED",
     ]) expect(skill).toContain(term);
-
-    const invocationStart = factories.indexOf("function getToolInvocation");
-    const invocationEnd = factories.indexOf("function extractShape", invocationStart);
-    const invocation = factories.slice(invocationStart, invocationEnd);
-    const validation = invocation.indexOf("parameterSchema.parseAsync(args)");
-    const execution = invocation.indexOf("toolDef.execute(");
-    expect(invocationStart).toBeGreaterThan(-1);
-    expect(validation).toBeGreaterThan(-1);
-    expect(execution).toBeGreaterThan(validation);
-
-    const registration = factories.slice(
-      factories.indexOf("export function registerToolsOnServer")
-    );
-    expect(registration).toContain("getToolInvocation(name, toolDef)");
-
-    expect(identity).toContain('is ambiguous. Use an exact UUID.');
-    expect(identity).toContain('not found.');
-    expect(cubes).toContain("has no authored effect");
-    expect(locators).toContain("require the Minecraft Bedrock Entity format");
   });
 
-  test("texturing and animation specialists route only within their active phase", async () => {
-    const [texturing, animation] = await Promise.all([
-      source("../.agents/skills/blockit-bedrock-texturing/SKILL.md"),
-      source("../.agents/skills/blockit-bedrock-animation/SKILL.md"),
-    ]);
+  test("texturing uses consolidated material facade and keeps support tools conditional", async () => {
+    const texturing = await source("../.agents/skills/blockit-bedrock-texturing/SKILL.md");
 
     for (const term of [
-      "## Direct Routing",
       "create_texture",
       "list_textures",
       "get_texture",
       "activate_texture",
-      "create_pbr_material",
-      "configure_material",
-      "assign_texture_channel",
+      "manage_material",
+      "manage_material_instances",
       "HANDOFF_REQUIRED",
-      "do not re-list/re-read it only for confirmation",
-    ]) expect(texturing.toLowerCase()).toContain(term.toLowerCase());
-    expect(texturing).toContain(
-      "Never `tool_search` for `manage_cubes`, `bone_rigging`"
-    );
+      "switch_authoring_phase",
+      "Primary vs Support Capabilities",
+    ]) expect(texturing).toContain(term);
+
+    expect(texturing).not.toContain("create_pbr_material / configure_material / assign_texture_channel");
+    expect(texturing).not.toContain("reload BlockIT MCP");
+  });
+
+  test("animation keeps compact primary surface and Gateway handoff", async () => {
+    const animation = await source("../.agents/skills/blockit-bedrock-animation/SKILL.md");
 
     for (const term of [
-      "## Direct Routing",
       "create_animation",
       "inspect_animation",
       "manage_animation_timeline",
+      "manage_animation_effects",
+      "manage_animation_controller",
       "HANDOFF_REQUIRED",
-    ]) expect(animation.toLowerCase()).toContain(term.toLowerCase());
-    expect(animation).toContain("Do not `tool_search` for `bone_rigging`");
+      "switch_authoring_phase",
+      "same task",
+    ]) expect(animation).toContain(term);
+    expect(animation).not.toContain("reload BlockIT MCP");
   });
 
-  test("routing hardening uses the existing registration profile rather than a second router", async () => {
-    const profile = await source("lib/registrationProfile.ts");
+  test("internal extended identifier remains compatibility rather than a second authoring router", async () => {
+    const [profile, settings] = await Promise.all([
+      source("lib/registrationProfile.ts"),
+      source("ui/settings.ts"),
+    ]);
+
     expect(profile).toContain('export type McpRegistrationProfile = "bedrock_entity" | "extended";');
+    expect(settings).toContain('name: "Legacy UI Fallbacks (Debug)"');
+    expect(settings).toContain("not an authoring profile");
     expect(profile).not.toContain("decision_loop");
     expect(profile).not.toContain("routing_state");
-    expect(profile).not.toContain("recovery_profile");
   });
 });

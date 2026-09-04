@@ -1,10 +1,10 @@
 # Local Acceptance Runbook
 
-Updated: 2026-09-01  
+Updated: 2026-09-04  
 Owner: `LIVE_BLOCKBENCH` formal acceptance procedure  
 Active only when `docs/knowledge/next-action.md` explicitly reactivates local testing.
 
-`LIVE_BLOCKBENCH` is an execution capability; it does not activate this procedure by itself. Targeted live debugging may use that capability without activating formal Local Acceptance. Use this runbook only for claims repository CI cannot prove. Do not edit source until a reproducible failure identifies the first wrong owner.
+`LIVE_BLOCKBENCH` is an execution capability; it **does not activate** this procedure by itself. Targeted live debugging may use that capability without activating formal Local Acceptance. Use this runbook only for claims repository CI cannot prove. Do not edit source until a reproducible failure identifies the first wrong owner.
 
 ## 1. Acceptance Contract
 
@@ -17,7 +17,7 @@ Proof Required
 STOP Condition
 ```
 
-Static source/CI never proves installed Blockbench behavior or visual quality. **Static Footprint** is a separate guardrail and cannot prove runtime efficiency. **Authoring Efficiency is evaluated only after the relevant quality gate passes** and means Cost to Accepted Result.
+Static source/CI never proves installed Blockbench behavior or visual quality. **Static Footprint** is a separate guardrail. **Authoring Efficiency is evaluated only after the relevant quality gate passes** and means Cost to Accepted Result.
 
 ## 2. Pin Local State
 
@@ -52,41 +52,66 @@ bun install --frozen-lockfile
 bun run verify:mcp
 ```
 
-`verify:mcp` owns typecheck, full tests, surface measurements, production build, and generated-doc freshness. Do not separately repeat commands it already runs unless diagnosing a specific failure.
+`verify:mcp` owns Runtime/Gateway typecheck, full tests, surface measurements, production build, and generated-doc freshness.
 
-Record only material environment state: Local HEAD, build identity, Blockbench/Bun/client versions when useful, plugin path, endpoint, active phase, and current runtime profile/setting names. If exact loaded artifact identity is unknown → `ENVIRONMENT / INSTALL` and STOP.
+Record only material environment state: Local HEAD, build identity, Blockbench/Bun/client versions when useful, plugin path, Gateway config, Runtime endpoint, and active phase. Unknown loaded artifact identity → `ENVIRONMENT / INSTALL` and STOP.
 
-## 4. Live Registry / Phase Gate
+## 4. Native Runtime Proof
 
-Load only the freshly built plugin, reconnect, then:
+Load the freshly built plugin, then prove the native Runtime contract directly:
 
 ```bash
 bun run verify:stateless-local
 ```
 
-For deliberate phase checks:
+For deliberate native phase checks:
 
 ```bash
 bun run verify:stateless-local -- texturing
 bun run verify:stateless-local -- animation
 ```
 
-Runtime source is authority for current counts. Do not preserve historical 28/43/24 or 65 counts after consolidation merely to satisfy old measurements.
+This proves the installed Runtime identity/current native `tools/list`; it does **not** prove the normal Gateway connection survives Runtime lifecycle changes.
 
-Foreign-phase mutation remains:
+Current normal Runtime counts are source-owned: 51 callable union, Geometry 25, Texturing 35, Animation 19. Historical counts are not compatibility targets.
+
+## 5. Gateway Stability Gate
+
+Configure the AI client to use the stdio Gateway rather than the direct Runtime endpoint.
+
+Required continuous-session sequence:
 
 ```text
-HANDOFF_REQUIRED
-→ target_phase + reason + readiness + resume_from
-→ switch phase / reload / reconnect
-→ continue
+1. Start one Codex/client task with Blockbench closed.
+2. Gateway remains callable; status reports Runtime offline.
+3. Open Blockbench; same task reports Runtime online.
+4. Search/describe/invoke a safe current Geometry capability.
+5. switch_authoring_phase Geometry → Texturing.
+6. Same task discovers current Texturing capabilities; no client reconnect/new chat.
+7. switch_authoring_phase Texturing → Geometry and continue.
+8. Reload BlockIT plugin; same Gateway process recovers.
+9. Close/open Blockbench; same Gateway process recovers.
+10. Rebuild/change one Runtime tool surface, reload, and confirm refreshed capability discovery.
 ```
 
-Same-phase future STANDARD ↔ EXTENDED routing must not be treated as a phase handoff.
+PASS requires:
 
-## 5. Representative Runtime Proof
+```text
+Gateway client tools stay fixed
+Runtime offline/online transition is truthful
+phase handoff invalidates only backend catalog
+client_reconnect_required=false
+new_chat_required=false
+manual MCP reconnect count = 0 after initial Gateway configuration
+new chat count = 0
+interrupted mutation is never blindly retried
+```
 
-Exercise only the path needed by the claim. Reuse returned state; avoid confirmation rereads. A successful tool call proves execution only.
+A transport interruption after a mutation may return `OUTCOME_UNKNOWN`; inspect current model state before retrying.
+
+## 6. Reference-Grounded Runtime Proof
+
+Exercise only the evidence branch required by the claim.
 
 General visual gate:
 
@@ -104,92 +129,78 @@ approved reference visible
 
 Tool success, coordinates, export success, low call count, or scalar scores cannot override **QUALITY FAIL**.
 
-## 6. 3D-Assisted Route — Selected Image + Evidence Test
+### Optional 3D Evidence sub-gate
 
-The product choice is already locked:
+Run only when approved 3D Evidence is actually part of the task. It is not a separate authoring route and no image-only A/B run is required.
 
-```text
-approved image + requested dimensions + approved shape-only GLB
-```
+Detailed generation/alignment procedure remains in `Experimental/three-d-assisted-hunyuan-poc/README.md`.
 
-Do **not** run image-only A/B again. Detailed generation/alignment contract lives in `Experimental/three-d-assisted-hunyuan-poc/README.md`.
-
-Required local path:
+Minimum live proof:
 
 ```text
-1. approved image visible; fixture dimensions/front direction known
-2. manage_geometry_reference(load): origin=[0,0,0], uniform_scale=1
-3. record raw world bounds
-4. plan uniform FIT_ENVELOPE with mcp/lib/threeDAssistedReferenceAlignment.ts
-5. update uniform_scale only
-6. obtain FRESH post-scale bounds
-7. plan center X/Z + ground Y translation
-8. update origin only
-9. obtain FRESH aligned evidence
-10. capture FRONT / SIDE / TOP / ISOMETRIC
-11. author one coherent semantic Group/Cube blockout
-12. judge approved image + fresh model views
-13. remove transient reference
-14. export editable .bbmodel
-15. verify no reference_model state remains
+approved image visible + requested dimensions known
+→ manage_geometry_reference(load)
+→ observe raw bounds
+→ uniform FIT_ENVELOPE scale
+→ fresh post-scale bounds
+→ center X/Z + ground Y translation
+→ fresh aligned evidence
+→ canonical captures
+→ semantic Groups/Cubes
+→ compare approved image + fresh model views
+→ remove transient reference
+→ export .bbmodel
+→ verify no reference_model remains
 ```
 
-Authority:
+Authority remains:
 
 ```text
 approved image       = visual authority
 requested dimensions = numeric authority
-GLB                   = supporting 3D evidence
-raw GLB bounds        = observation only
+optional GLB         = supporting 3D evidence
+raw GLB bounds       = observation only
 ```
 
-Acceptance requires uniform scale only, fresh measurement after scale, intended center/ground, shared coordinate frame, and reference cleanup before export. Unused envelope space on one/two axes is valid.
+No non-uniform stretch, GLB rewrite, mesh repair/decimation, voxelizer, triangle→Cube conversion, or scalar GLB-quality authority.
 
-Non-goals: image-only comparison, extra 3D formats, non-uniform stretch, GLB rewrite, mesh repair/decimation, voxelizer, triangle→Cube conversion, semantic mesh parser, cuboid solver, new alignment tool/modes, Reference Models fork, scalar GLB quality authority.
+## 7. Legacy UI Fallback Proof — Debug Only
 
-Failure → identify first wrong owner → fix only that owner → rerun failing step first → rerun the 3D-Assisted Route → STOP.
+Normal authoring has no two-profile proof matrix. Internal `extended` compatibility exists only to expose Legacy UI Fallback families for explicit debug/maintenance needs.
 
-## 7. Standard MCP Profile / Extended MCP Profile Local Proof
-
-When this parked proof is explicitly reactivated, verify how same-phase
-`EXTENDED` definitions are reachable with the current client/transport. The
-profile names are **Standard MCP Profile** and **Extended MCP Profile**; do not
-introduce a second profile vocabulary.
-
-Do not combine owner consolidation with an SDK/transport migration. Consider protocol/SDK changes only if the current mechanism cannot satisfy:
+If that fallback is intentionally tested:
 
 ```text
-STANDARD direct route → zero lookup
-first EXTENDED need → bounded lookup/load
-same EXTENDED capability again → reuse, zero second lookup
-STANDARD ↔ EXTENDED same phase → no reload/reconnect/reset
-foreign phase → HANDOFF_REQUIRED
+normal authored capability remains preferred
+→ enable Legacy UI Fallbacks (Debug)
+→ verify only the requested fallback behavior
+→ risky_eval remains disabled
+→ from_geo_json remains disabled
+→ disable fallback again when debug need ends
 ```
 
-After Core/Geometry/Texturing/Animation owners are consolidated, regenerate prompts/docs and run one final `bun run verify:mcp`, then live-test representative STANDARD, EXTENDED, reuse, and cross-phase handoff paths.
+Do not use generic UI fallback as a substitute for a missing authored BlockIT capability and do not score it as a normal authoring route.
 
 ## 8. Authoring Efficiency
 
-Only after quality PASS, record observable work that can change a decision: meaningful MCP calls, discovery/lookups, repeated lookup, tool-search misses, **redundant readbacks**, correction attempts/rebuilds, same-cause retries, recovery, phase handoffs/reloads, and elapsed workflow cost when measurable.
-
-Classify material work when useful:
+Only after quality PASS, record observable work that can change a decision: meaningful Gateway/Runtime calls, `search_capabilities`/`describe_capability` discovery, repeated discovery, redundant readbacks, correction attempts, same-cause retries, recovery, phase handoffs, and elapsed workflow cost when measurable.
 
 ```text
 NECESSARY | AVOIDABLE | CONTRACT_CAUSED | REASONING_CAUSED | RECOVERY
 IMPROVED | UNCHANGED | REGRESSED
 ```
 
-Quality must stay accepted while Cost to Accepted Result decreases. Do not invent token/latency numbers.
+Quality must stay accepted while **Cost to Accepted Result** decreases. Do not invent token/latency numbers.
 
 ## 9. Failure / Completion
 
 First wrong owner examples:
 
 ```text
-AGENT_REASONING | SKILL_INSTRUCTION | MCP_PUBLIC_CONTRACT | MCP_RESULT_QUALITY
-MCP_PHASE / HANDOFF | STATE_DISCOVERY | VISUAL_FEEDBACK | BLOCKBENCH_RUNTIME
-ENVIRONMENT / INSTALL | THREE_D_ASSISTED_ALIGNMENT | TEXTURE / PBR | ANIMATION
-PERSISTENCE / EXPORT | UNKNOWN
+AGENT_REASONING | SKILL_INSTRUCTION | GATEWAY_ROUTING | MCP_PUBLIC_CONTRACT
+MCP_RESULT_QUALITY | MCP_PHASE/HANDOFF | STATE_DISCOVERY | VISUAL_FEEDBACK
+BLOCKBENCH_RUNTIME | ENVIRONMENT/INSTALL | OPTIONAL_3D_EVIDENCE
+TEXTURE/PBR | ANIMATION | PERSISTENCE/EXPORT | UNKNOWN
 ```
 
 Update only state owners when their state changes:

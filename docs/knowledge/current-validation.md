@@ -4,118 +4,79 @@ Updated: 2026-09-04
 
 This file owns **current proof interpretation**. Active continuation belongs in `docs/knowledge/next-action.md`; stable product facts belong in `CONTEXT.md`; exact source/test ownership belongs in `docs/knowledge/implementation-map.md`.
 
-Do not copy every passing workflow run, test count, or historical proof snapshot here. GitHub Actions and Git history own exact run/commit archaeology. Update this file only when the meaningful proof boundary changes.
-
 ## Current Proof Boundary
 
 ```text
 BEDROCK RUNTIME CALLABLE CATALOG: 51 tools across phases
-NATIVE RUNTIME DEFAULT EXPOSURE:  MCP Core + Geometry (25 tools)
-GATEWAY CLIENT SURFACE:           4 fixed tools — SOURCE/STATIC
-GATEWAY LIVE STABILITY:           PENDING — local Codex + Blockbench required
-KNOWN FULL MCP BASELINE:          PASS @ 5ecbf25608f8da879497e2f687854cb68781f3cd
-ACCEPTED LIVE BASELINE:           2026-08-12 Blockbench 5.1.6
-IMAGE REFERENCE ACTIVE ROUTE:     APPROVED IMAGE ONLY BY DEFAULT
-3D-ASSISTED ROUTE STATUS:          OPTIONAL / PARKED
-3D-ASSISTED ALIGNMENT FOUNDATION: SOURCE PREPARED — REFERENCE LOAD VERIFIED
-CURRENT 3D-ASSISTED LIVE RETEST:  STOPPED AFTER EVIDENCE REFERENCE LOAD
-CURRENT MODEL-QUALITY CLAIM:      NONE — CUBE AUTHORING DEFERRED
+NATIVE GEOMETRY EXPOSURE:        25 tools
+NATIVE TEXTURING EXPOSURE:       35 tools
+NATIVE ANIMATION EXPOSURE:       19 tools
+GATEWAY CLIENT SURFACE:          4 fixed tools — SOURCE/STATIC
+AUTHORING TAXONOMY:              one Reference-Grounded flow — SOURCE/STATIC
+OPTIONAL 3D EVIDENCE:            Geometry-only / experimental
+LEGACY UI FALLBACKS:             debug/maintenance only
+GATEWAY LIVE STABILITY:          PENDING — local Codex + Blockbench required
+ACCEPTED LIVE BASELINE:          2026-08-12 Blockbench 5.1.6
+CURRENT MODEL-QUALITY CLAIM:     NONE
 ```
 
-`KNOWN FULL MCP BASELINE` is the last deliberately retained full canonical executable/source baseline, not a claim that this file tracks the newest CI run. Current workflow status must be read from the exact current commit/run when it matters.
+Current source/static contracts prove that normal authoring no longer requires a user-facing Image-vs-3D route choice or Standard-vs-Extended authoring profile choice. The canonical model is approved image + optional 3D Evidence → Geometry → Texturing → optional Animation.
 
-The Image Reference Route is the default object-agnostic workflow. 3D-Assisted Evidence is optional and must never block it. Image-only versus image+evidence is not an A/B gate; the optional evidence path is activated only when the user explicitly supplies clean supporting evidence and requests it.
+They also prove:
 
-## Current Agent-Contract Proof
+- fixed four-tool Gateway client surface;
+- phase-filtered Runtime capability surfaces;
+- Gateway backend catalog invalidation after phase handoff;
+- no blind automatic mutation retry after transport interruption;
+- capability-priority metadata that de-prioritizes maintenance fallbacks without deleting capability;
+- `manage_geometry_reference` remains optional experimental Geometry evidence;
+- internal `extended` compatibility does not redefine the normal authoring flow;
+- `risky_eval` and `from_geo_json` remain disabled.
 
-Current Runtime source defines:
+These source/static contracts do **not** prove the real Codex-facing Gateway survives repeated Blockbench plugin reload, application close/open, backend rebuild, or phase-switch cycles. That remains the next live gate.
 
-```text
-MCP CORE + exactly one ACTIVE PHASE
-GEOMETRY | TEXTURING | ANIMATION
-```
+## Routing Effectiveness Interpretation
 
-Static/current source contracts retain:
+Existing phase-scoped discovery evidence materially favors keeping Geometry/Texturing/Animation separation: the static Codex-like discovery proxy previously improved from roughly 60% top-1 on the unscoped catalog to above 90% top-1 with phase-scoped routing, while top-3 recall reached 100%.
 
-- 51 callable Bedrock Runtime tools across phases;
-- default native Core + Geometry exposure of 25 tools;
-- a fixed four-tool Gateway client surface: `status`, `search_capabilities`, `describe_capability`, `invoke_capability`;
-- Gateway loopback-only Runtime routing, serialized backend calls, and no blind automatic mutation retry;
-- successful Gateway phase handoff invalidating only its Runtime connection/catalog while the client-facing stdio process remains alive;
-- strict foreign-phase `HANDOFF_REQUIRED` behavior in the native Runtime;
-- 3D-Assisted Evidence as transient Geometry-owned reference evidence rather than production geometry;
-- fail-closed targeting, mutation, export, and phase boundaries;
-- generated API/prompt ownership through canonical source + generator;
-- repository, authoring-policy, executable MCP, experimental runtime, and release verification as separate proof surfaces.
-
-These source/static contracts do **not** yet prove the real Codex-facing Gateway survives repeated Blockbench plugin reload, application close/open, or backend rebuild cycles. That remains the next live gate.
-
-3D-Assisted Evidence alignment planning has a pure source foundation for two deliberately separate operations:
-
-```text
-observed GLB bounds + requested Minecraft dimensions
-→ uniform fit-envelope scale plan
-→ measure fresh scaled bounds
-→ center X/Z + ground Y translation plan
-```
-
-The pure planner does **not** prove Blockbench Reference Model transform semantics. It does not change `manage_geometry_reference`, does not pre-scale the GLB artifact, does not add non-uniform scaling, and does not convert mesh triangles to Bedrock Cubes. The user has explicitly stopped the 3D-Assisted workflow after the sample GLB enters Blockbench; no Cube reconstruction claim is active.
-
-Exact regression ownership and protected capability gaps live in `docs/knowledge/implementation-map.md`; this file does not duplicate them.
+Therefore current cleanup does **not** optimize by reducing the 51-tool Runtime catalog. It reduces conceptual state and adds Gateway capability priority. Texturing consolidation remains evidence-gated: only repeated accepted-result overhead should justify removing/merging capability.
 
 ## Visual / Reference Proof Rule
 
 A visual/reference `PASS` requires the **actual approved reference image** plus fresh evidence from the current model/revision for the material views being judged.
+
+```text
+approved image       = visual authority
+requested dimensions = numeric authority
+optional 3D Evidence = supporting depth/volume/attachment evidence
+raw GLB bounds       = observation only
+```
+
+Optional 3D Evidence cannot replace the approved image, cannot define target size, and cannot become production geometry.
 
 The following cannot create visual `PASS` by themselves:
 
 - successful MCP/tool execution;
 - static source or CI success;
 - valid coordinates/hierarchy/export;
-- 3D-Assisted Evidence or raw GLB bounds;
+- optional 3D Evidence or raw GLB bounds;
 - a scalar similarity score;
 - a saved artifact whose visual result was not inspected.
 
-Front-view agreement does not prove hidden depth or full 3D fidelity. If required evidence is unavailable, the correct state is `UNVERIFIED` or `LOCAL PROOF REQUIRED`, not inferred success.
-
-For 3D-Assisted Evidence specifically:
-
-```text
-requested dimensions = numeric authority
-approved image        = visual authority
-3D-Assisted Evidence  = 3D depth/volume/attachment evidence
-raw GLB bounds        = observation only
-```
-
-Fit-envelope alignment may scale the reference **uniformly** to fit the requested envelope, but it must never redefine target dimensions or justify non-uniform deformation.
+Front-view agreement does not prove hidden depth or full 3D fidelity. If required evidence is unavailable, use `UNVERIFIED` or `LOCAL PROOF REQUIRED`, not inferred success.
 
 ## Authoring Efficiency
 
 **Static Footprint** and raw call count are guardrails, not Authoring Efficiency proof.
 
-Authoring Efficiency means **Cost to Accepted Result**: the justified work needed to reach an accepted-quality result, including avoidable discovery, readback, retries, recovery, and correction. A smaller prompt/Skill/tool surface is not an improvement if quality regresses or work merely moves elsewhere.
+Authoring Efficiency means **Cost to Accepted Result**: the justified work needed to reach accepted quality, including avoidable discovery, readback, retries, recovery, and correction. A smaller prompt, Skill, schema, or tool surface is not improvement if quality regresses or work simply moves elsewhere.
 
-Runtime Authoring Efficiency or model-quality claims require the matching local acceptance procedure and accepted artifact evidence.
-
-For the selected 3D-Assisted workflow, local acceptance measures only whether the image + evidence path reaches an accepted result efficiently and correctly. It does **not** require an image-only comparison run.
+Capability tiering is therefore a routing optimization, not proof of better authoring by itself. Live acceptance must compare actual task completion quality and cost.
 
 ## Evidence Limits
 
-Static source/CI evidence can prove the contracts it actually executes, such as schemas, routing, deterministic generated output, buildability, phase ownership, Gateway surface invariants, pinned reproducibility inputs, pure alignment math, and fail-closed source invariants.
+Static source/CI evidence can prove schemas, routing, deterministic generated output, buildability, phase ownership, Gateway contract invariants, and fail-closed source behavior.
 
-It **cannot prove visual fidelity**, installed-plugin freshness, the live Codex Gateway surviving editor restarts, desktop GLB rendering, live Reference Model scale/origin behavior, live Blockbench Undo/playback/persistence, or model-quality improvement unless those surfaces actually ran.
+It **cannot prove visual fidelity**, installed-plugin freshness, live Gateway survival, Blockbench Undo/playback/persistence, or model-quality improvement unless those surfaces actually ran.
 
-The completed live boundary for 3D-Assisted Evidence is only:
-
-```text
-canonical GLB load into Blockbench as transient Reference Model
-→ normal preview restored
-```
-
-Everything after that boundary is intentionally deferred:
-
-```text
-Cube authoring, fitting, correction, reference cleanup, and .bbmodel export
-```
-
-If that selected path passes, 3D-Assisted acceptance is complete for the tested claim. Do not add an image-only A/B gate afterward.
+Current live proof for optional 3D Evidence remains bounded to previously observed Reference Model loading; final Gateway + optional-evidence authoring remains pending the explicit local gate in `next-action.md`.

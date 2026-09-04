@@ -21,7 +21,7 @@ const server = new McpServer(
   },
   {
     instructions:
-      "Stable BlockIT client boundary. Blockbench may reload without changing this MCP tool list. Use search_capabilities and describe_capability when the exact current runtime capability is unknown. invoke_capability never auto-retries an interrupted backend call.",
+      "Stable BlockIT client boundary. Normal authoring is one Reference-Grounded flow: approved image + optional 3D Evidence, then Geometry → Texturing → optional Animation. Blockbench may reload without changing this MCP tool list. Capability discovery prioritizes primary authoring tools over support/experimental/maintenance fallbacks. Phase handoffs continue the same task; invoke_capability never auto-retries an interrupted backend call.",
   }
 );
 
@@ -41,12 +41,6 @@ type GatewayToolHandler = (
   args: JsonRecord
 ) => Promise<unknown>;
 
-/**
- * Keep SDK registration generics at one narrow boundary. The SDK otherwise
- * expands every Zod branch together with the task-capable result union, which
- * is unnecessary for this four-tool stable facade and can exhaust tsc memory.
- * Each non-empty input is still parsed by its explicit Zod schema below.
- */
 const registerGatewayTool = server.registerTool.bind(server) as unknown as (
   name: string,
   definition: GatewayToolDefinition,
@@ -98,7 +92,7 @@ registerGatewayTool(
   {
     title: "BlockIT Status",
     description:
-      "Reports Gateway health and the current Blockbench runtime state without requiring the runtime to be online at Gateway startup.",
+      "Reports Gateway health and the current Blockbench Runtime state without requiring the Runtime to be online at Gateway startup.",
     inputSchema: {},
     annotations: {
       readOnlyHint: true,
@@ -114,8 +108,8 @@ registerGatewayTool(
         {
           type: "text" as const,
           text: status.runtime.online
-            ? "BlockIT Gateway is ready and the Blockbench runtime is online."
-            : "BlockIT Gateway is ready; the Blockbench runtime is currently offline.",
+            ? "BlockIT Gateway is ready and the Blockbench Runtime is online."
+            : "BlockIT Gateway is ready; the Blockbench Runtime is currently offline.",
         },
       ],
       structuredContent: status,
@@ -128,7 +122,7 @@ registerGatewayTool(
   {
     title: "Search BlockIT Capabilities",
     description:
-      "Searches the live Blockbench runtime capability catalog. The Gateway tool surface stays stable even when backend tools are added, removed, renamed, or phase-filtered.",
+      "Searches the live phase-filtered Runtime catalog. Primary authoring capabilities rank ahead of support, experimental, and maintenance fallbacks when relevance is comparable; exact matching intent can still discover any exposed capability.",
     inputSchema: searchInput.shape,
     annotations: {
       readOnlyHint: true,
@@ -145,7 +139,7 @@ registerGatewayTool(
         content: [
           {
             type: "text" as const,
-            text: `Found ${capabilities.length} BlockIT runtime capabilities.`,
+            text: `Found ${capabilities.length} BlockIT Runtime capabilities.`,
           },
         ],
         structuredContent: { query, count: capabilities.length, capabilities },
@@ -161,7 +155,7 @@ registerGatewayTool(
   {
     title: "Describe BlockIT Capability",
     description:
-      "Returns the current backend description, annotations, and input schema for one exact capability before invocation.",
+      "Returns the current Runtime description, annotations, and input schema for one exact capability before invocation.",
     inputSchema: describeInput.shape,
     annotations: {
       readOnlyHint: true,
@@ -178,7 +172,7 @@ registerGatewayTool(
         content: [
           {
             type: "text" as const,
-            text: `Capability ${capability} is available on the current BlockIT runtime surface.`,
+            text: `Capability ${capability} is available on the current BlockIT Runtime surface.`,
           },
         ],
         structuredContent: { capability: tool },
@@ -194,7 +188,7 @@ registerGatewayTool(
   {
     title: "Invoke BlockIT Capability",
     description:
-      "Invokes one exact capability on the current Blockbench runtime. Calls are serialized and are never automatically retried after a transport interruption; uncertain mutations return OUTCOME_UNKNOWN.",
+      "Invokes one exact capability on the current Blockbench Runtime. Calls are serialized and are never automatically retried after a transport interruption; uncertain mutations return OUTCOME_UNKNOWN. Successful phase switches keep the same Gateway task alive and refresh the Runtime catalog automatically.",
     inputSchema: invokeInput.shape,
   },
   async (rawArgs) => {

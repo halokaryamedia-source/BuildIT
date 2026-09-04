@@ -6,7 +6,7 @@ async function source(path: string): Promise<string> {
 }
 
 describe("model creation effectiveness — texture/animation sequencing", () => {
-  test("phase handoff waits for explicit upstream readiness", async () => {
+  test("phase handoff waits for explicit upstream readiness and continues through Gateway", async () => {
     const [orchestrator, texturing, animation] = await Promise.all([
       source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md"),
       source("../.agents/skills/blockit-bedrock-texturing/SKILL.md"),
@@ -21,7 +21,10 @@ describe("model creation effectiveness — texture/animation sequencing", () => 
       expect(text).toContain("HANDOFF_REQUIRED");
       expect(text).toContain("target_phase");
       expect(text).toContain("readiness");
-      expect(text).toContain("STOP");
+      expect(text).toContain("switch_authoring_phase");
+      expect(text).toContain("Gateway");
+      expect(text).toMatch(/same task|same task\/chat/i);
+      expect(text).not.toMatch(/reload BlockIT MCP|reconnect.*MCP|new chat/i);
     }
 
     expect(texturing.toLowerCase()).toContain("final box uv locked with `autouv=0`");
@@ -51,11 +54,13 @@ describe("model creation effectiveness — texture/animation sequencing", () => 
       source("../.agents/skills/blockit-bedrock-animation/SKILL.md"),
     ]);
 
-    expect(texturing).toContain("unlocked/invalid UV        → HANDOFF_REQUIRED(geometry)");
+    expect(texturing).toMatch(/unlocked\/invalid UV\s+→ HANDOFF_REQUIRED\(geometry\)/);
     expect(texturing).toContain("must not borrow Cube mutation");
+    expect(texturing).toContain("switch_authoring_phase through Gateway");
     expect(animation).toContain("Animation owns motion, not structural rig mutation");
     expect(animation).toContain("target_phase: geometry");
-    expect(animation).toContain("Do not `tool_search` for `bone_rigging`");
+    expect(animation).toContain("Do not search for `bone_rigging`");
+    expect(animation).not.toContain("tool_search");
   });
 
   test("texture and animation guidance remains evidence-based without preset density metrics", async () => {

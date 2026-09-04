@@ -80,6 +80,41 @@ describe("current developer-facing documentation sync", () => {
     expect(runbook).toMatch(/targeted live debugging[\s\S]*formal Local Acceptance/i);
   });
 
+  test("canonical authoring taxonomy stays one-flow and Gateway-aware", async () => {
+    const [root, context, flow, implementation, router, texturing, animation, settings] = await Promise.all([
+      text("../AGENTS.md"),
+      text("../CONTEXT.md"),
+      text("../docs/knowledge/flow.md"),
+      text("../docs/knowledge/implementation-map.md"),
+      text("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md"),
+      text("../.agents/skills/blockit-bedrock-texturing/SKILL.md"),
+      text("../.agents/skills/blockit-bedrock-animation/SKILL.md"),
+      text("ui/settings.ts"),
+    ]);
+
+    for (const owner of [root, context, flow, implementation, router]) {
+      expect(owner).toMatch(/Reference[- ]Ground/i);
+      expect(owner).toContain("optional 3D Evidence");
+    }
+
+    for (const owner of [root, flow, router, texturing, animation]) {
+      expect(owner).toContain("Gateway");
+      expect(owner).toContain("switch_authoring_phase");
+      expect(owner).toMatch(/same task|same task\/chat/i);
+    }
+
+    for (const owner of [root, context, flow, implementation, router]) {
+      expect(owner).not.toContain("Image Reference Route");
+      expect(owner).not.toContain("3D-Assisted Route");
+      expect(owner).not.toContain("Standard MCP Profile");
+      expect(owner).not.toContain("Extended MCP Profile");
+    }
+
+    expect(settings).toContain('name: "Legacy UI Fallbacks (Debug)"');
+    expect(settings).toContain("not an authoring profile");
+    expect(texturing).toContain("manage_material");
+  });
+
   test("current Geometry guidance does not route through retired public tool names", async () => {
     const files = await Promise.all([
       text("../docs/knowledge/flow.md"),

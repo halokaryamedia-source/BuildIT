@@ -24,7 +24,7 @@ A marker states intended context, not proof. Confirm capability. If it overstate
 ```text
 REMOTE_GITHUB   = GitHub repository + CI; no local worktree/Bun/installed Blockbench
 LOCAL_CODE      = local checkout + Bun/tests/build/generators/filesystem
-LIVE_BLOCKBENCH = LOCAL_CODE + deployed/reloaded BlockIT + reconnected live MCP client
+LIVE_BLOCKBENCH = LOCAL_CODE + deployed BlockIT runtime + functioning Gateway/runtime connection
 ```
 
 Context persists until explicit switch or capability changes. Proof ceiling: `REMOTE_GITHUB` = source/static/CI; `LOCAL_CODE` adds local build/test/generator/filesystem; `LIVE_BLOCKBENCH` adds installed/live Blockbench proof.
@@ -103,14 +103,24 @@ source image / user intent → blockbench-reference-generator
 → readiness → one Draft → visual gate → user approval
 ```
 
+Reference preparation creates an approved visual reference. It does not choose between separate authoring routes.
+
 ### Asset Authoring
 
+Normal authoring has one mental model:
+
 ```text
-current request / approved reference → persistent workspace when needed
-→ blockit-bedrock-entity-mcp → ACTIVE PHASE → active specialist only → BlockIT MCP
+current request / approved reference
+→ persistent workspace when needed
+→ BlockIT Gateway
+→ Reference Grounding: approved image + optional 3D Evidence
+→ ACTIVE PHASE → active specialist only
+→ Geometry → Texturing → Animation when required
 ```
 
-Do not preload later-phase specialists. On `HANDOFF_REQUIRED`, retain resume-critical state, switch/reload, then load only its specialist. `workspace/active/<project>/README.md` owns continuity.
+The approved image remains visual authority. Optional 3D Evidence is Geometry-only supporting evidence, not a second route and never production geometry.
+
+Do not preload later-phase specialists. On `HANDOFF_REQUIRED`, retain resume-critical state, invoke `switch_authoring_phase` through the Gateway, let the Gateway refresh its Runtime catalog, then load only the next specialist and continue the **same task/chat**. Do not treat a phase handoff as a reconnect/new-chat boundary.
 
 For normal asset authoring, do not automatically load repository continuation/history/foundation docs. Asset authoring is not software **Development**; do not route it through `development-brief` unless repository/plugin behavior changes.
 

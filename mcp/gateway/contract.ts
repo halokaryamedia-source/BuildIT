@@ -30,12 +30,68 @@ export type BackendTool = {
   [key: string]: unknown;
 };
 
+export type CapabilityTier =
+  | "primary"
+  | "support"
+  | "experimental"
+  | "maintenance";
+
 export type CapabilitySummary = {
   capability_id: string;
   description: string;
+  tier: CapabilityTier;
   read_only: boolean;
   destructive: boolean;
   idempotent: boolean;
+};
+
+const PRIMARY_CAPABILITIES = new Set([
+  "create_project",
+  "get_project_info",
+  "inspect_elements",
+  "capture_model_views",
+  "export_model",
+  "undo",
+  "redo",
+  "switch_authoring_phase",
+  "manage_cubes",
+  "add_group",
+  "modify_group",
+  "reparent_element",
+  "remove_element",
+  "rename_element",
+  "create_texture",
+  "list_textures",
+  "get_texture",
+  "activate_texture",
+  "paint_fill_tool",
+  "draw_shape_tool",
+  "paint_with_brush",
+  "eraser_tool",
+  "manage_material",
+  "manage_material_instances",
+  "create_animation",
+  "inspect_animation",
+  "manage_animation_timeline",
+]);
+
+const EXPERIMENTAL_CAPABILITIES = new Set([
+  "manage_geometry_reference",
+]);
+
+const MAINTENANCE_CAPABILITIES = new Set([
+  "trigger_action",
+  "emulate_clicks",
+  "fill_dialog",
+  "risky_eval",
+  "from_geo_json",
+]);
+
+const TIER_BOOST: Record<CapabilityTier, number> = {
+  primary: 20,
+  support: 6,
+  experimental: 0,
+  maintenance: -20,
 };
 
 function isRecord(value: unknown): value is JsonRecord {
@@ -76,10 +132,7 @@ export function normalizeRuntimeUrl(
   return parsed.toString().replace(/\/+$/, "");
 }
 
-/**
- * Fingerprint only stable runtime identity fields. Health timestamps are
- * deliberately excluded so ordinary probes do not invalidate the catalog.
- */
+/** Fingerprint only stable runtime identity fields. */
 export function createRuntimeSignature(health: unknown): string {
   const root = isRecord(health) ? health : {};
   const product = isRecord(root.product) ? root.product : {};
@@ -96,17 +149,25 @@ export function createRuntimeSignature(health: unknown): string {
   });
 }
 
+export function classifyCapabilityTier(tool: BackendTool): CapabilityTier {
+  if (MAINTENANCE_CAPABILITIES.has(tool.name)) return "maintenance";
+  if (EXPERIMENTAL_CAPABILITIES.has(tool.name)) return "experimental";
+  if (PRIMARY_CAPABILITIES.has(tool.name)) return "primary";
+  return "support";
+}
+
 export function summarizeCapability(tool: BackendTool): CapabilitySummary {
   return {
     capability_id: tool.name,
     description: tool.description ?? "",
+    tier: classifyCapabilityTier(tool),
     read_only: tool.annotations?.readOnlyHint === true,
     destructive: tool.annotations?.destructiveHint === true,
     idempotent: tool.annotations?.idempotentHint === true,
   };
 }
 
-function capabilityScore(tool: BackendTool, tokens: string[]): number {
+function lexicalCapabilityScore(tool: BackendTool, tokens: string[]): number {
   if (tokens.length === 0) return 1;
 
   const name = tool.name.toLowerCase();
@@ -139,8 +200,19 @@ export function searchCapabilityCatalog(
     .filter(Boolean);
 
   return tools
-    .map((tool) => ({ tool, score: capabilityScore(tool, tokens) }))
-    .filter(({ score }) => tokens.length === 0 || score > 0)
+    .map((tool) => {
+      const tier = classifyCapabilityTier(tool);
+      const lexicalScore = lexicalCapabilityScore(tool, tokens);
+      return {
+        tool,
+        tier,
+        lexicalScore,
+        score: lexicalScore + TIER_BOOST[tier],
+      };
+    })
+    .filter(({ tier, lexicalScore }) =>
+      tokens.length === 0 ? tier !== "maintenance" : lexicalScore > 0
+    )
     .sort(
       (left, right) =>
         right.score - left.score || left.tool.name.localeCompare(right.tool.name)

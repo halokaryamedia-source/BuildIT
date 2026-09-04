@@ -74,30 +74,32 @@ describe("cross-agent repository handoff", () => {
     ]);
 
     expect(context).toMatch(/stable project facts only/i);
+    expect(context).toContain("Reference-Grounded Authoring");
     expect(next).toContain("SOURCE_READY");
-    expect(next).toContain("IMAGE REFERENCE ROUTE");
+    expect(next).toContain("AUTHORING TAXONOMY");
     expect(validation).toMatch(/current proof interpretation/i);
     expect(implementation).toMatch(/no active task status/i);
     expect(runbook).toMatch(/explicitly reactivates local testing/i);
     expect(await Bun.file("../docs/foundation/validation-report.md").exists()).toBe(false);
   });
 
-  test("retired proof paths and terminology cannot return to current routing/procedure docs", async () => {
+  test("retired proof paths and route/profile terminology cannot return to current canonical docs", async () => {
     const owners = await Promise.all([
       text("../AGENTS.md"),
       text("../CONTEXT.md"),
-      text("../README.md"),
-      text("../CONTRIBUTING.md"),
       text("README.md"),
-      text("../.agents/skills/development-brief/SKILL.md"),
+      text("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md"),
       text("../docs/knowledge/next-action.md"),
       text("../docs/knowledge/implementation-map.md"),
-      text("../docs/knowledge/operations/local-acceptance-runbook.md"),
     ]);
 
     for (const owner of owners) {
       expect(owner).not.toContain("docs/foundation/validation-report.md");
       expect(owner).not.toMatch(/\bDeveloping Execution\b|\bAmbiguous Developing\b|\bMandatory Developing\b/);
+      expect(owner).not.toContain("Image Reference Route");
+      expect(owner).not.toContain("3D-Assisted Route");
+      expect(owner).not.toContain("Standard MCP Profile");
+      expect(owner).not.toContain("Extended MCP Profile");
     }
   });
 

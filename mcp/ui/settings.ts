@@ -21,7 +21,7 @@ export function setExtendedMcpFamiliesEnabled(enabled: boolean): void {
   }
   Settings.save();
   Blockbench.showQuickMessage(
-    `BlockIT Extended MCP Profile ${enabled ? "enabled" : "disabled"}. MCP surface updated.`,
+    `BlockIT Legacy UI Fallbacks ${enabled ? "enabled" : "disabled"}. Runtime surface updated for debug/maintenance use.`,
     3000
   );
   extendedProfileHandler?.(enabled);
@@ -71,9 +71,9 @@ export function settingsSetup(): void {
       icon: "webhook",
     }),
     new Setting(MCP_AUTHORING_PHASE_SETTING_ID, {
-      name: "MCP Authoring Phase",
+      name: "Default MCP Authoring Phase",
       description:
-        "Expose Core tools plus exactly one authoring phase on the next plugin load/reload. Change phase only at a deliberate Geometry, Texturing, or Animation handoff.",
+        "Startup/reload default for the BlockIT Runtime. Normal Gateway handoffs use switch_authoring_phase and refresh automatically without reconnecting the AI client.",
       type: "select",
       value: DEFAULT_MCP_AUTHORING_PHASE,
       options: {
@@ -85,9 +85,9 @@ export function settingsSetup(): void {
       category,
     }),
     new Setting(MCP_EXTENDED_FAMILIES_SETTING_ID, {
-      name: "Extended MCP Profile",
+      name: "Legacy UI Fallbacks (Debug)",
       description:
-        "Explicitly expose the source-preserved generic import/UI fallback families immediately. risky_eval and from_geo_json remain disabled.",
+        "Debug/maintenance compatibility only. Enables generic import/UI fallback families; this is not an authoring profile. risky_eval and from_geo_json remain disabled.",
       type: "toggle",
       value: false,
       category,

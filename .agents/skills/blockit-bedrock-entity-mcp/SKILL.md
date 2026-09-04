@@ -1,11 +1,11 @@
 ---
 name: blockit-bedrock-entity-mcp
-description: Route Bedrock Entity intents to exact active-phase tools.
+description: Route Bedrock Entity intents through Gateway to active-phase Runtime capabilities.
 ---
 
 # BlockIT Bedrock Entity MCP
 
-Target bedrock. Own only **phase/tool routing**, state reuse, handoff, recovery:
+Own only **phase/tool routing through Gateway**, state reuse, handoff, and recovery:
 
 ```text
 geometry/rig/UV judgement → `blockbench-bedrock-modelling`
@@ -13,83 +13,97 @@ texture/PBR               → `blockit-bedrock-texturing`
 animation/motion          → `blockit-bedrock-animation`
 ```
 
+Normal authoring: **approved image + optional 3D Evidence → Geometry → Texturing → optional Animation**. Optional 3D Evidence supports Geometry; it is not a second route.
+
 ## Fast Routing Contract
 
 Normal asset work **must not begin by searching repository files**.
 
-`ACTIVE PHASE + intent + known state/UUIDs → exact exposed tool → execute → reuse fresh state`
+```text
+ACTIVE PHASE + intent + known state/UUIDs
+→ exact known Runtime capability when current
+→ execute through Gateway
+→ reuse fresh returned state
+```
 
-`ACTIVE PHASE` + `tools/list` are the **routing authority for the first tool decision**; phase absence is not discovery failure. **1 Minecraft block = 16 Blockbench units**. Reuse `front_direction` when relevant.
+Unknown/stale capability → `search_capabilities`; exact current schema → `describe_capability` once. **1 Minecraft block = 16 Blockbench units.** Reuse `front_direction` when relevant.
+
+## Reference Grounding
+
+```text
+approved image       → visual authority
+requested dimensions → numeric authority
+optional 3D Evidence → supporting depth/volume/attachment evidence
+```
+
+Approved useful 3D Evidence → Geometry may use `manage_geometry_reference`. Image-only work does not require 3D setup.
 
 ## Active Phase Contract
 
-Foreign-phase need → `HANDOFF_REQUIRED` with target_phase, reason, readiness, resume_from, phase switch/reload action → STOP. Do **not** `tool_search` or substitute it.
+Foreign-phase need → `HANDOFF_REQUIRED` with `target_phase`, `reason`, `readiness`, `resume_from`.
+
+```text
+switch_authoring_phase through Gateway
+→ invalidate Runtime catalog
+→ refresh on next capability request
+→ load target specialist
+→ continue same task/chat
+```
+
+`HANDOFF_REQUIRED` means STOP current-phase mutation routing, not reconnect/new chat or stop the whole task.
 
 ## Authoring Stage Lock
 
 `DISCOVER → AUTHOR → VERIFY → CORRECT → VERIFY → DONE`
 
-`DISCOVER` only for unknown/stale identity or exact spec; fresh state must not regress.
-
 ## Tool Lane Discipline
 
 ```text
-CORE
-no project                    → create_project
-lifecycle unknown             → get_project_info
+CORE / SHARED
 target identity unknown       → inspect_elements(mode=search)
 hierarchy question            → inspect_elements(mode=outline)
 known target detail           → inspect_elements(mode=detail)
 visible/reference comparison  → capture_model_views
 numeric envelope/scale/ground → inspect_model_bounds
-structural validation gate    → validator://status; details only when nonzero
 Locator identity unknown      → list_locator_elements
 global UV/atlas readiness     → list_textures
 recover change                → undo / redo
 file deliverable              → export_model
+phase change                  → switch_authoring_phase
 
 GEOMETRY
-3D-Assisted Evidence lifecycle → manage_geometry_reference when exposed
-create normal bone/Group      → add_group
- create/update Cubes            → manage_cubes(operation=create|update|batch_update)
-Group/bone parent move        → reparent_element
-Group pivot/rotation/visible  → modify_group
-structural delete/rename      → remove_element / rename_element
-Locator/Null create/edit      → manage_locator / manage_null_object
-rig IK/mirror                 → bone_rigging
+optional 3D Evidence lifecycle → manage_geometry_reference
+create normal bone/Group       → add_group
+create/update Cubes            → manage_cubes(operation=create|update|batch_update)
+Group/bone parent move         → reparent_element
+Group pivot/rotation/visible   → modify_group
+structural delete/rename       → remove_element / rename_element
+Locator/Null create/edit       → manage_locator / manage_null_object
+rig IK/mirror                  → bone_rigging
 ```
 
-`bone_rigging` only for IK/mirror. Known coherent Cubes → one `manage_cubes(operation=create, elements=[...])`; uncertainty → no batch. Known Cubes sharing one deterministic TRANSLATE/RESIZE intent → derive absolute targets once from fresh state → one `manage_cubes(operation=batch_update)`; one known correction uses `operation=update`. Never loop inspect→modify per Cube. Relative intent stays reasoning-layer arithmetic; writes stay absolute/fail-closed.
+`bone_rigging` only for IK/mirror. Known coherent Cubes → one `manage_cubes(operation=create, elements=[...])`; uncertainty → no batch. Known Cubes sharing one deterministic TRANSLATE/RESIZE intent → derive absolute targets once from fresh state → one `manage_cubes(operation=batch_update)`. Never loop inspect→modify per Cube. Relative intent stays reasoning-layer arithmetic; writes stay absolute/fail-closed.
 
-## 3D-Assisted
+## Capability Discovery / Recovery
 
-Image + dimensions + GLB/Primitive Decomposition → `manage_geometry_reference`; modelling owns alignment/cleanup.
-
-## First-Call Invariants
+Capability discovery is **deferred spec loading after routing**, not a second router.
 
 ```text
-manage_cubes create rotation != 0 → origin required
-add_group                 → pass name OR groups, never both
-manage_cubes update       → id + at least one authored field change
-manage_locator create     → name+parent; update → id+authored change
-manage_null_object create → name+parent; update → id+parent/position
+known exact capability   → invoke directly
+unknown/stale capability → one precise search_capabilities query
+schema needed            → describe_capability once
 ```
 
-If conditional/action fields matter, load **that exact active-phase spec once** before mutation. Validation failure repairs arguments for the **same routed tool**.
-
-## Search / Recovery
-
-`tool_search` is **deferred spec loading after routing** only for a tool that **belongs to the active phase**. Search **the exact selected tool name only**.
-
-**One precise search:** exact selected tool name. Miss → **reformulate once** with exact name + one domain noun; second miss → `BLOCKED`. Fallback is search-backend recovery, **not re-routing**. **A known foreign-phase tool must never enter this search path.**
+One precise search miss → reformulate once with one domain noun; second miss → `BLOCKED`. A known foreign-phase capability is never a discovery miss; hand off instead.
 
 ```text
-validation      → INVALID_INPUT       → repair args; same tool
+validation      → INVALID_INPUT       → repair args; same capability
 ambiguous       → TARGET_AMBIGUOUS    → resolve UUID once
 unknown missing → TARGET_NOT_FOUND    → focused identity lookup
 known UUID gone → STALE_STATE         → one focused refresh
 no effect       → NO_EFFECT           → change diagnosis/payload
 unsupported     → CAPABILITY_MISMATCH → handoff once or BLOCKED
+transport after mutation → OUTCOME_UNKNOWN → inspect state before retry
 ```
 
 ## State Reuse / Anti-Loop
@@ -97,9 +111,8 @@ unsupported     → CAPABILITY_MISMATCH → handoff once or BLOCKED
 - Known UUID → no discovery unless stale/ambiguous.
 - Fresh mutation → reuse returned state/`geometry_effect`; no confirmation readback.
 - **Do not automatically re-read fresh mutation targets with `inspect_elements(mode=detail)`.**
-- Validator gate → read `validator://status` first; zero problems means no detail-resource read.
 - `inspect_model_bounds` only for envelope/scale/ground/displacement.
 - Skip `get_project_info` after create/export unless lifecycle state is unknown/stale.
 - Same routed failure twice without new evidence → `BLOCKED`.
 
-`export_model`: `bedrock` JSON or `project` `.bbmodel`. Never emulate missing capability.
+`export_model`: `bedrock` JSON or editable `project` `.bbmodel`. Never emulate missing capability through generic UI actions.

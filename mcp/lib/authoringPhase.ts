@@ -27,16 +27,13 @@ const CORE_FAMILIES = new Set<McpRegistrationFamily>([
   "history",
   "project",
   "phase_control",
-  // Generic fallback families are Core only when the explicit extended
-  // registration profile makes them available. Their individually disabled
-  // tools remain disabled at createTool().
+  // Internal extended compatibility only adds Legacy UI Fallback families.
+  // They remain debug/maintenance capability rather than an authoring profile.
   "import",
   "ui",
 ]);
 
-const CORE_ELEMENT_TOOLS = new Set([
-  "inspect_elements",
-]);
+const CORE_ELEMENT_TOOLS = new Set(["inspect_elements"]);
 
 const GEOMETRY_ELEMENT_TOOLS = new Set([
   "modify_group",
@@ -71,18 +68,15 @@ const PHASE_FOREIGN_SUMMARY: Record<McpAuthoringPhase, string> = {
 
 const PHASE_OWNER_SUMMARY: Record<McpAuthoringPhase, string> = {
   geometry:
-    "Geometry owns Cube/Group/rig/Locator/Null mutation and UV Layout mutation/audit.",
+    "Geometry owns Cube/Group/rig/Locator/Null mutation, UV Layout, and optional 3D Evidence lifecycle.",
   texturing:
     "Texturing owns Texture Atlas, Painter, PBR, material-instance authoring, and Texture Verify.",
   animation:
     "Animation owns authored animations, keyframes, timeline, effects, controllers, and animation inspection.",
 };
 
-// Keep shared initialize text semantic rather than naming individual tools. The
-// latter pollutes every tool-search corpus entry because namespace instructions
-// are shared metadata; exact routes live in the active specialist Skill.
 const PHASE_RUNTIME_OWNER_SUMMARY: Record<McpAuthoringPhase, string> = {
-  geometry: "Owns: Cube/Group/rig/Locator/Null + UV Layout.",
+  geometry: "Owns: Cube/Group/rig/Locator/Null + UV Layout + optional 3D Evidence.",
   texturing: "Owns: Texture Atlas/Painter/PBR/materials + Texture Verify.",
   animation: "Owns: animations/keyframes/timeline/effects/controllers/inspection.",
 };
@@ -108,15 +102,13 @@ const PHASE_SUPPORT_ROUTING: Record<McpAuthoringPhase, string> = {
 const GEOMETRY_SUBGROUP_ROUTING =
   "Geometry intent routes: setup_and_hierarchy=create_project/get_project_info; geometry_authoring=add_group/manage_cubes(operation=create)/duplicate_element/reparent_element; correction_and_inspection=manage_cubes(operation=update|batch_update)/modify_group/remove_element/rename_element/inspect_elements(mode=outline|search|detail)/inspect_model_bounds; checkpoint_and_export=capture_model_views/export_model. Legacy Geometry Plan and compiler routes are not part of the production surface. Selection, locator discovery, generic screenshots, format discovery, and history are conditional support only. Choose one direct route from the current intent.";
 
+void PHASE_SUPPORT_ROUTING;
+void GEOMETRY_SUBGROUP_ROUTING;
+
 export function isMcpAuthoringPhase(value: unknown): value is McpAuthoringPhase {
   return MCP_AUTHORING_PHASES.includes(value as McpAuthoringPhase);
 }
 
-/**
- * Missing/default setting starts in Geometry. An explicit invalid value is a
- * configuration error because silently pretending it is Geometry would give
- * the agent a plausible but incorrect authoring context.
- */
 export function resolveMcpAuthoringPhase(value: unknown): McpAuthoringPhase {
   if (value === undefined || value === null || value === "") {
     return DEFAULT_MCP_AUTHORING_PHASE;
@@ -156,9 +148,9 @@ export function buildMcpPhaseRuntimeContract(
     `ACTIVE PHASE: ${label}. MCP CORE + ${label} only.`,
     BEDROCK_AUTHORING_COORDINATE_CONTRACT,
     PHASE_RUNTIME_OWNER_SUMMARY[phase],
-    `${PHASE_FOREIGN_SUMMARY[phase]} unavailable.`,
-    "Do not tool_search, emulate, rename, or substitute foreign tools.",
-    `${MCP_HANDOFF_REQUIRED}: include target_phase, reason, readiness, resume_from, action=set phase; reload/reconnect, then STOP.${allowedToolsText}`,
+    `${PHASE_FOREIGN_SUMMARY[phase]} unavailable until phase handoff.`,
+    "Do not search for, emulate, rename, or substitute foreign tools.",
+    `${MCP_HANDOFF_REQUIRED}: include target_phase, reason, readiness, resume_from; invoke switch_authoring_phase through the Gateway, then stop using prior-phase mutation routes while the Gateway refreshes automatically.${allowedToolsText}`,
   ].join(" ");
 }
 
@@ -169,7 +161,7 @@ export function buildMcpPhasePromptHeader(
   return [
     "## Active Phase Contract",
     buildMcpPhaseRuntimeContract(phase, allowedTools),
-    "Only the current phase workflow is rendered below. Later phases are handoff targets, not callable routes in this session.",
+    "Only the current phase workflow is rendered below. Later phases become callable only after a Gateway phase handoff; the same task/chat continues.",
   ].join("\n\n");
 }
 
@@ -179,16 +171,11 @@ export function buildMcpPhaseHandoffContract(
   return [
     "## Phase Readiness / Handoff",
     PHASE_READINESS_SUMMARY[phase],
-    "A handoff must preserve only resume-critical state: target_phase, reason, readiness, resume_from, and action. resume_from names the current model/project, immediate target identifiers, and last verified gate; include an exact UUID only when the next mutation needs it. Do not create a persistent UUID registry or tool-call transcript.",
-    `${MCP_HANDOFF_REQUIRED} means STOP after reporting the handoff.`,
+    "A handoff preserves only resume-critical state: target_phase, reason, readiness, resume_from, and action. resume_from names the current model/project, immediate target identifiers, and last verified gate; include an exact UUID only when the next mutation needs it. Do not create a persistent UUID registry or tool-call transcript.",
+    `${MCP_HANDOFF_REQUIRED} means STOP using current-phase mutation routes, invoke switch_authoring_phase through the Gateway, then continue the same task after the Gateway refreshes the Runtime catalog.`,
   ].join("\n\n");
 }
 
-/**
- * Assign one retained MCP tool to exactly one authoring ownership category.
- * Core remains available in every phase; phase-owned mutation families do not
- * cross authoring boundaries. Unknown mixed-family tools fail closed (null).
- */
 export function classifyMcpToolPhase(
   toolName: string,
   family: McpRegistrationFamily
@@ -215,9 +202,7 @@ export function classifyMcpToolPhase(
   }
   if (GEOMETRY_MAINTENANCE_TOOLS.has(toolName)) return "geometry";
   if (CORE_FAMILIES.has(family)) return "core";
-
   if (family === "cubes") return "geometry";
-
   if (family === "textures") {
     return CORE_TEXTURE_TOOLS.has(toolName) ? "core" : "texturing";
   }
@@ -225,22 +210,15 @@ export function classifyMcpToolPhase(
     return "texturing";
   }
   if (family === "animation_inspection") return "animation";
-
   if (family === "animation") {
-    // Rig/pivot mutation belongs to Geometry; authored motion remains Animation.
     return toolName === "bone_rigging" ? "geometry" : "animation";
   }
-
   if (family === "elements") {
     if (CORE_ELEMENT_TOOLS.has(toolName)) return "core";
     if (GEOMETRY_ELEMENT_TOOLS.has(toolName)) return "geometry";
-    // Retained legacy material lookup is texturing-owned even though it stays
-    // individually disabled on the normal Bedrock Entity surface.
     if (toolName === "filter_by_material") return "texturing";
     return null;
   }
-
-  // validator_resources registers resources rather than MCP tools.
   return null;
 }
 

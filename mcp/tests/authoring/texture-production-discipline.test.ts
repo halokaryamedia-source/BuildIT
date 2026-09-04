@@ -29,8 +29,6 @@ describe("professional texture production discipline", () => {
       }
     }
 
-    // Stable project context owns the semantic distinction, while active
-    // texturing/runtime/policy owners retain the concrete tool contract.
     expect(context).toContain("Texture Atlas");
     expect(context).toContain("stores pixels");
     for (const owner of [skill, workflow, policy]) {
@@ -77,19 +75,21 @@ describe("professional texture production discipline", () => {
     }
   });
 
-  test("Texturing routes only current-phase tools and hands UV mutation back to Geometry", async () => {
+  test("Texturing uses current consolidated capabilities and hands UV mutation back to Geometry", async () => {
     const skill = await source("../.agents/skills/blockit-bedrock-texturing/SKILL.md");
     for (const tool of [
       "create_texture", "list_textures", "activate_texture", "get_texture",
       "paint_fill_tool", "draw_shape_tool", "gradient_tool", "paint_with_brush",
-      "create_pbr_material", "configure_material", "assign_texture_channel",
+      "eraser_tool", "manage_material", "manage_material_instances",
     ]) expect(skill).toContain(tool);
 
+    expect(skill).not.toContain("create_pbr_material / configure_material / assign_texture_channel");
     expect(skill).toContain("connect_strokes=false");
     expect(skill).toContain("box_uv_region");
     expect(skill).toContain("autouv=0");
     expect(skill).toContain("HANDOFF_REQUIRED(geometry)");
-    expect(skill).toContain("Never `tool_search` for `manage_cubes`, `bone_rigging`");
+    expect(skill).toContain("switch_authoring_phase through Gateway");
+    expect(skill).not.toContain("tool_search");
   });
 
   test("UV Layout lock/audit remains Geometry-owned before Texture Styling", async () => {

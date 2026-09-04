@@ -16,13 +16,14 @@ bone/pivot/IK/parenting structure must change
 → HANDOFF_REQUIRED
   target_phase: geometry
   reason: <observed rig defect>
-  readiness: <which hierarchy/pivot/IK prerequisite failed>
-  resume_from: <current model/project + immediate animation/bone target identifiers>
-  action: set MCP Authoring Phase=geometry; reload BlockIT MCP
-→ STOP
+  readiness: <failed hierarchy/pivot/IK prerequisite>
+  resume_from: <current project + immediate animation/bone target>
+→ invoke switch_authoring_phase through Gateway
+→ Gateway refreshes Runtime catalog
+→ continue same task with Geometry specialist
 ```
 
-Do not `tool_search` for `bone_rigging` while Animation is active.
+Do not search for `bone_rigging` while Animation is active. No normal phase handoff requires reconnect, Blockbench reload, or a new chat.
 
 ## Direct Routing
 
@@ -35,9 +36,24 @@ controller state/composition/effects  → manage_animation_controller
 new-animation particle/sound          → create_animation
 ```
 
-Load the exact active-phase tool only. Reuse fresh UUID/state; known identity **must not fall back to broad hierarchy discovery or confirmation reads**. Route all timeline/keyframe intents through `manage_animation_timeline`; choose the matching operation and use `batch` for one shared cohort intent instead of looping per key. Prefer batch coherent operations when one intent covers several keys.
+Primary normal path:
 
-Controller/effect/graph/copy-paste tools are conditional: use them only when that behavior is requested or evidenced, not because search ranks them near a basic keyframe/timeline route.
+```text
+create_animation
+inspect_animation
+manage_animation_timeline
+```
+
+Conditional support:
+
+```text
+manage_animation_effects
+manage_animation_controller
+```
+
+Known exact capability → invoke through Gateway. Unknown/stale capability → one focused `search_capabilities`; exact current schema needed → `describe_capability` once. **Reuse fresh UUID/state; known identity must not fall back to broad hierarchy discovery or confirmation reads.**
+
+Route all timeline/keyframe intents through `manage_animation_timeline`; use `batch` for one shared cohort intent instead of looping per key. Prefer **batch coherent operations** when one intent covers several keys. Controller/effect/graph/copy-paste tools are conditional; use them only when behavior is requested or evidenced.
 
 ## Motion Design Contract
 
@@ -53,7 +69,7 @@ causal event for sound/particle
 loop seam or neutral/controller handoff
 ```
 
-Archetypes are categories, not presets. No universal FPS, duration, amplitude, phase, keyframe count, or Bezier target. Do not reduce acceptance to an **animation quality score**.
+Archetypes are categories, **not presets**. No universal FPS, duration, amplitude, phase, keyframe count, or Bezier target. Do not reduce acceptance to an **animation quality score**.
 
 ## Procedural Math / Molang
 
@@ -66,7 +82,7 @@ q.modified_move_speed     → speed/intensity response
 controller blend value    → conditional layer weight
 ```
 
-Periodic motion tracks base + amplitude + frequency + phase. Chains use driver → delayed followers, deliberate phase/amplitude hierarchy, and attachment continuity.
+Periodic motion tracks base + amplitude + frequency + phase. Chains use **driver → delayed followers**, deliberate phase/amplitude hierarchy, and attachment continuity.
 
 ## Action / Effects / Verification
 
@@ -82,7 +98,7 @@ Correction verdict: `IMPROVED | UNCHANGED | REGRESSED`; tool success is not moti
 
 ## Completion / Handoff
 
-Requested Animation scope is complete only when the required motion/effect behavior is verified. If another phase is requested afterward, emit `HANDOFF_REQUIRED` with the latest verified readiness and STOP rather than preloading another specialist.
+Requested Animation scope is complete only when required motion/effect behavior is verified. If another phase is needed afterward, preserve resume-critical state, switch through the Gateway, and continue the same task with only the target specialist loaded.
 
 ## Protected Gaps
 

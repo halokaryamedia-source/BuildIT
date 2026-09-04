@@ -196,8 +196,11 @@ describe("repository GitHub discipline", () => {
 
     expect(next.length).toBeLessThan(2_500);
     expect(next).toContain("SOURCE_READY");
-    expect(next).toContain("IMAGE REFERENCE ROUTE");
-    expect(next).toContain("same-phase Standard ↔ Extended");
+    expect(next).toContain("AUTHORING TAXONOMY");
+    expect(next).toContain("OPTIONAL 3D EVIDENCE");
+    expect(next).toContain("LEGACY UI FALLBACKS");
+    expect(next).not.toContain("IMAGE REFERENCE ROUTE");
+    expect(next).not.toContain("same-phase Standard ↔ Extended");
     expect(validation).toContain("current proof interpretation");
     expect(validation).not.toContain("LATEST REPOSITORY VERIFY");
 

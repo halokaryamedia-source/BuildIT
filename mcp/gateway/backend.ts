@@ -63,13 +63,6 @@ function isRecord(value: unknown): value is JsonRecord {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
 
-/**
- * MCP SDK task-capable callTool typings include result branches without a
- * `content` array. The Gateway exposes an ordinary tool result to its client, so
- * retain normal tool results verbatim and wrap any alternate backend result in
- * structuredContent rather than leaking the SDK's large compatibility union
- * through the Gateway type graph.
- */
 function normalizeRuntimeCallResult(result: unknown): GatewayRuntimeCallResult {
   if (isRecord(result) && Array.isArray(result.content)) {
     return result as GatewayRuntimeCallResult;
@@ -99,13 +92,15 @@ function normalizeGatewayManagedResult(
     content: [
       {
         type: "text",
-        text: "BlockIT authoring phase switched. The Gateway invalidated its backend catalog and will refresh automatically on the next capability request.",
+        text: "BlockIT authoring phase switched. Continue the same task; the Gateway invalidated its Runtime catalog and will refresh automatically on the next capability request.",
       },
     ],
     structuredContent: {
       ...(isRecord(result.structuredContent) ? result.structuredContent : {}),
       gateway_catalog_invalidated: true,
       client_reconnect_required: false,
+      new_chat_required: false,
+      action: "continue same task through Gateway; Runtime catalog refreshes automatically",
     },
   };
 }
@@ -205,9 +200,7 @@ export class BlockitRuntimeBackend {
     return tools;
   }
 
-  private async connectFreshUnsafe(
-    signature: string
-  ): Promise<void> {
+  private async connectFreshUnsafe(signature: string): Promise<void> {
     await this.closeConnectionUnsafe();
 
     const client = new Client(

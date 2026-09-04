@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import {
   GATEWAY_TOOL_NAMES,
+  classifyCapabilityTier,
   classifyInterruptedCall,
   createRuntimeSignature,
   normalizeRuntimeUrl,
@@ -18,31 +19,65 @@ describe("BlockIT Gateway contract", () => {
     ]);
   });
 
-  test("capability discovery ranks backend tools without changing Gateway tools", () => {
+  test("capability discovery ranks primary authoring tools ahead of comparable support tools", () => {
     const tools: BackendTool[] = [
       {
-        name: "manage_cubes",
-        description: "Create and update Bedrock cubes.",
-        annotations: { destructiveHint: true },
+        name: "create_texture",
+        description: "Create a texture atlas for BlockIT authoring.",
       },
       {
-        name: "inspect_elements",
-        description: "Inspect hierarchy and authored elements.",
-        annotations: { readOnlyHint: true },
+        name: "create_brush_preset",
+        description: "Create a texture brush preset.",
       },
       {
-        name: "capture_model_views",
-        description: "Capture canonical model views.",
-        annotations: { readOnlyHint: true },
+        name: "manage_geometry_reference",
+        description: "Load an approved GLB as optional 3D Evidence.",
+      },
+      {
+        name: "emulate_clicks",
+        description: "Emulate Blockbench UI clicks for maintenance.",
       },
     ];
 
-    expect(searchCapabilityCatalog(tools, "cube geometry", 10)[0]?.capability_id).toBe(
-      "manage_cubes"
+    expect(searchCapabilityCatalog(tools, "create texture", 10)[0]?.capability_id).toBe(
+      "create_texture"
     );
-    expect(searchCapabilityCatalog(tools, "inspect hierarchy", 10)[0]?.capability_id).toBe(
-      "inspect_elements"
-    );
+    expect(classifyCapabilityTier(tools[0]!)).toBe("primary");
+    expect(classifyCapabilityTier(tools[1]!)).toBe("support");
+    expect(classifyCapabilityTier(tools[2]!)).toBe("experimental");
+    expect(classifyCapabilityTier(tools[3]!)).toBe("maintenance");
+  });
+
+  test("maintenance fallbacks stay out of empty discovery but remain explicitly discoverable", () => {
+    const tools: BackendTool[] = [
+      { name: "manage_cubes", description: "Create Bedrock cubes." },
+      { name: "emulate_clicks", description: "Emulate Blockbench UI clicks." },
+    ];
+
+    expect(searchCapabilityCatalog(tools, "", 10).map((tool) => tool.capability_id))
+      .toEqual(["manage_cubes"]);
+    expect(searchCapabilityCatalog(tools, "emulate clicks", 10)[0]).toMatchObject({
+      capability_id: "emulate_clicks",
+      tier: "maintenance",
+    });
+  });
+
+  test("experimental 3D Evidence remains discoverable only when relevant", () => {
+    const tools: BackendTool[] = [
+      {
+        name: "manage_geometry_reference",
+        description: "Load update or remove approved local GLB 3D Evidence.",
+      },
+      {
+        name: "manage_cubes",
+        description: "Create and update Bedrock cubes.",
+      },
+    ];
+
+    expect(searchCapabilityCatalog(tools, "approved GLB evidence", 10)[0]).toMatchObject({
+      capability_id: "manage_geometry_reference",
+      tier: "experimental",
+    });
   });
 
   test("runtime signature ignores changing health timestamps but detects surface identity changes", () => {
@@ -94,13 +129,15 @@ describe("BlockIT Gateway contract", () => {
     });
   });
 
-  test("phase handoff invalidates only the backend catalog, not the Codex-facing Gateway", async () => {
+  test("phase handoff invalidates only backend state and explicitly keeps the client task alive", async () => {
     const backendSource = await Bun.file("gateway/backend.ts").text();
 
     expect(backendSource).toContain('capability === "switch_authoring_phase"');
     expect(backendSource).toContain("await this.closeConnectionUnsafe()");
     expect(backendSource).toContain("gateway_catalog_invalidated: true");
     expect(backendSource).toContain("client_reconnect_required: false");
+    expect(backendSource).toContain("new_chat_required: false");
+    expect(backendSource).toContain("continue same task through Gateway");
   });
 
   test("stdio Gateway is a first-class package command and does not log protocol traffic to stdout", async () => {
