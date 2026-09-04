@@ -9,6 +9,7 @@ import {
   GATEWAY_NAME,
   GATEWAY_TOOLS,
   GATEWAY_VERSION,
+  type JsonRecord,
 } from "./contract";
 
 const backend = new BlockitRuntimeBackend();
@@ -23,6 +24,34 @@ const server = new McpServer(
       "Stable BlockIT client boundary. Blockbench may reload without changing this MCP tool list. Use search_capabilities and describe_capability when the exact current runtime capability is unknown. invoke_capability never auto-retries an interrupted backend call.",
   }
 );
+
+type GatewayToolDefinition = {
+  title: string;
+  description: string;
+  inputSchema: Record<string, z.ZodTypeAny>;
+  annotations?: {
+    readOnlyHint?: boolean;
+    destructiveHint?: boolean;
+    idempotentHint?: boolean;
+    openWorldHint?: boolean;
+  };
+};
+
+type GatewayToolHandler = (
+  args: JsonRecord
+) => Promise<unknown>;
+
+/**
+ * Keep SDK registration generics at one narrow boundary. The SDK otherwise
+ * expands every Zod branch together with the task-capable result union, which
+ * is unnecessary for this four-tool stable facade and can exhaust tsc memory.
+ * Each non-empty input is still parsed by its explicit Zod schema below.
+ */
+const registerGatewayTool = server.registerTool.bind(server) as unknown as (
+  name: string,
+  definition: GatewayToolDefinition,
+  handler: GatewayToolHandler
+) => void;
 
 function gatewayErrorResult(error: unknown) {
   if (error instanceof GatewayBackendError) {
@@ -50,7 +79,21 @@ function gatewayErrorResult(error: unknown) {
   };
 }
 
-server.registerTool(
+const searchInput = z.object({
+  query: z.string().default(""),
+  limit: z.number().int().min(1).max(50).default(12),
+});
+
+const describeInput = z.object({
+  capability: z.string().min(1),
+});
+
+const invokeInput = z.object({
+  capability: z.string().min(1),
+  arguments: z.record(z.unknown()).default({}),
+});
+
+registerGatewayTool(
   GATEWAY_TOOLS.status,
   {
     title: "BlockIT Status",
@@ -80,16 +123,13 @@ server.registerTool(
   }
 );
 
-server.registerTool(
+registerGatewayTool(
   GATEWAY_TOOLS.searchCapabilities,
   {
     title: "Search BlockIT Capabilities",
     description:
       "Searches the live Blockbench runtime capability catalog. The Gateway tool surface stays stable even when backend tools are added, removed, renamed, or phase-filtered.",
-    inputSchema: {
-      query: z.string().default(""),
-      limit: z.number().int().min(1).max(50).default(12),
-    },
+    inputSchema: searchInput.shape,
     annotations: {
       readOnlyHint: true,
       destructiveHint: false,
@@ -97,8 +137,9 @@ server.registerTool(
       openWorldHint: false,
     },
   },
-  async ({ query, limit }) => {
+  async (rawArgs) => {
     try {
+      const { query, limit } = searchInput.parse(rawArgs);
       const capabilities = await backend.searchCapabilities(query, limit);
       return {
         content: [
@@ -115,15 +156,13 @@ server.registerTool(
   }
 );
 
-server.registerTool(
+registerGatewayTool(
   GATEWAY_TOOLS.describeCapability,
   {
     title: "Describe BlockIT Capability",
     description:
       "Returns the current backend description, annotations, and input schema for one exact capability before invocation.",
-    inputSchema: {
-      capability: z.string().min(1),
-    },
+    inputSchema: describeInput.shape,
     annotations: {
       readOnlyHint: true,
       destructiveHint: false,
@@ -131,8 +170,9 @@ server.registerTool(
       openWorldHint: false,
     },
   },
-  async ({ capability }) => {
+  async (rawArgs) => {
     try {
+      const { capability } = describeInput.parse(rawArgs);
       const tool = await backend.describeCapability(capability);
       return {
         content: [
@@ -149,19 +189,17 @@ server.registerTool(
   }
 );
 
-server.registerTool(
+registerGatewayTool(
   GATEWAY_TOOLS.invokeCapability,
   {
     title: "Invoke BlockIT Capability",
     description:
       "Invokes one exact capability on the current Blockbench runtime. Calls are serialized and are never automatically retried after a transport interruption; uncertain mutations return OUTCOME_UNKNOWN.",
-    inputSchema: {
-      capability: z.string().min(1),
-      arguments: z.record(z.unknown()).default({}),
-    },
+    inputSchema: invokeInput.shape,
   },
-  async ({ capability, arguments: args }) => {
+  async (rawArgs) => {
     try {
+      const { capability, arguments: args } = invokeInput.parse(rawArgs);
       return await backend.invokeCapability(capability, args);
     } catch (error) {
       return gatewayErrorResult(error);

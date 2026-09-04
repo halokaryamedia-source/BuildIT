@@ -1,6 +1,5 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
-import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import {
   DEFAULT_RUNTIME_URL,
   GATEWAY_VERSION,
@@ -50,12 +49,41 @@ export type GatewayRuntimeStatus = {
   last_error: string | null;
 };
 
+export type GatewayRuntimeCallResult = JsonRecord & {
+  content: unknown[];
+  structuredContent?: unknown;
+  isError?: boolean;
+};
+
 function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
 
 function isRecord(value: unknown): value is JsonRecord {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+/**
+ * MCP SDK task-capable callTool typings include result branches without a
+ * `content` array. The Gateway exposes an ordinary tool result to its client, so
+ * retain normal tool results verbatim and wrap any alternate backend result in
+ * structuredContent rather than leaking the SDK's large compatibility union
+ * through the Gateway type graph.
+ */
+function normalizeRuntimeCallResult(result: unknown): GatewayRuntimeCallResult {
+  if (isRecord(result) && Array.isArray(result.content)) {
+    return result as GatewayRuntimeCallResult;
+  }
+
+  return {
+    content: [
+      {
+        type: "text",
+        text: "BlockIT runtime returned a non-standard deferred tool result.",
+      },
+    ],
+    structuredContent: { runtime_result: result },
+  };
 }
 
 export class BlockitRuntimeBackend {
@@ -277,7 +305,7 @@ export class BlockitRuntimeBackend {
   async invokeCapability(
     capability: string,
     args: JsonRecord = {}
-  ): Promise<CallToolResult> {
+  ): Promise<GatewayRuntimeCallResult> {
     return this.runExclusive(async () => {
       await this.ensureCatalogUnsafe();
       const tool = this.catalog.get(capability);
@@ -291,10 +319,11 @@ export class BlockitRuntimeBackend {
       }
 
       try {
-        return await this.client!.callTool({
+        const result: unknown = await this.client!.callTool({
           name: capability,
           arguments: args,
         });
+        return normalizeRuntimeCallResult(result);
       } catch (error) {
         const classification = classifyInterruptedCall(tool);
         const message = errorMessage(error);
