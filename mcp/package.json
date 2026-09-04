@@ -12,6 +12,7 @@
     "typecheck": "tsc --noEmit",
     "typecheck:profile": "tsc --noEmit --extendedDiagnostics",
     "test": "bun test",
+    "gateway": "bun run ./gateway/index.ts",
     "measure:surface": "bun run ./scripts/measure-default-surface.ts",
     "measure:phases": "bun run ./scripts/measure-phase-surfaces.ts",
     "verify:repository": "bun test tests/repository/*.test.ts",
