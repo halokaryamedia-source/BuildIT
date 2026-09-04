@@ -86,7 +86,7 @@ manage_locator create       → name+parent; update → id+authored change
 manage_null_object create   → name+parent; update → id+parent/position
 ```
 
-Validation failure repairs args for the same capability.
+Validation failure repairs arguments for the **same capability**.
 
 ## Capability Discovery / Recovery
 
