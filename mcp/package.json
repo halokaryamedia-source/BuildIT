@@ -10,6 +10,7 @@
   "main": "dist/blockit_mcp.js",
   "scripts": {
     "typecheck": "tsc --noEmit",
+    "typecheck:gateway": "tsc -p gateway/tsconfig.json --noEmit",
     "typecheck:profile": "tsc --noEmit --extendedDiagnostics",
     "test": "bun test",
     "gateway": "bun run ./gateway/index.ts",
@@ -17,7 +18,7 @@
     "measure:phases": "bun run ./scripts/measure-phase-surfaces.ts",
     "verify:repository": "bun test tests/repository/*.test.ts",
     "verify:authoring": "bun test tests/authoring/*.test.ts",
-    "verify:mcp": "bun run typecheck && bun run test && bun run measure:surface && bun run measure:phases && bun run build && bun run docs:check",
+    "verify:mcp": "bun run typecheck && bun run typecheck:gateway && bun run test && bun run measure:surface && bun run measure:phases && bun run build && bun run docs:check",
     "verify:release": "bun run verify:mcp",
     "eval:tool-discovery": "bun run ./scripts/evaluate-tool-discovery.ts",
     "verify:stateless-local": "bun run ./scripts/verify-stateless-local.ts",

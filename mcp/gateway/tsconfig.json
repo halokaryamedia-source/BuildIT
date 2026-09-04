@@ -1,0 +1,11 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "outDir": "./dist",
+    "tsBuildInfoFile": "../.cache/gateway.tsbuildinfo",
+    "types": ["bun"]
+  },
+  "include": ["./**/*.ts"],
+  "exclude": ["./dist"]
+}
