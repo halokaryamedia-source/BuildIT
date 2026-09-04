@@ -35,6 +35,7 @@ Backend tools may still change. In this first foundation, the backend MCP tool n
 - Blockbench/plugin reload does not terminate the Gateway process.
 - Runtime health is checked before catalog-dependent operations.
 - A changed runtime build/profile/phase invalidates the cached backend catalog.
+- A successful `switch_authoring_phase` immediately drops only the Gateway's Runtime client/catalog; the Codex-facing stdio process remains alive and refreshes on the next capability request.
 - Gateway backend calls are serialized to avoid concurrent editor mutations.
 - `tools/call` is never automatically retried after a transport interruption.
 - An interrupted non-read-only operation returns `OUTCOME_UNKNOWN`; inspect model state before retrying.
@@ -76,4 +77,4 @@ Codex then owns the Gateway process lifecycle. Closing/reloading Blockbench does
 
 ## Current foundation boundary
 
-This first step proves the connection architecture, not the final domain facade. The next acceptance gate is one continuous Codex task surviving repeated BlockIT runtime rebuild/reload cycles with no Codex restart and no new chat. Only after that connection gate passes should broader stable domain tools such as Geometry/Texturing/Animation facades be promoted.
+Source/static contracts are ready, but the Gateway is not promoted to a live-proven canonical client boundary until one continuous Codex task survives repeated BlockIT runtime rebuild/reload and Blockbench close/open cycles with no Codex restart, new chat, or manual MCP reconnect. Only after that connection gate passes should broader stable domain tools such as Geometry/Texturing/Animation facades be promoted.

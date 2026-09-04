@@ -9,16 +9,17 @@ Do not copy every passing workflow run, test count, or historical proof snapshot
 ## Current Proof Boundary
 
 ```text
-BEDROCK CALLABLE CATALOG:        65 tools across phases
-DEFAULT CLIENT EXPOSURE:         MCP Core + Geometry (25 tools)
-KNOWN FULL MCP BASELINE:         PASS @ 5ecbf25608f8da879497e2f687854cb68781f3cd
-ACCEPTED LIVE BASELINE:          2026-08-12 Blockbench 5.1.6
-IMAGE REFERENCE ACTIVE ROUTE:    APPROVED IMAGE ONLY BY DEFAULT
-3D-ASSISTED ROUTE STATUS:         OPTIONAL / PARKED
+BEDROCK RUNTIME CALLABLE CATALOG: 51 tools across phases
+NATIVE RUNTIME DEFAULT EXPOSURE:  MCP Core + Geometry (25 tools)
+GATEWAY CLIENT SURFACE:           4 fixed tools — SOURCE/STATIC
+GATEWAY LIVE STABILITY:           PENDING — local Codex + Blockbench required
+KNOWN FULL MCP BASELINE:          PASS @ 5ecbf25608f8da879497e2f687854cb68781f3cd
+ACCEPTED LIVE BASELINE:           2026-08-12 Blockbench 5.1.6
+IMAGE REFERENCE ACTIVE ROUTE:     APPROVED IMAGE ONLY BY DEFAULT
+3D-ASSISTED ROUTE STATUS:          OPTIONAL / PARKED
 3D-ASSISTED ALIGNMENT FOUNDATION: SOURCE PREPARED — REFERENCE LOAD VERIFIED
-CURRENT 3D-ASSISTED LIVE RETEST: STOPPED AFTER EVIDENCE REFERENCE LOAD
-CURRENT MODEL-QUALITY CLAIM:     NONE — CUBE AUTHORING DEFERRED
-LOCAL SOURCE/RULE VERIFIER:      PASS @ Local HEAD (2026-09-04)
+CURRENT 3D-ASSISTED LIVE RETEST:  STOPPED AFTER EVIDENCE REFERENCE LOAD
+CURRENT MODEL-QUALITY CLAIM:      NONE — CUBE AUTHORING DEFERRED
 ```
 
 `KNOWN FULL MCP BASELINE` is the last deliberately retained full canonical executable/source baseline, not a claim that this file tracks the newest CI run. Current workflow status must be read from the exact current commit/run when it matters.
@@ -27,7 +28,7 @@ The Image Reference Route is the default object-agnostic workflow. 3D-Assisted E
 
 ## Current Agent-Contract Proof
 
-Current source defines:
+Current Runtime source defines:
 
 ```text
 MCP CORE + exactly one ACTIVE PHASE
@@ -36,13 +37,18 @@ GEOMETRY | TEXTURING | ANIMATION
 
 Static/current source contracts retain:
 
-- 51 callable Bedrock tools across phases;
-- default Core + Geometry exposure of 25 tools;
-- strict foreign-phase `HANDOFF_REQUIRED` behavior;
+- 51 callable Bedrock Runtime tools across phases;
+- default native Core + Geometry exposure of 25 tools;
+- a fixed four-tool Gateway client surface: `status`, `search_capabilities`, `describe_capability`, `invoke_capability`;
+- Gateway loopback-only Runtime routing, serialized backend calls, and no blind automatic mutation retry;
+- successful Gateway phase handoff invalidating only its Runtime connection/catalog while the client-facing stdio process remains alive;
+- strict foreign-phase `HANDOFF_REQUIRED` behavior in the native Runtime;
 - 3D-Assisted Evidence as transient Geometry-owned reference evidence rather than production geometry;
 - fail-closed targeting, mutation, export, and phase boundaries;
 - generated API/prompt ownership through canonical source + generator;
 - repository, authoring-policy, executable MCP, experimental runtime, and release verification as separate proof surfaces.
+
+These source/static contracts do **not** yet prove the real Codex-facing Gateway survives repeated Blockbench plugin reload, application close/open, or backend rebuild cycles. That remains the next live gate.
 
 3D-Assisted Evidence alignment planning has a pure source foundation for two deliberately separate operations:
 
@@ -95,9 +101,9 @@ For the selected 3D-Assisted workflow, local acceptance measures only whether th
 
 ## Evidence Limits
 
-Static source/CI evidence can prove the contracts it actually executes, such as schemas, routing, deterministic generated output, buildability, phase ownership, pinned reproducibility inputs, pure alignment math, and fail-closed source invariants.
+Static source/CI evidence can prove the contracts it actually executes, such as schemas, routing, deterministic generated output, buildability, phase ownership, Gateway surface invariants, pinned reproducibility inputs, pure alignment math, and fail-closed source invariants.
 
-It **cannot prove visual fidelity**, installed-plugin freshness, fresh client registry state, desktop GLB rendering, live Reference Model scale/origin behavior, live Blockbench Undo/playback/persistence, or model-quality improvement unless those surfaces actually ran.
+It **cannot prove visual fidelity**, installed-plugin freshness, the live Codex Gateway surviving editor restarts, desktop GLB rendering, live Reference Model scale/origin behavior, live Blockbench Undo/playback/persistence, or model-quality improvement unless those surfaces actually ran.
 
 The completed live boundary for 3D-Assisted Evidence is only:
 
