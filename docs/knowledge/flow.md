@@ -112,6 +112,8 @@ Codex uses current Blockbench state and internal `capture_model_views` when visu
 
 Do not send materially broken work to user review. Same material causal correction failing twice without new evidence → `BLOCKED`; request user direction.
 
+Persist project state at meaningful handoff/resume/park/completion boundaries; stage approval is the normal checkpoint trigger.
+
 ## 6. Geometry Strategies
 
 ### DIRECT

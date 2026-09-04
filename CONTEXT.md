@@ -78,7 +78,7 @@ Naturally movable structurally distinct parts remain meaningfully transformable 
 ## Texture vocabulary
 
 - **UV Layout** = geometry-to-atlas mapping.
-- **Texture Atlas** = bitmap/PNG canvas.
+- **Texture Atlas** = bitmap/PNG canvas that stores pixels.
 - **Texture Styling** = authored color/material/shading/detail.
 - **Texture Verify** = fresh atlas + mapped-model visual validation.
 

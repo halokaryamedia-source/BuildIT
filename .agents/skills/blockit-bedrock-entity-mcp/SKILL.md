@@ -15,14 +15,14 @@ animation/motion          → `blockit-bedrock-animation`
 
 ## Reference Grounding / Strategy Gate
 
-The **approved image** remains visual authority. Geometry Strategy is user-selected `DIRECT | 3D_ASSISTED`; never infer/default/auto-switch.
+Approved image = visual authority. User selects `DIRECT | 3D_ASSISTED`; never infer/default/auto-switch.
 
 ```text
 DIRECT      → normal Geometry
-3D_ASSISTED → Shape Reconstruction → PrimitiveAnything → Cuboid Scaffold → semantic Geometry cleanup
+3D_ASSISTED → Shape Reconstruction → PrimitiveAnything → Cuboid Scaffold → semantic cleanup
 ```
 
-3D-Assisted is one package; unavailable path → `BLOCKED`, never fallback.
+Unavailable 3D-Assisted → `BLOCKED`; never fallback.
 
 ## Fast Routing Contract
 
@@ -42,11 +42,10 @@ Known → invoke. Unknown/stale → `search_capabilities`; schema needed → `de
 Foreign phase → `HANDOFF_REQUIRED`: `target_phase`, `reason`, `readiness`, `resume_from`.
 
 ```text
-switch_authoring_phase through Gateway
-→ refresh Runtime catalog → load target specialist → continue same task/chat
+switch_authoring_phase through Gateway → refresh catalog → target specialist → same task/chat
 ```
 
-Forward handoff waits for explicit user approval + checkpoint. `HANDOFF_REQUIRED` stops prior-phase mutations only.
+Forward handoff waits for user approval + checkpoint.
 
 ## Authoring Stage Lock
 
@@ -82,7 +81,7 @@ Locator/Null create/edit       → manage_locator / manage_null_object
 rig IK/mirror                  → bone_rigging
 ```
 
-`bone_rigging` only for IK/mirror. Known coherent Cubes → one `manage_cubes(operation=create, elements=[...])`; uncertainty → no batch. Known Cubes sharing one deterministic TRANSLATE/RESIZE intent → derive absolute targets once from fresh state → one `manage_cubes(operation=batch_update)`. Never inspect→modify per Cube; writes stay absolute/fail-closed.
+`bone_rigging` only for IK/mirror. Known coherent Cubes → one `manage_cubes(operation=create, elements=[...])`; uncertainty → no batch. Known Cubes sharing one deterministic TRANSLATE/RESIZE intent → derive absolute targets once from fresh state → one `manage_cubes(operation=batch_update)`. Never loop inspect→modify per Cube; writes stay absolute/fail-closed.
 
 ## First-Call Invariants
 
@@ -98,13 +97,7 @@ Validation failure repairs arguments for the **same capability**.
 
 ## Capability Discovery / Recovery
 
-Capability discovery is **deferred spec loading after routing**, not a second router.
-
-```text
-known exact capability   → invoke directly
-unknown/stale capability → one precise search_capabilities query
-schema needed            → describe_capability once
-```
+Capability discovery is **deferred spec loading after routing**, not a second router. Known → invoke directly; unknown/stale → one precise `search_capabilities`; schema → `describe_capability` once.
 
 One precise search miss → reformulate once; second miss → `BLOCKED`. A known foreign-phase capability is never a discovery miss; hand off.
 
