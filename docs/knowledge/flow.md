@@ -13,8 +13,8 @@ PIN CURRENT AUTHORITY
 → PROOF CEILING
 → TASK CLASS
 
-REFERENCE PREPARATION → blockbench-reference-generator
-ASSET AUTHORING       → BlockIT Gateway → Reference Grounding → ACTIVE PHASE → active specialist only
+REFERENCE PREPARATION → ChatGPT image generation / review
+ASSET AUTHORING       → BlockIT Gateway → Geometry Strategy → ACTIVE PHASE → active specialist only
 REPOSITORY WORK       → Bounded | Standard | Complex → exact owner + nearest AGENTS.md
 LOCAL ACCEPTANCE      → formal procedure only when next-action.md explicitly reactivates it
 ```
@@ -23,49 +23,87 @@ Execution context describes available capability, not product/UI identity and no
 
 ## 2. Reference Preparation
 
+Reference-image generation belongs in **ChatGPT**, not normal Codex/BlockIT authoring. The repository keeps the reference-generation contract as specification/history, but Codex should consume the approved output rather than attempt to reproduce the image-generation stage.
+
 ```text
 SOURCE IMAGE + USER INTENT
-→ INTERNAL GENERATION BRIEF
+→ CHATGPT REFERENCE GENERATION
 → Minecraft-first geometry + texture target
-→ source-nearest orthographic anchor
-→ stable/readable pose
 → FIVE-PREVIEW COVERAGE BOARD
-   UPPER: SIDE | FRONT | BACK
-   LOWER: TOP / FOOTPRINT | FRONT-SIDE 3/4
-→ readiness
-→ EXECUTION CONSENT GATE — fresh instruction required
-→ one Draft
-→ visual gate
-→ at most one material correction
+→ USER REVIEW / CORRECTION
 → USER APPROVAL
 → ACTUAL APPROVED REFERENCE IMAGE + HANDOFF CONSTRAINTS
 ```
 
-The generator returns one image only. The approved image becomes visual authority for reference-driven authoring. Requested dimensions remain numeric authority. Reference preparation does **not** choose between separate authoring routes.
+The approved image becomes visual authority for reference-driven authoring. Requested dimensions remain numeric authority. Reference preparation does **not** choose an MCP phase or create a separate client route.
 
 ## 3. Reference-Grounded Authoring
 
-Normal authoring has one flow:
+Normal authoring has one downstream pipeline but **two Geometry entry strategies**:
 
 ```text
 APPROVED IMAGE + HANDOFF CONSTRAINTS
-+ OPTIONAL 3D EVIDENCE WHEN ALREADY AVAILABLE/USEFUL
-→ GEOMETRY
+→ choose Geometry strategy from subject form
+
+A. IMAGE-GUIDED GEOMETRY
+   simple / mostly cuboid / mechanically readable subject
+   → Geometry directly from approved image
+
+B. ORGANIC-COMPLEX GEOMETRY
+   organic humanoid/animal or similarly curved subject
+   with many rotations, bends, curved volumes, or non-cuboid form relationships
+   → approved image → shape GLB → PrimitiveAnything → Cuboid Scaffold
+   → normal semantic Geometry cleanup/refinement
+
+BOTH
+→ GEOMETRY PASS
 → TEXTURING
 → ANIMATION when required
 → FINALIZE / EXPORT
 ```
 
-Authority is fixed:
+### 3.0 Geometry strategy rule
+
+`complex` in this authoring decision means **organic-form complexity**, not simply many parts or a high Cube count.
+
+Typical **Organic-Complex** indicators:
+
+- humanoid or animal body plan;
+- many rotated masses or articulated segments;
+- bends/curves that are difficult to approximate cleanly from flat image evidence alone;
+- organic transitions between major volumes;
+- irregular silhouette where a direct cuboid blockout would require substantial spatial guessing.
+
+Typical **Image-Guided** indicators:
+
+- architecture, furniture, machinery, props, lifts, boxes, panels, vehicles, or other mechanically readable forms;
+- primarily cuboid/planar/stepped construction;
+- many parts are allowed when their spatial relationships remain clear and directly buildable.
+
+Do **not** classify an object as Organic-Complex merely because it has many parts. A complex-looking mechanical object can still use Image-Guided Geometry when its construction is explicit. Conversely, a relatively simple-looking animal/humanoid can use Organic-Complex Geometry when its pose/form depends on many rotations, bends, and organic volume relationships.
+
+Current selection intent:
+
+```text
+mechanical / cuboid-readable
+→ IMAGE-GUIDED
+
+organic humanoid / animal
++ many rotations / bends / curved relationships
+→ ORGANIC-COMPLEX
+```
+
+This decision selects the **Geometry starting strategy only**. It does not create another Gateway, profile, authoring phase, Texturing path, Animation path, or export path.
+
+Authority remains fixed in either strategy:
 
 ```text
 approved image       → visual authority
 requested dimensions → numeric envelope authority
-optional 3D Evidence → supporting depth/volume/attachment/hidden-side evidence
-raw GLB bounds       → observation only
+shape GLB            → intermediate 3D shape evidence for Organic-Complex Geometry
+PrimitiveAnything    → intermediate primitive decomposition
+Cuboid Scaffold      → editable starting geometry, not final production authority
 ```
-
-Optional 3D Evidence is **not a second route**, is Geometry-only, and never becomes production geometry. Hunyuan, PrimitiveAnything, manual GLB preparation, or another future provider belongs to the evidence-production/research layer, not the normal authoring mental model.
 
 For persistent work:
 
@@ -78,16 +116,17 @@ user names/continues project
 
 ### 3.1 Geometry
 
-Geometry owns shape, hierarchy, rig, Locator/Null mutation, UV Layout, and optional 3D Evidence lifecycle.
+Geometry owns shape, hierarchy, rig, Locator/Null mutation, UV Layout, and Organic-Complex scaffold cleanup/refinement.
 
 Construction representations are examples, **not presets**. Decide transform ownership before coordinates. Form/contact/articulation-defining Groups/Pivots may belong in the **PRIMARY BLOCKOUT**; neutral organization stays downstream.
 
-Normal image-grounded path:
+#### Strategy A — Image-Guided Geometry
 
 ```text
-identity + requested envelope + primary masses
+approved image + requested envelope
+→ identity + primary masses
 → construction + transform ownership
-→ REQUIRED PRIMARY GROUPS/PIVOTS only where form/contact/articulation needs them
+→ REQUIRED PRIMARY GROUPS/PIVOTS where form/contact/articulation needs them
 → coherent PRIMARY BLOCKOUT
 → complete primary + identity-weighted secondary geometry
 → canonical model views
@@ -96,21 +135,26 @@ identity + requested envelope + primary masses
 → smallest causal correction when needed
 ```
 
-Minor drift uses one consistent Minecraft interpretation; unresolved **material conflict** blocks rather than being averaged into invented geometry.
+#### Strategy B — Organic-Complex Geometry
 
-Optional 3D Evidence path is only an evidence branch inside the same Geometry phase:
+The intended high-level path is:
 
 ```text
-approved image + approved clean GLB
-→ manage_geometry_reference(load)
-→ align evidence to requested envelope using uniform scale only
-→ fresh aligned evidence
-→ use only supported 3D relationships
-→ normal semantic Groups/Cubes
-→ remove transient reference before production export
+approved image
+→ generate/approve shape GLB
+→ PrimitiveAnything decomposition
+→ convert accepted primitive decomposition into Cuboid Scaffold
+→ load/materialize scaffold as native editable Blockbench Groups/Cubes
+→ keep approved image as visual authority
+→ semantic cleanup / merge / remove / resize / rotate / reparent / rename as needed
+→ build production hierarchy
+→ reference comparison
+→ GEOMETRY PASS
 ```
 
-Exact GLB generation, fixture preparation, provenance, and alignment procedure live in `Experimental/three-d-assisted-hunyuan-poc/README.md`; normal flow does not duplicate them.
+The GLB and PrimitiveAnything output are **intermediate geometry aids**. Neither replaces modelling judgement. The Cuboid Scaffold is not final geometry and may be materially simplified or corrected when the approved image demands it.
+
+Until the PrimitiveAnything production bridge is promoted from Experimental, its exact generation/conversion procedure remains owned by `Experimental/primitiveanything-poc/README.md` and related experimental source.
 
 Geometry efficiency rules:
 
@@ -123,7 +167,7 @@ add secondary detail only when identity-weighted and useful to silhouette/contac
 visual correction starts from the first observed wrong owner
 ```
 
-Geometry `PASS` is the shared convergence point whether optional 3D Evidence was used or not.
+Geometry `PASS` is the shared convergence point for both Geometry strategies.
 
 ### 3.2 UV Layout / Texturing
 
@@ -202,7 +246,7 @@ foreign-phase need
 After Texture PASS and optional Animation PASS:
 
 ```text
-remove transient optional 3D Evidence
+remove transient geometry evidence when applicable
 → validate Bedrock structure/references
 → save final .bbmodel
 → final visual gate
@@ -269,33 +313,23 @@ Do not create duplicate route systems, authoring profiles, roadmap/review indexe
 
 ## 7. Practical Usage Flow
 
-This is the developer/user mental model for normal BlockIT authoring. The client should think about **intent and phase**, not the native Runtime tool catalog.
+This is the developer/user mental model for normal BlockIT authoring. The client should think about **intent, Geometry strategy, and phase**, not the native Runtime tool catalog.
 
 ### 7.1 Start an asset task
 
-If an approved reference already exists:
-
-```text
-USER REQUEST + APPROVED IMAGE + DIMENSIONS/CONSTRAINTS
-→ AI client stays connected to BlockIT Gateway
-→ Geometry is the default authoring phase
-→ use the active specialist
-→ execute the smallest exact capability needed
-→ verify the phase result
-→ hand off only when the next phase is ready
-```
-
-If the reference does not exist yet:
-
 ```text
 USER REQUEST
-→ Reference Preparation
-→ USER APPROVAL
-→ approved image becomes visual authority
-→ start normal authoring at Geometry
+→ approved reference exists?
+   NO  → generate/approve it in ChatGPT
+   YES → continue
+→ classify Geometry strategy
+   mechanical/cuboid-readable → Image-Guided
+   organic humanoid/animal with many rotations/bends/curves → Organic-Complex
+→ Geometry
+→ Texturing
+→ Animation if required
+→ Finalization
 ```
-
-If optional 3D Evidence does not already exist or is not materially useful, skip it entirely. Do not generate 3D merely because the feature exists.
 
 Static asset:
 
@@ -341,7 +375,7 @@ known intent + unknown/stale capability
 → invoke_capability
 ```
 
-Do not turn `search_capabilities` into a second router. Phase/specialist ownership decides the route first; discovery only loads missing capability information afterward.
+Do not turn `search_capabilities` into a second router. Geometry strategy and phase/specialist ownership decide the route first; discovery only loads missing capability information afterward.
 
 ### 7.3 Phase changes during the same task
 
@@ -398,7 +432,7 @@ The safest rule is:
 
 > **Expand Runtime capability behind the existing Gateway/phase model before expanding architecture.**
 
-A new tool, schema, provider, or experiment should not automatically create a new route, profile, phase, or client-facing Gateway tool.
+A new tool, schema, provider, scaffold generator, or experiment should not automatically create a new Gateway, profile, or authoring phase. A materially different Geometry preparation method may become a Geometry strategy only when it still converges into the same Geometry ownership and downstream pipeline.
 
 Use `docs/knowledge/implementation-map.md` for the exact current source owner of each boundary.
 
@@ -411,7 +445,7 @@ NEW CAPABILITY
 → What user intent does it satisfy?
 → Which existing owner is responsible?
    shared lifecycle/read/recovery → Core
-   geometry/rig/UV/evidence       → Geometry
+   geometry/rig/UV/scaffold       → Geometry
    texture/PBR/Painter            → Texturing
    motion/keyframes/controllers   → Animation
 → Which routing tier?
@@ -419,188 +453,47 @@ NEW CAPABILITY
    conditional valid operation    → SUPPORT
    explicit research/evidence     → EXPERIMENTAL
    debug/legacy fallback          → MAINTENANCE
-→ implement in the existing Runtime owner
-→ classify it in the existing phase model
-→ expose it through Gateway discovery/invocation
-→ update only the specialist guidance that needs to know it
-→ add/update regression coverage
 ```
 
-Important rules:
+Then implement behind the existing Gateway. Do not add a fifth Gateway tool merely because Runtime gained one capability.
 
-1. **Do not add a fifth Gateway tool** just because a new Runtime capability exists. The Gateway remains `status`, `search_capabilities`, `describe_capability`, `invoke_capability`.
-2. **Do not create a new authoring profile** for a normal capability. The internal `extended` identifier is compatibility/debug only.
-3. **Do not create a new phase** when the capability clearly belongs to Geometry, Texturing, Animation, or Core.
-4. New capabilities default conceptually to **Support** unless there is a clear reason they belong on the normal hot path.
-5. Promote to **Primary** only when the capability is a normal canonical operation that should rank highly during routine authoring.
-6. Use **Experimental** for opt-in evidence/research behavior, not merely because a tool is new.
-7. Use **Maintenance** for generic UI/debug/legacy fallback behavior; maintenance must never outrank authored BlockIT operations.
+### 8.2 Adding or changing Geometry preparation
 
-Current implementation boundaries:
+Ask first:
 
 ```text
-phase ownership/classification → mcp/lib/authoringPhase.ts
-Gateway tier/ranking           → mcp/gateway/contract.ts
-exact Runtime operation        → existing owner under mcp/server/tools/ or mcp/server/tools.ts
-specialist decision guidance   → .agents/skills/<active specialist>/SKILL.md
-source/regression lookup       → docs/knowledge/implementation-map.md
+Does this change how Geometry is initially inferred/built,
+while still converging into normal native Groups/Cubes?
+
+YES → it may be a Geometry strategy/experimental scaffold path
+NO  → keep it as a normal Geometry capability or support tool
 ```
 
-### 8.2 Changing a capability schema
-
-If the user-facing semantic operation is still the same, keep the same capability name.
+Current strategies:
 
 ```text
-same semantic capability
-→ evolve input/output schema
-→ update description when needed
-→ update executor + tests
-→ let describe_capability expose the current schema
+Image-Guided
+Organic-Complex: approved image → GLB → PrimitiveAnything → Cuboid Scaffold
 ```
 
-Do **not** create `tool_v2`, a second profile, or another authoring route only because the schema changed.
+Do not create provider-specific authoring routes such as `Hunyuan Route` or `PrimitiveAnything Phase`. Providers and converters belong inside the Organic-Complex Geometry strategy.
 
-A new capability name is justified when the semantic operation/ownership is materially different, not merely because parameters changed.
+### 8.3 Renaming/changing/removing a capability
 
-### 8.3 Renaming a capability
+Treat a rename/schema change as one contract migration across the Runtime registration, phase owner, Gateway tier when explicit, specialist skill, tests, and generated docs. Do not preserve two canonical names indefinitely without a real compatibility requirement.
 
-Treat rename as a contract migration, not a text-only cleanup.
+When removing a capability, first decide whether its user intent still exists. If yes, provide the authored replacement before removal. Do not silently route normal work through generic UI/eval fallbacks.
+
+### 8.4 Before introducing a new architecture concept
+
+Ask:
 
 ```text
-rename Runtime capability
-→ update registration/executor owner
-→ update phase classification
-→ update Gateway tier classification when explicitly tiered
-→ update specialist routing references
-→ update regression tests
-→ update generated/reference docs through the normal build path
-→ remove stale canonical name
+Can this requirement be represented by:
+Gateway
++ existing Geometry strategy
++ Core / Geometry / Texturing / Animation
++ capability tier?
 ```
 
-Keep a compatibility alias only when there is a proven compatibility requirement. Do not permanently keep two names for the same normal operation because it makes discovery and agent choice worse.
-
-### 8.4 Removing a capability
-
-Before deletion, answer:
-
-```text
-Does a supported user intent still depend on this capability?
-```
-
-If **no**:
-
-```text
-remove implementation
-→ remove registration/phase exposure
-→ remove specialist routing references
-→ remove/update tests and generated docs
-```
-
-If **yes**, replace the missing semantic operation with an authored capability before removing the old one.
-
-Never silently replace a removed real capability with `trigger_action`, `emulate_clicks`, `fill_dialog`, or `risky_eval` in normal authoring.
-
-### 8.5 Moving a capability between phases
-
-Move a capability only when its semantic owner changes.
-
-Examples:
-
-```text
-Cube/Group/rig/UV mutation     → Geometry
-Texture Atlas/Painter/PBR      → Texturing
-keyframe/timeline/controller   → Animation
-shared read/recovery/lifecycle → Core when genuinely cross-phase
-```
-
-Do not make a mutation Core merely to avoid a phase handoff. Phase boundaries exist to keep the authoring surface legible.
-
-If a capability changes owner, update `mcp/lib/authoringPhase.ts`, specialist guidance, readiness/handoff behavior, and regression coverage together.
-
-### 8.6 Adding another 3D/reference provider
-
-A provider is not an authoring phase.
-
-Correct model:
-
-```text
-Hunyuan / PrimitiveAnything / future provider / manual GLB
-→ evidence-production or research layer
-→ optional clean evidence artifact
-→ Geometry consumes it through manage_geometry_reference when useful
-→ normal Geometry production remains semantic Groups/Cubes
-```
-
-Do not create:
-
-```text
-Hunyuan Profile
-PrimitiveAnything Profile
-3D-Assisted Authoring Phase
-Provider-specific Gateway tools
-```
-
-unless a future, repeatedly proven product requirement demonstrates that the existing evidence boundary cannot represent the need.
-
-### 8.7 When architecture expansion is justified
-
-Before introducing a new phase, route, profile, Gateway tool, persistent state system, or abstraction layer, require a concrete capability gap that cannot fit the current model.
-
-Valid reason:
-
-```text
-repeated real user intent
-+ cannot be represented safely in Core/Geometry/Texturing/Animation
-+ existing Gateway invocation cannot express the operation
-+ capability loss or reliability problem is demonstrated
-```
-
-Invalid reasons:
-
-```text
-tool count feels large
-one experiment has a different provider
-one schema became more complex
-one capability was renamed
-a direct Runtime tools/list changed
-an implementation file is large
-```
-
-## 9. Development Guardrails Checklist
-
-Before finishing a capability change, check these questions:
-
-```text
-[ ] Does normal authoring still read as one flow:
-    approved image + optional 3D Evidence → Geometry → Texturing → optional Animation?
-
-[ ] Is the AI client boundary still the four-tool Gateway?
-
-[ ] Does the changed capability have one clear owner:
-    Core, Geometry, Texturing, or Animation?
-
-[ ] Is its tier intentional:
-    Primary, Support, Experimental, or Maintenance?
-
-[ ] Can a known capability still be invoked directly without mandatory search?
-
-[ ] Does foreign-phase work use HANDOFF_REQUIRED + switch_authoring_phase
-    instead of borrowing mutation tools?
-
-[ ] Did schema-only evolution keep the same semantic capability name?
-
-[ ] Did rename/remove work delete stale canonical references rather than
-    leaving duplicate normal tools indefinitely?
-
-[ ] Did no provider/research feature leak into a new normal authoring route/profile?
-
-[ ] Did no normal instruction reintroduce MCP reconnect/new-chat as a phase step?
-
-[ ] Are generic UI/eval fallbacks still debug/maintenance only?
-
-[ ] Are capability counts being treated as observations, not optimization targets?
-
-[ ] Did the exact source owner + regression owner get updated together?
-```
-
-If the answer to one of the architectural questions is **no**, stop before adding another abstraction. First determine whether the problem is actually a missing Runtime capability, a phase-ownership mistake, a Gateway ranking issue, or only stale documentation.
+If yes, do not add a new route/profile/phase/client boundary. Architecture expansion requires a repeated evidenced requirement that cannot be expressed by the existing model.
