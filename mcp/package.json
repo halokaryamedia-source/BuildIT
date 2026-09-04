@@ -2,10 +2,15 @@
   "name": "blockit-bedrock-entity-mcp",
   "version": "0.1.0",
   "description": "Minecraft Bedrock Entity-focused MCP server plugin for Blockbench",
-  "keywords": ["Blockbench", "MCP"],
+  "keywords": [
+    "Blockbench",
+    "MCP"
+  ],
   "license": "GPL-3.0-only",
   "author": "Halo Karya Media",
-  "contributors": ["Jason J. Gardner"],
+  "contributors": [
+    "Jason J. Gardner"
+  ],
   "type": "module",
   "main": "dist/blockit_mcp.js",
   "scripts": {
@@ -26,6 +31,7 @@
     "verify:texturing-live": "bun run ./scripts/verify-texturing-live.ts",
     "verify:animation-live": "bun run ./scripts/verify-animation-live.ts",
     "deploy:local": "bun run build && bun run ./scripts/deploy-local.ts",
+    "three-d-assisted:run": "bun run ./scripts/three-d-assisted-run.ts",
     "three-d-assisted:prepare": "bun run ./scripts/three-d-assisted-fixture.ts prepare",
     "three-d-assisted:package": "bun run ./scripts/three-d-assisted-fixture.ts package",
     "prompts:build": "bun run ./build/generate-manifest.ts",

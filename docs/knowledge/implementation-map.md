@@ -24,7 +24,7 @@ Current `Local` source/ownership only. This map contains **no active task status
 | architecture/redesign contract | `.agents/skills/development-brief/` |
 | MCP public/schema/result/transport | `.agents/skills/mcp-server-development/` |
 | Blockbench API/lifecycle/UI/Undo | `.agents/skills/blockbench-runtime-development/` |
-| MCP TypeScript/Bun implementation mechanics | `mcp/AGENTS.md` + exact affected source/build owner |
+| MCP TypeScript/Bun mechanics | `mcp/AGENTS.md` + exact source/build owner |
 
 ## Canonical Authoring Taxonomy
 
@@ -50,25 +50,32 @@ CAPABILITY TIER — internal only
   PRIMARY | SUPPORT | EXPERIMENTAL | MAINTENANCE
 ```
 
-There is no automatic strategy classifier. Object category, complexity, available GLB, or failed modelling never changes strategy without explicit user choice.
+There is no automatic strategy classifier. Object category, complexity, generated GLB, or failed modelling never changes strategy without explicit user choice.
 
-## Source Areas
+## MCP Source Areas
 
 ```text
 mcp/gateway/                   stable client boundary + Runtime adapter
 mcp/index.ts                   plugin lifecycle
 mcp/server/                    Runtime transport/resources/prompts
-mcp/server/tools/              authored operations
-mcp/lib/                       schemas/factories/runtime helpers
+mcp/server/tools/              authored public operations
+mcp/server/threeDAssistedMaterializer.ts
+                               internal atomic 3D-Assisted Blockbench materializer engine
+mcp/lib/threeDAssistedProduction.ts
+                               canonical external state/decomposition/materialization-plan schemas
+mcp/lib/                       other schemas/factories/runtime helpers
 mcp/lib/authoringPhase.ts      Core/phase classification + handoff contract
 mcp/lib/registrationProfile.ts internal Runtime compatibility
 mcp/ui/                        Blockbench panel/settings
 mcp/prompts/                   canonical workflow + generated manifest
 mcp/build/                     build/docs/manifest generation + developer watch policy
-mcp/scripts/                   verification/measurement/preparation/local-deploy utilities
+mcp/scripts/three-d-assisted-run.ts
+                               production external 3D-Assisted orchestrator
+mcp/scripts/three-d-assisted/  deterministic reference extraction + operator contract
+mcp/scripts/                   other verification/measurement/deploy utilities
 mcp/tests/                     contract/integration regressions
 mcp/docs/                      generated API docs; secondary to source
-Experimental/                  bounded research only
+Experimental/                  pinned external implementation backends/research
 ```
 
 Developer-loop owner remains: **developer loop: `dev:watch`, prompt watch regeneration, `deploy:local`** → `mcp/build/`, `mcp/scripts/` with regression `mcp/tests/developer-loop.test.ts`.
@@ -79,44 +86,28 @@ Developer-loop owner remains: **developer loop: `dev:watch`, prompt watch regene
 
 Current production path uses normal Geometry specialists + Runtime capabilities.
 
-### 3D_ASSISTED — target production contract
+### 3D_ASSISTED
 
 ```text
 Approved Board
 → deterministic LEFT/FRONT/BACK extraction
-→ Shape Reconstruction
+→ Hunyuan3D v1 Shape Reconstruction
 → Shape GLB Gate
 → PrimitiveAnything
 → Primitive Decomposition Gate
-→ dedicated atomic Cuboid Materialization
+→ atomic Cuboid Materialization
 → Cuboid Materialization Gate
 → Semantic Geometry Cleanup
 → final Geometry internal verify
 ```
 
-Execution boundary:
+External production owner is `mcp/scripts/three-d-assisted-run.ts`. It consumes only an absolute Active Workspace, persists accepted artifacts under `workspace/active/<asset>/3d-assisted/`, is resumable from validated hashes, and stops for explicit Shape/Decomposition gates. Hunyuan/PrimitiveAnything scripts remain pinned implementation backends under `Experimental/`; do not add a provider router until a second real implementation is required.
 
-```text
-extraction + Shape Reconstruction + PrimitiveAnything → external local tooling controlled by Codex
-Cuboid materialization + semantic production cleanup  → Geometry Runtime / Blockbench
-```
+Canonical state/data semantics are owned by `mcp/lib/threeDAssistedProduction.ts`. Canonical persistent files are `state.json`, `shape.glb`, and `primitive-decomposition.json`; candidates/previews stay in `.cache/`.
 
-Architecture term = `Shape Reconstruction`; Hunyuan3D is the single v1 implementation. Do not create provider router/interface until another implementation is actually required.
+Blockbench conversion engine is `mcp/server/threeDAssistedMaterializer.ts`: Active Workspace only, strict schema/provenance/hash/dimension validation, full preflight before mutation, one native Undo transaction, one temporary `pa_<id>` Group/Bone + Cube per accepted primitive, rollback on exception.
 
-Canonical 3D-Assisted workspace:
-
-```text
-workspace/active/<asset>/3d-assisted/
-├─ state.json
-├─ shape.glb
-└─ primitive-decomposition.json
-```
-
-Target external orchestrator: one thin resumable normal-use entrypoint; current `Experimental/three-d-assisted-hunyuan-poc/` + `Experimental/primitiveanything-poc/` remain research/implementation evidence only.
-
-Target scaffold materializer: one dedicated Geometry Runtime capability behind the existing Gateway; Active Workspace path only, canonical state/hash validation, one atomic Undo transaction, one temporary Group/Bone + Cube per primitive. Do not revive `from_geo_json` or accept arbitrary primitive arrays.
-
-**Current status:** orchestrator/state contract and dedicated production materializer are design-locked but not yet production-implemented/promoted.
+**Public materializer ToolSpec binding is the narrow LOCAL_CODE handoff.** It must expose the existing engine as one Geometry Runtime capability accepting only `workspace_path`, keep the Gateway at four tools, and use canonical `docs:build`/`docs:check` before completion. Do not hand-edit generated API docs and do not revive `from_geo_json`.
 
 ## Phase / Approval Ownership
 
@@ -127,7 +118,7 @@ Texturing  Texture Atlas/Painter/PBR/materials/Texture Verify
 Animation  motion/keyframes/effects/controllers
 ```
 
-Internal stage PASS means ready for user review, not approval. Normal forward phase handoff waits for explicit user approval + checkpoint save. Reopen upstream only for a material owner defect and invalidate only materially dependent downstream approvals.
+Internal stage PASS means ready for user review, not approval. Forward handoff waits for explicit user approval + checkpoint. Reopen upstream only for a material owner defect and invalidate only materially dependent downstream approvals.
 
 ## Gateway / Runtime Boundary
 
@@ -140,9 +131,7 @@ describe_capability
 invoke_capability
 ```
 
-Current Runtime callable union is **51 tools**; current native phase surfaces remain Geometry 25, Texturing 35, Animation 19 until executable source deliberately changes. Generated API inventory contains **77 declared source ToolSpecs**, including disabled/source-preserved definitions; that is not the active client surface.
-
-A future scaffold materializer is a Geometry Runtime capability behind the existing Gateway, not a fifth Gateway tool.
+Current Runtime callable union is **51 tools**; current native phase surfaces remain Geometry 25, Texturing 35, Animation 19 until the local public materializer binding deliberately changes Geometry/union counts. Generated API inventory includes disabled/source-preserved ToolSpecs and is not the active client surface. A materializer is a Runtime capability behind the existing Gateway, never a fifth Gateway tool.
 
 ## Hot-Path Defect Index
 
@@ -150,6 +139,7 @@ A future scaffold materializer is a Geometry Runtime capability behind the exist
 |---|---|---|
 | Gateway stable surface / ranking | `mcp/gateway/contract.ts`, `mcp/gateway/backend.ts` | `mcp/tests/gateway-contract.test.ts` |
 | phase exposure / `HANDOFF_REQUIRED` | `mcp/lib/authoringPhase.ts`, active Skills | `mcp/tests/authoring-phase-surface.test.ts` |
+| developer loop | `mcp/build/`, `mcp/scripts/` | `mcp/tests/developer-loop.test.ts` |
 | `create_project` | `mcp/server/tools/project.ts` | `mcp/tests/p1-core-ownership.test.ts` |
 | `inspect_model_bounds` | `mcp/server/tools/project.ts` | `mcp/tests/rendered-model-bounds-numeric-safety.test.ts` |
 | `manage_geometry_reference` | `mcp/server/tools/project.ts` | `mcp/tests/geometry-reference-contract.test.ts` |
@@ -159,8 +149,8 @@ A future scaffold materializer is a Geometry Runtime capability behind the exist
 | `manage_locator`, `manage_null_object` | `mcp/server/tools/locators.ts` | `mcp/tests/bedrock-locator-coverage.test.ts` |
 | `manage_animation_controller` | `mcp/server/tools/animation-controller.ts` | `mcp/tests/animation-controller-mutation-contract.test.ts` |
 | `export_model` | `mcp/server/tools/export.ts` | `mcp/tests/prelocal-generic-semantics.test.ts` |
-| future 3D-Assisted orchestrator | production owner not yet created; current `Experimental/` | new static + later local proof |
-| future scaffold materializer | Geometry Runtime owner not yet created | new targeted contract + live Undo proof |
+| external 3D-Assisted state/orchestration | `mcp/lib/threeDAssistedProduction.ts`, `mcp/scripts/three-d-assisted-run.ts` | `mcp/tests/three-d-assisted-production-contract.test.ts` |
+| atomic scaffold materializer engine | `mcp/server/threeDAssistedMaterializer.ts` | `mcp/tests/three-d-assisted-production-contract.test.ts` + later live Undo proof |
 
 ## Protected Capability Map
 
@@ -182,6 +172,4 @@ Locator/Null is available through `manage_locator` / `manage_null_object`; mater
 
 **Authoring Quality** = accepted result quality. **Authoring Efficiency** = Cost to Accepted Result. **Static Footprint** = instruction/schema/surface guardrail only.
 
-**Static Footprint cannot upgrade** Authoring Efficiency or visual-quality claims. Smaller tool/skill/schema size is not improvement when work is displaced or accepted quality regresses.
-
-Design/source/static proof cannot establish external GPU quality, PrimitiveAnything scaffold quality, atomic materializer Undo behavior, live Gateway lifecycle, or final visual fidelity.
+**Static Footprint cannot upgrade** Authoring Efficiency or visual-quality claims. Source/static proof cannot establish external GPU quality, PrimitiveAnything quality, installed Gateway lifecycle, native materializer Undo behavior, or final visual fidelity.

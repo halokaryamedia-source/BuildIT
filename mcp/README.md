@@ -60,18 +60,39 @@ Approved Reference + Dimensions + Requirements
 
 `DIRECT` uses normal reference-guided Geometry.
 
-`3D_ASSISTED` is one target package:
+`3D_ASSISTED` is one package:
 
 ```text
-Shape Reconstruction (Hunyuan3D v1)
+deterministic LEFT/FRONT/BACK extraction
+→ Shape Reconstruction (Hunyuan3D v1)
 → Shape GLB Gate
 → PrimitiveAnything
 → Primitive Decomposition Gate
-→ dedicated atomic Cuboid Materialization
+→ atomic Cuboid Materialization
 → Semantic Geometry Cleanup
 ```
 
-The approved image remains visual authority; requested dimensions remain numeric authority. `manage_geometry_reference` may support comparison inside 3D-Assisted Geometry, but it is not a separate user-facing route and never becomes production geometry.
+Approved image remains visual authority; requested dimensions remain numeric authority. `manage_geometry_reference` may support comparison inside 3D-Assisted Geometry, but it is not a separate user-facing route and never becomes production geometry.
+
+### 3D-Assisted external CLI
+
+The production external owner is `scripts/three-d-assisted-run.ts`:
+
+```bash
+bun run three-d-assisted:run -- status --workspace /absolute/workspace/active/<asset>
+bun run three-d-assisted:run -- run --workspace /absolute/workspace/active/<asset>
+```
+
+The Active Workspace README must contain:
+
+```text
+Geometry Strategy: 3D_ASSISTED
+Requested Dimensions: width=<n> height=<n> length=<n> blocks
+```
+
+`run` is resumable and stops at `AWAITING_SHAPE_GATE` and `AWAITING_DECOMPOSITION_GATE`; acceptance/rejection is explicit via `accept-shape|reject-shape|accept-decomposition|reject-decomposition`. Only passed artifacts become canonical `shape.glb` / `primitive-decomposition.json`; candidate evidence remains in `.cache/`.
+
+`server/threeDAssistedMaterializer.ts` contains the fail-closed native materializer engine. Its **public Geometry ToolSpec binding is intentionally LOCAL_CODE work** because generated MCP API docs must come from the canonical generator. Bind the engine as one Runtime capability accepting only `workspace_path`, keep the Gateway at four tools, then run `bun run docs:build`, `bun run docs:check`, and `bun run verify:mcp` before live proof. Generated API docs must never be hand-edited.
 
 ## Current Runtime Surface
 
@@ -83,7 +104,7 @@ Texturing                    35 exposed tools
 Animation                    19 exposed tools
 ```
 
-Foreign-phase work returns `HANDOFF_REQUIRED`; phase switching is invoked through Gateway and continues the same task/chat without normal MCP reconnect or new chat.
+These counts remain current until the local materializer ToolSpec is deliberately registered. Foreign-phase work returns `HANDOFF_REQUIRED`; phase switching is invoked through Gateway and continues the same task/chat without normal MCP reconnect or new chat.
 
 ## Capability Priority
 
@@ -154,19 +175,19 @@ Texturing specialist guidance       < 4,500 characters
 
 Normal authoring includes Cube/Group authoring, hierarchy/rig/pivots, Locator/Null lifecycle, canonical capture, Texture Atlas/Painter/PBR/material instances, animation/timeline/effects/controllers, Undo/history, `.bbmodel` persistence, Bedrock geometry export, and phase control.
 
-3D-Assisted external orchestration and the dedicated production scaffold materializer remain implementation work tracked in `../docs/knowledge/next-action.md`.
+3D-Assisted source now includes the resumable external orchestrator, strict state/decomposition contracts, and internal atomic materializer engine. Remaining implementation is the thin public materializer ToolSpec binding + generated docs in LOCAL_CODE, followed by local/live proof.
 
 ## Source Layout
 
 ```text
 gateway/      stable client boundary + Runtime adapter
 index.ts      Blockbench plugin entry/lifecycle
-server/       Runtime transport/tools/resources/prompts
-lib/          schemas/factories/runtime helpers
+server/       Runtime transport/tools/resources/prompts + materializer engine
+lib/          schemas/factories/runtime helpers + 3D-Assisted contracts
 ui/           Blockbench panel/settings
 prompts/      canonical runtime workflow + generated manifest
 build/        build/docs/manifest tooling
-scripts/      verification/measurement/local-deploy utilities
+scripts/      verification/deploy + production 3D-Assisted orchestration
 tests/        contract/integration regressions
 docs/         generated Runtime API documentation
 ```
