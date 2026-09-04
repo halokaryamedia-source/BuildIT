@@ -7,7 +7,7 @@ Working branch: **`Local` only**. Continuation only; stable facts → `CONTEXT.m
 ## Current Status
 
 ```text
-BLOCKIT GATEWAY: SOURCE/STATIC FOUNDATION READY
+BLOCKIT GATEWAY: SOURCE_READY
 LIVE GATEWAY PROOF: PENDING — requires local Codex + Blockbench
 IMAGE REFERENCE ROUTE: PAUSED UNTIL CONNECTION GATE PASSES
 3D-ASSISTED ROUTE: PARKED
