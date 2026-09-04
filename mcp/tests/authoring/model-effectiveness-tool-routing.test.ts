@@ -33,11 +33,12 @@ describe("model creation effectiveness — tool routing", () => {
       source("../.agents/skills/blockit-bedrock-texturing/SKILL.md"),
     ]);
     const normalizedAnimation = animation.toLowerCase().replaceAll("`", "");
+    const normalizedTexturing = texturing.toLowerCase();
 
     expect(normalizedAnimation).toContain("reuse fresh uuid/state");
     expect(normalizedAnimation).toContain("must not fall back to broad hierarchy discovery or confirmation reads");
-    expect(texturing.toLowerCase()).toContain("reuse fresh state");
-    expect(texturing).toContain("do not re-list/re-read it only for confirmation");
+    expect(normalizedTexturing).toContain("reuse fresh state");
+    expect(normalizedTexturing).toContain("do not re-list/re-read it only for confirmation");
     expect(texturing).toContain("Pin atlas UUID and pass `texture_id` when multiple textures are loaded");
   });
 

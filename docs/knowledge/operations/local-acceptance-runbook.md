@@ -190,7 +190,7 @@ NECESSARY | AVOIDABLE | CONTRACT_CAUSED | REASONING_CAUSED | RECOVERY
 IMPROVED | UNCHANGED | REGRESSED
 ```
 
-Quality must stay accepted while **Cost to Accepted Result** decreases. Do not invent token/latency numbers.
+Quality must stay accepted while Cost to Accepted Result decreases. Do not invent token/latency numbers.
 
 ## 9. Failure / Completion
 

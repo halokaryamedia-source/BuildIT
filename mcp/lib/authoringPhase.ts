@@ -58,12 +58,9 @@ const CORE_TEXTURE_TOOLS = new Set([
 ]);
 
 const PHASE_FOREIGN_SUMMARY: Record<McpAuthoringPhase, string> = {
-  geometry:
-    "Foreign phases are Texturing (Texture/PBR) and Animation (keyframes/controllers).",
-  texturing:
-    "Foreign phases are Geometry (Cube/Group/rig/UV mutation) and Animation (keyframes/controllers).",
-  animation:
-    "Foreign phases are Geometry (Cube/Group/rig/UV mutation) and Texturing (Texture/PBR).",
+  geometry: "Foreign: Texturing (Texture/PBR), Animation (keyframes/controllers).",
+  texturing: "Foreign: Geometry (Cube/Group/rig/UV), Animation (keyframes/controllers).",
+  animation: "Foreign: Geometry (Cube/Group/rig/UV), Texturing (Texture/PBR).",
 };
 
 const PHASE_OWNER_SUMMARY: Record<McpAuthoringPhase, string> = {
@@ -76,9 +73,9 @@ const PHASE_OWNER_SUMMARY: Record<McpAuthoringPhase, string> = {
 };
 
 const PHASE_RUNTIME_OWNER_SUMMARY: Record<McpAuthoringPhase, string> = {
-  geometry: "Owns: Cube/Group/rig/Locator/Null + UV Layout + optional 3D Evidence.",
-  texturing: "Owns: Texture Atlas/Painter/PBR/materials + Texture Verify.",
-  animation: "Owns: animations/keyframes/timeline/effects/controllers/inspection.",
+  geometry: "Owns Cube/Group/rig/Locator/Null, UV Layout, optional 3D Evidence.",
+  texturing: "Owns Texture Atlas/Painter/PBR/materials and Texture Verify.",
+  animation: "Owns animation/keyframes/timeline/effects/controllers/inspection.",
 };
 
 const PHASE_READINESS_SUMMARY: Record<McpAuthoringPhase, string> = {
@@ -148,9 +145,9 @@ export function buildMcpPhaseRuntimeContract(
     `ACTIVE PHASE: ${label}. MCP CORE + ${label} only.`,
     BEDROCK_AUTHORING_COORDINATE_CONTRACT,
     PHASE_RUNTIME_OWNER_SUMMARY[phase],
-    `${PHASE_FOREIGN_SUMMARY[phase]} unavailable until phase handoff.`,
+    PHASE_FOREIGN_SUMMARY[phase],
     "Do not search for, emulate, rename, or substitute foreign tools.",
-    `${MCP_HANDOFF_REQUIRED}: include target_phase, reason, readiness, resume_from; invoke switch_authoring_phase through the Gateway, then stop using prior-phase mutation routes while the Gateway refreshes automatically.${allowedToolsText}`,
+    `${MCP_HANDOFF_REQUIRED}: include target_phase, reason, readiness, resume_from; invoke switch_authoring_phase through Gateway, then stop prior-phase mutations.${allowedToolsText}`,
   ].join(" ");
 }
 
