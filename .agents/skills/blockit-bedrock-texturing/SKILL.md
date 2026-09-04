@@ -58,7 +58,7 @@ manage_material | manage_material_instances | capture_model_views
 
 ## Conditional Support — Not Default Routing
 
-Use only when intent specifically requires:
+These must not enter the normal hot path unless intent requires:
 
 ```text
 gradient_tool | color_picker_tool | copy_brush_tool | paint_settings
@@ -66,9 +66,9 @@ create_brush_preset | load_brush_preset | texture_selection | texture_layer_mana
 add_texture_group | list_materials | get_material_info | import_texture_set
 ```
 
-Support tools never outrank primary authoring or justify extra discovery/readback.
+Support tools never outrank primary authoring.
 
-## First-Call / Discovery Invariants
+## First-Call Invariants
 
 ```text
 blank create_texture → explicit width+height from project UV
@@ -78,9 +78,9 @@ pbr_channel          → material TextureGroup `group` required
 Painter coordinates  → texture pixels; keep in bounds
 ```
 
-`create_texture` has a provisional **16×16** blank default. Production authoring must **not omit blank Atlas size**; reuse project resolution. Existing base-color atlas → reuse its UUID.
+`create_texture` has a provisional **16×16** blank default. Production authoring must therefore **not omit blank Atlas size**; reuse project resolution. Existing base-color atlas → reuse its UUID.
 
-Known identity must not fall back to broad hierarchy discovery or confirmation reads. Known capability → invoke. Unknown/stale → one `search_capabilities`; schema → `describe_capability` once. **Do not re-list/re-read it only for confirmation.**
+Known capability → invoke. Unknown/stale → one `search_capabilities`; schema → `describe_capability` once. **Do not re-list/re-read it only for confirmation.**
 
 ## Texture Atlas / Styling
 
@@ -96,10 +96,10 @@ SECONDARY DETAIL PASS → controlled detail
 VERIFY                → Texture Verify
 ```
 
-`gradient_tool` only for reference-supported continuous transition. Same-color detail → one `paint_with_brush` batch with `connect_strokes=false`.
+`gradient_tool` only for reference-supported continuous transition. Same-color detail → one `paint_with_brush` batch.
 
 ## Texture Verify / Visual Convergence
 
-Use approved reference + fresh `get_texture` + `capture_model_views`. Review UV → material → form → identity → microdetail. Verdict: `FAIL | UNVERIFIED | PASS`. `FAIL` → smallest causal correction → fresh affected evidence → `IMPROVED | UNCHANGED | REGRESSED`; same causal direction twice → `BLOCKED`.
+Use approved reference + fresh `get_texture` + `capture_model_views`. Review UV → material → form → identity → microdetail. Verdict: `FAIL | UNVERIFIED | PASS`. `FAIL` → smallest bounded causal correction → fresh affected evidence → `IMPROVED | UNCHANGED | REGRESSED`; same causal direction twice → `BLOCKED`.
 
 Texture `PASS` + required motion → `switch_authoring_phase` through Gateway; static assets may finish with `ANIMATION NOT REQUIRED`.

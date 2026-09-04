@@ -5,7 +5,7 @@ description: Route Bedrock Entity intents through Gateway to active-phase Runtim
 
 # BlockIT Bedrock Entity MCP
 
-Own **Gateway phase/tool routing**, state reuse, handoff, and recovery only:
+Own only **phase/tool routing**, Gateway state reuse, handoff, and recovery:
 
 ```text
 geometry/rig/UV judgement → `blockbench-bedrock-modelling`
@@ -65,7 +65,7 @@ phase change                  → switch_authoring_phase
 
 GEOMETRY
 optional 3D Evidence          → manage_geometry_reference
-create normal bone/Group      → add_group
+create normal bone/Group       → add_group
 create/update Cubes           → manage_cubes(operation=create|update|batch_update)
 Group/bone parent move         → reparent_element
 Group pivot/rotation/visible   → modify_group
@@ -114,8 +114,8 @@ OUTCOME_UNKNOWN     → inspect state before retry
 
 - Known UUID → no discovery unless stale/ambiguous.
 - Fresh mutation → reuse returned state/`geometry_effect`; no confirmation readback.
-- Do not automatically re-read fresh targets with `inspect_elements(mode=detail)`.
-- Validator: `validator://status` first; zero problems → no detail read.
+- Do not automatically re-read fresh mutation targets with `inspect_elements(mode=detail)`.
+- Validator gate → read `validator://status` first; zero problems means no detail-resource read.
 - `inspect_model_bounds` only for envelope/scale/ground/displacement.
 - Skip `get_project_info` after create/export unless lifecycle state is unknown/stale.
 - Same routed failure twice without new evidence → `BLOCKED`.
