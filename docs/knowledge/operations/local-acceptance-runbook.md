@@ -183,7 +183,7 @@ Do not use generic UI fallback as a substitute for a missing authored BlockIT ca
 
 ## 8. Authoring Efficiency
 
-Only after quality PASS, record observable work that can change a decision: meaningful Gateway/Runtime calls, `search_capabilities`/`describe_capability` discovery, repeated discovery, redundant readbacks, correction attempts, same-cause retries, recovery, phase handoffs, and elapsed workflow cost when measurable.
+Only after quality PASS, record observable work that can change a decision: meaningful Gateway/Runtime calls, `search_capabilities`/`describe_capability` discovery, capability-search misses, repeated discovery, redundant readbacks, correction attempts, same-cause retries, recovery, phase handoffs, and elapsed workflow cost when measurable.
 
 ```text
 NECESSARY | AVOIDABLE | CONTRACT_CAUSED | REASONING_CAUSED | RECOVERY

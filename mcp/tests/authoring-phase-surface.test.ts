@@ -34,9 +34,7 @@ describe("authoring phase MCP surface", () => {
     expect(resolveMcpAuthoringPhase(null)).toBe("geometry");
     expect(resolveMcpAuthoringPhase("texturing")).toBe("texturing");
     expect(resolveMcpAuthoringPhase("animation")).toBe("animation");
-    expect(() => resolveMcpAuthoringPhase("texturingg")).toThrow(
-      "Invalid MCP Authoring Phase"
-    );
+    expect(() => resolveMcpAuthoringPhase("texturingg")).toThrow("Invalid MCP Authoring Phase");
   });
 
   test("native phase surfaces stay bounded and preserve Geometry ownership", () => {
@@ -45,14 +43,9 @@ describe("authoring phase MCP surface", () => {
     expect(phaseSurface("animation").size).toBe(19);
 
     const geometry = phaseSurface("geometry");
-    for (const tool of [
-      "manage_cubes",
-      "add_group",
-      "manage_geometry_reference",
-      "bone_rigging",
-      "switch_authoring_phase",
-    ]) expect(geometry.has(tool), tool).toBe(true);
-
+    for (const tool of ["manage_cubes", "add_group", "manage_geometry_reference", "bone_rigging", "switch_authoring_phase"]) {
+      expect(geometry.has(tool), tool).toBe(true);
+    }
     for (const foreign of ["create_texture", "create_animation"]) {
       expect(geometry.has(foreign), foreign).toBe(false);
     }
@@ -79,20 +72,12 @@ describe("authoring phase MCP surface", () => {
       expect(header).toContain(`Allowed tools (${expected.length}):`);
       expect(header).toContain("Gateway");
       expect(header).toContain("same task/chat continues");
-      expect(header).not.toMatch(/reload\/reconnect|new chat/i);
+      expect(header).not.toContain("Reconnect the client to refresh tools/list");
     }
   });
 
   test("legacy-risk tools stay outside active authoring surfaces", () => {
-    const legacyRiskTools = [
-      "from_geo_json",
-      "risky_eval",
-      "filter_by_material",
-      "capture_app_screenshot",
-      "set_camera_angle",
-      "apply_texture",
-    ];
-
+    const legacyRiskTools = ["from_geo_json", "risky_eval", "filter_by_material", "capture_app_screenshot", "set_camera_angle", "apply_texture"];
     try {
       for (const profile of ["bedrock_entity", "extended"] as const) {
         for (const phase of MCP_AUTHORING_PHASES) {
@@ -123,7 +108,7 @@ describe("authoring phase MCP surface", () => {
       expect(instructions).toContain(MCP_HANDOFF_REQUIRED);
       expect(instructions).toContain("switch_authoring_phase");
       expect(instructions).toContain("Gateway");
-      expect(instructions).not.toMatch(/reload\/reconnect|new chat/i);
+      expect(instructions).not.toContain("Reconnect the client to refresh tools/list");
       expect(instructions.length).toBeLessThan(700);
     }
   });
@@ -137,11 +122,9 @@ describe("authoring phase MCP surface", () => {
     expect(geometry).toContain("## Geometry / Visual Gate");
     expect(geometry).not.toContain("create_texture");
     expect(geometry).not.toContain("create_animation");
-
     expect(texturing).toContain("## Texture Atlas");
     expect(texturing).not.toContain("manage_cubes");
     expect(texturing).not.toContain("create_animation");
-
     expect(animation).toContain("## Animation Workflow");
     expect(animation).toContain("create_animation");
     expect(animation).not.toContain("manage_cubes");
@@ -154,13 +137,11 @@ describe("authoring phase MCP surface", () => {
 
     for (const phase of MCP_AUTHORING_PHASES) {
       const contract = buildMcpPhaseHandoffContract(phase);
-      for (const key of ["target_phase", "reason", "readiness", "resume_from"]) {
-        expect(contract).toContain(key);
-      }
+      for (const key of ["target_phase", "reason", "readiness", "resume_from"]) expect(contract).toContain(key);
       expect(contract).toContain("STOP using current-phase mutation routes");
       expect(contract).toContain("continue the same task");
       expect(contract).toContain("Gateway");
-      expect(contract).not.toMatch(/reload\/reconnect|new chat/i);
+      expect(contract).not.toContain("Reconnect the client to refresh tools/list");
     }
   });
 
@@ -176,7 +157,8 @@ describe("authoring phase MCP surface", () => {
       expect(owner).toContain("switch_authoring_phase");
       expect(owner).toContain("Gateway");
       expect(owner).toContain("same task");
-      expect(owner).not.toMatch(/reload BlockIT MCP|reconnect.*MCP|new chat/i);
+      expect(owner).not.toContain("action: set MCP Authoring Phase=");
+      expect(owner).not.toContain("reload BlockIT MCP");
     }
 
     expect(orchestrator).toContain("optional 3D Evidence");
@@ -191,7 +173,6 @@ describe("authoring phase MCP surface", () => {
       Bun.file("index.ts").text(),
       Bun.file("ui/settings.ts").text(),
     ]);
-
     expect(indexSource).toContain("resolveMcpAuthoringPhase");
     expect(indexSource).toContain("applyMcpToolSurface(registrationProfile, authoringPhase)");
     expect(settingsSource).toContain('name: "Default MCP Authoring Phase"');

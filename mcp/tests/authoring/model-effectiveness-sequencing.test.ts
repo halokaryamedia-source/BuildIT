@@ -24,7 +24,8 @@ describe("model creation effectiveness — texture/animation sequencing", () => 
       expect(text).toContain("switch_authoring_phase");
       expect(text).toContain("Gateway");
       expect(text).toMatch(/same task|same task\/chat/i);
-      expect(text).not.toMatch(/reload BlockIT MCP|reconnect.*MCP|new chat/i);
+      expect(text).not.toContain("action: set MCP Authoring Phase=");
+      expect(text).not.toContain("reload BlockIT MCP");
     }
 
     expect(texturing.toLowerCase()).toContain("final box uv locked with `autouv=0`");

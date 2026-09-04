@@ -28,16 +28,6 @@ ACTIVE PHASE + intent + known state/UUIDs
 
 Unknown/stale capability → `search_capabilities`; exact current schema → `describe_capability` once. **1 Minecraft block = 16 Blockbench units.** Reuse `front_direction` when relevant.
 
-## Reference Grounding
-
-```text
-approved image       → visual authority
-requested dimensions → numeric authority
-optional 3D Evidence → supporting depth/volume/attachment evidence
-```
-
-Approved useful 3D Evidence → Geometry may use `manage_geometry_reference`. Image-only work does not require 3D setup.
-
 ## Active Phase Contract
 
 Foreign-phase need → `HANDOFF_REQUIRED` with `target_phase`, `reason`, `readiness`, `resume_from`.
@@ -50,7 +40,7 @@ switch_authoring_phase through Gateway
 → continue same task/chat
 ```
 
-`HANDOFF_REQUIRED` means STOP current-phase mutation routing, not reconnect/new chat or stop the whole task.
+`HANDOFF_REQUIRED` means STOP current-phase mutation routing, not stop the whole task.
 
 ## Authoring Stage Lock
 
@@ -65,6 +55,7 @@ hierarchy question            → inspect_elements(mode=outline)
 known target detail           → inspect_elements(mode=detail)
 visible/reference comparison  → capture_model_views
 numeric envelope/scale/ground → inspect_model_bounds
+structural validation gate    → validator://status; details only when nonzero
 Locator identity unknown      → list_locator_elements
 global UV/atlas readiness     → list_textures
 recover change                → undo / redo
@@ -82,7 +73,19 @@ Locator/Null create/edit       → manage_locator / manage_null_object
 rig IK/mirror                  → bone_rigging
 ```
 
-`bone_rigging` only for IK/mirror. Known coherent Cubes → one `manage_cubes(operation=create, elements=[...])`; uncertainty → no batch. Known Cubes sharing one deterministic TRANSLATE/RESIZE intent → derive absolute targets once from fresh state → one `manage_cubes(operation=batch_update)`. Never loop inspect→modify per Cube. Relative intent stays reasoning-layer arithmetic; writes stay absolute/fail-closed.
+Known coherent Cubes → one `manage_cubes(operation=create, elements=[...])`; uncertainty → no batch. Shared deterministic correction → one `manage_cubes(operation=batch_update)`. Never loop inspect→modify per Cube.
+
+## First-Call Invariants
+
+```text
+add_group                 → pass name OR groups, never both
+manage_cubes update       → id + at least one authored field change
+manage_cubes rotated create → origin required
+manage_locator create     → name+parent; update → id+authored change
+manage_null_object create → name+parent; update → id+parent/position
+```
+
+If the exact current schema matters, `describe_capability` once before mutation. Validation failure repairs arguments for the **same capability**.
 
 ## Capability Discovery / Recovery
 
@@ -94,7 +97,7 @@ unknown/stale capability → one precise search_capabilities query
 schema needed            → describe_capability once
 ```
 
-One precise search miss → reformulate once with one domain noun; second miss → `BLOCKED`. A known foreign-phase capability is never a discovery miss; hand off instead.
+One precise search miss → reformulate once; second miss → `BLOCKED`. Known foreign-phase capability → hand off instead.
 
 ```text
 validation      → INVALID_INPUT       → repair args; same capability
@@ -111,6 +114,7 @@ transport after mutation → OUTCOME_UNKNOWN → inspect state before retry
 - Known UUID → no discovery unless stale/ambiguous.
 - Fresh mutation → reuse returned state/`geometry_effect`; no confirmation readback.
 - **Do not automatically re-read fresh mutation targets with `inspect_elements(mode=detail)`.**
+- Validator gate → read `validator://status` first; zero problems means no detail-resource read.
 - `inspect_model_bounds` only for envelope/scale/ground/displacement.
 - Skip `get_project_info` after create/export unless lifecycle state is unknown/stale.
 - Same routed failure twice without new evidence → `BLOCKED`.

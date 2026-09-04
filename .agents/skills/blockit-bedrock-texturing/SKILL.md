@@ -29,8 +29,10 @@ Entry: **final Box UV locked with `autouv=0`**, no invalid/out-of-bounds/partial
 
 ## Direct Routing
 
+Reuse fresh state.
+
 ```text
-global UV/atlas readiness      → list_textures
+global UV/atlas readiness      → list_textures (`uv_audit.production_gate`)
 face-specific mapping          → inspect_elements(mode=detail) only when needed
 unlocked/invalid UV            → HANDOFF_REQUIRED(geometry)
 blank atlas resolution unknown → get_project_info once
@@ -94,7 +96,7 @@ SECONDARY DETAIL PASS → controlled detail
 VERIFY                → Texture Verify
 ```
 
-`gradient_tool` only for reference-supported transition. Same-color detail → one `paint_with_brush` batch with `connect_strokes=false`.
+`gradient_tool` is only for reference-supported continuous transition. Same-color detail → one `paint_with_brush` batch with `connect_strokes=false`.
 
 ## Texture Verify / Visual Convergence
 

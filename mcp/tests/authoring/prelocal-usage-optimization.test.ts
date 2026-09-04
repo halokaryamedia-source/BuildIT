@@ -39,7 +39,7 @@ describe("pre-local usage optimization contract", () => {
       "quality gate passes",
       "discovery",
       "redundant readbacks",
-      "tool-search misses",
+      "capability-search misses",
       "correction attempts",
       "same-cause retries",
       "contract_caused",
