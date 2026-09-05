@@ -1,6 +1,6 @@
 # Next Action
 
-Updated: 2026-09-05 — authoring correction active
+Updated: 2026-09-05 — industrial elevator geometry incident documented; correction active
 
 Branch: **`Local` only**. Facts → `CONTEXT.md`; proof → `current-validation.md`; procedure → local acceptance runbook.
 
@@ -32,6 +32,17 @@ No automatic strategy/provider router, partial 3D route, fifth Gateway tool, arb
 
 ## Current Asset Handoff
 
-Industrial elevator is **reopened at Geometry + UV quality**. Baseline: `workspace/active/industrial-elevator/industrial-elevator.bbmodel`; reference remains authority.
+Industrial elevator is **reopened at Geometry** and Texturing is paused. Baseline: `workspace/active/industrial-elevator/industrial-elevator.bbmodel`; active live rebuild is not an accepted checkpoint; reference remains authority.
 
-Prior z-fighting closure is not visual acceptance. Repair observed structural/cohort defects, then UV face proportion, texel density, orientation, seam/padding, and semantic reuse. Do not begin Animation before corrected Authoring is accepted.
+Prior z-fighting/overlap closure is not visual acceptance. Repair front-shell continuity and left-glass segmentation from a whole-form surface map, then capture fresh views and obtain explicit Geometry approval. Only after that, generate the native UV template, verify valid UVs, author pixel-level styling from the atlas, run Texture Verify, and obtain explicit Texture approval. Do not begin Animation before corrected Authoring is accepted.
+
+### Required learning flow for the next correction
+
+1. Restate the authority: approved reference image, `5×5×6` blocks (`80×80×96` units), `DIRECT`, and canonical front entrance.
+2. Write the semantic surface map before coordinates: closed shell regions, door opening, left glass span, panel boundaries, intentional negative spaces, and attachment/contact invariants.
+3. Author the primary shell as continuous cohorts. Every gap must be intentional and named; every required boundary must be covered by an adjacent volume.
+4. Audit the whole model, not only bounds: front/3⁄4/left/back/top/bottom views plus gap, seam, penetration, and contact review.
+5. Stop at `READY_FOR_USER_REVIEW`; user approval is required before UV Layout/Texturing.
+6. Generate the native template only after Geometry approval. The tool must select all model elements, return a valid UV atlas, and fail closed otherwise.
+7. Paint exact atlas pixels from the actual UV layout. No guessed UVs, stretched reference image, flat color fill, or texture used to hide geometry.
+8. Verify fresh atlas and mapped model views. Then request Texture approval; only afterward start the required door animation.

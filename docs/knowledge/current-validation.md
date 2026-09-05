@@ -94,8 +94,23 @@ The latest `.bbmodel` remains an editable baseline, **not visually accepted**:
 - `workspace/active/industrial-elevator/industrial-elevator.bbmodel`
 - `workspace/active/industrial-elevator/industrial-elevator-atlas-v2.png`
 
-Previous Gateway checks established envelope `80 × 80 × 96`, 27 rendered Cubes, no positive-volume Cube overlap, in-bounds UV coordinates, and no partial-overlap UV gate failure. Those checks are technical evidence only.
+Previous Gateway checks established envelope `80 × 80 × 96`, first with 27 Cubes and later with a clean rebuild of 23 Cubes, plus no positive-volume Cube overlap. Those checks are technical evidence only.
 
-User review now reopens both upstream gates: visible geometry still appears to contain gap/z-fighting problems, and UV/material mapping remains disorganized. The current model also contains a split `ControlPanel` cohort: body/top/mid controls occupy the opposite X side from low/emergency controls, so the assembly must be reviewed as one semantic relationship rather than as independent successful Cube mutations.
+User review now reopens Geometry before Texturing: the live clean rebuild visibly contains holes/gaps. The previous UV/material attempt is also invalid and remains paused. The current rebuild has 23 Cubes, 4 Groups, exact bounds `80 × 80 × 96`, and three left-glass Cubes, but those facts do not prove continuous surfaces.
+
+### Incident diagnosis
+
+The front shell was authored as isolated side wall, jamb, beam, and door pieces without a coverage invariant for the front plane. Exact live state showed:
+
+- `LeftLowerWall x=-40..-36` and `FrontLeftJamb x=-28..-24`, leaving an `8`-unit front gap between them.
+- `FrontLeftJamb` ends at `x=-24` and `DoorLeft` starts at `x=-20`, leaving a `4`-unit door-transition gap.
+- The mirrored right-side relationship has the same defect.
+- Left glass spans `z=-40..-28`, `-27..-14`, and `-13..0`, leaving two `1`-unit gaps.
+
+The root failure is process-level: reference evidence and numeric envelope were present, but no semantic surface map, required-continuity invariant, or fresh whole-form visual gate was applied before Geometry was considered complete. `manage_cubes` success, bounds, hierarchy, and positive-volume overlap checks cannot detect this class of visual hole.
+
+Separately, the first native texture-template attempt returned a `16×16` texture with `162` enabled faces and `0` valid UV faces. The native generator had no selected model elements because the tool did not reproduce the UI's selection step. This was a tool integration defect, not a reason to paint or manually guess UVs. The source fix now selects the outliner model automatically and rejects a returned template unless the UV audit is valid; it still requires a fresh runtime reload and live proof.
+
+The continuity/state failure is also documented: the asset README previously described Geometry as user-approved and UV as clean while the live visual result was not accepted. Visual user evidence supersedes those stale technical claims; both gates are reopened.
 
 Do not start Animation. First repair observed geometry/cohort defects, then re-author affected UV layout with face proportion, texel density, orientation, padding/seams, and semantic exact-reuse checks, then Texture Verify against canonical views.
