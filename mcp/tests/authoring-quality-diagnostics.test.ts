@@ -68,6 +68,20 @@ describe("authoring quality diagnostics", () => {
     ).toBe(false);
   });
 
+  test("coplanar diagnostics require overlapping face regions instead of plane coincidence alone", () => {
+    const base = box([0, 0, 0]);
+    const samePlaneButDisjoint: OrientedBox = {
+      ...box([0.5, 3, 0]),
+      halfSizes: [0.5, 0.75, 0.75],
+    };
+
+    expect(
+      analyzeOrientedBoxSurfaceQuality(base, samePlaneButDisjoint).some(
+        (risk) => risk.kind === "coplanar_overlap"
+      )
+    ).toBe(false);
+  });
+
   test("UV aspect diagnostics accept direct or 90-degree proportional mapping and flag distorted mapping", () => {
     const direct = summarizeFaceUvQuality([8, 4], [0, 0, 16, 8]);
     expect(direct.state).toBe("measured");
