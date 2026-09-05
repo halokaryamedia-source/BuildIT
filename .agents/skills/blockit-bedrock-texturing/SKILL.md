@@ -74,7 +74,7 @@ Known → invoke. Unknown/stale → `search_capabilities`; schema → `describe_
 
 ## Texture Atlas / Styling
 
-Use one **base-color atlas** for the whole model, not per body part/Cube. Production UV: **128×128 default, 256×256 opt-in**. Pin atlas UUID; pass `texture_id` when multiple textures are loaded.
+Use one **base-color atlas** for the whole model, not per body part/Cube. Production UV: **128×128 default, 256×256 opt-in**. Pin atlas UUID and pass `texture_id` when multiple textures are loaded.
 
 Define palette roles/value-hue ramp, material zones, face/form shading, contact/occlusion, edge/alpha/seam, identity marks, detail budget, and pixels per UV unit. generic palette, copied unrelated texture, or flat rectangles are invalid production styling. Flat color is BASE PASS only; reject random high-contrast noise.
 

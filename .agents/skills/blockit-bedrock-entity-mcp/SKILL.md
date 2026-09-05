@@ -50,7 +50,7 @@ CORE / SHARED
 project unknown                → get_project_info
 identity/hierarchy/detail      → inspect_elements(mode=search|outline|detail)
 locator identity discovery     → list_locator_elements
-reference comparison           → capture_model_views
+visible/reference comparison  → capture_model_views
 envelope/scale/ground          → inspect_model_bounds
 structural validation gate    → validator://status; details only when nonzero
 UV/atlas readiness             → list_textures
@@ -91,7 +91,7 @@ Capability discovery is deferred spec loading after routing, not a second router
 ```text
 known exact capability   → invoke directly
 unknown/stale capability → one precise search_capabilities query
-schema needed            → describe_capability once before mutation
+schema needed            → `describe_capability` once before mutation
 ```
 
 One precise search miss → reformulate once; second miss → `BLOCKED`. A known foreign-phase capability is never a discovery miss: AUTHORING↔Animation uses handoff.
