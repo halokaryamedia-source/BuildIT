@@ -82,6 +82,8 @@ Define palette roles/value-hue ramp, material zones, face/form shading, contact/
 
 Texture Styling completion needs fresh `get_texture` pixels + mapped model-view evidence. Missing/unrelated evidence → `FAIL | UNVERIFIED`.
 
+`gradient_tool` is only for reference-supported continuous transition.
+
 ## Texture Verify / Visual Convergence
 
 Approved reference + fresh `get_texture` + `capture_model_views` → UV → material → form → identity → microdetail → `FAIL | UNVERIFIED | PASS`.
