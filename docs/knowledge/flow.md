@@ -41,7 +41,9 @@ Texture Atlas / Styling / PBR       → blockit-bedrock-texturing
 Animation / motion                   → blockit-bedrock-animation
 ```
 
-No mutation until router + matching specialist are loaded and its prerequisite gate is satisfied. When Geometry↔Texturing ownership changes, load the new specialist before its first mutation; both remain on the shared AUTHORING Runtime surface. AUTHORING↔Animation alone uses `switch_authoring_phase`, and the same task/chat continues.
+No mutation until router + matching specialist are loaded and its prerequisite gate is satisfied. When Geometry↔Texturing ownership changes, load the new specialist before its first mutation; both remain on the shared AUTHORING Runtime surface. **No Geometry↔Texturing `switch_authoring_phase` is required.** AUTHORING↔Animation alone uses `switch_authoring_phase`, and the same task/chat continues.
+
+Persist current project state only at **meaningful handoff/resume/park/completion boundaries**.
 
 ## 3. Reference Preparation
 
