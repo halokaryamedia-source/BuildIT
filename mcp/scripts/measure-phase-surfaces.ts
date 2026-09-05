@@ -16,8 +16,8 @@ const PROTOCOL_VERSION = "2025-06-18";
 const CATALOG_TOOL_COUNT = 51;
 
 const EXPECTED_PHASE_TOOL_COUNTS: Record<McpAuthoringPhase, number> = {
-  geometry: 25,
-  texturing: 35,
+  geometry: 46,
+  texturing: 46,
   animation: 19,
 };
 
