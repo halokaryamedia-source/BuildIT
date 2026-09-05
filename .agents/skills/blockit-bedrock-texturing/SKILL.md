@@ -20,22 +20,22 @@ Entry: **final Box UV locked with `autouv=0`**, no invalid/out-of-bounds/partial
 Reuse fresh state.
 
 ```text
-global UV/atlas readiness      → list_textures (`uv_audit.production_gate`)
-face mapping                   → inspect_elements(mode=detail) only when needed
-unlocked/invalid UV            → Geometry owner + bounded UV correction; no phase switch
-blank atlas resolution unknown → get_project_info once
-atlas lifecycle                → list_textures / activate_texture; create/read → create_texture / get_texture
-base/material regions          → draw_shape_tool
-contiguous fill                → paint_fill_tool
-stepped value/form/detail      → draw_shape_tool / paint_with_brush
-erase bounded pixels           → eraser_tool
-PBR/material semantics         → manage_material
-mapped model-view evidence     → capture_model_views
+global UV/atlas technical hygiene → list_textures (`uv_audit.production_gate`)
+face proportion/density quality   → inspect_element(detail=uv) on affected/reuse owners only
+unlocked/invalid UV               → Geometry owner + bounded UV correction; no phase switch
+blank atlas resolution unknown    → get_project_info once
+atlas lifecycle                   → list_textures / activate_texture; create/read → create_texture / get_texture
+base/material regions             → draw_shape_tool
+contiguous fill                   → paint_fill_tool
+stepped value/form/detail         → draw_shape_tool / paint_with_brush
+erase bounded pixels              → eraser_tool
+PBR/material semantics            → manage_material
+mapped model-view evidence        → capture_model_views
 ```
 
 ## UV Layout Quality Gate
 
-Review **face aspect ratio, texel density, orientation, padding/seams, and semantic UV reuse**; wrong mapping → Geometry owner.
+`uv_audit.production_gate=ready` proves technical atlas hygiene only, **not UV Layout PASS**. Review **face aspect ratio, texel density, orientation, padding/seams, and semantic UV reuse**. `inspect_element(detail=uv)` exposes per-face aspect/density diagnostics; any `review_required`/degenerate result reopens Geometry/UV review. Exact UV reuse may be intentional, so judge reuse owners together instead of failing reuse globally. Wrong mapping → Geometry owner.
 
 ## Primary vs Support Capabilities
 

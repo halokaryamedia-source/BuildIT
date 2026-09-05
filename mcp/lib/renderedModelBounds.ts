@@ -1,5 +1,10 @@
 /// <reference types="three" />
 /// <reference types="blockbench-types" />
+import { orientedBoxFromCube } from "@/lib/blockbenchCubeObb";
+import {
+  analyzeOrientedBoxContact,
+  type OrientedBox,
+} from "@/lib/orientedBoxContact";
 
 export type Vec3 = [number, number, number];
 
@@ -31,9 +36,303 @@ export interface RenderedModelBoundsObservation {
   warnings: string[];
 }
 
+export const SURFACE_MICRO_GAP_REVIEW_DISTANCE = 0.05;
+export const SURFACE_SHALLOW_PENETRATION_REVIEW_DEPTH = 0.05;
+const SURFACE_PARALLEL_EPSILON = 1e-6;
+const SURFACE_PLANE_EPSILON = 1e-4;
+const SURFACE_WARNING_LIMIT = 8;
+const SURFACE_PAIR_ANALYSIS_LIMIT = 20_000;
+
+type BoxFace = {
+  center: Vec3;
+  normal: Vec3;
+  u: Vec3;
+  v: Vec3;
+  half_u: number;
+  half_v: number;
+};
+
+export type SurfaceQualityRisk =
+  | {
+      kind: "coplanar_overlap";
+      plane_distance: number;
+    }
+  | {
+      kind: "micro_gap";
+      distance: number;
+    }
+  | {
+      kind: "shallow_penetration";
+      depth: number;
+    };
+
 function normalizeNumber(value: number): number {
   return Object.is(value, -0) ? 0 : value;
 }
+
+function dot(first: Vec3, second: Vec3): number {
+  return (
+    first[0] * second[0] +
+    first[1] * second[1] +
+    first[2] * second[2]
+  );
+}
+
+function add(first: Vec3, second: Vec3): Vec3 {
+  return [
+    first[0] + second[0],
+    first[1] + second[1],
+    first[2] + second[2],
+  ];
+}
+
+function subtract(first: Vec3, second: Vec3): Vec3 {
+  return [
+    first[0] - second[0],
+    first[1] - second[1],
+    first[2] - second[2],
+  ];
+}
+
+function scale(vector: Vec3, amount: number): Vec3 {
+  return [vector[0] * amount, vector[1] * amount, vector[2] * amount];
+}
+
+function boxFaces(box: OrientedBox): BoxFace[] {
+  const faces: BoxFace[] = [];
+  for (let axis = 0; axis < 3; axis += 1) {
+    const tangentAxes = [0, 1, 2].filter((index) => index !== axis);
+    const uIndex = tangentAxes[0];
+    const vIndex = tangentAxes[1];
+    for (const sign of [-1, 1] as const) {
+      faces.push({
+        center: add(
+          box.center,
+          scale(box.axes[axis], sign * box.halfSizes[axis])
+        ),
+        normal: scale(box.axes[axis], sign),
+        u: box.axes[uIndex],
+        v: box.axes[vIndex],
+        half_u: box.halfSizes[uIndex],
+        half_v: box.halfSizes[vIndex],
+      });
+    }
+  }
+  return faces;
+}
+
+function projectedFaceRadius(face: BoxFace, axis: Vec3): number {
+  return (
+    face.half_u * Math.abs(dot(face.u, axis)) +
+    face.half_v * Math.abs(dot(face.v, axis))
+  );
+}
+
+function facesOverlapInPlane(first: BoxFace, second: BoxFace): boolean {
+  const offset = subtract(second.center, first.center);
+  for (const axis of [first.u, first.v, second.u, second.v]) {
+    const overlap =
+      projectedFaceRadius(first, axis) +
+      projectedFaceRadius(second, axis) -
+      Math.abs(dot(offset, axis));
+    if (overlap <= SURFACE_PLANE_EPSILON) return false;
+  }
+  return true;
+}
+
+function findParallelFacePlaneDistance(
+  first: OrientedBox,
+  second: OrientedBox,
+  relation: "same" | "opposite",
+  maxDistance: number
+): number | null {
+  let best: number | null = null;
+  for (const firstFace of boxFaces(first)) {
+    for (const secondFace of boxFaces(second)) {
+      const alignment = dot(firstFace.normal, secondFace.normal);
+      if (
+        relation === "same"
+          ? alignment < 1 - SURFACE_PARALLEL_EPSILON
+          : alignment > -1 + SURFACE_PARALLEL_EPSILON
+      ) {
+        continue;
+      }
+
+      const planeDistance = Math.abs(
+        dot(subtract(secondFace.center, firstFace.center), firstFace.normal)
+      );
+      if (planeDistance > maxDistance) continue;
+      if (!facesOverlapInPlane(firstFace, secondFace)) continue;
+      if (best === null || planeDistance < best) best = planeDistance;
+    }
+  }
+  return best;
+}
+
+/**
+ * Objective review hints for Cube-vs-Cube surface construction.
+ *
+ * These are intentionally non-verdict diagnostics: they detect narrow geometric
+ * patterns that often produce visible z-fighting, hairline gaps, or accidental
+ * near-overlap, but they do not decide semantic intent or visual acceptance.
+ */
+export function analyzeOrientedBoxSurfaceQuality(
+  first: OrientedBox,
+  second: OrientedBox
+): SurfaceQualityRisk[] {
+  const risks: SurfaceQualityRisk[] = [];
+
+  const coplanarPlaneDistance = findParallelFacePlaneDistance(
+    first,
+    second,
+    "same",
+    SURFACE_PLANE_EPSILON
+  );
+  if (coplanarPlaneDistance !== null) {
+    risks.push({
+      kind: "coplanar_overlap",
+      plane_distance: coplanarPlaneDistance,
+    });
+  }
+
+  const contact = analyzeOrientedBoxContact(
+    first,
+    second,
+    SURFACE_PLANE_EPSILON
+  );
+
+  if (
+    contact.classification === "separate" &&
+    contact.separation <= SURFACE_MICRO_GAP_REVIEW_DISTANCE
+  ) {
+    const opposingPlaneDistance = findParallelFacePlaneDistance(
+      first,
+      second,
+      "opposite",
+      SURFACE_MICRO_GAP_REVIEW_DISTANCE
+    );
+    if (opposingPlaneDistance !== null) {
+      risks.push({ kind: "micro_gap", distance: contact.separation });
+    }
+  }
+
+  if (
+    contact.classification === "intersecting" &&
+    contact.penetrationDepth <= SURFACE_SHALLOW_PENETRATION_REVIEW_DEPTH
+  ) {
+    const opposingPlaneDistance = findParallelFacePlaneDistance(
+      first,
+      second,
+      "opposite",
+      SURFACE_SHALLOW_PENETRATION_REVIEW_DEPTH
+    );
+    if (opposingPlaneDistance !== null) {
+      risks.push({
+        kind: "shallow_penetration",
+        depth: contact.penetrationDepth,
+      });
+    }
+  }
+
+  return risks;
+}
+
+function boxesMayHaveSurfaceRisk(first: OrientedBox, second: OrientedBox): boolean {
+  const offset = subtract(second.center, first.center);
+  const firstRadius = Math.hypot(...first.halfSizes);
+  const secondRadius = Math.hypot(...second.halfSizes);
+  const maxDistance =
+    firstRadius + secondRadius + SURFACE_MICRO_GAP_REVIEW_DISTANCE;
+  return dot(offset, offset) <= maxDistance * maxDistance;
+}
+
+function formatSurfaceMetric(value: number): string {
+  return Number.isFinite(value) ? value.toFixed(4) : String(value);
+}
+
+function readSurfaceQualityWarnings(cubes: readonly Cube[]): string[] {
+  const measured: Array<{ cube: Cube; box: OrientedBox }> = [];
+  const warnings: string[] = [];
+  let omittedWarningCount = 0;
+
+  const pushWarning = (warning: string): void => {
+    if (warnings.length < SURFACE_WARNING_LIMIT) warnings.push(warning);
+    else omittedWarningCount += 1;
+  };
+
+  for (const cube of cubes) {
+    try {
+      measured.push({ cube, box: orientedBoxFromCube(cube) });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      pushWarning(
+        `Surface-quality diagnostics unavailable for Cube "${cube.name}" (${cube.uuid}): ${message}`
+      );
+    }
+  }
+
+  let analyzedPairCount = 0;
+  let pairBudgetReached = false;
+
+  pairScan: for (let firstIndex = 0; firstIndex < measured.length; firstIndex += 1) {
+    for (
+      let secondIndex = firstIndex + 1;
+      secondIndex < measured.length;
+      secondIndex += 1
+    ) {
+      const first = measured[firstIndex];
+      const second = measured[secondIndex];
+      if (!boxesMayHaveSurfaceRisk(first.box, second.box)) continue;
+      if (analyzedPairCount >= SURFACE_PAIR_ANALYSIS_LIMIT) {
+        pairBudgetReached = true;
+        break pairScan;
+      }
+      analyzedPairCount += 1;
+
+      let risks: SurfaceQualityRisk[];
+      try {
+        risks = analyzeOrientedBoxSurfaceQuality(first.box, second.box);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        pushWarning(
+          `Surface-quality pair diagnostics unavailable for Cube "${first.cube.name}" (${first.cube.uuid}) and "${second.cube.name}" (${second.cube.uuid}): ${message}`
+        );
+        continue;
+      }
+
+      for (const risk of risks) {
+        const pair = `Cube "${first.cube.name}" (${first.cube.uuid}) and "${second.cube.name}" (${second.cube.uuid})`;
+        if (risk.kind === "coplanar_overlap") {
+          pushWarning(
+            `Possible z-fighting: ${pair} expose overlapping same-facing coplanar surfaces (plane delta ${formatSurfaceMetric(risk.plane_distance)} Blockbench units). Review the visible surface/layer relationship.`
+          );
+        } else if (risk.kind === "micro_gap") {
+          pushWarning(
+            `Possible micro-gap: ${pair} have overlapping opposing faces separated by ${formatSurfaceMetric(risk.distance)} Blockbench units. Review the intended contact seam.`
+          );
+        } else {
+          pushWarning(
+            `Possible shallow penetration: ${pair} overlap by ${formatSurfaceMetric(risk.depth)} Blockbench units across opposing face regions. Review whether the overlap is intentional construction.`
+          );
+        }
+      }
+    }
+  }
+
+  if (pairBudgetReached) {
+    pushWarning(
+      `Surface-quality diagnostics stopped after ${SURFACE_PAIR_ANALYSIS_LIMIT} nearby Cube pair(s); absence of further warnings is not a clean-surface claim.`
+    );
+  }
+  if (omittedWarningCount > 0) {
+    warnings.push(
+      `${omittedWarningCount} additional surface-quality warning(s) were omitted from this bounded diagnostic. Use semantic assembly context and fresh model views before any visual verdict.`
+    );
+  }
+
+  return warnings;
+}
+
 export function summarizeFiniteBounds(
   min: Vec3,
   max: Vec3
@@ -111,7 +410,8 @@ function ensureCurrentWorldMatrix(cube: Cube): void {
  * the same coordinate basis the viewport renders.
  *
  * This helper intentionally does not accept target dimensions and never judges
- * whether the model is correct. It returns observation facts only.
+ * whether the model is correct. It returns observation facts only. Surface-risk
+ * warnings are bounded review hints, never visual PASS/FAIL.
  */
 export function readRenderedModelBounds(): RenderedModelBoundsObservation {
   if (!Project) {
@@ -179,6 +479,7 @@ export function readRenderedModelBounds(): RenderedModelBoundsObservation {
   }
 
   const { center, size } = summarizeFiniteBounds(min, max);
+  warnings.push(...readSurfaceQualityWarnings(renderedCubes));
 
   return {
     total_cube_count: totalCubeCount,

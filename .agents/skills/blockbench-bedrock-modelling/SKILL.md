@@ -11,7 +11,7 @@ Own Geometry form judgement, transform ownership, correction, and reference read
 
 - **No per-Cube inspection ceremony** without a diagnosed problem.
 - **No screenshot-per-mutation loop.** Build a judgeable whole form, then gate it.
-- Bounds are only for envelope/scale/ground/displacement. **Otherwise skip the bounds call.**
+- Surface/contact question → `inspect_model_bounds` once for bounded risk hints; otherwise skip it.
 - `UNVERIFIED` does not automatically require more calls.
 
 ## Reference Grounding

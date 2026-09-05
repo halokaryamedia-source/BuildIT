@@ -229,9 +229,153 @@ const CUBE_FACE_KEYS = [
   "up",
   "down",
 ] as const;
+type CubeFaceKey = (typeof CUBE_FACE_KEYS)[number];
+
+export const UV_FACE_ASPECT_REVIEW_FACTOR = 1.25;
+export const UV_CUBE_DENSITY_SPREAD_REVIEW_FACTOR = 2;
+
+export type FaceUvQuality =
+  | {
+      state: "degenerate";
+      geometry_size: [number, number];
+      uv_size: [number, number];
+    }
+  | {
+      state: "measured";
+      geometry_size: [number, number];
+      uv_size: [number, number];
+      geometry_aspect_ratio: number;
+      uv_aspect_ratio: number;
+      best_aspect_alignment: "direct" | "rotated_90";
+      aspect_ratio_scale_error: number;
+      aspect_state: "matched" | "review_required";
+      logical_uv_area_per_model_area: number;
+    };
+
+function ratioScaleError(first: number, second: number): number {
+  return Math.max(first / second, second / first);
+}
+
+/**
+ * Objective face-to-UV construction metrics. `aspect_state` is a conservative
+ * review hint, not a visual or semantic PASS/FAIL verdict.
+ */
+export function summarizeFaceUvQuality(
+  geometrySize: readonly [number, number],
+  uv: readonly [number, number, number, number]
+): FaceUvQuality {
+  const width = Math.abs(geometrySize[0]);
+  const height = Math.abs(geometrySize[1]);
+  const uvWidth = Math.abs(uv[2] - uv[0]);
+  const uvHeight = Math.abs(uv[3] - uv[1]);
+  const geometry: [number, number] = [width, height];
+  const uvSize: [number, number] = [uvWidth, uvHeight];
+
+  if (
+    ![width, height, uvWidth, uvHeight].every(Number.isFinite) ||
+    width <= 0 ||
+    height <= 0 ||
+    uvWidth <= 0 ||
+    uvHeight <= 0
+  ) {
+    return { state: "degenerate", geometry_size: geometry, uv_size: uvSize };
+  }
+
+  const geometryAspect = width / height;
+  const uvAspect = uvWidth / uvHeight;
+  const directError = ratioScaleError(geometryAspect, uvAspect);
+  const rotatedError = ratioScaleError(geometryAspect, 1 / uvAspect);
+  const rotated = rotatedError < directError;
+  const aspectError = rotated ? rotatedError : directError;
+
+  return {
+    state: "measured",
+    geometry_size: geometry,
+    uv_size: uvSize,
+    geometry_aspect_ratio: geometryAspect,
+    uv_aspect_ratio: uvAspect,
+    best_aspect_alignment: rotated ? "rotated_90" : "direct",
+    aspect_ratio_scale_error: aspectError,
+    aspect_state:
+      aspectError > UV_FACE_ASPECT_REVIEW_FACTOR
+        ? "review_required"
+        : "matched",
+    logical_uv_area_per_model_area:
+      (uvWidth * uvHeight) / (width * height),
+  };
+}
+
+function cubeFaceGeometrySize(
+  size: readonly [number, number, number],
+  face: CubeFaceKey
+): [number, number] {
+  const [x, y, z] = size.map(Math.abs) as [number, number, number];
+  if (face === "north" || face === "south") return [x, y];
+  if (face === "east" || face === "west") return [z, y];
+  return [x, z];
+}
+
+function median(values: readonly number[]): number | null {
+  if (values.length === 0) return null;
+  const sorted = [...values].sort((a, b) => a - b);
+  const middle = Math.floor(sorted.length / 2);
+  return sorted.length % 2 === 0
+    ? (sorted[middle - 1] + sorted[middle]) / 2
+    : sorted[middle];
+}
+
+export function summarizeUvDensity(values: readonly number[]) {
+  if (values.length === 0) {
+    return {
+      state: "unavailable" as const,
+      measured_faces: 0,
+      min: null,
+      median: null,
+      max: null,
+      spread_factor: null,
+    };
+  }
+
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const spread = min > 0 ? max / min : null;
+  return {
+    state:
+      spread !== null && spread > UV_CUBE_DENSITY_SPREAD_REVIEW_FACTOR
+        ? ("review_required" as const)
+        : ("consistent" as const),
+    measured_faces: values.length,
+    min,
+    median: median(values),
+    max,
+    spread_factor: spread,
+  };
+}
+
+function cubeSize(cube: Cube): [number, number, number] {
+  const from = requireFiniteInspectableVector3(cube.from, `Cube ${cube.name} (${cube.uuid}) from`);
+  const to = requireFiniteInspectableVector3(cube.to, `Cube ${cube.name} (${cube.uuid}) to`);
+  const size = [
+    to[0] - from[0],
+    to[1] - from[1],
+    to[2] - from[2],
+  ] as [number, number, number];
+  if (size.some((value) => !Number.isFinite(value))) {
+    throw new Error(
+      `Cube ${cube.name} (${cube.uuid}) has a non-finite derived size; exact authored correction state cannot be reported safely.`
+    );
+  }
+  return size;
+}
 
 function inspectCubeUv(cube: Cube) {
   const textureSpace = inspectEffectiveTextureSpace();
+  const size = cubeSize(cube);
+  const densityValues: number[] = [];
+  let enabledFaceCount = 0;
+  let degenerateFaceCount = 0;
+  let aspectReviewFaceCount = 0;
+
   const faces = Object.fromEntries(
     CUBE_FACE_KEYS.map((faceKey) => {
       const face = cube.faces[faceKey];
@@ -248,6 +392,30 @@ function inspectCubeUv(cube: Cube) {
               `Cube ${cube.name} (${cube.uuid}) face ${faceKey}`
             )
           : null;
+      const quality = enabled
+        ? summarizeFaceUvQuality(cubeFaceGeometrySize(size, faceKey), uv)
+        : null;
+
+      let physicalPixelAreaPerModelArea: number | null = null;
+      if (enabled) enabledFaceCount += 1;
+      if (quality?.state === "degenerate") {
+        degenerateFaceCount += 1;
+      } else if (quality?.state === "measured") {
+        densityValues.push(quality.logical_uv_area_per_model_area);
+        if (quality.aspect_state === "review_required") {
+          aspectReviewFaceCount += 1;
+        }
+        if (textureSpace.state === "mapped") {
+          const pixelsPerUvX =
+            textureSpace.metrics.width / textureSpace.metrics.uvWidth;
+          const pixelsPerUvY =
+            textureSpace.metrics.displayHeight / textureSpace.metrics.uvHeight;
+          physicalPixelAreaPerModelArea =
+            quality.logical_uv_area_per_model_area *
+            pixelsPerUvX *
+            pixelsPerUvY;
+        }
+      }
 
       return [
         faceKey,
@@ -258,6 +426,14 @@ function inspectCubeUv(cube: Cube) {
           paintable: enabled && pixelMapping !== null,
           mapping_state: enabled ? textureSpace.state : ("disabled_face" as const),
           texture_pixels: pixelMapping,
+          quality:
+            quality === null
+              ? null
+              : {
+                  ...quality,
+                  physical_pixel_area_per_model_area:
+                    physicalPixelAreaPerModelArea,
+                },
         },
       ];
     })
@@ -276,24 +452,17 @@ function inspectCubeUv(cube: Cube) {
       state: textureSpace.state,
       effective_texture: textureSpace.texture,
     },
+    quality_summary: {
+      enabled_faces: enabledFaceCount,
+      degenerate_faces: degenerateFaceCount,
+      aspect_review_faces: aspectReviewFaceCount,
+      texel_density: summarizeUvDensity(densityValues),
+      verdict: "review_hint_only" as const,
+      note:
+        "Aspect and density diagnostics are objective construction hints only; orientation, seams, semantic reuse, and visual acceptance still require authored context and current model-view evidence.",
+    },
     faces,
   };
-}
-
-function cubeSize(cube: Cube): [number, number, number] {
-  const from = requireFiniteInspectableVector3(cube.from, `Cube ${cube.name} (${cube.uuid}) from`);
-  const to = requireFiniteInspectableVector3(cube.to, `Cube ${cube.name} (${cube.uuid}) to`);
-  const size = [
-    to[0] - from[0],
-    to[1] - from[1],
-    to[2] - from[2],
-  ] as [number, number, number];
-  if (size.some((value) => !Number.isFinite(value))) {
-    throw new Error(
-      `Cube ${cube.name} (${cube.uuid}) has a non-finite derived size; exact authored correction state cannot be reported safely.`
-    );
-  }
-  return size;
 }
 
 function inspectCube(cube: Cube, detail: "geometry" | "uv") {
