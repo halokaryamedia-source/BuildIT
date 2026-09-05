@@ -1,10 +1,12 @@
 import {
   DEFAULT_MCP_AUTHORING_PHASE,
   MCP_AUTHORING_PHASES,
+  classifyMcpToolPhase,
 } from "@/lib/authoringPhase";
 import {
   applyMcpToolSurface,
   getMcpSurfaceToolNames,
+  getToolRegistrationFamily,
 } from "@/server/tools";
 import {
   CODEX_TOOL_SEARCH_REFERENCE,
@@ -21,15 +23,22 @@ const phaseSurfaces = new Map(
 );
 
 function routedPhase(expected: string): (typeof MCP_AUTHORING_PHASES)[number] {
+  const family = getToolRegistrationFamily(expected);
+  const semanticOwner = family
+    ? classifyMcpToolPhase(expected, family)
+    : null;
+
+  if (semanticOwner === "core") return DEFAULT_MCP_AUTHORING_PHASE;
+  if (semanticOwner) return semanticOwner;
+
   const matches = MCP_AUTHORING_PHASES.filter((phase) =>
     phaseSurfaces.get(phase)?.has(expected)
   );
-
   if (matches.length === 1) return matches[0]!;
-  if (matches.includes(DEFAULT_MCP_AUTHORING_PHASE)) {
-    return DEFAULT_MCP_AUTHORING_PHASE;
-  }
-  throw new Error(`No routed authoring phase owns expected tool ${expected}`);
+
+  throw new Error(
+    `No unique semantic authoring owner for expected tool ${expected}; visible phases: ${matches.join(", ") || "none"}`
+  );
 }
 
 const phaseReports: Record<string, unknown> = {};
@@ -84,13 +93,13 @@ console.log(
     {
       proxy: "codex_mcp_bm25_phase_scoped_static_proxy",
       proxy_note:
-        "Static BM25 proxy for deferred spec loading after deterministic routing. Each expected tool is searched only inside its normal BlockIT Core + active-phase surface; Core tools use default Geometry. It is not installed-client proof and does not reproduce the exact upstream tokenizer implementation.",
+        "Static BM25 proxy for deferred spec loading after deterministic routing. Expected tools are assigned by semantic owner, then searched inside the matching BlockIT Runtime surface; Core tools use default Geometry. It is not installed-client proof and does not reproduce the exact upstream tokenizer implementation.",
       upstream_reference: CODEX_TOOL_SEARCH_REFERENCE,
       routed_query_contract: "<exact_selected_tool_name>",
       routed_query_note:
         "Use the exact selected tool name for the first deferred-spec query. A miss may be reformulated once with one distinguishing domain noun; that fallback is not modeled here.",
       phase_surface_contract:
-        "phase-specific tools use their owning phase; Core tools use default Geometry",
+        "shared AUTHORING tools are assigned by semantic owner; Core tools use default Geometry",
       catalog_enabled_tool_count: 62,
       case_count: originalCases.length,
       phase_reports: phaseReports,

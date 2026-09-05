@@ -61,11 +61,21 @@ describe("texture design reasoning", () => {
     ]);
 
     expect(workflow).toContain("## Texture Styling");
-    expect(workflow).toContain("BASE → FORM/MATERIAL → IDENTITY → DETAIL → VERIFY");
-    expect(workflow).toContain("palette/material regions");
-    expect(workflow).toContain("face/form shading");
-    expect(workflow).toContain("contact/edge information");
-    expect(workflow).toContain("identity-critical marks");
+    for (const stage of [
+      "BASE PASS",
+      "VALUE / FORM PASS",
+      "IDENTITY PASS",
+      "SECONDARY DETAIL PASS",
+      "VERIFY",
+    ]) expect(workflow).toContain(stage);
+    for (const term of [
+      "palette roles",
+      "material zones",
+      "face-aware shading",
+      "contact/occlusion",
+      "edge treatment",
+      "identity marks",
+    ]) expect(workflow).toContain(term);
     expect(contract).toContain("texturing: AUTHORING_WORKFLOW_SECTIONS");
   });
 

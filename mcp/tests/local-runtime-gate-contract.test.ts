@@ -31,11 +31,13 @@ async function source(path: string): Promise<string> {
 }
 
 describe("local runtime gate source contract", () => {
-  test("default Geometry acceptance surface is complete and plan-free", () => {
+  test("shared AUTHORING acceptance surface is complete and plan-free", () => {
     const names = getMcpSurfaceToolNames("bedrock_entity", "geometry");
+    const texturingNames = getMcpSurfaceToolNames("bedrock_entity", "texturing");
     const definitions = getEnabledToolDefinitions();
 
-    expect(names.length).toBe(25);
+    expect(names).toEqual(texturingNames);
+    expect(names.length).toBeGreaterThanOrEqual(REQUIRED_GEOMETRY_TOOLS.length);
     for (const toolName of REQUIRED_GEOMETRY_TOOLS) {
       expect(names, toolName).toContain(toolName);
       expect(definitions[toolName], toolName).toBeDefined();

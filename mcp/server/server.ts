@@ -25,7 +25,7 @@ export function buildMcpServerInstructions(
   describeMcpSurfaceToolNames(profile, phase);
   return `BlockIT Bedrock Entity authoring. ${buildMcpPhaseRuntimeContract(
     phase
-  )} Core routes are lifecycle and read operations; selection, history, camera, and export are conditional support routes.`;
+  )} Capability nouns: cube, texture/PBR, locator; Animation uses keyframe tooling. Core routes are lifecycle and read operations; selection, history, camera, and export are conditional support routes.`;
 }
 
 export const MCP_SERVER_INSTRUCTIONS = buildMcpServerInstructions(

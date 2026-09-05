@@ -1,28 +1,32 @@
 import { describe, expect, test } from "bun:test";
 import { consolidatedInspectionToolDocs, consolidatedMaterialToolDocs } from "@/server/tools";
-import { textureToolDocs } from "@/server/tools/texture";
+import { paintToolDocs } from "@/server/tools/paint";
+import {
+  buildUvAtlasAudit,
+  createTextureParameters,
+  textureToolDocs,
+} from "@/server/tools/texture";
 
 async function source(path: string): Promise<string> {
   return Bun.file(path).text();
 }
 
 describe("texture production discipline", () => {
-  test("texture creation requires explicit production canvas size and routes mapping to Geometry", async () => {
-    const [textureSource, standard] = await Promise.all([
-      source("server/tools/texture.ts"),
+  test("texture creation keeps 16x16 provisional defaults while production sizing and UV ownership stay explicit", async () => {
+    const [standard, skill] = await Promise.all([
       source("../docs/foundation/06-texture-standard.md"),
+      source("../.agents/skills/blockit-bedrock-texturing/SKILL.md"),
     ]);
-    const create = textureToolDocs.find((tool) => tool.name === "create_texture");
-    const shape = textureToolDocs.find((tool) => tool.name === "draw_shape_tool");
-    const brush = textureToolDocs.find((tool) => tool.name === "paint_with_brush");
-    expect(create).toBeDefined();
-    expect(create?.description).toContain("blank default is 16×16");
-    expect(create?.description).toContain("pass width+height explicitly for production");
-    expect(create?.description).toContain("does not assign UVs");
-    expect(create?.description).toContain("mapping belongs to Geometry/UV Layout");
-    expect(shape?.description).toContain("Texture Styling only");
-    expect(brush?.description).toContain("Texture Styling only");
-    expect(textureSource).not.toContain("apply_texture");
+    const provisional = createTextureParameters.parse({ name: "fixture" });
+    const shape = paintToolDocs.find((tool) => tool.name === "draw_shape_tool");
+    const brush = paintToolDocs.find((tool) => tool.name === "paint_with_brush");
+
+    expect(provisional.width).toBe(16);
+    expect(provisional.height).toBe(16);
+    expect(shape).toBeDefined();
+    expect(brush).toBeDefined();
+    expect(skill).toContain("blank create_texture → explicit width+height from project UV");
+    expect(skill).toContain("provisional **16×16** blank default");
     expect(standard).toContain("create_texture` creates a **Texture Atlas**");
     expect(standard).toContain("does not create UV Layout");
   });
@@ -57,34 +61,57 @@ describe("texture production discipline", () => {
     expect(skill).toContain("mapped model-view evidence");
   });
 
-  test("global UV audit is exposed on list_textures instead of deprecated inspection aliases", () => {
-    const sourceText = consolidatedInspectionToolDocs.description;
+  test("global UV audit is owned by list_textures instead of element inspection", async () => {
+    const textureSource = await source("server/tools/texture.ts");
     const list = textureToolDocs.find((tool) => tool.name === "list_textures");
     expect(list).toBeDefined();
-    expect(list?.description).toContain("global UV audit");
-    expect(sourceText).toContain("Bedrock elements");
-    expect(sourceText).not.toContain("global UV audit");
+    expect(textureSource).toContain("buildUvAtlasAudit(");
+    expect(textureSource).toContain("uv_audit: uvAudit");
+    expect(consolidatedInspectionToolDocs.description).toContain("Bedrock elements");
+    expect(consolidatedInspectionToolDocs.description).not.toContain("global UV audit");
   });
 
-  test("global UV audit owns explicit production gate semantics", async () => {
-    const sourceText = await source("server/tools/texture.ts");
-    for (const term of [
-      "production_gate",
-      "partial_overlap_candidates",
-      "partial-overlap review blockers",
-      "invalid/non-finite UV coordinates",
-      "out-of-bounds faces",
-      "unlocked Box-UV Cubes",
-      "fractional UV candidates",
-      "recommendation",
-    ]) expect(sourceText).toContain(term);
-    expect(sourceText).toContain("blocking_issues.length === 0 ? \"PASS\" : \"FAIL\"");
+  test("global UV audit reports current production-gate semantics", () => {
+    const review = buildUvAtlasAudit(
+      [
+        {
+          cube_uuid: "a",
+          cube_name: "a",
+          face: "north",
+          uv: [0, 0, 8, 8],
+          box_uv: true,
+          autouv: 1,
+          mirror_uv: false,
+          face_rotation: 0,
+        },
+        {
+          cube_uuid: "b",
+          cube_name: "b",
+          face: "north",
+          uv: [4, 4, 12, 12],
+          box_uv: true,
+          autouv: 0,
+          mirror_uv: false,
+          face_rotation: 0,
+        },
+      ],
+      128,
+      128
+    );
+
+    expect(review.state).toBe("available");
+    if (review.state !== "available") throw new Error("expected available audit");
+    expect(review.partial_overlap.pair_count).toBe(1);
+    expect(review.unlocked_box_uv_cubes.count).toBe(1);
+    expect(review.production_gate.state).toBe("review_required");
+    expect(review.production_gate.reasons).toContain("PARTIAL_OVERLAP");
+    expect(review.production_gate.reasons).toContain("BOX_UV_AUTOUV_UNLOCKED");
   });
 
   test("texturing skill routes global audit first and face inspection conditionally", async () => {
     const skill = await source("../.agents/skills/blockit-bedrock-texturing/SKILL.md");
     expect(skill).toMatch(/global UV\/atlas readiness\s+→ list_textures/i);
-    expect(skill).toMatch(/face-specific mapping\s+→ inspect_elements\(mode=detail\) only when needed/i);
+    expect(skill).toMatch(/face mapping\s+→ inspect_elements\(mode=detail\) only when needed/i);
     expect(skill).toContain("final Box UV locked with `autouv=0`");
     expect(skill).toContain("no invalid/out-of-bounds/partial-overlap blocker");
   });
