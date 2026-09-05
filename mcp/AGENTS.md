@@ -100,6 +100,28 @@ Canonical runtime prompt change: edit source → `bun run prompts:build` → inc
 
 Runtime bundles only prompts intentionally exposed by `server/prompts.ts`; maintainer Markdown stays source-only unless explicitly exposed.
 
+## Dependency Closure
+
+Before a cross-surface MCP change is considered complete, classify every materially affected dependent as one of:
+
+```text
+SHARED SOURCE     same import-safe spec/constant can own runtime + generated-description metadata
+GENERATED         canonical source must regenerate committed output
+SEMANTIC MIRROR   distinct human-owned surface must preserve the same invariant through regression tests
+CI ROUTING        the verifier that owns the invariant must actually run for the changed path
+```
+
+Closure rules:
+
+- Prefer **SHARED SOURCE** over copying the same public metadata into runtime/docs/UI when the code can stay import-safe.
+- **GENERATED** output is never a second owner; regenerate it from canonical source and fail freshness checks when stale.
+- Use **SEMANTIC MIRROR** only where separate human-facing owners are intentional; protect the invariant, forbidden stale concepts, and workflow ordering rather than cosmetic prose.
+- Treat missing **CI ROUTING** as a routing defect: update the workflow/path owner instead of weakening tests or changing unrelated source.
+- Do not auto-rewrite `CONTEXT.md`, proof state, continuation state, Skills, or human-owned docs from source code. Their semantics remain manually owned and test-protected.
+- If any required GENERATED dependent cannot be produced in the current execution context, transfer before mutating its canonical source.
+
+For LOCAL_CODE cross-surface work, `bun run verify:closure` is the compact closure gate: repository semantic contracts → authoring semantic contracts → generated freshness. It does **not** replace `verify:mcp` when executable or public MCP behavior changed.
+
 ## Verification
 
 Verification follows the changed claim; `package.json` owns verifier composition so CI, local work, and docs do not maintain separate command lists.
@@ -109,6 +131,7 @@ Canonical entrypoints from `mcp/`:
 ```text
 repository-policy / repository-static contract → bun run verify:repository
 authoring-policy / authoring-static contract   → bun run verify:authoring
+cross-surface dependency closure               → bun run verify:closure
 executable or public MCP behavior               → bun run verify:mcp
 main release boundary                           → bun run verify:release
 ```
