@@ -84,6 +84,8 @@ Known → invoke. Unknown/stale → `search_capabilities`; schema → `describe_
 
 Use one **base-color atlas** for the whole model, not one per body part/Cube. Production UV is **128×128 default, 256×256 opt-in**. Pin atlas UUID and pass `texture_id` when multiple textures are loaded.
 
+For reference-grounded assets, the approved reference is a required styling input. Build the atlas from the reference's actual material and identity evidence; do not substitute a generic palette, copied unrelated texture, or a handful of flat rectangles. A flat/base pass is provisional and must never be reported as Texture Styling completion.
+
 Define palette roles, value/hue ramp, material zones, face shading, contact/occlusion, edge/alpha/seam, identity marks, detail budget, pixels per UV unit. Flat color is BASE PASS only; reject random high-contrast noise.
 
 ```text
@@ -93,6 +95,8 @@ IDENTITY PASS         → paint_with_brush
 SECONDARY DETAIL PASS → controlled detail
 VERIFY                → Texture Verify
 ```
+
+Texture Styling is not complete until fresh `get_texture` evidence shows authored material/form/detail pixels and fresh mapped model views show those pixels on the intended surfaces. If either evidence is missing or visibly unrelated to the approved reference, mark `FAIL` or `UNVERIFIED` and continue the smallest causal correction.
 
 `gradient_tool` is only for reference-supported continuous transition. Same-color detail → one `paint_with_brush` batch with `connect_strokes=false`.
 

@@ -130,4 +130,20 @@ describe("professional texture production discipline", () => {
     }
     expect(skill).toContain("Texture Verify / Visual Convergence");
   });
+
+  test("reference-grounded styling rejects generic flat-fill completion", async () => {
+    const [skill, workflow] = await Promise.all([
+      source("../.agents/skills/blockit-bedrock-texturing/SKILL.md"),
+      source("prompts/bedrock_entity_workflow.md"),
+    ]);
+    for (const text of [skill, workflow]) {
+      expect(text.toLowerCase()).toContain("generic palette");
+      expect(text.toLowerCase()).toContain("unverified");
+    }
+    expect(skill.toLowerCase()).toContain("approved reference");
+    expect(workflow.toLowerCase()).toContain("actual approved image");
+    expect(skill.toLowerCase()).toContain("flat rectangles");
+    expect(workflow.toLowerCase()).toContain("five flat rectangles");
+    expect(workflow.toLowerCase()).toContain("paint tool succeeded");
+  });
 });

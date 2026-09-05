@@ -27,3 +27,7 @@ LEGACY UI FALLBACKS: DEBUG/MAINTENANCE ONLY
 ## Non-Goals
 
 No automatic strategy classifier, provider router, GLB-only/PrimitiveAnything-only route, fifth Gateway tool, arbitrary decomposition path/primitive-array input, `from_geo_json` revival, automatic fallback to `DIRECT`, or benchmark/profile framework before representative end-to-end proof.
+
+## Current Asset Handoff
+
+Industrial elevator texture/UV work is deferred to the user's external Blockbench workflow. The latest checkpoint is `workspace/active/industrial-elevator/industrial-elevator.bbmodel`; the approved visual authority is `workspace/active/industrial-elevator/references/approved-reference.png`; the active atlas is `workspace/active/industrial-elevator/industrial-elevator-atlas-v2.png`. Do not redo the geometry dimensions, door hierarchy, control-panel relocation, or shell z-fighting correction. Visual acceptance was not achieved; remap and verify the atlas against all canonical views before animation.

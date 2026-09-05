@@ -83,6 +83,8 @@ Define palette roles, value/hue ramp, material zones, face-aware shading, contac
 
 Flat fill is a **BASE PASS only**, never production completion when material/form/detail is visible. Prefer controlled Minecraft pixel clusters and stepped ramps; random noise is rejected. Smooth gradient is optional only when the reference/style supports it.
 
+For reference-grounded assets, the approved image is a required Texture Styling input. Author material zones, panel seams, highlights, identity marks, and surface detail from that image; a generic palette, unrelated copied texture, or five flat rectangles is an invalid production result.
+
 ```text
 BASE PASS             → draw_shape_tool; paint_fill_tool only for intentional contiguous base fill
 VALUE / FORM PASS     → draw_shape_tool / paint_with_brush for stepped form, contact, occlusion, edge, hue/value ramp
@@ -108,6 +110,8 @@ fresh get_texture atlas
 → microdetail
 → FAIL | UNVERIFIED | PASS
 ```
+
+`paint tool succeeded`, `atlas exists`, or `BASE PASS` alone cannot advance the stage. Styling remains `FAIL`/`UNVERIFIED` until the fresh atlas visibly contains authored reference-derived detail and the mapped model views show it on the intended surfaces.
 
 Texture mutation makes evidence stale. `FAIL` → smallest causal correction → fresh affected evidence → `IMPROVED | UNCHANGED | REGRESSED`; same causal direction failing twice → `BLOCKED`.
 

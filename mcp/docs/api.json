@@ -1,6 +1,6 @@
 {
   "version": "0.1.0",
-  "generatedAt": "2026-09-03T06:11:04.498Z",
+  "generatedAt": "2026-09-05T05:59:56.510Z",
   "tools": [
     {
       "name": "manage_cubes",
@@ -155,8 +155,8 @@
                           {
                             "type": "boolean",
                             "const": true,
-                            "description": "Use inherited project UV mode; per-face UV Cubes receive native auto UV mapping.",
-                            "markdownDescription": "Use inherited project UV mode; per-face UV Cubes receive native auto UV mapping."
+                            "description": "Use inherited project UV mode.",
+                            "markdownDescription": "Use inherited project UV mode."
                           },
                           {
                             "type": "array",
@@ -195,8 +195,8 @@
                             },
                             "minItems": 1,
                             "maxItems": 6,
-                            "description": "Per-face UV overrides; creates the Cube in per-face UV mode; unlisted faces keep native default UV.",
-                            "markdownDescription": "Per-face UV overrides; creates the Cube in per-face UV mode; unlisted faces keep native default UV."
+                            "description": "Per-face UV overrides; switches the Cube to per-face UV mode; unlisted faces keep their current UV.",
+                            "markdownDescription": "Per-face UV overrides; switches the Cube to per-face UV mode; unlisted faces keep their current UV."
                           }
                         ],
                         "default": true,
@@ -340,6 +340,46 @@
                         "type": "boolean",
                         "description": "Whether to mirror the UVs.",
                         "markdownDescription": "Whether to mirror the UVs."
+                      },
+                      "faces": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "face": {
+                              "type": "string",
+                              "enum": [
+                                "north",
+                                "south",
+                                "east",
+                                "west",
+                                "up",
+                                "down"
+                              ],
+                              "description": "Face whose per-face UV rectangle is overridden.",
+                              "markdownDescription": "Face whose per-face UV rectangle is overridden."
+                            },
+                            "uv": {
+                              "type": "array",
+                              "items": {
+                                "type": "number"
+                              },
+                              "minItems": 4,
+                              "maxItems": 4,
+                              "description": "Finite custom UV rectangle [u1,v1,u2,v2] for this face.",
+                              "markdownDescription": "Finite custom UV rectangle [u1,v1,u2,v2] for this face."
+                            }
+                          },
+                          "required": [
+                            "face",
+                            "uv"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "minItems": 1,
+                        "maxItems": 6,
+                        "description": "Per-face UV overrides; switches the Cube to per-face UV mode; unlisted faces keep their current UV.",
+                        "markdownDescription": "Per-face UV overrides; switches the Cube to per-face UV mode; unlisted faces keep their current UV."
                       },
                       "inflate": {
                         "type": "number",
@@ -487,6 +527,46 @@
                               "type": "boolean",
                               "description": "Whether to mirror Box UVs.",
                               "markdownDescription": "Whether to mirror Box UVs."
+                            },
+                            "faces": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "face": {
+                                    "type": "string",
+                                    "enum": [
+                                      "north",
+                                      "south",
+                                      "east",
+                                      "west",
+                                      "up",
+                                      "down"
+                                    ],
+                                    "description": "Face whose per-face UV rectangle is overridden.",
+                                    "markdownDescription": "Face whose per-face UV rectangle is overridden."
+                                  },
+                                  "uv": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "number"
+                                    },
+                                    "minItems": 4,
+                                    "maxItems": 4,
+                                    "description": "Finite custom UV rectangle [u1,v1,u2,v2] for this face.",
+                                    "markdownDescription": "Finite custom UV rectangle [u1,v1,u2,v2] for this face."
+                                  }
+                                },
+                                "required": [
+                                  "face",
+                                  "uv"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "minItems": 1,
+                              "maxItems": 6,
+                              "description": "Per-face UV overrides; switches the Cube to per-face UV mode; unlisted faces keep their current UV.",
+                              "markdownDescription": "Per-face UV overrides; switches the Cube to per-face UV mode; unlisted faces keep their current UV."
                             },
                             "visibility": {
                               "type": "boolean",

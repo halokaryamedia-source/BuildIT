@@ -51,6 +51,8 @@ describe("model creation effectiveness — correction accuracy", () => {
     expect(modifyCubesBatchParameters.safeParse({ updates: [{ id: "a", from: [0, 0, 0] }, { id: "a", to: [1, 1, 1] }] }).success).toBe(false);
     expect(modifyCubesBatchParameters.safeParse({ updates: [{ id: "a", uv_offset: [8, 16], autouv: "0", mirror_uv: true }] }).success).toBe(true);
     expect(modifyCubesBatchParameters.safeParse({ updates: [{ id: "a", name: "renamed" }] }).success).toBe(false);
+    expect(modifyCubesBatchParameters.safeParse({ updates: [{ id: "a", faces: [{ face: "north", uv: [0, 0, 32, 32] }] }] }).success).toBe(true);
+    expect(modifyCubesBatchParameters.safeParse({ updates: [{ id: "a", faces: [{ face: "north", uv: [0, 0, 32, 32] }, { face: "north", uv: [0, 0, 16, 16] }] }] }).success).toBe(false);
   });
 
   test("batch Cube correction carries existing Box-UV authored state without a new tool", async () => {
@@ -58,6 +60,9 @@ describe("model creation effectiveness — correction accuracy", () => {
     expect(cubes).toContain("update.uv_offset");
     expect(cubes).toContain("update.autouv");
     expect(cubes).toContain("update.mirror_uv");
+    expect(cubes).toContain("update.faces");
+    expect(cubes).toContain("cube.faces[face].extend");
+    expect(cubes).toContain('"faces"');
     expect(cubes).toContain("geometryVisibilityFields");
     expect(cubes).not.toContain("professional_uv");
   });

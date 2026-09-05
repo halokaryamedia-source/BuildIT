@@ -83,4 +83,16 @@ exact Local → verify:mcp → deploy exact plugin → Gateway lifecycle + DIREC
 → live atomic materializer proof → end-to-end 3D_ASSISTED
 ```
 
+## Industrial Elevator External Handoff
+
+The latest live asset state is intentionally **not visually accepted**. The approved reference and editable checkpoint are kept at:
+
+- `workspace/active/industrial-elevator/references/approved-reference.png`
+- `workspace/active/industrial-elevator/industrial-elevator.bbmodel`
+- `workspace/active/industrial-elevator/industrial-elevator-atlas-v2.png`
+
+Verified on 2026-09-05 through the BlockIT Gateway: model envelope `80 × 80 × 96`, 27 rendered Cubes, no positive-volume Cube overlaps, UV coordinates in bounds, no fractional/degenerate UVs, no partial-overlap UV gate failure, and explicit UV locking on the added control-panel frame pieces. These are structural/technical checks only; they do not constitute visual reference acceptance.
+
+User-reported remaining visual defects: texture and UV placements still do not match the approved elevator reference, the atlas arrangement is not yet accepted as clean, and previous editor views appeared broken. Continue outside Codex from the saved `.bbmodel`; do not begin animation until the user accepts front, 3/4, side, back, top, and bottom texture views.
+
 Detailed procedure lives in `docs/knowledge/operations/local-acceptance-runbook.md`.

@@ -21,6 +21,26 @@ const finiteVec2Schema = z.tuple([
   z.number().finite(),
   z.number().finite(),
 ]);
+const faceUvOverridesSchema = z
+  .array(
+    z.object({
+      face: faceEnum.describe("Face whose per-face UV rectangle is overridden."),
+      uv: z
+        .array(z.number().finite())
+        .length(4)
+        .describe("Finite custom UV rectangle [u1,v1,u2,v2] for this face."),
+    })
+  )
+  .min(1)
+  .max(6)
+  .refine(
+    (entries) =>
+      new Set(entries.map((entry) => entry.face)).size === entries.length,
+    { message: "Each custom-UV Cube face may appear at most once." }
+  )
+  .describe(
+    "Per-face UV overrides; switches the Cube to per-face UV mode; unlisted faces keep their current UV."
+  );
 function hasFiniteCubeSpan(
   from: readonly number[],
   to: readonly number[]
@@ -128,6 +148,7 @@ const cubeCorrectionUpdateSchema = z
       .optional()
       .describe("Auto UV setting: 0 disabled, 1 enabled, 2 relative."),
     mirror_uv: z.boolean().optional().describe("Whether to mirror Box UVs."),
+    faces: faceUvOverridesSchema.optional(),
     visibility: z
       .boolean()
       .optional()
@@ -143,6 +164,7 @@ const cubeCorrectionUpdateSchema = z
       update.uv_offset !== undefined ||
       update.autouv !== undefined ||
       update.mirror_uv !== undefined ||
+      update.faces !== undefined ||
       update.visibility !== undefined,
     {
       message:
@@ -166,33 +188,7 @@ export const placeCubeParameters = z
         "Optional Group UUID or unique exact name; omit/use `root` only for intentional root placement."
       ),
     faces: z
-      .union([
-        z
-          .literal(true)
-          .describe(
-            "Use inherited project UV mode; per-face UV Cubes receive native auto UV mapping."
-          ),
-        z
-          .array(
-            z.object({
-              face: faceEnum.describe("Face whose per-face UV rectangle is overridden."),
-              uv: z
-                .array(z.number().finite())
-                .length(4)
-                .describe("Finite custom UV rectangle [u1,v1,u2,v2] for this face."),
-            })
-          )
-          .min(1)
-          .max(6)
-          .refine(
-            (entries) =>
-              new Set(entries.map((entry) => entry.face)).size === entries.length,
-            { message: "Each custom-UV Cube face may appear at most once." }
-          )
-          .describe(
-            "Per-face UV overrides; creates the Cube in per-face UV mode; unlisted faces keep native default UV."
-          ),
-      ])
+      .union([z.literal(true).describe("Use inherited project UV mode."), faceUvOverridesSchema])
       .optional()
       .default(true)
       .describe(
@@ -234,6 +230,7 @@ export const modifyCubeParameters = z.object({
     .optional()
     .describe("Finite box-UV offset [u,v] exported by Bedrock when this Cube uses box UV."),
   mirror_uv: z.boolean().optional().describe("Whether to mirror the UVs."),
+  faces: faceUvOverridesSchema.optional(),
 
   inflate: z.number().finite().optional().describe("Finite Bedrock Cube inflation amount."),
 
@@ -412,6 +409,24 @@ function boxUvRegionState(cube: Cube) {
   };
 }
 
+const CUBE_FACE_KEYS = ["north", "south", "east", "west", "up", "down"] as const;
+type CubeFaceKey = (typeof CUBE_FACE_KEYS)[number];
+
+function cubeFaceUvs(cube: Cube): Record<CubeFaceKey, number[]> {
+  return Object.fromEntries(
+    CUBE_FACE_KEYS.map((face) => [face, [...cube.faces[face].uv]])
+  ) as Record<CubeFaceKey, number[]>;
+}
+
+function faceUvsEqual(
+  before: Record<CubeFaceKey, number[]>,
+  after: Record<CubeFaceKey, number[]>
+): boolean {
+  return CUBE_FACE_KEYS.every((face) =>
+    before[face].every((value, index) => value === after[face][index])
+  );
+}
+
 function finalCubeState(cube: Cube) {
   const from = [...cube.from] as [number, number, number];
   const to = [...cube.to] as [number, number, number];
@@ -464,6 +479,7 @@ function finalCubeState(cube: Cube) {
     mirror_uv: cube.mirror_uv,
     autouv: cube.autouv,
     visibility: cube.visibility !== false,
+    face_uvs: cubeFaceUvs(cube),
   };
 }
 
@@ -509,6 +525,7 @@ function cubeGeometryEffect(before: CubeAuthoredState, after: CubeAuthoredState)
   if (before.mirror_uv !== after.mirror_uv) changedFields.push("mirror_uv");
   if (before.autouv !== after.autouv) changedFields.push("autouv");
   if (before.visibility !== after.visibility) changedFields.push("visibility");
+  if (!faceUvsEqual(before.face_uvs, after.face_uvs)) changedFields.push("faces");
 
   return {
     changed_fields: changedFields,
@@ -524,6 +541,7 @@ function cubeGeometryEffect(before: CubeAuthoredState, after: CubeAuthoredState)
     mirror_uv_changed: before.mirror_uv !== after.mirror_uv,
     autouv_changed: before.autouv !== after.autouv,
     visibility_changed: before.visibility !== after.visibility,
+    faces_changed: changedFields.includes("faces"),
   };
 }
 
@@ -544,6 +562,9 @@ function modifyCubeRequestWouldChange(
     (update.uv_offset !== undefined && !vec2Equal(update.uv_offset, cube.uv_offset)) ||
     (update.autouv !== undefined && Number(update.autouv) !== cube.autouv) ||
     (update.mirror_uv !== undefined && update.mirror_uv !== cube.mirror_uv) ||
+    (update.faces !== undefined && update.faces.some(({ face, uv }) =>
+      uv.some((value, index) => value !== cube.faces[face].uv[index])
+    )) ||
     (update.inflate !== undefined && update.inflate !== (cube.inflate ?? 0)) ||
     (update.visibility !== undefined && update.visibility !== (cube.visibility !== false))
   );
@@ -703,6 +724,7 @@ export function registerCubesTools() {
       autouv,
       mirror_uv,
       inflate,
+      faces,
       visibility,
     }: ModifyCubeRequest) => {
       requireOpenProject("modifying a Cube");
@@ -718,7 +740,7 @@ export function registerCubesTools() {
         `Cube ${cubes[0].name} (${cubes[0].uuid}) update`
       );
       if (!modifyCubeRequestWouldChange(cubes[0], {
-        id, name, origin, from, to, rotation, uv_offset, autouv, mirror_uv, inflate, visibility,
+        id, name, origin, from, to, rotation, uv_offset, autouv, mirror_uv, inflate, faces, visibility,
       })) {
         throw new Error(
           `modify_cube request for Cube ${cubes[0].name} (${cubes[0].uuid}) has no authored effect; every supplied value already matches current state.`
@@ -759,8 +781,12 @@ export function registerCubesTools() {
               ? { autouv: Number(autouv) as 0 | 1 | 2 }
               : {}),
             ...(mirror_uv !== undefined ? { mirror_uv } : {}),
+            ...(faces !== undefined ? { box_uv: false, autouv: 0 } : {}),
             ...(inflate !== undefined ? { inflate } : {}),
             ...(visibility !== undefined ? { visibility } : {}),
+          });
+          faces?.forEach(({ face, uv }) => {
+            cube.faces[face].extend({ uv: uv as [number, number, number, number] });
           });
         });
 
@@ -865,9 +891,13 @@ export function registerCubesTools() {
               ? { autouv: Number(update.autouv) as 0 | 1 | 2 }
               : {}),
             ...(update.mirror_uv !== undefined ? { mirror_uv: update.mirror_uv } : {}),
+            ...(update.faces !== undefined ? { box_uv: false, autouv: 0 } : {}),
             ...(update.visibility !== undefined
               ? { visibility: update.visibility }
               : {}),
+          });
+          update.faces?.forEach(({ face, uv }) => {
+            cube.faces[face].extend({ uv: uv as [number, number, number, number] });
           });
         }
 
