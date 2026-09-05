@@ -87,11 +87,10 @@ describe("model-wide texel density diagnostics", () => {
       "server/tools/element-inspection.ts"
     ).text();
 
-    expect(skill).toContain("model-wide 1-pixel scale");
-    expect(skill).toContain("project_texel_density");
-    expect(skill).toContain(
-      "never force detail into an undersized UV island with a larger brush/shape"
-    );
+    expect(skill).toContain("## UV Layout Quality Gate");
+    expect(skill).toContain("texel density");
+    expect(skill).toContain("pixels per UV unit");
+    expect(skill).toContain("return to Geometry/UV if detail cannot fit");
     expect(skill).toContain(
       "Pin atlas UUID and pass `texture_id` when multiple textures are loaded"
     );

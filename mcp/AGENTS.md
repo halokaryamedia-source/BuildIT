@@ -122,6 +122,30 @@ Closure rules:
 
 For LOCAL_CODE cross-surface work, `bun run verify:closure` is the compact closure gate: repository semantic contracts → authoring semantic contracts → generated freshness. It does **not** replace `verify:mcp` when executable or public MCP behavior changed.
 
+### Change Closure Gate
+
+Before the first mutation of any cross-surface MCP or authoring contract, build a **transient impact map**; do not create a persisted checklist/roadmap file:
+
+```text
+canonical owner
+SHARED SOURCE dependents
+GENERATED dependents
+SEMANTIC MIRROR dependents
+CI ROUTING
+state/proof owners if their state actually changes
+```
+
+Every material row must end as `UPDATED | VERIFIED_UNCHANGED | NOT_APPLICABLE` before completion.
+
+Minimum impact rules:
+
+- authoring semantics / stage / handoff → `docs/knowledge/flow.md`, affected router/specialist Skills, runtime prompt/phase/handoff contract when exposed, Local Acceptance runbook, and semantic regressions;
+- public Tool / Resource / Prompt → exact source owner, direct callers, docs/prompt generator owner + committed generated output, contract tests, and Gateway only when boundary/discovery semantics actually change;
+- implementation-only change → implementation + direct regressions; do not churn Flow/Skills/docs when public semantics and proof state are unchanged;
+- proof/continuation → update `current-validation.md` / `next-action.md` only after corresponding evidence or continuation state actually changes.
+
+If any required generated dependent cannot be produced in the current execution context, transfer before editing its canonical source. Completion requires no unclassified material dependent, then `verify:closure`; add `verify:mcp` whenever executable or public MCP behavior changed.
+
 ## Verification
 
 Verification follows the changed claim; `package.json` owns verifier composition so CI, local work, and docs do not maintain separate command lists.
@@ -132,7 +156,7 @@ Canonical entrypoints from `mcp/`:
 repository-policy / repository-static contract → bun run verify:repository
 authoring-policy / authoring-static contract   → bun run verify:authoring
 cross-surface dependency closure               → bun run verify:closure
-executable or public MCP behavior               → bun run verify:mcp
+executable or public MCP behavior              → bun run verify:mcp
 main release boundary                           → bun run verify:release
 ```
 

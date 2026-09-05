@@ -183,7 +183,8 @@ describe("authoring stage MCP surface", () => {
       expect(owner).not.toContain("reload BlockIT MCP");
     }
 
-    expect(orchestrator).toContain("Geometry and Texturing share one AUTHORING Runtime surface");
+    expect(orchestrator).toContain("AUTHORING/Animation tool routing");
+    expect(orchestrator).toContain("AUTHORING↔Animation uses handoff");
     expect(texturing).toContain("No Geometry↔Texturing phase switch");
     expect(texturing).toContain("manage_material");
     expect(animation).toContain("manage_animation_timeline");

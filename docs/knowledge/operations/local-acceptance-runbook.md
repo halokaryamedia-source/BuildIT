@@ -1,10 +1,10 @@
 # Local Acceptance Runbook
 
-Updated: 2026-09-05  
+Updated: 2026-09-06  
 Owner: `LIVE_BLOCKBENCH` formal acceptance procedure  
-Current state: **reactivated by `docs/knowledge/next-action.md` for local/Codex handoff**.
+Current state: reactivated by `docs/knowledge/next-action.md` for local/Codex handoff.
 
-This procedure is active only when `docs/knowledge/next-action.md` **explicitly reactivates local testing**. `LIVE_BLOCKBENCH` is an execution capability; it **does not activate** this procedure by itself. Targeted live debugging may use that capability without activating formal Local Acceptance.
+This procedure is active only when `docs/knowledge/next-action.md` explicitly reactivates local testing. `LIVE_BLOCKBENCH` is an execution capability; it does not activate this procedure by itself. Targeted live debugging may use that capability without formal Local Acceptance.
 
 Use this runbook only for claims repository CI cannot prove. Do not edit source until a reproducible local failure identifies the first wrong owner.
 
@@ -19,7 +19,7 @@ Proof Required
 STOP Condition
 ```
 
-Static source/CI never proves installed Blockbench behavior or visual quality. Static Footprint is a separate guardrail. Authoring Efficiency is evaluated only after the relevant quality gate passes and means Cost to Accepted Result.
+Static source/CI never proves installed Blockbench behavior or visual quality. Static Footprint is a guardrail. Authoring Efficiency is evaluated only after the relevant quality gate passes and means Cost to Accepted Result.
 
 ## 2. Pin Local State
 
@@ -32,31 +32,19 @@ git rev-parse HEAD
 
 Require a clean tree before reusing proof.
 
-## 3. Source Proof + Build
+## 3. Source Closure + Build
 
-### Fast path — reuse exact green MCP Verify
-
-Use only when the current clean HEAD has an exact successful MCP Verify and no local source/package edits follow it. Then:
+From `mcp/`:
 
 ```bash
-cd mcp
 bun install --frozen-lockfile
-bun run build
-```
-
-### Full path
-
-Otherwise:
-
-```bash
-cd mcp
-bun install --frozen-lockfile
+bun run verify:closure
 bun run verify:mcp
 ```
 
-`verify:mcp` owns Runtime/Gateway typecheck, recursive tests, surface measurements, production build, and generated-doc freshness.
+An exact current green CI result may be reused only when the local tree is unchanged from that exact commit. Otherwise run the commands above. `verify:closure` protects semantic mirrors/generated freshness; `verify:mcp` owns Runtime/Gateway typecheck, recursive tests, surface measurements, production build, and generated-doc freshness.
 
-Record only material environment state: Local HEAD, build identity, Blockbench/Bun/Codex versions when useful, plugin path, Gateway config, Runtime endpoint, active phase. Unknown loaded artifact identity → `ENVIRONMENT / INSTALL` and STOP.
+Do **not** hardcode phase tool counts in this runbook. Source counts belong to `measure:phases`; installed counts belong to `verify:stateless-local` and live `tools/list` proof.
 
 ## 4. Deploy Exact Plugin
 
@@ -64,7 +52,7 @@ Record only material environment state: Local HEAD, build identity, Blockbench/B
 bun run deploy:local -- /absolute/path/to/blockit_mcp.js
 ```
 
-Reload the plugin in Blockbench after deployment. Deployment does not prove the Gateway lifecycle.
+Reload the plugin in Blockbench after manual deployment. Deployment alone does not prove Gateway lifecycle.
 
 ## 5. Native Runtime Smoke
 
@@ -74,23 +62,7 @@ With the freshly built plugin loaded:
 bun run verify:stateless-local
 ```
 
-For deliberate native phase debugging only:
-
-```bash
-bun run verify:stateless-local -- texturing
-bun run verify:stateless-local -- animation
-```
-
-This proves installed Runtime identity/current native `tools/list`; it does not prove normal Codex Gateway survival.
-
-Current source-owned counts:
-
-```text
-callable Runtime union 51
-Geometry              25
-Texturing             35
-Animation             19
-```
+This proves installed Runtime identity/current native `tools/list`; it does not prove normal Gateway survival or visual fidelity.
 
 ## 6. Gateway Stability Gate
 
@@ -99,16 +71,16 @@ Configure Codex to use the stdio Gateway, not the direct Runtime endpoint.
 Required continuous-session sequence:
 
 ```text
-1. Start one Codex task with Blockbench closed.
-2. Gateway remains callable; status reports Runtime offline.
-3. Open Blockbench; same task reports Runtime online.
-4. Search/describe/invoke one safe current Geometry capability.
-5. switch_authoring_phase Geometry → Texturing.
-6. Same task sees current Texturing capabilities; no client reconnect/new chat.
-7. switch_authoring_phase Texturing → Geometry and continue.
-8. Reload BlockIT plugin; same Gateway process recovers.
-9. Close/open Blockbench; same Gateway process recovers.
-10. Rebuild/reload a Runtime surface and confirm refreshed discovery when deliberately testing catalog invalidation.
+1. Start one Codex task with Blockbench closed; Gateway stays callable and reports Runtime offline.
+2. Open Blockbench; the same task reports Runtime online.
+3. Search/describe/invoke one safe Geometry capability.
+4. In the same AUTHORING surface, verify one current Texturing capability is discoverable without a phase switch.
+5. Geometry↔Texturing stays on the shared AUTHORING surface; do not call switch_authoring_phase for this correction boundary.
+6. When Animation is required and Texturing is approved, switch_authoring_phase AUTHORING → Animation.
+7. Same task sees Animation capabilities; no client reconnect/new chat.
+8. Switch Animation → Geometry/AUTHORING and continue the same task.
+9. Reload BlockIT; the same Gateway process recovers.
+10. Close/open Blockbench; the same Gateway process recovers.
 ```
 
 PASS requires:
@@ -116,7 +88,8 @@ PASS requires:
 ```text
 Gateway client tools stay fixed
 Runtime offline/online is truthful
-phase handoff invalidates backend catalog only
+Geometry/Texturing share AUTHORING without phase bounce
+AUTHORING↔Animation invalidates backend catalog only
 client_reconnect_required=false
 new_chat_required=false
 manual MCP reconnect count = 0 after initial configuration
@@ -128,19 +101,27 @@ A mutation transport interruption may return `OUTCOME_UNKNOWN`; inspect current 
 
 ## 7. DIRECT Smoke Gate
 
-Before 3D-Assisted implementation, prove one small disposable normal asset through the current product path.
+Use one small disposable normal asset:
 
 ```text
 Approved Reference visible
 + requested dimensions
 + Geometry Strategy = DIRECT
-+ Animation Required = NO
-→ Geometry → internal verify → user approve → checkpoint
-→ Texturing → internal verify → user approve → checkpoint
-→ Finalization → editable .bbmodel
++ Animation Required = YES | NO
+→ Geometry internal verify
+→ user Geometry APPROVED
+→ checkpoint
+→ native production UV Layout
+→ UV Layout PASS
+→ Texturing + Texture Verify
+→ user Texture APPROVED
+→ checkpoint
+→ optional AUTHORING→Animation handoff + user Animation approval
+→ Finalization
+→ editable .bbmodel
 ```
 
-This gate proves route/handoff/persistence behavior, not broad model-quality superiority. Visual PASS still requires the actual approved reference + fresh current model evidence. Tool success, export success, low call count, or a scalar score cannot override QUALITY FAIL.
+Tool success, export success, low call count, or a scalar score cannot override QUALITY FAIL.
 
 ## 8. 3D_ASSISTED External Pipeline Gate
 
@@ -155,12 +136,7 @@ Approved Reference Board
 → Primitive Decomposition Gate → primitive-decomposition.json/state
 ```
 
-Approved image is visual authority; requested dimensions are numeric authority. `shape.glb` and PrimitiveAnything output are intermediate evidence only.
-
-- maximum one targeted Hunyuan regeneration for a diagnosed reconstruction issue;
-- no blind PrimitiveAnything reruns;
-- bad external output stops before Runtime materialization;
-- accepted artifacts/hashes persist; temp crops/renders/logs stay in `.cache/`.
+Approved image is visual authority; requested dimensions are numeric authority. `shape.glb` and PrimitiveAnything output are intermediate evidence only. Maximum one targeted Hunyuan regeneration for a diagnosed reconstruction issue; no blind PrimitiveAnything reruns.
 
 ## 9. Dedicated Materializer Gate
 
@@ -185,10 +161,13 @@ Approved Reference + Dimensions + 3D_ASSISTED
 → materializer PASS
 → Semantic Geometry Cleanup
 → remove live Shape GLB/reference_model
-→ Geometry approve/checkpoint
-→ Texturing approve/checkpoint
-→ optional Animation approve/checkpoint
-→ Finalization → final editable .bbmodel
+→ internal Geometry verify
+→ user Geometry APPROVED
+→ native production UV Layout → UV Layout PASS
+→ Texturing + Texture Verify → user Texture APPROVED
+→ optional Animation → user Animation APPROVED
+→ Finalization
+→ final editable .bbmodel
 ```
 
 `manage_geometry_reference` may support comparison during cleanup, but it is not a separate route and must not remain in production export.

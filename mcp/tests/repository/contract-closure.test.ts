@@ -28,10 +28,11 @@ describe("MCP dependency closure", () => {
     expect(freshness).toContain("Generated MCP documentation is stale");
   });
 
-  test("package rules define all four dependency classes and preserve proof boundaries", async () => {
+  test("package rules define dependency classes, impact mapping, and proof boundaries", async () => {
     const rules = await text("AGENTS.md");
 
     expect(rules).toContain("## Dependency Closure");
+    expect(rules).toContain("### Change Closure Gate");
     for (const dependencyClass of [
       "SHARED SOURCE",
       "GENERATED",
@@ -40,11 +41,40 @@ describe("MCP dependency closure", () => {
     ]) {
       expect(rules).toContain(dependencyClass);
     }
+    for (const marker of [
+      "transient impact map",
+      "UPDATED | VERIFIED_UNCHANGED | NOT_APPLICABLE",
+      "authoring semantics / stage / handoff",
+      "public Tool / Resource / Prompt",
+      "implementation-only change",
+      "state/proof owners if their state actually changes",
+    ]) {
+      expect(rules).toContain(marker);
+    }
 
     expect(rules).toContain("bun run verify:closure");
     expect(rules).toContain("does **not** replace `verify:mcp`");
     expect(rules).toContain("Do not auto-rewrite `CONTEXT.md`");
     expect(rules).toContain("transfer before mutating its canonical source");
+    expect(rules).toContain("do not create a persisted checklist/roadmap file");
+  });
+
+  test("semantic mirrors keep shared AUTHORING and approval-to-UV ordering synchronized", async () => {
+    const [flow, runbook] = await Promise.all([
+      text("../docs/knowledge/flow.md"),
+      text("../docs/knowledge/operations/local-acceptance-runbook.md"),
+    ]);
+
+    expect(flow).toContain("No Geometry↔Texturing `switch_authoring_phase` is required");
+    expect(runbook).toContain("Geometry↔Texturing stays on the shared AUTHORING surface");
+    expect(runbook).toMatch(
+      /user Geometry APPROVED[\s\S]*UV Layout PASS[\s\S]*Texturing/
+    );
+    expect(runbook).toMatch(
+      /3D_ASSISTED[\s\S]*user Geometry APPROVED[\s\S]*UV Layout PASS[\s\S]*Texture APPROVED/
+    );
+    expect(runbook).not.toContain("Geometry              25");
+    expect(runbook).not.toContain("Texturing             35");
   });
 
   test("semantic mirrors and CI routes remain protected by their owning verifiers", async () => {

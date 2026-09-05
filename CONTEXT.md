@@ -1,6 +1,6 @@
 # BlockIT Workspace Context
 
-Last verified stable facts: 2026-09-05  
+Last verified stable facts: 2026-09-06  
 Stability: stable design contract; implementation/proof tracked separately
 
 This file owns **stable project facts only**. Continuation → `docs/knowledge/next-action.md`; proof → `current-validation.md`; ownership → `implementation-map.md`; asset continuity → `workspace/active/<asset>/README.md`; routing → `AGENTS.md`.
@@ -97,9 +97,9 @@ README owns current intake/stage/next-step/blocker state. `3d-assisted/state.jso
 
 ## 3D-Assisted implementation boundary
 
-External local tooling controlled by Codex owns view extraction + Shape Reconstruction + PrimitiveAnything. Target production flow requires one thin resumable orchestrator.
+External local tooling controlled by Codex owns view extraction + Shape Reconstruction + PrimitiveAnything. The resumable external orchestrator and canonical state/decomposition contracts are source-implemented.
 
-BlockIT Geometry Runtime owns target dedicated atomic Cuboid materialization + production cleanup. The orchestrator/state contract and dedicated materializer are **design-locked but not yet production-implemented/promoted**.
+BlockIT Geometry Runtime contains the dedicated fail-closed atomic Cuboid materializer engine. Its public Geometry ToolSpec binding, canonical generated API output, installed Runtime proof, and native Undo proof still require `LOCAL_CODE` / `LIVE_BLOCKBENCH` before production promotion.
 
 Do not revive generic `from_geo_json` or add a provider router to implement this target.
 

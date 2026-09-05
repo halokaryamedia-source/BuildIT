@@ -61,7 +61,7 @@ describe("pre-local plugin runtime cleanup", () => {
     const status = await source("ui/statusBar.ts");
     const settings = await source("ui/settings.ts");
 
-    expect(index).toContain("httpServer.closeAndWait()");
+    expect(index).toContain("if (current) await current.closeAndWait();");
     expect(net).toContain("activeSockets");
     expect(net).toContain("closeActiveSockets");
     expect(ui).toContain("toolTestDialogTeardown()");
@@ -76,7 +76,10 @@ describe("pre-local plugin runtime cleanup", () => {
     const net = await source("server/net.ts");
 
     expect(net).toContain("closeAndWait(): Promise<void>");
-    expect(index).toContain("await httpServer.closeAndWait()");
+    expect(index).toContain("const current = httpServer;");
+    expect(index).toContain("httpServer = null;");
+    expect(index).toContain("if (current) await current.closeAndWait();");
+    expect(index).toContain("async onunload() {\n    await teardownBlockItRuntime();");
     expect(index).not.toContain("httpServer.close();");
   });
 

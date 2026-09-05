@@ -98,8 +98,8 @@ describe("Bedrock Locator / Null Object direct coverage", () => {
       source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md"),
       source("../docs/knowledge/implementation-map.md"),
     ]);
-    expect(orchestrator).toContain("list_locator_elements");
-    expect(orchestrator).toContain("manage_locator / manage_null_object");
+    expect(orchestrator).toContain("identity/hierarchy/detail      → inspect_elements(mode=search|outline|detail)");
+    expect(orchestrator).toContain("Locator/Null                   → manage_locator / manage_null_object");
     expect(orchestrator).toContain("Do not automatically re-read fresh mutation targets with `inspect_elements(mode=detail)`");
     expect(implementation).toContain("mcp/tests/bedrock-locator-coverage.test.ts");
     expect(implementation).toContain("TextureMesh direct authoring/inspection");
