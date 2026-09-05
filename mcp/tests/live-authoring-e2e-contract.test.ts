@@ -9,7 +9,7 @@ describe("live authoring E2E harness", () => {
     const helper = await source("scripts/live-e2e-common.ts");
     for (const contract of [
       "build_identity",
-      "ACTIVE PHASE",
+      "ACTIVE STAGE",
       "tools/list",
       "mutation_calls",
       "inspection_calls",
