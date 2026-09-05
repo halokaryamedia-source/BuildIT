@@ -206,6 +206,61 @@ For a semantic assembly translation/orientation, prefer its Group/Bone when one 
 
 A repaired local gap does not certify the whole surface. Re-run the affected surface/cohort coverage check and reject a correction that merely moves the hole, creates a new seam, or uses compensating micro-geometry instead of restoring the intended continuous form.
 
+## Native UV Layout / Texel Integrity Gate
+
+UV Layout remains a **Geometry-owned mapping decision** even though `create_texture(type=template)` is a Texture capability on the shared AUTHORING surface. Texture Styling must not start until this gate passes.
+
+For a fresh or materially rebuilt Cube-based production UV layout, default to Blockbench's **native Texture Template generator**:
+
+```text
+Geometry form/surface PASS
+→ create_texture(type=template)
+   + explicit pixel_density
+   + rearrange_uv=true
+   + power_of_two=true
+   + intentional occupancy/padding settings
+→ native UV arrangement + template atlas
+→ UV audit
+→ important-face texel-integrity review
+→ UV Layout PASS
+→ only then Texture Styling
+```
+
+Do not replace this normal path with manually guessed face rectangles, arbitrary `uv_offset` packing, stretched reference images, color-fill atlases, or hand-scaled islands merely to make everything fit. Preserve an existing/imported authored UV layout only when it is already valid and there is no material reason to rebuild it. A user-requested special hand-authored layout is also valid when its mapping intent is explicit.
+
+### Pixel density / square-texel invariant
+
+Choose `pixel_density` **once for the model/atlas intent** and keep important surfaces at that consistent density unless a deliberate exception is required. Native semantics are:
+
+```text
+16x  → 1 texture pixel per 1 model unit
+32x  → 2 texture pixels per 1 model unit
+64x  → 4 texture pixels per 1 model unit
+...
+```
+
+A face whose model-space sides have ratio `W:H` must receive a UV region with the corresponding pixel-space ratio after the chosen global density, subject only to exact integer/native packing. **Do not non-uniformly scale an island to squeeze it into the atlas.** That turns one square texel into a stretched rectangle on the model and is a UV Layout defect.
+
+If the generated atlas becomes too large, solve the actual cause: choose a justified lower global density, remove unnecessary geometry, use intentional exact reuse/mirroring where surfaces truly share pixels, or choose an appropriate production bitmap size. Do not fix atlas pressure by distorting important face aspect ratios.
+
+### Native-template acceptance
+
+The native tool already owns model selection, rearrangement, and fail-closed technical UV validation. Treat `uv_audit.production_gate=ready` as **necessary hygiene, not final UV quality**. After generation, review material visible surfaces for:
+
+```text
+face geometry ↔ UV aspect
+consistent texel density
+orientation / directional material flow
+intentional seams + padding relationship
+accidental overlap
+intentional exact reuse / mirroring
+unique regions for asymmetric identity detail
+```
+
+A visually tidy atlas layout is useful, but packing aesthetics are secondary to correct aspect, density, orientation, uniqueness, and non-overlap. Do not repeatedly regenerate a valid template after styling begins: native rearrangement moves UV ownership and invalidates painted assumptions.
+
+A template that is invalid, out-of-bounds, unexpectedly degenerate on an important visible face, or materially stretched is `FAIL`; correct Geometry/UV and regenerate before painting. Zero-area UV on a genuinely zero-thickness/non-rendered direction is not automatically a defect.
+
 ## Future Editability / Animation Readiness
 
 Keep semantic hierarchy and movable distinct parts separate; do not build speculative full rigs. If Animation is required, participating hierarchy/pivots/attachments must be ready before Geometry approval.
