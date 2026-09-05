@@ -1,6 +1,6 @@
 # Next Action
 
-Updated: 2026-09-06 — REMOTE_GITHUB test/closure cleanup prepared; generated MCP contract work remains LOCAL_CODE.
+Updated: 2026-09-06 — REMOTE_GITHUB test/closure cleanup complete; generated MCP contract work remains LOCAL_CODE.
 
 Branch: **`Local` only**. Facts → `CONTEXT.md`; proof → `current-validation.md`.
 
@@ -14,14 +14,14 @@ SHARED AUTHORING SURFACE: SOURCE_UPDATED / LOCAL PROOF NEXT
 3D_ASSISTED MATERIALIZER: ENGINE SOURCE_READY / PUBLIC BINDING LOCAL_CODE REQUIRED
 MCP RESOURCE/PROMPT/HANDOFF: AUDITED / LOCAL_CODE IMPLEMENTATION REQUIRED
 TEST LAYERS: RUNTIME / AUTHORING / REPOSITORY SPLIT; FULL GATE NON-DUPLICATING
-REMOTE CLOSURE CLEANUP: SOURCE_UPDATED / EXACT CI REQUIRED
+REMOTE TEST/CLOSURE CLEANUP: MCP VERIFY GREEN @ 6e44fef / LOCAL verify:full NEXT
 LEGACY UI FALLBACKS: DEBUG/MAINTENANCE ONLY
 ACTIVE ASSET: NONE
 ```
 
 ## Immediate Local Handoff
 
-1. Pin exact `Local`; require `bun run verify:full` green. On failure, fix the first wrong owner only.
+1. Pin exact `Local`; run `bun install --frozen-lockfile` then require `bun run verify:full` green. On failure, fix the first wrong owner only.
 2. Close the MCP contract in one LOCAL_CODE delivery:
    - canonical workflow: Requirement Gate, `DIRECT | 3D_ASSISTED`, no fallback, 3D-Assisted route, coverage invariant, Geometry approval → native production UV → Texture approval → Animation;
    - move Animation prose into the canonical prompt and strengthen `promptContract` override invariants;

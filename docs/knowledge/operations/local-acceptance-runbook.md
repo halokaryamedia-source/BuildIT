@@ -34,7 +34,7 @@ Require a clean tree before reusing proof.
 
 ## 3. Source Closure + Build
 
-### Fast path — reuse exact green MCP Verify
+### Fast path — reuse exact green `verify:full`
 
 Use only when the current clean HEAD has an exact successful `verify:full` and no local source/package edits follow it. Then:
 

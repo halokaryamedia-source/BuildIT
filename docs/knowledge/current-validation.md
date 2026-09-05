@@ -17,7 +17,7 @@ DIRECT AUTHORING:                      SOURCE_READY / LOCAL LIVE PROOF REQUIRED
 3D_ASSISTED EXTERNAL ORCHESTRATOR:     SOURCE_READY / LOCAL GPU PROOF REQUIRED
 3D_ASSISTED MATERIALIZER ENGINE:       SOURCE_READY / PUBLIC TOOL BINDING PENDING LOCAL_CODE
 GATEWAY LIVE STABILITY:                PENDING — local Codex + Blockbench required
-EXACT FULL MCP VERIFIER:               exact green result required before Local acceptance
+REMOTE MCP VERIFY:                     GREEN @ 6e44fef / LOCAL verify:full REQUIRED
 CURRENT MODEL-QUALITY CLAIM:           NONE
 ```
 
@@ -38,9 +38,9 @@ The public Resource/Prompt/handoff closure remains intentionally deferred to `LO
 
 ## Static Verification State
 
-The previous full MCP run on the Contract Closure change was not green because several tests still asserted superseded prose/source shapes. The REMOTE_GITHUB cleanup corrects those stale assertion owners and current repository/proof mirrors, but **this commit itself still requires exact CI**. No local Bun execution is claimed here.
+Exact `Local` commit `6e44fefba7c8351f26dd81596036eb43d526016d` has a successful GitHub **MCP Verify** after stale prose assertions, duplicated verifier composition, and the noisy relative-latency test gate were corrected. **Repository Verify** was green on immediate parent `d81a643e4a38b4a4bc2d1750d394b545991972f3`; the final commit changed only the Runtime benchmark test owner. This is REMOTE_GITHUB evidence, not local execution or an exact `verify:full` run.
 
-A green repository/static check is not a substitute for `verify:mcp` when executable/public MCP behavior changes, and neither proves live Blockbench behavior.
+Before Local acceptance, the receiving `LOCAL_CODE` context must run `bun run verify:full` on its exact clean checkout. Static/CI success still cannot prove live Blockbench behavior or visual fidelity.
 
 ## What Is Not Yet Proven
 
@@ -89,8 +89,7 @@ No active asset project exists under `workspace/active/`. Historical Industrial 
 
 ```text
 exact Local
-→ verify:closure
-→ verify:mcp
+→ verify:full
 → deploy exact plugin
 → prove shared AUTHORING + AUTHORING↔Animation Gateway lifecycle
 → DIRECT smoke: Geometry APPROVED → UV Layout PASS → Texture APPROVED → Finalization
