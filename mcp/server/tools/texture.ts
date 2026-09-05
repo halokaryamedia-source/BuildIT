@@ -1239,6 +1239,24 @@ export function registerTextureTools() {
           );
         }
 
+        const outliner = (globalThis as typeof globalThis & {
+          Outliner?: { selected?: unknown[] };
+          SharedActions?: { runSpecific?: (action: string, scope: string) => void };
+        });
+        if ((outliner.Outliner?.selected?.length ?? 0) === 0) {
+          if (typeof outliner.SharedActions?.runSpecific !== "function") {
+            throw new Error(
+              "Blockbench selection actions are unavailable. Reload BlockIT/Blockbench before creating a texture template."
+            );
+          }
+          outliner.SharedActions.runSpecific("select_all", "outliner");
+        }
+        if ((outliner.Outliner?.selected?.length ?? 0) === 0) {
+          throw new Error(
+            "Template generation requires at least one visible selected Cube. Select the model elements and retry."
+          );
+        }
+
         const nativeColor = fill_color
           ? (globalThis as typeof globalThis & { tinycolor?: (value: unknown) => unknown })
             .tinycolor?.(
@@ -1278,6 +1296,21 @@ export function registerTextureTools() {
 
         if (!templateTexture) {
           throw new Error("Blockbench did not return the generated texture template.");
+        }
+        const templateUvAudit = buildUvAtlasAudit(
+          collectUvAtlasUsages(),
+          templateTexture.getUVWidth(),
+          templateTexture.getUVHeight()
+        );
+        if (
+          templateUvAudit.state !== "available" ||
+          templateUvAudit.invalid_uv.count > 0 ||
+          templateUvAudit.out_of_bounds.count > 0 ||
+          templateUvAudit.production_gate.state !== "ready"
+        ) {
+          throw new Error(
+            "Native template generation finished without a valid UV atlas. The texture was not accepted; reload BlockIT/Blockbench and retry from a clean project."
+          );
         }
         templateTexture.render_mode = render_mode;
         templateTexture.render_sides = render_sides;

@@ -37,6 +37,8 @@ describe("texture production discipline", () => {
     for (const marker of [
       'if (type === "template")',
       "TextureGenerator",
+      'runSpecific("select_all", "outliner")',
+      "Native template generation finished without a valid UV atlas",
       "resolution: pixel_density",
       "rearrange_uv",
       "double_use: keep_multi_texture_occupancy",
