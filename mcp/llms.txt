@@ -12,21 +12,20 @@ Default endpoint:
 
 Transport is loopback-only, stateless Streamable HTTP with JSON responses.
 
-The normal `bedrock_entity` profile retains **51 callable tools across authoring phases**, but they are **not exposed all at once**. Runtime exposure is:
+The normal `bedrock_entity` profile retains **51 callable tools**. Runtime exposure is now organized as:
 
 ```text
-MCP CORE + exactly one ACTIVE PHASE
+MCP CORE + AUTHORING
+  GEOMETRY owner  = Cube/Group/rig/Locator/Null + structural mutation + UV Layout
+  TEXTURING owner = Texture Atlas + Painter + PBR + material instances + Texture Verify
 
-GEOMETRY  = Cube/Group/rig/Locator/Null + structural mutation + UV Layout
-TEXTURING = Texture Atlas + Painter + PBR + material instances + Texture Verify
-ANIMATION = animation/keyframes/timeline/effects/controllers/inspection
+MCP CORE + ANIMATION
+  animation/keyframes/timeline/effects/controllers/inspection
 ```
 
-Default phase is **Geometry**, currently **25 exposed tools**. A phase change can be requested through `switch_authoring_phase`; reconnect the MCP client to refresh `tools/list`.
+Geometry and Texturing startup focus values expose the same AUTHORING capability set. They remain separate semantic stages/owners, but a Geometry↔Texturing correction does not require a Runtime phase switch. `HANDOFF_REQUIRED` + `switch_authoring_phase` is reserved for crossing AUTHORING↔Animation through the Gateway.
 
-Generated API documentation enumerates **77 declared source ToolSpecs**, including disabled/source-preserved definitions. That documentation count is not the normal callable catalog and is not the current phase exposure.
-
-Foreign-phase mutation is not a tool-search miss. Use `HANDOFF_REQUIRED` instead of searching for, emulating, renaming, or substituting a tool from another phase.
+Generated API documentation enumerates **77 declared source ToolSpecs**, including disabled/source-preserved definitions. That documentation count is not the normal callable catalog and is not the installed surface count.
 
 ## Bedrock Authoring Invariants
 - 1 Minecraft block = 16 Blockbench units.
@@ -34,7 +33,11 @@ Foreign-phase mutation is not a tool-search miss. Use `HANDOFF_REQUIRED` instead
 - Prefer exact UUID targeting; ambiguous exact names fail closed.
 - Reuse fresh mutation-returned state instead of immediate confirmation reads.
 - Tool success proves execution, not visual/reference fidelity.
+- A clean positive-volume overlap audit is not proof of surface quality.
+- Shared semantic assemblies should use a Group/shared transform or one coherent cohort correction; partial child moves need an explicit local-part reason.
+- UV technical validity is not unwrap quality: review face aspect, texel density, orientation, seams/padding, and semantic exact-reuse intent.
 - Reference-driven PASS requires actual approved visual evidence plus fresh current model evidence.
+- User visual rejection reopens the affected gate.
 - Same causal correction failing twice without new evidence stops as `BLOCKED`.
 
 ## Capability Summary
@@ -53,16 +56,16 @@ Protected gaps remain controller blend-curve mutation, TextureMesh direct author
 ## Security Boundary
 - `risky_eval` is disabled.
 - `from_geo_json` is disabled.
-- Generic fallback families require the explicit `Extended MCP Profile`; that profile does not re-enable the two disabled tools above.
+- Generic fallback families require the internal Legacy UI Fallback opt-in; it does not re-enable the two disabled tools above.
 - Do not broaden network exposure beyond loopback without a separately reviewed authentication design.
 
 ## Prompt / Agent Contract
-The bundled `bedrock_entity_workflow` is phase-filtered at runtime. Persisted prompt overrides are compatibility-checked against the current canonical workflow; stale pre-phase overrides must not silently replace current routing.
+The bundled `bedrock_entity_workflow` renders full AUTHORING guidance for Geometry/Texturing focus and Animation-only guidance on the Animation surface. Persisted prompt overrides are compatibility-checked against the current canonical workflow.
 
 Codex should route from:
-`ACTIVE PHASE + intent + known state/UUID → exact exposed tool → execute → reuse returned state`.
+`ACTIVE STAGE + intent + known state/UUID → exact exposed capability → execute → reuse returned state`.
 
-Use `tool_search` only as bounded deferred spec loading after the exact active-phase tool has already been selected.
+Known capability → invoke directly. Unknown/stale capability → bounded `search_capabilities`; schema needed → `describe_capability` once.
 
 ## Development / Verification
 From `mcp/`:
@@ -74,13 +77,13 @@ bun run verify:mcp
 
 During iteration use the smallest targeted regression or primitive check that can falsify the current change; do not use the full verifier as the edit loop.
 
-`measure:surface` is the **66-tool callable-catalog/static payload guard**. `measure:phases` measures the source-owned Core + active-phase `tools/list` payload actually produced over the real loopback transport for Geometry, Texturing, and Animation. Neither measurement is installed-client token usage or Authoring Efficiency proof.
+`measure:surface` guards the retained callable catalog/static payload. `measure:phases` measures the source-owned Runtime surfaces over the real loopback transport. Neither measurement is installed-client token usage or Authoring Efficiency proof.
 
 Production artifact: `mcp/dist/blockit_mcp.js`.
 
-For installed-runtime freshness use `bun run verify:stateless-local`; it compares the installed profile + active phase + `tools/list` against current source. With an explicitly disposable Blockbench project, `bun run verify:geometry-live -- --confirm-disposable` additionally proves Geometry create/mutate/readback/fixed-frame-render/Undo/Redo effects. The live verifier does not score reference fidelity or accepted model quality.
+For installed-runtime freshness use `bun run verify:stateless-local`; it compares the installed profile + active stage + `tools/list` against current source. With an explicitly disposable Blockbench project, `bun run verify:geometry-live -- --confirm-disposable` additionally proves Geometry create/mutate/readback/fixed-frame-render/Undo/Redo effects. The live verifier does not score reference fidelity or accepted model quality.
 
-Static source/CI proof cannot establish live Blockbench rendering, installed-plugin freshness, visual quality, or Authoring Efficiency.
+Static source/CI proof cannot establish live Blockbench rendering, installed-plugin freshness, visual quality, UV quality, or Authoring Efficiency.
 
 ## License
 GPL-3.0-only. See repository root `LICENSE`.

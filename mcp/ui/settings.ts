@@ -71,14 +71,14 @@ export function settingsSetup(): void {
       icon: "webhook",
     }),
     new Setting(MCP_AUTHORING_PHASE_SETTING_ID, {
-      name: "Default MCP Authoring Phase",
+      name: "Default Authoring Stage",
       description:
-        "Startup/reload default for the BlockIT Runtime. Normal Gateway handoffs use switch_authoring_phase and refresh automatically without reconnecting the AI client.",
+        "Startup/reload focus. Geometry and Texturing use the same shared AUTHORING tool surface; switch_authoring_phase is only needed when crossing AUTHORING and Animation through the Gateway.",
       type: "select",
       value: DEFAULT_MCP_AUTHORING_PHASE,
       options: {
-        geometry: "Geometry + Rig + UV Layout",
-        texturing: "Texturing",
+        geometry: "Geometry focus (shared Authoring tools)",
+        texturing: "Texturing focus (shared Authoring tools)",
         animation: "Animation",
       },
       requires_restart: true,

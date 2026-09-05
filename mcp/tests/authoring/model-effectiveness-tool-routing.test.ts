@@ -6,7 +6,7 @@ async function source(path: string): Promise<string> {
 }
 
 describe("model creation effectiveness — tool routing", () => {
-  test("Geometry lane is explicit and runtime prompt excludes later-phase tools", async () => {
+  test("Geometry focus gets complete AUTHORING guidance without Animation tools", async () => {
     const [orchestrator, modelling, workflow] = await Promise.all([
       source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md"),
       source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
@@ -17,14 +17,15 @@ describe("model creation effectiveness — tool routing", () => {
     for (const tool of ["get_project_info", "manage_cubes", "capture_model_views", "inspect_elements", "export_model"]) {
       expect(orchestrator).toContain(tool);
     }
-    for (const tool of ["manage_cubes", "inspect_elements"]) {
+    for (const tool of ["manage_cubes", "inspect_elements", "create_texture"]) {
       expect(geometryRuntime).toContain(tool);
     }
     expect(geometryRuntime).toContain("fresh model views");
-    expect(geometryRuntime).not.toContain("create_texture");
     expect(geometryRuntime).not.toContain("create_animation");
     expect(orchestrator).toMatch(/Skip `get_project_info` after create\/export unless .*lifecycle state.*unknown\/stale/i);
     expect(modelling).toContain("Stay in the geometry lane unless a current decision requires another branch");
+    expect(modelling).toContain("No positive-volume overlap alone is not visual PASS");
+    expect(orchestrator).toContain("Semantic cohort rule");
   });
 
   test("specialists reuse known state instead of forcing lifecycle/discovery rereads", async () => {

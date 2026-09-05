@@ -5,83 +5,71 @@ description: Route Bedrock Entity intents.
 
 # BlockIT Bedrock Entity MCP
 
-Own only **phase/tool routing**, handoff, recovery:
+Own AUTHORING/Animation routing, handoff, recovery:
 
 ```text
 geometry/rig/UV judgement → `blockbench-bedrock-modelling`
-texture/PBR               → `blockit-bedrock-texturing`
-animation/motion          → `blockit-bedrock-animation`
+texture/PBR → `blockit-bedrock-texturing`
+animation/motion → `blockit-bedrock-animation`
 ```
 
 ## Reference Grounding / Strategy Gate
 
 approved image = visual authority. Geometry Strategy is user-selected: `DIRECT | 3D_ASSISTED`; never auto-switch.
 
-```text
-DIRECT      → normal Geometry
-3D_ASSISTED → Shape Reconstruction → PrimitiveAnything → Cuboid Scaffold → semantic cleanup
-```
-
-Unavailable 3D-Assisted → `BLOCKED`; never fallback.
+`DIRECT` → normal Geometry. `3D_ASSISTED` → Shape Reconstruction → PrimitiveAnything → Cuboid Scaffold → semantic cleanup. Unavailable → `BLOCKED`; never fallback. `manage_geometry_reference` is support evidence only.
 
 ## Fast Routing Contract
 
 Normal asset work **must not begin by searching repository files**.
 
 ```text
-ACTIVE PHASE + intent + known state/UUIDs
+ACTIVE STAGE + intent + known state/UUIDs
 → exact known Runtime capability
-→ execute through Gateway
-→ reuse fresh returned state
+→ Gateway execution → reuse returned state
 ```
 
 Schema needed → `describe_capability` once before mutation. **1 Minecraft block = 16 Blockbench units.** Reuse `front_direction`.
 
-## Phase Handoff
+## Authoring Surface / Handoff
 
-Foreign phase → `HANDOFF_REQUIRED`: `target_phase`, `reason`, `readiness`, `resume_from`.
+Geometry and Texturing share one AUTHORING Runtime surface; Geometry↔Texturing is an owner/focus change, not a Runtime handoff.
 
-```text
-switch_authoring_phase through Gateway → refresh catalog → target specialist → same task/chat
-```
-
-Forward handoff waits for user approval + checkpoint.
+`HANDOFF_REQUIRED`: `target_phase`, `reason`, `readiness`, `resume_from` only for AUTHORING↔Animation. `switch_authoring_phase` through Gateway → target specialist → same task/chat.
 
 ## Authoring Stage Lock
 
 `DISCOVER → AUTHOR → VERIFY → CORRECT → VERIFY → DONE`
 
-Internal `PASS` → `READY_FOR_USER_REVIEW`; user explicitly approves live Blockbench. Same material cause twice without new evidence → `BLOCKED`.
+Internal `PASS` → `READY_FOR_USER_REVIEW`; same material cause twice without new evidence → `BLOCKED`.
 
 ## Tool Lane Discipline
 
 ```text
 CORE / SHARED
-project lifecycle unknown     → get_project_info
-target identity unknown       → inspect_elements(mode=search)
-hierarchy question            → inspect_elements(mode=outline)
-known target detail           → inspect_elements(mode=detail)
-visible/reference comparison  → capture_model_views
-numeric envelope/scale/ground → inspect_model_bounds
-structural validation gate    → validator://status; details only when nonzero
-Locator identity unknown      → list_locator_elements
-global UV/atlas readiness     → list_textures
-recovery                      → undo / redo
-file deliverable              → export_model
-phase change                  → switch_authoring_phase
+project unknown                → get_project_info
+identity/hierarchy/detail      → inspect_elements(mode=search|outline|detail)
+reference comparison           → capture_model_views
+envelope/scale/ground          → inspect_model_bounds
+validation                     → validator://status
+UV/atlas readiness             → list_textures
+file deliverable               → export_model
+Animation boundary             → switch_authoring_phase
 
-GEOMETRY
-3D-Assisted live GLB          → manage_geometry_reference
+GEOMETRY OWNER — callable throughout AUTHORING
+3D-Assisted GLB                → manage_geometry_reference
 create normal bone/Group       → add_group
-create/update Cubes           → manage_cubes(operation=create|update|batch_update)
+create/update Cubes            → manage_cubes(operation=create|update|batch_update)
 Group/bone parent move         → reparent_element
 Group pivot/rotation/visible   → modify_group
-structural delete/rename       → remove_element / rename_element
-Locator/Null create/edit       → manage_locator / manage_null_object
+delete/rename                  → remove_element / rename_element
+Locator/Null                   → manage_locator / manage_null_object
 rig IK/mirror                  → bone_rigging
 ```
 
 `bone_rigging` only for IK/mirror. Known coherent Cubes → one `manage_cubes(operation=create, elements=[...])`; uncertainty → no batch. Known Cubes sharing one deterministic TRANSLATE/RESIZE intent → derive absolute targets once from fresh state → one `manage_cubes(operation=batch_update)`. Never loop inspect→modify per Cube; relative intent stays reasoning-layer arithmetic; writes stay absolute/fail-closed.
+
+**Semantic cohort rule:** shared assembly motion belongs to its Group when one transform explains it. Otherwise correct the complete affected sibling cohort; subset child moves need an explicit local-part reason.
 
 ## First-Call Invariants
 
@@ -97,15 +85,7 @@ Validation failure repairs arguments for the **same capability**.
 
 ## Capability Discovery / Recovery
 
-Capability discovery is **deferred spec loading after routing**, not a second router.
-
-```text
-known exact capability   → invoke directly
-unknown/stale capability → one precise search_capabilities query
-schema needed            → describe_capability once
-```
-
-One precise search miss → reformulate once; second miss → `BLOCKED`. A known foreign-phase capability is never a discovery miss; hand off.
+Known exact capability → invoke. Unknown/stale → one precise `search_capabilities`; schema → `describe_capability` once. One precise search miss → reformulate once; second miss → `BLOCKED`. A known foreign-phase capability is never a discovery miss: AUTHORING↔Animation uses handoff.
 
 ```text
 INVALID_INPUT       → repair args; same capability
@@ -119,12 +99,10 @@ OUTCOME_UNKNOWN     → inspect state before retry
 
 ## State Reuse / Anti-Loop
 
-- Known UUID → no discovery unless stale/ambiguous.
-- Fresh mutation → reuse returned state/`geometry_effect`; no confirmation readback.
+- Fresh mutation → reuse state/`geometry_effect`; no confirmation readback.
 - Do not automatically re-read fresh mutation targets with `inspect_elements(mode=detail)`.
-- Validator gate → read `validator://status` first; zero problems means no detail-resource read.
+- `validator://status` first; details only when nonzero.
 - `inspect_model_bounds` only for envelope/scale/ground/displacement.
 - Skip `get_project_info` after create/export unless lifecycle state is unknown/stale.
-- Same routed failure twice without new evidence → `BLOCKED`.
 
 `export_model`: `bedrock` JSON or `project` `.bbmodel`.

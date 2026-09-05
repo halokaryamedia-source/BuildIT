@@ -40,6 +40,8 @@ describe_capability
 invoke_capability
 ```
 
+Geometry and Texturing use one shared **AUTHORING Runtime surface**. Their semantic owners remain separate, but routine Geometry↔Texturing correction does not change the Runtime tool catalog. Animation remains a separate surface and is the only normal authoring boundary that uses `switch_authoring_phase`.
+
 ## 3. Reference Preparation
 
 ChatGPT generates one canonical five-preview board:
@@ -87,14 +89,14 @@ Only after the gate passes:
 
 ```text
 create Blockbench project
-→ start Geometry
+→ enter shared AUTHORING surface with Geometry focus
 ```
 
 Before that: no `.bbmodel`, Cubes/Groups, Shape Reconstruction, or PrimitiveAnything execution.
 
 ## 5. Stage Lifecycle
 
-Each authored stage:
+Semantic stages remain useful for judgement and approval, but Geometry and Texturing are not hard Runtime ACLs.
 
 ```text
 IN_PROGRESS
@@ -104,8 +106,8 @@ IN_PROGRESS
 → user inspects live Blockbench
    ├─ revision → IN_PROGRESS
    └─ explicit “approve” → APPROVED
-→ checkpoint save
-→ next required stage
+→ checkpoint save when meaningful
+→ next required stage/focus
 ```
 
 Codex uses current Blockbench state and internal `capture_model_views` when visual evidence is needed. Internal captures are not the user approval surface.
@@ -113,6 +115,8 @@ Codex uses current Blockbench state and internal `capture_model_views` when visu
 Do not send materially broken work to user review. Same material causal correction failing twice without new evidence → `BLOCKED`; request user direction.
 
 Persist project state at meaningful handoff/resume/park/completion boundaries; stage approval is the normal checkpoint trigger.
+
+A user-reported defect **reopens the exact affected gate**, even when earlier technical checks were clean. Technical validator success is evidence, not an acceptance lock.
 
 ## 6. Geometry Strategies
 
@@ -213,7 +217,7 @@ Active Workspace path
 
 Do not accept arbitrary primitive arrays/path overrides and do not revive generic `from_geo_json`.
 
-**Current status:** target orchestrator/state contract + atomic materializer are design-locked but not yet production-implemented/promoted.
+**Current status:** external orchestrator/state contract + internal atomic materializer engine are source-ready; the public Runtime ToolSpec binding still requires LOCAL_CODE generation/verification.
 
 ### Semantic Geometry Cleanup
 
@@ -223,7 +227,7 @@ Approved Reference = visual authority; requested dimensions = numeric authority.
 
 Cleanup must leave coherent silhouette, dimensions, parts, attachments, orientation, semantic hierarchy, future editability, and UV readiness.
 
-## 7. Geometry Readiness / Future Animation
+## 7. Geometry / Surface / UV Readiness
 
 Canonical downstream vocabulary remains distinct:
 
@@ -244,22 +248,46 @@ All Geometry should be future-animation-friendly:
 - no destructive structure requiring full rebuild later;
 - no speculative full rig for static scope.
 
-If `Animation Required = YES`, participating hierarchy/Bones/pivots/attachments must be animation-ready before Geometry user approval.
+If `Animation Required = YES`, participating hierarchy/Bones/pivots/attachments must be animation-ready before Geometry approval.
 
-Geometry internal PASS + UV readiness → user review. Explicit approve → checkpoint → `switch_authoring_phase` through Gateway → Texturing in the same task/chat.
+### Surface quality
+
+A clean positive-volume overlap audit is **not** a surface-quality PASS. Before Geometry readiness, inspect the affected views for accidental coplanar rendered surfaces, visible penetration, gaps, contact seams, and deliberate layer offsets. User-reported flicker/z-fighting/gap appearance reopens this gate.
+
+### Semantic cohort
+
+When several Cubes form one assembly, a shared translation/orientation should normally be owned by the semantic Group/Bone when one shared transform explains the change. Otherwise correct the complete affected sibling cohort in one coherent batch. Do not treat independent successful Cube mutations as proof that the assembly relationship stayed intact.
+
+### UV quality
+
+Technical UV validity remains necessary but is insufficient. Important visible faces also require review of:
+
+```text
+face geometry ↔ UV aspect
+texel density / pixels per UV unit
+orientation / directional material flow
+padding and seam relationships
+semantic exact-reuse intent
+unique identity/detail surfaces
+```
+
+Exact UV reuse is allowed only when the surfaces intentionally should read the same pixels. A valid in-bounds rectangle does not by itself prove a good unwrap.
+
+Geometry internal PASS + UV readiness → user review when a meaningful Geometry checkpoint is due. Explicit approve → checkpoint → continue Texturing focus **inside the same AUTHORING Runtime surface**. No Geometry↔Texturing `switch_authoring_phase` is required.
 
 ## 8. Texturing
 
 ```text
-Geometry APPROVED
-→ Texturing
+Geometry/UV sufficiently coherent
+→ Texturing focus in shared AUTHORING surface
+→ Texture Atlas + Styling
 → internal technical + visual verify
 → READY_FOR_USER_REVIEW
 → user approve
 → checkpoint save
 ```
 
-Return to Geometry only for a material Geometry/UV blocker that prevents correct Texturing, not optional improvement.
+If Texturing reveals a material Geometry/UV blocker, route judgement to the Geometry owner and correct it directly using the already-callable AUTHORING capabilities. Revalidate only materially affected texture evidence. Do not bounce the Runtime surface Geometry↔Texturing.
 
 ## 9. Animation
 
@@ -269,6 +297,8 @@ If YES:
 
 ```text
 Texturing APPROVED
+→ HANDOFF_REQUIRED(target_phase=animation)
+→ switch_authoring_phase through Gateway
 → Animation
 → internal playback/technical/visual verify
 → READY_FOR_USER_REVIEW
@@ -276,7 +306,7 @@ Texturing APPROVED
 → checkpoint save
 ```
 
-Return to Geometry only for material rig/pivot/hierarchy blockers.
+Animation owns motion. A material rig/pivot/hierarchy/UV/texture blocker returns through Gateway to the shared AUTHORING surface; Animation does not borrow upstream mutation while its surface is active.
 
 ## 10. Downstream Invalidation
 
@@ -287,7 +317,7 @@ downstream unaffected → keep APPROVED
 downstream affected   → INVALIDATED → repair → user approval again
 ```
 
-Invalidate minimum dependent scope; prevent before handoff rather than bouncing stages.
+Invalidate minimum dependent scope. Within shared AUTHORING, fix the owning Geometry/UV defect directly rather than using a phase bounce.
 
 ## 11. Finalization
 
@@ -313,7 +343,7 @@ user supplies/identifies .bbmodel + change
 → recover/create Active Workspace
 → if untracked: persist supplied .bbmodel as baseline before mutation
 → inspect current model
-→ determine affected stage(s)
+→ determine affected semantic stage(s)
 → ask only material missing information
 → update smallest owning stage(s)
 → internal verify

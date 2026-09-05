@@ -1,21 +1,21 @@
 import type { McpAuthoringPhase } from "@/lib/authoringPhase";
 
+const AUTHORING_WORKFLOW_SECTIONS = [
+  "Minimum Necessary Evidence",
+  "Simple Rigid Fast Path",
+  "Geometry / Visual Gate",
+  "UV Layout",
+  "Texture Atlas",
+  "Texture Styling",
+  "Texture Verify",
+] as const;
+
 export const BEDROCK_WORKFLOW_PHASE_SECTIONS: Record<
   McpAuthoringPhase,
   readonly string[]
 > = {
-  geometry: [
-    "Minimum Necessary Evidence",
-    "Simple Rigid Fast Path",
-    "Geometry / Visual Gate",
-    "UV Layout",
-  ],
-  texturing: [
-    "Minimum Necessary Evidence",
-    "Texture Atlas",
-    "Texture Styling",
-    "Texture Verify",
-  ],
+  geometry: AUTHORING_WORKFLOW_SECTIONS,
+  texturing: AUTHORING_WORKFLOW_SECTIONS,
   animation: ["Minimum Necessary Evidence"],
 };
 
@@ -33,7 +33,7 @@ export function assertBedrockWorkflowSourceCompatible(markdown: string): void {
   const missing = missingBedrockWorkflowSections(markdown);
   if (missing.length === 0) return;
   throw new Error(
-    `Bedrock workflow is incompatible with phase routing; missing section(s): ${missing
+    `Bedrock workflow is incompatible with authoring-stage routing; missing section(s): ${missing
       .map((heading) => `## ${heading}`)
       .join(", ")}. Reset the prompt override or restore the canonical section structure.`
   );

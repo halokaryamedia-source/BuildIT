@@ -5,12 +5,12 @@ async function source(path: string): Promise<string> {
 }
 
 describe("asset tool routing", () => {
-  test("orchestrator uses Gateway + active phase before repository discovery", async () => {
+  test("orchestrator uses Gateway + active stage before repository discovery", async () => {
     const skill = await source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md");
 
     expect(skill).toContain("## Fast Routing Contract");
     expect(skill).toContain("must not begin by searching repository files");
-    expect(skill).toContain("ACTIVE PHASE + intent + known state/UUIDs");
+    expect(skill).toContain("ACTIVE STAGE + intent + known state/UUIDs");
     expect(skill).toContain("exact known Runtime capability");
     expect(skill).toContain("search_capabilities");
     expect(skill).toContain("describe_capability");
@@ -44,9 +44,10 @@ describe("asset tool routing", () => {
     expect(skill).toContain("Group pivot/rotation/visible   → modify_group");
     expect(skill).toContain("rig IK/mirror                  → bone_rigging");
     expect(skill).toContain("`bone_rigging` only for IK/mirror");
+    expect(skill).toContain("Semantic cohort rule");
   });
 
-  test("Gateway discovery is bounded and foreign-phase need is a handoff, not a miss", async () => {
+  test("Gateway discovery is bounded and only the AUTHORING/Animation boundary hands off", async () => {
     const skill = await source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md");
 
     expect(skill).toContain("## Capability Discovery / Recovery");
@@ -54,6 +55,7 @@ describe("asset tool routing", () => {
     expect(skill).toContain("reformulate once");
     expect(skill).toContain("second miss → `BLOCKED`");
     expect(skill).toContain("known foreign-phase capability is never a discovery miss");
+    expect(skill).toContain("AUTHORING↔Animation uses handoff");
     expect(skill).not.toContain("tool_search");
   });
 
@@ -74,7 +76,7 @@ describe("asset tool routing", () => {
     ]) expect(skill).toContain(term);
   });
 
-  test("texturing uses consolidated material facade and keeps support tools conditional", async () => {
+  test("texturing uses consolidated material facade and shared Authoring correction", async () => {
     const texturing = await source("../.agents/skills/blockit-bedrock-texturing/SKILL.md");
 
     for (const term of [
@@ -87,6 +89,7 @@ describe("asset tool routing", () => {
       "HANDOFF_REQUIRED",
       "switch_authoring_phase",
       "Primary vs Support Capabilities",
+      "No Geometry↔Texturing phase switch",
     ]) expect(texturing).toContain(term);
 
     expect(texturing).not.toContain("create_pbr_material / configure_material / assign_texture_channel");

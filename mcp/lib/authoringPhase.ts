@@ -27,8 +27,6 @@ const CORE_FAMILIES = new Set<McpRegistrationFamily>([
   "history",
   "project",
   "phase_control",
-  // Internal extended compatibility only adds Legacy UI Fallback families.
-  // They remain debug/maintenance capability rather than an authoring profile.
   "import",
   "ui",
 ]);
@@ -52,54 +50,49 @@ const GEOMETRY_MAINTENANCE_TOOLS = new Set([
 ]);
 
 const CORE_TEXTURE_TOOLS = new Set([
-  // Read-only cross-phase inventory + global UV audit. Geometry uses it before
-  // handoff; Texturing reuses it without borrowing Cube mutation.
   "list_textures",
 ]);
 
+function isSharedAuthoringStage(phase: McpAuthoringPhase): boolean {
+  return phase === "geometry" || phase === "texturing";
+}
+
 const PHASE_FOREIGN_SUMMARY: Record<McpAuthoringPhase, string> = {
-  geometry: "Foreign: Texturing (Texture/PBR), Animation (keyframes/controllers).",
-  texturing: "Foreign: Geometry (Cube/Group/rig/UV), Animation (keyframes/controllers).",
-  animation: "Foreign: Geometry (Cube/Group/rig/UV), Texturing (Texture/PBR).",
+  geometry:
+    "Foreign: Animation only. Geometry and Texturing share the AUTHORING tool surface.",
+  texturing:
+    "Foreign: Animation only. Geometry and Texturing share the AUTHORING tool surface.",
+  animation:
+    "Foreign: AUTHORING (Geometry/rig/UV/Texture/PBR).",
 };
 
 const PHASE_OWNER_SUMMARY: Record<McpAuthoringPhase, string> = {
   geometry:
-    "Geometry owns Cube/Group/rig/Locator/Null mutation, UV Layout, and optional 3D Evidence lifecycle.",
+    "AUTHORING surface; Geometry focus owns Cube/Group/rig/Locator/Null mutation and UV Layout. Texture capabilities remain callable for adjacent authoring work.",
   texturing:
-    "Texturing owns Texture Atlas, Painter, PBR, material-instance authoring, and Texture Verify.",
+    "AUTHORING surface; Texturing focus owns Texture Atlas/Painter/PBR/materials/Texture Verify. Geometry/UV capabilities remain callable for bounded upstream correction.",
   animation:
-    "Animation owns authored animations, keyframes, timeline, effects, controllers, and animation inspection.",
+    "Animation owns animations, keyframes, timeline, effects, controllers, and animation inspection.",
 };
 
 const PHASE_RUNTIME_OWNER_SUMMARY: Record<McpAuthoringPhase, string> = {
-  geometry: "Owns Cube/Group/rig/Locator/Null, UV Layout, optional 3D Evidence.",
-  texturing: "Owns Texture Atlas/Painter/PBR/materials and Texture Verify.",
-  animation: "Owns animation/keyframes/timeline/effects/controllers/inspection.",
+  geometry: "AUTHORING surface. Current focus: Geometry/rig/UV Layout.",
+  texturing: "AUTHORING surface. Current focus: Texture Atlas/Painter/PBR/Texture Verify.",
+  animation: "Animation surface. Owns motion/keyframes/effects/controllers/inspection.",
 };
 
 const PHASE_READINESS_SUMMARY: Record<McpAuthoringPhase, string> = {
   geometry:
-    "Texturing handoff readiness: geometry=PASS; uv_layout=PASS; final Box-UV lock is complete where applicable; list_textures has no unresolved invalid/out-of-bounds/partial-overlap blocker.",
+    "Authoring readiness: geometry=PASS and uv_layout=PASS before substantial styling; texture_verify=PASS before Animation/finalization.",
   texturing:
-    "Animation handoff readiness: texture_verify=PASS; no unresolved Geometry/UV blocker remains; required texture/material state is current.",
+    "Animation handoff readiness: geometry=PASS; uv_layout=PASS; texture_verify=PASS; no unresolved Geometry/surface/UV blocker remains.",
   animation:
-    "Animation completion readiness: requested motion scope is verified; any structural rig/pivot/IK defect returns to Geometry instead of being repaired here.",
-};
-
-const PHASE_SUPPORT_ROUTING: Record<McpAuthoringPhase, string> = {
-  geometry:
-    "Support-only routes: selection tools only when editor selection is required; locator tools only for explicit attachment/marker needs; camera only for visual checkpoints; history only for recovery; export only at the final artifact checkpoint.",
-  texturing:
-    "Support-only routes: camera only for visual texture checkpoints; history only for recovery; export only at the final artifact checkpoint.",
-  animation:
-    "Support-only routes: camera only for motion checkpoints; history only for recovery; export only at the final artifact checkpoint.",
+    "Animation completion readiness: requested motion scope is verified; any structural rig/pivot/UV/texture defect returns to the shared AUTHORING surface.",
 };
 
 const GEOMETRY_SUBGROUP_ROUTING =
-  "Geometry intent routes: setup_and_hierarchy=create_project/get_project_info; geometry_authoring=add_group/manage_cubes(operation=create)/duplicate_element/reparent_element; correction_and_inspection=manage_cubes(operation=update|batch_update)/modify_group/remove_element/rename_element/inspect_elements(mode=outline|search|detail)/inspect_model_bounds; checkpoint_and_export=capture_model_views/export_model. Legacy Geometry Plan and compiler routes are not part of the production surface. Selection, locator discovery, generic screenshots, format discovery, and history are conditional support only. Choose one direct route from the current intent.";
+  "Geometry intent routes: setup_and_hierarchy=create_project/get_project_info; geometry_authoring=add_group/manage_cubes(operation=create)/duplicate_element/reparent_element; correction_and_inspection=manage_cubes(operation=update|batch_update)/modify_group/remove_element/rename_element/inspect_elements(mode=outline|search|detail)/inspect_model_bounds; checkpoint_and_export=capture_model_views/export_model. Selection, locator discovery, generic screenshots, format discovery, and history are conditional support only. Choose one direct route from the current intent.";
 
-void PHASE_SUPPORT_ROUTING;
 void GEOMETRY_SUBGROUP_ROUTING;
 
 export function isMcpAuthoringPhase(value: unknown): value is McpAuthoringPhase {
@@ -137,17 +130,22 @@ export function buildMcpPhaseRuntimeContract(
   allowedTools: readonly string[] = []
 ): string {
   const label = phase.toUpperCase();
+  const surface = isSharedAuthoringStage(phase) ? "AUTHORING" : "ANIMATION";
   const allowedToolsText =
     allowedTools.length > 0
       ? ` Allowed tools (${allowedTools.length}): ${allowedTools.join(", ")}.`
       : "";
+  const transition = isSharedAuthoringStage(phase)
+    ? "Geometry↔Texturing focus changes stay in the same AUTHORING surface; do not call switch_authoring_phase for those corrections."
+    : "Structural/UV/texture correction requires HANDOFF_REQUIRED back to AUTHORING.";
   return [
-    `ACTIVE PHASE: ${label}. MCP CORE + ${label} only.`,
+    `ACTIVE STAGE: ${label}. MCP CORE + ${surface} tools available.`,
     BEDROCK_AUTHORING_COORDINATE_CONTRACT,
     PHASE_RUNTIME_OWNER_SUMMARY[phase],
     PHASE_FOREIGN_SUMMARY[phase],
     "Do not search for, emulate, rename, or substitute foreign tools.",
-    `${MCP_HANDOFF_REQUIRED}: include target_phase, reason, readiness, resume_from; invoke switch_authoring_phase through Gateway, then stop prior-phase mutations.${allowedToolsText}`,
+    transition,
+    `${MCP_HANDOFF_REQUIRED}: only when crossing AUTHORING↔ANIMATION; include target_phase, reason, readiness, resume_from and invoke switch_authoring_phase through Gateway.${allowedToolsText}`,
   ].join(" ");
 }
 
@@ -156,20 +154,32 @@ export function buildMcpPhasePromptHeader(
   allowedTools: readonly string[] = []
 ): string {
   return [
-    "## Active Phase Contract",
+    "## Active Stage Contract",
     buildMcpPhaseRuntimeContract(phase, allowedTools),
-    "Only the current phase workflow is rendered below. Later phases become callable only after a Gateway phase handoff; the same task/chat continues.",
+    isSharedAuthoringStage(phase)
+      ? "Geometry and Texturing guidance are rendered together because both operate in the same AUTHORING Runtime surface."
+      : "Animation guidance is rendered alone; upstream correction returns through Gateway to the shared AUTHORING surface.",
   ].join("\n\n");
 }
 
 export function buildMcpPhaseHandoffContract(
   phase: McpAuthoringPhase
 ): string {
+  if (isSharedAuthoringStage(phase)) {
+    return [
+      "## Authoring Focus / Handoff",
+      PHASE_READINESS_SUMMARY[phase],
+      "Geometry↔Texturing correction does not require HANDOFF_REQUIRED or a Runtime phase switch. Use the semantic owner directly in the same task/chat and invalidate only affected downstream evidence.",
+      "When Animation is required, handoff state is target_phase, reason, readiness, resume_from; resume_from names the current project, immediate target, and last verified gate.",
+      `${MCP_HANDOFF_REQUIRED} means cross AUTHORING↔ANIMATION through switch_authoring_phase via Gateway, then continue the same task/chat.`,
+    ].join("\n\n");
+  }
+
   return [
     "## Phase Readiness / Handoff",
     PHASE_READINESS_SUMMARY[phase],
-    "A handoff preserves only resume-critical state: target_phase, reason, readiness, resume_from, and action. resume_from names the current model/project, immediate target identifiers, and last verified gate; include an exact UUID only when the next mutation needs it. Do not create a persistent UUID registry or tool-call transcript.",
-    `${MCP_HANDOFF_REQUIRED} means STOP using current-phase mutation routes, invoke switch_authoring_phase through the Gateway, then continue the same task after the Gateway refreshes the Runtime catalog.`,
+    "A handoff preserves only resume-critical state: target_phase, reason, readiness, resume_from, and action. resume_from names the current model/project, immediate target identifiers, and last verified gate.",
+    `${MCP_HANDOFF_REQUIRED} means STOP Animation mutation routes, invoke switch_authoring_phase through the Gateway, then continue the same task on the shared AUTHORING surface.`,
   ].join("\n\n");
 }
 
@@ -225,5 +235,7 @@ export function isMcpToolExposedForPhase(
   phase: McpAuthoringPhase
 ): boolean {
   const category = classifyMcpToolPhase(toolName, family);
-  return category === "core" || category === phase;
+  if (category === "core") return true;
+  if (phase === "animation") return category === "animation";
+  return category === "geometry" || category === "texturing";
 }

@@ -21,9 +21,8 @@ Gateway does not choose the modelling strategy. Normal authoring is:
 ```text
 Approved Reference + Dimensions + Requirements
 → user selects DIRECT | 3D_ASSISTED
-→ Geometry
-→ Texturing
-→ Animation when required
+→ shared AUTHORING surface: Geometry/UV ↔ Texturing/PBR
+→ Animation surface when required
 → Finalization
 ```
 
@@ -40,11 +39,11 @@ describe_capability
 invoke_capability
 ```
 
-Blockbench/plugin reload and Runtime phase changes do not change this client-facing `tools/list`.
+Blockbench/plugin reload and Runtime stage changes do not change this client-facing `tools/list`.
 
 ## Capability Discovery
 
-The live Runtime catalog is phase-filtered. Gateway search assigns internal priority only for discovery:
+The live Runtime catalog is surface-filtered. Geometry and Texturing startup focus values expose the same shared AUTHORING capabilities; Animation has its own surface. Gateway search assigns internal priority only for discovery:
 
 ```text
 PRIMARY      normal authoring hot path
@@ -55,13 +54,15 @@ MAINTENANCE  legacy/debug fallback; de-prioritized
 
 Tiering never deletes capability. Exact intent may still discover an exposed support/experimental/maintenance capability.
 
-## Phase Handoff
+## Authoring / Animation Handoff
 
-A successful Runtime `switch_authoring_phase` call is Gateway-managed:
+Geometry↔Texturing is **not** a Gateway handoff. Both capability families remain present on the AUTHORING Runtime surface; semantic ownership decides which specialist governs the correction.
+
+A successful Runtime `switch_authoring_phase` call is reserved for the AUTHORING↔Animation boundary and remains Gateway-managed:
 
 ```text
 invoke switch_authoring_phase
-→ Runtime phase changes
+→ Runtime surface changes AUTHORING ↔ Animation
 → Gateway invalidates backend client/catalog
 → next capability request reconnects and refetches
 → continue same task/chat
@@ -74,7 +75,7 @@ Gateway normalizes the result with `client_reconnect_required=false` and `new_ch
 - Gateway startup does not require Blockbench to be open.
 - Blockbench/plugin reload does not terminate the Gateway process.
 - Runtime health is checked before catalog-dependent operations.
-- Changed Runtime build/profile/phase invalidates cached backend catalog.
+- Changed Runtime build/profile/stage invalidates cached backend catalog.
 - Backend calls are serialized to avoid concurrent editor mutations.
 - `tools/call` is never automatically retried after transport interruption.
 - Interrupted non-read-only operations return `OUTCOME_UNKNOWN`; inspect current model state before retrying.
@@ -112,20 +113,21 @@ command = "bun"
 args = ["run", "C:/absolute/path/to/BuildIT/mcp/gateway/index.ts"]
 ```
 
-Codex owns the Gateway process lifecycle. Reloading/closing Blockbench does not replace the Codex-facing MCP process.
+A project-scoped `.codex/config.toml` may carry the same configuration when the repository is trusted. Codex owns the Gateway process lifecycle; reloading/closing Blockbench does not replace the Codex-facing MCP process.
 
 ## Current Surface
 
 ```text
 Gateway client tools     4
 Runtime callable union  51
-Geometry surface        25
-Texturing surface       35
-Animation surface       19
+AUTHORING surface        Geometry + Texturing capabilities together
+Animation surface        separate
 ```
+
+Exact installed Runtime surface counts are verified from current source/deployment rather than treated as a durable product number.
 
 ## Proof Boundary
 
-Source/static tests prove the fixed Gateway surface, loopback containment, capability priority, catalog invalidation, and retry semantics. They do not prove the live client survives Runtime lifecycle changes.
+Source/static tests can prove the fixed Gateway surface, shared AUTHORING routing contract, loopback containment, capability priority, catalog invalidation, and retry semantics. They do not prove the live client survives Runtime lifecycle changes or that authored Geometry/UV/Texture output is visually accepted.
 
-The next local gate is one continuous Codex task that starts with Blockbench closed, observes Runtime offline→online, switches Geometry↔Texturing, survives plugin reload and Blockbench close/open, and performs no manual Codex MCP reconnect or new chat.
+The next local gate is one continuous Codex task that starts with Blockbench closed, observes Runtime offline→online, confirms Geometry and Texturing focus resolve to the same AUTHORING catalog, performs an in-session Geometry↔Texturing correction, crosses AUTHORING↔Animation, survives plugin reload and Blockbench close/open, and performs no manual Codex MCP reconnect or new chat.

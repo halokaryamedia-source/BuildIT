@@ -10,18 +10,20 @@ Geometry Strategy: DIRECT
 
 Animation Required: YES — open/close iron doors only.
 
-Current Stage: TEXTURING — EXTERNAL CONTINUATION REQUIRED
+Current Stage: AUTHORING — GEOMETRY SURFACE / UV QUALITY REOPENED
 
-Geometry: STRUCTURALLY VERIFIED — front shell z-fighting audit clean; control-panel opening rebuilt through Gateway; visual acceptance not granted
-Texturing: UNACCEPTED — atlas is reference-derived, but several UV/material placements remain visually incorrect
+Geometry: REOPENED BY USER REVIEW — previous technical overlap audit was clean, but visible gap/z-fighting appearance is not accepted
+Texturing: REOPENED — UV/material mapping is technically in-bounds but visually disorganized and unaccepted
 Animation: NOT_STARTED
 
-Current model file: [industrial-elevator.bbmodel](industrial-elevator.bbmodel) (latest external-continuation checkpoint saved).
+Current model file: [industrial-elevator.bbmodel](industrial-elevator.bbmodel) — editable baseline, not accepted completion.
 
-Material handoff constraints: retain a meaningful door hierarchy/pivot for the later open/close animation; canonical front is the elevator entrance/front view. Revision applied: central door inset gap closed; left wall window opening/frame and glass panel retained. Front shell substrates stop at z=-44 so the front trim/frame strip owns z=-48..-44. The control panel is cut into the reference-right front jamb with dedicated surround cubes; current live audit found no positive-volume cube overlap and the outer 80 × 80 × 96 envelope is preserved. The active atlas is `industrial-elevator-atlas-v2.png`; UV coordinates are in bounds and have no partial-overlap gate failure, but visual material placement remains unaccepted.
+Material constraints: preserve the 80 × 80 × 96 envelope unless the approved reference proves the envelope interpretation wrong; retain meaningful left/right door hierarchy and pivots for later open/close animation; canonical front is the elevator entrance.
 
-Current next step — continue outside Codex by opening the latest `.bbmodel` in Blockbench and remapping the full UV atlas against `references/approved-reference.png`; inspect front, both 3/4 views, right/left sides, back, top, and bottom. Do not start animation until the user accepts the visual texture/UV result.
+Known structural concern: the current `ControlPanel` cohort is internally inconsistent. `ControlPanelBody`, `ControlButtonTop`, and `ControlButtonMid` are authored at negative X while `ControlButtonLow` and `EmergencyButton` remain at positive X. Treat the panel as one semantic assembly: decide the intended side from the approved reference, then use a shared Group transform or one complete coherent correction instead of independent partial moves.
 
-Known blocker(s): visual acceptance failed. The current model is a documented handoff state, not a finished asset. Remaining defects reported by the user: several material regions do not align to the reference, UV layout still appears visually disorganized, and some editor views were previously perceived as broken/z-fighting despite the structural overlap audit being clean.
+The prior statement that front shell z-fighting was resolved is no longer an acceptance lock. A clean positive-volume overlap audit is technical evidence only; it does not prove absence of visible coplanar-surface, seam, contact, or gap defects. User visual review reopens the affected Geometry gate.
 
-Current handoff state: EXTERNAL_CONTINUATION — user will continue texture/UV correction outside Codex. Preserve geometry dimensions, door hierarchy, control-panel placement, active atlas, and current `.bbmodel`; do not overwrite the approved reference.
+UV next step: do not patch styling on top of the current mapping until important faces are reviewed for aspect ratio, texel density, orientation, seam/padding, and semantic UV reuse. Exact reuse is valid only where surfaces intentionally need the same pixels. Rebuild/remap affected UVs first, then Texture Styling and Texture Verify on front, 3/4, sides, back, top, and bottom.
+
+Current handoff state: REOPENED_AUTHORING. Continue from the current `.bbmodel` and approved reference. Do not start Animation until the user explicitly accepts the corrected Geometry + Texture result.

@@ -43,7 +43,7 @@ describe("Bedrock prompt and skill surface", () => {
     expect(Object.keys(manifest.prompts)).toEqual(["bedrock_entity_workflow"]);
   });
 
-  test("prompt override compatibility is phase-aware and stale overrides are not silently reused", async () => {
+  test("prompt override compatibility is authoring-stage aware and stale overrides are rejected", async () => {
     const workflow = await source("prompts/bedrock_entity_workflow.md");
     expect(() => assertBedrockWorkflowSourceCompatible(workflow)).not.toThrow();
     expect(() =>
@@ -65,7 +65,7 @@ describe("Bedrock prompt and skill surface", () => {
     expect(prompts).toContain("assertBedrockWorkflowSourceCompatible(workflow)");
   });
 
-  test("skill stack keeps orchestration and domain judgement in separate active-phase owners", async () => {
+  test("skill stack keeps shared Runtime access separate from semantic judgement owners", async () => {
     const [root, orchestrator, modelling, texturing, animation] = await Promise.all([
       source("../AGENTS.md"),
       source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md"),
@@ -73,9 +73,9 @@ describe("Bedrock prompt and skill surface", () => {
       source("../.agents/skills/blockit-bedrock-texturing/SKILL.md"),
       source("../.agents/skills/blockit-bedrock-animation/SKILL.md"),
     ]);
-    expect(root).toContain("active specialist only");
+    expect(root).toContain("shared AUTHORING surface");
     expect(orchestrator).toContain("Tool Lane Discipline");
-    expect(orchestrator).toContain("Own only **phase/tool routing");
+    expect(orchestrator).toContain("Own AUTHORING/Animation tool routing");
     expect(orchestrator).not.toContain("FAIL / UNVERIFIED / PASS");
     expect(orchestrator.toLowerCase()).not.toContain("difference-first");
     expect(modelling).toContain("Difference-First Reference Fidelity Verdict");

@@ -63,15 +63,20 @@ Shape GLB may remain locked/non-export during semantic cleanup but must be remov
 
 Architecture term is `Shape Reconstruction`; Hunyuan3D is the single v1 implementation. Do not build provider abstraction until another real implementation is required.
 
-### Authoring phases
+### Shared AUTHORING surface and stage ownership
 
 ```text
-Geometry   shape, hierarchy, rig foundation, pivots, UV Layout, future editability
-Texturing  Texture Atlas, Painter/styling, PBR/material instances, Texture Verify
-Animation  motion/keyframes/effects/controllers when required
+AUTHORING Runtime surface
+  Geometry focus  → shape, hierarchy, rig foundation, pivots, UV Layout
+  Texturing focus → Texture Atlas, Painter/styling, PBR/materials, Texture Verify
+
+ANIMATION Runtime surface
+  Animation       → motion/keyframes/effects/controllers when required
 ```
 
-Codex internally verifies each stage. Internal PASS means `READY_FOR_USER_REVIEW`; user inspects live Blockbench and explicitly approves before checkpoint/handoff. Same material causal correction failing twice without new evidence → `BLOCKED`.
+Geometry and Texturing retain distinct semantic owners, but both tool families are callable in the same AUTHORING Runtime surface. Geometry↔Texturing correction therefore does not require `switch_authoring_phase`; the setting remains a startup/guidance focus. `HANDOFF_REQUIRED` is reserved for crossing AUTHORING↔Animation through the Gateway.
+
+Codex internally verifies meaningful stage checkpoints. Internal PASS means `READY_FOR_USER_REVIEW`; user inspects live Blockbench and explicitly approves before checkpointing. Same material causal correction failing twice without new evidence → `BLOCKED`.
 
 Naturally movable structurally distinct parts remain meaningfully transformable even when Animation is not currently required. When Animation is required, needed hierarchy/pivots/attachments must already be animation-ready before Geometry approval.
 
@@ -123,9 +128,9 @@ describe_capability
 invoke_capability
 ```
 
-Current Runtime retains **51 callable Bedrock tools across phases**: Geometry 25, Texturing 35, Animation 19. Direct Runtime MCP remains for Inspector/conformance/debugging, not normal AI-client authoring.
+Current Runtime retains **51 callable Bedrock tools**. Geometry and Texturing startup stages expose the same shared AUTHORING surface; Animation remains a separate runtime surface. Direct Runtime MCP remains for Inspector/conformance/debugging, not normal AI-client authoring.
 
-Gateway phase handoff keeps the same task/chat alive and refreshes backend catalog only.
+Gateway handoff keeps the same task/chat alive and refreshes backend catalog only when crossing AUTHORING↔Animation.
 
 ## Repository / Runtime Separation
 

@@ -13,7 +13,7 @@ bun install --frozen-lockfile
 bun run verify:mcp
 ```
 
-`verify:mcp` typechecks Runtime + Gateway, runs the recursive test suite, measures native surfaces, builds the plugin, and checks generated docs.
+`verify:mcp` typechecks Runtime + Gateway, runs the recursive test suite, measures surfaces, builds the plugin, and checks generated docs.
 
 ## Normal Client Boundary
 
@@ -51,12 +51,14 @@ Direct Runtime access is for Inspector/conformance/focused debugging only.
 ```text
 Approved Reference + Dimensions + Requirements
 → user-selected Geometry Strategy: DIRECT | 3D_ASSISTED
-→ Geometry
-→ Texturing
-→ Animation when required
+→ shared AUTHORING surface
+   Geometry/rig/UV focus ↔ Texturing/PBR focus
+→ Animation surface when required
 → Finalization
 → validated .bbmodel
 ```
+
+Geometry and Texturing retain distinct semantic owners, but their tools are available together during AUTHORING. A texture-discovered Geometry/UV defect is corrected in-session by the Geometry owner instead of forcing a Runtime phase bounce. `HANDOFF_REQUIRED` + `switch_authoring_phase` is reserved for crossing AUTHORING↔Animation.
 
 `DIRECT` uses normal reference-guided Geometry.
 
@@ -99,12 +101,11 @@ Requested Dimensions: width=<n> height=<n> length=<n> blocks
 ```text
 Gateway client surface        4 fixed tools
 Runtime callable union       51 tools
-Geometry                     25 exposed tools
-Texturing                    35 exposed tools
-Animation                    19 exposed tools
+AUTHORING surface            Geometry + Texturing families together
+Animation surface            separate
 ```
 
-These counts remain current until the local materializer ToolSpec is deliberately registered. Foreign-phase work returns `HANDOFF_REQUIRED`; phase switching is invoked through Gateway and continues the same task/chat without normal MCP reconnect or new chat.
+The exact installed AUTHORING `tools/list` count is deliberately treated as a local verification result rather than hand-maintained documentation. Geometry and Texturing startup focus values must resolve to the same AUTHORING tool set. Animation crossing remains Gateway-managed and continues the same task/chat without a normal MCP reconnect or new chat.
 
 ## Capability Priority
 
@@ -118,6 +119,15 @@ MAINTENANCE  legacy/debug fallback; de-prioritized
 ```
 
 Tiering affects discovery priority only. It does not create a second authoring profile.
+
+## Quality Gates
+
+Technical state is not visual acceptance.
+
+- A clean positive-volume Cube-overlap audit does not prove absence of visible coplanar surfaces, seams, penetration, or gaps.
+- Assembly corrections preserve semantic cohorts; a partial child move needs an explicit local-part reason.
+- UV bounds/lock/partial-overlap checks do not prove a clean unwrap. Review face aspect, texel density, orientation, padding/seams, semantic reuse, and identity-specific islands.
+- User visual rejection reopens the affected gate even when an earlier structural validator passed.
 
 ## Legacy UI Fallbacks
 
@@ -154,14 +164,13 @@ bun run verify:stateless-local
 bun run verify:geometry-live -- --confirm-disposable
 ```
 
-These do not prove Gateway lifecycle survival or visual quality.
+These do not prove visual fidelity or accepted asset quality.
 
 ## Surface Guard
 
 ```text
 Gateway client surface                 4 tools
 retained Bedrock Runtime catalog      51 tools
-default native Geometry exposure       25 tools
 initialize instructions                <= 700 characters
 catalog tools/list budget              <= 82,000 characters
 catalog input schemas                  <= 58,500 characters
@@ -173,9 +182,9 @@ Texturing specialist guidance       < 4,500 characters
 
 ## Current Capability Shape
 
-Normal authoring includes Cube/Group authoring, hierarchy/rig/pivots, Locator/Null lifecycle, canonical capture, Texture Atlas/Painter/PBR/material instances, animation/timeline/effects/controllers, Undo/history, `.bbmodel` persistence, Bedrock geometry export, and phase control.
+Normal authoring includes Cube/Group authoring, hierarchy/rig/pivots, Locator/Null lifecycle, canonical capture, UV Layout mutation/audit, Texture Atlas/Painter/PBR/material instances, animation/timeline/effects/controllers, Undo/history, `.bbmodel` persistence, Bedrock geometry export, and stage control.
 
-3D-Assisted source now includes the resumable external orchestrator, strict state/decomposition contracts, and internal atomic materializer engine. Remaining implementation is the thin public materializer ToolSpec binding + generated docs in LOCAL_CODE, followed by local/live proof.
+3D-Assisted source includes the resumable external orchestrator, strict state/decomposition contracts, and internal atomic materializer engine. Remaining implementation is the thin public materializer ToolSpec binding + generated docs in LOCAL_CODE, followed by local/live proof.
 
 ## Source Layout
 
@@ -196,4 +205,4 @@ Generated API/prompt artifacts follow canonical source + generator output and mu
 
 ## Proof Boundary
 
-Continuation → `../docs/knowledge/next-action.md`. Proof interpretation → `../docs/knowledge/current-validation.md`. Static source/CI success cannot prove installed Runtime freshness, live Gateway survival, external 3D model/decomposition quality, atomic Undo behavior, playback/persistence, or visual fidelity unless those surfaces actually ran.
+Continuation → `../docs/knowledge/next-action.md`. Proof interpretation → `../docs/knowledge/current-validation.md`. Static source/CI success cannot prove installed Runtime freshness, live Gateway survival, final surface/UV quality, external 3D model/decomposition quality, atomic Undo behavior, playback/persistence, or visual fidelity unless those surfaces actually ran.

@@ -104,15 +104,16 @@ New-model authoring is ordered and user-driven:
 approved image → Active Workspace
 → Requirement Gate: Asset + Dimensions + Geometry Strategy + Animation Required
 → create Blockbench project
-→ BlockIT Gateway → ACTIVE PHASE → active specialist only
-→ Geometry → Texturing → Animation when required → Finalization
+→ BlockIT Gateway → shared AUTHORING surface
+→ Geometry/UV focus ↔ Texturing focus without Runtime handoff
+→ Animation handoff when required → Finalization
 ```
 
 `Geometry Strategy` is user-selected `DIRECT | 3D_ASSISTED`; never infer/default/auto-switch it. `3D_ASSISTED` is one package: Shape Reconstruction → PrimitiveAnything → Cuboid Scaffold → semantic Geometry cleanup. If target 3D-Assisted execution is unavailable, `BLOCKED`; never emulate/fallback.
 
-Codex internally verifies before `READY_FOR_USER_REVIEW`; user inspects live Blockbench and explicitly approves before checkpoint save/handoff. Reopen upstream only for a material owner defect; invalidate only affected downstream approval.
+Codex internally verifies before `READY_FOR_USER_REVIEW`; user inspects live Blockbench and explicitly approves meaningful stage checkpoints. Geometry and Texturing keep distinct semantic ownership, but their capabilities remain callable in the same AUTHORING Runtime surface. A texture-discovered Geometry/UV defect is corrected directly with the Geometry owner; no `switch_authoring_phase` is required for Geometry↔Texturing correction.
 
-Do not preload later specialists. On `HANDOFF_REQUIRED`, retain resume-critical state, invoke `switch_authoring_phase` through Gateway, refresh catalog, load only next specialist, continue the **same task/chat**; no normal reconnect/new chat.
+`HANDOFF_REQUIRED` is reserved for crossing AUTHORING↔Animation. Retain resume-critical state, invoke `switch_authoring_phase` through Gateway, load the matching specialist, and continue the **same task/chat**; no normal reconnect/new chat.
 
 For normal asset authoring, do not automatically load repository continuation/history/foundation docs. Asset authoring is not software **Development**; do not route it through `development-brief` unless repository/plugin behavior changes.
 

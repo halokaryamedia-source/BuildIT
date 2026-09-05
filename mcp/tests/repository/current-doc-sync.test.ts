@@ -5,7 +5,7 @@ async function text(path: string): Promise<string> {
 }
 
 describe("current developer-facing documentation sync", () => {
-  test("current proof, tool counts, and developer-loop ownership stay aligned", async () => {
+  test("current proof, Runtime shape, and developer-loop ownership stay aligned", async () => {
     const [flow, llms, implementation, packageRules] = await Promise.all([
       text("../docs/knowledge/flow.md"),
       text("llms.txt"),
@@ -16,11 +16,12 @@ describe("current developer-facing documentation sync", () => {
     expect(flow).toContain("current proof state        → docs/knowledge/current-validation.md");
     expect(flow).not.toContain("docs/foundation/validation-report.md");
 
-    expect(llms).toContain("51 callable tools across authoring phases");
-    expect(llms).toContain("currently **25 exposed tools**");
+    expect(llms).toContain("51 callable tools");
+    expect(llms).toContain("MCP CORE + AUTHORING");
+    expect(llms).toContain("Geometry and Texturing startup focus values expose the same AUTHORING capability set");
     expect(llms).toContain("77 declared source ToolSpecs");
-    expect(llms).not.toContain("64 callable tools across authoring phases");
-    expect(llms).not.toContain("currently **27 exposed tools**");
+    expect(llms).not.toContain("MCP CORE + exactly one ACTIVE PHASE");
+    expect(llms).not.toContain("currently **25 exposed tools**");
 
     expect(packageRules).toContain(
       "scripts/        verification/measurement/preparation/local-deploy utilities"
@@ -80,7 +81,7 @@ describe("current developer-facing documentation sync", () => {
     expect(runbook).toMatch(/targeted live debugging[\s\S]*formal Local Acceptance/i);
   });
 
-  test("canonical authoring taxonomy keeps explicit user strategy and Gateway-aware stages", async () => {
+  test("canonical authoring taxonomy keeps explicit user strategy, shared AUTHORING, and Gateway Animation handoff", async () => {
     const [root, context, flow, implementation, router, texturing, animation, settings] = await Promise.all([
       text("../AGENTS.md"),
       text("../CONTEXT.md"),
@@ -96,6 +97,7 @@ describe("current developer-facing documentation sync", () => {
       expect(owner).toContain("Geometry Strategy");
       expect(owner).toContain("DIRECT");
       expect(owner).toContain("3D_ASSISTED");
+      expect(owner).toContain("AUTHORING");
       expect(owner).not.toContain("optional 3D Evidence");
     }
 
@@ -104,6 +106,9 @@ describe("current developer-facing documentation sync", () => {
       expect(owner).toContain("switch_authoring_phase");
       expect(owner).toMatch(/same task|same task\/chat/i);
     }
+
+    expect(flow).toContain("No Geometry↔Texturing `switch_authoring_phase` is required");
+    expect(texturing).toContain("No Geometry↔Texturing phase switch");
 
     for (const owner of [root, context, flow, implementation, router]) {
       expect(owner).not.toContain("Image Reference Route");

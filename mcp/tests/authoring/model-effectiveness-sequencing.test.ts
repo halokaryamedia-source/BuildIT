@@ -6,7 +6,7 @@ async function source(path: string): Promise<string> {
 }
 
 describe("model creation effectiveness — texture/animation sequencing", () => {
-  test("phase handoff waits for explicit upstream readiness and continues through Gateway", async () => {
+  test("Authoring focus stays shared while Animation uses Gateway handoff", async () => {
     const [orchestrator, texturing, animation] = await Promise.all([
       source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md"),
       source("../.agents/skills/blockit-bedrock-texturing/SKILL.md"),
@@ -31,6 +31,7 @@ describe("model creation effectiveness — texture/animation sequencing", () => 
     expect(texturing.toLowerCase()).toContain("final box uv locked with `autouv=0`");
     expect(texturing).toContain("list_textures");
     expect(texturing).toContain("partial-overlap blocker");
+    expect(texturing).toContain("No Geometry↔Texturing phase switch");
     expect(animation.toLowerCase().replaceAll("/", " ")).toContain(
       "participating hierarchy pivots are suitable"
     );
@@ -49,15 +50,15 @@ describe("model creation effectiveness — texture/animation sequencing", () => 
     expect(foundation.toLowerCase()).toContain("existing-asset work may accept the current asset as the task baseline");
   });
 
-  test("downstream phases return structural defects to Geometry instead of borrowing mutation", async () => {
+  test("Texturing can correct upstream Geometry/UV in-session; Animation still hands back", async () => {
     const [texturing, animation] = await Promise.all([
       source("../.agents/skills/blockit-bedrock-texturing/SKILL.md"),
       source("../.agents/skills/blockit-bedrock-animation/SKILL.md"),
     ]);
 
-    expect(texturing).toMatch(/unlocked\/invalid UV\s+→ HANDOFF_REQUIRED\(geometry\)/);
-    expect(texturing).toContain("must not borrow Cube mutation");
-    expect(texturing).toContain("switch_authoring_phase through Gateway");
+    expect(texturing).toMatch(/unlocked\/invalid UV\s+→ Geometry owner \+ bounded UV correction; no phase switch/);
+    expect(texturing).toContain("Geometry/UV capabilities remain callable for bounded upstream correction");
+    expect(texturing).toContain("No Geometry↔Texturing phase switch");
     expect(animation).toContain("Animation owns motion, not structural rig mutation");
     expect(animation).toContain("target_phase: geometry");
     expect(animation).toContain("Do not search for `bone_rigging`");
@@ -78,6 +79,9 @@ describe("model creation effectiveness — texture/animation sequencing", () => 
 
     expect(texturing).toContain("pixels per UV unit");
     expect(texturing).toContain("random high-contrast noise");
+    for (const quality of ["face aspect ratio", "texel density", "semantic UV reuse"]) {
+      expect(texturing).toContain(quality);
+    }
 
     const normalizedAnimation = animation.toLowerCase();
     expect(normalizedAnimation).toContain(
@@ -88,7 +92,7 @@ describe("model creation effectiveness — texture/animation sequencing", () => 
     expect(normalizedAnimation).toContain("molang");
   });
 
-  test("sequencing remains instruction/phase ownership rather than a registration profile", async () => {
+  test("sequencing remains instruction/stage ownership rather than a registration profile", async () => {
     const profile = await source("lib/registrationProfile.ts");
     expect(profile).toContain('export type McpRegistrationProfile = "bedrock_entity" | "extended";');
     expect(profile).not.toContain("sequencing_profile");
