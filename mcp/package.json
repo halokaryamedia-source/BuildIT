@@ -31,6 +31,7 @@
     "eval:tool-discovery": "bun run ./scripts/evaluate-tool-discovery.ts",
     "verify:stateless-local": "bun run ./scripts/verify-stateless-local.ts",
     "verify:geometry-live": "bun run ./scripts/verify-geometry-live.ts",
+    "verify:surface-gap-live": "bun run ./scripts/verify-surface-gap-live.ts",
     "verify:texturing-live": "bun run ./scripts/verify-texturing-live.ts",
     "verify:animation-live": "bun run ./scripts/verify-animation-live.ts",
     "deploy:local": "bun run build && bun run ./scripts/deploy-local.ts",

@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import {
   analyzeOrientedBoxSurfaceQuality,
+  SURFACE_COPLANAR_EDGE_GAP_REVIEW_DISTANCE,
   SURFACE_MICRO_GAP_REVIEW_DISTANCE,
   SURFACE_SHALLOW_PENETRATION_REVIEW_DEPTH,
 } from "@/lib/renderedModelBounds";
@@ -79,6 +80,37 @@ describe("authoring quality diagnostics", () => {
       analyzeOrientedBoxSurfaceQuality(base, samePlaneButDisjoint).some(
         (risk) => risk.kind === "coplanar_overlap"
       )
+    ).toBe(false);
+  });
+
+  test("coplanar edge-gap diagnostics catch local panel holes without treating diagonal separation as adjacency", () => {
+    const base = box([0, 0, 0]);
+
+    const edgeGap = analyzeOrientedBoxSurfaceQuality(base, box([0, 2.5, 0]));
+    const edgeGapRisk = edgeGap.find(
+      (risk) => risk.kind === "coplanar_edge_gap"
+    );
+    expect(edgeGapRisk).toMatchObject({
+      kind: "coplanar_edge_gap",
+      distance: 0.5,
+      shared_span: 2,
+    });
+
+    expect(
+      analyzeOrientedBoxSurfaceQuality(base, box([0, 2, 0])).some(
+        (risk) => risk.kind === "coplanar_edge_gap"
+      )
+    ).toBe(false);
+    expect(
+      analyzeOrientedBoxSurfaceQuality(base, box([3, 3, 0])).some(
+        (risk) => risk.kind === "coplanar_edge_gap"
+      )
+    ).toBe(false);
+    expect(
+      analyzeOrientedBoxSurfaceQuality(
+        base,
+        box([0, 2 + SURFACE_COPLANAR_EDGE_GAP_REVIEW_DISTANCE * 2, 0])
+      ).some((risk) => risk.kind === "coplanar_edge_gap")
     ).toBe(false);
   });
 

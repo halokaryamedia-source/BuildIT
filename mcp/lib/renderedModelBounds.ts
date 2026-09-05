@@ -37,6 +37,7 @@ export interface RenderedModelBoundsObservation {
 }
 
 export const SURFACE_MICRO_GAP_REVIEW_DISTANCE = 0.05;
+export const SURFACE_COPLANAR_EDGE_GAP_REVIEW_DISTANCE = 4;
 export const SURFACE_SHALLOW_PENETRATION_REVIEW_DEPTH = 0.05;
 const SURFACE_PARALLEL_EPSILON = 1e-6;
 const SURFACE_PLANE_EPSILON = 1e-4;
@@ -60,6 +61,11 @@ export type SurfaceQualityRisk =
   | {
       kind: "micro_gap";
       distance: number;
+    }
+  | {
+      kind: "coplanar_edge_gap";
+      distance: number;
+      shared_span: number;
     }
   | {
       kind: "shallow_penetration";
@@ -140,6 +146,81 @@ function facesOverlapInPlane(first: BoxFace, second: BoxFace): boolean {
   return true;
 }
 
+function facesHaveAlignedTangentAxes(first: BoxFace, second: BoxFace): boolean {
+  const threshold = 1 - SURFACE_PARALLEL_EPSILON;
+  const firstUAlignment = Math.max(
+    Math.abs(dot(first.u, second.u)),
+    Math.abs(dot(first.u, second.v))
+  );
+  const firstVAlignment = Math.max(
+    Math.abs(dot(first.v, second.u)),
+    Math.abs(dot(first.v, second.v))
+  );
+  return firstUAlignment >= threshold && firstVAlignment >= threshold;
+}
+
+function findCoplanarEdgeGap(
+  first: OrientedBox,
+  second: OrientedBox,
+  maxDistance: number
+): { distance: number; shared_span: number } | null {
+  let best: { distance: number; shared_span: number } | null = null;
+
+  for (const firstFace of boxFaces(first)) {
+    for (const secondFace of boxFaces(second)) {
+      if (
+        dot(firstFace.normal, secondFace.normal) <
+        1 - SURFACE_PARALLEL_EPSILON
+      ) {
+        continue;
+      }
+
+      const offset = subtract(secondFace.center, firstFace.center);
+      const planeDistance = Math.abs(dot(offset, firstFace.normal));
+      if (planeDistance > SURFACE_PLANE_EPSILON) continue;
+      if (!facesHaveAlignedTangentAxes(firstFace, secondFace)) continue;
+
+      const uOverlap =
+        projectedFaceRadius(firstFace, firstFace.u) +
+        projectedFaceRadius(secondFace, firstFace.u) -
+        Math.abs(dot(offset, firstFace.u));
+      const vOverlap =
+        projectedFaceRadius(firstFace, firstFace.v) +
+        projectedFaceRadius(secondFace, firstFace.v) -
+        Math.abs(dot(offset, firstFace.v));
+
+      const candidates: Array<{ distance: number; shared_span: number }> = [];
+      if (
+        uOverlap < -SURFACE_PLANE_EPSILON &&
+        vOverlap > SURFACE_PLANE_EPSILON
+      ) {
+        candidates.push({ distance: -uOverlap, shared_span: vOverlap });
+      }
+      if (
+        vOverlap < -SURFACE_PLANE_EPSILON &&
+        uOverlap > SURFACE_PLANE_EPSILON
+      ) {
+        candidates.push({ distance: -vOverlap, shared_span: uOverlap });
+      }
+
+      for (const candidate of candidates) {
+        if (candidate.distance > maxDistance) continue;
+        if (
+          best === null ||
+          candidate.distance < best.distance - SURFACE_PLANE_EPSILON ||
+          (Math.abs(candidate.distance - best.distance) <=
+            SURFACE_PLANE_EPSILON &&
+            candidate.shared_span > best.shared_span)
+        ) {
+          best = candidate;
+        }
+      }
+    }
+  }
+
+  return best;
+}
+
 function findParallelFacePlaneDistance(
   first: OrientedBox,
   second: OrientedBox,
@@ -217,6 +298,24 @@ export function analyzeOrientedBoxSurfaceQuality(
   }
 
   if (
+    contact.classification === "separate" &&
+    contact.separation > SURFACE_MICRO_GAP_REVIEW_DISTANCE
+  ) {
+    const edgeGap = findCoplanarEdgeGap(
+      first,
+      second,
+      SURFACE_COPLANAR_EDGE_GAP_REVIEW_DISTANCE
+    );
+    if (edgeGap !== null) {
+      risks.push({
+        kind: "coplanar_edge_gap",
+        distance: edgeGap.distance,
+        shared_span: edgeGap.shared_span,
+      });
+    }
+  }
+
+  if (
     contact.classification === "intersecting" &&
     contact.penetrationDepth <= SURFACE_SHALLOW_PENETRATION_REVIEW_DEPTH
   ) {
@@ -242,7 +341,12 @@ function boxesMayHaveSurfaceRisk(first: OrientedBox, second: OrientedBox): boole
   const firstRadius = Math.hypot(...first.halfSizes);
   const secondRadius = Math.hypot(...second.halfSizes);
   const maxDistance =
-    firstRadius + secondRadius + SURFACE_MICRO_GAP_REVIEW_DISTANCE;
+    firstRadius +
+    secondRadius +
+    Math.max(
+      SURFACE_MICRO_GAP_REVIEW_DISTANCE,
+      SURFACE_COPLANAR_EDGE_GAP_REVIEW_DISTANCE
+    );
   return dot(offset, offset) <= maxDistance * maxDistance;
 }
 
@@ -274,7 +378,11 @@ function readSurfaceQualityWarnings(cubes: readonly Cube[]): string[] {
   let analyzedPairCount = 0;
   let pairBudgetReached = false;
 
-  pairScan: for (let firstIndex = 0; firstIndex < measured.length; firstIndex += 1) {
+  pairScan: for (
+    let firstIndex = 0;
+    firstIndex < measured.length;
+    firstIndex += 1
+  ) {
     for (
       let secondIndex = firstIndex + 1;
       secondIndex < measured.length;
@@ -309,6 +417,10 @@ function readSurfaceQualityWarnings(cubes: readonly Cube[]): string[] {
         } else if (risk.kind === "micro_gap") {
           pushWarning(
             `Possible micro-gap: ${pair} have overlapping opposing faces separated by ${formatSurfaceMetric(risk.distance)} Blockbench units. Review the intended contact seam.`
+          );
+        } else if (risk.kind === "coplanar_edge_gap") {
+          pushWarning(
+            `Possible coplanar edge-gap: ${pair} expose same-facing coplanar surface edges separated by ${formatSurfaceMetric(risk.distance)} Blockbench units across ${formatSurfaceMetric(risk.shared_span)} units of shared edge span. Review whether this is an intentional opening or missing surface coverage.`
           );
         } else {
           pushWarning(
