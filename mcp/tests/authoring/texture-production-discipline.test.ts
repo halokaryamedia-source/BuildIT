@@ -1,149 +1,116 @@
 import { describe, expect, test } from "bun:test";
-import { DEFAULT_BEDROCK_UV_RESOLUTION } from "@/server/tools/project";
+import { consolidatedInspectionToolDocs, consolidatedMaterialToolDocs } from "@/server/tools";
+import { textureToolDocs } from "@/server/tools/texture";
 
 async function source(path: string): Promise<string> {
   return Bun.file(path).text();
 }
 
-describe("professional texture production discipline", () => {
-  test("new Bedrock projects default to the 128 logical UV baseline with an explicit 256 opt-in", async () => {
-    expect(DEFAULT_BEDROCK_UV_RESOLUTION).toBe(128);
-    const project = await source("server/tools/project.ts");
-    expect(project).toContain("Project!.texture_width = resolution ?? DEFAULT_BEDROCK_UV_RESOLUTION");
-    expect(project).toContain("Project!.texture_height = resolution ?? DEFAULT_BEDROCK_UV_RESOLUTION");
-    expect(project).toContain('z.literal(128), z.literal(256)');
-  });
-
-  test("canonical vocabulary separates UV Layout, Texture Atlas, Styling, and Verify", async () => {
-    const [context, skill, workflow, policy, flow] = await Promise.all([
-      source("../CONTEXT.md"),
-      source("../.agents/skills/blockit-bedrock-texturing/SKILL.md"),
-      source("prompts/bedrock_entity_workflow.md"),
-      source("../docs/foundation/06-texture-standard.md"),
-      source("../docs/knowledge/flow.md"),
-    ]);
-
-    for (const owner of [context, skill, workflow, policy, flow]) {
-      for (const term of ["UV Layout", "Texture Atlas", "Texture Styling", "Texture Verify"]) {
-        expect(owner.toLowerCase()).toContain(term.toLowerCase());
-      }
-    }
-
-    expect(context).toContain("Texture Atlas");
-    expect(context).toContain("stores pixels");
-    for (const owner of [skill, workflow, policy]) {
-      expect(owner).toContain("create_texture");
-      expect(owner.toLowerCase()).toContain("texture atlas");
-    }
-  });
-
-  test("active guidance owns one production base-color atlas and explicit atlas identity", async () => {
-    const [skill, workflow, policy] = await Promise.all([
-      source("../.agents/skills/blockit-bedrock-texturing/SKILL.md"),
-      source("prompts/bedrock_entity_workflow.md"),
+describe("texture production discipline", () => {
+  test("texture creation requires explicit production canvas size and routes mapping to Geometry", async () => {
+    const [textureSource, standard] = await Promise.all([
+      source("server/tools/texture.ts"),
       source("../docs/foundation/06-texture-standard.md"),
     ]);
-
-    for (const text of [skill, workflow, policy]) {
-      const lower = text.toLowerCase();
-      expect(lower).toContain("base-color atlas");
-      expect(lower).toContain("128");
-      expect(lower).toContain("body part");
-      expect(lower).toContain("texture_id");
-      expect(lower).toContain("pbr");
-    }
-    expect(policy).toContain("Single Base-Color Atlas");
+    const create = textureToolDocs.find((tool) => tool.name === "create_texture");
+    const shape = textureToolDocs.find((tool) => tool.name === "draw_shape_tool");
+    const brush = textureToolDocs.find((tool) => tool.name === "paint_with_brush");
+    expect(create).toBeDefined();
+    expect(create?.description).toContain("blank default is 16×16");
+    expect(create?.description).toContain("pass width+height explicitly for production");
+    expect(create?.description).toContain("does not assign UVs");
+    expect(create?.description).toContain("mapping belongs to Geometry/UV Layout");
+    expect(shape?.description).toContain("Texture Styling only");
+    expect(brush?.description).toContain("Texture Styling only");
+    expect(textureSource).not.toContain("apply_texture");
+    expect(standard).toContain("create_texture` creates a **Texture Atlas**");
+    expect(standard).toContain("does not create UV Layout");
   });
 
-  test("production styling requires texel scale plus material/form/detail hierarchy", async () => {
-    const [skill, workflow, policy] = await Promise.all([
-      source("../.agents/skills/blockit-bedrock-texturing/SKILL.md"),
-      source("prompts/bedrock_entity_workflow.md"),
+  test("production standard owns one base atlas and 128-based canvases", async () => {
+    const standard = await source("../docs/foundation/06-texture-standard.md");
+    expect(standard).toContain("logical UV remains **128×128** for production");
+    expect(standard).toContain("128×128");
+    expect(standard).toContain("256×256");
+    expect(standard).toContain("384×384");
+    expect(standard).toContain("512×512");
+    expect(standard).toContain("one base-color atlas PNG for the whole model");
+    expect(standard).toContain("Do not optimize atlas occupancy as a quality score");
+  });
+
+  test("Texture Styling cannot be completed by technical state or placeholder fill", async () => {
+    const [standard, skill] = await Promise.all([
       source("../docs/foundation/06-texture-standard.md"),
+      source("../.agents/skills/blockit-bedrock-texturing/SKILL.md"),
     ]);
-
-    for (const text of [skill, workflow, policy]) {
-      const lower = text.toLowerCase();
-      for (const invariant of [
-        "palette", "ramp", "pixels per uv unit", "flat", "face", "contact",
-        "occlusion", "edge", "hue", "identity", "detail", "noise", "alpha",
-      ]) expect(lower).toContain(invariant);
-    }
-    for (const stage of ["BASE PASS", "VALUE / FORM PASS", "IDENTITY PASS", "SECONDARY DETAIL PASS", "VERIFY"]) {
-      expect(skill).toContain(stage);
-      expect(workflow).toContain(stage);
-    }
+    expect(standard).toContain("A placeholder/flat fill may make geometry readable early");
+    expect(standard).toContain("is not production completion");
+    expect(standard).toContain("Creating an atlas, clearing it, or filling it with one color is **not Texture Styling completion**");
+    expect(standard).toContain("Material-Family Palette Ramps");
+    expect(standard).toContain("value and hue");
+    expect(standard).toContain("Texture Verify asks whether the atlas pixels");
+    expect(standard).toContain("fresh Texture Atlas image");
+    expect(standard).toContain("fresh affected model view(s)");
+    expect(skill).toContain("flat rectangles");
+    expect(skill).toContain("generic palette");
+    expect(skill).toContain("copied unrelated texture");
+    expect(skill).toContain("mapped model-view evidence");
   });
 
-  test("Texturing uses current consolidated capabilities and hands UV mutation back to Geometry", async () => {
+  test("global UV audit is exposed on list_textures instead of deprecated inspection aliases", () => {
+    const sourceText = consolidatedInspectionToolDocs.description;
+    const list = textureToolDocs.find((tool) => tool.name === "list_textures");
+    expect(list).toBeDefined();
+    expect(list?.description).toContain("global UV audit");
+    expect(sourceText).toContain("Bedrock elements");
+    expect(sourceText).not.toContain("global UV audit");
+  });
+
+  test("global UV audit owns explicit production gate semantics", async () => {
+    const sourceText = await source("server/tools/texture.ts");
+    for (const term of [
+      "production_gate",
+      "partial_overlap_candidates",
+      "partial-overlap review blockers",
+      "invalid/non-finite UV coordinates",
+      "out-of-bounds faces",
+      "unlocked Box-UV Cubes",
+      "fractional UV candidates",
+      "recommendation",
+    ]) expect(sourceText).toContain(term);
+    expect(sourceText).toContain("blocking_issues.length === 0 ? \"PASS\" : \"FAIL\"");
+  });
+
+  test("texturing skill routes global audit first and face inspection conditionally", async () => {
     const skill = await source("../.agents/skills/blockit-bedrock-texturing/SKILL.md");
-    for (const tool of [
-      "create_texture", "list_textures", "activate_texture", "get_texture",
-      "paint_fill_tool", "draw_shape_tool", "gradient_tool", "paint_with_brush",
-      "eraser_tool", "manage_material", "manage_material_instances",
-    ]) expect(skill).toContain(tool);
+    expect(skill).toMatch(/global UV\/atlas readiness\s+→ list_textures/i);
+    expect(skill).toMatch(/face-specific mapping\s+→ inspect_elements\(mode=detail\) only when needed/i);
+    expect(skill).toContain("final Box UV locked with `autouv=0`");
+    expect(skill).toContain("no invalid/out-of-bounds/partial-overlap blocker");
+  });
 
+  test("texturing uses consolidated material facade instead of public primitive aliases", async () => {
+    const [skill, docs] = await Promise.all([
+      source("../.agents/skills/blockit-bedrock-texturing/SKILL.md"),
+      source("docs/api.json"),
+    ]);
+    expect(skill).toContain("manage_material");
     expect(skill).not.toContain("create_pbr_material / configure_material / assign_texture_channel");
-    expect(skill).toContain("connect_strokes=false");
-    expect(skill).toContain("box_uv_region");
-    expect(skill).toContain("autouv=0");
-    expect(skill).toContain("HANDOFF_REQUIRED(geometry)");
-    expect(skill).toContain("switch_authoring_phase through Gateway");
-    expect(skill).not.toContain("tool_search");
+    expect(skill).not.toContain("save_material_config");
+    expect(consolidatedMaterialToolDocs.name).toBe("manage_material");
+    expect(consolidatedMaterialToolDocs.description).toContain("PBR material");
+    expect(docs).toContain('"name": "manage_material"');
+    expect(docs).not.toContain('"name": "create_pbr_material"');
   });
 
-  test("UV Layout lock/audit remains Geometry-owned before Texture Styling", async () => {
-    const [skill, workflow, policy] = await Promise.all([
-      source("../.agents/skills/blockit-bedrock-texturing/SKILL.md"),
-      source("prompts/bedrock_entity_workflow.md"),
-      source("../docs/foundation/06-texture-standard.md"),
-    ]);
-
-    expect(skill.toLowerCase()).toContain("final box uv locked with `autouv=0`");
-    expect(skill).toContain("list_textures");
+  test("Texturing keeps semantic ownership while using shared AUTHORING capabilities for upstream correction", async () => {
+    const skill = await source("../.agents/skills/blockit-bedrock-texturing/SKILL.md");
+    expect(skill).toContain("Geometry/UV capabilities remain callable for bounded upstream correction");
     expect(skill).toContain("must not borrow Cube mutation");
-
-    for (const text of [workflow, policy]) {
-      const lower = text.toLowerCase();
-      expect(lower).toContain("autouv=0");
-      expect(lower).toContain("integer");
-      expect(lower).toContain("out-of-bounds");
-      expect(lower).toContain("partial overlap");
-      expect(lower).toContain("exact reuse");
-      expect(lower).toContain("seam");
-    }
-  });
-
-  test("Texture Verify reviews mapped structure and identity before microdetail", async () => {
-    const [skill, workflow, policy] = await Promise.all([
-      source("../.agents/skills/blockit-bedrock-texturing/SKILL.md"),
-      source("prompts/bedrock_entity_workflow.md"),
-      source("../docs/foundation/06-texture-standard.md"),
-    ]);
-
-    for (const text of [skill, workflow, policy]) {
-      const lower = text.toLowerCase();
-      for (const term of ["uv", "material", "form", "identity", "microdetail"]) {
-        expect(lower).toContain(term);
-      }
-      expect(text).toContain("Texture Verify");
-    }
-    expect(skill).toContain("Texture Verify / Visual Convergence");
-  });
-
-  test("reference-grounded styling rejects generic flat-fill completion", async () => {
-    const [skill, workflow] = await Promise.all([
-      source("../.agents/skills/blockit-bedrock-texturing/SKILL.md"),
-      source("prompts/bedrock_entity_workflow.md"),
-    ]);
-    for (const text of [skill, workflow]) {
-      expect(text.toLowerCase()).toContain("generic palette");
-      expect(text.toLowerCase()).toContain("unverified");
-    }
-    expect(skill.toLowerCase()).toContain("approved reference");
-    expect(workflow.toLowerCase()).toContain("actual approved image");
-    expect(skill.toLowerCase()).toContain("flat rectangles");
-    expect(workflow.toLowerCase()).toContain("five flat rectangles");
-    expect(workflow.toLowerCase()).toContain("paint tool succeeded");
+    expect(skill).toContain("No Geometry↔Texturing phase switch");
+    expect(skill).toContain("HANDOFF_REQUIRED");
+    expect(skill).toContain("switch_authoring_phase");
+    expect(skill).toContain("AUTHORING↔Animation");
+    expect(skill).not.toContain("target_phase: geometry");
   });
 });

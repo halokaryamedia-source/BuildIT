@@ -5,40 +5,43 @@ description: Bedrock Entity judgement for reference grounding, construction, tra
 
 # Blockbench Bedrock Modelling
 
-Own Geometry form judgement, transform ownership, correction, and reference-grounded readiness.
+Own Geometry form judgement, transform ownership, and whether reference-grounded modelling can continue.
 
 ## Minimum Necessary Evidence
 
-- No per-Cube inspection ceremony without a diagnosed problem.
-- No screenshot-per-mutation loop; build a judgeable form, then gate it.
-- Bounds are only for envelope/scale/ground/displacement.
+- **No per-Cube inspection ceremony** without a diagnosed problem.
+- **No screenshot-per-mutation loop.** Build a judgeable whole form, then gate it.
+- Bounds are only for envelope/scale/ground/displacement. **Otherwise skip the bounds call.**
 - `UNVERIFIED` does not automatically require more calls.
 
 ## Reference Grounding
 
-Reference work requires the **actual approved image** in active visual context; path/prose/memory is not visual evidence. If unavailable, `BLOCKED`.
+Reference-driven work requires the **actual approved reference image visible in active multimodal context**. Filename/path/manifest/prose/memory is context, not visual evidence. If unavailable, `BLOCKED`.
 
 ```text
-user brief → identity/function
-approved image → visual authority
-approved dimensions → numeric envelope authority
-Geometry Strategy → DIRECT | 3D_ASSISTED; user-selected only
-claim | observable requirement | view | SUPPORTED | PROVISIONAL | CONFLICTING | UNAVAILABLE
+user brief/target    → identity/function
+approved image       → visual authority
+approved dimensions  → numeric envelope authority
+Geometry Strategy    → DIRECT | 3D_ASSISTED; user-selected only
+claim | observable requirement | supporting view | SUPPORTED | PROVISIONAL | CONFLICTING | UNAVAILABLE
 ```
 
-Never auto-switch strategy.
+Never infer/default/auto-switch Geometry Strategy.
 
 ```text
-DIRECT      → semantic Groups/Cubes
+DIRECT      → normal semantic Groups/Cubes
 3D_ASSISTED → Shape Reconstruction → Shape GLB PASS
-             → PrimitiveAnything PASS → Cuboid Scaffold → semantic cleanup
+             → PrimitiveAnything decomposition PASS
+             → deterministic Cuboid Scaffold → semantic cleanup
 ```
 
-3D-Assisted intermediates are hypotheses, not authority. Remove live GLB before final Geometry review. Unavailable production path → `BLOCKED`; never emulate/fallback.
+3D-Assisted is one package. GLB/decomposition/scaffold are intermediate evidence/hypotheses, not authority. A passed GLB may stay locked/non-export during cleanup; remove it before final Geometry verification/user review. If the production path is unavailable, `BLOCKED`; never emulate/fallback.
 
-Use a View Pair Map only for material front/back, side, mirror, depth, or 3/4 ambiguity. Do not turn evidence ceremony into the work.
+Use a View Pair Map only to resolve materially ambiguous front/back, left/right, mirrored, depth, or 3/4 evidence. Do not silently compare the closest-looking view. When evidence is already clear, **do not turn analysis ceremony into the work**.
 
 ## Simple Rigid Fast Path
+
+When reference evidence is clear, topology is simple, and the object is predominantly rigid:
 
 ```text
 identity + envelope + primary masses
@@ -46,74 +49,96 @@ identity + envelope + primary masses
 → minimum meaningful hierarchy
 → coherent PRIMARY BLOCKOUT
 → judgeable views
-→ diagnose observed mismatch only
+→ diagnose only observed mismatch
 ```
 
-Keep Groups/Bones only when they own a real shared transform, attachment, articulation, or useful organization. Local rigid slopes may be Cube-owned. Primary form/contact hierarchy belongs in blockout when required.
+Construction forms are examples, **not presets**. Keep one root Group plus only Groups/Bones that own a real shared transform, attachment, or articulation. Local rigid slopes may be Cube-owned. Form/contact/articulation-defining hierarchy may belong in the primary blockout; neutral organization stays downstream. Do not split coherent known work into many calls just to inspect each part.
 
 ## Semantic Form / Construction / Transform Gate
 
-Before coordinates know material facts: identity, primary masses/landmarks, required count/asymmetry, topology/attachments, important negative spaces, representation (`geometry | texture | animation | omit`), and evidence state.
+Before exact coordinates determine only material facts:
 
-A label never authorizes coordinates. No orphan/filler Cube. Choose the simplest buildable construction preserving the visible requirement. Sheet form may use plane-like Cubes; bends use meaningful segments; surface-only marks stay texture.
+```text
+identity / recognizability
+primary masses + must-exist reason
+identity-critical landmarks
+required count / symmetry or deliberate asymmetry
+topology: what attaches to what
+important negative spaces / separations
+representation: geometry | texture | animation | omit
+material evidence state
+```
 
-Shared semantic orientation/attachment/articulation is **Group/Bone-owned**; local rigid orientation may be Cube-owned. Material rotated masses need explicit pivot/origin + role `MASS_CENTER | ATTACHMENT | JOINT | PARENT_TRANSFORM`. `UNRESOLVED` material form → `BLOCKED`.
+A semantic label never authorizes coordinates. **No orphan/filler Cube**: each primary Cube implements a declared mass/landmark or justified split. `PROVISIONAL` may support a coarse hypothesis; placement never verifies it.
 
-Required attachments state their contact invariant before coordinates. AABB overlap, hierarchy, or numeric touching is not contact proof.
+Choose the simplest Blockbench-buildable construction preserving the visible requirement. Use volume for silhouette, plane-like Cubes for sheet form, linked segments for meaningful bends, and Locator for required non-visible anchors.
+
+Decide transform ownership before rotation: shared semantic orientation/attachment/articulation is **Group/Bone-owned**; a local rigid slope may be Cube-owned. Do not create hierarchy solely to increase depth, node count, or apparent sophistication.
+
+Classify material primary masses `AXIS_ALIGNED | ROTATED | UNRESOLVED`. A visible slope requires `ROTATED` + explicit origin/pivot + role `MASS_CENTER | ATTACHMENT | JOINT | PARENT_TRANSFORM`. Material `UNRESOLVED` → `BLOCKED`.
+
+For every required attachment state its **contact target/invariant** before coordinates. Use an **attachment/joint pivot** when it owns the transform. AABB overlap, hierarchy, or numeric touching is not contact proof; important negative spaces stay open.
 
 ## Surface / Cohort Quality Gate
 
-**No positive-volume overlap alone is not visual PASS.** Judge affected views for visible penetration, accidental coplanar rendered surfaces, gaps, contact seams, and deliberate layer offsets. User-reported surface defects reopen this gate even after a clean structural validator.
+Technical overlap checks are necessary but insufficient. **No positive-volume overlap alone is not visual PASS.** Before Geometry readiness, judge visible penetrations, accidental coplanar rendered surfaces, gaps, contact seams, and deliberate layer offsets in affected views. A surface defect reported by the user reopens this gate even if an earlier structural validator was clean.
 
-For an assembly translation/orientation, prefer its Group/Bone when one shared transform explains intent. Otherwise update the complete affected sibling cohort coherently. A single-child move inside a multi-part assembly needs an explicit local-part reason and fresh proof sibling relationships remain correct.
+For a semantic assembly translation/orientation, prefer its Group/Bone transform when one shared transform explains the intent. Otherwise update the complete affected sibling cohort in one coherent batch. A single-child move inside a multi-part assembly requires an explicit local-part reason and fresh view proof that sibling relationships remain correct.
 
 ## Future Editability / Animation Readiness
 
-Keep semantic hierarchy, sensible transform ownership, and naturally movable distinct parts separate. Do not build speculative full rigs. If Animation is required, participating pivots/attachments must be ready before Geometry approval.
+All Geometry stays future-animation-friendly: semantic hierarchy, sensible transform ownership, and naturally movable structurally distinct parts separated. Do not build a speculative full rig for static scope. If `Animation Required = YES`, required hierarchy/Bones/pivots/attachments must be animation-ready before Geometry user approval.
 
 ## Primary Build / Difference-First Reference Fidelity Verdict
 
-**Stay in the geometry lane unless a current decision requires another branch.** Build the minimum coherent complete form before detail.
+**Stay in the geometry lane unless a current decision requires another branch.** Create the minimum coherent complete form before detail. Resolve minor discrepancy consistently:
 
 ```text
 explicit user requirement
 → original source evidence
-→ best-supported approved views
+→ best-supported approved view(s)
 → simplest recognizable Blockbench-buildable interpretation
 ```
 
-Do not average drift. Front agreement does not certify depth. `manage_cubes` success proves execution only.
+Do not average drift. **Only unresolved material conflict becomes `BLOCKED`.** Front agreement does not certify depth.
 
-Material verdict requires approved reference + **fresh current-revision model** views:
+Successful `manage_cubes` execution is **Tool success** and **execution evidence** only. Tool success never authorizes visual `PASS`. Once judgeable, capture necessary views. **After primary `PASS`, add identity-weighted secondary geometry only** where silhouette, recognizability, contact/layering, or motion benefits.
+
+Material verdict requires approved reference + **fresh current-revision model** image(s):
 
 ```text
 claim | reference view | current view | observed difference | FAIL | UNVERIFIED | PASS
 ```
 
-Mutation stales affected captures. Tool success, coordinates, bounds, hierarchy, validators, or similarity scores cannot justify `PASS`.
-
-After primary `PASS`, add only identity-weighted secondary geometry where silhouette, recognizability, contact/layering, editability, or motion benefits.
+Mutation makes affected captures stale. **Tool success, coordinates, bounds, hierarchy, validators, or similarity scores cannot justify `PASS`. Similarity scores cannot justify `PASS`.**
 
 ## Local Correction / Convergence
 
 ```text
 TRANSLATE placement | RESIZE extent | ROTATE orientation
 REATTACH contact/parent | SPLIT distinct volume/orientation
-MERGE/REMOVE compensation | ADD MASS genuinely missing volume
+MERGE/REMOVE compensatory geometry | ADD MASS genuinely missing declared volume
 ```
 
-Reuse fresh exact state; otherwise `inspect_elements(mode=detail)` once. State target UUID(s), cause, intended change, invariant, and expected effect. TRANSLATE preserves size; RESIZE names changed axis + fixed anchor/contact; ROTATE preserves from/to/size and uses justified pivot. Returned `geometry_effect` must match intent.
+Reuse fresh exact authored state; otherwise `inspect_elements(mode=detail)` once. State target UUID(s), cause, intended change, invariant, and expected visible/structural effect. TRANSLATE preserves size; RESIZE names changed axis + fixed anchor/center/contact; ROTATE preserves `from/to/size`, pivot role, and required attachment. Returned `geometry_effect` must match the intended structural change.
 
-Capture **affected view(s) first**; expand only for material cross-view risk. Classify `IMPROVED | UNCHANGED | REGRESSED`. Progress requires `IMPROVED`. A fix that helps one view while materially regressing another is rejected. If the same causal direction fails twice without new evidence, stop and reframe as `BLOCKED`.
+Capture **affected view(s) first**; expand only for material cross-view risk. Classify `IMPROVED | UNCHANGED | REGRESSED`. **Progress requires `IMPROVED`** with no supported material claim regressed. A fix that helps one view while materially regressing another is rejected. If the **same causal correction direction has failed twice without new evidence**, stop speculative mutation and reframe as `BLOCKED`.
 
 ## Existing Assets
 
-Existing-asset work may use current geometry as baseline without certifying reference accuracy. Diagnose the requested/current defect unless broader evidence proves the baseline materially wrong. Visual updates require approved reference; deterministic explicit changes may not.
+Existing-asset work may use current geometry as baseline without certifying reference accuracy. Diagnose only the requested/current defect unless broader evidence proves the baseline itself is materially wrong. Visual/fidelity updates require the actual approved reference; deterministic explicit changes may not.
 
 ## Shared Authoring Session / User Approval
 
-Geometry owns shape/hierarchy/rig/pivots/UV Layout; Texturing owns atlas pixels/PBR. Both capability families remain callable in the same AUTHORING Runtime surface, while semantic ownership governs each mutation.
+Geometry owns shape, hierarchy, rig foundation, pivots, and UV Layout. Texturing owns atlas pixels/PBR, but both capability families remain callable in the same AUTHORING Runtime surface; semantic ownership still decides which rule set governs a mutation.
 
-`internal geometry=PASS + uv_layout=PASS → READY_FOR_USER_REVIEW` at a meaningful checkpoint. User revision continues Geometry; explicit approval saves checkpoint and continues Texturing focus in the same AUTHORING surface.
+```text
+internal geometry=PASS + uv_layout=PASS
+→ READY_FOR_USER_REVIEW when a meaningful Geometry checkpoint is due
+→ user inspects live Blockbench
+   ├─ revision → continue Geometry
+   └─ explicit approve → checkpoint save
+→ continue Texturing focus in the same AUTHORING surface
+```
 
-A texture-discovered Geometry/UV defect is corrected directly with this owner; no Geometry↔Texturing phase handoff. Revalidate only affected downstream evidence. `HANDOFF_REQUIRED` + `switch_authoring_phase` through Gateway is reserved for AUTHORING↔Animation.
+A texture-discovered Geometry/UV defect is corrected directly with the Geometry owner; no Geometry↔Texturing phase handoff. Revalidate only affected texture evidence. `HANDOFF_REQUIRED` + `switch_authoring_phase` through Gateway is reserved for AUTHORING↔Animation.

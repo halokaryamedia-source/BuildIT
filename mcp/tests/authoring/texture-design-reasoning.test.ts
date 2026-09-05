@@ -4,87 +4,74 @@ async function source(path: string): Promise<string> {
   return Bun.file(path).text();
 }
 
-describe("texture design reasoning contract", () => {
-  test("active guidance defines production Texture Styling decisions without a separate design ceremony", async () => {
-    const [skill, workflow, policy] = await Promise.all([
-      source("../.agents/skills/blockit-bedrock-texturing/SKILL.md"),
-      source("prompts/bedrock_entity_workflow.md"),
-      source("../docs/foundation/06-texture-standard.md"),
-    ]);
+describe("texture design reasoning", () => {
+  test("foundation separates UV Layout, Texture Atlas, Texture Styling, and Texture Verify", async () => {
+    const standard = await source("../docs/foundation/06-texture-standard.md");
+    const modelling = await source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md");
+    const texturing = await source("../.agents/skills/blockit-bedrock-texturing/SKILL.md");
 
-    for (const text of [skill, workflow, policy]) {
-      const lower = text.toLowerCase();
-      for (const term of ["palette", "material", "value", "face", "seam", "identity", "detail"]) {
-        expect(lower).toContain(term);
-      }
-      expect(text).toContain("Texture Styling");
-    }
+    for (const term of [
+      "UV LAYOUT",
+      "TEXTURE ATLAS",
+      "TEXTURE STYLING",
+      "TEXTURE VERIFY",
+      "material",
+      "form",
+      "contact",
+      "edge",
+      "identity",
+    ]) expect(standard.toUpperCase()).toContain(term.toUpperCase());
 
-    expect(skill).toContain("material_instance");
-    expect(skill).toContain("pixels per UV unit");
-    expect(policy).toContain("Material-Family Palette Ramps");
-    expect(policy).toContain("VALUE / FORM PASS");
+    expect(standard).toContain("Texture Styling supports geometry; it does not repair geometry");
+    expect(modelling).toContain("Use texture for surface information");
+    expect(texturing).toContain("Texture Atlas");
+    expect(texturing).toContain("Texture Styling");
   });
 
-  test("texturing routes mapped-state reads to existing inspection and Painter tools", async () => {
-    const [skill, workflow] = await Promise.all([
-      source("../.agents/skills/blockit-bedrock-texturing/SKILL.md"),
-      source("prompts/bedrock_entity_workflow.md"),
-    ]);
+  test("texture workflow requires staged material and form reasoning rather than a flat color fill", async () => {
+    const texturing = await source("../.agents/skills/blockit-bedrock-texturing/SKILL.md");
 
-    for (const text of [skill, workflow]) {
-      for (const term of [
-        "inspect_element",
-        "draw_shape_tool",
-        "paint_with_brush",
-        "BASE PASS",
-        "VALUE / FORM PASS",
-        "IDENTITY PASS",
-        "SECONDARY DETAIL PASS",
-        "VERIFY",
-      ]) expect(text).toContain(term);
-    }
+    for (const term of [
+      "palette",
+      "ramp",
+      "material",
+      "face",
+      "form",
+      "contact",
+      "occlusion",
+      "edge",
+      "hue",
+      "identity",
+      "detail",
+      "noise",
+      "alpha",
+    ]) expect(texturing.toLowerCase()).toContain(term);
 
-    expect(skill).toContain("box_uv_region");
-    expect(skill).toContain("face-specific mapping");
-    expect(skill).toContain("must not borrow Cube mutation");
+    expect(texturing).toContain("BASE PASS");
+    expect(texturing).toContain("VALUE / FORM PASS");
+    expect(texturing).toContain("IDENTITY PASS");
+    expect(texturing).toContain("SECONDARY DETAIL PASS");
+    expect(texturing).toContain("VERIFY");
   });
 
-  test("guidance rejects noise-first painting and requires atlas plus mapped-model evidence", async () => {
-    const [skill, workflow] = await Promise.all([
-      source("../.agents/skills/blockit-bedrock-texturing/SKILL.md"),
+  test("workflow prompt contains texture material and form stages", async () => {
+    const [workflow, contract] = await Promise.all([
       source("prompts/bedrock_entity_workflow.md"),
-    ]);
-
-    expect(skill.toLowerCase()).toContain("random high-contrast noise");
-    expect(workflow.toLowerCase()).toContain("random noise is rejected");
-
-    for (const text of [skill, workflow]) {
-      expect(text.toLowerCase()).toContain("atlas");
-      expect(text.toLowerCase()).toContain("visual");
-      expect(text).toContain("get_texture");
-      expect(text).toContain("capture_model_views");
-      expect(text).toContain("FAIL");
-      expect(text).toContain("UNVERIFIED");
-      expect(text).toContain("PASS");
-    }
-  });
-
-  test("committed runtime prompt manifest matches the canonical full workflow source", async () => {
-    const manifest = JSON.parse(await source("prompts/manifest.json")) as {
-      prompts: Record<string, string>;
-    };
-    const workflow = await source("prompts/bedrock_entity_workflow.md");
-    const [runtime, contract] = await Promise.all([
-      source("server/prompts.ts"),
       source("lib/promptContract.ts"),
     ]);
 
-    expect(manifest.prompts.bedrock_entity_workflow).toBe(workflow);
     expect(workflow).toContain("## Texture Styling");
-    expect(runtime).toContain("selectMcpPhaseWorkflowBody");
-    expect(runtime).toContain("BEDROCK_WORKFLOW_PHASE_SECTIONS");
-    expect(contract).toContain('texturing: [');
-    expect(contract).toContain('"Texture Styling"');
+    expect(workflow).toContain("BASE → FORM/MATERIAL → IDENTITY → DETAIL → VERIFY");
+    expect(workflow).toContain("palette/material regions");
+    expect(workflow).toContain("face/form shading");
+    expect(workflow).toContain("contact/edge information");
+    expect(workflow).toContain("identity-critical marks");
+    expect(contract).toContain("texturing: AUTHORING_WORKFLOW_SECTIONS");
+  });
+
+  test("texture foundation keeps crisp pixel-art alpha intentional", async () => {
+    const standard = await source("../docs/foundation/06-texture-standard.md");
+    expect(standard).toContain("default authored alpha intent is **0 or 255**");
+    expect(standard).toContain("Intermediate alpha is valid only when material behavior requires translucency/blending");
   });
 });

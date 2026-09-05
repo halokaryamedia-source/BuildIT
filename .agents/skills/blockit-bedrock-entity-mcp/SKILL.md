@@ -5,7 +5,7 @@ description: Route Bedrock Entity intents.
 
 # BlockIT Bedrock Entity MCP
 
-Own AUTHORING/Animation routing, handoff, recovery:
+Own AUTHORING/Animation tool routing, handoff, recovery:
 
 ```text
 geometry/rig/UV judgement → `blockbench-bedrock-modelling`
@@ -51,7 +51,7 @@ project unknown                → get_project_info
 identity/hierarchy/detail      → inspect_elements(mode=search|outline|detail)
 reference comparison           → capture_model_views
 envelope/scale/ground          → inspect_model_bounds
-validation                     → validator://status
+structural validation gate    → validator://status; details only when nonzero
 UV/atlas readiness             → list_textures
 file deliverable               → export_model
 Animation boundary             → switch_authoring_phase
@@ -85,7 +85,7 @@ Validation failure repairs arguments for the **same capability**.
 
 ## Capability Discovery / Recovery
 
-Known exact capability → invoke. Unknown/stale → one precise `search_capabilities`; schema → `describe_capability` once. One precise search miss → reformulate once; second miss → `BLOCKED`. A known foreign-phase capability is never a discovery miss: AUTHORING↔Animation uses handoff.
+Capability discovery is deferred spec loading after routing, not a second router. Known exact capability → invoke. Unknown/stale → one precise `search_capabilities`; schema → `describe_capability` once. One precise search miss → reformulate once; second miss → `BLOCKED`. A known foreign-phase capability is never a discovery miss: AUTHORING↔Animation uses handoff.
 
 ```text
 INVALID_INPUT       → repair args; same capability

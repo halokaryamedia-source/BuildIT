@@ -40,7 +40,7 @@ describe_capability
 invoke_capability
 ```
 
-Geometry and Texturing use one shared **AUTHORING Runtime surface**. Their semantic owners remain separate, but routine Geometry↔Texturing correction does not change the Runtime tool catalog. Animation remains a separate surface and is the only normal authoring boundary that uses `switch_authoring_phase`.
+Geometry and Texturing use one shared **AUTHORING Runtime surface**. Their semantic owners remain separate, but routine Geometry↔Texturing correction does not change the Runtime tool catalog. Animation remains a separate surface and is the only normal authoring boundary that uses `switch_authoring_phase`. The same task continues across the AUTHORING↔Animation Gateway handoff.
 
 ## 3. Reference Preparation
 
@@ -158,17 +158,7 @@ Architecture term = `Shape Reconstruction`; Hunyuan3D is the single v1 implement
 
 ### 3D-Assisted external ownership
 
-External local tooling controlled by Codex owns:
-
-```text
-fixed view extraction
-Shape Reconstruction
-GLB Gate
-PrimitiveAnything
-Decomposition Gate
-```
-
-Normal use should have one thin resumable orchestrator. Individual Hunyuan/PrimitiveAnything scripts stay debug/development helpers.
+External local tooling controlled by Codex owns fixed view extraction, Shape Reconstruction, GLB Gate, PrimitiveAnything, and Decomposition Gate. Normal use should have one thin resumable orchestrator; individual backend scripts stay debug/development helpers.
 
 Persistent canonical state:
 
@@ -240,19 +230,13 @@ Texture Verify  = atlas + mapped-model validation
 
 Construction forms are examples, not presets. Decide transform ownership before coordinates. Form/contact/articulation-defining **REQUIRED PRIMARY GROUPS/PIVOTS** may belong in the **PRIMARY BLOCKOUT**; neutral organization stays downstream. After primary PASS, add identity-weighted secondary geometry only where it materially improves silhouette, contact, layering, editability, or motion.
 
-All Geometry should be future-animation-friendly:
-
-- meaningful semantic hierarchy;
-- naturally movable structurally distinct parts remain separately transformable;
-- sensible pivots/transform ownership;
-- no destructive structure requiring full rebuild later;
-- no speculative full rig for static scope.
+All Geometry should be future-animation-friendly: meaningful semantic hierarchy; naturally movable structurally distinct parts remain separately transformable; sensible pivots/transform ownership; no destructive structure requiring full rebuild later; no speculative full rig for static scope.
 
 If `Animation Required = YES`, participating hierarchy/Bones/pivots/attachments must be animation-ready before Geometry approval.
 
 ### Surface quality
 
-A clean positive-volume overlap audit is **not** a surface-quality PASS. Before Geometry readiness, inspect the affected views for accidental coplanar rendered surfaces, visible penetration, gaps, contact seams, and deliberate layer offsets. User-reported flicker/z-fighting/gap appearance reopens this gate.
+A clean positive-volume overlap audit is **not** a surface-quality PASS. Before Geometry readiness, inspect affected views for accidental coplanar rendered surfaces, visible penetration, gaps, contact seams, and deliberate layer offsets. User-reported flicker/z-fighting/gap appearance reopens this gate.
 
 ### Semantic cohort
 
