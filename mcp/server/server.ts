@@ -22,6 +22,7 @@ export function buildMcpServerInstructions(
   phase: McpAuthoringPhase,
   profile: McpRegistrationProfile = DEFAULT_MCP_REGISTRATION_PROFILE
 ): string {
+  // Keep initialize capability-oriented; detailed routed specs load only after selection.
   describeMcpSurfaceToolNames(profile, phase);
   return `BlockIT Bedrock Entity authoring. ${buildMcpPhaseRuntimeContract(
     phase
