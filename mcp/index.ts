@@ -47,6 +47,19 @@ import type { NetServer } from "@/server/net";
 import createNetServer from "@/server/net";
 import { getIcon } from "@/macros/getIcon" with { type: "macro" };
 
+type LocalDevFileWatcher = { close(): void };
+type LocalDevFilesystem = {
+  watch(path: string, listener: () => void): LocalDevFileWatcher;
+  readFileSync(path: string, encoding: "utf8"): string;
+};
+type ReloadableBlockItPlugin = {
+  id?: string;
+  source?: string;
+  path?: string;
+  reload?: () => unknown;
+  isReloadable?: () => boolean;
+};
+
 let httpServer: NetServer | null = null;
 let profileActions: Action[] = [];
 let nativeNet: Parameters<typeof createNetServer>[0] | null = null;
@@ -57,6 +70,36 @@ let serverConfig: {
   phase: McpAuthoringPhase;
 } | null = null;
 let restartInProgress: Promise<void> | null = null;
+let localDevFileWatcher: LocalDevFileWatcher | null = null;
+let localDevReloadTimer: ReturnType<typeof setTimeout> | null = null;
+let localDevReloadInProgress: Promise<void> | null = null;
+
+function embeddedBuildIdentity(content: string): string | null {
+  return (
+    content.match(
+      /globalThis\.__BLOCKIT_BUILD_ID__\s*=\s*["'](sha256:[a-f0-9]{64})["']/
+    )?.[1] ?? null
+  );
+}
+
+function currentBuildIdentity(): string | null {
+  return (
+    (
+      globalThis as typeof globalThis & {
+        __BLOCKIT_BUILD_ID__?: unknown;
+      }
+    ).__BLOCKIT_BUILD_ID__ as string | undefined
+  ) ?? null;
+}
+
+function stopLocalDevAutoReload(): void {
+  if (localDevReloadTimer) {
+    clearTimeout(localDevReloadTimer);
+    localDevReloadTimer = null;
+  }
+  localDevFileWatcher?.close();
+  localDevFileWatcher = null;
+}
 
 async function waitForServerListening(server: NetServer): Promise<void> {
   if (server.listening) return;
@@ -126,6 +169,125 @@ async function restartMcpServer(): Promise<void> {
   });
 
   await restartInProgress;
+}
+
+async function teardownBlockItRuntime(): Promise<void> {
+  stopLocalDevAutoReload();
+  setMcpPhaseSwitchHandler(() => undefined);
+  setMcpProfileSwitchHandler(() => undefined);
+  clearExtendedMcpProfileHandler();
+
+  const pendingRestart = restartInProgress;
+  if (pendingRestart) {
+    try {
+      await pendingRestart;
+    } catch {
+      // The restart path already reports its own failure; teardown continues.
+    }
+  }
+  restartInProgress = null;
+
+  const current = httpServer;
+  httpServer = null;
+  if (current) await current.closeAndWait();
+
+  nativeNet = null;
+  serverConfig = null;
+
+  uiTeardown();
+  teardownProfileActions();
+  settingsTeardown();
+}
+
+function getReloadableBlockItPlugin(): ReloadableBlockItPlugin | null {
+  const pluginState = Plugins as unknown as {
+    registered?: Record<string, ReloadableBlockItPlugin>;
+    all?: ReloadableBlockItPlugin[];
+  };
+  return (
+    pluginState.registered?.blockit_mcp ??
+    pluginState.all?.find((plugin) => plugin.id === "blockit_mcp") ??
+    null
+  );
+}
+
+function setupLocalDevAutoReload(): void {
+  if (process.env.NODE_ENV !== "development" || localDevFileWatcher) return;
+
+  const plugin = getReloadableBlockItPlugin();
+  if (
+    !plugin ||
+    plugin.source !== "file" ||
+    !plugin.path ||
+    typeof plugin.reload !== "function" ||
+    (typeof plugin.isReloadable === "function" && !plugin.isReloadable())
+  ) {
+    console.warn(
+      "[MCP] dev:sync auto-reload requires BlockIT to be loaded as a reloadable file-based plugin."
+    );
+    return;
+  }
+
+  const runningBuildIdentity = currentBuildIdentity();
+  if (!runningBuildIdentity) {
+    console.warn("[MCP] dev:sync auto-reload disabled: current build_identity is unavailable.");
+    return;
+  }
+
+  // @ts-ignore - requireNativeModule is a Blockbench desktop global.
+  const devFs = requireNativeModule("fs", {
+    message: "BlockIT development sync watches its local plugin file for successful rebuilds.",
+    detail: "This is used only by development builds to reload the file-based BlockIT plugin automatically.",
+    optional: true,
+  }) as LocalDevFilesystem | null;
+  if (!devFs) {
+    console.warn("[MCP] dev:sync auto-reload disabled: filesystem access was not granted.");
+    return;
+  }
+
+  const scheduleReload = () => {
+    if (localDevReloadTimer) clearTimeout(localDevReloadTimer);
+    localDevReloadTimer = setTimeout(() => {
+      localDevReloadTimer = null;
+      if (localDevReloadInProgress) return;
+
+      let nextContent: string;
+      try {
+        nextContent = devFs.readFileSync(plugin.path!, "utf8");
+      } catch (error) {
+        console.warn("[MCP] dev:sync could not read the updated plugin file", error);
+        return;
+      }
+
+      const nextBuildIdentity = embeddedBuildIdentity(nextContent);
+      if (!nextBuildIdentity || nextBuildIdentity === runningBuildIdentity) return;
+
+      localDevReloadInProgress = (async () => {
+        console.log(
+          `[MCP] Development bundle changed ${runningBuildIdentity} → ${nextBuildIdentity}; safely reloading BlockIT.`
+        );
+        await teardownBlockItRuntime();
+        plugin.reload?.();
+      })()
+        .catch((error) => {
+          console.error("[MCP] Automatic development plugin reload failed", error);
+          Blockbench.showQuickMessage(
+            "BlockIT dev sync could not reload automatically; use the plugin Reload action once.",
+            5000
+          );
+        })
+        .finally(() => {
+          localDevReloadInProgress = null;
+        });
+    }, 250);
+  };
+
+  try {
+    localDevFileWatcher = devFs.watch(plugin.path, scheduleReload);
+    console.log(`[MCP] dev:sync auto-reload watching ${plugin.path}`);
+  } catch (error) {
+    console.warn("[MCP] dev:sync auto-reload watcher could not start", error);
+  }
 }
 
 function setupProfileActions(): void {
@@ -277,32 +439,11 @@ BBPlugin.register("blockit_mcp", {
       profile: registrationProfile,
       phase: authoringPhase,
     });
+    setupLocalDevAutoReload();
   },
 
   async onunload() {
-    setMcpPhaseSwitchHandler(() => undefined);
-    setMcpProfileSwitchHandler(() => undefined);
-    clearExtendedMcpProfileHandler();
-    if (restartInProgress) {
-      try {
-        await restartInProgress;
-      } catch {
-        // The restart path already reports its own failure; teardown continues.
-      }
-    }
-    if (httpServer) {
-      // Wait for the listener close callback before allowing a subsequent
-      // plugin load to claim the same port.
-      await httpServer.closeAndWait();
-      httpServer = null;
-    }
-    nativeNet = null;
-    serverConfig = null;
-    restartInProgress = null;
-
-    uiTeardown();
-    teardownProfileActions();
-    settingsTeardown();
+    await teardownBlockItRuntime();
   },
 
   oninstall() {

@@ -10,10 +10,95 @@ import {
   classifyWatchPath,
   type WatchAction,
 } from "./watch-policy";
+import { deployArtifact, resolveDeployTarget } from "../scripts/deploy-local";
 import { version } from "../package.json";
 
 const OUTPUT_DIR = "./dist";
 const entryFile = resolve("./index.ts");
+const isSyncMode = Bun.argv.includes("--sync");
+const localRuntimeUrl = (process.env.BLOCKIT_MCP_URL ?? "http://127.0.0.1:3000/bb-mcp").replace(/\/+$/, "");
+const syncArtifactPath = resolve("./dist/blockit_mcp.js");
+let syncTarget: string | null = null;
+
+type LiveBuildProbe = {
+  online: boolean;
+  build_identity: string | null;
+};
+
+function syncTargetArgs(): string[] {
+  const index = Bun.argv.indexOf("--sync");
+  if (index < 0) return [];
+  return Bun.argv.slice(index + 1).filter((arg) => arg !== "--");
+}
+
+async function probeLiveBuildIdentity(timeoutMs = 500): Promise<LiveBuildProbe> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(`${localRuntimeUrl}/health`, {
+      headers: { connection: "close" },
+      signal: controller.signal,
+    });
+    if (response.status !== 200) {
+      return { online: false, build_identity: null };
+    }
+    const body = (await response.json()) as { build_identity?: unknown };
+    return {
+      online: true,
+      build_identity:
+        typeof body.build_identity === "string" ? body.build_identity : null,
+    };
+  } catch {
+    return { online: false, build_identity: null };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function waitForLiveBuildIdentity(
+  expected: string,
+  timeoutMs = 5_000
+): Promise<LiveBuildProbe> {
+  const deadline = Date.now() + timeoutMs;
+  let latest: LiveBuildProbe = { online: false, build_identity: null };
+  while (Date.now() < deadline) {
+    latest = await probeLiveBuildIdentity();
+    if (latest.online && latest.build_identity === expected) return latest;
+    await new Promise((resolveDelay) => setTimeout(resolveDelay, 150));
+  }
+  return latest;
+}
+
+async function syncBuiltPlugin(target: string): Promise<void> {
+  const before = await probeLiveBuildIdentity();
+  try {
+    const receipt = await deployArtifact(syncArtifactPath, target);
+    log.step(`[Sync] deployed ${c.cyan}${receipt.target}${c.reset}`);
+    log.step(`[Sync] build_identity ${c.gray}${receipt.build_identity}${c.reset}`);
+
+    if (!before.online) {
+      log.warn(
+        "[Sync] DEPLOYED_OFFLINE — Blockbench Runtime is not reachable; the latest bundle will load on the next Blockbench/plugin start."
+      );
+      return;
+    }
+
+    const live = await waitForLiveBuildIdentity(receipt.build_identity);
+    if (live.online && live.build_identity === receipt.build_identity) {
+      log.success(`[Sync] LIVE_SYNCED — ${receipt.build_identity}`);
+      return;
+    }
+
+    log.warn(
+      `[Sync] STALE_BUILD — deployed=${receipt.build_identity}; live=${live.build_identity ?? "unavailable"}. ` +
+        "If this is the first dev:sync after installing auto-sync, reload the file-based BlockIT plugin once; subsequent successful rebuilds reload automatically."
+    );
+  } catch (error) {
+    log.error(
+      `[Sync] failed: ${error instanceof Error ? error.message : String(error)}`
+    );
+  }
+}
 
 async function cleanOutputDir() {
   try {
@@ -117,9 +202,7 @@ async function buildPlugin(): Promise<boolean> {
   const mcpContent = await mcpBunFile.text();
   const buildDigest = createHash("sha256").update(mcpContent).digest("hex");
   const buildIdentity = `sha256:${buildDigest}`;
-  const banner = /* js */ `/* v${version} build ${buildDigest.slice(0, 12)} */
-globalThis.__BLOCKIT_BUILD_ID__ = ${JSON.stringify(buildIdentity)};
-let process = requireNativeModule('process');`;
+  const banner = /* js */ `/* v${version} build ${buildDigest.slice(0, 12)} */\nglobalThis.__BLOCKIT_BUILD_ID__ = ${JSON.stringify(buildIdentity)};\nlet process = requireNativeModule('process');`;
 
   await Bun.write(mcpFile, banner + mcpContent);
   const emittedContent = await Bun.file(mcpFile).text();
@@ -180,6 +263,7 @@ function watchFiles() {
         const success = await buildPlugin();
         if (success) {
           log.success("Rebuild complete");
+          if (syncTarget) await syncBuiltPlugin(syncTarget);
         } else {
           log.error("Rebuild failed");
         }
@@ -213,6 +297,20 @@ function watchFiles() {
 async function main() {
   log.header("[Build] MCP Plugin");
 
+  if (isSyncMode) {
+    try {
+      syncTarget = resolveDeployTarget(syncTargetArgs(), process.env);
+      log.info(`[Sync] target ${syncTarget}`);
+    } catch (error) {
+      log.error(
+        `[Sync] ${error instanceof Error ? error.message : String(error)} ` +
+          "Set BLOCKIT_PLUGIN_PATH once (for example in your local environment) or pass the absolute blockit_mcp.js path after --sync."
+      );
+      process.exit(1);
+      return;
+    }
+  }
+
   if (isCleanMode) {
     await cleanOutputDir();
   }
@@ -222,6 +320,7 @@ async function main() {
     const success = await buildPlugin();
     if (success) {
       log.success(`Initial build completed. Output in ${c.cyan}${OUTPUT_DIR}${c.reset}`);
+      if (syncTarget) await syncBuiltPlugin(syncTarget);
       watchFiles();
     }
   } else {
@@ -229,6 +328,7 @@ async function main() {
     const success = await buildPlugin();
     if (success) {
       log.success(`Build completed. Output in ${c.cyan}${OUTPUT_DIR}${c.reset}`);
+      if (syncTarget) await syncBuiltPlugin(syncTarget);
     }
     if (!success) {
       process.exit(1);

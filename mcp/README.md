@@ -135,19 +135,54 @@ Normal authoring has no Standard/Extended choice. The internal `bedrock_entity |
 
 ## Local Development Loop
 
-Watch build:
+### Automatic sync — recommended
+
+For day-to-day development, configure the exact file-based Blockbench plugin destination once through `BLOCKIT_PLUGIN_PATH` (an absolute path ending in `blockit_mcp.js`) or pass that path after `--sync`, then run:
+
+```bash
+bun run dev:sync
+```
+
+`dev:sync` is the end-to-end development loop:
+
+```text
+source change
+→ successful development rebuild
+→ exact-byte deploy to BLOCKIT_PLUGIN_PATH
+→ file-based BlockIT detects a new build_identity
+→ old MCP listener closes completely
+→ native Blockbench plugin.reload()
+→ new BlockIT starts
+→ live /health build_identity must match the deployed build
+```
+
+Expected terminal states:
+
+```text
+LIVE_SYNCED       latest deployed build is running in Blockbench
+DEPLOYED_OFFLINE  latest build is installed; Blockbench/Runtime is not running
+STALE_BUILD       installed bytes changed but the running plugin did not load them
+```
+
+The auto-reload watcher exists only in development builds and only for a reloadable **file-based** BlockIT plugin. If the currently running plugin predates this auto-sync support, the first `dev:sync` can report `STALE_BUILD`; use Blockbench's plugin **Reload** action once. After that bootstrap, subsequent successful rebuilds reload automatically without user action. The Gateway already refreshes its Runtime catalog when the Runtime build/signature changes.
+
+### Build only
+
+Use this when automatic deploy/reload is not wanted:
 
 ```bash
 bun run dev:watch
 ```
 
-Install the exact current plugin bundle:
+### Manual deploy
+
+Install the exact current plugin bundle manually:
 
 ```bash
 bun run deploy:local -- /absolute/path/to/blockit_mcp.js
 ```
 
-The helper builds first, copies exact bytes, verifies build identity, and does not reload Blockbench automatically. Runtime health exposes `build_identity`; use it to confirm the installed bundle matches the exact local artifact before reusing live proof.
+The manual helper builds first, copies exact bytes, verifies build identity, and intentionally does **not** reload Blockbench automatically. Runtime health exposes `build_identity`; use it to confirm the installed bundle matches the exact local artifact before reusing live proof.
 
 Gateway:
 
@@ -205,4 +240,4 @@ Generated API/prompt artifacts follow canonical source + generator output and mu
 
 ## Proof Boundary
 
-Continuation → `../docs/knowledge/next-action.md`. Proof interpretation → `../docs/knowledge/current-validation.md`. Static source/CI success cannot prove installed Runtime freshness, live Gateway survival, final surface/UV quality, external 3D model/decomposition quality, atomic Undo behavior, playback/persistence, or visual fidelity unless those surfaces actually ran.
+Continuation → `../docs/knowledge/next-action.md`. Proof interpretation → `../docs/knowledge/current-validation.md`. Static source/CI success cannot prove installed Runtime freshness, live Gateway survival, final surface/UV quality, external GPU quality, PrimitiveAnything quality, atomic Undo behavior, playback/persistence, or visual fidelity unless those surfaces actually ran.

@@ -68,6 +68,35 @@ describe("developer loop", () => {
     expect(classifyWatchPath("prompts/manifest.json")).toBe("ignore");
   });
 
+  test("dev sync owns build, exact deploy, safe file-plugin reload, and live freshness", async () => {
+    const [packageJson, buildSource, pluginSource, readme] = await Promise.all([
+      Bun.file("package.json").json(),
+      Bun.file("build/index.ts").text(),
+      Bun.file("index.ts").text(),
+      Bun.file("README.md").text(),
+    ]);
+
+    expect(packageJson.scripts["dev:sync"]).toBe(
+      "bun run prompts:build && bun run ./build --sourcemap --watch --sync"
+    );
+    expect(buildSource).toContain('const isSyncMode = Bun.argv.includes("--sync")');
+    expect(buildSource).toContain("resolveDeployTarget(syncTargetArgs(), process.env)");
+    expect(buildSource).toContain("deployArtifact(syncArtifactPath, target)");
+    expect(buildSource).toContain("waitForLiveBuildIdentity(receipt.build_identity)");
+    expect(buildSource).toContain("LIVE_SYNCED");
+    expect(buildSource).toContain("STALE_BUILD");
+    expect(buildSource).toContain("DEPLOYED_OFFLINE");
+
+    expect(pluginSource).toContain('process.env.NODE_ENV !== "development"');
+    expect(pluginSource).toContain('plugin.source !== "file"');
+    expect(pluginSource).toContain('requireNativeModule("fs"');
+    expect(pluginSource).toContain("await teardownBlockItRuntime()");
+    expect(pluginSource).toContain("plugin.reload?.()");
+    expect(pluginSource).toContain("await current.closeAndWait()");
+    expect(readme).toContain("bun run dev:sync");
+    expect(readme).toContain("LIVE_SYNCED");
+  });
+
   test("prompt generator is import-safe for watch-mode reuse", () => {
     expect(typeof generatePromptManifest).toBe("function");
   });
