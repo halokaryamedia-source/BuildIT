@@ -34,7 +34,19 @@ Require a clean tree before reusing proof.
 
 ## 3. Source Closure + Build
 
-From `mcp/`:
+### Fast path — reuse exact green MCP Verify
+
+Use only when the current clean HEAD has exact successful `verify:closure` + MCP Verify evidence and no local source/package edits follow it. Then:
+
+```bash
+cd mcp
+bun install --frozen-lockfile
+bun run build
+```
+
+### Full path
+
+Otherwise, from `mcp/`:
 
 ```bash
 bun install --frozen-lockfile
@@ -42,7 +54,7 @@ bun run verify:closure
 bun run verify:mcp
 ```
 
-An exact current green CI result may be reused only when the local tree is unchanged from that exact commit. Otherwise run the commands above. `verify:closure` protects semantic mirrors/generated freshness; `verify:mcp` owns Runtime/Gateway typecheck, recursive tests, surface measurements, production build, and generated-doc freshness.
+`verify:closure` protects semantic mirrors/generated freshness; `verify:mcp` owns Runtime/Gateway typecheck, recursive tests, surface measurements, production build, and generated-doc freshness.
 
 Do **not** hardcode phase tool counts in this runbook. Source counts belong to `measure:phases`; installed counts belong to `verify:stateless-local` and live `tools/list` proof.
 
