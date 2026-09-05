@@ -161,8 +161,8 @@ async function measurePhase(phase: McpAuthoringPhase): Promise<MeasuredPhase> {
       );
     }
     const instructions = initialized.json.result?.instructions ?? "";
-    if (!instructions.includes(`ACTIVE PHASE: ${phase.toUpperCase()}`)) {
-      throw new Error(`${phase} initialize lost its active-phase contract.`);
+    if (!instructions.includes(`ACTIVE STAGE: ${phase.toUpperCase()}`)) {
+      throw new Error(`${phase} initialize lost its active-stage contract.`);
     }
 
     const listed = await postMcp(
