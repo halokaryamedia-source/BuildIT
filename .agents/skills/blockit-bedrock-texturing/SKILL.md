@@ -17,6 +17,8 @@ Entry: **final Box UV locked with `autouv=0`**, no invalid/out-of-bounds/partial
 
 ## Direct Routing
 
+Reuse fresh state.
+
 ```text
 global UV/atlas readiness      → list_textures (`uv_audit.production_gate`)
 face mapping                   → inspect_elements(mode=detail) only when needed
@@ -74,7 +76,7 @@ Known → invoke. Unknown/stale → `search_capabilities`; schema → `describe_
 
 Use one **base-color atlas** for the whole model, not per body part/Cube. Production UV: **128×128 default, 256×256 opt-in**. Pin atlas UUID; pass `texture_id` when multiple textures are loaded.
 
-Define palette roles/value-hue ramp, material zones, face/form shading, contact/occlusion, edge/alpha/seam, identity marks, detail budget, and pixels per UV unit. Generic palette, copied unrelated texture, or flat rectangles are invalid production styling. Flat color is BASE PASS only; reject random high-contrast noise.
+Define palette roles/value-hue ramp, material zones, face/form shading, contact/occlusion, edge/alpha/seam, identity marks, detail budget, and pixels per UV unit. generic palette, copied unrelated texture, or flat rectangles are invalid production styling. Flat color is BASE PASS only; reject random high-contrast noise.
 
 ```text
 BASE PASS
