@@ -81,7 +81,7 @@ describe("repository GitHub discipline", () => {
     requireInvariant(specialist, /Preflight generated ownership[\s\S]*(schema|description|spec)[\s\S]*runtime prompt[\s\S]*mcp\/AGENTS\.md/i, "mcp-server-development/SKILL.md", "specialist follows package generator ownership");
   });
 
-  test("test-only verifier ownership is directory-based while full MCP remains recursive", async () => {
+  test("test layers stay directory-owned and full verification avoids duplicate subset execution", async () => {
     const [repository, authoring, mcp, release, packageText] = await Promise.all([
       source("../.github/workflows/repository-verify.yml"),
       source("../.github/workflows/authoring-policy-verify.yml"),
@@ -94,16 +94,29 @@ describe("repository GitHub discipline", () => {
     expect(scripts["verify:repository"]).toBe("bun test tests/repository/*.test.ts");
     expect(scripts["verify:authoring"]).toBe("bun test tests/authoring/*.test.ts");
     expect(scripts["test"]).toBe("bun test");
-    expect(scripts["verify:release"]).toBe("bun run verify:mcp");
+    expect(scripts["test:runtime"]).toBe("bun test tests/*.test.ts");
+    expect(scripts["verify:release"]).toBe("bun run verify:full");
+    expect(scripts["verify:full"]).toBe("bun run verify:repository && bun run verify:mcp");
 
-    const fullGate = scripts["verify:mcp"];
-    const ordered = ["bun run typecheck", "bun run test", "bun run measure:surface", "bun run build", "bun run docs:check"];
+    const mcpGate = scripts["verify:mcp"];
+    const ordered = [
+      "bun run typecheck",
+      "bun run typecheck:gateway",
+      "bun run test:runtime",
+      "bun run verify:authoring",
+      "bun run measure:surface",
+      "bun run measure:phases",
+      "bun run build",
+      "bun run docs:check",
+    ];
     let previous = -1;
     for (const command of ordered) {
-      const index = fullGate.indexOf(command);
+      const index = mcpGate.indexOf(command);
       expect(index).toBeGreaterThan(previous);
       previous = index;
     }
+    expect(mcpGate).not.toContain("bun run verify:repository");
+    expect(mcpGate).not.toContain("bun run test &&");
 
     expect(repository).toContain("bun run verify:repository");
     expect(authoring).toContain("bun run verify:authoring");
@@ -206,8 +219,8 @@ describe("repository GitHub discipline", () => {
     expect(validation).not.toContain("LATEST REPOSITORY VERIFY");
 
     expect(runbook.length).toBeLessThan(8_000);
-    expect(runbook).toContain("Fast path — reuse exact green MCP Verify");
-    expect(runbook).toContain("bun run verify:mcp");
+    expect(runbook).toMatch(/Fast path[^\n]*exact green/i);
+    expect(runbook).toContain("bun run verify:full");
     expect(runbook).toContain("Cost to Accepted Result");
     expect(runbook).toContain("docs/knowledge/current-validation.md");
     expect(runbook).not.toContain("docs/foundation/validation-report.md");
