@@ -144,7 +144,26 @@ Minimum impact rules:
 - implementation-only change → implementation + direct regressions; do not churn Flow/Skills/docs when public semantics and proof state are unchanged;
 - proof/continuation → update `current-validation.md` / `next-action.md` only after corresponding evidence or continuation state actually changes.
 
-If any required generated dependent cannot be produced in the current execution context, transfer before editing its canonical source. Completion requires no unclassified material dependent, then `verify:closure`; add `verify:mcp` whenever executable or public MCP behavior changed.
+If any required generated dependent cannot be produced in the current execution context, transfer before editing its canonical source. Use `verify:closure` as the compact cross-surface preflight; use `verify:full` once for a final delivery that also affects executable/public MCP behavior.
+
+## Test Ownership / Anti-Stale
+
+Tests are evidence, not prose snapshots.
+
+- Prefer imported behavior, schema, structured result, deterministic ownership, and public-contract assertions over source-string inspection.
+- Use source-string assertions only when the boundary cannot be imported safely; match stable identifiers or semantic invariants, not spacing, complete sentences, local variable names, or incidental implementation syntax.
+- Keep one primary regression owner per recurring defect. Do not repeat the same invariant in runtime, authoring, and repository suites unless each layer proves a materially different boundary.
+- If implementation/semantics are correct and an assertion is stale, fix, merge, or remove the **test owner**; do not rewrite product prose solely to satisfy an old string.
+- A test with no current failure mode, no canonical owner, or strictly weaker duplicate coverage should be deleted or merged rather than retained as ceremony.
+- During iteration run the smallest named test/file that can falsify the current change. Full verification is terminal evidence, not an edit loop.
+
+Test layers:
+
+```text
+tests/*.test.ts              executable/runtime/import-safe contracts
+tests/authoring/*.test.ts    authoring semantics and policy
+tests/repository/*.test.ts   repository/docs/CI ownership and routing
+```
 
 ## Verification
 
@@ -153,12 +172,16 @@ Verification follows the changed claim; `package.json` owns verifier composition
 Canonical entrypoints from `mcp/`:
 
 ```text
-repository-policy / repository-static contract → bun run verify:repository
-authoring-policy / authoring-static contract   → bun run verify:authoring
-cross-surface dependency closure               → bun run verify:closure
-executable or public MCP behavior              → bun run verify:mcp
-main release boundary                           → bun run verify:release
+runtime/import-safe test layer                    → bun run test:runtime
+repository-policy / repository-static contract    → bun run verify:repository
+authoring-policy / authoring-static contract      → bun run verify:authoring
+cross-surface dependency closure                  → bun run verify:closure
+executable/public MCP + authoring compatibility   → bun run verify:mcp
+full repository + MCP final gate                  → bun run verify:full
+main release boundary                              → bun run verify:release
 ```
+
+`verify:mcp` intentionally does not rerun repository tests. `verify:full` composes repository verification with `verify:mcp`, so repository, authoring, and runtime layers each run once in the final full gate.
 
 ### During iteration
 
@@ -169,11 +192,18 @@ main release boundary                           → bun run verify:release
 
 ### Final MCP gate
 
-For one final logical change affecting executable source, public MCP contracts, build output, or generated ownership:
+For executable/public MCP changes whose repository-policy owners did not change:
 
 ```bash
 bun install --frozen-lockfile
 bun run verify:mcp
+```
+
+For cross-surface work or a release candidate, run the non-duplicating full gate once:
+
+```bash
+bun install --frozen-lockfile
+bun run verify:full
 ```
 
 A file under `mcp/tests/` alone never upgrades a static policy change into a full MCP gate. GitHub/static proof covers source contracts/buildability, not live Blockbench rendering, Undo, playback, persistence, or visual fidelity.

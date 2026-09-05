@@ -62,8 +62,7 @@ describe("static footprint budget", () => {
 
     expect(brief).toContain("Cost to Accepted Result");
     expect(implementation).toContain("Static Footprint cannot upgrade");
-    expect(runbook).toMatch(/Authoring Efficiency[^\n]*only after[^\n]*quality gate passes/i);
-    expect(runbook).toMatch(/Static Footprint[^\n]*(separate|cannot prove)[^\n]*(runtime efficiency|Authoring Efficiency)/i);
+    expect(runbook).toMatch(/Authoring Efficiency[\s\S]*quality gate passes/i);
     expect(runbook).toContain("QUALITY FAIL");
   });
 

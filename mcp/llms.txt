@@ -72,10 +72,10 @@ From `mcp/`:
 
 ```bash
 bun install --frozen-lockfile
-bun run verify:mcp
+bun run verify:full
 ```
 
-During iteration use the smallest targeted regression or primitive check that can falsify the current change; do not use the full verifier as the edit loop.
+Use the smallest targeted test during iteration. `test:runtime`, `verify:authoring`, and `verify:repository` are separate ownership layers; `verify:mcp` covers executable/public MCP plus authoring compatibility, while `verify:full` adds repository contracts without rerunning those layers twice.
 
 `measure:surface` guards the retained callable catalog/static payload. `measure:phases` measures the source-owned Runtime surfaces over the real loopback transport. Neither measurement is installed-client token usage or Authoring Efficiency proof.
 

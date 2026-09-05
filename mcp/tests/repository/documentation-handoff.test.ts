@@ -146,7 +146,8 @@ describe("cross-agent repository handoff", () => {
     ]);
 
     expect(validation).toMatch(/Visual\s*\/\s*Reference Proof Rule/i);
-    expect(validation).toMatch(/cannot prove visual fidelity/i);
+    expect(validation).toMatch(/actual approved reference image/i);
+    expect(validation).toMatch(/fresh evidence/i);
     expect(validation).toMatch(/authoring efficiency/i);
     expect(implementation).toMatch(/Static Footprint[\s\S]*cannot upgrade/i);
     expect(runbook).toMatch(/quality gate passes/i);

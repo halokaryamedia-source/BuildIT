@@ -5,15 +5,24 @@ async function text(path: string): Promise<string> {
 }
 
 describe("MCP dependency closure", () => {
-  test("one compact closure command composes semantic and generated freshness gates", async () => {
+  test("verification layers compose without rerunning repository/authoring subsets in the full gate", async () => {
     const packageJson = JSON.parse(await text("package.json")) as {
       scripts: Record<string, string>;
     };
 
+    expect(packageJson.scripts["test:runtime"]).toBe("bun test tests/*.test.ts");
     expect(packageJson.scripts["verify:closure"]).toBe(
       "bun run verify:repository && bun run verify:authoring && bun run docs:check"
     );
     expect(packageJson.scripts["verify:closure"]).not.toContain("verify:mcp");
+    expect(packageJson.scripts["verify:mcp"]).toContain("bun run test:runtime");
+    expect(packageJson.scripts["verify:mcp"]).toContain("bun run verify:authoring");
+    expect(packageJson.scripts["verify:mcp"]).not.toContain("bun run test &&");
+    expect(packageJson.scripts["verify:full"]).toBe(
+      "bun run verify:repository && bun run verify:mcp"
+    );
+    expect(packageJson.scripts["verify:full"]).not.toContain("verify:closure");
+    expect(packageJson.scripts["verify:release"]).toBe("bun run verify:full");
     expect(packageJson.scripts["verify:mcp"]).toContain("bun run docs:check");
   });
 
@@ -33,6 +42,7 @@ describe("MCP dependency closure", () => {
 
     expect(rules).toContain("## Dependency Closure");
     expect(rules).toContain("### Change Closure Gate");
+    expect(rules).toContain("## Test Ownership / Anti-Stale");
     for (const dependencyClass of [
       "SHARED SOURCE",
       "GENERATED",

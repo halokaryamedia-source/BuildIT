@@ -36,7 +36,7 @@ Require a clean tree before reusing proof.
 
 ### Fast path — reuse exact green MCP Verify
 
-Use only when the current clean HEAD has exact successful `verify:closure` + MCP Verify evidence and no local source/package edits follow it. Then:
+Use only when the current clean HEAD has an exact successful `verify:full` and no local source/package edits follow it. Then:
 
 ```bash
 cd mcp
@@ -50,11 +50,10 @@ Otherwise, from `mcp/`:
 
 ```bash
 bun install --frozen-lockfile
-bun run verify:closure
-bun run verify:mcp
+bun run verify:full
 ```
 
-`verify:closure` protects semantic mirrors/generated freshness; `verify:mcp` owns Runtime/Gateway typecheck, recursive tests, surface measurements, production build, and generated-doc freshness.
+`verify:full` runs repository policy once, then `verify:mcp`; `verify:mcp` runs Runtime/import-safe tests plus authoring compatibility once, then typecheck/surface/build/generated freshness. `verify:closure` remains the cheaper cross-surface preflight during iteration and should not be run immediately before `verify:full` unless it is needed to diagnose a closure failure.
 
 Do **not** hardcode phase tool counts in this runbook. Source counts belong to `measure:phases`; installed counts belong to `verify:stateless-local` and live `tools/list` proof.
 

@@ -10,10 +10,10 @@ From `mcp/`:
 
 ```bash
 bun install --frozen-lockfile
-bun run verify:mcp
+bun run verify:full
 ```
 
-`verify:mcp` typechecks Runtime + Gateway, runs the recursive test suite, measures surfaces, builds the plugin, and checks generated docs.
+Verification is layered: `test:runtime` owns root executable/import-safe tests, `verify:authoring` owns authoring semantics, `verify:repository` owns repository/docs/CI contracts, `verify:mcp` owns executable/public MCP + authoring compatibility, and `verify:full` runs the repository + MCP final gates without rerunning the same subset twice. Use the smallest targeted test during iteration.
 
 ## Normal Client Boundary
 
@@ -94,7 +94,7 @@ Requested Dimensions: width=<n> height=<n> length=<n> blocks
 
 `run` is resumable and stops at `AWAITING_SHAPE_GATE` and `AWAITING_DECOMPOSITION_GATE`; acceptance/rejection is explicit via `accept-shape|reject-shape|accept-decomposition|reject-decomposition`. Only passed artifacts become canonical `shape.glb` / `primitive-decomposition.json`; candidate evidence remains in `.cache/`.
 
-`server/threeDAssistedMaterializer.ts` contains the fail-closed native materializer engine. Its **public Geometry ToolSpec binding is intentionally LOCAL_CODE work** because generated MCP API docs must come from the canonical generator. Bind the engine as one Runtime capability accepting only `workspace_path`, keep the Gateway at four tools, then run `bun run docs:build`, `bun run docs:check`, and `bun run verify:mcp` before live proof. Generated API docs must never be hand-edited.
+`server/threeDAssistedMaterializer.ts` contains the fail-closed native materializer engine. Its **public Geometry ToolSpec binding is intentionally LOCAL_CODE work** because generated MCP API docs must come from the canonical generator. Bind the engine as one Runtime capability accepting only `workspace_path`, keep the Gateway at four tools, then run `bun run docs:build` and `bun run verify:full` before live proof. Generated API docs must never be hand-edited.
 
 ## Current Runtime Surface
 
