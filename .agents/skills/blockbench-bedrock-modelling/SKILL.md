@@ -97,7 +97,7 @@ explicit user requirement
 → simplest recognizable Blockbench-buildable interpretation
 ```
 
-Do not average drift. **Only unresolved material conflict becomes `BLOCKED`.** Front agreement does not certify depth.
+Minor supported drift uses one consistent interpretation. Do not average drift. **Only unresolved material conflict becomes `BLOCKED`.** Front agreement does not certify depth.
 
 Successful `manage_cubes` execution is **Tool success** and **execution evidence** only. Tool success never authorizes visual `PASS`. After primary `PASS`, add identity-weighted secondary geometry only where silhouette, recognizability, contact/layering, editability, or motion benefits.
 

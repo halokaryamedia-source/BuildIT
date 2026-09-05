@@ -5,26 +5,24 @@ description: Bedrock Texture/Painter/PBR specialist.
 
 # BlockIT Bedrock Texturing
 
-Shared `AUTHORING` Runtime surface. Own Texture Atlas/Painter/PBR/Texture Verify. Geometry/UV capabilities remain callable for bounded upstream correction; Texturing **must not borrow Cube mutation**.
+Shared `AUTHORING` Runtime surface. Geometry/UV capabilities remain callable for bounded upstream correction; Texturing **must not borrow Cube mutation**. Own Texture Atlas/Painter/PBR/Texture Verify.
 
 ## Shared Authoring Correction Boundary
 
-A texture-discovered Geometry/UV defect is corrected in-session by Geometry owner. **No Geometry↔Texturing phase switch.** `HANDOFF_REQUIRED` + `switch_authoring_phase` through Gateway is only AUTHORING↔Animation, same task.
+**No Geometry↔Texturing phase switch.** Geometry defects → owner in-session. `HANDOFF_REQUIRED` + `switch_authoring_phase` through Gateway is only AUTHORING↔Animation, same task.
 
 Entry: **final Box UV locked with `autouv=0`**, no invalid/out-of-bounds/partial-overlap blocker, reuse `box_uv_region`.
 
-`UV Layout` maps geometry→atlas; `Texture Styling` authors pixels. `manage_material_instances` owns face `material_instance` state.
+`UV Layout` = geometry→atlas; `Texture Styling` = pixels. `manage_material_instances` owns face `material_instance` state.
 
 ## Direct Routing
-
-Reuse fresh state.
 
 ```text
 global UV/atlas readiness      → list_textures (`uv_audit.production_gate`)
 face mapping                   → inspect_elements(mode=detail) only when needed
 unlocked/invalid UV            → Geometry owner + bounded UV correction; no phase switch
 blank atlas resolution unknown → get_project_info once
-atlas lifecycle                → create_texture / activate_texture / get_texture
+atlas lifecycle                → list_textures / activate_texture; create/read → create_texture / get_texture
 base/material regions          → draw_shape_tool
 contiguous fill                → paint_fill_tool
 stepped value/form/detail      → draw_shape_tool / paint_with_brush
@@ -68,15 +66,15 @@ pbr_channel → material TextureGroup `group` required
 Painter coordinates → texture pixels; keep in bounds
 ```
 
-`create_texture` has a provisional **16×16** blank default; production must not omit Atlas size. Existing base atlas → reuse its UUID.
+`create_texture` has a provisional **16×16** blank default. Production authoring must therefore **not omit blank Atlas size**; reuse project resolution. Existing base-color atlas → reuse its UUID.
 
 Known → invoke. Unknown/stale → `search_capabilities`; schema → `describe_capability` once. **Do not re-list/re-read it only for confirmation.**
 
 ## Texture Atlas / Styling
 
-Use one **base-color atlas** for the whole model, not per body part/Cube. Production UV: **128×128 default, 256×256 opt-in**. Pin atlas UUID and pass `texture_id` when multiple textures are loaded.
+Use one **base-color atlas** for the whole model, not per body part/Cube. Production UV: **128×128 default, 256×256 opt-in**. Pin atlas UUID; pass `texture_id` when multiple textures are loaded.
 
-Approved reference is required. Define palette/value-hue ramp, material zones, face/form shading, contact/occlusion, edge/alpha/seam, identity marks, detail budget, and pixels per UV unit. A generic palette, copied unrelated texture, or flat rectangles is invalid production styling. Flat color is BASE PASS only; reject random high-contrast noise.
+Define palette roles/value-hue ramp, material zones, face/form shading, contact/occlusion, edge/alpha/seam, identity marks, detail budget, and pixels per UV unit. Generic palette, copied unrelated texture, or flat rectangles are invalid production styling. Flat color is BASE PASS only; reject random high-contrast noise.
 
 ```text
 BASE PASS
@@ -86,7 +84,7 @@ SECONDARY DETAIL PASS
 VERIFY
 ```
 
-Texture Styling completion needs fresh `get_texture` material/form/detail pixels plus fresh mapped model-view evidence. Missing/unrelated evidence → `FAIL | UNVERIFIED`.
+Texture Styling completion needs fresh `get_texture` material/form/detail pixels + mapped model-view evidence. Missing/unrelated evidence → `FAIL | UNVERIFIED`.
 
 `gradient_tool` is only for reference-supported continuous transition. Same-color detail → one `paint_with_brush` batch with `connect_strokes=false`.
 
