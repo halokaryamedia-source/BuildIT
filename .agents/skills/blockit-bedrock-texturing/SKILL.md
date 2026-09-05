@@ -35,7 +35,7 @@ mapped model-view evidence → capture_model_views
 
 ## UV Layout Quality Gate
 
-`uv_audit.production_gate=ready` is technical hygiene, **not UV Layout PASS**. Review **face aspect ratio, texel density, orientation, padding/seams, and semantic UV reuse**. `inspect_element(detail=uv)` flags distorted/degenerate faces; exact reuse may be intentional. `review_required` reopens Geometry/UV.
+`uv_audit.production_gate`=ready is technical hygiene, **not UV Layout PASS**. Review **face aspect ratio, texel density, orientation, padding/seams, and semantic UV reuse**. `inspect_element(detail=uv)` flags distorted/degenerate faces; exact reuse may be intentional. `review_required` reopens Geometry/UV.
 
 ## Primary vs Support Capabilities
 
@@ -76,7 +76,9 @@ Known → invoke. Unknown/stale → `search_capabilities`; schema → `describe_
 
 Use one **base-color atlas** for the whole model. Production UV: **128×128 default, 256×256 opt-in**. Pin atlas UUID and pass `texture_id` when multiple textures are loaded.
 
-Define palette roles/value-hue ramp, material zones, face/form shading, contact/occlusion, edge/alpha/seam, identity marks, detail budget, and pixels per UV unit. generic palette, copied unrelated texture, or flat rectangles are invalid production styling. Flat color is BASE PASS only; reject random high-contrast noise.
+Define palette roles/value-hue ramp, material zones, face/form shading, contact/occlusion, edge/alpha/seam, identity marks, detail budget, and pixels per UV unit. generic palette, copied unrelated texture, or flat rectangles are invalid production styling. Reject random high-contrast noise.
+
+`BASE PASS → VALUE / FORM PASS → IDENTITY PASS → SECONDARY DETAIL PASS → VERIFY`
 
 Texture Styling completion needs fresh `get_texture` pixels + mapped model-view evidence. Missing/unrelated evidence → `FAIL | UNVERIFIED`.
 
