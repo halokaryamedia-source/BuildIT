@@ -44,9 +44,11 @@ When evidence is clear, topology simple, and the object predominantly rigid:
 
 ```text
 identity + envelope + primary masses
+→ required continuous surfaces + intentional negative spaces
 → simplest transform ownership
 → minimum meaningful hierarchy
 → coherent PRIMARY BLOCKOUT
+→ whole-form surface gate
 → judgeable views
 → diagnose only observed mismatch
 ```
@@ -63,24 +65,64 @@ primary masses + must-exist reason
 identity-critical landmarks
 required count / symmetry or deliberate asymmetry
 topology: what attaches to what
-important negative spaces / separations
+required continuous surface regions
+intentional openings / recesses / negative spaces
 representation: geometry | texture | animation | omit
+micro-detail candidates + smallest material span
 material evidence state
 ```
 
-A semantic label never authorizes coordinates. **No orphan/filler Cube**: each primary Cube implements a declared mass/landmark or justified split. `PROVISIONAL` may support a coarse hypothesis; placement never verifies it.
+A semantic label never authorizes coordinates. **No orphan/filler Cube**: each primary Cube implements a declared mass/landmark, required surface coverage, or justified split. `PROVISIONAL` may support a coarse hypothesis; placement never verifies it.
 
-Choose the simplest buildable construction preserving the visible requirement: volume for silhouette, plane-like Cubes for sheet form, linked segments for bends, Locator for non-visible anchors. **Use texture for surface information** that needs no silhouette, volume, contact, or separate motion.
+Choose the simplest buildable construction preserving the visible requirement: volume for silhouette, plane-like Cubes for sheet form, linked segments for bends, Locator for non-visible anchors. **Use texture for surface information** that needs no silhouette, volume, contact, intentional negative-space boundary, or separate motion.
 
 Decide transform ownership before rotation: shared semantic orientation/attachment/articulation is **Group/Bone-owned**; local rigid orientation may be Cube-owned. Classify primary masses `AXIS_ALIGNED | ROTATED | UNRESOLVED`. A visible slope requires `ROTATED` + explicit origin/pivot + role `MASS_CENTER | ATTACHMENT | JOINT | PARENT_TRANSFORM`. Material `UNRESOLVED` → `BLOCKED`.
 
 For every required attachment state its **contact target/invariant** before coordinates. Use an **attachment/joint pivot** when it owns the transform. AABB overlap, hierarchy, or numeric touching is not contact proof; important negative spaces stay open.
 
+## Surface Coverage / Negative-Space Gate
+
+Before coordinates for a shell, body panel, wall, housing, casing, skin, or any reference region that is visually continuous, state a compact coverage contract:
+
+```text
+surface/cohort
+required covered region
+intentional opening or recess
+adjacent cohort/contact boundary
+```
+
+For enclosure-like forms, use **closed-shell reasoning**: every major exposed region must be covered except an explicitly intended opening/recess. For naturally open forms, do not force a box; apply the same rule only to surfaces/segments the reference shows as continuous and preserve intended negative space.
+
+**Every gap must be intentional.** A space between adjacent cohorts that is not a named opening/recess is a Geometry defect. Exact outer bounds, AABB overlap, hierarchy, or successful Cube creation do not prove surface coverage.
+
+Build broad continuous primary surfaces/cohorts before local inserts and trim. Prefer one coherent primary mass/cohort over disconnected strips that recreate one continuous plane without a structural reason. Do not use later detail Cubes or texture to conceal missing primary coverage.
+
+At the primary whole-form gate, review the exposed form from the minimum views needed to cover front/back/left/right/top/bottom plus a useful 3/4 view when depth relationships matter. Fail the gate if unintended background/interior/backfaces are visible through the form, if adjacent required surfaces leave a gap, or if a seam/recess exists without reference support.
+
+## Geometry Detail Budget / Texture Delegation Gate
+
+Before creating **secondary/detail geometry**, classify each candidate:
+
+```text
+GEOMETRY  → materially changes silhouette, real volume, intentional opening/contact,
+            layering that must read in 3D, or separate motion
+TEXTURE   → surface pattern/color/seam/panel line/marking/detail with no required 3D effect
+OMIT      → unsupported or visually immaterial detail
+```
+
+For a **detail-only candidate whose smallest material span/thickness is `<= 4 Blockbench units` (1/4 block)**, default to `TEXTURE` or `OMIT`. Geometry at or below this size requires a stated exception: silhouette-critical thin form, genuine volume/contact, intentional negative-space boundary, or independently moving part. This is a suppression gate, not a permission rule: being larger than 4 units does not automatically justify geometry.
+
+Do not build geometry merely to reproduce panel grids, painted seams, grout lines, scratches, bolts/buttons, thin decorative borders, material breaks, or other surface information when texture can preserve the visible requirement. Conversely, a thin structural part that genuinely changes silhouette or motion remains geometry even when its thickness is <=4 units.
+
+Secondary geometry begins only after the primary surface-coverage gate passes. If detail creation starts increasing gaps, fragmentation, UV burden, or correction cost without a material 3D benefit, merge/remove it and delegate the visible detail downstream to texture.
+
 ## Surface / Cohort Quality Gate
 
-**No positive-volume overlap alone is not visual PASS.** Judge affected views for penetration, accidental coplanar surfaces, gaps, contact seams, and layer offsets. User-reported surface defects reopen this gate even after a clean structural validator.
+**No positive-volume overlap alone is not visual PASS.** Judge affected views for penetration, accidental coplanar surfaces, holes, gaps, contact seams, and layer offsets. User-reported surface defects reopen this gate even after a clean structural validator.
 
 For a semantic assembly translation/orientation, prefer its Group/Bone when one shared transform explains intent. Otherwise update the complete affected sibling cohort coherently. A single-child move inside a multi-part assembly needs an explicit local-part reason and fresh view proof that sibling relationships remain correct.
+
+A repaired local gap does not certify the whole surface. Re-run the affected surface/cohort coverage check and reject a correction that merely moves the hole, creates a new seam, or uses compensating micro-geometry instead of restoring the intended continuous form.
 
 ## Future Editability / Animation Readiness
 
@@ -95,11 +137,14 @@ explicit user requirement
 → original source evidence
 → best-supported approved view(s)
 → simplest recognizable Blockbench-buildable interpretation
+→ continuous required surfaces + intentional negative spaces
+→ primary whole-form surface gate
+→ only then identity-weighted secondary geometry
 ```
 
 Minor supported drift uses one consistent interpretation. Do not average drift. **Only unresolved material conflict becomes `BLOCKED`.** Front agreement does not certify depth.
 
-Successful `manage_cubes` execution is **Tool success** and **execution evidence** only. Tool success never authorizes visual `PASS`. After primary `PASS`, add identity-weighted secondary geometry only where silhouette, recognizability, contact/layering, editability, or motion benefits.
+Successful `manage_cubes` execution is **Tool success** and **execution evidence** only. Tool success never authorizes visual `PASS`. After primary `PASS`, add identity-weighted secondary geometry only where silhouette, recognizability, contact/layering, editability, or motion benefits; apply the Geometry Detail Budget before each detail cohort.
 
 Material verdict requires the actual approved reference image + **fresh current-revision model** image(s):
 
@@ -129,6 +174,6 @@ Existing-asset work may use current geometry as baseline without certifying refe
 
 Geometry owns shape/hierarchy/rig/pivots/UV Layout; Texturing owns atlas pixels/PBR. Both remain callable in the same AUTHORING Runtime surface; semantic ownership governs mutation.
 
-`internal geometry=PASS + uv_layout=PASS → READY_FOR_USER_REVIEW` at a meaningful checkpoint. User revision continues Geometry; explicit approval saves the checkpoint and continues Texturing focus in the same AUTHORING surface.
+`internal geometry=PASS` requires the primary surface/negative-space gate to pass and no unjustified detail-only micro-geometry to remain. `internal geometry=PASS + uv_layout=PASS → READY_FOR_USER_REVIEW` at a meaningful checkpoint. User revision continues Geometry; explicit approval saves the checkpoint and continues Texturing focus in the same AUTHORING surface.
 
 A texture-discovered Geometry/UV defect is corrected directly with the Geometry owner; no Geometry↔Texturing phase handoff. Revalidate only affected texture evidence. `HANDOFF_REQUIRED` + `switch_authoring_phase` through Gateway is reserved for AUTHORING↔Animation.
