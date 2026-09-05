@@ -92,6 +92,11 @@ describe("model-wide texel density diagnostics", () => {
     expect(skill).toContain(
       "never force detail into an undersized UV island with a larger brush/shape"
     );
+    expect(skill).toContain(
+      "Pin atlas UUID and pass `texture_id` when multiple textures are loaded"
+    );
+    expect(skill).toContain("palette roles");
+    expect(skill).toContain("identity marks");
     expect(inspection).toContain("model_units_per_physical_pixel");
     expect(inspection).toContain("outlier_model_area_fraction");
   });
