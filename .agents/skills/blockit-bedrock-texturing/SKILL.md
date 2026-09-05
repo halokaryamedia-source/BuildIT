@@ -7,9 +7,9 @@ description: Bedrock Texture/Painter/PBR specialist.
 
 Geometry/UV capabilities remain callable for bounded upstream correction in shared `AUTHORING`; Texturing **must not borrow Cube mutation**.
 
-## Authoring Correction
+## Correction
 
-**No Geometry↔Texturing phase switch.** Geometry defects → owner in-session. `HANDOFF_REQUIRED` + `switch_authoring_phase` is only AUTHORING↔Animation, same task.
+**No Geometry↔Texturing phase switch.** Geometry defects → owner in-session. `HANDOFF_REQUIRED` + `switch_authoring_phase` is only AUTHORING↔Animation.
 
 Entry: **final Box UV locked with `autouv=0`**, no invalid/out-of-bounds/partial-overlap blocker; reuse `box_uv_region`.
 `UV Layout`=geometry→atlas; `Texture Styling`=pixels. `manage_material_instances` owns face `material_instance`.
@@ -74,9 +74,9 @@ Known → invoke. Unknown/stale → `search_capabilities`; schema → `describe_
 
 ## Texture Atlas / Styling
 
-Use one **base-color atlas** for the whole model. Production UV: **128×128 default, 256×256 opt-in**. Pin atlas UUID; with multiple textures pass `texture_id`.
+Use one **base-color atlas** for the whole model. Production UV: **128×128 default, 256×256 opt-in**. Pin atlas UUID and pass `texture_id` when multiple textures are loaded.
 
-Define palette/value-hue ramp, material zones, face/form shading, contact/occlusion, edge/alpha/seam, identity, detail budget, and pixels per UV unit. generic palette, copied unrelated texture, or flat rectangles are invalid; reject random high-contrast noise.
+Define palette roles/value-hue ramp, material zones, face/form shading, contact/occlusion, edge/alpha/seam, identity, detail budget, and pixels per UV unit. generic palette, copied unrelated texture, or flat rectangles are invalid; reject random high-contrast noise.
 
 `BASE PASS → VALUE / FORM PASS → IDENTITY PASS → SECONDARY DETAIL PASS → VERIFY`
 
