@@ -1883,6 +1883,11 @@ bun run docs:check
       <td><span class="param-required">required</span></td>
       <td class="col-desc">Non-empty texture name. <span class="param-meta">[minLength: 1]</span></td>
     </tr><tr>
+      <td class="col-name">type</td>
+      <td class="col-type">&quot;blank&quot; | &quot;template&quot;</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Texture creation mode. Template builds UV layout from model geometry before any pixel painting. <span class="param-meta">(default: <code>&quot;blank&quot;</code>)</span></td>
+    </tr><tr>
       <td class="col-name">width</td>
       <td class="col-type">integer</td>
       <td><span class="param-optional">optional</span></td>
@@ -1892,6 +1897,31 @@ bun run docs:check
       <td class="col-type">integer</td>
       <td><span class="param-optional">optional</span></td>
       <td class="col-desc"> <span class="param-meta">(default: <code>16</code>) [min: 16, max: 4096]</span></td>
+    </tr><tr>
+      <td class="col-name">pixel_density</td>
+      <td class="col-type">&quot;16&quot; | &quot;32&quot; | &quot;64&quot; | &quot;128&quot; | &quot;256&quot; | &quot;512&quot;</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Template density in pixels per 16 model units. At 16x, one model unit maps to one texture pixel. <span class="param-meta">(default: <code>16</code>)</span></td>
+    </tr><tr>
+      <td class="col-name">rearrange_uv</td>
+      <td class="col-type">boolean</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Generate and assign a fresh UV arrangement for template mode. <span class="param-meta">(default: <code>true</code>)</span></td>
+    </tr><tr>
+      <td class="col-name">power_of_two</td>
+      <td class="col-type">boolean</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Round the generated template atlas to a power-of-two square. <span class="param-meta">(default: <code>true</code>)</span></td>
+    </tr><tr>
+      <td class="col-name">keep_multi_texture_occupancy</td>
+      <td class="col-type">boolean</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Reuse identical existing UV occupancy when generating a template. <span class="param-meta">(default: <code>true</code>)</span></td>
+    </tr><tr>
+      <td class="col-name">padding</td>
+      <td class="col-type">boolean</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Reserve a one-pixel padding border around template islands. <span class="param-meta">(default: <code>false</code>)</span></td>
     </tr><tr>
       <td class="col-name">data</td>
       <td class="col-type">string</td>
@@ -2377,7 +2407,7 @@ bun run docs:check
       </section>
 
       <footer class="page-footer">
-        Generated 2026-09-05T05:59:56.510Z from Zod schemas
+        Generated 2026-09-05T12:58:28.753Z from Zod schemas
       </footer>
     </main>
   </div>

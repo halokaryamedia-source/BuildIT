@@ -32,8 +32,43 @@ export function isDeterministicTextureSource(value: string): boolean {
 export const createTextureParameters = z
   .object({
     name: z.string().min(1).describe("Non-empty texture name."),
+    type: z
+      .enum(["blank", "template"])
+      .default("blank")
+      .describe(
+        "Texture creation mode. Template builds UV layout from model geometry before any pixel painting."
+      ),
     width: z.number().int().min(16).max(4096).default(16),
     height: z.number().int().min(16).max(4096).default(16),
+    pixel_density: z
+      .union([
+        z.literal(16),
+        z.literal(32),
+        z.literal(64),
+        z.literal(128),
+        z.literal(256),
+        z.literal(512),
+      ])
+      .default(16)
+      .describe(
+        "Template density in pixels per 16 model units. At 16x, one model unit maps to one texture pixel."
+      ),
+    rearrange_uv: z
+      .boolean()
+      .default(true)
+      .describe("Generate and assign a fresh UV arrangement for template mode."),
+    power_of_two: z
+      .boolean()
+      .default(true)
+      .describe("Round the generated template atlas to a power-of-two square."),
+    keep_multi_texture_occupancy: z
+      .boolean()
+      .default(true)
+      .describe("Reuse identical existing UV occupancy when generating a template."),
+    padding: z
+      .boolean()
+      .default(false)
+      .describe("Reserve a one-pixel padding border around template islands."),
     data: z
       .string()
       .refine(isDeterministicTextureSource, {
@@ -84,6 +119,23 @@ export const createTextureParameters = z
     message:
       "The 'layer_name' property is required when 'fill_color' is set.",
     path: ["layer_name", "fill_color"],
+  })
+  .superRefine((params, ctx) => {
+    if (params.type !== "template") return;
+    if (params.data !== undefined) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["data"],
+        message: "Template mode owns bitmap generation; do not provide image data.",
+      });
+    }
+    if (params.pbr_channel !== undefined && params.pbr_channel !== "color") {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["pbr_channel"],
+        message: "Template mode creates the base-color atlas only.",
+      });
+    }
   })
   .refine(
     ({ pbr_channel, group }) => (pbr_channel && group) || !pbr_channel,
@@ -1137,8 +1189,14 @@ export function registerTextureTools() {
     parameters: createTextureParameters,
     async execute({
       name,
+      type,
       width,
       height,
+      pixel_density,
+      rearrange_uv,
+      power_of_two,
+      keep_multi_texture_occupancy,
+      padding,
       data,
       pbr_channel,
       fill_color,
@@ -1157,6 +1215,103 @@ export function registerTextureTools() {
         pbr_channel,
         textureGroup,
       });
+
+      if (type === "template") {
+        if (group !== undefined) {
+          throw new Error(
+            "Template mode creates the single base-color atlas; assign it to a material group after UV generation."
+          );
+        }
+
+        const generator = (
+          globalThis as typeof globalThis & {
+            TextureGenerator?: {
+              addBitmap: (
+                options: Record<string, unknown>,
+                callback?: (texture: Texture) => Texture
+              ) => void;
+            };
+          }
+        ).TextureGenerator;
+        if (!generator?.addBitmap) {
+          throw new Error(
+            "Blockbench TextureGenerator is unavailable. Reload BlockIT/Blockbench before creating a texture template."
+          );
+        }
+
+        const nativeColor = fill_color
+          ? (globalThis as typeof globalThis & { tinycolor?: (value: unknown) => unknown })
+            .tinycolor?.(
+              Array.isArray(fill_color)
+                ? {
+                  r: Number(fill_color[0]),
+                  g: Number(fill_color[1]),
+                  b: Number(fill_color[2]),
+                  a: Number(fill_color[3] ?? 255) / 255,
+                }
+                : fill_color
+            )
+          : undefined;
+
+        let templateTexture: Texture | undefined;
+        await new Promise<void>((resolve, reject) => {
+          try {
+            generator.addBitmap({
+              name,
+              type: "template",
+              resolution: pixel_density,
+              color: nativeColor,
+              rearrange_uv,
+              power: power_of_two,
+              double_use: keep_multi_texture_occupancy,
+              padding,
+              particle: "auto",
+            }, (created: Texture) => {
+                templateTexture = created;
+                resolve();
+                return created;
+            });
+          } catch (error) {
+            reject(error);
+          }
+        });
+
+        if (!templateTexture) {
+          throw new Error("Blockbench did not return the generated texture template.");
+        }
+        templateTexture.render_mode = render_mode;
+        templateTexture.render_sides = render_sides;
+        if (fill_color && layer_name) {
+          templateTexture.activateLayers(false);
+          templateTexture.getActiveLayer().name = layer_name;
+        }
+        Canvas.updateAll();
+
+        const templateResult = {
+          texture: {
+            ...textureInventoryEntry(templateTexture),
+            uuid: templateTexture.uuid,
+          },
+          template: {
+            pixel_density,
+            pixels_per_model_unit: pixel_density / 16,
+            rearranged_uv: rearrange_uv,
+            power_of_two: power_of_two,
+            keep_multi_texture_occupancy,
+            padding,
+            uv_locked: true,
+          },
+        };
+        return {
+          content: [
+            {
+              type: "text" as const,
+              text: `Created texture template "${templateTexture.name}" (${templateTexture.uuid}) with native UV generation at ${pixel_density}x. Paint only after inspecting the returned UV/atlas evidence.`,
+            },
+          ],
+          structuredContent: templateResult,
+        };
+      }
 
       Undo.initEdit({
         textures: [],

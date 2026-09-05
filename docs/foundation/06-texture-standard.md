@@ -1,8 +1,8 @@
 # BlockIT — UV Layout & Texture Standard
 
 **Status:** Active Policy  
-**Version:** 1.4  
-**Updated:** 2026-08-25
+**Version:** 1.5
+**Updated:** 2026-09-05
 
 ## Purpose
 
@@ -26,7 +26,7 @@ Hard boundaries:
 - Texture Atlas creation contains no proof of styling quality.
 - Texture Styling does not own geometry shape or UV ownership.
 - Texture Verify is evidence, not another authoring pass.
-- `create_texture` creates a **Texture Atlas**. It does not create UV Layout and does not complete Texture Styling.
+- `create_texture(type=blank)` creates only a **Texture Atlas**. `create_texture(type=template)` delegates UV Layout and template bitmap generation to Blockbench's native generator before Texture Styling.
 - `uv_offset`, `autouv`, `mirror_uv`, per-face UV, and `box_uv_region` are **UV Layout** state.
 - Painter operations are **Texture Styling**.
 
@@ -45,7 +45,8 @@ UV LAYOUT
 ↓
 UV LOCK / AUDIT
 ↓
-TEXTURE ATLAS
+TEXTURE TEMPLATE / ATLAS
+  native UV arrangement + exact pixel grid
 ↓
 TEXTURE STYLING
    BASE PASS
@@ -59,6 +60,10 @@ FINAL PASS
 ```
 
 A placeholder/flat fill may make geometry readable early, but it is provisional and is not production completion.
+
+## Native Texture Template
+
+When UVs must be rebuilt, use `create_texture(type=template)` with an explicit `pixel_density` (16x means one model unit per pixel), `rearrange_uv=true`, and the required occupancy/padding/power-of-two settings. The native generator writes the UV arrangement and template bitmap with nearest-pixel behavior. Do not approximate this phase with manually guessed face rectangles, stretched source images, or color-only fills. Inspect the fresh UV audit and atlas before any styling operation.
 
 # UV Layout
 

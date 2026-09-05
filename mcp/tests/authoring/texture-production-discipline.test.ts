@@ -12,6 +12,41 @@ async function source(path: string): Promise<string> {
 }
 
 describe("texture production discipline", () => {
+  test("template creation delegates UV layout and pixel density to Blockbench's native generator", async () => {
+    const template = createTextureParameters.parse({
+      name: "template",
+      type: "template",
+      pixel_density: 16,
+      rearrange_uv: true,
+      power_of_two: true,
+      keep_multi_texture_occupancy: true,
+      padding: false,
+    });
+    expect(template.type).toBe("template");
+    expect(template.pixel_density).toBe(16);
+    expect(template.rearrange_uv).toBe(true);
+    expect(() =>
+      createTextureParameters.parse({
+        name: "template",
+        type: "template",
+        data: "data:image/png;base64,AA==",
+      })
+    ).toThrow("owns bitmap generation");
+
+    const texture = await source("server/tools/texture.ts");
+    for (const marker of [
+      'if (type === "template")',
+      "TextureGenerator",
+      "resolution: pixel_density",
+      "rearrange_uv",
+      "double_use: keep_multi_texture_occupancy",
+      "native UV generation",
+      "uv_locked: true",
+    ]) {
+      expect(texture).toContain(marker);
+    }
+  });
+
   test("texture creation keeps 16x16 provisional defaults while production sizing and UV ownership stay explicit", async () => {
     const [standard, skill] = await Promise.all([
       source("../docs/foundation/06-texture-standard.md"),
@@ -27,8 +62,9 @@ describe("texture production discipline", () => {
     expect(brush).toBeDefined();
     expect(skill).toContain("blank create_texture → explicit width+height from project UV");
     expect(skill).toContain("provisional **16×16** blank default");
-    expect(standard).toContain("create_texture` creates a **Texture Atlas**");
-    expect(standard).toContain("does not create UV Layout");
+    expect(standard).toContain("create_texture(type=blank)");
+    expect(standard).toContain("create_texture(type=template)");
+    expect(standard).toContain("before Texture Styling");
   });
 
   test("production standard owns one base atlas and 128-based canvases", async () => {

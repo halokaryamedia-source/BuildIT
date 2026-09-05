@@ -35,7 +35,7 @@ mapped model-view evidence → capture_model_views
 
 ## UV Layout Quality Gate
 
-`uv_audit.production_gate`=ready is technical hygiene, **not UV Layout PASS**. Review **face aspect ratio, texel density, orientation, padding/seams, and semantic UV reuse**. `inspect_element(detail=uv)` reports face pixel scale + `project_texel_density`. Material `review_required` → Geometry/UV before detailed paint; **never force detail into an undersized UV island with a larger brush/shape**. `localized_variance` may be intentional small detail.
+`uv_audit.production_gate`=ready is hygiene, **not UV Layout PASS**. Review **face aspect ratio, texel density, orientation, padding/seams, and semantic UV reuse**. `inspect_element(detail=uv)` reports `project_texel_density`. `review_required` → Geometry/UV; **never force detail into an undersized UV island with a larger brush/shape**.
 
 ## Primary vs Support Capabilities
 
@@ -56,12 +56,12 @@ create_brush_preset | load_brush_preset | texture_selection | texture_layer_mana
 add_texture_group | list_materials | get_material_info | import_texture_set
 ```
 
-Support tools do not justify extra discovery/readback.
-
+Support tools do not justify extra discovery/readback
 ## First-Call Invariants
 
 ```text
 blank create_texture → explicit width+height from project UV
+template create_texture → explicit pixel_density and native UV generation; inspect fresh atlas/UV evidence before paint
 data + fill_color → invalid
 fill_color → layer_name required
 pbr_channel → material TextureGroup `group` required

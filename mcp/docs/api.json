@@ -1,6 +1,6 @@
 {
   "version": "0.1.0",
-  "generatedAt": "2026-09-05T05:59:56.510Z",
+  "generatedAt": "2026-09-05T12:58:28.753Z",
   "tools": [
     {
       "name": "manage_cubes",
@@ -5336,6 +5336,16 @@
                 "description": "Non-empty texture name.",
                 "markdownDescription": "Non-empty texture name."
               },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "blank",
+                  "template"
+                ],
+                "default": "blank",
+                "description": "Texture creation mode. Template builds UV layout from model geometry before any pixel painting.",
+                "markdownDescription": "Texture creation mode. Template builds UV layout from model geometry before any pixel painting."
+              },
               "width": {
                 "type": "integer",
                 "minimum": 16,
@@ -5347,6 +5357,44 @@
                 "minimum": 16,
                 "maximum": 4096,
                 "default": 16
+              },
+              "pixel_density": {
+                "type": "number",
+                "enum": [
+                  16,
+                  32,
+                  64,
+                  128,
+                  256,
+                  512
+                ],
+                "default": 16,
+                "description": "Template density in pixels per 16 model units. At 16x, one model unit maps to one texture pixel.",
+                "markdownDescription": "Template density in pixels per 16 model units. At 16x, one model unit maps to one texture pixel."
+              },
+              "rearrange_uv": {
+                "type": "boolean",
+                "default": true,
+                "description": "Generate and assign a fresh UV arrangement for template mode.",
+                "markdownDescription": "Generate and assign a fresh UV arrangement for template mode."
+              },
+              "power_of_two": {
+                "type": "boolean",
+                "default": true,
+                "description": "Round the generated template atlas to a power-of-two square.",
+                "markdownDescription": "Round the generated template atlas to a power-of-two square."
+              },
+              "keep_multi_texture_occupancy": {
+                "type": "boolean",
+                "default": true,
+                "description": "Reuse identical existing UV occupancy when generating a template.",
+                "markdownDescription": "Reuse identical existing UV occupancy when generating a template."
+              },
+              "padding": {
+                "type": "boolean",
+                "default": false,
+                "description": "Reserve a one-pixel padding border around template islands.",
+                "markdownDescription": "Reserve a one-pixel padding border around template islands."
               },
               "data": {
                 "type": "string",
