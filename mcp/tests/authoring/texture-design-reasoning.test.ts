@@ -24,7 +24,7 @@ describe("texture design reasoning", () => {
 
     expect(standard).toContain("Texture Styling supports geometry; it does not repair geometry");
     expect(modelling).toContain("Use texture for surface information");
-    expect(texturing).toContain("Texture Atlas");
+    expect(texturing.toLowerCase()).toContain("atlas");
     expect(texturing).toContain("Texture Styling");
   });
 

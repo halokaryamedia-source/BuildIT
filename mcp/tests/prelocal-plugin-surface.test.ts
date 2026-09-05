@@ -28,7 +28,10 @@ describe("pre-local BlockIT plugin surface hardening", () => {
       exposed_count: 2, disabled_count: 1, catalog_count: 3,
       exposed: ["exposed_a", "exposed_b"], disabled: ["disabled_a"],
     });
-    expect(manifest.resources.available_count).toBe(1);
+    expect(manifest.resources).toEqual({
+      exposed_count: 1, disabled_count: 0, catalog_count: 1,
+      exposed: ["texture"], disabled: [],
+    });
     expect(manifest.prompts.exposed_count).toBe(1);
   });
 
@@ -52,7 +55,7 @@ describe("pre-local BlockIT plugin surface hardening", () => {
     expect(buildSource).not.toContain("GITHUB_SHA");
   });
 
-  test("panel exposes active phase and truthful MCP surface counts", async () => {
+  test("panel exposes active phase and synchronized MCP surface counts", async () => {
     const [panel, uiSource, identitySource] = await Promise.all([
       source("ui/panel.html"),
       source("ui/index.ts"),
@@ -61,8 +64,12 @@ describe("pre-local BlockIT plugin surface hardening", () => {
     expect(panel).toContain("{{tl('mcp.server.phase')}}");
     expect(panel).toContain("server.authoringPhase");
     expect(panel).toContain("surface.tools.exposed_count");
+    expect(panel).toContain("surface.tools.catalog_count");
+    expect(panel).toContain("surface.resources.exposed_count");
+    expect(panel).toContain("surface.resources.catalog_count");
     expect(panel).toContain("surface.prompts.exposed_count");
-    expect(panel).toContain("surface.resources.available_count");
+    expect(panel).toContain("surface.prompts.catalog_count");
+    expect(panel).not.toContain("surface.resources.available_count");
     expect(uiSource).toContain("phase: McpAuthoringPhase");
     expect(uiSource).toContain("authoringPhase: phase");
     expect(uiSource).toContain("showDisabled: false");

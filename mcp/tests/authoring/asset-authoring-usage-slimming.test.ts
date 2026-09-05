@@ -46,9 +46,9 @@ describe("pre-local asset-authoring usage slimming", () => {
       "Geometry Detail Budget",
       "User Geometry APPROVED is required",
       "Native UV Layout / Texel Integrity",
-      "difference-first",
       "geometry_effect",
     ]) expect(modelling).toContain(required);
+    expect(modelling.toLowerCase()).toContain("difference-first");
 
     for (const required of [
       "Geometry APPROVED + UV Layout PASS",

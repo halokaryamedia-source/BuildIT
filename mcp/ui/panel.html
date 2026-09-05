@@ -56,7 +56,7 @@
         </div>
     </details>
     <details name="mcp_panel" @toggle="onResourcesToggle">
-        <summary>{{tl('mcp.panel.resources')}} ({{surface.resources.available_count}} available)</summary>
+        <summary>{{tl('mcp.panel.resources')}} ({{surface.resources.exposed_count}} exposed / {{surface.resources.catalog_count}} catalog)</summary>
 
         <div class="filter-bar">
             <input type="text" v-model="resourcesFilter.search" :placeholder="tl('mcp.filter.resources_placeholder')"

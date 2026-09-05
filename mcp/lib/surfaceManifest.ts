@@ -25,10 +25,10 @@ export function createSurfaceManifest({
   const toolCatalog = Object.values(tools);
   const exposedTools = toolCatalog.filter((tool) => tool.enabled);
   const disabledTools = toolCatalog.filter((tool) => !tool.enabled);
+  const resourceCatalog = Object.values(resources);
   const promptCatalog = Object.values(prompts);
   const exposedPrompts = promptCatalog.filter((prompt) => prompt.enabled);
   const disabledPrompts = promptCatalog.filter((prompt) => !prompt.enabled);
-  const availableResources = Object.values(resources);
 
   return {
     profile,
@@ -41,8 +41,11 @@ export function createSurfaceManifest({
       disabled: sortedNames(disabledTools),
     },
     resources: {
-      available_count: availableResources.length,
-      available: sortedNames(availableResources),
+      exposed_count: resourceCatalog.length,
+      disabled_count: 0,
+      catalog_count: resourceCatalog.length,
+      exposed: sortedNames(resourceCatalog),
+      disabled: [],
     },
     prompts: {
       exposed_count: exposedPrompts.length,
