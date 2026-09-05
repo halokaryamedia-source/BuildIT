@@ -599,6 +599,7 @@ export function registerCubesTools() {
       const customFaceUvs = Array.isArray(faces);
       const autoPackBoxUv = !customFaceUvs && Project?.box_uv === true;
       let plannedBoxUvOffsets: [number, number][] | null = null;
+      let deferredBoxUvTemplate = false;
 
       if (autoPackBoxUv) {
         const textureWidth = Project?.texture_width;
@@ -611,12 +612,21 @@ export function registerCubesTools() {
             "Box-UV auto-layout requires finite logical project texture dimensions."
           );
         }
-        plannedBoxUvOffsets = packBoxUvOffsets(
-          currentBoxUvOccupancy(),
-          placements.map(({ element }) => boxUvFootprint(element.from, element.to)),
-          textureWidth,
-          textureHeight
+        const footprints = placements.map(({ element }) =>
+          boxUvFootprint(element.from, element.to)
         );
+        if (footprints.some(([width, height]) => width > textureWidth || height > textureHeight)) {
+          // Large geometry is valid; its final atlas size is owned by the
+          // native template generator, not by provisional placement packing.
+          deferredBoxUvTemplate = true;
+        } else {
+          plannedBoxUvOffsets = packBoxUvOffsets(
+            currentBoxUvOccupancy(),
+            footprints,
+            textureWidth,
+            textureHeight
+          );
+        }
       } else if (!customFaceUvs) {
         const textureWidth = Project?.texture_width ?? null;
         const textureHeight = Project?.texture_height ?? null;
@@ -693,7 +703,9 @@ export function registerCubesTools() {
         uv_mode: customFaceUvs ? "per_face" as const : "inherited" as const,
         box_uv_layout: plannedBoxUvOffsets
           ? ("auto_packed_unlocked" as const)
-          : null,
+          : deferredBoxUvTemplate
+            ? ("deferred_for_native_template" as const)
+            : null,
         cubes: cubes.map((cube: Cube) => ({
           uuid: cube.uuid,
           name: cube.name,
@@ -701,7 +713,9 @@ export function registerCubesTools() {
       };
       const uvNote = plannedBoxUvOffsets
         ? " Box-UV offsets were auto-packed without overlap; keep autouv active through geometry correction, then lock the final Cubes in one batch before production paint."
-        : "";
+        : deferredBoxUvTemplate
+          ? " Box-UV template packing was deferred because the provisional canvas is smaller than the geometry; use create_texture(type=template) before painting."
+          : "";
       return {
         content: [
           {
