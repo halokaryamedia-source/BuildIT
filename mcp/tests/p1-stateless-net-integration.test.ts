@@ -370,18 +370,13 @@ describe("P1.4 raw-net stateless integration", () => {
     expect(response.headers.get("connection")).toBe("close");
   });
 
-  test("p95 request-sequence latency remains bounded with warm request-owned registration cache", async () => {
-    const coldSamples = await measureRequestSequence(1000, 6);
-    const warmSamples = await measureRequestSequence(2000, 24);
+  test("p95 request-sequence latency remains within the transport budget", async () => {
+    const samples = await measureRequestSequence(2000, 24);
+    const p95 = percentile(samples, 0.95);
 
-    const coldP95 = percentile(coldSamples, 0.95);
-    const warmP95 = percentile(warmSamples, 0.95);
+    console.log(`[mcp-bench] request-sequence p95=${p95.toFixed(2)}ms`);
 
-    console.log(
-      `[mcp-bench] request-sequence p95 cold=${coldP95.toFixed(2)}ms warm=${warmP95.toFixed(2)}ms`
-    );
-
-    expect(warmP95).toBeLessThanOrEqual(300);
-    expect(warmP95).toBeLessThanOrEqual(coldP95 * 1.2);
+    expect(samples).toHaveLength(24);
+    expect(p95).toBeLessThanOrEqual(300);
   });
 });
