@@ -233,6 +233,9 @@ type CubeFaceKey = (typeof CUBE_FACE_KEYS)[number];
 
 export const UV_FACE_ASPECT_REVIEW_FACTOR = 1.25;
 export const UV_CUBE_DENSITY_SPREAD_REVIEW_FACTOR = 2;
+export const UV_MODEL_TEXEL_DENSITY_REVIEW_FACTOR = 2;
+export const UV_MODEL_TEXEL_DENSITY_MATERIAL_AREA_FRACTION = 0.05;
+export const UV_MODEL_TEXEL_DENSITY_EXAMPLE_LIMIT = 6;
 
 export type FaceUvQuality =
   | {
@@ -352,6 +355,181 @@ export function summarizeUvDensity(values: readonly number[]) {
   };
 }
 
+export type ProjectTexelDensitySample = {
+  cube_uuid: string;
+  cube_name: string;
+  face: string;
+  model_area: number;
+  logical_uv_units_per_model_unit: number;
+  physical_pixels_per_model_unit: number | null;
+};
+
+function weightedMedian(
+  samples: readonly ProjectTexelDensitySample[],
+  value: (sample: ProjectTexelDensitySample) => number
+): number | null {
+  const valid = samples
+    .filter(
+      (sample) =>
+        Number.isFinite(sample.model_area) &&
+        sample.model_area > 0 &&
+        Number.isFinite(value(sample)) &&
+        value(sample) > 0
+    )
+    .sort((a, b) => value(a) - value(b));
+  if (valid.length === 0) return null;
+
+  const totalWeight = valid.reduce((sum, sample) => sum + sample.model_area, 0);
+  let cumulative = 0;
+  for (const sample of valid) {
+    cumulative += sample.model_area;
+    if (cumulative >= totalWeight / 2) return value(sample);
+  }
+  return value(valid[valid.length - 1]);
+}
+
+function densityRatio(value: number, reference: number): number {
+  return Math.max(value / reference, reference / value);
+}
+
+function projectDensityExample(
+  sample: ProjectTexelDensitySample,
+  reference: number
+) {
+  return {
+    cube_uuid: sample.cube_uuid,
+    cube_name: sample.cube_name,
+    face: sample.face,
+    model_area: sample.model_area,
+    logical_uv_units_per_model_unit:
+      sample.logical_uv_units_per_model_unit,
+    physical_pixels_per_model_unit: sample.physical_pixels_per_model_unit,
+    model_units_per_physical_pixel:
+      sample.physical_pixels_per_model_unit !== null &&
+      sample.physical_pixels_per_model_unit > 0
+        ? 1 / sample.physical_pixels_per_model_unit
+        : null,
+    relative_to_reference:
+      sample.logical_uv_units_per_model_unit < reference
+        ? ("lower_density" as const)
+        : ("higher_density" as const),
+    ratio_to_reference: densityRatio(
+      sample.logical_uv_units_per_model_unit,
+      reference
+    ),
+  };
+}
+
+/**
+ * Model-wide linear texel-density audit. Major mapped surface-area drift becomes
+ * review_required, while tiny high-detail exceptions stay visible as
+ * localized_variance. This is a UV construction diagnostic, not a visual score.
+ */
+export function summarizeProjectTexelDensity(
+  samples: readonly ProjectTexelDensitySample[],
+  exampleLimit: number = UV_MODEL_TEXEL_DENSITY_EXAMPLE_LIMIT
+) {
+  const valid = samples.filter(
+    (sample) =>
+      Number.isFinite(sample.model_area) &&
+      sample.model_area > 0 &&
+      Number.isFinite(sample.logical_uv_units_per_model_unit) &&
+      sample.logical_uv_units_per_model_unit > 0
+  );
+  if (valid.length === 0) {
+    return {
+      state: "unavailable" as const,
+      measured_faces: 0,
+      measured_model_area: 0,
+      reference_logical_uv_units_per_model_unit: null,
+      reference_physical_pixels_per_model_unit: null,
+      reference_model_units_per_physical_pixel: null,
+      min_logical_uv_units_per_model_unit: null,
+      max_logical_uv_units_per_model_unit: null,
+      spread_factor: null,
+      outlier_faces: 0,
+      outlier_model_area_fraction: null,
+      examples: [],
+      examples_truncated: false,
+    };
+  }
+
+  const reference = weightedMedian(
+    valid,
+    (sample) => sample.logical_uv_units_per_model_unit
+  );
+  if (reference === null) {
+    throw new Error("Project texel-density reference could not be derived.");
+  }
+
+  const physicalSamples = valid.filter(
+    (sample) =>
+      sample.physical_pixels_per_model_unit !== null &&
+      Number.isFinite(sample.physical_pixels_per_model_unit) &&
+      sample.physical_pixels_per_model_unit > 0
+  );
+  const physicalReference = weightedMedian(
+    physicalSamples,
+    (sample) => sample.physical_pixels_per_model_unit as number
+  );
+
+  const totalArea = valid.reduce((sum, sample) => sum + sample.model_area, 0);
+  const outliers = valid
+    .filter(
+      (sample) =>
+        densityRatio(
+          sample.logical_uv_units_per_model_unit,
+          reference
+        ) >= UV_MODEL_TEXEL_DENSITY_REVIEW_FACTOR
+    )
+    .sort(
+      (a, b) =>
+        densityRatio(b.logical_uv_units_per_model_unit, reference) -
+          densityRatio(a.logical_uv_units_per_model_unit, reference) ||
+        b.model_area - a.model_area
+    );
+  const outlierArea = outliers.reduce(
+    (sum, sample) => sum + sample.model_area,
+    0
+  );
+  const outlierAreaFraction = totalArea > 0 ? outlierArea / totalArea : 0;
+  const min = Math.min(
+    ...valid.map((sample) => sample.logical_uv_units_per_model_unit)
+  );
+  const max = Math.max(
+    ...valid.map((sample) => sample.logical_uv_units_per_model_unit)
+  );
+  const state =
+    outliers.length === 0
+      ? ("consistent" as const)
+      : outlierAreaFraction >=
+          UV_MODEL_TEXEL_DENSITY_MATERIAL_AREA_FRACTION
+        ? ("review_required" as const)
+        : ("localized_variance" as const);
+  const examples = outliers
+    .slice(0, exampleLimit)
+    .map((sample) => projectDensityExample(sample, reference));
+
+  return {
+    state,
+    measured_faces: valid.length,
+    measured_model_area: totalArea,
+    reference_logical_uv_units_per_model_unit: reference,
+    reference_physical_pixels_per_model_unit: physicalReference,
+    reference_model_units_per_physical_pixel:
+      physicalReference !== null && physicalReference > 0
+        ? 1 / physicalReference
+        : null,
+    min_logical_uv_units_per_model_unit: min,
+    max_logical_uv_units_per_model_unit: max,
+    spread_factor: min > 0 ? max / min : null,
+    outlier_faces: outliers.length,
+    outlier_model_area_fraction: outlierAreaFraction,
+    examples,
+    examples_truncated: outliers.length > examples.length,
+  };
+}
+
 function cubeSize(cube: Cube): [number, number, number] {
   const from = requireFiniteInspectableVector3(cube.from, `Cube ${cube.name} (${cube.uuid}) from`);
   const to = requireFiniteInspectableVector3(cube.to, `Cube ${cube.name} (${cube.uuid}) to`);
@@ -366,6 +544,101 @@ function cubeSize(cube: Cube): [number, number, number] {
     );
   }
   return size;
+}
+
+function safeProjectCubeSize(cube: Cube): [number, number, number] | null {
+  if (
+    cube.from.length !== 3 ||
+    cube.to.length !== 3 ||
+    cube.from.some((value) => !Number.isFinite(value)) ||
+    cube.to.some((value) => !Number.isFinite(value))
+  ) {
+    return null;
+  }
+  const size = [
+    cube.to[0] - cube.from[0],
+    cube.to[1] - cube.from[1],
+    cube.to[2] - cube.from[2],
+  ] as [number, number, number];
+  return size.every(Number.isFinite) ? size : null;
+}
+
+function physicalPixelsPerUvUnit(
+  textureSpace: EffectiveTextureSpace
+): number | null {
+  if (textureSpace.state !== "mapped") return null;
+  const x = textureSpace.metrics.width / textureSpace.metrics.uvWidth;
+  const y =
+    textureSpace.metrics.displayHeight / textureSpace.metrics.uvHeight;
+  if (![x, y].every((value) => Number.isFinite(value) && value > 0)) {
+    return null;
+  }
+  return Math.sqrt(x * y);
+}
+
+function inspectProjectTexelDensity(textureSpace: EffectiveTextureSpace) {
+  const physicalScale = physicalPixelsPerUvUnit(textureSpace);
+  const samples: ProjectTexelDensitySample[] = [];
+  let excludedDegenerateFaces = 0;
+  let excludedAspectReviewFaces = 0;
+  let excludedInvalidFaces = 0;
+
+  for (const cube of Cube.all ?? []) {
+    if (cube.export === false) continue;
+    const size = safeProjectCubeSize(cube);
+    if (!size) {
+      excludedInvalidFaces += CUBE_FACE_KEYS.length;
+      continue;
+    }
+
+    for (const faceKey of CUBE_FACE_KEYS) {
+      const face = cube.faces[faceKey];
+      if (!face || face.enabled === false) continue;
+      const uv = [...face.uv];
+      if (uv.length !== 4 || uv.some((value) => !Number.isFinite(value))) {
+        excludedInvalidFaces += 1;
+        continue;
+      }
+      const geometrySize = cubeFaceGeometrySize(size, faceKey);
+      const quality = summarizeFaceUvQuality(
+        geometrySize,
+        uv as [number, number, number, number]
+      );
+      if (quality.state === "degenerate") {
+        excludedDegenerateFaces += 1;
+        continue;
+      }
+      if (quality.aspect_state === "review_required") {
+        excludedAspectReviewFaces += 1;
+        continue;
+      }
+
+      const logicalLinear = Math.sqrt(
+        quality.logical_uv_area_per_model_area
+      );
+      const modelArea =
+        Math.abs(geometrySize[0]) * Math.abs(geometrySize[1]);
+      samples.push({
+        cube_uuid: cube.uuid,
+        cube_name: cube.name,
+        face: faceKey,
+        model_area: modelArea,
+        logical_uv_units_per_model_unit: logicalLinear,
+        physical_pixels_per_model_unit:
+          physicalScale !== null ? logicalLinear * physicalScale : null,
+      });
+    }
+  }
+
+  return {
+    ...summarizeProjectTexelDensity(samples),
+    excluded_degenerate_faces: excludedDegenerateFaces,
+    excluded_aspect_review_faces: excludedAspectReviewFaces,
+    excluded_invalid_faces: excludedInvalidFaces,
+    verdict: "review_hint_only" as const,
+    note:
+      "This compares model-space size per texel across aspect-matched exported faces. review_required means materially large density drift must be resolved or explicitly justified before detailed painting; localized_variance may be intentional small-detail allocation.",
+  };
 }
 
 function inspectCubeUv(cube: Cube) {
@@ -397,11 +670,18 @@ function inspectCubeUv(cube: Cube) {
         : null;
 
       let physicalPixelAreaPerModelArea: number | null = null;
+      let logicalUvUnitsPerModelUnit: number | null = null;
+      let physicalPixelsPerModelUnit: number | null = null;
+      let modelUnitsPerPhysicalPixel: number | null = null;
+
       if (enabled) enabledFaceCount += 1;
       if (quality?.state === "degenerate") {
         degenerateFaceCount += 1;
       } else if (quality?.state === "measured") {
         densityValues.push(quality.logical_uv_area_per_model_area);
+        logicalUvUnitsPerModelUnit = Math.sqrt(
+          quality.logical_uv_area_per_model_area
+        );
         if (quality.aspect_state === "review_required") {
           aspectReviewFaceCount += 1;
         }
@@ -414,6 +694,13 @@ function inspectCubeUv(cube: Cube) {
             quality.logical_uv_area_per_model_area *
             pixelsPerUvX *
             pixelsPerUvY;
+          physicalPixelsPerModelUnit = Math.sqrt(
+            physicalPixelAreaPerModelArea
+          );
+          modelUnitsPerPhysicalPixel =
+            physicalPixelsPerModelUnit > 0
+              ? 1 / physicalPixelsPerModelUnit
+              : null;
         }
       }
 
@@ -431,8 +718,14 @@ function inspectCubeUv(cube: Cube) {
               ? null
               : {
                   ...quality,
+                  logical_uv_units_per_model_unit:
+                    logicalUvUnitsPerModelUnit,
                   physical_pixel_area_per_model_area:
                     physicalPixelAreaPerModelArea,
+                  physical_pixels_per_model_unit:
+                    physicalPixelsPerModelUnit,
+                  model_units_per_physical_pixel:
+                    modelUnitsPerPhysicalPixel,
                 },
         },
       ];
@@ -457,6 +750,7 @@ function inspectCubeUv(cube: Cube) {
       degenerate_faces: degenerateFaceCount,
       aspect_review_faces: aspectReviewFaceCount,
       texel_density: summarizeUvDensity(densityValues),
+      project_texel_density: inspectProjectTexelDensity(textureSpace),
       verdict: "review_hint_only" as const,
       note:
         "Aspect and density diagnostics are objective construction hints only; orientation, seams, semantic reuse, and visual acceptance still require authored context and current model-view evidence.",
