@@ -44,11 +44,12 @@ When evidence is clear, topology simple, and the object predominantly rigid:
 
 ```text
 identity + envelope + primary masses
+→ cross-view proportions + shared primary boundaries
 → required continuous surfaces + intentional negative spaces
 → simplest transform ownership
 → minimum meaningful hierarchy
 → coherent PRIMARY BLOCKOUT
-→ whole-form surface gate
+→ primary proportion + whole-form surface gate
 → judgeable views
 → diagnose only observed mismatch
 ```
@@ -79,6 +80,87 @@ Choose the simplest buildable construction preserving the visible requirement: v
 Decide transform ownership before rotation: shared semantic orientation/attachment/articulation is **Group/Bone-owned**; local rigid orientation may be Cube-owned. Classify primary masses `AXIS_ALIGNED | ROTATED | UNRESOLVED`. A visible slope requires `ROTATED` + explicit origin/pivot + role `MASS_CENTER | ATTACHMENT | JOINT | PARENT_TRANSFORM`. Material `UNRESOLVED` → `BLOCKED`.
 
 For every required attachment state its **contact target/invariant** before coordinates. Use an **attachment/joint pivot** when it owns the transform. AABB overlap, hierarchy, or numeric touching is not contact proof; important negative spaces stay open.
+
+## Primary Mass / Proportion / Depth Gate
+
+For reference-driven `DIRECT` work, **coordinates are the consequence of one coherent 3D interpretation, not the starting point**. Before authoring material primary coordinates, establish:
+
+```text
+coordinate frame + canonical front + envelope
+PRIMARY masses        → silhouette / major volume / major opening / major moving part
+SECONDARY masses      → supported 3D identity refinement after primary PASS
+SURFACE information   → texture unless a material 3D reason exists
+major shared boundaries / partitions
+cross-view proportion constraints
+material depth state
+```
+
+Do not decompose the reference into small visible features first. Establish the whole-object mass hierarchy before local detail.
+
+### Cross-view dimension constraint
+
+Treat orthographic-like views as complementary constraints, not independent models:
+
+```text
+front/back → width + height evidence
+left/right → depth + height evidence
+top/bottom → width + depth evidence
+3/4        → relationship / layering / orientation cross-check
+```
+
+A view may be perspective-stylized or internally imperfect; do not calibrate geometry by raw reference pixels. Use approved dimensions as the numeric envelope and use the reference for **relative proportions, landmarks, boundaries, count, alignment, silhouette, and contact**.
+
+Do not lock a material axis from one view when that axis is not sufficiently observable there. Front agreement does not certify depth; side agreement does not certify width. Use the smallest set of views that actually constrains the relationship.
+
+### Shared-boundary partitioning
+
+When adjacent primary cohorts meet at the same visible boundary, derive them from **one shared partition**, not independent coordinate guesses.
+
+```text
+outer boundary
+→ region A
+→ shared boundary
+→ region B / opening
+→ shared boundary
+→ region C
+→ outer boundary
+```
+
+For an intended flush/continuous transition, reuse the same boundary value or intentionally overlapping construction when the form requires it. Do not independently estimate `A.to` and `B.from` and then repair accidental strips afterward. Symmetric or repeated partitions may share a rule only when the reference supports that relationship.
+
+### Depth evidence state
+
+Classify material depth decisions:
+
+```text
+OBSERVED    → directly constrained by a suitable side/top/3/4 relationship
+INFERRED    → not direct, but supported by multiple consistent visible relationships
+UNRESOLVED  → insufficient/conflicting evidence
+```
+
+`INFERRED` must use the **simplest geometry that explains the visible evidence**. Do not invent hidden engineering structure, unseen recesses, internal supports, or detail merely because a real-world object might contain them.
+
+A material `UNRESOLVED` depth/topology/orientation that can change the primary form is `BLOCKED`. A non-material unresolved detail may remain coarse, move to texture, or be omitted; uncertainty is not permission to add speculative geometry.
+
+### One coherent 3D interpretation
+
+When approved views have minor drift, choose one consistent interpretation that preserves the strongest shared invariants. Do not fit each side independently and do not average contradictions into distorted geometry. A material conflict in count, topology, orientation, opening, attachment, or major proportion that cannot be reconciled from the approved evidence is `BLOCKED`.
+
+### Primary coarse-to-fine lock
+
+```text
+primary mass hierarchy
+→ major partitions/shared boundaries
+→ material depth/layering
+→ primary silhouette/proportion gate
+→ surface coverage/negative-space gate
+→ primary visual PASS
+→ only then secondary geometry
+```
+
+Do not use secondary geometry, trim, or texture to compensate for a wrong primary mass, wrong proportion, wrong depth, or wrong opening. If several primary relationships are wrong, reopen the primary interpretation instead of patching local Cubes.
+
+At primary review, compare global silhouette, envelope occupation, major mass ratios, openings, shared boundaries, contact/layering, and cross-view depth before judging detail.
 
 ## Surface Coverage / Negative-Space Gate
 
@@ -136,7 +218,10 @@ Keep semantic hierarchy and movable distinct parts separate; do not build specul
 explicit user requirement
 → original source evidence
 → best-supported approved view(s)
-→ simplest recognizable Blockbench-buildable interpretation
+→ one coherent 3D interpretation
+→ primary mass hierarchy + shared boundaries + material depth
+→ simplest recognizable Blockbench-buildable construction
+→ primary silhouette/proportion gate
 → continuous required surfaces + intentional negative spaces
 → primary whole-form surface gate
 → only then identity-weighted secondary geometry
@@ -174,6 +259,6 @@ Existing-asset work may use current geometry as baseline without certifying refe
 
 Geometry owns shape/hierarchy/rig/pivots/UV Layout; Texturing owns atlas pixels/PBR. Both remain callable in the same AUTHORING Runtime surface; semantic ownership governs mutation.
 
-`internal geometry=PASS` requires the primary surface/negative-space gate to pass and no unjustified detail-only micro-geometry to remain. `internal geometry=PASS + uv_layout=PASS → READY_FOR_USER_REVIEW` at a meaningful checkpoint. User revision continues Geometry; explicit approval saves the checkpoint and continues Texturing focus in the same AUTHORING surface.
+`internal geometry=PASS` requires coherent primary mass/proportion/depth, the primary surface/negative-space gate to pass, and no unjustified detail-only micro-geometry to remain. `internal geometry=PASS + uv_layout=PASS → READY_FOR_USER_REVIEW` at a meaningful checkpoint. User revision continues Geometry; explicit approval saves the checkpoint and continues Texturing focus in the same AUTHORING surface.
 
 A texture-discovered Geometry/UV defect is corrected directly with the Geometry owner; no Geometry↔Texturing phase handoff. Revalidate only affected texture evidence. `HANDOFF_REQUIRED` + `switch_authoring_phase` through Gateway is reserved for AUTHORING↔Animation.
