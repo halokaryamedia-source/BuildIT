@@ -9,9 +9,8 @@ import {
 const REQUIRED_TOOLS = [
   "create_project",
   "add_group",
-  "place_cube",
+  "manage_cubes",
   "inspect_model_bounds",
-  "modify_cube",
 ] as const;
 
 const PROJECT_NAME = "blockit_surface_gap_disposable";
@@ -77,8 +76,9 @@ async function main(): Promise<void> {
 
   const placement = structuredObject(
     await client.callTool(
-      "place_cube",
+      "manage_cubes",
       {
+        operation: "create",
         group: group.uuid,
         elements: [
           {
@@ -95,18 +95,18 @@ async function main(): Promise<void> {
       },
       "mutation"
     ),
-    "place_cube"
+    "manage_cubes"
   );
   const cubes = placement.cubes as Array<JsonObject> | undefined;
   const lowerUuid = cubes?.[0]?.uuid;
   const upperUuid = cubes?.[1]?.uuid;
   expect(
     typeof lowerUuid === "string",
-    "place_cube returned no lower Cube UUID."
+    "manage_cubes returned no lower Cube UUID."
   );
   expect(
     typeof upperUuid === "string",
-    "place_cube returned no upper Cube UUID."
+    "manage_cubes returned no upper Cube UUID."
   );
 
   const withGap = structuredObject(
@@ -125,8 +125,9 @@ async function main(): Promise<void> {
   );
 
   await client.callTool(
-    "modify_cube",
+    "manage_cubes",
     {
+      operation: "update",
       id: upperUuid,
       from: [-2, 2, -1],
       to: [2, 4, 1],
@@ -144,6 +145,54 @@ async function main(): Promise<void> {
     `Coplanar edge-gap warning remained after closing the seam. warnings=${JSON.stringify(closedWarnings)}`
   );
 
+  // A non-adjacent Cube pair must not report a hole already filled by a third
+  // rendered Cube. Hide the cover to prove that a real opening is not masked.
+  await client.callTool("manage_cubes", {
+    operation: "update",
+    id: upperUuid,
+    from: [-2, 2.5, -1],
+    to: [2, 4.5, 1],
+  }, "mutation");
+  const covering = structuredObject(await client.callTool("manage_cubes", {
+    operation: "create",
+    group: group.uuid,
+    elements: [{ name: "surface_bridge", from: [-2, 2, -1], to: [2, 2.5, 1] }],
+  }, "mutation"), "manage_cubes");
+  const bridgeUuid = (covering.cubes as JsonObject[] | undefined)?.[0]?.uuid;
+  expect(typeof bridgeUuid === "string", "manage_cubes returned no bridge Cube UUID.");
+
+  const covered = warningStrings(structuredObject(
+    await client.callTool("inspect_model_bounds", {}, "inspection"),
+    "inspect_model_bounds"
+  ));
+  expect(
+    pairEdgeGapWarning(covered, lowerUuid, upperUuid) === undefined,
+    `Fully covered seam still reports an edge-gap: ${JSON.stringify(covered)}`
+  );
+
+  await client.callTool("manage_cubes", {
+    operation: "update", id: bridgeUuid, visibility: false,
+  }, "mutation");
+  const uncovered = warningStrings(structuredObject(
+    await client.callTool("inspect_model_bounds", {}, "inspection"),
+    "inspect_model_bounds"
+  ));
+  expect(
+    pairEdgeGapWarning(uncovered, lowerUuid, upperUuid),
+    "Hiding the bridge must restore the original pair's edge-gap warning."
+  );
+  await client.callTool("manage_cubes", {
+    operation: "update", id: bridgeUuid, visibility: true,
+  }, "mutation");
+  const restored = warningStrings(structuredObject(
+    await client.callTool("inspect_model_bounds", {}, "inspection"),
+    "inspect_model_bounds"
+  ));
+  expect(
+    pairEdgeGapWarning(restored, lowerUuid, upperUuid) === undefined,
+    "Restoring the rendered bridge must clear the covered edge-gap warning."
+  );
+
   console.log(
     JSON.stringify(
       {
@@ -155,10 +204,13 @@ async function main(): Promise<void> {
           group_uuid: group.uuid,
           lower_cube_uuid: lowerUuid,
           upper_cube_uuid: upperUuid,
+          bridge_cube_uuid: bridgeUuid,
           initial_gap_blockbench_units: 0.5,
         },
         detected_warning: detected,
         warning_cleared_after_contact: true,
+        warning_cleared_after_cover: true,
+        warning_restored_when_cover_hidden: true,
         cost: client.snapshotMetrics(),
         visual_quality: "not_evaluated",
         note: "Targeted diagnostic regression only. It does not replace reference-fidelity or whole-model visual review.",

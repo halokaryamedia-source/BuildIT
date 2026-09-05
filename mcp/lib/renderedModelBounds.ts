@@ -159,10 +159,79 @@ function facesHaveAlignedTangentAxes(first: BoxFace, second: BoxFace): boolean {
   return firstUAlignment >= threshold && firstVAlignment >= threshold;
 }
 
+type FaceRect = { u0: number; u1: number; v0: number; v1: number };
+
+function faceRectInBasis(basis: BoxFace, face: BoxFace): FaceRect {
+  const offset = subtract(face.center, basis.center);
+  const u = dot(offset, basis.u);
+  const v = dot(offset, basis.v);
+  const halfU = projectedFaceRadius(face, basis.u);
+  const halfV = projectedFaceRadius(face, basis.v);
+  return { u0: u - halfU, u1: u + halfU, v0: v - halfV, v1: v + halfV };
+}
+
+/**
+ * Suppress a pairwise edge-gap only when other coplanar, co-oriented Cube faces
+ * cover its ENTIRE strip. This is geometric coverage, not visibility/alpha or
+ * semantic acceptance. Partial coverage must retain the review hint.
+ */
+function isCoplanarStripCovered(
+  basis: BoxFace,
+  strip: FaceRect,
+  coverageBoxes: readonly OrientedBox[]
+): boolean {
+  let uncovered: FaceRect[] = [strip];
+  for (const box of coverageBoxes) {
+    for (const face of boxFaces(box)) {
+      if (dot(basis.normal, face.normal) < 1 - SURFACE_PARALLEL_EPSILON) continue;
+      if (
+        Math.abs(dot(subtract(face.center, basis.center), basis.normal)) >
+        SURFACE_PLANE_EPSILON
+      ) continue;
+      // Do not let a rotated face's projected bounding rectangle certify cover.
+      const aligned = [basis.u, basis.v].every((axis) =>
+        Math.max(Math.abs(dot(axis, face.u)), Math.abs(dot(axis, face.v))) >=
+        1 - 1e-12
+      );
+      if (!aligned) continue;
+
+      const cover = faceRectInBasis(basis, face);
+      if (![cover.u0, cover.u1, cover.v0, cover.v1].every(Number.isFinite)) continue;
+      const next: FaceRect[] = [];
+      const retain = (rect: FaceRect): void => {
+        if (
+          rect.u1 - rect.u0 > SURFACE_PLANE_EPSILON &&
+          rect.v1 - rect.v0 > SURFACE_PLANE_EPSILON
+        ) next.push(rect);
+      };
+      for (const rect of uncovered) {
+        const u0 = Math.max(rect.u0, cover.u0);
+        const u1 = Math.min(rect.u1, cover.u1);
+        const v0 = Math.max(rect.v0, cover.v0);
+        const v1 = Math.min(rect.v1, cover.v1);
+        if (u1 - u0 <= SURFACE_PLANE_EPSILON || v1 - v0 <= SURFACE_PLANE_EPSILON) {
+          next.push(rect);
+          continue;
+        }
+        retain({ ...rect, u1: u0 });
+        retain({ ...rect, u0: u1 });
+        retain({ u0, u1, v0: rect.v0, v1: v0 });
+        retain({ u0, u1, v0: v1, v1: rect.v1 });
+      }
+      if (next.length === 0) return true;
+      // Bound fragmentation conservatively: uncertainty keeps the warning.
+      if (next.length > 64) return false;
+      uncovered = next;
+    }
+  }
+  return false;
+}
+
 function findCoplanarEdgeGap(
   first: OrientedBox,
   second: OrientedBox,
-  maxDistance: number
+  maxDistance: number,
+  coverageBoxes: readonly OrientedBox[]
 ): { distance: number; shared_span: number } | null {
   let best: { distance: number; shared_span: number } | null = null;
 
@@ -180,31 +249,37 @@ function findCoplanarEdgeGap(
       if (planeDistance > SURFACE_PLANE_EPSILON) continue;
       if (!facesHaveAlignedTangentAxes(firstFace, secondFace)) continue;
 
-      const uOverlap =
-        projectedFaceRadius(firstFace, firstFace.u) +
-        projectedFaceRadius(secondFace, firstFace.u) -
-        Math.abs(dot(offset, firstFace.u));
-      const vOverlap =
-        projectedFaceRadius(firstFace, firstFace.v) +
-        projectedFaceRadius(secondFace, firstFace.v) -
-        Math.abs(dot(offset, firstFace.v));
-
-      const candidates: Array<{ distance: number; shared_span: number }> = [];
-      if (
-        uOverlap < -SURFACE_PLANE_EPSILON &&
-        vOverlap > SURFACE_PLANE_EPSILON
-      ) {
-        candidates.push({ distance: -uOverlap, shared_span: vOverlap });
+      const a = faceRectInBasis(firstFace, firstFace);
+      const b = faceRectInBasis(firstFace, secondFace);
+      const sharedU0 = Math.max(a.u0, b.u0);
+      const sharedU1 = Math.min(a.u1, b.u1);
+      const sharedV0 = Math.max(a.v0, b.v0);
+      const sharedV1 = Math.min(a.v1, b.v1);
+      const uOverlap = sharedU1 - sharedU0;
+      const vOverlap = sharedV1 - sharedV0;
+      const candidates: Array<{
+        distance: number;
+        shared_span: number;
+        strip: FaceRect;
+      }> = [];
+      if (uOverlap < -SURFACE_PLANE_EPSILON && vOverlap > SURFACE_PLANE_EPSILON) {
+        candidates.push({
+          distance: -uOverlap,
+          shared_span: vOverlap,
+          strip: { u0: sharedU1, u1: sharedU0, v0: sharedV0, v1: sharedV1 },
+        });
       }
-      if (
-        vOverlap < -SURFACE_PLANE_EPSILON &&
-        uOverlap > SURFACE_PLANE_EPSILON
-      ) {
-        candidates.push({ distance: -vOverlap, shared_span: uOverlap });
+      if (vOverlap < -SURFACE_PLANE_EPSILON && uOverlap > SURFACE_PLANE_EPSILON) {
+        candidates.push({
+          distance: -vOverlap,
+          shared_span: uOverlap,
+          strip: { u0: sharedU0, u1: sharedU1, v0: sharedV1, v1: sharedV0 },
+        });
       }
 
       for (const candidate of candidates) {
         if (candidate.distance > maxDistance) continue;
+        if (isCoplanarStripCovered(firstFace, candidate.strip, coverageBoxes)) continue;
         if (
           best === null ||
           candidate.distance < best.distance - SURFACE_PLANE_EPSILON ||
@@ -212,7 +287,7 @@ function findCoplanarEdgeGap(
             SURFACE_PLANE_EPSILON &&
             candidate.shared_span > best.shared_span)
         ) {
-          best = candidate;
+          best = { distance: candidate.distance, shared_span: candidate.shared_span };
         }
       }
     }
@@ -259,7 +334,8 @@ function findParallelFacePlaneDistance(
  */
 export function analyzeOrientedBoxSurfaceQuality(
   first: OrientedBox,
-  second: OrientedBox
+  second: OrientedBox,
+  coverageBoxes: readonly OrientedBox[] = []
 ): SurfaceQualityRisk[] {
   const risks: SurfaceQualityRisk[] = [];
 
@@ -304,7 +380,8 @@ export function analyzeOrientedBoxSurfaceQuality(
     const edgeGap = findCoplanarEdgeGap(
       first,
       second,
-      SURFACE_COPLANAR_EDGE_GAP_REVIEW_DISTANCE
+      SURFACE_COPLANAR_EDGE_GAP_REVIEW_DISTANCE,
+      coverageBoxes
     );
     if (edgeGap !== null) {
       risks.push({
@@ -375,6 +452,7 @@ function readSurfaceQualityWarnings(cubes: readonly Cube[]): string[] {
     }
   }
 
+  const coverageBoxes = measured.map(({ box }) => box);
   let analyzedPairCount = 0;
   let pairBudgetReached = false;
 
@@ -399,7 +477,7 @@ function readSurfaceQualityWarnings(cubes: readonly Cube[]): string[] {
 
       let risks: SurfaceQualityRisk[];
       try {
-        risks = analyzeOrientedBoxSurfaceQuality(first.box, second.box);
+        risks = analyzeOrientedBoxSurfaceQuality(first.box, second.box, coverageBoxes);
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
         pushWarning(
@@ -432,7 +510,8 @@ function readSurfaceQualityWarnings(cubes: readonly Cube[]): string[] {
   }
 
   if (pairBudgetReached) {
-    pushWarning(
+    // Scan completeness must never be hidden by the defect-warning cap.
+    warnings.push(
       `Surface-quality diagnostics stopped after ${SURFACE_PAIR_ANALYSIS_LIMIT} nearby Cube pair(s); absence of further warnings is not a clean-surface claim.`
     );
   }

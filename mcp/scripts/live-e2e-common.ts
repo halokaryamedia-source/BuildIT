@@ -251,7 +251,7 @@ export class LiveMcpClient {
     const instructions = initializeResult.instructions;
     expect(
       typeof instructions === "string" &&
-        instructions.includes(`ACTIVE PHASE: ${this.expectedPhase.toUpperCase()}`),
+        instructions.includes(`ACTIVE STAGE: ${this.expectedPhase.toUpperCase()}.`),
       `Initialize instructions do not prove active ${this.expectedPhase} ownership.`
     );
 
