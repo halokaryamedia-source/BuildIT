@@ -1,16 +1,34 @@
 ---
 name: blockit-bedrock-entity-mcp
-description: Route Bedrock Entity intents.
+description: Mandatory router for every BlockIT Minecraft Bedrock Entity asset-authoring task. Load before Geometry/UV, Texturing/PBR, or Animation mutation; owns Gateway routing, specialist selection, and handoff.
 ---
 
 # BlockIT Bedrock Entity MCP
 
-Own AUTHORING/Animation tool routing, handoff, recovery:
-
 ```text
 geometry/rig/UV judgement → `blockbench-bedrock-modelling`
-texture/PBR → `blockit-bedrock-texturing`
-animation/motion → `blockit-bedrock-animation`
+texture/PBR               → `blockit-bedrock-texturing`
+animation/motion          → `blockit-bedrock-animation`
+```
+
+## Mandatory Authoring Latch
+
+Before each owner's first mutation, load this router + matching specialist from the **current worktree**.
+
+```text
+router_loaded=YES
+active_owner=GEOMETRY|TEXTURING|ANIMATION
+specialist_loaded=YES
+gate_satisfied=YES
+```
+
+Any `NO` → **DO NOT MUTATE**. Memory, an older session, or tool availability cannot substitute for the current specialist.
+
+```text
+Geometry → approved image + Dimensions + user-selected strategy + Animation Required
+UV       → user Geometry APPROVED; Geometry specialist owns UV judgement
+Texture  → Geometry APPROVED + UV Layout PASS; load Texturing specialist
+Animation→ Texturing APPROVED → HANDOFF_REQUIRED → load Animation specialist
 ```
 
 ## Reference Grounding / Strategy Gate
@@ -18,6 +36,8 @@ animation/motion → `blockit-bedrock-animation`
 approved image = visual authority. Geometry Strategy is user-selected: `DIRECT | 3D_ASSISTED`; never auto-switch.
 
 `DIRECT` → Geometry. `3D_ASSISTED` → Shape Reconstruction → PrimitiveAnything → Cuboid Scaffold → cleanup. Unavailable → `BLOCKED`; never fallback. `manage_geometry_reference` is support evidence only.
+
+**1 Minecraft block = 16 Blockbench units.** Reuse `front_direction`.
 
 ## Fast Routing Contract
 
@@ -29,19 +49,15 @@ ACTIVE STAGE + intent + known state/UUIDs
 → Gateway execution → reuse returned state
 ```
 
-**1 Minecraft block = 16 Blockbench units.** Reuse `front_direction`.
-
 ## Authoring Surface / Handoff
 
-Geometry and Texturing share one AUTHORING Runtime surface; Geometry↔Texturing is an owner/focus change, not a Runtime handoff.
-
-`HANDOFF_REQUIRED`: `target_phase`, `reason`, `readiness`, `resume_from` only for AUTHORING↔Animation. `switch_authoring_phase` through Gateway → target specialist → same task/chat.
+Geometry↔Texturing is an owner change; no Runtime handoff. `HANDOFF_REQUIRED` + `switch_authoring_phase` is only AUTHORING↔Animation; same task/chat.
 
 ## Authoring Stage Lock
 
 `DISCOVER → AUTHOR → VERIFY → CORRECT → VERIFY → DONE`
 
-Internal `PASS` → `READY_FOR_USER_REVIEW`; blockers stop progress.
+Internal PASS never bypasses required user approval.
 
 ## Tool Lane Discipline
 
@@ -49,15 +65,14 @@ Internal `PASS` → `READY_FOR_USER_REVIEW`; blockers stop progress.
 CORE / SHARED
 project unknown                → get_project_info
 identity/hierarchy/detail      → inspect_elements(mode=search|outline|detail)
-locator identity discovery     → list_locator_elements
 visible/reference comparison  → capture_model_views
 envelope/scale/ground          → inspect_model_bounds
-structural validation gate    → validator://status; details only when nonzero
+structural validation gate    → validator://status
 UV/atlas readiness             → list_textures
 file deliverable               → export_model
 Animation boundary             → switch_authoring_phase
 
-GEOMETRY OWNER — callable throughout AUTHORING
+GEOMETRY OWNER
 3D-Assisted GLB                → manage_geometry_reference
 create normal bone/Group       → add_group
 create/update Cubes            → manage_cubes(operation=create|update|batch_update)
@@ -68,9 +83,9 @@ Locator/Null                   → manage_locator / manage_null_object
 rig IK/mirror                  → bone_rigging
 ```
 
-`bone_rigging` only for IK/mirror. Known coherent Cubes → one `manage_cubes(operation=create, elements=[...])`; uncertainty → no batch. Known Cubes sharing one deterministic TRANSLATE/RESIZE intent → derive absolute targets once from fresh state → one `manage_cubes(operation=batch_update)`. Never loop inspect→modify per Cube; relative intent stays reasoning-layer arithmetic; writes stay absolute/fail-closed.
+Known coherent Cubes → one batch; uncertainty → no batch. Shared TRANSLATE/RESIZE → one absolute `batch_update`; never inspect→modify per Cube.
 
-**Semantic cohort rule:** shared assembly motion belongs to its Group when one transform explains it; otherwise correct the full sibling cohort. Subset child moves need an explicit local-part reason.
+**Semantic cohort rule:** shared assembly motion belongs to its Group when one transform explains it; otherwise correct the full sibling cohort.
 
 ## First-Call Invariants
 
@@ -112,7 +127,6 @@ Same routed failure twice without new evidence → `BLOCKED`.
 
 - Fresh mutation → reuse state/`geometry_effect`; no confirmation readback.
 - Do not automatically re-read fresh mutation targets with `inspect_elements(mode=detail)`.
-- Validator gate → read `validator://status` first; zero problems means no detail-resource read.
 - `inspect_model_bounds` only for envelope/scale/ground/displacement.
 - Skip `get_project_info` after create/export unless lifecycle state is unknown/stale.
 

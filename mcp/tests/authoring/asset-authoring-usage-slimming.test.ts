@@ -7,21 +7,30 @@ async function source(path: string): Promise<string> {
 }
 
 describe("pre-local asset-authoring usage slimming", () => {
-  test("asset authoring bypasses repository-development boot and development-brief", async () => {
+  test("asset authoring bypasses repository-development boot but uses deterministic authoring boot", async () => {
     const agents = await source("../AGENTS.md");
     expect(agents).toContain("### Asset Authoring");
     expect(agents).toMatch(/do not automatically load/i);
-    expect(agents).toMatch(/asset authoring is not software \*\*development\*\*/i);
+    expect(agents).toMatch(/asset authoring is not software \*\*Development\*\*/i);
     expect(agents).toMatch(/do not route it through `development-brief`/i);
+    expect(agents).toContain(".agents/skills/blockit-bedrock-entity-mcp/SKILL.md");
+    expect(agents).toContain(".agents/skills/blockbench-bedrock-modelling/SKILL.md");
+    expect(agents).toContain(".agents/skills/blockit-bedrock-texturing/SKILL.md");
+    expect(agents).toContain(".agents/skills/blockit-bedrock-animation/SKILL.md");
+    expect(agents).toContain("No authoring mutation is allowed until the router + matching specialist are loaded");
   });
 
-  test("router stays compact and routing-only while modelling owns visual gates", async () => {
+  test("normal authoring skill stack remains compact while hard gates stay present", async () => {
     const orchestrator = await source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md");
     const modelling = await source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md");
+    const texturing = await source("../.agents/skills/blockit-bedrock-texturing/SKILL.md");
+
     expect(orchestrator.length).toBeLessThan(5_000);
     expect(modelling.length).toBeLessThan(13_000);
+    expect(texturing.length).toBeLessThan(10_000);
 
     for (const required of [
+      "Mandatory Authoring Latch",
       "Tool Lane Discipline",
       "State Reuse / Anti-Loop",
       "HANDOFF_REQUIRED",
@@ -31,12 +40,29 @@ describe("pre-local asset-authoring usage slimming", () => {
       "geometry/rig/UV judgement",
     ]) expect(orchestrator).toContain(required);
 
+    for (const required of [
+      "Primary Mass / Proportion / Depth",
+      "Surface Coverage / Negative Space",
+      "Geometry Detail Budget",
+      "User Geometry APPROVED is required",
+      "Native UV Layout / Texel Integrity",
+      "difference-first",
+      "geometry_effect",
+    ]) expect(modelling).toContain(required);
+
+    for (const required of [
+      "Geometry APPROVED + UV Layout PASS",
+      "Reference-Grounded Texture Intent",
+      "Atlas-Island Discipline",
+      "No noise-first or generic texture-pattern pass",
+    ]) expect(texturing).toContain(required);
+
     expect(orchestrator).not.toContain("FAIL / UNVERIFIED / PASS");
     expect(orchestrator.toLowerCase()).not.toContain("difference-first");
     expect(orchestrator.toLowerCase()).not.toContain("existing geometry may be a task baseline");
 
-    for (const required of ["SUPPORTED", "PROVISIONAL", "CONFLICTING", "UNAVAILABLE", "difference-first", "FAIL", "UNVERIFIED", "PASS", "BLOCKED", "geometry_effect"]) {
-      expect(modelling.toLowerCase()).toContain(required.toLowerCase());
+    for (const required of ["SUPPORTED", "PROVISIONAL", "CONFLICTING", "UNAVAILABLE", "FAIL", "UNVERIFIED", "PASS", "BLOCKED"]) {
+      expect(modelling).toContain(required);
     }
   });
 

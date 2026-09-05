@@ -1,11 +1,11 @@
 ---
 name: blockbench-bedrock-modelling
-description: Bedrock Entity judgement for reference grounding, construction, transforms, correction, and visual completion.
+description: Mandatory BlockIT Bedrock Geometry and UV Layout specialist. Use before reference-grounded Geometry, hierarchy, pivots, surface continuity, geometry-vs-texture decisions, correction, or UV Layout mutation.
 ---
 
 # Blockbench Bedrock Modelling
 
-Own Geometry form judgement, transform ownership, correction, and reference readiness.
+Own Geometry form judgement, transform ownership, correction, user Geometry readiness, and UV Layout.
 
 ## Minimum Necessary Evidence
 
@@ -26,35 +26,9 @@ Geometry Strategy   → DIRECT | 3D_ASSISTED; user-selected only
 claim | observable requirement | supporting view | SUPPORTED | PROVISIONAL | CONFLICTING | UNAVAILABLE
 ```
 
-Never infer/default/auto-switch Geometry Strategy.
-
-```text
-DIRECT      → semantic Groups/Cubes
-3D_ASSISTED → Shape Reconstruction → Shape GLB PASS
-             → PrimitiveAnything decomposition PASS → Cuboid Scaffold → semantic cleanup
-```
-
-3D-Assisted intermediates are hypotheses. Remove live GLB before final Geometry review. Unavailable path → `BLOCKED`; never emulate/fallback.
+Never infer/default/auto-switch Geometry Strategy. `DIRECT` uses semantic Groups/Cubes. `3D_ASSISTED` remains Shape Reconstruction → Shape GLB PASS → PrimitiveAnything PASS → Cuboid Scaffold → semantic cleanup; unavailable path → `BLOCKED`, never fallback. 3D-Assisted intermediates are hypotheses and live GLB is removed before final Geometry review.
 
 Use a View Pair Map only to resolve materially ambiguous front/back, left/right, mirrored, depth, or 3/4 evidence. When evidence is clear, **do not turn analysis ceremony into the work**.
-
-## Simple Rigid Fast Path
-
-When evidence is clear, topology simple, and the object predominantly rigid:
-
-```text
-identity + envelope + primary masses
-→ cross-view proportions + shared primary boundaries
-→ required continuous surfaces + intentional negative spaces
-→ simplest transform ownership
-→ minimum meaningful hierarchy
-→ coherent PRIMARY BLOCKOUT
-→ primary proportion + whole-form surface gate
-→ judgeable views
-→ diagnose only observed mismatch
-```
-
-Construction forms are **not presets**. Keep Groups/Bones only for real shared transform, attachment, articulation, or form-defining hierarchy. Local rigid slopes may be Cube-owned; neutral organization stays downstream.
 
 ## Semantic Form / Construction / Transform Gate
 
@@ -66,233 +40,138 @@ primary masses + must-exist reason
 identity-critical landmarks
 required count / symmetry or deliberate asymmetry
 topology: what attaches to what
-required continuous surface regions
-intentional openings / recesses / negative spaces
+required continuous surfaces + intentional negative spaces
 representation: geometry | texture | animation | omit
-micro-detail candidates + smallest material span
+transform ownership + attachment/contact invariant
 material evidence state
 ```
 
 A semantic label never authorizes coordinates. **No orphan/filler Cube**: each primary Cube implements a declared mass/landmark, required surface coverage, or justified split. `PROVISIONAL` may support a coarse hypothesis; placement never verifies it.
 
-Choose the simplest buildable construction preserving the visible requirement: volume for silhouette, plane-like Cubes for sheet form, linked segments for bends, Locator for non-visible anchors. **Use texture for surface information** that needs no silhouette, volume, contact, intentional negative-space boundary, or separate motion.
+Construction forms are **not presets**. Choose the simplest buildable representation: volume for silhouette/real volume, plane-like Cube for genuinely sheet-like form, linked meaningful segments for bends, Locator for non-visible anchors, texture for surface information needing no silhouette/volume/contact/opening/motion.
 
-Decide transform ownership before rotation: shared semantic orientation/attachment/articulation is **Group/Bone-owned**; local rigid orientation may be Cube-owned. Classify primary masses `AXIS_ALIGNED | ROTATED | UNRESOLVED`. A visible slope requires `ROTATED` + explicit origin/pivot + role `MASS_CENTER | ATTACHMENT | JOINT | PARENT_TRANSFORM`. Material `UNRESOLVED` → `BLOCKED`.
+Decide transform ownership before rotation. Shared orientation/attachment/articulation is **Group/Bone-owned**; local rigid orientation may be Cube-owned. Classify primary masses `AXIS_ALIGNED | ROTATED | UNRESOLVED`. A visible slope requires `ROTATED` + explicit origin/pivot + role `MASS_CENTER | ATTACHMENT | JOINT | PARENT_TRANSFORM`. Material `UNRESOLVED` → `BLOCKED`.
 
-For every required attachment state its **contact target/invariant** before coordinates. Use an **attachment/joint pivot** when it owns the transform. AABB overlap, hierarchy, or numeric touching is not contact proof; important negative spaces stay open.
+For every required attachment state its **contact target/invariant** before coordinates; use an **attachment/joint pivot** when it owns the transform. AABB overlap, hierarchy, or numeric touching is not contact proof.
 
-## Primary Mass / Proportion / Depth Gate
+## Primary Mass / Proportion / Depth
 
-For reference-driven `DIRECT` work, **coordinates are the consequence of one coherent 3D interpretation, not the starting point**. Before authoring material primary coordinates, establish:
+**Coordinates are the consequence of one coherent 3D interpretation, not the starting point.**
 
 ```text
 coordinate frame + canonical front + envelope
-PRIMARY masses        → silhouette / major volume / major opening / major moving part
-SECONDARY masses      → supported 3D identity refinement after primary PASS
-SURFACE information   → texture unless a material 3D reason exists
-major shared boundaries / partitions
-cross-view proportion constraints
-material depth state
-```
-
-Do not decompose the reference into small visible features first. Establish the whole-object mass hierarchy before local detail.
-
-### Cross-view dimension constraint
-
-Treat orthographic-like views as complementary constraints, not independent models:
-
-```text
-front/back → width + height evidence
-left/right → depth + height evidence
-top/bottom → width + depth evidence
-3/4        → relationship / layering / orientation cross-check
-```
-
-A view may be perspective-stylized or internally imperfect; do not calibrate geometry by raw reference pixels. Use approved dimensions as the numeric envelope and use the reference for **relative proportions, landmarks, boundaries, count, alignment, silhouette, and contact**.
-
-Do not lock a material axis from one view when that axis is not sufficiently observable there. Front agreement does not certify depth; side agreement does not certify width. Use the smallest set of views that actually constrains the relationship.
-
-### Shared-boundary partitioning
-
-When adjacent primary cohorts meet at the same visible boundary, derive them from **one shared partition**, not independent coordinate guesses.
-
-```text
-outer boundary
-→ region A
-→ shared boundary
-→ region B / opening
-→ shared boundary
-→ region C
-→ outer boundary
-```
-
-For an intended flush/continuous transition, reuse the same boundary value or intentionally overlapping construction when the form requires it. Do not independently estimate `A.to` and `B.from` and then repair accidental strips afterward. Symmetric or repeated partitions may share a rule only when the reference supports that relationship.
-
-### Depth evidence state
-
-Classify material depth decisions:
-
-```text
-OBSERVED    → directly constrained by a suitable side/top/3/4 relationship
-INFERRED    → not direct, but supported by multiple consistent visible relationships
-UNRESOLVED  → insufficient/conflicting evidence
-```
-
-`INFERRED` must use the **simplest geometry that explains the visible evidence**. Do not invent hidden engineering structure, unseen recesses, internal supports, or detail merely because a real-world object might contain them.
-
-A material `UNRESOLVED` depth/topology/orientation that can change the primary form is `BLOCKED`. A non-material unresolved detail may remain coarse, move to texture, or be omitted; uncertainty is not permission to add speculative geometry.
-
-### One coherent 3D interpretation
-
-When approved views have minor drift, choose one consistent interpretation that preserves the strongest shared invariants. Do not fit each side independently and do not average contradictions into distorted geometry. A material conflict in count, topology, orientation, opening, attachment, or major proportion that cannot be reconciled from the approved evidence is `BLOCKED`.
-
-### Primary coarse-to-fine lock
-
-```text
-primary mass hierarchy
-→ major partitions/shared boundaries
+→ primary mass hierarchy
+→ major shared boundaries / partitions
+→ cross-view proportion constraints
 → material depth/layering
 → primary silhouette/proportion gate
-→ surface coverage/negative-space gate
-→ primary visual PASS
-→ only then secondary geometry
 ```
 
-Do not use secondary geometry, trim, or texture to compensate for a wrong primary mass, wrong proportion, wrong depth, or wrong opening. If several primary relationships are wrong, reopen the primary interpretation instead of patching local Cubes.
+Treat views as complementary constraints: front/back constrain width+height; sides constrain depth+height; top/bottom constrain width+depth; 3/4 cross-checks layering/orientation. Do not calibrate geometry by raw reference pixels. Front agreement does not certify depth.
 
-At primary review, compare global silhouette, envelope occupation, major mass ratios, openings, shared boundaries, contact/layering, and cross-view depth before judging detail.
+Adjacent primary cohorts sharing one visible boundary use **one shared partition**, not independent coordinate guesses. For intended flush continuity, reuse the same boundary value or a deliberately justified overlap.
 
-## Surface Coverage / Negative-Space Gate
-
-Before coordinates for a shell, body panel, wall, housing, casing, skin, or any reference region that is visually continuous, state a compact coverage contract:
+Depth state:
 
 ```text
-surface/cohort
+OBSERVED   → directly constrained
+INFERRED   → multiple consistent visible relationships; simplest explaining geometry only
+UNRESOLVED → insufficient/conflicting evidence
+```
+
+Do not invent hidden engineering structure. Material `UNRESOLVED` depth/topology/orientation → `BLOCKED`. Minor view drift uses one consistent interpretation. Do not average drift. **Only unresolved material conflict becomes `BLOCKED`.**
+
+## Surface Coverage / Negative Space
+
+For each shell/body/wall/housing/casing/skin or other visually continuous cohort, know:
+
+```text
 required covered region
-intentional opening or recess
-adjacent cohort/contact boundary
+intentional opening/recess
+adjacent contact boundary
 ```
 
-For enclosure-like forms, use **closed-shell reasoning**: every major exposed region must be covered except an explicitly intended opening/recess. For naturally open forms, do not force a box; apply the same rule only to surfaces/segments the reference shows as continuous and preserve intended negative space.
+For enclosure-like forms use closed-shell reasoning; for naturally open forms apply coverage only where the reference shows continuity. **Every gap must be intentional.** Bounds, hierarchy, successful Cube creation, or clean positive-volume overlap do not prove coverage.
 
-**Every gap must be intentional.** A space between adjacent cohorts that is not a named opening/recess is a Geometry defect. Exact outer bounds, AABB overlap, hierarchy, or successful Cube creation do not prove surface coverage.
+Build broad continuous primary surfaces before trim. At whole-form review, inspect enough front/back/left/right/top/bottom and useful 3/4 evidence to detect holes, visible background/interior/backfaces, unsupported seams, penetration, contact errors, or layer offsets.
 
-Build broad continuous primary surfaces/cohorts before local inserts and trim. Prefer one coherent primary mass/cohort over disconnected strips that recreate one continuous plane without a structural reason. Do not use later detail Cubes or texture to conceal missing primary coverage.
+**No positive-volume overlap alone is not visual PASS.** A repaired local gap does not certify the whole surface.
 
-At the primary whole-form gate, review the exposed form from the minimum views needed to cover front/back/left/right/top/bottom plus a useful 3/4 view when depth relationships matter. Fail the gate if unintended background/interior/backfaces are visible through the form, if adjacent required surfaces leave a gap, or if a seam/recess exists without reference support.
+## Geometry Detail Budget
 
-## Geometry Detail Budget / Texture Delegation Gate
-
-Before creating **secondary/detail geometry**, classify each candidate:
+Before secondary/detail geometry:
 
 ```text
-GEOMETRY  → materially changes silhouette, real volume, intentional opening/contact,
-            layering that must read in 3D, or separate motion
-TEXTURE   → surface pattern/color/seam/panel line/marking/detail with no required 3D effect
-OMIT      → unsupported or visually immaterial detail
+GEOMETRY → silhouette, real volume, opening/contact, required 3D layering, or separate motion
+TEXTURE  → pattern/color/seam/panel line/marking with no required 3D effect
+OMIT     → unsupported or visually immaterial
 ```
 
-For a **detail-only candidate whose smallest material span/thickness is `<= 4 Blockbench units` (1/4 block)**, default to `TEXTURE` or `OMIT`. Geometry at or below this size requires a stated exception: silhouette-critical thin form, genuine volume/contact, intentional negative-space boundary, or independently moving part. This is a suppression gate, not a permission rule: being larger than 4 units does not automatically justify geometry.
+For a detail-only candidate whose smallest material span/thickness is `<= 4 Blockbench units` (`1/4 block`), default to `TEXTURE` or `OMIT`. Geometry needs an explicit exception: silhouette-critical thin form, genuine volume/contact, intentional negative-space boundary, or independent motion. Larger than 4 units is not automatic permission.
 
-Do not build geometry merely to reproduce panel grids, painted seams, grout lines, scratches, bolts/buttons, thin decorative borders, material breaks, or other surface information when texture can preserve the visible requirement. Conversely, a thin structural part that genuinely changes silhouette or motion remains geometry even when its thickness is <=4 units.
+Do not model panel grids, painted seams, scratches, small buttons/bolts, thin decorative borders, or material breaks when texture preserves the requirement. Secondary geometry begins only after primary proportion + coverage PASS.
 
-Secondary geometry begins only after the primary surface-coverage gate passes. If detail creation starts increasing gaps, fragmentation, UV burden, or correction cost without a material 3D benefit, merge/remove it and delegate the visible detail downstream to texture.
+## Geometry Verify / User Gate
 
-## Surface / Cohort Quality Gate
-
-**No positive-volume overlap alone is not visual PASS.** Judge affected views for penetration, accidental coplanar surfaces, holes, gaps, contact seams, and layer offsets. User-reported surface defects reopen this gate even after a clean structural validator.
-
-For a semantic assembly translation/orientation, prefer its Group/Bone when one shared transform explains intent. Otherwise update the complete affected sibling cohort coherently. A single-child move inside a multi-part assembly needs an explicit local-part reason and fresh view proof that sibling relationships remain correct.
-
-A repaired local gap does not certify the whole surface. Re-run the affected surface/cohort coverage check and reject a correction that merely moves the hole, creates a new seam, or uses compensating micro-geometry instead of restoring the intended continuous form.
-
-## Native UV Layout / Texel Integrity Gate
-
-UV Layout remains a **Geometry-owned mapping decision** even though `create_texture(type=template)` is a Texture capability on the shared AUTHORING surface. Texture Styling must not start until this gate passes.
-
-For a fresh or materially rebuilt Cube-based production UV layout, default to Blockbench's **native Texture Template generator**:
+**Stay in the geometry lane unless a current decision requires another branch.**
 
 ```text
-Geometry form/surface PASS
-→ create_texture(type=template)
-   + explicit pixel_density
-   + rearrange_uv=true
-   + power_of_two=true
-   + intentional occupancy/padding settings
-→ native UV arrangement + template atlas
-→ UV audit
-→ important-face texel-integrity review
-→ UV Layout PASS
-→ only then Texture Styling
+approved reference + dimensions
+→ coherent primary interpretation
+→ PRIMARY BLOCKOUT + required hierarchy/pivots
+→ primary proportion + surface coverage PASS
+→ identity-weighted secondary geometry only
+→ fresh current-revision model views
+→ difference-first verdict
 ```
 
-Do not replace this normal path with manually guessed face rectangles, arbitrary `uv_offset` packing, stretched reference images, color-fill atlases, or hand-scaled islands merely to make everything fit. Preserve an existing/imported authored UV layout only when it is already valid and there is no material reason to rebuild it. A user-requested special hand-authored layout is also valid when its mapping intent is explicit.
-
-### Pixel density / square-texel invariant
-
-Choose `pixel_density` **once for the model/atlas intent** and keep important surfaces at that consistent density unless a deliberate exception is required. Native semantics are:
-
-```text
-16x  → 1 texture pixel per 1 model unit
-32x  → 2 texture pixels per 1 model unit
-64x  → 4 texture pixels per 1 model unit
-...
-```
-
-A face whose model-space sides have ratio `W:H` must receive a UV region with the corresponding pixel-space ratio after the chosen global density, subject only to exact integer/native packing. **Do not non-uniformly scale an island to squeeze it into the atlas.** That turns one square texel into a stretched rectangle on the model and is a UV Layout defect.
-
-If the generated atlas becomes too large, solve the actual cause: choose a justified lower global density, remove unnecessary geometry, use intentional exact reuse/mirroring where surfaces truly share pixels, or choose an appropriate production bitmap size. Do not fix atlas pressure by distorting important face aspect ratios.
-
-### Native-template acceptance
-
-The native tool already owns model selection, rearrangement, and fail-closed technical UV validation. Treat `uv_audit.production_gate=ready` as **necessary hygiene, not final UV quality**. After generation, review material visible surfaces for:
-
-```text
-face geometry ↔ UV aspect
-consistent texel density
-orientation / directional material flow
-intentional seams + padding relationship
-accidental overlap
-intentional exact reuse / mirroring
-unique regions for asymmetric identity detail
-```
-
-A visually tidy atlas layout is useful, but packing aesthetics are secondary to correct aspect, density, orientation, uniqueness, and non-overlap. Do not repeatedly regenerate a valid template after styling begins: native rearrangement moves UV ownership and invalidates painted assumptions.
-
-A template that is invalid, out-of-bounds, unexpectedly degenerate on an important visible face, or materially stretched is `FAIL`; correct Geometry/UV and regenerate before painting. Zero-area UV on a genuinely zero-thickness/non-rendered direction is not automatically a defect.
-
-## Future Editability / Animation Readiness
-
-Keep semantic hierarchy and movable distinct parts separate; do not build speculative full rigs. If Animation is required, participating hierarchy/pivots/attachments must be ready before Geometry approval.
-
-## Primary Build / Difference-First Reference Fidelity Verdict
-
-**Stay in the geometry lane unless a current decision requires another branch.** Build the minimum coherent complete form before detail.
-
-```text
-explicit user requirement
-→ original source evidence
-→ best-supported approved view(s)
-→ one coherent 3D interpretation
-→ primary mass hierarchy + shared boundaries + material depth
-→ simplest recognizable Blockbench-buildable construction
-→ primary silhouette/proportion gate
-→ continuous required surfaces + intentional negative spaces
-→ primary whole-form surface gate
-→ only then identity-weighted secondary geometry
-```
-
-Minor supported drift uses one consistent interpretation. Do not average drift. **Only unresolved material conflict becomes `BLOCKED`.** Front agreement does not certify depth.
-
-Successful `manage_cubes` execution is **Tool success** and **execution evidence** only. Tool success never authorizes visual `PASS`. After primary `PASS`, add identity-weighted secondary geometry only where silhouette, recognizability, contact/layering, editability, or motion benefits; apply the Geometry Detail Budget before each detail cohort.
-
-Material verdict requires the actual approved reference image + **fresh current-revision model** image(s):
+Material verdict requires the actual approved reference image + fresh current-revision model evidence. Mutation makes affected captures stale.
 
 ```text
 claim | reference view | current view | observed difference | FAIL | UNVERIFIED | PASS
 ```
 
-Mutation makes affected captures stale. **Tool success, coordinates, bounds, hierarchy, validators, or similarity scores cannot justify `PASS`**. Similarity scores cannot justify `PASS`.
+Tool success is **execution evidence** only. After primary `PASS`, add identity-weighted secondary geometry only. **Tool success, coordinates, bounds, hierarchy, validators, or similarity scores cannot justify `PASS`.** Similarity scores cannot justify `PASS`.
+
+`internal geometry=PASS` requires coherent mass/proportion/depth, surface/negative-space coverage, purposeful detail, required hierarchy/pivots, and no major defect. Then stop at `READY_FOR_USER_REVIEW`. **User Geometry APPROVED is required before fresh/rebuilt production UV Layout.**
+
+## Native UV Layout / Texel Integrity
+
+UV Layout is Geometry-owned even though `create_texture(type=template)` is callable on shared AUTHORING.
+
+For fresh or materially rebuilt Cube-based production UV:
+
+```text
+Geometry APPROVED
+→ create_texture(type=template)
+   pixel_density=<explicit>
+   rearrange_uv=true
+   power_of_two=true
+→ native UV arrangement + template atlas
+→ UV audit + important-face review
+→ UV Layout PASS
+→ Texturing owner
+```
+
+Do not replace the normal path with guessed rectangles, arbitrary `uv_offset` packing, stretched reference images, color-fill atlases, or hand-scaled islands merely to fit. Preserve valid imported/authored UV when no material rebuild reason exists.
+
+Choose one model/atlas pixel-density intent. `16x` = 1 texture pixel/model unit; `32x` = 2; `64x` = 4. Face model-space aspect must match pixel-space UV aspect (direct or intentional 90° orientation). **Never non-uniformly scale an island to squeeze it into the atlas.**
+
+If atlas pressure is real, lower global density when justified, remove unnecessary geometry, use intentional exact reuse/mirroring, or choose a larger valid bitmap. Do not distort important faces.
+
+`uv_audit.production_gate=ready` is necessary hygiene, not UV Layout PASS. Review:
+
+```text
+face geometry ↔ UV aspect
+consistent texel density
+orientation / material flow
+padding / seams
+accidental overlap
+intentional exact reuse / mirroring
+unique regions for asymmetric identity detail
+```
+
+Invalid/out-of-bounds/materially stretched important mapping → `FAIL`; correct/regenerate before painting. Do not rearrange a valid template after Styling starts.
 
 ## Local Correction / Convergence
 
@@ -302,18 +181,12 @@ REATTACH contact/parent | SPLIT distinct volume/orientation
 MERGE/REMOVE compensatory geometry | ADD MASS genuinely missing volume
 ```
 
-Reuse fresh exact authored state; otherwise `inspect_elements(mode=detail)` once. State target UUID(s), cause, intended change, invariant, and expected visible/structural effect. TRANSLATE preserves size; RESIZE names changed axis + fixed anchor/center/contact; ROTATE preserves `from/to/size` and uses a justified pivot. Returned `geometry_effect` must match intent.
+Reuse fresh exact authored state; otherwise `inspect_elements(mode=detail)` once. State target UUID(s), cause, intended change, invariant, expected effect. Returned `geometry_effect` must match intent before visual review.
 
-Capture **affected view(s) first**; expand only for material cross-view risk. Classify `IMPROVED | UNCHANGED | REGRESSED`. **Progress requires `IMPROVED`**. A fix that helps one view while materially regressing another is rejected. If the **same causal correction direction has failed twice without new evidence**, stop speculative mutation and reframe as `BLOCKED`.
+Capture affected views first. Classify `IMPROVED | UNCHANGED | REGRESSED`; **progress requires `IMPROVED`**. A fix that helps one view while materially regressing another is rejected. If the **same causal correction direction has failed twice without new evidence**, stop and mark `BLOCKED`.
 
-## Existing Assets
+## Existing Assets / Shared Session
 
-Existing-asset work may use current geometry as baseline without certifying reference accuracy. Diagnose only the requested/current defect unless evidence proves the baseline materially wrong. Visual/fidelity updates require the approved reference; deterministic explicit changes may not.
+Existing-asset work may use current geometry as baseline without certifying reference accuracy. Diagnose only the requested/current defect unless evidence proves the baseline materially wrong.
 
-## Shared Authoring Session / User Approval
-
-Geometry owns shape/hierarchy/rig/pivots/UV Layout; Texturing owns atlas pixels/PBR. Both remain callable in the same AUTHORING Runtime surface; semantic ownership governs mutation.
-
-`internal geometry=PASS` requires coherent primary mass/proportion/depth, the primary surface/negative-space gate to pass, and no unjustified detail-only micro-geometry to remain. `internal geometry=PASS + uv_layout=PASS → READY_FOR_USER_REVIEW` at a meaningful checkpoint. User revision continues Geometry; explicit approval saves the checkpoint and continues Texturing focus in the same AUTHORING surface.
-
-A texture-discovered Geometry/UV defect is corrected directly with the Geometry owner; no Geometry↔Texturing phase handoff. Revalidate only affected texture evidence. `HANDOFF_REQUIRED` + `switch_authoring_phase` through Gateway is reserved for AUTHORING↔Animation.
+Geometry owns shape/hierarchy/rig/pivots/UV Layout; Texturing owns atlas pixels/PBR. Both are callable in shared AUTHORING, but semantic ownership governs mutation. A texture-discovered Geometry/UV defect returns to this owner in-session; no Geometry↔Texturing phase switch. `HANDOFF_REQUIRED` + `switch_authoring_phase` is reserved for AUTHORING↔Animation.

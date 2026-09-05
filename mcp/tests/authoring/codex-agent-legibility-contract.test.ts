@@ -40,6 +40,34 @@ describe("Codex Bedrock agent legibility contract", () => {
     }
   });
 
+  test("root authoring boot deterministically loads router and matching current-worktree specialist", async () => {
+    const [agents, router, modelling, texturing, animation] = await Promise.all([
+      source("../AGENTS.md"),
+      source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md"),
+      source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
+      source("../.agents/skills/blockit-bedrock-texturing/SKILL.md"),
+      source("../.agents/skills/blockit-bedrock-animation/SKILL.md"),
+    ]);
+
+    for (const path of [
+      ".agents/skills/blockit-bedrock-entity-mcp/SKILL.md",
+      ".agents/skills/blockbench-bedrock-modelling/SKILL.md",
+      ".agents/skills/blockit-bedrock-texturing/SKILL.md",
+      ".agents/skills/blockit-bedrock-animation/SKILL.md",
+    ]) expect(agents).toContain(path);
+
+    expect(agents).toContain("No authoring mutation is allowed until the router + matching specialist are loaded from the current worktree");
+    expect(router).toContain("## Mandatory Authoring Latch");
+    expect(router).toContain("Any `NO` → **DO NOT MUTATE**");
+    expect(router).toContain("current worktree");
+    expect(router).toContain("Geometry APPROVED + UV Layout PASS");
+
+    expect(router).toMatch(/description: Mandatory router for every BlockIT Minecraft Bedrock Entity asset-authoring task/);
+    expect(modelling).toMatch(/description: Mandatory BlockIT Bedrock Geometry and UV Layout specialist/);
+    expect(texturing).toMatch(/description: Mandatory BlockIT Bedrock Texture specialist/);
+    expect(animation).toMatch(/description: Minecraft Bedrock Entity animation specialist/);
+  });
+
   test("asset router makes common Geometry choices and first-call rules explicit", async () => {
     const router = await source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md");
 
@@ -55,9 +83,11 @@ describe("Codex Bedrock agent legibility contract", () => {
     expect(router).toContain("repairs arguments for the **same capability**");
   });
 
-  test("Texturing exposes UV gate, Painter intent, and the blank-atlas guard", async () => {
+  test("Texturing exposes hard entry gate, UV gate, Painter intent, and blank-atlas guard", async () => {
     const texturing = await source("../.agents/skills/blockit-bedrock-texturing/SKILL.md");
 
+    expect(texturing).toContain("Geometry APPROVED + UV Layout PASS");
+    expect(texturing).toContain("Do not start Painter/PBR mutation if the entry gate is not satisfied");
     expect(texturing).toContain("`uv_audit.production_gate`");
     expect(texturing).toContain("provisional **16×16** blank default");
     expect(texturing).toContain("must therefore **not omit blank Atlas size**");
@@ -67,8 +97,13 @@ describe("Codex Bedrock agent legibility contract", () => {
     );
   });
 
-  test("persistent workspace preserves scale/front orientation instead of re-guessing", async () => {
+  test("persistent workspace preserves resume-critical UV gate, scale, and front orientation", async () => {
     const workspace = await source("../workspace/README.md");
+    expect(workspace).toContain("UV Layout:");
+    expect(workspace).toContain("NOT_STARTED | IN_PROGRESS | PASS | INVALIDATED | BLOCKED");
+    expect(workspace).toContain("Texturing cannot enter `IN_PROGRESS` until `UV Layout: PASS`");
+    expect(workspace).toContain("current-worktree BlockIT asset router");
+    expect(workspace).toContain("current-worktree active specialist");
     expect(workspace).toContain(
       "Material handoff constraints (scale/front_direction/pose override when material)"
     );

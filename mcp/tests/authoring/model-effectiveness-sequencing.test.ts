@@ -6,8 +6,11 @@ async function source(path: string): Promise<string> {
 }
 
 describe("model creation effectiveness — texture/animation sequencing", () => {
-  test("Authoring focus stays shared while Animation uses Gateway handoff", async () => {
-    const [orchestrator, texturing, animation] = await Promise.all([
+  test("Authoring keeps explicit Geometry approval → UV PASS → Texturing while Animation uses Gateway handoff", async () => {
+    const [agents, flow, workspace, orchestrator, texturing, animation] = await Promise.all([
+      source("../AGENTS.md"),
+      source("../docs/knowledge/flow.md"),
+      source("../workspace/README.md"),
       source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md"),
       source("../.agents/skills/blockit-bedrock-texturing/SKILL.md"),
       source("../.agents/skills/blockit-bedrock-animation/SKILL.md"),
@@ -16,6 +19,14 @@ describe("model creation effectiveness — texture/animation sequencing", () => 
     expect(getMcpPhaseReadinessSummary("geometry")).toContain("geometry=PASS");
     expect(getMcpPhaseReadinessSummary("geometry")).toContain("uv_layout=PASS");
     expect(getMcpPhaseReadinessSummary("texturing")).toContain("texture_verify=PASS");
+
+    for (const text of [agents, flow, workspace, orchestrator, texturing]) {
+      expect(text).toContain("Geometry APPROVED");
+      expect(text).toContain("UV Layout PASS");
+    }
+    expect(flow).toContain("Geometry user approval is required before fresh/rebuilt production UV Layout");
+    expect(workspace).toContain("Texturing cannot enter `IN_PROGRESS` until `UV Layout: PASS`");
+    expect(orchestrator).toContain("Any `NO` → **DO NOT MUTATE**");
 
     for (const text of [orchestrator, texturing, animation]) {
       expect(text).toContain("HANDOFF_REQUIRED");

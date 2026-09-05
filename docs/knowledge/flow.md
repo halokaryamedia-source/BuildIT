@@ -2,7 +2,7 @@
 
 Updated: 2026-09-05
 
-This is the **single detailed current flow**. Root `AGENTS.md` owns task routing; `workspace/README.md` owns asset continuity; `next-action.md` owns implementation continuation.
+This is the **single detailed current flow**. Root `AGENTS.md` owns deterministic task/Skill routing; `workspace/README.md` owns asset continuity; `next-action.md` owns implementation continuation.
 
 ## 1. Route / Proof Ceiling
 
@@ -14,15 +14,11 @@ PIN CURRENT AUTHORITY
 → TASK CLASS
 ```
 
-```text
-REMOTE_GITHUB   = repository/source/docs/static/CI evidence
-LOCAL_CODE      = REMOTE_GITHUB + local build/generator/filesystem evidence
-LIVE_BLOCKBENCH = LOCAL_CODE + installed BlockIT + functioning Gateway/runtime/model evidence
-```
+`REMOTE_GITHUB` = source/docs/static/CI evidence. `LOCAL_CODE` adds local build/test/generator/filesystem evidence. `LIVE_BLOCKBENCH` adds deployed/reloaded BlockIT + live Gateway/runtime/model evidence.
 
-Asset authoring that needs live Blockbench belongs to `LIVE_BLOCKBENCH`; this does not activate formal Local Acceptance unless explicitly requested.
+Asset authoring that mutates or visually judges Blockbench belongs to `LIVE_BLOCKBENCH`; this does not activate formal Local Acceptance unless explicitly requested.
 
-## 2. Product Boundary
+## 2. Product / Authoring Boot Boundary
 
 ```text
 REFERENCE CREATION → ChatGPT
@@ -31,16 +27,21 @@ PERSISTENCE        → workspace/active/<asset>/
 USER STAGE REVIEW  → live Blockbench
 ```
 
-Gateway client surface stays fixed:
+Gateway remains exactly `status`, `search_capabilities`, `describe_capability`, `invoke_capability`.
+
+Before **any authoring mutation**, current-worktree routing is mandatory:
 
 ```text
-status
-search_capabilities
-describe_capability
-invoke_capability
+root AGENTS.md
+→ blockit-bedrock-entity-mcp
+→ active semantic specialist
+
+Geometry / rig / pivots / UV Layout → blockbench-bedrock-modelling
+Texture Atlas / Styling / PBR       → blockit-bedrock-texturing
+Animation / motion                   → blockit-bedrock-animation
 ```
 
-Geometry and Texturing use one shared **AUTHORING Runtime surface**. Their semantic owners remain separate, but routine Geometry↔Texturing correction does not change the Runtime tool catalog. Animation remains a separate surface and is the only normal authoring boundary that uses `switch_authoring_phase`. The same task continues across the AUTHORING↔Animation Gateway handoff.
+No mutation until router + matching specialist are loaded and its prerequisite gate is satisfied. When Geometry↔Texturing ownership changes, load the new specialist before its first mutation; both remain on the shared AUTHORING Runtime surface. AUTHORING↔Animation alone uses `switch_authoring_phase`, and the same task/chat continues.
 
 ## 3. Reference Preparation
 
@@ -60,14 +61,13 @@ source image + user intent
 → actual approved image handed to Codex
 ```
 
-Handoff is only the actual image + normal user message. No sidecar/manifest/ZIP is required. An image explicitly sent for modelling is approved unless the user marks it draft/not ready.
+Handoff is the actual image + normal user message. No sidecar/manifest/ZIP. An image explicitly sent for modelling is approved unless marked draft/not ready.
 
 ## 4. New Model Intake
 
 ```text
 Approved Reference arrives
 → create Active Workspace
-→ no .bbmodel yet
 → REQUIREMENT GATE
 ```
 
@@ -81,42 +81,49 @@ Geometry Strategy: DIRECT | 3D_ASSISTED
 Animation Required: YES | NO
 ```
 
-Geometry Strategy is decided by the user. Codex must not infer/default/auto-switch it from object type, complexity, failed modelling, or available tools.
+Only the user selects Geometry Strategy. Missing fields are asked once as a batch. Before the gate passes: no `.bbmodel`, Cubes/Groups, Shape Reconstruction, or PrimitiveAnything execution.
 
-Missing fields → ask all missing values in one batch. Ask again only unresolved/material items. Complete + non-conflicting intake proceeds automatically; no redundant final confirmation.
-
-Only after the gate passes:
+After it passes:
 
 ```text
 create Blockbench project
-→ enter shared AUTHORING surface with Geometry focus
+→ shared AUTHORING with Geometry owner
 ```
 
-Before that: no `.bbmodel`, Cubes/Groups, Shape Reconstruction, or PrimitiveAnything execution.
+## 5. Non-Skippable Authoring Sequence
 
-## 5. Stage Lifecycle
-
-Semantic stages remain useful for judgement and approval, but Geometry and Texturing are not hard Runtime ACLs.
+Geometry and Texturing share Runtime capabilities, but semantic gates are ordered:
 
 ```text
-IN_PROGRESS
-→ INTERNAL VERIFY
-→ correct clear material defects
+GEOMETRY IN_PROGRESS
+→ internal Geometry verify
 → READY_FOR_USER_REVIEW
 → user inspects live Blockbench
-   ├─ revision → IN_PROGRESS
-   └─ explicit “approve” → APPROVED
-→ checkpoint save when meaningful
-→ next required stage/focus
+   ├─ revision → GEOMETRY IN_PROGRESS
+   └─ explicit approve → Geometry APPROVED
+→ checkpoint save
+
+Geometry APPROVED
+→ Geometry-owned UV Layout
+→ UV Layout PASS
+→ checkpoint/update continuity
+
+Geometry APPROVED + UV Layout PASS
+→ Texturing specialist
+→ Texture Atlas + Styling
+→ Texture Verify
+→ READY_FOR_USER_REVIEW
+→ user approve → Texturing APPROVED
+→ checkpoint save
+
+Texturing APPROVED
+→ Animation when required
+→ otherwise Finalization
 ```
 
-Codex uses current Blockbench state and internal `capture_model_views` when visual evidence is needed. Internal captures are not the user approval surface.
+**Geometry user approval is required before fresh/rebuilt production UV Layout. Texture/PBR mutation is forbidden before `Geometry APPROVED + UV Layout PASS`.**
 
-Do not send materially broken work to user review. Same material causal correction failing twice without new evidence → `BLOCKED`; request user direction.
-
-Persist project state at meaningful handoff/resume/park/completion boundaries; stage approval is the normal checkpoint trigger.
-
-A user-reported defect **reopens the exact affected gate**, even when earlier technical checks were clean. Technical validator success is evidence, not an acceptance lock.
+Codex uses current Blockbench state + `capture_model_views` for internal evidence; internal captures are not user approval. Do not send materially broken work to review. Same material causal correction failing twice without new evidence → `BLOCKED`.
 
 ## 6. Geometry Strategies
 
@@ -124,12 +131,14 @@ A user-reported defect **reopens the exact affected gate**, even when earlier te
 
 ```text
 Approved Reference + Dimensions + Requirements
-→ normal semantic Geometry
+→ semantic Geometry
 → internal verify
 → READY_FOR_USER_REVIEW
+→ user Geometry APPROVED
+→ UV Layout
 ```
 
-`DIRECT` describes the user-selected method, not an object-category classifier.
+`DIRECT` is a user-selected method, not an object classifier.
 
 ### 3D_ASSISTED
 
@@ -137,141 +146,102 @@ One indivisible package:
 
 ```text
 Approved Reference Board
-→ deterministic LEFT/FRONT/BACK extraction + validation
+→ deterministic LEFT/FRONT/BACK extraction
 → Shape Reconstruction
 → Shape GLB Gate
-→ persist shape.glb
 → PrimitiveAnything
 → Primitive Decomposition Gate
-→ persist primitive-decomposition.json
 → atomic Cuboid Materialization
 → Cuboid Materialization Gate
 → Semantic Geometry Cleanup
 → remove live Shape GLB
 → final Geometry internal verify
 → READY_FOR_USER_REVIEW
+→ user Geometry APPROVED
+→ UV Layout
 ```
 
-No GLB-only, PrimitiveAnything-only, user-supplied-GLB v1, skip-PrimitiveAnything, provider selection, or automatic fallback path.
+No GLB-only, PrimitiveAnything-only, user-supplied-GLB v1, provider selection, or automatic fallback path.
 
-Architecture term = `Shape Reconstruction`; Hunyuan3D is the single v1 implementation. Do not build a provider framework until another real implementation is required.
+Internal Shape/Primitive/Cuboid gates have no user approval. Shape checks identity/masses/parts/attachments/depth without judging blocky style; decomposition checks useful mass separation/negative spaces without primitive-count authority; materialization checks faithful native editable conversion, not final visual quality.
 
-### 3D-Assisted external ownership
+Retry remains bounded: one targeted Shape regeneration maximum; no blind PrimitiveAnything rerun; known technical retry once; repeated same failure → `BLOCKED`.
 
-External local tooling controlled by Codex owns fixed view extraction, Shape Reconstruction, GLB Gate, PrimitiveAnything, and Decomposition Gate. Normal use should have one thin resumable orchestrator; individual backend scripts stay debug/development helpers.
+Canonical persistent external state stays under `workspace/active/<asset>/3d-assisted/`: `state.json`, `shape.glb`, `primitive-decomposition.json`. Failed/temp output stays `.cache/`.
 
-Persistent canonical state:
+Semantic cleanup may rename/reparent/merge/delete/split/resize/translate/rotate/replace/add Cubes and repair hierarchy/pivots. Approved Reference = visual authority; requested dimensions = numeric authority.
 
-```text
-workspace/active/<asset>/3d-assisted/
-├─ state.json
-├─ shape.glb
-└─ primitive-decomposition.json
-```
+## 7. Geometry / Surface / UV
 
-`state.json` owns reference/artifact hashes and last valid external gate only. Passed artifacts persist immediately after their gate. Failed/temp crops, meshes, renders, contact sheets, logs stay in `.cache/`.
-
-Reference replacement keeps the user-selected strategy but removes current derived GLB/decomposition; Git history owns old versions.
-
-### Internal gates
-
-**Shape GLB Gate**: identity, primary masses, required part count, attachments, major pose/orientation, useful depth/volume, no material hallucination. It does not judge Minecraft/blocky styling.
-
-**Primitive Decomposition Gate**: useful primary-mass separation, identity-critical parts, bends/orientation, attachments, negative spaces, useful fragmentation. Primitive count alone is not authority.
-
-**Cuboid Materialization Gate**: faithful conversion only—complete primitives, no missing/duplicates, preserved translation/rotation/scale/spatial relationships, correct orientation, native editable Group/Bone + Cube, no production Mesh. It does not judge final Minecraft quality.
-
-No user approval occurs at internal 3D-Assisted gates.
-
-### Retry
-
-```text
-Shape quality fail → maximum one targeted regeneration → still fail = BLOCKED
-PrimitiveAnything quality fail → no blind rerun → BLOCKED
-known-incomplete technical failure → maximum one safe retry
-same failure again → BLOCKED
-```
-
-### Target materializer
-
-Target production contract: one dedicated Geometry Runtime capability behind the existing Gateway.
-
-```text
-Active Workspace path
-→ validate state.json + primitive-decomposition.json + hashes
-→ full pre-validation
-→ one atomic Undo transaction
-→ one temporary pa_<id> Group/Bone + Cube per primitive
-→ complete scaffold or no accepted scaffold state
-```
-
-Do not accept arbitrary primitive arrays/path overrides and do not revive generic `from_geo_json`.
-
-**Current status:** external orchestrator/state contract + internal atomic materializer engine are source-ready; the public Runtime ToolSpec binding still requires LOCAL_CODE generation/verification.
-
-### Semantic Geometry Cleanup
-
-Materialized scaffold is a starting hypothesis. Codex may rename/reparent/merge/delete/split/resize/translate/rotate/replace/add Cubes, construct semantic hierarchy, and repair pivots.
-
-Approved Reference = visual authority; requested dimensions = numeric authority. Shape GLB may remain locked/non-export during cleanup as supporting depth evidence, then must be removed from live Blockbench before final Geometry verify/user review.
-
-Cleanup must leave coherent silhouette, dimensions, parts, attachments, orientation, semantic hierarchy, future editability, and UV readiness.
-
-## 7. Geometry / Surface / UV Readiness
-
-Canonical downstream vocabulary remains distinct:
+Canonical vocabulary:
 
 ```text
 UV Layout       = geometry-to-atlas mapping
 Texture Atlas   = bitmap/PNG canvas
-Texture Styling = authored color/material/detail
+Texture Styling = authored pixels
 Texture Verify  = atlas + mapped-model validation
 ```
 
-Construction forms are examples, not presets. Decide transform ownership before coordinates. Form/contact/articulation-defining **REQUIRED PRIMARY GROUPS/PIVOTS** may belong in the **PRIMARY BLOCKOUT**; neutral organization stays downstream. After primary PASS, add identity-weighted secondary geometry only where it materially improves silhouette, contact, layering, editability, or motion.
+Construction forms are **not presets**. Decide **transform ownership** before coordinates. Form/contact/articulation-defining **REQUIRED PRIMARY GROUPS/PIVOTS** may belong in the **PRIMARY BLOCKOUT**; neutral organization stays downstream. After primary PASS, add only **identity-weighted** secondary geometry.
 
-All Geometry should be future-animation-friendly: meaningful semantic hierarchy; naturally movable structurally distinct parts remain separately transformable; sensible pivots/transform ownership; no destructive structure requiring full rebuild later; no speculative full rig for static scope.
-
-If `Animation Required = YES`, participating hierarchy/Bones/pivots/attachments must be animation-ready before Geometry approval.
+All Geometry stays future-animation-friendly: semantic hierarchy, naturally movable parts transformable, sensible pivots, no speculative full rig. If Animation is required, participating hierarchy/pivots/attachments must be ready before Geometry approval.
 
 ### Surface quality
 
-A clean positive-volume overlap audit is **not** a surface-quality PASS. Before Geometry readiness, inspect affected views for accidental coplanar rendered surfaces, visible penetration, gaps, contact seams, and deliberate layer offsets. User-reported flicker/z-fighting/gap appearance reopens this gate.
+A clean positive-volume overlap audit is not surface PASS. Inspect current whole-form views for accidental coplanar surfaces, penetration, gaps/holes, contact seams, and intended layer offsets. Required continuous cohorts must be covered; every unsupported gap is a Geometry defect.
 
-### Semantic cohort
+### Geometry vs Texture
 
-When several Cubes form one assembly, a shared translation/orientation should normally be owned by the semantic Group/Bone when one shared transform explains the change. Otherwise correct the complete affected sibling cohort in one coherent batch. Do not treat independent successful Cube mutations as proof that the assembly relationship stayed intact.
+Surface-only detail defaults to texture. Detail-only geometry with smallest material span/thickness `<=4 Blockbench units` defaults to Texture/omit unless it materially changes silhouette, volume/contact, intentional negative-space boundary, or independent motion.
 
-### UV quality
+### Geometry user gate
 
-Technical UV validity remains necessary but is insufficient. Important visible faces also require review of:
+Geometry internal PASS + fresh current-revision evidence → `READY_FOR_USER_REVIEW`. User approval locks the Geometry checkpoint before production UV rebuild.
+
+### UV Layout
+
+For fresh/materially rebuilt Cube-based production UV, default to native `create_texture(type=template)` with explicit `pixel_density` and `rearrange_uv=true`. Geometry owns the judgement even though the capability is callable on shared AUTHORING.
+
+UV Layout PASS requires:
 
 ```text
+technical validity / bounds / overlap
 face geometry ↔ UV aspect
-texel density / pixels per UV unit
+consistent texel density / square texels
 orientation / directional material flow
-padding and seam relationships
-semantic exact-reuse intent
-unique identity/detail surfaces
+padding + seams
+intentional exact reuse/mirroring
+unique regions for asymmetric identity detail
 ```
 
-Exact UV reuse is allowed only when the surfaces intentionally should read the same pixels. A valid in-bounds rectangle does not by itself prove a good unwrap.
-
-Geometry internal PASS + UV readiness → user review when a meaningful Geometry checkpoint is due. Explicit approve → checkpoint → continue Texturing focus **inside the same AUTHORING Runtime surface**. No Geometry↔Texturing `switch_authoring_phase` is required.
+Do not guess rectangles, stretch islands/source images, or distort aspect to fit an atlas. `uv_audit.production_gate=ready` is necessary hygiene, not UV Layout PASS. Persist `UV Layout: PASS` before Texturing.
 
 ## 8. Texturing
 
+Entry:
+
 ```text
-Geometry/UV sufficiently coherent
-→ Texturing focus in shared AUTHORING surface
-→ Texture Atlas + Styling
-→ internal technical + visual verify
-→ READY_FOR_USER_REVIEW
-→ user approve
-→ checkpoint save
+Geometry APPROVED
++ UV Layout PASS
++ current-worktree blockit-bedrock-texturing loaded
 ```
 
-If Texturing reveals a material Geometry/UV blocker, route judgement to the Geometry owner and correct it directly using the already-callable AUTHORING capabilities. Revalidate only materially affected texture evidence. Do not bounce the Runtime surface Geometry↔Texturing.
+Then:
+
+```text
+Texture Atlas
+→ BASE
+→ VALUE / FORM
+→ IDENTITY
+→ controlled SECONDARY DETAIL
+→ Texture Verify
+→ READY_FOR_USER_REVIEW
+→ user Texture APPROVED
+```
+
+Pixels are authored against the final UV atlas/islands. No arbitrary procedural patterns/noise, stretched pixel art, reference-image transfer shortcut, or Texture used to hide Geometry. Reference + material/form intent own styling.
+
+If Texturing reveals a Geometry/UV blocker, route judgement to Geometry in-session, correct it on shared AUTHORING, invalidate only materially affected downstream texture evidence, then resume Texturing.
 
 ## 9. Animation
 
@@ -283,6 +253,7 @@ If YES:
 Texturing APPROVED
 → HANDOFF_REQUIRED(target_phase=animation)
 → switch_authoring_phase through Gateway
+→ load Animation specialist
 → Animation
 → internal playback/technical/visual verify
 → READY_FOR_USER_REVIEW
@@ -290,58 +261,57 @@ Texturing APPROVED
 → checkpoint save
 ```
 
-Animation owns motion. A material rig/pivot/hierarchy/UV/texture blocker returns through Gateway to the shared AUTHORING surface; Animation does not borrow upstream mutation while its surface is active.
+Animation owns motion, not upstream structural mutation. Material rig/UV/texture blockers return through Gateway to AUTHORING.
 
 ## 10. Downstream Invalidation
 
-Approved upstream stage reopens only for a material blocker owned by it.
+Invalidate minimum dependency:
 
 ```text
-downstream unaffected → keep APPROVED
-downstream affected   → INVALIDATED → repair → user approval again
+Geometry material change affecting mapped surfaces
+→ UV Layout INVALIDATED
+→ affected Texture INVALIDATED
+
+UV Layout material change
+→ affected Texture INVALIDATED
+
+unaffected downstream state
+→ keep accepted
 ```
 
-Invalidate minimum dependent scope. Within shared AUTHORING, fix the owning Geometry/UV defect directly rather than using a phase bounce.
+Routine Geometry↔Texturing correction uses the shared AUTHORING surface; no phase bounce.
 
 ## 11. Finalization
 
-After all required stages are approved:
+After all required approvals/gates:
 
 ```text
 FINALIZATION
 → technical validation only
 → format/dimensions/hierarchy/references/UV/textures/animation refs
 → no live Shape GLB/reference_model
-→ no unintended temporary/debug elements
+→ no temporary/debug elements
 → workspace consistent
 ```
 
-Finalization cannot silently alter approved visual work. Material defect → reopen exact owner → fix → internal verify → user re-approve → Finalization again.
+Finalization cannot silently alter approved visual work. Material defect → reopen exact owner → repair → required re-approval → Finalization again. PASS with no material change → final save + `COMPLETE`.
 
-PASS with no material change → Final Save → `COMPLETE`. No extra final approval. Project remains under `workspace/active/` until user explicitly moves it to `saved/`.
-
-## 12. Existing Model / Improvement Flow
+## 12. Existing Model / Improvement
 
 ```text
 user supplies/identifies .bbmodel + change
 → recover/create Active Workspace
-→ if untracked: persist supplied .bbmodel as baseline before mutation
+→ persist untracked supplied baseline before mutation
 → inspect current model
-→ determine affected semantic stage(s)
-→ ask only material missing information
-→ update smallest owning stage(s)
+→ determine affected owner/gate
+→ load current router + matching specialist
+→ update smallest owning stage/gate
 → internal verify
-→ user approve affected stage(s)
+→ required user approval/PASS
 → Finalization
 ```
 
-Use one current editable `.bbmodel`; Git history owns prior versions.
-
-Reference is required only for visual/fidelity success criteria. Deterministic numeric/color/timing changes may proceed from current model + explicit instruction.
-
-Tracked asset reuses stored Geometry Strategy. External untracked model needs strategy only if Geometry authoring is required.
-
-Only user changes strategy. Before Geometry approval, a strategy change discards unapproved Geometry, removes 3D-Assisted canonical state when leaving it, recreates a clean Blockbench project from the same intake/workspace, then starts the new strategy. After Geometry approval, keep approved production Geometry and use the new strategy for future Geometry work.
+Use one editable `.bbmodel`; Git history owns prior versions. Reference is required only for visual/fidelity criteria. Only user changes strategy.
 
 ## 13. Evidence / Continuity
 

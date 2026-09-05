@@ -98,6 +98,26 @@ source image / user intent → canonical five-preview board → user approval
 
 ### Asset Authoring
 
+For every BlockIT Bedrock Entity asset-authoring task, use this **deterministic current-worktree boot** before any authoring mutation:
+
+```text
+current AGENTS.md
+→ current .agents/skills/blockit-bedrock-entity-mcp/SKILL.md
+→ resolve semantic owner
+→ load exactly the matching current specialist:
+
+Geometry / rig / pivots / UV Layout
+→ .agents/skills/blockbench-bedrock-modelling/SKILL.md
+
+Texture Atlas / Styling / PBR / Texture Verify
+→ .agents/skills/blockit-bedrock-texturing/SKILL.md
+
+Animation / motion
+→ .agents/skills/blockit-bedrock-animation/SKILL.md
+```
+
+**No authoring mutation is allowed until the router + matching specialist are loaded from the current worktree and the specialist's prerequisite gate is satisfied.** Prior-chat memory, an older Codex session, tool availability, or remembered Skill content is not a substitute. When semantic ownership changes, load the new specialist before its first mutation.
+
 New-model authoring is ordered and user-driven:
 
 ```text
@@ -105,13 +125,16 @@ approved image → Active Workspace
 → Requirement Gate: Asset + Dimensions + Geometry Strategy + Animation Required
 → create Blockbench project
 → BlockIT Gateway → shared AUTHORING surface
-→ Geometry/UV focus ↔ Texturing focus without Runtime handoff
+→ Geometry form
+→ internal verify → READY_FOR_USER_REVIEW → user Geometry APPROVED
+→ Geometry-owned UV Layout → UV Layout PASS
+→ Texturing focus → Texture Verify → user Texture APPROVED
 → Animation handoff when required → Finalization
 ```
 
 `Geometry Strategy` is user-selected `DIRECT | 3D_ASSISTED`; never infer/default/auto-switch it. `3D_ASSISTED` is one package: Shape Reconstruction → PrimitiveAnything → Cuboid Scaffold → semantic Geometry cleanup. If target 3D-Assisted execution is unavailable, `BLOCKED`; never emulate/fallback.
 
-Codex internally verifies before `READY_FOR_USER_REVIEW`; user inspects live Blockbench and explicitly approves meaningful stage checkpoints. Geometry and Texturing keep distinct semantic ownership, but their capabilities remain callable in the same AUTHORING Runtime surface. A texture-discovered Geometry/UV defect is corrected directly with the Geometry owner; no `switch_authoring_phase` is required for Geometry↔Texturing correction.
+Geometry and Texturing keep distinct semantic ownership while sharing the AUTHORING Runtime surface. A texture-discovered Geometry/UV defect is corrected directly with the Geometry owner; no `switch_authoring_phase` is required for Geometry↔Texturing correction.
 
 `HANDOFF_REQUIRED` is reserved for crossing AUTHORING↔Animation. Retain resume-critical state, invoke `switch_authoring_phase` through Gateway, load the matching specialist, and continue the **same task/chat**; no normal reconnect/new chat.
 

@@ -51,6 +51,7 @@ Requested Dimensions
 Geometry Strategy: UNSPECIFIED | DIRECT | 3D_ASSISTED
 Animation Required: YES | NO | UNSPECIFIED
 Current Stage + stage states
+UV Layout gate
 Current model file
 Material handoff constraints (scale/front_direction/pose override when material)
 Current next step — one concrete step
@@ -68,13 +69,20 @@ Current Stage:
 
 Geometry:
   NOT_STARTED | IN_PROGRESS | READY_FOR_USER_REVIEW | APPROVED | INVALIDATED | BLOCKED
+
+UV Layout:
+  NOT_STARTED | IN_PROGRESS | PASS | INVALIDATED | BLOCKED
+
 Texturing:
   NOT_STARTED | IN_PROGRESS | READY_FOR_USER_REVIEW | APPROVED | INVALIDATED | BLOCKED
+
 Animation:
   NOT_REQUIRED | NOT_STARTED | IN_PROGRESS | READY_FOR_USER_REVIEW | APPROVED | INVALIDATED | BLOCKED
 ```
 
-`INVALIDATED` is only for a previously approved stage whose approval became materially invalid because an upstream approved stage changed. `INTERNAL_VERIFY` is transient and is not persisted.
+`UV Layout` is a **Geometry-owned technical gate**, not a separate user stage. Fresh/rebuilt production UV Layout starts only after user Geometry `APPROVED`; Texturing cannot enter `IN_PROGRESS` until `UV Layout: PASS`.
+
+`INVALIDATED` is only for a previously accepted stage/gate whose assumptions became materially invalid because an upstream accepted state changed. `INTERNAL_VERIFY` is transient and is not persisted.
 
 `front_direction` means the canonical object front used by `capture_model_views`: `+z` or `-z`. Record it once when material and reuse it. Requested dimensions stay in Minecraft blocks plus resolved Blockbench units when resume-critical (`1 block = 16 Blockbench units`).
 
@@ -97,7 +105,8 @@ Prefer **one current editable `.bbmodel`** per project. Git history owns older i
 Persist/checkpoint the current `.bbmodel` and update README at meaningful approval/resume/park/completion boundaries:
 
 ```text
-Geometry APPROVED  → checkpoint save
+Geometry APPROVED  → checkpoint save + UV Layout remains/returns NOT_STARTED unless preserved valid UV is explicitly accepted
+UV Layout PASS     → checkpoint/update README before Texture Styling
 Texturing APPROVED → checkpoint save
 Animation APPROVED → checkpoint save
 Finalization PASS  → final save + COMPLETE
@@ -164,16 +173,16 @@ keep Active Workspace/intake/reference
 → start Geometry with new strategy
 ```
 
-After Geometry approval, keep approved production Geometry and persist the new strategy for future Geometry work.
+After Geometry approval, keep approved production Geometry and persist the new strategy for future Geometry work. A material Geometry change that changes mapped surfaces invalidates `UV Layout` and only the materially dependent downstream Texture state.
 
 ## Downstream Invalidation
 
 ```text
-unaffected downstream stage → keep APPROVED
-materially affected stage   → INVALIDATED → repair → user approval again
+unaffected downstream stage/gate → keep accepted state
+materially affected stage/gate   → INVALIDATED → repair → required approval/PASS again
 ```
 
-Do not reset all stages automatically.
+Geometry changes invalidate UV only when mapping assumptions change. UV changes invalidate only affected Texture assumptions. Do not reset all stages automatically.
 
 ## Codex Resume Rule
 
@@ -183,11 +192,12 @@ user names/continues asset
 → current .bbmodel only if it exists
 → only files needed for next decision
 → 3d-assisted/state.json only when that external pipeline is pending
-→ BlockIT asset router
-→ ACTIVE PHASE → active specialist only
+→ current-worktree BlockIT asset router
+→ current-worktree active specialist
+→ verify persisted prerequisite gate before mutation
 ```
 
-If stored target phase and live MCP phase disagree, reconcile through Gateway rather than broad-searching tools. Do not scan every active project when asset is known.
+The router + active specialist loading contract comes from root `AGENTS.md`; remembered Skill content is not sufficient. If stored target phase and live MCP phase disagree, reconcile through Gateway rather than broad-searching tools. Do not scan every active project when asset is known.
 
 ## Reference Generator Boundary
 
