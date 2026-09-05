@@ -12,7 +12,6 @@ Shared `AUTHORING` Runtime surface. Geometry/UV capabilities remain callable for
 **No Geometry↔Texturing phase switch.** Geometry defects → owner in-session. `HANDOFF_REQUIRED` + `switch_authoring_phase` through Gateway is only AUTHORING↔Animation, same task.
 
 Entry: **final Box UV locked with `autouv=0`**, no invalid/out-of-bounds/partial-overlap blocker, reuse `box_uv_region`.
-
 `UV Layout` = geometry→atlas; `Texture Styling` = pixels. `manage_material_instances` owns face `material_instance` state.
 
 ## Direct Routing
@@ -20,22 +19,23 @@ Entry: **final Box UV locked with `autouv=0`**, no invalid/out-of-bounds/partial
 Reuse fresh state.
 
 ```text
-global UV/atlas technical hygiene → list_textures (`uv_audit.production_gate`)
-face proportion/density quality   → inspect_element(detail=uv) on affected/reuse owners only
-unlocked/invalid UV               → Geometry owner + bounded UV correction; no phase switch
-blank atlas resolution unknown    → get_project_info once
-atlas lifecycle                   → list_textures / activate_texture; create/read → create_texture / get_texture
-base/material regions             → draw_shape_tool
-contiguous fill                   → paint_fill_tool
-stepped value/form/detail         → draw_shape_tool / paint_with_brush
-erase bounded pixels              → eraser_tool
-PBR/material semantics            → manage_material
-mapped model-view evidence        → capture_model_views
+global UV/atlas readiness → list_textures
+face mapping → inspect_elements(mode=detail) only when needed
+face aspect/density review → inspect_element(detail=uv) on affected/reuse owners
+unlocked/invalid UV → Geometry owner + bounded UV correction; no phase switch
+blank atlas resolution unknown → get_project_info once
+atlas lifecycle → list_textures / activate_texture; create/read → create_texture / get_texture
+base/material regions → draw_shape_tool
+contiguous fill → paint_fill_tool
+stepped value/form/detail → draw_shape_tool / paint_with_brush
+erase bounded pixels → eraser_tool
+PBR/material semantics → manage_material
+mapped model-view evidence → capture_model_views
 ```
 
 ## UV Layout Quality Gate
 
-`uv_audit.production_gate=ready` proves technical atlas hygiene only, **not UV Layout PASS**. Review **face aspect ratio, texel density, orientation, padding/seams, and semantic UV reuse**. `inspect_element(detail=uv)` exposes per-face aspect/density diagnostics; any `review_required`/degenerate result reopens Geometry/UV review. Exact UV reuse may be intentional, so judge reuse owners together instead of failing reuse globally. Wrong mapping → Geometry owner.
+`uv_audit.production_gate=ready` is technical hygiene, **not UV Layout PASS**. Review **face aspect ratio, texel density, orientation, padding/seams, and semantic UV reuse**. `inspect_element(detail=uv)` flags distorted/degenerate faces; exact reuse may be intentional. `review_required` reopens Geometry/UV.
 
 ## Primary vs Support Capabilities
 
@@ -74,26 +74,15 @@ Known → invoke. Unknown/stale → `search_capabilities`; schema → `describe_
 
 ## Texture Atlas / Styling
 
-Use one **base-color atlas** for the whole model, not per body part/Cube. Production UV: **128×128 default, 256×256 opt-in**. Pin atlas UUID and pass `texture_id` when multiple textures are loaded.
+Use one **base-color atlas** for the whole model. Production UV: **128×128 default, 256×256 opt-in**. Pin atlas UUID and pass `texture_id` when multiple textures are loaded.
 
 Define palette roles/value-hue ramp, material zones, face/form shading, contact/occlusion, edge/alpha/seam, identity marks, detail budget, and pixels per UV unit. generic palette, copied unrelated texture, or flat rectangles are invalid production styling. Flat color is BASE PASS only; reject random high-contrast noise.
 
-```text
-BASE PASS
-VALUE / FORM PASS
-IDENTITY PASS
-SECONDARY DETAIL PASS
-VERIFY
-```
-
-Texture Styling completion needs fresh `get_texture` material/form/detail pixels + mapped model-view evidence. Missing/unrelated evidence → `FAIL | UNVERIFIED`.
-
-`gradient_tool` is only for reference-supported continuous transition. Same-color detail → one `paint_with_brush` batch with `connect_strokes=false`.
+Texture Styling completion needs fresh `get_texture` pixels + mapped model-view evidence. Missing/unrelated evidence → `FAIL | UNVERIFIED`.
 
 ## Texture Verify / Visual Convergence
 
 Approved reference + fresh `get_texture` + `capture_model_views` → UV → material → form → identity → microdetail → `FAIL | UNVERIFIED | PASS`.
-
 `FAIL` → smallest bounded causal correction → fresh affected evidence → `IMPROVED | UNCHANGED | REGRESSED`; same causal direction twice → `BLOCKED`.
 
 Animation required → `HANDOFF_REQUIRED(target_phase=animation, readiness=geometry=PASS; uv_layout=PASS; texture_verify=PASS)` → `switch_authoring_phase` through Gateway → same task/chat.
