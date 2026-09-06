@@ -94,38 +94,6 @@ const TIER_BOOST: Record<CapabilityTier, number> = {
   maintenance: -20,
 };
 
-const SEARCH_STOP_WORDS = new Set([
-  "a",
-  "an",
-  "and",
-  "for",
-  "in",
-  "me",
-  "my",
-  "of",
-  "on",
-  "please",
-  "that",
-  "the",
-  "this",
-  "to",
-  "with",
-]);
-
-const SEARCH_TERM_GROUPS = [
-  ["find", "search", "inspect"],
-  ["show", "list", "read", "get"],
-  ["change", "edit", "update", "modify", "set"],
-  ["hierarchy", "outline", "tree", "parenting"],
-  ["keyframe", "keyframes", "timeline"],
-  ["easing", "ease", "curve", "interpolation"],
-] as const;
-
-const SEARCH_TERM_ALTERNATIVES = new Map<string, readonly string[]>();
-for (const group of SEARCH_TERM_GROUPS) {
-  for (const term of group) SEARCH_TERM_ALTERNATIVES.set(term, group);
-}
-
 function isRecord(value: unknown): value is JsonRecord {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
@@ -199,61 +167,24 @@ export function summarizeCapability(tool: BackendTool): CapabilitySummary {
   };
 }
 
-function capabilityQueryTokens(query: string): string[] {
-  return query
-    .trim()
-    .toLowerCase()
-    .split(/[^a-z0-9]+/)
-    .filter((token) => token.length > 0 && !SEARCH_STOP_WORDS.has(token));
-}
-
-function lexicalTermScore(
-  name: string,
-  searchableName: string,
-  description: string,
-  title: string,
-  term: string
-): number {
-  let score = 0;
-
-  if (name === term) score += 100;
-  else if (name.startsWith(term)) score += 60;
-  else if (name.includes(term)) score += 40;
-  else if (searchableName.includes(term)) score += 30;
-
-  if (description.includes(term)) score += 12;
-  if (title.includes(term)) score += 10;
-  return score;
-}
-
 function lexicalCapabilityScore(tool: BackendTool, tokens: string[]): number {
   if (tokens.length === 0) return 1;
 
   const name = tool.name.toLowerCase();
   const searchableName = name.replace(/[_.\/-]+/g, " ");
   const description = (tool.description ?? "").toLowerCase();
-  const title = (tool.annotations?.title ?? "").toLowerCase();
   let score = 0;
-  let matchedTokens = 0;
 
   for (const token of tokens) {
-    const alternatives = SEARCH_TERM_ALTERNATIVES.get(token) ?? [token];
-    let bestScore = 0;
-    for (const term of alternatives) {
-      bestScore = Math.max(
-        bestScore,
-        lexicalTermScore(name, searchableName, description, title, term)
-      );
-    }
-    if (bestScore > 0) {
-      score += bestScore;
-      matchedTokens += 1;
-    }
+    if (name === token) score += 100;
+    else if (name.startsWith(token)) score += 60;
+    else if (name.includes(token)) score += 40;
+    else if (searchableName.includes(token)) score += 30;
+
+    if (description.includes(token)) score += 10;
   }
 
-  // Prefer capabilities that explain more of a natural-language request instead
-  // of over-ranking one generic name token such as "group" or "texture".
-  return score + matchedTokens * 12;
+  return score;
 }
 
 export function searchCapabilityCatalog(
@@ -262,7 +193,11 @@ export function searchCapabilityCatalog(
   limit: number
 ): CapabilitySummary[] {
   const boundedLimit = Math.max(1, Math.min(50, Math.trunc(limit)));
-  const tokens = capabilityQueryTokens(query);
+  const tokens = query
+    .trim()
+    .toLowerCase()
+    .split(/\s+/)
+    .filter(Boolean);
 
   return tools
     .map((tool) => {
