@@ -29,7 +29,7 @@ describe("live authoring E2E harness", () => {
     expect(helper).toContain("--confirm-disposable");
   });
 
-  test("Geometry uses the current consolidated Cube and inspection surfaces", async () => {
+  test("Geometry uses current consolidated tools and hands Texturing the same shared AUTHORING session", async () => {
     const geometry = await source("scripts/verify-geometry-live.ts");
     for (const tool of [
       "create_project",
@@ -47,11 +47,12 @@ describe("live authoring E2E harness", () => {
     }
     expect(geometry).toContain("operation: \"create\"");
     expect(geometry).toContain("operation: \"update\"");
-    expect(geometry).toContain("shared Texturing/Animation fixture");
+    expect(geometry).toContain("same shared AUTHORING session");
+    expect(geometry).toContain("no Geometry-to-Texturing phase switch is required");
     expect(geometry).toContain("client.snapshotMetrics()");
   });
 
-  test("Texturing prebuilds native UV, semantic-pixel, target-isolation, clipping and history acceptance", async () => {
+  test("Texturing prebuilds native UV, semantic-pixel, target-isolation, clipping and history acceptance without an AUTHORING bounce", async () => {
     const texturing = await source("scripts/verify-texturing-live.ts");
     for (const contract of [
       "type: \"template\"",
@@ -76,6 +77,9 @@ describe("live authoring E2E harness", () => {
     ]) {
       expect(texturing).toContain(contract);
     }
+    expect(texturing).toContain('expectedPhase: "geometry"');
+    expect(texturing).toContain("same shared AUTHORING session created by Geometry");
+    expect(texturing).not.toContain('expectedPhase: "texturing"');
     expect(texturing).not.toContain("capture_model_views");
     expect(texturing).not.toContain("place_cube");
     expect(texturing).toContain("client.snapshotMetrics()");
