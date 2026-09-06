@@ -113,7 +113,8 @@ const SEARCH_STOP_WORDS = new Set([
 ]);
 
 const SEARCH_TERM_GROUPS = [
-  ["find", "search", "inspect", "list", "show", "read", "get"],
+  ["find", "search", "inspect"],
+  ["show", "list", "read", "get"],
   ["change", "edit", "update", "modify", "set"],
   ["hierarchy", "outline", "tree", "parenting"],
   ["keyframe", "keyframes", "timeline"],
