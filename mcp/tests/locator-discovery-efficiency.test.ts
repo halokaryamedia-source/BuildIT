@@ -20,6 +20,8 @@ describe("Locator discovery efficiency", () => {
     }
 
     const orchestrator = await source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md");
-    expect(orchestrator).toContain("Do not automatically re-read fresh mutation targets with `inspect_elements(mode=detail)`");
+    expect(orchestrator).toContain("## State Reuse / Anti-Loop");
+    expect(orchestrator).toContain("no confirmation readback");
+    expect(orchestrator).toMatch(/Do not automatically re-read fresh .*targets with `inspect_elements\(mode=detail\)`/);
   });
 });
