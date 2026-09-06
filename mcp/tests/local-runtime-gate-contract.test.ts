@@ -157,8 +157,9 @@ describe("local runtime gate source contract", () => {
       "runtime workflow prompt             < 7,000 characters"
     );
 
-    expect(about).toContain("reload");
-    expect(about).toContain("reconnect");
+    expect(about).toContain("BlockIT Gateway");
+    expect(about).toContain("shared AUTHORING Runtime surface");
+    expect(about).toContain("without a manual MCP reconnect");
     expect(about).not.toContain("without restarting Blockbench");
 
     expect(runbook).toContain("cd mcp");

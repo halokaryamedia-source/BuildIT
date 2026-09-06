@@ -92,7 +92,6 @@ describe("pre-local plugin runtime cleanup", () => {
     expect(index).toContain("const current = httpServer;");
     expect(index).toContain("if (current) await current.closeAndWait();");
     expect(index).toContain("const started = await startMcpServer();");
-    expect(index).toContain("Gateway clients reconnect automatically");
     expect(index).not.toContain("Reconnect the Codex MCP client");
   });
 

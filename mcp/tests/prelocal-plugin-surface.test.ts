@@ -42,7 +42,8 @@ describe("pre-local BlockIT plugin surface hardening", () => {
     expect(indexSource).toContain("title: PRODUCT_NAME");
     expect(indexSource).toContain("repository: PRODUCT_REPOSITORY");
     expect(indexSource).not.toContain("jasonjgardner.github.io/blockbench-mcp-plugin");
-    expect(readme).toContain("Do **not** use the upstream hosted plugin");
+    expect(readme).toContain("runtime authority for this repository");
+    expect(readme).toContain("BlockIT source/builds come from this repository");
   });
 
   test("panel identity stays minimal without build fingerprint state", async () => {

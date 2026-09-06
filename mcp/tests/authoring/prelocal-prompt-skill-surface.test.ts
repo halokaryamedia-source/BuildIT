@@ -107,7 +107,8 @@ describe("Bedrock prompt and skill surface", () => {
   test("generated-doc source is BlockIT-branded and README requires the local build", async () => {
     const [docs, readme] = await Promise.all([source("build/docs.ts"), source("README.md")]);
     expect(docs).toContain("BlockIT — Bedrock Entity MCP");
-    expect(readme).toContain("Do **not** use the upstream hosted plugin");
+    expect(readme).toContain("runtime authority for this repository");
+    expect(readme).toContain("BlockIT source/builds come from this repository");
     expect(readme).toContain("dist/blockit_mcp.js");
   });
 });
