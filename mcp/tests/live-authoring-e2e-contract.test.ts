@@ -145,7 +145,7 @@ describe("live authoring E2E harness", () => {
     expect(persistence).toContain("expectedPhase: \"animation\"");
   });
 
-  test("package exposes explicit phase/persistence verifiers plus GitHub-first static/deploy entrypoints without an automatic authoring orchestrator", async () => {
+  test("package exposes explicit phase/persistence verifiers plus GitHub-first generic fixture/deploy entrypoints without an automatic authoring orchestrator", async () => {
     const pkg = JSON.parse(await source("package.json")) as {
       scripts: Record<string, string>;
     };
@@ -161,9 +161,10 @@ describe("live authoring E2E harness", () => {
     expect(pkg.scripts["verify:persistence-live"]).toBe(
       "bun run ./scripts/verify-persistence-live.ts"
     );
-    expect(pkg.scripts["verify:lift-static"]).toBe(
-      "bun test tests/authoring/lift-static-acceptance.test.ts"
+    expect(pkg.scripts["verify:fixture-static"]).toBe(
+      "bun test tests/authoring/current-workspace-fixture-static.test.ts"
     );
+    expect(pkg.scripts["verify:lift-static"]).toBeUndefined();
     expect(pkg.scripts["deploy:verified"]).toBe(
       "bun run ./scripts/verified-build-artifact.ts deploy"
     );

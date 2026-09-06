@@ -5,13 +5,13 @@ async function source(path: string): Promise<string> {
 }
 
 describe("pre-local usage optimization contract", () => {
-  test("repository work states the real contract before one coherent patch", async () => {
+  test("repository work states the real contract before one coherent delivery", async () => {
     const brief = await source("../.agents/skills/development-brief/SKILL.md");
     expect(brief).toContain("State the contract");
     expect(brief).toContain("Preflight regressions");
     expect(brief).toContain("Success Metric");
     expect(brief).toContain("Forbidden Proxy / Non-Goal");
-    expect(brief).toContain("Implement one coherent patch");
+    expect(brief).toContain("Implement one coherent delivery");
   });
 
   test("known coherent creation batches without turning uncertainty into a call-saving target", async () => {

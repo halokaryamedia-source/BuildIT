@@ -65,11 +65,12 @@ describe("MCP dependency closure", () => {
     expect(rules).toContain("bun run verify:closure");
     expect(rules).toContain("does **not** replace `verify:mcp`");
     expect(rules).toContain("Do not auto-rewrite `CONTEXT.md`");
-    expect(rules).toContain("transfer before mutating its canonical source");
+    expect(rules).toContain("only its coupled canonical edit remains higher-context residue");
+    expect(rules).toContain("unrelated regression, routing, harness, provenance, or static acceptance work continues in GitHub");
     expect(rules).toContain("do not create a persisted checklist/roadmap file");
   });
 
-  test("semantic mirrors keep shared AUTHORING and approval-to-UV ordering synchronized", async () => {
+  test("semantic mirrors keep shared AUTHORING, approval ordering, and representative fixtures generic", async () => {
     const [flow, runbook] = await Promise.all([
       text("../docs/knowledge/flow.md"),
       text("../docs/knowledge/operations/local-acceptance-runbook.md"),
@@ -78,11 +79,13 @@ describe("MCP dependency closure", () => {
     expect(flow).toContain("No Geometry↔Texturing `switch_authoring_phase` is required");
     expect(runbook).toContain("Geometry↔Texturing stays on the shared AUTHORING surface");
     expect(runbook).toMatch(
-      /user Geometry APPROVED[\s\S]*UV Layout PASS[\s\S]*Texturing/
+      /user Geometry APPROVED[\s\S]*UV Layout PASS[\s\S]*Texturing[\s\S]*Texture APPROVED/
     );
     expect(runbook).toMatch(
       /3D_ASSISTED[\s\S]*user Geometry APPROVED[\s\S]*UV Layout PASS[\s\S]*Texture APPROVED/
     );
+    expect(runbook).toContain("only a representative test fixture");
+    expect(runbook).toContain("must not create LIFT-specific tool behavior");
     expect(runbook).not.toContain("Geometry              25");
     expect(runbook).not.toContain("Texturing             35");
   });
@@ -115,6 +118,7 @@ describe("MCP dependency closure", () => {
     }
 
     expect(authoringWorkflow).toContain('"mcp/tests/authoring/**"');
+    expect(authoringWorkflow).toContain('"workspace/active/**"');
     expect(authoringWorkflow).toContain(
       '".agents/skills/blockit-bedrock-entity-mcp/**"'
     );

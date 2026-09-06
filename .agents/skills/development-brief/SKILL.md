@@ -1,25 +1,19 @@
 ---
 name: development-brief
-description: Escalation contract for complex or ambiguous BlockIT Development. Use when success criteria, ownership, architecture, cross-owner scope, or quality/efficiency evidence needs explicit grounding. Not for bounded maintenance, clear standard development, or ordinary asset authoring.
+description: Escalation contract for complex or ambiguous BlockIT Development. Use for architecture, cross-owner ambiguity, unresolved success criteria, or quality/efficiency work; not bounded maintenance, clear standard changes, or ordinary asset authoring.
 ---
 
 # Development Brief
 
-Use this Skill only when the lightweight routes in root `AGENTS.md` are insufficient. It protects complex work without turning every repository change into planning ceremony.
-
-Root `AGENTS.md` owns route selection, boot, source precedence, and the Development Execution Gate. `GITHUB_RULES.md` owns GitHub-first partitioning, execution/history/CI, and higher-context handoff.
+Use only when root `AGENTS.md` lightweight routes are insufficient. `AGENTS.md` owns route/boot/source precedence; `GITHUB_RULES.md` owns GitHub-first partitioning, delivery, proof, and higher-context handoff.
 
 ## Entry boundary
 
-Enter this brief for architecture/redesign, unclear or cross-owner requirements, material public/product contract design, unresolved success criteria, quality/fidelity/accuracy/efficiency optimization, or when a standard task encounters a material unknown that can change the owner or acceptance.
+Enter for architecture/redesign, unclear or cross-owner requirements, material public/product contract design, unresolved success criteria, quality/fidelity/accuracy/efficiency optimization, or a material unknown that can change owner/acceptance.
 
-Do **not** load this Skill for bounded maintenance or a clear standard change merely because the task touches repository/plugin source.
-
-Normal asset authoring is not Development. A read-only `amati / inspect / understand` request reports and stops unless the user also asks to change something.
+Do **not** load this Skill for bounded maintenance or a clear standard change merely because repository/plugin source is involved. Normal asset authoring is not Development. Read-only `amati / inspect / understand` reports and stops unless mutation is also requested.
 
 ## Mandatory Development continuity
-
-When this full brief is entered:
 
 ```text
 AGENTS.md
@@ -29,7 +23,7 @@ AGENTS.md
 → smallest owner/evidence needed
 ```
 
-Reuse an already-current in-session boot. Current source wins over stale continuation; reconcile stale state only when its owner actually changes.
+Reuse current in-session boot. Current source outranks stale continuation; update state owners only when their state changes.
 
 ## Development Contract
 
@@ -47,7 +41,7 @@ Proof Required
 STOP Condition
 ```
 
-Add only when they materially change the decision:
+Add only when material:
 
 ```text
 Generic requirement
@@ -59,39 +53,35 @@ Proof budget
 Material unknowns
 ```
 
-`UNKNOWN` is valid for the first wrong owner only when the evidence needed to resolve it is explicit. A proposed method is not automatically the requirement. Samples/fixtures are evidence unless object-specific behavior is requested.
+`UNKNOWN` is valid only with named evidence needed to resolve it. A proposed method is not the requirement. Samples/fixtures are evidence unless object-specific behavior is requested.
 
 ## Execution Partition
 
-Start repository Development from `REMOTE_GITHUB` whenever that capability is actually available. Do not hand the whole task to Codex/`LOCAL_CODE`/`LIVE_BLOCKBENCH` because one final step needs a generator, filesystem, installed runtime, or visual proof.
+Start repository Development in `REMOTE_GITHUB` whenever that capability is actually available. Do not hand the whole task to Codex/`LOCAL_CODE`/`LIVE_BLOCKBENCH` because one final action needs a generator, filesystem, installed runtime, or visual proof.
 
 ```text
 GitHub-first
-→ diagnose + design
-→ source/static implementation that can be completed coherently
+→ diagnose/design
+→ coherent source/static implementation
 → regressions + CI/security/provenance
 → deterministic fixtures/harness/evidence preparation
 → exact-SHA source/build proof
 
 Higher-context residue
-→ only the coupled generator/lockfile/filesystem/native/visual action that GitHub cannot perform
+→ only coupled generator/lockfile/filesystem/native/visual action GitHub cannot perform
 ```
 
-The handoff must name why the residue intrinsically exceeds `REMOTE_GITHUB`, its first command/action, acceptance, and what **must not be redone**. A prepared live harness is not live proof; a CI artifact is not deployment.
+Handoff names why residue exceeds `REMOTE_GITHUB`, first command/action, acceptance, and what **must not be redone**. A prepared harness is not live proof; a CI artifact is not deployment.
 
 ## Effectiveness vocabulary
 
-For product-quality or usage work, keep these separate:
+- **Authoring Quality** — intended output reaches accepted visual/functional result.
+- **Authoring Efficiency** — **Cost to Accepted Result**, including avoidable discovery/readback/retry/recovery/correction.
+- **Static Footprint** — instruction/schema/surface-size guardrail only.
 
-- **Authoring Quality** — whether the intended output reaches the accepted visual/functional result.
-- **Authoring Efficiency** — **Cost to Accepted Result**: the shortest justified path to that accepted result, including unnecessary discovery, readback, retry, recovery, and correction.
-- **Static Footprint** — instruction/schema/surface-size guardrails only; not proof of Authoring Efficiency.
-
-A smaller Skill, prompt, schema, tool surface, or raw call count is not improvement if accepted quality regresses or work is merely displaced elsewhere.
+A smaller Skill/prompt/schema/tool surface or raw call count is not improvement if accepted quality regresses or work moves elsewhere.
 
 ## Evidence before optimization
-
-For quality, fidelity, accuracy, efficiency, less usage, or less looping:
 
 ```text
 current behavior / exact artifact
@@ -102,11 +92,9 @@ current behavior / exact artifact
 → matching proof
 ```
 
-Do not begin by shrinking Skills, prompts, schemas, or tool lists unless Static Footprint itself is the requirement. Static evidence cannot prove live authoring efficiency or visual quality.
+Do not start quality/efficiency work by shrinking static surfaces unless Static Footprint itself is the requirement. Static evidence cannot prove live authoring efficiency or visual quality.
 
 ## Failure classification
-
-Use the first category that explains the observed failure:
 
 ```text
 AGENT_REASONING
@@ -124,17 +112,17 @@ PROOF_FAILURE
 UNKNOWN
 ```
 
-Do not patch a downstream owner because it is easier to edit.
+Fix the first wrong owner, not the easiest downstream file.
 
 ## Procedure
 
-1. **Recover and ground** — apply mandatory continuity; separate fact, proposal, history, unknown.
-2. **State the contract** — outcome, forbidden proxy, scope, execution partition, proof, STOP.
-3. **Exhaust GitHub-first work** — finish every coherent source/test/harness/provenance slice that does not require the higher context.
-4. **Get first evidence** — runtime/quality claims require matching evidence, not static proxies.
+1. **Recover and ground** — separate fact, proposal, history, unknown.
+2. **State the contract** — outcome, forbidden proxy, scope, partition, proof, STOP.
+3. **Preflight regressions and exhaust GitHub-first work** — finish coherent source/test/harness/provenance slices below the higher-context ceiling.
+4. **Get first evidence** — runtime/quality claims need matching evidence, not static proxies.
 5. **Diagnose first wrong owner** — `No change required` and `UNKNOWN pending named evidence` are valid.
-6. **Implement one coherent delivery** — follow `GITHUB_RULES.md`; hand off only named residue when unavoidable.
-7. **Compare proof to Success Metric** — report source vs higher-context proof separately, then STOP.
+6. **Implement one coherent delivery** — follow `GITHUB_RULES.md`; hand off only named residue.
+7. **Compare proof to Success Metric** — separate source proof from higher-context proof, then STOP.
 
 ## Owner Selection
 
@@ -145,8 +133,8 @@ model/visual judgement            → blockbench-bedrock-modelling
 TypeScript/Bun mechanics          → exact affected source/build owner + mcp/AGENTS.md
 ```
 
-TypeScript and Bun are implementation mechanics, not standalone semantic routing destinations. Use a specialist only when it adds material reusable procedure.
+Use a specialist only when it adds material reusable procedure.
 
 ## Completion Boundary
 
-Report implementation separately from local/live verification where required. A valid completion may contain a **minimum higher-context residue** only after GitHub-verifiable work is exhausted. Do not invent another planning/review layer merely to appear more rigorous.
+Completion may contain a **minimum higher-context residue** only after GitHub-verifiable work is exhausted. Report implementation separately from local/live proof; do not add another review/planning layer for ceremony.

@@ -34,7 +34,7 @@ describe("current developer-facing documentation sync", () => {
     expect(implementation).toContain(`${api.tools.length} declared source ToolSpecs`);
   });
 
-  test("execution context markers, defaults, and proof ceilings stay synchronized", async () => {
+  test("execution context markers, GitHub-first defaults, and proof ceilings stay synchronized", async () => {
     const [root, githubRules, packageRules, flow, contributing, runbook] = await Promise.all([
       text("../AGENTS.md"),
       text("../GITHUB_RULES.md"),
@@ -61,10 +61,13 @@ describe("current developer-facing documentation sync", () => {
     expect(root).toMatch(/without a marker[\s\S]*lowest sufficient provable context/i);
     expect(root).toMatch(/never infer `LOCAL_CODE`[\s\S]*never infer `LIVE_BLOCKBENCH`/i);
     expect(root).toMatch(/`LIVE_BLOCKBENCH` is never assumed/i);
-    expect(root).toMatch(/proof ceiling[\s\S]*handoff before substantial edits/i);
+    expect(root).toMatch(
+      /proof ceiling[\s\S]*exhaust source\/static\/CI-verifiable work first[\s\S]*handoff only the minimum[\s\S]*never transfer the whole task/i
+    );
     expect(root).toContain("LOCAL PROOF REQUIRED");
 
     expect(githubRules).toContain("Execution context / proof ceiling");
+    expect(githubRules).toContain("GitHub-first execution partition");
     expect(githubRules).toContain("### Execution Handoff");
     expect(githubRules).toContain("FROM_CONTEXT");
     expect(githubRules).toContain("TO_CONTEXT");

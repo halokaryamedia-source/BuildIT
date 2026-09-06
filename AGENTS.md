@@ -7,7 +7,7 @@
 
 ## Execution Context Gate
 
-Classify by **actual capability**, not product/UI name, before task class or implementation.
+Classify by **actual capability**, not product/UI name:
 
 ```text
 CONTEXT: REMOTE_GITHUB
@@ -16,20 +16,21 @@ CONTEXT: LIVE_BLOCKBENCH
 SWITCH CONTEXT: <REMOTE_GITHUB | LOCAL_CODE | LIVE_BLOCKBENCH>
 ```
 
-A marker states intended context, not proof. Confirm capability. If it overstates capability, use the highest provable context and report the mismatch. Without a marker, choose the lowest sufficient provable context. Never infer `LOCAL_CODE` from “Codex” or a local-sounding task; never infer `LIVE_BLOCKBENCH` because Blockbench is mentioned. `LIVE_BLOCKBENCH` is never assumed.
+A marker is intent, not proof. If it overstates capability, use the highest provable context and report the mismatch. Without a marker, choose the lowest sufficient provable context. Never infer `LOCAL_CODE` from “Codex” or a local-sounding task; never infer `LIVE_BLOCKBENCH` because Blockbench is mentioned. `LIVE_BLOCKBENCH` is never assumed.
 
 ```text
 REMOTE_GITHUB   = GitHub repository + CI; no local worktree/Bun/installed Blockbench
 LOCAL_CODE      = local checkout + Bun/tests/build/generators/filesystem
-LIVE_BLOCKBENCH = LOCAL_CODE + deployed BlockIT runtime + functioning Gateway/runtime connection
+LIVE_BLOCKBENCH = LOCAL_CODE + deployed BlockIT + functioning Gateway/runtime connection
 ```
 
-Proof ceiling follows the context above. Exact-commit source acceptance and cloud workspace capability follow `GITHUB_RULES.md`.
+Proof ceiling follows actual context; exact-commit source acceptance follows `GITHUB_RULES.md`.
 
 ```text
-REMOTE_GITHUB available → exhaust source/static/CI-verifiable work first
-higher-context dependency → partition work; prebuild tests/harness/provenance/evidence here
-handoff only the minimum LOCAL_CODE/LIVE_BLOCKBENCH residue; never transfer the whole task for one residue
+REMOTE_GITHUB → exhaust source/static/CI-verifiable work first
+higher-context dependency → partition; prepare tests/harness/provenance/evidence here
+handoff only the minimum LOCAL_CODE/LIVE_BLOCKBENCH residue
+never transfer the whole task because one residue needs higher capability
 covered source result complete → accept CI proof; label only genuinely missing higher-context proof
 ```
 
@@ -47,8 +48,8 @@ AGENTS.md → GITHUB_RULES.md Core Rules
 
 ```text
 AGENTS.md → GITHUB_RULES.md Core Rules → EXECUTION CONTEXT
-→ classify: Bounded | Standard | Complex
-→ exact owner + nearest AGENTS.md → only material continuity/evidence
+→ Bounded | Standard | Complex
+→ nearest AGENTS.md + exact owner → only material continuity/evidence
 ```
 
 #### Development Execution Gate
@@ -73,19 +74,17 @@ Proof Required
 STOP Condition
 ```
 
-Escalate to `development-brief` only for architecture/redesign, cross-owner/material ambiguity, non-obvious public contract design, unresolved success criteria, or quality/efficiency work. The brief keeps `Forbidden Proxy / Non-Goal` explicit. **Authoring Efficiency** is cost to an accepted result; **Static Footprint** is only a guardrail.
-
 ### Bounded Maintenance
 
 Concrete bug/stale rule/test/CI routing or behavior-preserving cleanup starts at its exact owner.
 
 ### Standard Development
 
-Use when requirement/owner are clear but work exceeds bounded maintenance. Do not escalate the whole task merely because one final generator, filesystem, or native-runtime proof needs a higher context; finish the GitHub-verifiable partition first.
+Use when requirement and owner are clear but work exceeds bounded maintenance. Finish the GitHub-verifiable partition before escalating any generator/filesystem/native residue.
 
 ### Complex / Ambiguous Development
 
-Use `.agents/skills/development-brief/SKILL.md` for architecture/redesign, unclear/cross-owner requirements, material public contracts, or quality/efficiency work.
+Use `.agents/skills/development-brief/SKILL.md` for architecture/redesign, unclear or cross-owner requirements, material public contracts, unresolved success criteria, or quality/efficiency work. It keeps `Forbidden Proxy / Non-Goal` explicit.
 
 ## Task Class After Context
 
@@ -100,13 +99,13 @@ source image / user intent → canonical five-preview board → user approval
 
 ### Asset Authoring
 
-For every BlockIT Bedrock Entity asset-authoring task, use this **deterministic current-worktree boot** before any authoring mutation:
+Before any BlockIT Bedrock Entity authoring mutation:
 
 ```text
 current AGENTS.md
 → current .agents/skills/blockit-bedrock-entity-mcp/SKILL.md
-→ resolve semantic owner
-→ load exactly the matching current specialist:
+→ semantic owner
+→ exactly one matching current specialist:
 
 Geometry / rig / pivots / UV Layout
 → .agents/skills/blockbench-bedrock-modelling/SKILL.md
@@ -118,9 +117,9 @@ Animation / motion
 → .agents/skills/blockit-bedrock-animation/SKILL.md
 ```
 
-**No authoring mutation is allowed until the router + matching specialist are loaded from the current worktree and the specialist's prerequisite gate is satisfied.** Prior-chat memory, an older Codex session, tool availability, or remembered Skill content is not a substitute. When semantic ownership changes, load the new specialist before its first mutation.
+No mutation until router + matching specialist are loaded from the current worktree and its prerequisite gate is satisfied. Prior-chat memory or remembered Skill content is not a substitute. Load a new specialist before the first mutation when semantic ownership changes.
 
-New-model authoring is ordered and user-driven:
+New-model authoring:
 
 ```text
 approved image → Active Workspace
@@ -130,17 +129,17 @@ approved image → Active Workspace
 → Geometry form
 → internal verify → READY_FOR_USER_REVIEW → user Geometry APPROVED
 → Geometry-owned UV Layout → UV Layout PASS
-→ Texturing focus → Texture Verify → user Texture APPROVED
+→ Texturing → Texture Verify → user Texture APPROVED
 → Animation handoff when required → Finalization
 ```
 
-`Geometry Strategy` is user-selected `DIRECT | 3D_ASSISTED`; never infer/default/auto-switch it. `3D_ASSISTED` is one package: Shape Reconstruction → PrimitiveAnything → Cuboid Scaffold → semantic Geometry cleanup. If target 3D-Assisted execution is unavailable, `BLOCKED`; never emulate/fallback.
+`Geometry Strategy` is user-selected `DIRECT | 3D_ASSISTED`; never infer/default/auto-switch it. `3D_ASSISTED` is one package: Shape Reconstruction → PrimitiveAnything → Cuboid Scaffold → semantic Geometry cleanup. If its execution is unavailable, `BLOCKED`; never emulate/fallback.
 
-Geometry and Texturing keep distinct semantic ownership while sharing the AUTHORING Runtime surface. A texture-discovered Geometry/UV defect is corrected directly with the Geometry owner; no `switch_authoring_phase` is required for Geometry↔Texturing correction.
+Geometry and Texturing retain distinct semantic owners while sharing the AUTHORING Runtime surface. A texture-discovered Geometry/UV defect returns directly to the Geometry owner; no `switch_authoring_phase` is required for Geometry↔Texturing correction.
 
-`HANDOFF_REQUIRED` is reserved for crossing AUTHORING↔Animation. Retain resume-critical state, invoke `switch_authoring_phase` through Gateway, load the matching specialist, and continue the **same task/chat**; no normal reconnect/new chat.
+`HANDOFF_REQUIRED` is only for AUTHORING↔Animation. Retain resume-critical state, invoke `switch_authoring_phase` through Gateway, load the matching specialist, and continue the **same task/chat**.
 
-For normal asset authoring, do not automatically load repository continuation/history/foundation docs. Asset authoring is not software **Development**; do not route it through `development-brief` unless repository/plugin behavior changes.
+For normal asset authoring, do not auto-load repository continuation/history/foundation docs. Asset authoring is not software **Development**; do not route it through `development-brief` unless repository/plugin behavior changes.
 
 ## GitHub Work
 
@@ -152,9 +151,10 @@ current user → current source/proof → root/nearest `AGENTS.md` → foundatio
 
 ## Work Discipline
 
-- Fix the minimum complete owner; do not add fallback/framework/profile layers without evidence.
+- Fix the minimum complete owner; no fallback/framework/profile layers without evidence.
 - Stop the same failed direction after two attempts without new evidence.
 - `No change required` is valid; never claim proof above context ceiling.
+- **Authoring Efficiency** = cost to accepted result; **Static Footprint** = guardrail only.
 
 ```text
 CURRENT-PROJECT VERIFIED

@@ -4,7 +4,7 @@ Updated: 2026-09-06
 Owner: `LIVE_BLOCKBENCH` formal acceptance procedure  
 Current state: DIRECT disposable tests only; GPU/3D_ASSISTED deferred.
 
-This procedure is active only when `docs/knowledge/next-action.md` explicitly reactivates local testing. `LIVE_BLOCKBENCH` is an execution capability; it does not activate this procedure by itself. Targeted live debugging may use that capability without formal Local Acceptance.
+This procedure activates only when `docs/knowledge/next-action.md` explicitly reactivates local testing. `LIVE_BLOCKBENCH` is an execution capability; it does not activate this procedure by itself. Targeted live debugging may use that capability without formal Local Acceptance.
 
 Use this runbook only for residue repository CI cannot prove. GitHub must finish source/static/CI work and prepare deterministic harness/provenance first. Do not edit source locally until a reproducible local failure identifies the first wrong owner.
 
@@ -38,9 +38,9 @@ Require a clean tree before reusing proof. Do not repeat accepted source checks 
 
 Use the full source gate in `GITHUB_RULES.md`: successful `verify:full`, or successful `verify:repository` + `verify:mcp` on the same exact `Local` SHA. The latter is composite evidence, not an executed `verify:full`. Reuse only for a clean matching HEAD with no source/package edits. Do not rerun solely because proof came from CI.
 
-`verify:authoring` also owns committed asset-static contracts such as `verify:lift-static`; reuse its exact-SHA CI result rather than rechecking deterministic repository artifacts on desktop.
+`verify:authoring` also owns committed representative-fixture static contracts such as `verify:fixture-static`; reuse its exact-SHA CI result instead of rechecking deterministic repository artifacts on desktop.
 
-Install the pinned local script dependencies once:
+Install pinned local script dependencies once:
 
 ```bash
 cd mcp
@@ -66,7 +66,7 @@ Prefer that exact-run artifact for acceptance. Extract it to an absolute local d
 bun run deploy:verified -- /absolute/path/to/artifact-dir /absolute/path/to/blockit_mcp.js
 ```
 
-`deploy:verified` fails closed unless provenance repository/ref/source SHA matches the current checkout and bundle SHA-256 + embedded `build_identity` match the verified artifact.
+`deploy:verified` fails closed unless provenance repository/ref/source SHA matches the current checkout and bundle SHA-256 + embedded `build_identity` match the artifact.
 
 Fallback only when no matching CI artifact exists or intentionally testing unpushed local source:
 
@@ -74,17 +74,15 @@ Fallback only when no matching CI artifact exists or intentionally testing unpus
 bun run deploy:local -- /absolute/path/to/blockit_mcp.js
 ```
 
-`deploy:local` owns build + copy; do not build twice. Before cleanup, preserve unsaved projects/assets/settings/credentials/other plugins; no `git clean -xfd`.
+`deploy:local` owns build + copy; do not build twice. Preserve unsaved projects/assets/settings/credentials/other plugins before cleanup; no `git clean -xfd`.
 
 Reload BlockIT after deployment and reconnect the client.
 
 ## 5. Native Runtime Preflight — no duplicate smoke ritual
 
-Normal Geometry/Texturing/Animation/Persistence/Lift live verifiers share one preflight that checks installed `build_identity`, stable `instance_id`/`startup_time`, phase, stateless transport, initialize contract, `tools/list` count, required tools, and forbidden tool absence.
+Normal Geometry/Texturing/Animation/Persistence/quality-fixture live verifiers share one preflight that checks installed `build_identity`, stable `instance_id`/`startup_time`, phase, stateless transport, initialize contract, `tools/list` count, required tools, and forbidden tool absence.
 
-Therefore `verify:stateless-local` is **diagnostic only** when that shared preflight fails or when exact full-surface diagnosis is explicitly required. Do not run it automatically before every live verifier.
-
-This reduces local acceptance to native behavior that source/CI cannot prove.
+`verify:stateless-local` is **diagnostic only** when that shared preflight fails or exact full-surface diagnosis is explicitly required. Do not run it automatically before every live verifier. This leaves local acceptance focused on native behavior source/CI cannot prove.
 
 ## 6. Prepared DIRECT Native Sequence
 
@@ -93,7 +91,10 @@ Use the repository-owned disposable harness; do not redesign tests in Blockbench
 ```text
 shared AUTHORING
 → verify:geometry-live -- --confirm-disposable
+→ user Geometry APPROVED
+→ UV Layout PASS
 → verify:texturing-live -- --confirm-disposable
+→ Texturing → Texture APPROVED
 → one AUTHORING→Animation handoff
 → verify:animation-live -- --confirm-disposable
 → verify:persistence-live -- --prepare --confirm-disposable
@@ -101,20 +102,22 @@ shared AUTHORING
 → verify:persistence-live -- --verify --confirm-disposable
 ```
 
-Geometry/Texturing intentionally share AUTHORING; no phase bounce. The harness owns thin per-face UV, native 16x template/repack, semantic pixel preservation, Painter target/clip, A-vs-selected-B animation targeting, Undo/Redo and persistence assertions.
+Geometry↔Texturing stays on the shared AUTHORING surface; no phase bounce. The disposable harness owns thin per-face UV, native 16x template/repack, semantic pixel preservation, Painter target/clip, A-vs-selected-B animation targeting, Undo/Redo and persistence assertions.
 
 Synthetic disposable-test readiness never proves user asset approval. Tool success, export success, low call count, or a scalar score cannot override **QUALITY FAIL**.
 
-## 7. Lift Quality Residue
+## 7. Representative quality fixture — current Lift example
 
-Never mutate `workspace/active/lift/lift.bbmodel` for system testing. Open an exact disposable copy and set its absolute path:
+The current Lift workspace is **only a representative test fixture** for BlockIT/MCP workflow quality. It is not a product target and must not create LIFT-specific tool behavior, schema, thresholds, workflow law, or acceptance rules. Another suitable fixture may replace it without changing production Runtime semantics.
+
+Never mutate the approved fixture source for system testing. Open an exact disposable copy and, for the current example, set:
 
 ```bash
 BLOCKIT_LIFT_DISPOSABLE_PATH=/absolute/path/to/lift-copy.bbmodel \
   bun run verify:lift-quality-live -- --confirm-disposable
 ```
 
-The verifier hashes approved references, captures comparable before/candidate front/left/3Q + atlas, runs one native 16x padded repack candidate, records native size, then Undo-restores the original state. A `<=512` result is only a packing candidate.
+That example verifier hashes references, captures comparable before/candidate views + atlas, runs one native 16x padded repack candidate, records native size, then Undo-restores the original state. Its fixture-specific observations are evidence about generic MCP/workflow behavior, not product requirements. A `<=512` result is only a packing candidate.
 
 Visual/reference `PASS` still requires the actual approved reference plus fresh comparable model evidence. No source/static metric or automatic similarity score may create visual PASS.
 
@@ -128,7 +131,7 @@ A mutation interruption may return `OUTCOME_UNKNOWN`; inspect state before retry
 
 Setup/binding/source checks live in `mcp/scripts/three-d-assisted/README.md`. Do not execute GPU/native work while deferred.
 
-When resumed, the package remains:
+When resumed:
 
 ```text
 Approved Reference Board
@@ -139,13 +142,16 @@ Approved Reference Board
 → Primitive Decomposition Gate
 → materialize_3d_assisted_scaffold
 → Semantic Geometry Cleanup
+→ user Geometry APPROVED
+→ UV Layout PASS
+→ Texture APPROVED
 ```
 
 External output is intermediate evidence. Materialization requires current hashes, complete preflight, one atomic Undo transaction, and no accepted partial scaffold. `manage_geometry_reference` is comparison evidence only and must not survive production export.
 
 ## 10. Authoring Efficiency
 
-After quality PASS, compare calls, discovery, redundant readbacks, correction attempts, same-cause retries, recovery, handoffs and available elapsed cost.
+After quality PASS, compare calls, discovery, capability-search misses, redundant readbacks, correction attempts, same-cause retries, recovery, handoffs and available elapsed cost.
 
 ```text
 NECESSARY | AVOIDABLE | CONTRACT_CAUSED | REASONING_CAUSED | RECOVERY
@@ -164,4 +170,4 @@ Update state owners only when state changes:
 - `docs/knowledge/next-action.md` — continuation;
 - `docs/knowledge/implementation-map.md` — source ownership.
 
-When the requested proof criteria are satisfied, **STOP**.
+When requested proof criteria are satisfied, **STOP**.
