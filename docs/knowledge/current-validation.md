@@ -1,6 +1,6 @@
 # Current Validation
 
-Updated: 2026-09-06
+Updated: 2026-09-07
 
 This file owns **current proof interpretation**. Continuation belongs in `docs/knowledge/next-action.md`; stable facts in `CONTEXT.md`; source ownership in `docs/knowledge/implementation-map.md`; active asset continuity in `workspace/active/<project>/README.md`.
 
@@ -9,23 +9,32 @@ This file owns **current proof interpretation**. Continuation belongs in `docs/k
 Repository: `halokaryamedia-source/BuildIT`  
 Branch: **`Local` only**.
 
-Per `GITHUB_RULES.md`, device-independent source acceptance must use a complete check on the same exact `Local` SHA. The current live-harness source closure is `ce8e3dba9a61c73f42ac8cff4b18823030862031`.
+Per `GITHUB_RULES.md`, device-independent source acceptance must use complete checks on the same exact `Local` SHA. The current source/provenance closure is `1c1f74e160ce520d53fda3a3f271d9323b28558b`.
 
-GitHub **MCP Verify** run `34042901846` completed successfully for that exact SHA and executed `bun run verify:mcp`:
+GitHub **Repository Verify** run `34046872083` completed successfully for that exact SHA and executed the repository routing/policy verifier.
 
-- runtime: **407 PASS / 0 FAIL** across 68 files;
-- authoring: **117 PASS / 0 FAIL**;
+GitHub **MCP Verify** run `34046872042` completed successfully for the same exact SHA and executed `bun run verify:mcp`:
+
+- runtime: **409 PASS / 0 FAIL** across 69 files;
+- authoring: **120 PASS / 0 FAIL** across 26 files;
 - generated docs/prompt freshness: PASS;
 - TypeScript + Gateway typecheck: PASS;
 - source surface measurements: PASS;
 - build: PASS;
 - build identity: `sha256:c208ec49344db79fa22e1cddd330e563f14319d4ed0c724408ee0ba0a01c969c`.
 
-This is **SOURCE/CI proof only**. None of the new live harnesses has been executed against the current installed Blockbench build yet.
+The same MCP run also produced exact-SHA provenance and uploaded `blockit-mcp-verified`:
+
+- artifact ID: `9993371261`;
+- artifact ZIP digest: `sha256:70cb1d126fe2bc9077d64b332f6d4e2715b6b14a93fe696b3493e776a0626fe3`;
+- verified bundle SHA-256: `9896b8c25e293b7f33dc2ebf3119942809ec4df548839f4ac753366bc8521f87`;
+- embedded build identity: `sha256:c208ec49344db79fa22e1cddd330e563f14319d4ed0c724408ee0ba0a01c969c`.
+
+This is **SOURCE/CI/build-artifact proof only**. It does not prove the bundle has been deployed/reloaded in Blockbench and none of the prepared live acceptance harnesses has run against that installed build.
 
 ## Live Acceptance Harness — SOURCE_READY / LIVE NOT_RUN
 
-The GitHub-prepared harness moves test design, fixtures, assertions and evidence capture out of the later desktop session.
+The GitHub-prepared harness moves test design, fixtures, assertions and evidence capture out of the later desktop session. The product target is generic BlockIT MCP/authoring behavior; any named model is only test media unless a task explicitly targets that asset.
 
 ### Shared preflight
 
@@ -77,9 +86,11 @@ This closes the manual-selection workaround at the test level once the live run 
 
 Until step 3 succeeds, native reopen remains UNVERIFIED.
 
-### Lift-specific quality evidence
+### Representative visual-quality fixture — current example: LIFT
 
-`verify:lift-quality-live` is a bounded **evidence candidate**, not a visual scorer.
+LIFT is **only a representative fixture** for validating the visual-quality/evidence workflow and historical issue closure. It is not a product target and must not create LIFT-specific MCP Runtime, tool schema, routing, packing law, geometry rule, or authoring policy.
+
+`verify:lift-quality-live` remains a bounded **fixture-specific evidence candidate**, not a visual scorer and not a generic MCP acceptance prerequisite.
 
 - requires `BLOCKIT_LIFT_DISPOSABLE_PATH` and rejects canonical `workspace/active/lift/lift.bbmodel`;
 - hashes `references/approved-reference.png` and `references/window-detail.png`;
@@ -93,24 +104,24 @@ Until step 3 succeeds, native reopen remains UNVERIFIED.
 
 A `<=512` result is only a packing candidate. It cannot become visual PASS without the actual reference plus fresh mapped visual evidence.
 
-## Lift Issue Closure Mapping
+## Historical LIFT Issue Mapping — fixture evidence only
 
-`workspace/active/lift/README.md` remains the active asset owner. Geometry, UV Layout, Texture and Animation are approved/delivered; quality-system testing must use a disposable copy.
+`workspace/active/lift/README.md` remains the asset owner. Geometry, UV Layout, Texture and Animation are approved/delivered; any quality-system testing uses a disposable copy. The table below preserves traceability for the historical test report; it is **not** the generic MCP roadmap or acceptance checklist.
 
 | ID | GitHub-prepared closure | Remaining proof |
 |---|---|---|
-| LIFT-01 | Reference-grounded workflow + Lift before/candidate comparable capture are scripted | actual-reference visual review |
+| LIFT-01 | Reference-grounded workflow + representative before/candidate comparable capture are scripted | actual-reference visual review on the fixture |
 | LIFT-02 | Better/HD intake rule source-protected | no source defect remains |
-| LIFT-03 | palette/ramp + adjoining-surface discipline protected; Lift capture bundle prepared | live visual color/form/shadow review |
-| LIFT-04 | surface-continuity/seam discipline protected; same evidence bundle prepared | live visual seam review |
-| LIFT-05 | union/bounds metrics + native padded-repack candidate harness prepared | run candidate; `<=512` alone is not visual PASS |
-| LIFT-06 | thin sub-unit per-face fixture scripted through native template/repack/history/persistence | live run |
-| LIFT-07 | explicit A-vs-selected-B + playback/property/keyframe history harness prepared | live run |
+| LIFT-03 | palette/ramp + adjoining-surface discipline protected; fixture capture bundle prepared | live visual color/form/shadow review on the fixture |
+| LIFT-04 | surface-continuity/seam discipline protected; same evidence bundle prepared | live visual seam review on the fixture |
+| LIFT-05 | union/bounds metrics + native padded-repack candidate harness prepared | run representative candidate; `<=512` alone is not visual PASS |
+| LIFT-06 | generic thin sub-unit per-face fixture scripted through native template/repack/history/persistence | live generic run |
+| LIFT-07 | explicit A-vs-selected-B + playback/property/keyframe history harness prepared | live generic run |
 | LIFT-08 | proof vocabulary remains fail-closed | visual gate stays mandatory |
-| LIFT-09 | every live harness emits comparable execution-cost counters | same-fixture Cost to Accepted Result after quality PASS |
-| LIFT-10 | proof/continuation now route directly to executable test commands | keep future status in canonical owners |
+| LIFT-09 | every live harness emits comparable execution-cost counters | comparable-fixture Cost to Accepted Result after quality PASS |
+| LIFT-10 | proof/continuation route to executable test commands | keep future status in canonical owners |
 
-No additional speculative Runtime logic is justified unless one of these live verifiers reproduces a concrete source defect.
+No additional speculative Runtime logic is justified unless a generic live verifier or representative fixture reproduces a concrete MCP/source defect.
 
 ## SDK Security Follow-up
 
@@ -122,7 +133,7 @@ Dependency closure remains `LOCAL_CODE`: upgrade to a patched compatible SDK, re
 
 ## Pending Live Sequence
 
-After the SDK/local source closure and exact deployment:
+After the SDK/local source closure and exact deployment, the generic MCP/native acceptance sequence is:
 
 ```text
 shared AUTHORING
@@ -133,12 +144,17 @@ shared AUTHORING
 → verify:persistence-live --prepare
 → one native close/reopen
 → verify:persistence-live --verify
-→ disposable Lift → verify:lift-quality-live
-→ human/multimodal strict visual review
-→ only then efficiency comparison
 ```
 
-This intentionally removes redundant Geometry↔Texturing reloads and manual test design.
+Only when validating the visual-quality/efficiency workflow or the historical LIFT issue report, append the representative-fixture step:
+
+```text
+disposable LIFT fixture → verify:lift-quality-live
+→ human/multimodal strict visual review
+→ only then comparable-fixture efficiency analysis
+```
+
+This intentionally removes redundant Geometry↔Texturing reloads and manual test design while keeping fixture-specific evidence outside generic product semantics.
 
 ## Visual / Reference Proof Rule
 
