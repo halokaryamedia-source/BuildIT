@@ -27,6 +27,20 @@ describe("P1.4 stateless Streamable HTTP ownership", () => {
     expect(source).toContain("response.body,\n              'close'");
   });
 
+  test("request-owned reconstruction reuses registration caches until a surface mutation", async () => {
+    const [netSource, toolsSource, factoriesSource] = await Promise.all([
+      readFile(new URL("../server/net.ts", import.meta.url), "utf8"),
+      readFile(new URL("../server/tools.ts", import.meta.url), "utf8"),
+      readFile(new URL("../lib/factories.ts", import.meta.url), "utf8"),
+    ]);
+
+    expect(netSource).not.toContain("invalidateToolRegistrationRuntimeCaches");
+    expect(toolsSource).toContain("invalidateToolRegistrationRuntimeCaches()");
+    expect(factoriesSource).toContain(
+      "Invalidation is intentionally explicit so profile and phase mutations"
+    );
+  });
+
   test("standalone SSE and session DELETE are not offered by the default endpoint", async () => {
     const source = await readFile(
       new URL("../server/net.ts", import.meta.url),

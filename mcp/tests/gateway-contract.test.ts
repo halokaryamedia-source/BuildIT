@@ -1,4 +1,6 @@
 import { describe, expect, test } from "bun:test";
+import { getAllToolDefinitions } from "@/lib/factories";
+import { getMcpSurfaceToolNames } from "@/server/tools";
 import {
   GATEWAY_TOOL_NAMES,
   classifyCapabilityTier,
@@ -8,6 +10,47 @@ import {
   searchCapabilityCatalog,
   type BackendTool,
 } from "@/gateway/contract";
+
+type RuntimeToolDefinition = {
+  description: string;
+  inputSchema?: unknown;
+  annotations?: BackendTool["annotations"];
+};
+
+function runtimeCatalogForPhase(
+  phase: "geometry" | "animation"
+): BackendTool[] {
+  const definitions = getAllToolDefinitions() as Record<
+    string,
+    RuntimeToolDefinition
+  >;
+  return getMcpSurfaceToolNames("bedrock_entity", phase).map((name) => {
+    const definition = definitions[name];
+    if (!definition) {
+      throw new Error(`Missing Runtime definition for Gateway search fixture ${name}.`);
+    }
+    return {
+      name,
+      description: definition.description,
+      inputSchema: definition.inputSchema,
+      annotations: definition.annotations,
+    };
+  });
+}
+
+function expectCapabilityRank(
+  catalog: readonly BackendTool[],
+  query: string,
+  expectedCapability: string,
+  maxRank: number
+): void {
+  const ranked = searchCapabilityCatalog(catalog, query, 8).map(
+    (capability) => capability.capability_id
+  );
+  const index = ranked.indexOf(expectedCapability);
+  expect(index).toBeGreaterThanOrEqual(0);
+  expect(index).toBeLessThan(maxRank);
+}
 
 describe("BlockIT Gateway contract", () => {
   test("client-facing MCP surface stays deliberately small and fixed", () => {
@@ -46,6 +89,30 @@ describe("BlockIT Gateway contract", () => {
     expect(classifyCapabilityTier(tools[1]!)).toBe("support");
     expect(classifyCapabilityTier(tools[2]!)).toBe("experimental");
     expect(classifyCapabilityTier(tools[3]!)).toBe("maintenance");
+  });
+
+  test("Gateway search covers representative daily intents against the actual phase catalogs", () => {
+    const authoring = runtimeCatalogForPhase("geometry");
+    const animation = runtimeCatalogForPhase("animation");
+
+    expectCapabilityRank(authoring, "find group hierarchy", "inspect_elements", 1);
+    expectCapabilityRank(authoring, "create several cubes", "manage_cubes", 1);
+    expectCapabilityRank(authoring, "capture model views", "capture_model_views", 1);
+    expectCapabilityRank(authoring, "paint texture with brush", "paint_with_brush", 3);
+
+    expectCapabilityRank(
+      animation,
+      "add rotation keyframe to bone",
+      "manage_animation_timeline",
+      3
+    );
+    expectCapabilityRank(
+      animation,
+      "change keyframe easing",
+      "manage_animation_timeline",
+      3
+    );
+    expectCapabilityRank(animation, "create looping animation", "create_animation", 3);
   });
 
   test("maintenance fallbacks stay out of empty discovery but remain explicitly discoverable", () => {

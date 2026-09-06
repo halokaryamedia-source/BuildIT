@@ -3,8 +3,7 @@ import type { Server as NodeNetServer, Socket } from 'node:net'
 import {
   registerToolsOnServer,
   registerResourcesOnServer,
-  registerPromptsOnServer,
-  invalidateToolRegistrationRuntimeCaches
+  registerPromptsOnServer
 } from '@/lib/factories'
 import { createServer as createMcpServer } from '@/server/server'
 import {
@@ -117,11 +116,10 @@ async function handleStatelessMcpRequest (
   phase: McpAuthoringPhase = getActiveMcpAuthoringPhase(),
   profile: McpRegistrationProfile = DEFAULT_MCP_REGISTRATION_PROFILE
 ): Promise<SerializedWebResponse> {
-  // The active phase changes tool.enabled at runtime. Rebuild the request
-  // snapshot after that mutation so every tool named in the phase contract is
-  // also callable by the request-owned MCP server.
-  invalidateToolRegistrationRuntimeCaches()
-  const requestServer = createMcpServer(getActiveMcpAuthoringPhase(), profile)
+  // Phase/profile mutations explicitly invalidate registration caches. Fresh
+  // request-owned servers reuse the current snapshot instead of rebuilding the
+  // same registration/invocation metadata on every stateless POST.
+  const requestServer = createMcpServer(phase, profile)
   registerToolsOnServer(requestServer)
   registerResourcesOnServer(requestServer)
   registerPromptsOnServer(requestServer)
