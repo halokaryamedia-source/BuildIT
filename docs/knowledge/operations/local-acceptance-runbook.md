@@ -34,28 +34,22 @@ Require a clean tree before reusing proof.
 
 ## 3. Source Closure + Build
 
-### Fast path — reuse exact green `verify:full`
+### Fast path — reuse exact green source proof
 
-Use only when the current clean HEAD has an exact successful `verify:full` and no local source/package edits follow it. Then:
+Use the full source gate in `GITHUB_RULES.md`: successful `verify:full`, or successful `verify:repository` + `verify:mcp` on the same exact `Local` SHA. CI proof is accepted; the latter is composite evidence, not an executed `verify:full`. Reuse only for a clean matching HEAD with no source/package edits. Do not rerun solely because proof came from CI.
 
 ```bash
 cd mcp
 bun install --frozen-lockfile
-bun run build
 ```
 
-### Full path
+### Missing source proof
 
-Otherwise, from `mcp/`:
+Run `bun run verify:full` once in a capable workspace, or obtain the missing exact-SHA CI evidence. Do not combine different SHAs or substitute ancestor success. `verify:closure` is an iteration diagnostic, not an additional final gate.
 
-```bash
-bun install --frozen-lockfile
-bun run verify:full
-```
+Source proof does not prove local build/deploy, installed identity or native runtime behavior. Section 4 uses `deploy:local`, which owns build and copy; do not build again immediately before it without a diagnosed need.
 
-`verify:full` runs repository policy once, then `verify:mcp`; `verify:mcp` runs Runtime/import-safe tests plus authoring compatibility once, then typecheck/surface/build/generated freshness. `verify:closure` remains the cheaper cross-surface preflight during iteration and should not be run immediately before `verify:full` unless it is needed to diagnose a closure failure.
-
-Do **not** hardcode phase tool counts in this runbook. Source counts belong to `measure:phases`; installed counts belong to `verify:stateless-local` and live `tools/list` proof.
+Source tool counts belong to `measure:phases`; installed counts belong to `verify:stateless-local` and live `tools/list` proof.
 
 ## 4. Deploy Exact Plugin
 

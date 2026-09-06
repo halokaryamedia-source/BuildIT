@@ -24,12 +24,12 @@ LOCAL_CODE      = local checkout + Bun/tests/build/generators/filesystem
 LIVE_BLOCKBENCH = LOCAL_CODE + deployed BlockIT runtime + functioning Gateway/runtime connection
 ```
 
-Proof ceiling follows the context above.
+Proof ceiling follows the context above. Exact-commit source acceptance and cloud workspace capability follow `GITHUB_RULES.md`.
 
 ```text
 required acceptance <= current proof ceiling → continue
 needs unavailable generator/runtime → handoff before substantial edits
-bounded source result complete here → deliver + remaining proof = LOCAL PROOF REQUIRED
+bounded source result complete here → accept covered CI proof; label only missing local/live proof
 ```
 
 ### Observe / recover context

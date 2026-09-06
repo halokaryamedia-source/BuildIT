@@ -49,6 +49,20 @@ LIVE_BLOCKBENCH = LOCAL_CODE + deployed/reloaded BlockIT + reconnected live MCP 
 - If complete delivery or required proof exceeds the current context, transfer before substantial edits accumulate. A bounded source result may still be delivered when complete within the current ceiling, with remaining proof labeled `LOCAL PROOF REQUIRED`.
 - GitHub Actions may verify repository contracts; CI is not a substitute for generator-authored committed output or live Blockbench proof.
 
+### Device-independent source acceptance
+
+`verify:repository`, `verify:authoring`, `verify:mcp`, and `verify:full` verify repository/source contracts; none implies installed Blockbench proof.
+
+For a full source gate, accept a completed successful `verify:full`, or completed successful `verify:repository` + `verify:mcp` on the same exact `Local` SHA. The latter is composite source evidence, not an executed `verify:full`. A narrower task needs only its owning verifier.
+
+Record repository/ref, commit SHA, run/job, canonical command, and conclusion when reporting evidence. Require actual successful steps under the pinned toolchain/lockfile where applicable; a green parent/workflow with skipped required checks is insufficient. Do not combine different SHAs or substitute ancestor success.
+
+Do not rerun an accepted source check locally solely because it ran in CI. Reuse requires a clean matching checkout; changed source/package inputs invalidate reuse. Environment-specific failures require corresponding targeted environment proof. Missing checks remain missing; do not create commits/temporary workflows just to trigger them.
+
+A cloud development workspace can satisfy `LOCAL_CODE` when its exact checkout, Bun, generators and filesystem execution are actually available. It need not be the user's PC. A product name or an unconnected workspace is not capability proof. Canonical generated output must still be authored in a capable development workspace and committed with its source; Actions remains verification, not a source editor/writeback path.
+
+Installed-plugin identity, native Undo/playback/persistence, Gateway lifecycle and visual claims still require matching `LIVE_BLOCKBENCH` evidence. Report `LOCAL PROOF REQUIRED` only for genuinely missing local/live proof, not for an already accepted CI source gate.
+
 ## 2. READ MINIMUM — read only what can change the decision
 
 After the reusable boot, default to:

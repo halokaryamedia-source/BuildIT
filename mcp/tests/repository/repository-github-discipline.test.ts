@@ -81,6 +81,44 @@ describe("repository GitHub discipline", () => {
     requireInvariant(specialist, /Preflight generated ownership[\s\S]*(schema|description|spec)[\s\S]*runtime prompt[\s\S]*mcp\/AGENTS\.md/i, "mcp-server-development/SKILL.md", "specialist follows package generator ownership");
   });
 
+  test("device-independent acceptance reuses only complete exact-commit source proof", async () => {
+    const [root, rules, runbook, validation, repository, packageText] = await Promise.all([
+      source("../AGENTS.md"),
+      source("../GITHUB_RULES.md"),
+      source("../docs/knowledge/operations/local-acceptance-runbook.md"),
+      source("../docs/knowledge/current-validation.md"),
+      source("../.github/workflows/repository-verify.yml"),
+      source("package.json"),
+    ]);
+
+    const acceptance = rules.split("### Device-independent source acceptance\n")[1]?.split("\n## 2. READ MINIMUM")[0];
+    expect(acceptance).toBeDefined();
+    const gate = acceptance ?? "";
+    requireInvariant(gate, /verify:repository[\s\S]*verify:mcp[\s\S]*same exact `Local` SHA/i, "GITHUB_RULES.md", "full composite proof is exact-commit");
+    requireInvariant(gate, /composite[\s\S]*not an executed `verify:full`/i, "GITHUB_RULES.md", "composite evidence is not a command-execution claim");
+    requireInvariant(gate, /Do not combine different SHAs[\s\S]*ancestor/i, "GITHUB_RULES.md", "missing exact-commit evidence cannot borrow ancestor success");
+    requireInvariant(gate, /Do not rerun[^\n]*locally[^\n]*CI/i, "GITHUB_RULES.md", "accepted CI source checks do not require a duplicate local run");
+    requireInvariant(gate, /cloud development workspace[\s\S]*checkout[\s\S]*Bun[\s\S]*filesystem[\s\S]*actually available/i, "GITHUB_RULES.md", "workspace capability is executable rather than device-named");
+    requireInvariant(gate, /generated output[\s\S]*committed with its source[\s\S]*LIVE_BLOCKBENCH/i, "GITHUB_RULES.md", "CI acceptance retains generator and live boundaries");
+    requireInvariant(root, /bounded source result complete here[^\n]*only missing local\/live proof/i, "AGENTS.md", "routing does not invent a local proof blocker");
+
+    for (const owner of [runbook, validation]) {
+      expect(owner).toContain("GITHUB_RULES.md");
+      expect(owner).toMatch(/same exact `Local` SHA/);
+    }
+    expect(validation).not.toContain("LOCAL verify:full REQUIRED");
+    expect(runbook).not.toContain("bun run build\n");
+    expect(JSON.parse(packageText).scripts["deploy:local"]).toMatch(/^bun run build && /);
+
+    for (const path of [
+      "AGENTS.md",
+      "GITHUB_RULES.md",
+      "docs/knowledge/current-validation.md",
+      "docs/knowledge/operations/**",
+      "mcp/tests/repository/**",
+    ]) expect(repository).toContain(`"${path}"`);
+  });
+
   test("test layers stay directory-owned and full verification avoids duplicate subset execution", async () => {
     const [repository, authoring, mcp, release, packageText] = await Promise.all([
       source("../.github/workflows/repository-verify.yml"),
