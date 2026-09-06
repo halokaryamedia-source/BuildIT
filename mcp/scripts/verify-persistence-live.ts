@@ -20,6 +20,7 @@ const REQUIRED_TOOLS = [
   "inspect_animation",
   "export_model",
 ] as const;
+const THIN_CUBE_NAME = "e2e_thin_per_face";
 
 const CACHE_DIR = resolve(".cache/live-authoring-e2e");
 const DEFAULT_PROJECT_PATH = resolve(
@@ -56,6 +57,7 @@ function stableElementState(detail: JsonObject) {
     origin: detail.origin ?? null,
     rotation: detail.rotation ?? null,
     inflate: detail.inflate ?? null,
+    uv: detail.uv ?? null,
     export: detail.export ?? null,
     visibility: detail.visibility ?? null,
   };
@@ -98,14 +100,18 @@ function stableAnimationState(inspection: JsonObject) {
   };
 }
 
-async function inspectBody(client: LiveMcpClient): Promise<JsonObject> {
+async function inspectElement(
+  client: LiveMcpClient,
+  id: string,
+  detail: "geometry" | "uv"
+): Promise<JsonObject> {
   return structuredObject(
     await client.callTool(
       "inspect_elements",
       {
         mode: "detail",
-        id: AUTHORING_E2E_CUBE_NAME,
-        detail: "geometry",
+        id,
+        detail,
       },
       "inspection"
     ),
@@ -146,7 +152,12 @@ async function snapshot(client: LiveMcpClient) {
   );
   return {
     project: stableProjectState(project),
-    body: stableElementState(await inspectBody(client)),
+    body: stableElementState(
+      await inspectElement(client, AUTHORING_E2E_CUBE_NAME, "geometry")
+    ),
+    thin_per_face: stableElementState(
+      await inspectElement(client, THIN_CUBE_NAME, "uv")
+    ),
     textures: stableTextureState(textures),
     animations: {
       a: stableAnimationState(
@@ -240,7 +251,7 @@ async function main(): Promise<void> {
           next:
             "In Blockbench, close the disposable project and reopen exactly the exported .bbmodel. Keep/re-enter Animation focus, then run verify:persistence-live -- --verify --confirm-disposable.",
           note:
-            "Prepare proves a verified native .bbmodel write and records deterministic authored state. It does not prove reopen until --verify succeeds after the manual native reopen.",
+            "Prepare proves a verified native .bbmodel write and records deterministic body, thin per-face UV, texture and animation state. It does not prove reopen until --verify succeeds after the manual native reopen.",
         },
         null,
         2
@@ -299,10 +310,11 @@ async function main(): Promise<void> {
         artifact_sha256: manifest.artifact_sha256,
         native_save_path_matches: true,
         authored_state_matches_prepare_snapshot: true,
+        thin_per_face_uv_persisted: true,
         cost: client.snapshotMetrics(),
         visual_quality: "not_evaluated",
         note:
-          "This proves native .bbmodel reopen for project/counts, body authored state, texture metadata/UV gate, and both animation/bone states. It does not substitute for texture visual fidelity or Minecraft execution.",
+          "This proves native .bbmodel reopen for project/counts, body state, thin per-face UV state, texture metadata/UV gate, and both animation/bone states. It does not substitute for texture visual fidelity or Minecraft execution.",
       },
       null,
       2
