@@ -100,7 +100,7 @@ console.log(
         "Use the exact selected tool name for the first deferred-spec query. A miss may be reformulated once with one distinguishing domain noun; that fallback is not modeled here.",
       phase_surface_contract:
         "shared AUTHORING tools are assigned by semantic owner; Core tools use default Geometry",
-      catalog_enabled_tool_count: 62,
+      catalog_enabled_tool_count: new Set([...phaseSurfaces.values()].flatMap((surface) => [...surface])).size,
       case_count: originalCases.length,
       phase_reports: phaseReports,
     },

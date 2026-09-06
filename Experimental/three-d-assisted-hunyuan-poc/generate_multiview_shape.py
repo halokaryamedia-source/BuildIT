@@ -6,6 +6,12 @@ from __future__ import annotations
 import argparse
 import os
 from pathlib import Path
+from environment import (
+    MODEL_ID, MODEL_REVISION, MODEL_SUBFOLDER, MODEL_VARIANT,
+    configure, check_source, check_weights,
+)
+
+configure()
 
 import torch
 from PIL import Image
@@ -14,10 +20,6 @@ from hy3dgen.rembg import BackgroundRemover
 from hy3dgen.shapegen import Hunyuan3DDiTFlowMatchingPipeline
 
 
-MODEL_ID = "tencent/Hunyuan3D-2mv"
-MODEL_REVISION = "3a761b539b29fe4ff64714813aa9560fd66f5de0"
-MODEL_SUBFOLDER = "hunyuan3d-dit-v2-mv"
-MODEL_VARIANT = "fp16"
 INFERENCE_STEPS = 50
 GUIDANCE_SCALE = 5.0
 OCTREE_RESOLUTION = 256
@@ -28,6 +30,8 @@ REQUIRED_VIEWS = ("front", "left", "back")
 
 
 def require_local_model() -> Path:
+    check_source()
+    check_weights()
     models_root = os.environ.get("HY3DGEN_MODELS")
     if not models_root:
         raise RuntimeError(

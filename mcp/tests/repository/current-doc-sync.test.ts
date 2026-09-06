@@ -16,7 +16,7 @@ describe("current developer-facing documentation sync", () => {
     expect(flow).toContain("current proof state        → docs/knowledge/current-validation.md");
     expect(flow).not.toContain("docs/foundation/validation-report.md");
 
-    expect(llms).toContain("51 callable tools");
+    expect(llms).toContain("52 callable tools");
     expect(llms).toContain("MCP CORE + AUTHORING");
     expect(llms).toContain("Geometry and Texturing startup focus values expose the same AUTHORING capability set");
     const api = JSON.parse(await text("docs/api.json"));

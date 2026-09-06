@@ -39,7 +39,6 @@ describe("model creation effectiveness — actual reference grounding", () => {
       expect(modelling).toContain(state);
     }
     expect(modelling).toContain("Use a View Pair Map only to resolve materially ambiguous");
-    expect(modelling).toContain("do not turn analysis ceremony into the work");
     expect(normalized(modelling)).toContain("semantic label never authorizes coordinates");
   });
 

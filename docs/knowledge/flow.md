@@ -165,6 +165,8 @@ Approved Reference Board
 
 No GLB-only, PrimitiveAnything-only, user-supplied-GLB v1, provider selection, or automatic fallback path.
 
+Prepare the complete setup and public integration before GPU/live testing. `three-d-assisted:run -- preflight` checks environment readiness without an asset or inference. After accepted external gates, `materialize_3d_assisted_scaffold(workspace_path)` is the Geometry-owned capability behind the existing Gateway; its receipt is not visual approval.
+
 Internal Shape/Primitive/Cuboid gates have no user approval. Shape checks identity/masses/parts/attachments/depth without judging blocky style; decomposition checks useful mass separation/negative spaces without primitive-count authority; materialization checks faithful native editable conversion, not final visual quality.
 
 Retry remains bounded: one targeted Shape regeneration maximum; no blind PrimitiveAnything rerun; known technical retry once; repeated same failure → `BLOCKED`.

@@ -18,7 +18,7 @@
 
       <div class="nav-group">
         <p class="nav-heading">Overview</p>
-        <a href="#tools" class="nav-link">Tools <span class="count">(63)</span></a>
+        <a href="#tools" class="nav-link">Tools <span class="count">(64)</span></a>
         <a href="#prompts" class="nav-link">Prompts <span class="count">(1)</span></a>
         <a href="#resources" class="nav-link">Resources <span class="count">(8)</span></a>
       </div>
@@ -28,7 +28,7 @@
         <a href="#cat-cubes" class="nav-link">Cubes <span class="count">(1)</span></a>
         <a href="#cat-camera-screenshots" class="nav-link">Camera &amp; Screenshots <span class="count">(4)</span></a>
         <a href="#cat-animation" class="nav-link">Animation <span class="count">(6)</span></a>
-        <a href="#cat-elements" class="nav-link">Elements <span class="count">(13)</span></a>
+        <a href="#cat-elements" class="nav-link">Elements <span class="count">(14)</span></a>
         <a href="#cat-export" class="nav-link">Export <span class="count">(2)</span></a>
         <a href="#cat-history" class="nav-link">History <span class="count">(4)</span></a>
         <a href="#cat-import-export" class="nav-link">Import/Export <span class="count">(1)</span></a>
@@ -45,7 +45,7 @@
         <h1>BlockIT — Bedrock Entity MCP</h1>
         <p class="subtitle">API Reference — v0.1.0</p>
         <nav class="stats">
-          <a href="#tools"><strong>63</strong> tools (28 stable, 35 experimental)</a>
+          <a href="#tools"><strong>64</strong> tools (28 stable, 36 experimental)</a>
           <a href="#prompts"><strong>1</strong> prompts</a>
           <a href="#resources"><strong>8</strong> resources</a>
         </nav>
@@ -765,6 +765,35 @@ bun run docs:check
       <td class="col-type">string</td>
       <td><span class="param-required">required</span></td>
       <td class="col-desc">New parent Group UUID or unique exact name; use `root` for root placement. <span class="param-meta">[minLength: 1]</span></td>
+    </tr></tbody>
+    </table>
+      </div>
+    </div>
+<div id="tool-materialize_3d_assisted_scaffold" class="card tool-card">
+      <div class="card-header">
+        <h3 class="card-name">materialize_3d_assisted_scaffold</h3>
+        <div class="card-badges">
+          <span class="badge badge-experimental">experimental</span>
+
+        </div>
+      </div>
+      <p class="card-title">Materialize 3D-Assisted Scaffold</p>
+      <p class="card-desc">Materializes the accepted 3D_ASSISTED workspace decomposition as editable Group/Cube scaffolding in one Undo transaction. Requires current Shape and Decomposition gates, hashes and dimensions. Rejects collisions; continue with semantic Geometry cleanup, not final visual approval.</p>
+      <div class="overflow-x">
+        <table class="param-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Required</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody><tr>
+      <td class="col-name">workspace_path</td>
+      <td class="col-type">string</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc">Absolute Active Workspace containing approved 3D_ASSISTED state and decomposition.</td>
     </tr></tbody>
     </table>
       </div>
@@ -2456,7 +2485,7 @@ bun run docs:check
       </section>
 
       <footer class="page-footer">
-        Generated 2026-09-06T09:30:09.853Z from Zod schemas
+        Generated 2026-09-06T10:28:17.525Z from Zod schemas
       </footer>
     </main>
   </div>

@@ -98,7 +98,7 @@ snapshot_download(
     allow_patterns=["basic_shapes_norm/*", "basic_shapes_norm_pc10000/*"],
 )
 
-cache_dir = pa_root / ".hf-download"
+cache_dir = pa_root.parent / "hf-download"
 cache_dir.mkdir(parents=True, exist_ok=True)
 
 pa_weight_download = Path(
@@ -152,5 +152,5 @@ Commit: $PA_COMMIT
 Conda env: $ENV_NAME
 
 Next:
-  ./run_poc.sh /absolute/or/wsl/path/to/approved-elephant.glb
+  ./run_production.sh --preflight
 EOF

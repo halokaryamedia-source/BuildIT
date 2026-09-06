@@ -24,9 +24,11 @@ Reuse fresh tool state. Do not inspect every Cube, capture after every mutation,
 
 Reference-driven work requires the actual approved image in active multimodal context. Path/memory is not image evidence. Missing material reference evidence → `BLOCKED`.
 
-Choose Geometry Strategy explicitly with the user: DIRECT or 3D_ASSISTED, never inferred or switched automatically. For DIRECT Geometry, use the stable direct method: create the project, add only the required Groups and Cubes, set explicit positions/sizes/parents/transforms, then capture canonical views for visual review. Do not use the retired reference-grounded plan/compiler flow.
+Choose DIRECT or 3D_ASSISTED with the user; never infer or auto-switch. For DIRECT Geometry: create the project, add required Groups and Cubes, set explicit positions/sizes/parents/transforms, then capture canonical views for visual review. Do not use the retired reference-grounded plan/compiler flow.
 
 ## Simple Rigid Fast Path
+
+3D_ASSISTED: after external gates, use Gateway `materialize_3d_assisted_scaffold(workspace_path)`.
 
 For a clear predominantly rigid object with simple topology and no material cross-view conflict:
 

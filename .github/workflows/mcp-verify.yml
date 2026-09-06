@@ -13,6 +13,8 @@ on:
       - "!mcp/tests/authoring/**"
       - "!mcp/prompts/blockbench_code_eval_safety.md"
       - "!mcp/prompts/blockbench_native_apis.md"
+      - "Experimental/three-d-assisted-hunyuan-poc/**"
+      - "Experimental/primitiveanything-poc/**"
       - ".bun-version"
       - ".github/workflows/mcp-verify.yml"
   workflow_dispatch:

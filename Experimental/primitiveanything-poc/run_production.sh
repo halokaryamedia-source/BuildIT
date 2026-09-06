@@ -8,18 +8,22 @@ PA_COMMIT="50586e55702cc91a81f205c3e1ea78853ce318b1"
 PA_WEIGHT_SHA256="140341166b40f2038ec20933512f2e00401299d581e7b2549c0068195b616c5a"
 MICHELANGELO_SHA256="0391b81c36240e8f766fedf4265df599884193a5ef65354525074b9a00887454"
 
-if [[ $# -ne 5 ]]; then
+PREFLIGHT=false
+if [[ $# -eq 1 && "$1" == "--preflight" ]]; then
+  PREFLIGHT=true
+elif [[ $# -ne 5 ]]; then
   echo "Usage: $0 /path/to/shape.glb /path/to/output-dir <width-bb> <height-bb> <depth-bb>" >&2
   exit 2
 fi
 
-INPUT="$(realpath "$1")"
-OUTPUT_DIR="$2"
-TARGET_WIDTH="$3"
-TARGET_HEIGHT="$4"
-TARGET_DEPTH="$5"
-
-[[ -f "$INPUT" ]] || { echo "shape.glb not found: $INPUT" >&2; exit 1; }
+if [[ "$PREFLIGHT" == false ]]; then
+  INPUT="$(realpath "$1")"
+  OUTPUT_DIR="$2"
+  TARGET_WIDTH="$3"
+  TARGET_HEIGHT="$4"
+  TARGET_DEPTH="$5"
+  [[ -f "$INPUT" ]] || { echo "shape.glb not found: $INPUT" >&2; exit 1; }
+fi
 [[ -d "$PA_ROOT/.git" ]] || {
   echo "PrimitiveAnything is not set up. Run Experimental/primitiveanything-poc/setup_wsl.sh first." >&2
   exit 1
@@ -49,18 +53,40 @@ command -v nvidia-smi >/dev/null || {
   exit 1
 }
 
-mkdir -p "$OUTPUT_DIR/pa" "$OUTPUT_DIR/cuboid"
-OUTPUT_DIR="$(realpath "$OUTPUT_DIR")"
-
 source "$(conda info --base)/etc/profile.d/conda.sh"
 conda activate "$ENV_NAME"
 
-python - <<'PY'
+python - "$PA_ROOT" <<'PY'
+import sys
+from pathlib import Path
+sys.path.insert(0, sys.argv[1])
 import torch
+import pytorch3d._C
+import mesh2sdf.core
+import mesh_to_sdf
+import skimage.measure
+import seaborn
+import accelerate
+import primitive_anything.utils
+from primitive_anything.primitive_transformer import PrimitiveTransformerDiscrete
+from scipy.spatial.transform import Rotation
 if not torch.cuda.is_available():
     raise SystemExit("torch.cuda.is_available() is false; PrimitiveAnything cannot run")
+for folder in ("basic_shapes_norm", "basic_shapes_norm_pc10000"):
+    for shape in ("CubeBevel", "SphereSharp", "CylinderSharp"):
+        path = Path(sys.argv[1]) / "data" / folder / f"SM_GR_BS_{shape}_001.ply"
+        if not path.is_file() or not path.stat().st_size:
+            raise SystemExit(f"PrimitiveAnything data missing: {path}")
 print("CUDA:", torch.cuda.get_device_name(0))
 PY
+
+if [[ "$PREFLIGHT" == true ]]; then
+  echo "PrimitiveAnything preflight PASS; source=$PA_ROOT; environment=$ENV_NAME; inference=not_run"
+  exit 0
+fi
+
+mkdir -p "$OUTPUT_DIR/pa" "$OUTPUT_DIR/cuboid"
+OUTPUT_DIR="$(realpath "$OUTPUT_DIR")"
 
 pushd "$PA_ROOT" >/dev/null
 python demo.py --input "$INPUT" --log_path "$OUTPUT_DIR/pa"

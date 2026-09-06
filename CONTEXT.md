@@ -99,7 +99,7 @@ README owns current intake/stage/next-step/blocker state. `3d-assisted/state.jso
 
 External local tooling controlled by Codex owns view extraction + Shape Reconstruction + PrimitiveAnything. The resumable external orchestrator and canonical state/decomposition contracts are source-implemented.
 
-BlockIT Geometry Runtime contains the dedicated fail-closed atomic Cuboid materializer engine. Its public Geometry ToolSpec binding, canonical generated API output, installed Runtime proof, and native Undo proof still require `LOCAL_CODE` / `LIVE_BLOCKBENCH` before production promotion.
+BlockIT Geometry Runtime contains the dedicated fail-closed atomic Cuboid materializer engine, exposed as `materialize_3d_assisted_scaffold(workspace_path)` through the existing Gateway. Setup and public integration precede GPU/live testing. Source readiness does not establish installed Runtime, native Undo, or production-quality proof.
 
 Do not revive generic `from_geo_json` or add a provider router to implement this target.
 
@@ -128,7 +128,7 @@ describe_capability
 invoke_capability
 ```
 
-Current Runtime retains **51 callable Bedrock tools**. Geometry and Texturing startup stages expose the same shared AUTHORING surface; Animation remains a separate runtime surface. Direct Runtime MCP remains for Inspector/conformance/debugging, not normal AI-client authoring.
+Current source retains **52 callable Bedrock tools**. Geometry and Texturing startup stages expose the same shared AUTHORING surface; Animation remains a separate runtime surface. Installed evidence is tracked separately in `current-validation.md`. Direct Runtime MCP remains for Inspector/conformance/debugging, not normal AI-client authoring.
 
 Gateway handoff keeps the same task/chat alive and refreshes backend catalog only when crossing AUTHORING↔Animation.
 

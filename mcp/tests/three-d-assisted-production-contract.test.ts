@@ -1,4 +1,14 @@
-import { describe, expect, test } from "bun:test";
+import { afterEach, describe, expect, test } from "bun:test";
+import * as fs from "node:fs";
+import * as path from "node:path";
+import * as crypto from "node:crypto";
+import { tmpdir } from "node:os";
+import { materializeThreeDAssistedScaffoldFromWorkspace } from "@/server/threeDAssistedMaterializer";
+import { materializeThreeDAssistedParameters } from "@/server/tools/element";
+import { getAllToolDefinitions } from "@/lib/factories";
+import { registerMcpProfile } from "@/server/tools";
+import { searchCapabilityCatalog } from "@/gateway/contract";
+import { loadState, readWorkspaceContract } from "../scripts/three-d-assisted-run";
 import {
   THREE_D_ASSISTED_PRIMITIVEANYTHING_V1,
   THREE_D_ASSISTED_UNITS_PER_BLOCK,
@@ -13,6 +23,78 @@ import {
 const SHA_A = "a".repeat(64);
 const SHA_B = "b".repeat(64);
 const SHA_C = "c".repeat(64);
+
+const globals = new Map<string, PropertyDescriptor | undefined>();
+const workspaces: string[] = [];
+function setGlobal(name: string, value: unknown) {
+  if (!globals.has(name)) globals.set(name, Object.getOwnPropertyDescriptor(globalThis, name));
+  Object.defineProperty(globalThis, name, { configurable: true, writable: true, value });
+}
+afterEach(() => {
+  for (const [name, descriptor] of globals) {
+    if (descriptor) Object.defineProperty(globalThis, name, descriptor);
+    else Reflect.deleteProperty(globalThis, name);
+  }
+  globals.clear();
+  for (const root of workspaces.splice(0)) {
+    if (!root.startsWith(path.join(tmpdir(), "blockit-assisted-"))) throw new Error("Unexpected test cleanup path");
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+const hash = (value: string) => crypto.createHash("sha256").update(value).digest("hex");
+function workspaceFixture() {
+  const root = fs.mkdtempSync(path.join(tmpdir(), "blockit-assisted-"));
+  workspaces.push(root);
+  const put = (name: string, value: unknown) => {
+    const file = path.join(root, name);
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    fs.writeFileSync(file, typeof value === "string" ? value : JSON.stringify(value));
+  };
+  put("README.md", "Geometry Strategy: 3D_ASSISTED\nRequested Dimensions: width=1 height=1 length=1 blocks\n");
+  put("references/approved-reference.png", "disposable reference bytes, not visual approval");
+  put("3d-assisted/shape.glb", "disposable shape bytes, not GPU evidence");
+  const referenceHash = hash(fs.readFileSync(path.join(root, "references/approved-reference.png"), "utf8"));
+  const shapeHash = hash(fs.readFileSync(path.join(root, "3d-assisted/shape.glb"), "utf8"));
+  const decomposition = canonicalizePrimitiveAnythingCandidate({ candidate: candidate(), reference_sha256: referenceHash,
+    shape_sha256: shapeHash, requested_dimensions_blocks: { width: 1, height: 1, length: 1 } });
+  put("3d-assisted/primitive-decomposition.json", decomposition);
+  const base = freshThreeDAssistedState(referenceHash);
+  const state = threeDAssistedStateSchema.parse({ ...base,
+    shape_reconstruction: { ...base.shape_reconstruction, status: "passed", artifact: "shape.glb", sha256: shapeHash },
+    primitive_decomposition: { ...base.primitive_decomposition, status: "passed", artifact: "primitive-decomposition.json", sha256: hash(JSON.stringify(decomposition)) },
+    last_valid_external_resume_point: "decomposition",
+  });
+  put("3d-assisted/state.json", state);
+  return { root, put, state };
+}
+
+function nativeFixture(failCube = false) {
+  class NativeGroup {
+    static all: NativeGroup[] = [];
+    name = ""; uuid = "group";
+    constructor(value: object) { Object.assign(this, value); }
+    init() { NativeGroup.all.push(this); return this; }
+    addTo(_parent: unknown) { return this; }
+  }
+  class NativeCube {
+    static all: NativeCube[] = [];
+    name = ""; uuid = "cube"; parent: unknown;
+    constructor(value: object) { Object.assign(this, value); }
+    init() { if (failCube) throw new Error("controlled cube failure"); NativeCube.all.push(this); return this; }
+    addTo(parent: unknown) { this.parent = parent; return this; }
+  }
+  const undo = { started: 0, finished: 0, cancelled: 0,
+    initEdit() { this.started++; },
+    finishEdit() { this.finished++; },
+    cancelEdit() { this.cancelled++; NativeGroup.all.length = 0; NativeCube.all.length = 0; },
+  };
+  setGlobal("requireNativeModule", (name: string) => ({ fs, path, crypto })[name as "fs"]);
+  setGlobal("Project", {}); setGlobal("Format", { id: "bedrock" });
+  setGlobal("Group", NativeGroup); setGlobal("Cube", NativeCube);
+  setGlobal("Undo", undo); setGlobal("Canvas", { updateAll() {} });
+  return { NativeGroup, NativeCube, undo };
+}
 
 function candidate() {
   return {
@@ -53,6 +135,83 @@ function candidate() {
 }
 
 describe("3D-Assisted production contract", () => {
+  test("public materializer has one strict absolute workspace input and structured receipt", async () => {
+    expect(materializeThreeDAssistedParameters.safeParse({ workspace_path: "relative" }).success).toBe(false);
+    const f = workspaceFixture();
+    expect(materializeThreeDAssistedParameters.safeParse({ workspace_path: f.root, primitives: [] }).success).toBe(false);
+    const native = nativeFixture();
+    registerMcpProfile();
+    const definitions = getAllToolDefinitions();
+    const catalog = Object.entries(definitions).map(([name, definition]) => ({ name, description: definition.description }));
+    expect(searchCapabilityCatalog(catalog, "materialize_3d_assisted_scaffold", 5)[0]?.capability_id).toBe("materialize_3d_assisted_scaffold");
+    const result = await definitions.materialize_3d_assisted_scaffold.execute({ workspace_path: f.root });
+    expect(result).toMatchObject({ structuredContent: { primitive_count: 1, group_count: 1, cube_count: 1, undo_units: 1, next_step: "semantic_geometry_cleanup" } });
+    expect(native.undo).toMatchObject({ started: 1, finished: 1, cancelled: 0 });
+    expect(native.NativeCube.all[0].parent).toBe(native.NativeGroup.all[0]);
+  });
+
+  for (const defect of ["gate", "reference", "shape", "decomposition", "dimensions", "collision", "format", "escape"] as const) {
+    test(`materializer rejects ${defect} before Undo`, () => {
+      const f = workspaceFixture();
+      const native = nativeFixture();
+      if (defect === "gate") f.put("3d-assisted/state.json", freshThreeDAssistedState(f.state.reference.sha256));
+      if (defect === "reference") f.put("references/approved-reference.png", "changed");
+      if (defect === "shape") f.put("3d-assisted/shape.glb", "changed");
+      if (defect === "decomposition") f.put("3d-assisted/primitive-decomposition.json", "changed");
+      if (defect === "dimensions") f.put("README.md", "Geometry Strategy: 3D_ASSISTED\nRequested Dimensions: width=2 height=1 length=1 blocks");
+      if (defect === "collision") new native.NativeGroup({ name: "pa_000" }).init();
+      if (defect === "format") setGlobal("Format", { id: "free" });
+      if (defect === "escape") setGlobal("requireNativeModule", (name: string) => name === "fs" ? { ...fs,
+        realpathSync: (file: string) => file.endsWith("README.md") ? path.join(tmpdir(), "outside.md") : fs.realpathSync(file),
+      } : name === "path" ? path : crypto);
+      expect(() => materializeThreeDAssistedScaffoldFromWorkspace(f.root)).toThrow();
+      expect(native.undo.started).toBe(0);
+      expect(native.NativeCube.all).toHaveLength(0);
+    });
+  }
+
+  test("partial native failure cancels the sole Undo transaction", () => {
+    const f = workspaceFixture();
+    const native = nativeFixture(true);
+    expect(() => materializeThreeDAssistedScaffoldFromWorkspace(f.root)).toThrow("controlled cube failure");
+    expect(native.undo).toMatchObject({ started: 1, finished: 0, cancelled: 1 });
+    expect(native.NativeGroup.all).toHaveLength(0);
+    expect(native.NativeCube.all).toHaveLength(0);
+  });
+
+  test("resume preserves accepted state, then invalidates only dimension-dependent decomposition", async () => {
+    const f = workspaceFixture();
+    let workspace = await readWorkspaceContract(f.root);
+    expect(await loadState(workspace, true)).toEqual(f.state);
+    f.put("README.md", "Geometry Strategy: 3D_ASSISTED\nRequested Dimensions: width=2 height=1 length=1 blocks");
+    workspace = await readWorkspaceContract(f.root);
+    const state = await loadState(workspace, true);
+    expect(state?.shape_reconstruction.status).toBe("passed");
+    expect(state?.primitive_decomposition.status).toBe("pending");
+    expect(fs.existsSync(path.join(f.root, "3d-assisted/primitive-decomposition.json"))).toBe(false);
+  });
+
+  test("read-only status retains artifacts; changed reference invalidates derived state on resume", async () => {
+    const f = workspaceFixture();
+    f.put("references/approved-reference.png", "new reference");
+    const workspace = await readWorkspaceContract(f.root);
+    expect(await loadState(workspace, false)).toEqual(f.state);
+    expect(fs.existsSync(path.join(f.root, "3d-assisted/shape.glb"))).toBe(true);
+    expect((await loadState(workspace, true))?.last_valid_external_resume_point).toBe("reference");
+    expect(fs.existsSync(path.join(f.root, "3d-assisted/shape.glb"))).toBe(false);
+  });
+
+  test("missing backends fail run before initializing asset state", async () => {
+    const f = workspaceFixture();
+    fs.unlinkSync(path.join(f.root, "3d-assisted/state.json"));
+    const process = Bun.spawn(["bun", "run", "scripts/three-d-assisted-run.ts", "run", "--workspace", f.root], {
+      env: { ...Bun.env, BLOCKIT_HUNYUAN_PYTHON: path.join(f.root, "missing-python.exe"), BLOCKIT_WSL_EXE: path.join(f.root, "missing-wsl.exe") },
+      stdout: "pipe", stderr: "pipe",
+    });
+    expect(await process.exited).not.toBe(0);
+    expect(await new Response(process.stderr).text()).toContain("preflight failed");
+    expect(fs.existsSync(path.join(f.root, "3d-assisted/state.json"))).toBe(false);
+  });
   test("workspace intake is explicit user strategy plus labelled block dimensions", () => {
     const parsed = parseThreeDAssistedWorkspaceReadme(`
 Geometry Strategy: 3D_ASSISTED

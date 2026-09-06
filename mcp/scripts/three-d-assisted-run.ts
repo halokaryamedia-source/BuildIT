@@ -54,6 +54,7 @@ function usage(): never {
   throw new Error(
     [
       "Usage:",
+      "  bun run three-d-assisted:run -- preflight",
       "  bun run three-d-assisted:run -- run --workspace /absolute/workspace/active/<asset>",
       "  bun run three-d-assisted:run -- status --workspace /absolute/workspace/active/<asset>",
       "  bun run three-d-assisted:run -- accept-shape --workspace /absolute/workspace/active/<asset>",
@@ -67,6 +68,7 @@ function usage(): never {
 function parseCli(): { command: string; workspace: string } {
   const args = process.argv.slice(2);
   const command = args[0];
+  if (command === "preflight" && args.length === 1) return { command, workspace: "" };
   const workspaceIndex = args.indexOf("--workspace");
   const workspace = workspaceIndex >= 0 ? args[workspaceIndex + 1] : undefined;
   if (
@@ -140,7 +142,7 @@ async function assertGlb2(path: string, label: string): Promise<void> {
   }
 }
 
-async function readWorkspaceContract(
+export async function readWorkspaceContract(
   requestedWorkspace: string
 ): Promise<WorkspaceContract> {
   const root = await realpath(resolve(requestedWorkspace));
@@ -214,7 +216,6 @@ async function atomicWriteJson(path: string, value: unknown): Promise<void> {
   await mkdir(dirname(path), { recursive: true });
   const temp = `${path}.${randomUUID()}.tmp`;
   await writeFile(temp, `${JSON.stringify(value, null, 2)}\n`, "utf8");
-  await rm(path, { force: true });
   await rename(temp, path);
 }
 
@@ -222,7 +223,6 @@ async function atomicCopy(source: string, target: string): Promise<void> {
   await mkdir(dirname(target), { recursive: true });
   const temp = `${target}.${randomUUID()}.tmp`;
   await copyFile(source, temp);
-  await rm(target, { force: true });
   await rename(temp, target);
 }
 
@@ -235,7 +235,7 @@ async function writeState(
   return parsed;
 }
 
-async function loadState(
+export async function loadState(
   workspace: WorkspaceContract,
   mutate: boolean
 ): Promise<ThreeDAssistedState | null> {
@@ -373,7 +373,7 @@ async function runProcess(
 }
 
 function hunyuanPython(): string {
-  return process.env.BLOCKIT_HUNYUAN_PYTHON || "python";
+  return process.env.BLOCKIT_HUNYUAN_PYTHON || resolve(HUNYUAN_DIR, ".cache", "venv", "Scripts", "python.exe");
 }
 
 async function ensureViews(
@@ -483,7 +483,7 @@ function wslExe(): string {
 
 function wslPath(path: string): string {
   const result = Bun.spawnSync({
-    cmd: [wslExe(), "wslpath", "-a", path],
+    cmd: [wslExe(), "-d", "Ubuntu", "--", "wslpath", "-a", path],
     stdout: "pipe",
     stderr: "pipe",
   });
@@ -528,7 +528,7 @@ async function runPrimitiveAnything(
   if (process.platform === "win32") {
     await runProcess([
       wslExe(),
-      "bash",
+      "-d", "Ubuntu", "--", "bash", "-l",
       wslPath(PA_PRODUCTION_SCRIPT),
       wslPath(paths.shape),
       wslPath(paths.paCandidate),
@@ -753,12 +753,18 @@ async function printStatus(workspace: WorkspaceContract): Promise<void> {
 
 async function main(): Promise<void> {
   const { command, workspace: workspaceArg } = parseCli();
+  if (command === "preflight") {
+    await preflight();
+    return;
+  }
   const workspace = await readWorkspaceContract(workspaceArg);
   if (command === "status") {
     await printStatus(workspace);
     return;
   }
 
+  // Missing dependencies must fail before state initialization/invalidation.
+  if (command === "run") await preflight();
   let state = await loadState(workspace, true);
   if (!state) throw new Error("Failed to initialize 3D-Assisted state.");
 
@@ -786,4 +792,19 @@ async function main(): Promise<void> {
   console.log("READY_FOR_BLOCKBENCH_MATERIALIZATION");
 }
 
-await main();
+async function preflight(): Promise<void> {
+  const errors: string[] = [];
+  try {
+    await runProcess([hunyuanPython(), resolve(HUNYUAN_DIR, "environment.py"), "preflight"]);
+  } catch (error) { errors.push(`Hunyuan: ${String(error)}`); }
+  try {
+    await runProcess(process.platform === "win32" ? [
+      wslExe(), "-d", "Ubuntu", "--", "bash", "-l",
+      wslPath(PA_PRODUCTION_SCRIPT), "--preflight",
+    ] : ["bash", PA_PRODUCTION_SCRIPT, "--preflight"]);
+  } catch (error) { errors.push(`PrimitiveAnything: ${String(error)}`); }
+  if (errors.length) throw new Error(`3D-Assisted preflight failed:\n${errors.join("\n")}`);
+  console.log("ENVIRONMENT_READY; inference and live Blockbench proof remain NOT_RUN");
+}
+
+if (import.meta.main) await main();

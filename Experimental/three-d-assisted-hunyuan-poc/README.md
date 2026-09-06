@@ -91,19 +91,18 @@ Do not tune Fast/Turbo, larger octree values, multiple seeds, extra views, clean
 
 ## Local Hunyuan Setup
 
-The GPU proof belongs on the local CUDA machine, not GitHub CI.
+The GPU proof belongs on the local CUDA machine, not GitHub CI. Complete environment setup and public integration first; stop at ready-to-test until asset testing is requested.
 
 ```bash
-git clone https://github.com/Tencent-Hunyuan/Hunyuan3D-2.git
-cd Hunyuan3D-2
-git checkout f8db63096c8282cb27354314d896feba5ba6ff8a
-
-# Install the appropriate CUDA-enabled PyTorch build first.
-pip install -r requirements.txt
-pip install -e .
+# From the repository root using Windows Python 3.12:
+python Experimental/three-d-assisted-hunyuan-poc/environment.py setup
+# From mcp/ after PrimitiveAnything setup:
+bun run three-d-assisted:run -- preflight
 ```
 
-The pinned model snapshot must already exist locally. Point `HY3DGEN_MODELS` at that root.
+`environment.py` owns shared model pins, source/weight verification and repeatable setup. It creates `.cache/venv`, installs the pinned shape-only compatibility constraints, downloads the exact MultiView snapshot and rembg u2net weights, and validates their upstream identities. Model/source constants are shared with `generate_multiview_shape.py`.
+
+The orchestrator defaults to that dedicated interpreter. `HY3DGEN_MODELS` defaults to `.cache/models` and `U2NET_HOME` to `.cache/u2net`; overrides must contain weights matching the source-pinned checksums. Inference uses local files with Hugging Face offline mode. Preflight checks imports/CUDA and checksums without model execution; it does not establish VRAM capacity or visual quality.
 
 PowerShell example:
 
@@ -213,7 +212,7 @@ thin external orchestrator
 → invoke PrimitiveAnything stage
 ```
 
-Only after PrimitiveAnything produces an acceptable decomposition should the dedicated BlockIT Geometry materializer be implemented/proven.
+The orchestrator and public `materialize_3d_assisted_scaffold(workspace_path)` binding are source-implemented. Complete setup/integration/source checks before testing. Actual materialization and native proof require a decomposition accepted at its visual gate; no inference or live proof is implied by installation.
 
 ## Historical Evidence
 

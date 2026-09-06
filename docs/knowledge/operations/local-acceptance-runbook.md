@@ -2,7 +2,7 @@
 
 Updated: 2026-09-06  
 Owner: `LIVE_BLOCKBENCH` formal acceptance procedure  
-Current state: reactivated by `docs/knowledge/next-action.md` for local/Codex handoff.
+Current state: preparation only; GPU/live tests deferred.
 
 This procedure is active only when `docs/knowledge/next-action.md` explicitly reactivates local testing. `LIVE_BLOCKBENCH` is an execution capability; it does not activate this procedure by itself. Targeted live debugging may use that capability without formal Local Acceptance.
 
@@ -134,7 +134,7 @@ Tool success, export success, low call count, or a scalar score cannot override 
 
 ## 8. 3D_ASSISTED External Pipeline Gate
 
-Run only after Gateway/DIRECT baseline is stable.
+Prepare setup/binding/source checks first: `mcp/scripts/three-d-assisted/README.md`. Stop while testing is deferred. GPU/live proof requires approved intake and a stable Gateway/DIRECT baseline.
 
 ```text
 Approved Reference Board
@@ -145,11 +145,11 @@ Approved Reference Board
 → Primitive Decomposition Gate → primitive-decomposition.json/state
 ```
 
-Approved image is visual authority; requested dimensions are numeric authority. `shape.glb` and PrimitiveAnything output are intermediate evidence only. Maximum one targeted Hunyuan regeneration for a diagnosed reconstruction issue; no blind PrimitiveAnything reruns.
+Reference is visual authority; dimensions are numeric authority. External output is intermediate evidence. Allow one diagnosed Hunyuan regeneration; no blind PrimitiveAnything reruns.
 
 ## 9. Dedicated Materializer Gate
 
-Only after the external decomposition gate passes:
+After decomposition PASS: Gateway → `materialize_3d_assisted_scaffold(workspace_path)`.
 
 ```text
 Active Workspace path

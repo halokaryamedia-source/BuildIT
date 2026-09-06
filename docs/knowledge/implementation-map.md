@@ -111,7 +111,9 @@ Canonical state/data semantics are owned by `mcp/lib/threeDAssistedProduction.ts
 
 Blockbench conversion engine is `mcp/server/threeDAssistedMaterializer.ts`: Active Workspace only, strict schema/provenance/hash/dimension validation, full preflight before mutation, one native Undo transaction, one temporary `pa_<id>` Group/Bone + Cube per accepted primitive, rollback on exception.
 
-**Public materializer ToolSpec binding is the narrow LOCAL_CODE handoff.** It must expose the existing engine as one Geometry-owned Runtime capability accepting only `workspace_path`, keep the Gateway at four tools, and use canonical `docs:build`/`docs:check` before completion. Do not hand-edit generated API docs and do not revive `from_geo_json`.
+**Public materializer ToolSpec binding:** `mcp/server/tools/element.ts` exposes `materialize_3d_assisted_scaffold` with only absolute `workspace_path`, using the existing engine and four-tool Gateway. `mcp/lib/authoringPhase.ts` owns Geometry classification. Canonical `docs:build`/`docs:check` own generated output; installed/native proof remains separate.
+
+Environment setup/preflight: `Experimental/three-d-assisted-hunyuan-poc/environment.py` owns pinned Windows Hunyuan source/model setup and checksum checks; the existing PrimitiveAnything setup/runner owns WSL Ubuntu dependencies and weights. `three-d-assisted-run.ts preflight` checks both without state writes or inference.
 
 ## Authoring / Approval Ownership
 
@@ -138,7 +140,7 @@ describe_capability
 invoke_capability
 ```
 
-The retained Bedrock Runtime callable union remains **51 tools**. Geometry and Texturing share **46** installed AUTHORING tools; Animation exposes **19**. Exact installed identity and lifecycle evidence belong in `current-validation.md`. Generated API inventory contains **63 declared source ToolSpecs**, including disabled/source-preserved definitions and phase control; that inventory is not the active client surface. A materializer is a Runtime capability behind the existing Gateway, never a fifth Gateway tool.
+The source Bedrock Runtime callable union has **52 tools**: Geometry and Texturing share **47** AUTHORING tools; Animation exposes **19**. The last installed proof predates the materializer binding; exact installed identity and lifecycle evidence belong in `current-validation.md`. Generated API inventory contains **64 declared source ToolSpecs**, including disabled/source-preserved definitions and phase control; that inventory is not the active client surface. A materializer is a Runtime capability behind the existing Gateway, never a fifth Gateway tool.
 
 ## Hot-Path Defect Index
 

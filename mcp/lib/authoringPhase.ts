@@ -32,6 +32,7 @@ const CORE_FAMILIES = new Set<McpRegistrationFamily>([
 
 const CORE_ELEMENT_TOOLS = new Set(["inspect_elements"]);
 const GEOMETRY_ELEMENT_TOOLS = new Set([
+  "materialize_3d_assisted_scaffold",
   "modify_group",
   "remove_element",
   "rename_element",

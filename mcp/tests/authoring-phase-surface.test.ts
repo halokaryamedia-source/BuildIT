@@ -45,6 +45,7 @@ describe("authoring stage MCP surface", () => {
 
     for (const tool of [
       "manage_cubes",
+      "materialize_3d_assisted_scaffold",
       "add_group",
       "manage_geometry_reference",
       "bone_rigging",

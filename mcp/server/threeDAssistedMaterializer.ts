@@ -32,12 +32,10 @@ type NativeCrypto = {
 
 type NativeModuleName = "fs" | "path" | "crypto";
 
-const loadNativeModule = requireNativeModule as unknown as (
-  name: NativeModuleName
-) => unknown;
-
 function requireNative<T>(name: NativeModuleName): T {
-  const module = loadNativeModule(name) as T | undefined;
+  const module = typeof requireNativeModule === "function"
+    ? (requireNativeModule as unknown as (name: NativeModuleName) => unknown)(name) as T | undefined
+    : undefined;
   if (!module) {
     throw new Error(
       `3D-Assisted materialization requires Blockbench native module permission for ${name}.`

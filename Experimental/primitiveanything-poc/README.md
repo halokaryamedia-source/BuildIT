@@ -7,7 +7,7 @@ Status:
 EXPERIMENTAL SOURCE FOUNDATION APPLIED
 PINNED PRIMITIVEANYTHING IMPLEMENTATION
 LOCAL DECOMPOSITION PROOF REQUIRED
-PRODUCTION MATERIALIZER PENDING
+PRODUCTION MATERIALIZER SOURCE_READY / LIVE PROOF PENDING
 NOT END-TO-END PRODUCTION READY
 ```
 
@@ -150,7 +150,7 @@ Do not blind-rerun PrimitiveAnything to chase visual quality. A rerun requires a
 
 ## Production Materializer Boundary
 
-The future production bridge is one dedicated **Geometry Runtime capability behind the existing four-tool Gateway**.
+The source production bridge is `materialize_3d_assisted_scaffold(workspace_path)`, one dedicated **Geometry Runtime capability behind the existing four-tool Gateway**. Installed/native proof remains pending.
 
 Target behavior:
 
@@ -185,7 +185,7 @@ They do **not** prove:
 - final Minecraft/Blockbench quality;
 - end-to-end `3D_ASSISTED` acceptance.
 
-Those are the next local/Codex development gates in `docs/knowledge/next-action.md`.
+The canonical schema and engine/binding now have separate production source owners; this POC evidence does not establish their live proof. Complete setup and integration before GPU/live testing as recorded in `docs/knowledge/next-action.md`.
 
 ## Non-Goals
 

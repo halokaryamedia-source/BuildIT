@@ -15,7 +15,7 @@ Reference-driven work requires the **actual approved reference image visible in 
 
 approved image = visual authority; dimensions = numeric authority; strategy = user-selected `DIRECT | 3D_ASSISTED`. Evidence: `SUPPORTED | PROVISIONAL | CONFLICTING | UNAVAILABLE`. Never auto-switch.
 
-`DIRECT` uses semantic Groups/Cubes. `3D_ASSISTED`: Shape Reconstruction → Shape GLB PASS → PrimitiveAnything PASS → Cuboid Scaffold → semantic cleanup; unavailable → `BLOCKED`, never fallback. Use a View Pair Map only to resolve materially ambiguous front/back, left/right, mirrored, depth, or 3/4 evidence; otherwise do not turn analysis ceremony into the work.
+`DIRECT` uses semantic Groups/Cubes. `3D_ASSISTED`: Shape Reconstruction → Shape GLB PASS → PrimitiveAnything PASS → Gateway `materialize_3d_assisted_scaffold(workspace_path)` → scaffold review → semantic cleanup; unavailable → `BLOCKED`, never fallback. Use a View Pair Map only to resolve materially ambiguous front/back, left/right, mirrored, depth, or 3/4 evidence.
 
 ## Semantic Form / Construction / Transform Gate
 Before exact coordinates determine material facts:

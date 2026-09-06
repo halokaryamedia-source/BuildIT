@@ -81,6 +81,7 @@ Approved image remains visual authority; requested dimensions remain numeric aut
 The production external owner is `scripts/three-d-assisted-run.ts`:
 
 ```bash
+bun run three-d-assisted:run -- preflight
 bun run three-d-assisted:run -- status --workspace /absolute/workspace/active/<asset>
 bun run three-d-assisted:run -- run --workspace /absolute/workspace/active/<asset>
 ```
@@ -94,13 +95,13 @@ Requested Dimensions: width=<n> height=<n> length=<n> blocks
 
 `run` is resumable and stops at `AWAITING_SHAPE_GATE` and `AWAITING_DECOMPOSITION_GATE`; acceptance/rejection is explicit via `accept-shape|reject-shape|accept-decomposition|reject-decomposition`. Only passed artifacts become canonical `shape.glb` / `primitive-decomposition.json`; candidate evidence remains in `.cache/`.
 
-`server/threeDAssistedMaterializer.ts` contains the fail-closed native materializer engine. Its **public Geometry ToolSpec binding is intentionally LOCAL_CODE work** because generated MCP API docs must come from the canonical generator. Bind the engine as one Runtime capability accepting only `workspace_path`, keep the Gateway at four tools, then run `bun run docs:build` and `bun run verify:full` before live proof. Generated API docs must never be hand-edited.
+`server/threeDAssistedMaterializer.ts` contains the fail-closed native engine. The Geometry capability `materialize_3d_assisted_scaffold` accepts only absolute `workspace_path` through the existing four-tool Gateway. Finish setup and source/generated checks before GPU/live proof; setup/cache paths are in `scripts/three-d-assisted/README.md`. `preflight` needs no asset and runs no inference. Generated API docs must never be hand-edited.
 
 ## Current Runtime Surface
 
 ```text
 Gateway client surface        4 fixed tools
-Runtime callable union       51 tools
+Source callable union        52 tools
 AUTHORING surface            Geometry + Texturing families together
 Animation surface            separate
 ```
@@ -205,7 +206,7 @@ These do not prove visual fidelity or accepted asset quality.
 
 ```text
 Gateway client surface                 4 tools
-retained Bedrock Runtime catalog      51 tools
+retained Bedrock source catalog       52 tools
 initialize instructions                <= 700 characters
 catalog tools/list budget              <= 82,000 characters
 catalog input schemas                  <= 58,500 characters

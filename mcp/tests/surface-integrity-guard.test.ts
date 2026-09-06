@@ -19,7 +19,7 @@ async function source(relativePath: string): Promise<string> {
 }
 
 describe("advertised surface and fail-closed integrity guards", () => {
-  test("all 66 enabled tools stay listed with their authored shapes", () => {
+  test("all retained tools stay listed with their authored shapes", () => {
     // Same shared-process exclusion as default-registration-import-safe:
     // fixture and extended-family registrations from other test files must
     // not distort the default Bedrock product surface count.
@@ -32,7 +32,7 @@ describe("advertised surface and fail-closed integrity guards", () => {
         !name.includes("fixture") &&
         !extendedToolNames.has(name)
     );
-    expect(enabledDefinitions.length).toBe(51);
+    expect(enabledDefinitions.length).toBe(52);
 
     for (const [, toolDef] of enabledDefinitions) {
       const { description, status } = toolDef as {

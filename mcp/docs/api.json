@@ -1,6 +1,6 @@
 {
   "version": "0.1.0",
-  "generatedAt": "2026-09-06T09:30:09.853Z",
+  "generatedAt": "2026-09-06T10:28:17.525Z",
   "tools": [
     {
       "name": "manage_cubes",
@@ -2918,6 +2918,38 @@
             "required": [
               "id",
               "parent"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      }
+    },
+    {
+      "name": "materialize_3d_assisted_scaffold",
+      "title": "Materialize 3D-Assisted Scaffold",
+      "description": "Materializes the accepted 3D_ASSISTED workspace decomposition as editable Group/Cube scaffolding in one Undo transaction. Requires current Shape and Decomposition gates, hashes and dimensions. Rejects collisions; continue with semantic Geometry cleanup, not final visual approval.",
+      "status": "experimental",
+      "category": "Elements",
+      "annotations": {
+        "destructiveHint": false,
+        "readOnlyHint": false,
+        "openWorldHint": false
+      },
+      "parameters": {
+        "$ref": "#/definitions/materialize_3d_assisted_scaffold",
+        "definitions": {
+          "materialize_3d_assisted_scaffold": {
+            "type": "object",
+            "properties": {
+              "workspace_path": {
+                "type": "string",
+                "description": "Absolute Active Workspace containing approved 3D_ASSISTED state and decomposition.",
+                "markdownDescription": "Absolute Active Workspace containing approved 3D_ASSISTED state and decomposition."
+              }
+            },
+            "required": [
+              "workspace_path"
             ],
             "additionalProperties": false
           }

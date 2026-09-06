@@ -20,12 +20,17 @@ describe("3D-Assisted Hunyuan reproducibility contract", () => {
     const script = await source(
       "../Experimental/three-d-assisted-hunyuan-poc/generate_multiview_shape.py"
     );
+    const environment = await source("../Experimental/three-d-assisted-hunyuan-poc/environment.py");
+    expect(script).toContain("from environment import (");
+    expect(script).toContain("check_weights()");
 
     for (const marker of [
       'MODEL_ID = "tencent/Hunyuan3D-2mv"',
       'MODEL_REVISION = "3a761b539b29fe4ff64714813aa9560fd66f5de0"',
       'MODEL_SUBFOLDER = "hunyuan3d-dit-v2-mv"',
       'MODEL_VARIANT = "fp16"',
+    ]) expect(environment).toContain(marker);
+    for (const marker of [
       "INFERENCE_STEPS = 50",
       "GUIDANCE_SCALE = 5.0",
       "OCTREE_RESOLUTION = 256",
@@ -77,6 +82,7 @@ describe("3D-Assisted Hunyuan reproducibility contract", () => {
 
     const files = [
       "../Experimental/three-d-assisted-hunyuan-poc/generate_shape.py",
+      "../Experimental/three-d-assisted-hunyuan-poc/environment.py",
       "../Experimental/three-d-assisted-hunyuan-poc/generate_multiview_shape.py",
       "../Experimental/three-d-assisted-hunyuan-poc/render_contact_sheet.py",
     ];

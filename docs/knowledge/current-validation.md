@@ -7,15 +7,15 @@ This file owns **current proof interpretation**. Continuation belongs in `docs/k
 ## Current Proof Boundary
 
 ```text
-BEDROCK RUNTIME CALLABLE CATALOG:      51 tools across retained families
-SHARED AUTHORING SURFACE:              BASIC LIVE PASS — 46 tools, Geometry/Texturing together
+BEDROCK SOURCE CALLABLE CATALOG:       52 tools; last installed proof covers 51
+SHARED AUTHORING SURFACE:              SOURCE 47; BASIC LIVE PASS covers earlier 46 tools
 ANIMATION SURFACE:                     BASIC HANDOFF LIVE PASS — 19 tools
 GATEWAY CLIENT SURFACE:                4 fixed tools — SOURCE + SAME-TASK LIVE
 AUTHORING TAXONOMY:                    user-selected DIRECT | 3D_ASSISTED — SOURCE/STATIC
 MCP RESOURCE/PROMPT CONTRACT:          UPDATED / GENERATORS + REGRESSIONS PASS
 DIRECT AUTHORING:                      DISPOSABLE BASIC LIVE PASS / ASSET QUALITY UNVERIFIED
-3D_ASSISTED EXTERNAL ORCHESTRATOR:     SOURCE_READY / LOCAL GPU PROOF REQUIRED
-3D_ASSISTED MATERIALIZER ENGINE:       SOURCE_READY / PUBLIC TOOL BINDING PENDING LOCAL_CODE
+3D_ASSISTED EXTERNAL ORCHESTRATOR:     SOURCE_READY / ENVIRONMENT PREFLIGHT PASS / GPU NOT_RUN
+3D_ASSISTED MATERIALIZER + BINDING:     SOURCE_READY / NATIVE LIVE PROOF DEFERRED
 GATEWAY LIVE STABILITY:                BASIC PASS — reconnect after restart + phase catalog refresh
 REMOTE MCP VERIFY:                     GREEN @ 071d0bb / SOURCE CI ONLY
 CURRENT MODEL-QUALITY CLAIM:           NONE
@@ -34,7 +34,20 @@ Current source owns:
 - pinned Hunyuan3D v1 and PrimitiveAnything provenance, strict state/decomposition schemas, SHA-256 stale detection, and explicit Shape/Decomposition gates;
 - an internal Blockbench materializer engine that prevalidates canonical workspace state before one Group+Cube Undo transaction and cancels on failure.
 
-Resource/Prompt/handoff closure is implemented with canonical `prompts:build` and `docs:build` output. Internal PASS remains READY_FOR_USER_REVIEW; Animation readiness requires explicit approval fields and a saved checkpoint. The materializer engine is still not registered as a public MCP ToolSpec.
+Resource/Prompt/handoff closure is implemented with canonical `prompts:build` and `docs:build` output. Internal PASS remains READY_FOR_USER_REVIEW; Animation readiness requires explicit approval fields and a saved checkpoint. `materialize_3d_assisted_scaffold` is registered in source as a Geometry-owned Elements ToolSpec with only absolute `workspace_path`, behind the existing four-tool Gateway.
+
+## 3D-Assisted Preparation — 2026-09-06
+
+Based on Local `1013cd1f0a96dcaf3c2a326c7a95ae59ec98bd23`; this preparation does not deploy or replace the installed plugin.
+
+- `bun run three-d-assisted:run -- preflight`: PASS. Both backend imports, pinned source, weights/data integrity and CUDA visibility checked; no inference or asset-state writes.
+- Hunyuan: Windows Python 3.12 venv at `Experimental/three-d-assisted-hunyuan-poc/.cache/venv`, PyTorch `2.5.1+cu124`; pinned Hunyuan3D-2 source, MultiView model and u2net installed under sibling cache directories. MultiView config/weights match pinned Git/LFS identities; hashes are retained in `environment.py`.
+- PrimitiveAnything: WSL2 Ubuntu, `/opt/miniforge3/envs/blockit-pa-poc`, PyTorch 2.1.0 CUDA; source/data/checkpoints under `Experimental/primitiveanything-poc/.cache/PrimitiveAnything`. Both checkpoint SHA-256 values match setup pins. Download cache moved outside the clean upstream checkout.
+- RTX 3070 8 GB is visible in both backends. WSL's NAT warning did not prevent setup/download/preflight; no network configuration was changed. Peak inference memory remains unproven.
+- Targeted source regressions pass for binding/receipt, rejection before Undo, controlled partial-failure cancellation, resume/invalidation, and missing dependencies before state initialization. These do not prove native Undo or actual asset quality.
+- Canonical prompt/API outputs regenerated. Final `bun run verify:full`: PASS on this Local delivery (Bun 1.3.11): repository 32/32, runtime 396/396, authoring 117/117, generated freshness, typechecks, source surface measurements and build. Log: `mcp/.cache/three-d-assisted-verify-full.log`. New built identity: `sha256:8865d0c3fd65849e7957a512b53efe47563c3116782d3e863e11d98b794a6289`; not deployed. The earlier desktop closure below remains historical proof only.
+
+Stop at preparation. GPU inference, deployment, native materializer Undo/stale-state proof and asset approval are user-deferred. Commands and environment paths are owned by `mcp/scripts/three-d-assisted/README.md`.
 
 ## Local Source and Desktop Closure — 2026-09-06
 
@@ -64,7 +77,7 @@ Static source/CI does not prove:
 - final UV layout quality, texel density, orientation, seams, or mapped styling;
 - Hunyuan Shape GLB quality on a selected asset;
 - PrimitiveAnything decomposition quality on a selected asset;
-- public materializer binding and its generated documentation;
+- installed availability of the new source-registered materializer binding;
 - materializer native Undo/stale-state behavior inside desktop Blockbench.
 
 ## 3D-Assisted Proof Model
@@ -105,8 +118,10 @@ exact Local
 → deploy exact plugin
 → prove shared AUTHORING + AUTHORING↔Animation Gateway lifecycle
 → DIRECT smoke: Geometry APPROVED → UV Layout PASS → Texture APPROVED → Finalization
-→ external 3D_ASSISTED GPU proof
-→ public materializer binding + generated docs
+→ 3D_ASSISTED setup + public binding + generated/source checks
+→ STOP ready-to-test while user defers GPU/live work
+→ later external 3D_ASSISTED GPU proof
+→ deploy matching materializer binding
 → live atomic materializer proof
 → end-to-end 3D_ASSISTED
 ```
