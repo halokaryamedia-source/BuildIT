@@ -1,5 +1,6 @@
 import {
   AUTHORING_E2E_BONE_NAME,
+  AUTHORING_E2E_CUBE_NAME,
   AUTHORING_E2E_PROJECT_NAME,
   LiveMcpClient,
   expect,
@@ -12,9 +13,8 @@ import {
 const REQUIRED_TOOLS = [
   "create_project",
   "add_group",
-  "place_cube",
-  "inspect_element",
-  "modify_cube",
+  "manage_cubes",
+  "inspect_elements",
   "capture_model_views",
   "undo",
   "redo",
@@ -31,11 +31,11 @@ function sameVec3(actual: unknown, expected: readonly number[]): boolean {
 async function inspectCube(client: LiveMcpClient, uuid: string): Promise<JsonObject> {
   return structuredObject(
     await client.callTool(
-      "inspect_element",
-      { id: uuid, detail: "geometry" },
+      "inspect_elements",
+      { mode: "detail", id: uuid, detail: "geometry" },
       "inspection"
     ),
-    "inspect_element"
+    "inspect_elements"
   );
 }
 
@@ -92,12 +92,13 @@ async function main(): Promise<void> {
 
   const placement = structuredObject(
     await client.callTool(
-      "place_cube",
+      "manage_cubes",
       {
+        operation: "create",
         group: group.uuid,
         elements: [
           {
-            name: "e2e_body",
+            name: AUTHORING_E2E_CUBE_NAME,
             from: [-4, 0, -2],
             to: [4, 8, 2],
           },
@@ -105,11 +106,11 @@ async function main(): Promise<void> {
       },
       "mutation"
     ),
-    "place_cube"
+    "manage_cubes"
   );
   const cubes = placement.cubes as Array<JsonObject> | undefined;
   const cubeUuid = cubes?.[0]?.uuid;
-  expect(typeof cubeUuid === "string", "place_cube returned no Cube UUID.");
+  expect(typeof cubeUuid === "string", "manage_cubes create returned no Cube UUID.");
 
   const before = await inspectCube(client, cubeUuid);
   expect(
@@ -128,19 +129,20 @@ async function main(): Promise<void> {
 
   const modification = structuredObject(
     await client.callTool(
-      "modify_cube",
+      "manage_cubes",
       {
+        operation: "update",
         id: cubeUuid,
         to: [6, 8, 2],
       },
       "mutation"
     ),
-    "modify_cube"
+    "manage_cubes"
   );
   const after = await inspectCube(client, cubeUuid);
   expect(
     sameVec3(after.to, [6, 8, 2]),
-    `modify_cube readback stayed stale: ${JSON.stringify(after.to)}.`
+    `manage_cubes update readback stayed stale: ${JSON.stringify(after.to)}.`
   );
   const afterImage = await captureFront(client);
   expect(
@@ -191,6 +193,8 @@ async function main(): Promise<void> {
         undo_restored_initial_geometry: true,
         redo_restored_modified_geometry: true,
         modification_receipt_present: Object.keys(modification).length > 0,
+        current_public_cube_surface: "manage_cubes",
+        current_public_inspection_surface: "inspect_elements",
         cost: client.snapshotMetrics(),
         visual_quality: "not_evaluated",
         note: "Leaves the disposable project open as the shared Texturing/Animation fixture. Runtime/readback/render/history proof is not reference-fidelity proof.",

@@ -5,7 +5,7 @@ async function source(path: string): Promise<string> {
 }
 
 describe("live authoring E2E harness", () => {
-  test("shared client owns freshness, phase proof, surface proof, and observable cost", async () => {
+  test("shared client owns freshness, phase proof, surface proof, observable cost, and stable fixture identities", async () => {
     const helper = await source("scripts/live-e2e-common.ts");
     for (const contract of [
       "build_identity",
@@ -18,6 +18,10 @@ describe("live authoring E2E harness", () => {
       "request_bytes",
       "response_bytes",
       "not model tokens",
+      "AUTHORING_E2E_CUBE_NAME",
+      "AUTHORING_E2E_ATLAS_NAME",
+      "AUTHORING_E2E_ANIMATION_A_NAME",
+      "AUTHORING_E2E_ANIMATION_B_NAME",
     ]) {
       expect(helper).toContain(contract);
     }
@@ -25,37 +29,50 @@ describe("live authoring E2E harness", () => {
     expect(helper).toContain("--confirm-disposable");
   });
 
-  test("Geometry produces one reusable disposable fixture and runtime cost receipt", async () => {
+  test("Geometry uses the current consolidated Cube and inspection surfaces", async () => {
     const geometry = await source("scripts/verify-geometry-live.ts");
     for (const tool of [
       "create_project",
       "add_group",
-      "place_cube",
-      "modify_cube",
-      "inspect_element",
+      "manage_cubes",
+      "inspect_elements",
       "capture_model_views",
       "undo",
       "redo",
     ]) {
       expect(geometry).toContain(tool);
     }
-    expect(geometry).toContain("AUTHORING_E2E_PROJECT_NAME");
-    expect(geometry).toContain("AUTHORING_E2E_BONE_NAME");
+    for (const retired of ["place_cube", "modify_cube", "inspect_element\""]) {
+      expect(geometry).not.toContain(retired);
+    }
+    expect(geometry).toContain("operation: \"create\"");
+    expect(geometry).toContain("operation: \"update\"");
     expect(geometry).toContain("shared Texturing/Animation fixture");
     expect(geometry).toContain("client.snapshotMetrics()");
   });
 
-  test("Texturing proves one batched paint mutation through exact atlas hashes and history", async () => {
+  test("Texturing prebuilds native UV, semantic-pixel, target-isolation, clipping and history acceptance", async () => {
     const texturing = await source("scripts/verify-texturing-live.ts");
     for (const contract of [
-      "create_texture",
-      "get_texture",
-      "paint_with_brush",
-      "connect_strokes: false",
+      "type: \"template\"",
+      "pixel_density: 16",
+      "padding: true",
+      "texture_id: baseTextureUuid",
+      "inspect_elements",
+      "mapFaceLocalPixelToAtlasPixel",
+      "#33669980",
+      "color_picker_tool",
+      "add_texture_group",
+      "activate_texture",
+      "size: 2",
+      "draw_shape_tool",
+      "affected_rect",
       "imageDigest",
       "undo",
       "redo",
-      "exact full-atlas PNG",
+      "semantic_rgba_preserved_across_repack",
+      "native_size_2_brush_changed_target_only",
+      "bounded_shape_clip_preserved_outside_pixel",
     ]) {
       expect(texturing).toContain(contract);
     }
@@ -64,26 +81,55 @@ describe("live authoring E2E harness", () => {
     expect(texturing).toContain("client.snapshotMetrics()");
   });
 
-  test("Animation proves a coherent multi-key edit through exact inspection and one history step", async () => {
+  test("Animation proves A-vs-selected-B targeting and playback through the current consolidated surface", async () => {
     const animation = await source("scripts/verify-animation-live.ts");
     for (const contract of [
       "create_animation",
       "inspect_animation",
-      "manage_keyframes",
-      "batch_keyframe_operations",
-      "edited_keyframe_count: 2",
+      "manage_animation_timeline",
+      "operation: \"timeline\"",
+      "set_anim_time_update",
+      "operation: \"keyframes\"",
+      "action: \"play\"",
+      "action: \"pause\"",
+      "action: \"stop\"",
+      "explicit_property_target_a_while_b_selected",
+      "animation_b_unchanged",
       "undo",
       "redo",
       "client.snapshotMetrics()",
     ]) {
       expect(animation).toContain(contract);
     }
-    expect(animation).not.toContain("add_group");
-    expect(animation).not.toContain("place_cube");
+    expect(animation).not.toContain('"manage_keyframes"');
+    expect(animation).not.toContain('"batch_keyframe_operations"');
     expect(animation).toContain("AUTHORING_E2E_BONE_NAME");
   });
 
-  test("package exposes phase-specific live verification without an automatic phase-switch orchestrator", async () => {
+  test("Persistence is a two-step native reopen proof instead of an open-project fallback", async () => {
+    const persistence = await source("scripts/verify-persistence-live.ts");
+    for (const contract of [
+      "--prepare",
+      "--verify",
+      "export_model",
+      "codec_id: \"project\"",
+      "wrote_to_path",
+      "artifact_sha256",
+      "save_path",
+      "inspect_elements",
+      "list_textures",
+      "inspect_animation",
+      "authored_state_matches_prepare_snapshot",
+      "manual native reopen",
+    ]) {
+      expect(persistence).toContain(contract);
+    }
+    expect(persistence).not.toContain("open_existing_project");
+    expect(persistence).not.toContain("switch_authoring_phase");
+    expect(persistence).toContain("expectedPhase: \"animation\"");
+  });
+
+  test("package exposes explicit phase/persistence verifiers without an automatic authoring orchestrator", async () => {
     const pkg = JSON.parse(await source("package.json")) as {
       scripts: Record<string, string>;
     };
@@ -95,6 +141,9 @@ describe("live authoring E2E harness", () => {
     );
     expect(pkg.scripts["verify:animation-live"]).toBe(
       "bun run ./scripts/verify-animation-live.ts"
+    );
+    expect(pkg.scripts["verify:persistence-live"]).toBe(
+      "bun run ./scripts/verify-persistence-live.ts"
     );
     expect(pkg.scripts["verify:authoring-live"]).toBeUndefined();
   });

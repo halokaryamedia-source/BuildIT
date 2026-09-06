@@ -6,6 +6,10 @@ export const EXPECTED_PROFILES = new Set(["bedrock_entity", "extended"]);
 export const PROTOCOL_VERSION = "2025-06-18";
 export const AUTHORING_E2E_PROJECT_NAME = "blockit_geometry_e2e_disposable";
 export const AUTHORING_E2E_BONE_NAME = "e2e_root";
+export const AUTHORING_E2E_CUBE_NAME = "e2e_body";
+export const AUTHORING_E2E_ATLAS_NAME = "e2e_atlas";
+export const AUTHORING_E2E_ANIMATION_A_NAME = "animation.blockit_e2e_motion_a";
+export const AUTHORING_E2E_ANIMATION_B_NAME = "animation.blockit_e2e_motion_b";
 
 export type JsonObject = Record<string, unknown>;
 export type ContentItem =
