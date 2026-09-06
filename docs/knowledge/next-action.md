@@ -1,24 +1,28 @@
 # Next Action
 
-Updated: 2026-09-06 — GitHub quality cross-check complete through request isolation.
+Updated: 2026-09-06 — live acceptance harness prepared in GitHub; local work should execute it, not redesign it.
 Branch: **`Local` only**. Proof → `current-validation.md`.
 
 ## Status
 
-- Integrated baseline `6b3779c` already has matching exact-SHA source proof; do not repeat it.
-- Latest executable/source-affecting quality commit `1949aa9`: concurrent same-JSON-RPC-id isolation regression. MCP Verify `34039585699` PASS: 403 runtime + 117 authoring tests; docs/typechecks/measurements/build PASS.
-- CI build identity remains `sha256:c208ec49344db79fa22e1cddd330e563f14319d4ed0c724408ee0ba0a01c969c`; exact merged installed identity is unverified.
-- SDK lock is 1.25.3. Request-owned server/transport isolation is regression-protected; patched dependency upgrade (>=1.26.0) still requires `LOCAL_CODE` for canonical Bun lockfile generation.
-- Lift Geometry/Texture/Animation APPROVED; preserve `workspace/active/lift/lift.bbmodel`.
-- AUTHORING TAXONOMY: user-selected `DIRECT | 3D_ASSISTED`; four-tool Gateway + shared AUTHORING retained.
-- 3D_ASSISTED: `SOURCE_READY`; GPU/native acceptance deferred.
+- LIVE ACCEPTANCE HARNESS: **SOURCE_READY / LIVE NOT_RUN**.
+- Exact source gate: `ce8e3dba9a61c73f42ac8cff4b18823030862031`; MCP Verify run `34042901846` PASS: 407 runtime + 117 authoring; generated freshness, typechecks, measurements and build PASS.
+- Lift is delivered/approved; preserve `workspace/active/lift/lift.bbmodel`. Quality audit uses disposable copies only.
+- `@modelcontextprotocol/sdk` 1.25.3 remains a `LOCAL_CODE` dependency closure; patched compatible target is >=1.26.0 and `bun.lock` must be generated canonically.
+- AUTHORING TAXONOMY: user-selected `DIRECT | 3D_ASSISTED`.
+- 3D_ASSISTED: SOURCE_READY; GPU/native quality deferred unless explicitly resumed.
 - LEGACY UI FALLBACKS: debug/maintenance only.
 
 ## Next
 
-1. **LOCAL_CODE:** upgrade `@modelcontextprotocol/sdk` to patched compatible >=1.26.0, regenerate `bun.lock` canonically, run the owning MCP verifier. Never hand-edit the lockfile or use Actions to author it.
-2. **LIVE_BLOCKBENCH:** deploy/reload exact merged build and confirm `build_identity`; on a disposable lift copy verify Painter RGBA/clip/target/Undo, 16x native UV packing + pixel preservation, timeline A while B selected + playback/Undo, and native save/reopen.
-3. Compare the same reference/views and facade-left pair. Only after quality PASS, measure active time, corrections, failed/no-effect calls, unnecessary rereads and available usage. Historical token totals remain UNKNOWN.
-4. Finish DIRECT audit at Blockbench, not Minecraft. Do not modify the approved lift main checkpoint for system testing.
+1. `LOCAL_CODE`: upgrade MCP SDK to a patched compatible version, regenerate `bun.lock`, run the owning source verifier. This is the only remaining local source-authoring step.
+2. Deploy the exact built plugin. In one shared AUTHORING session run:
+   - `bun run verify:geometry-live -- --confirm-disposable`
+   - `bun run verify:texturing-live -- --confirm-disposable`
+   These cover current consolidated tools, thin per-face UV without geometry thickening, native 16x template/repack, semantic pixel preservation, Painter target/clip, and Undo/Redo.
+3. Perform only the real AUTHORING→Animation handoff with clearly synthetic disposable-test readiness; reconnect once. Run `bun run verify:animation-live -- --confirm-disposable`.
+4. Persistence: run `bun run verify:persistence-live -- --prepare --confirm-disposable`, close/reopen the exported disposable `.bbmodel` once in Blockbench, then run the same command with `--verify`.
+5. Lift quality: open a disposable Lift copy, set `BLOCKIT_LIFT_DISPOSABLE_PATH` to that exact absolute path, then run `bun run verify:lift-quality-live -- --confirm-disposable`. It captures reference-hashed before/candidate front/left/3Q + atlas, records native padded-repack size, then restores original state by Undo.
+6. Review that evidence against the actual approved reference. `<=512` is only a packing candidate until visual PASS. Measure Cost to Accepted Result only after quality PASS.
 
-3D_ASSISTED GPU work remains deferred; reuse `mcp/scripts/three-d-assisted/README.md` only when explicitly resumed. No automatic strategy switch.
+No Minecraft acceptance. Do not repeat GitHub audit/source design unless a verifier reproduces a new defect.

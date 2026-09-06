@@ -4,83 +4,152 @@ Updated: 2026-09-06
 
 This file owns **current proof interpretation**. Continuation belongs in `docs/knowledge/next-action.md`; stable facts in `CONTEXT.md`; source ownership in `docs/knowledge/implementation-map.md`; active asset continuity in `workspace/active/<project>/README.md`.
 
-## Current Authority
+## Current Source Proof
 
 Repository: `halokaryamedia-source/BuildIT`  
 Branch: **`Local` only**.
 
-Source acceptance follows `GITHUB_RULES.md`: reusable source evidence must belong to the **same exact `Local` SHA** required by that acceptance boundary. Static/source/CI evidence never implies installed or live Blockbench proof.
+Per `GITHUB_RULES.md`, device-independent source acceptance must use a complete check on the same exact `Local` SHA. The current live-harness source closure is `ce8e3dba9a61c73f42ac8cff4b18823030862031`.
 
-The latest executable/source-affecting quality commit is `1949aa9065f60f817e97fa2d0ba081c3ecd1ac80` (`test(mcp): lock request isolation against SDK advisory`). Later documentation-only synchronization may advance `Local` without invalidating that source proof.
+GitHub **MCP Verify** run `34042901846` completed successfully for that exact SHA and executed `bun run verify:mcp`:
 
-Integrated source baseline `6b3779cc0d3e3f7806699721196e484931075e8e` merged the DIRECT authoring audit with the remote TCP/brush/export repairs. Exact-SHA GitHub proof completed successfully: Repository Verify, Authoring Policy Verify and MCP Verify. The integrated baseline recorded **32 repository + 402 runtime + 117 authoring = 551 tests**, with generated docs/prompt freshness, typechecks, source surface measurements and build passing. Build identity: `sha256:c208ec49344db79fa22e1cddd330e563f14319d4ed0c724408ee0ba0a01c969c`.
+- runtime: **407 PASS / 0 FAIL** across 68 files;
+- authoring: **117 PASS / 0 FAIL**;
+- generated docs/prompt freshness: PASS;
+- TypeScript + Gateway typecheck: PASS;
+- source surface measurements: PASS;
+- build: PASS;
+- build identity: `sha256:c208ec49344db79fa22e1cddd330e563f14319d4ed0c724408ee0ba0a01c969c`.
 
-Exact-SHA MCP Verify run `34039585699` for `1949aa9` completed successfully and executed `bun run verify:mcp`: **403 runtime + 117 authoring tests PASS**, generated docs fresh, typechecks PASS, source surface measurements PASS and build PASS. The build identity stayed `sha256:c208ec49344db79fa22e1cddd330e563f14319d4ed0c724408ee0ba0a01c969c`, as expected for a regression-test-only change.
+This is **SOURCE/CI proof only**. None of the new live harnesses has been executed against the current installed Blockbench build yet.
 
-This is **source/CI proof only**. It does not prove that the merged build is installed/reloaded in Blockbench, nor native Undo/playback/persistence or visual quality.
+## Live Acceptance Harness — SOURCE_READY / LIVE NOT_RUN
+
+The GitHub-prepared harness moves test design, fixtures, assertions and evidence capture out of the later desktop session.
+
+### Shared preflight
+
+`mcp/scripts/live-e2e-common.ts` requires:
+- exact built-vs-live `build_identity`;
+- expected authoring phase and required live `tools/list` surface;
+- stateless JSON transport;
+- explicit `--confirm-disposable`;
+- observable HTTP/RPC/tool/cost counters. These byte counts are transport measurements, not model-token counts.
+
+### Geometry + UV representation
+
+`verify:geometry-live` now uses the current consolidated `manage_cubes` + `inspect_elements` surface. It creates one disposable body, proves readback/render/update/Undo/Redo, and creates a generic thin fixture `1 x 4 x 0.5` with explicit `per_face` UV. The thin fixture must keep exact geometry size and non-degenerate per-face UV; no geometry thickening is allowed merely to silence UV warnings.
+
+### Texturing / native repack / Painter
+
+`verify:texturing-live` continues the **same shared AUTHORING session**; there is no Geometry→Texturing phase bounce. It is scripted to prove:
+
+- native template at 16x;
+- padded native in-place repack with same texture UUID;
+- semantic RGBA pixel preservation across repack;
+- thin per-face fixture survives template/repack/Undo/Redo without geometry thickening or meaningful-face collapse;
+- explicit target mutation while a decoy texture is selected;
+- size-2 request uses native Painter, not the size-1 exact-pixel shortcut;
+- bounded `draw_shape_tool` does not bleed outside its reported clip;
+- atlas + UV state restore exactly through Undo/Redo;
+- final UV production gate remains ready.
+
+These are native-behavior acceptance assertions; they are not texture visual-fidelity claims.
+
+### Animation
+
+`verify:animation-live` prepares two animations so B is selected while operations explicitly target A. It is scripted to prove:
+
+- persistent Animation-A property edit does not mutate/select B;
+- targeted set-time/play/pause/stop acts on A;
+- targeted A keyframe edit leaves B unchanged;
+- property and keyframe Undo/Redo restore exact expected state.
+
+This closes the manual-selection workaround at the test level once the live run passes; motion aesthetics remain separate.
+
+### Native persistence
+
+`verify:persistence-live` is intentionally two-step rather than inventing an open-project fallback.
+
+1. `--prepare`: snapshot body, thin per-face UV, texture/UV gate and both animation states; export a verified disposable `.bbmodel`; hash artifact + write manifest.
+2. One manual Blockbench close/reopen of that exact file.
+3. `--verify`: require matching build, artifact hash, native `save_path` and exact authored snapshot.
+
+Until step 3 succeeds, native reopen remains UNVERIFIED.
+
+### Lift-specific quality evidence
+
+`verify:lift-quality-live` is a bounded **evidence candidate**, not a visual scorer.
+
+- requires `BLOCKIT_LIFT_DISPOSABLE_PATH` and rejects canonical `workspace/active/lift/lift.bbmodel`;
+- hashes `references/approved-reference.png` and `references/window-detail.png`;
+- captures before front/left/front-left-3Q + atlas;
+- performs one native 16x, padded, power-of-two in-place repack candidate on the disposable copy;
+- records candidate bitmap size and whether native result is `<=512`;
+- captures candidate views + atlas;
+- Undo must restore the exact original atlas hash and UV packing/gate;
+- writes a manifest under `.cache/lift-quality-live/`;
+- emits `visual_quality: UNVERIFIED`.
+
+A `<=512` result is only a packing candidate. It cannot become visual PASS without the actual reference plus fresh mapped visual evidence.
+
+## Lift Issue Closure Mapping
+
+`workspace/active/lift/README.md` remains the active asset owner. Geometry, UV Layout, Texture and Animation are approved/delivered; quality-system testing must use a disposable copy.
+
+| ID | GitHub-prepared closure | Remaining proof |
+|---|---|---|
+| LIFT-01 | Reference-grounded workflow + Lift before/candidate comparable capture are scripted | actual-reference visual review |
+| LIFT-02 | Better/HD intake rule source-protected | no source defect remains |
+| LIFT-03 | palette/ramp + adjoining-surface discipline protected; Lift capture bundle prepared | live visual color/form/shadow review |
+| LIFT-04 | surface-continuity/seam discipline protected; same evidence bundle prepared | live visual seam review |
+| LIFT-05 | union/bounds metrics + native padded-repack candidate harness prepared | run candidate; `<=512` alone is not visual PASS |
+| LIFT-06 | thin sub-unit per-face fixture scripted through native template/repack/history/persistence | live run |
+| LIFT-07 | explicit A-vs-selected-B + playback/property/keyframe history harness prepared | live run |
+| LIFT-08 | proof vocabulary remains fail-closed | visual gate stays mandatory |
+| LIFT-09 | every live harness emits comparable execution-cost counters | same-fixture Cost to Accepted Result after quality PASS |
+| LIFT-10 | proof/continuation now route directly to executable test commands | keep future status in canonical owners |
+
+No additional speculative Runtime logic is justified unless one of these live verifiers reproduces a concrete source defect.
 
 ## SDK Security Follow-up
 
-Current `mcp/bun.lock` resolves `@modelcontextprotocol/sdk` **1.25.3**. Advisory `GHSA-345p-7cg4-v4c7` / `CVE-2026-25536` covers the affected SDK line through 1.25.3 and is patched in 1.26.0.
+Current `mcp/bun.lock` resolves `@modelcontextprotocol/sdk` **1.25.3**. `GHSA-345p-7cg4-v4c7` / `CVE-2026-25536` is patched in 1.26.0.
 
-BlockIT's current transport owner creates a **request-owned `McpServer` and request-owned `WebStandardStreamableHTTPServerTransport`** instead of sharing either object across clients. Regression `mcp/tests/p1-stateless-sdk-sequence.test.ts` now proves that two concurrent requests using the same JSON-RPC id remain isolated; exact-SHA CI PASS is recorded above.
+BlockIT currently uses request-owned server/transport objects and has exact-SHA CI regression for concurrent same-ID request isolation. That mitigation evidence does **not** make the dependency version patched.
 
-This architecture/regression evidence does **not** erase the vulnerable dependency version. Dependency closure remains **LOCAL_CODE REQUIRED**: upgrade `@modelcontextprotocol/sdk` to a patched compatible version (minimum 1.26.0), regenerate the canonical Bun lockfile in a Bun-capable checkout, then run the owning source verifier. Do not hand-edit `bun.lock` and do not use Actions as a lockfile authoring path.
+Dependency closure remains `LOCAL_CODE`: upgrade to a patched compatible SDK, regenerate canonical `bun.lock` with Bun, then run the owning source verifier. Do not hand-edit the lockfile and do not use Actions as an authoring path.
 
-## Laporan issue dan pemborosan — lift DIRECT
+## Pending Live Sequence
 
-`workspace/active/lift/README.md` is the active-asset owner. Lift Geometry, UV Layout, Texture and Animation are approved/delivered; the main `lift.bbmodel` must be preserved. Approval is not a claim of perfect texture fidelity.
+After the SDK/local source closure and exact deployment:
 
-| ID | GitHub/source status | Remaining acceptance |
-|---|---|---|
-| LIFT-01 | Reference-grounded landmark/count/opening workflow updated and regression-protected | **LIVE QUALITY REQUIRED** — confirm the workflow produces better strict view agreement on a disposable fixture |
-| LIFT-02 | Intake rule fixed: Better/HD does not silently change density, resolution or style | Historical reasoning failure recorded; no source defect remains |
-| LIFT-03 | Reference-derived palette/ramp, adjoining-pair-first workflow and causal repaint discipline are source-protected | **LIVE VISUAL REQUIRED** — prove color/form/shadow quality improves on comparable views |
-| LIFT-04 | Surface-continuity/seam discipline is source-protected | **LIVE VISUAL REQUIRED** — prove thick/double seam behavior is absent on the fixture |
-| LIFT-05 | UV union occupancy/bounds metrics are implemented and regression PASS | **LIVE NATIVE REQUIRED** — 512x512 feasibility with required padding/pixel preservation remains unproven |
-| LIFT-06 | Sub-unit Box-UV preflight/per-face fallback guidance is source-protected | **LIVE NATIVE REQUIRED** — verify native UV behavior without changing approved geometry merely to silence warnings |
-| LIFT-07 | Explicit animation target/select/affected-UUID behavior has executor regression PASS | **LIVE NATIVE REQUIRED** — timeline A while B selected, playback and Undo |
-| LIFT-08 | Proof vocabulary separates tool/source success from visual PASS and user approval | Visual gate remains mandatory; no new source defect proven |
-| LIFT-09 | Reuse receipts/state, bounded evidence and compact readback guidance are source-protected | **MEASUREMENT REQUIRED** — savings require same-fixture Cost to Accepted Result data |
-| LIFT-10 | Current proof and continuation are synchronized against exact source/CI evidence and the active lift owner | Keep future status in canonical owners; do not reconstruct from chat history |
+```text
+shared AUTHORING
+→ verify:geometry-live
+→ verify:texturing-live
+→ one real AUTHORING→Animation handoff/reconnect
+→ verify:animation-live
+→ verify:persistence-live --prepare
+→ one native close/reopen
+→ verify:persistence-live --verify
+→ disposable Lift → verify:lift-quality-live
+→ human/multimodal strict visual review
+→ only then efficiency comparison
+```
 
-No additional LIFT implementation change is justified from GitHub evidence alone. Adding more runtime logic without reproducing a source defect would be speculative and would exceed the current proof ceiling.
-
-## Current Live Evidence Boundary
-
-Historical local desktop evidence exists for earlier builds: Blockbench 5.1.6, Gateway restart/handoff behavior, disposable native template/brush Undo/Redo, and surface-gap verification were previously exercised successfully. That evidence remains useful historical capability proof, but it **cannot be promoted to the current merged build**.
-
-For the current integrated source:
-
-- CI build identity is `sha256:c208ec49344db79fa22e1cddd330e563f14319d4ed0c724408ee0ba0a01c969c`.
-- The pre-merge installed candidate was `sha256:e5f70645919f989d071ece5ceccc021d09a4ba20ac2cedac589c1b824fe5acb9`.
-- The last previously observed live runtime identity was `sha256:ed62edfdf0e0674fc4808b9f84d30253608f2b1f1e1922e7e3457a454977046c`.
-- Therefore exact merged installed identity remains **UNVERIFIED**.
-
-## Pending `LIVE_BLOCKBENCH`
-
-Use a disposable copy of the committed lift; do not mutate `workspace/active/lift/lift.bbmodel` for system acceptance.
-
-1. Confirm live `build_identity` equals the merged build identity above.
-2. Verify Painter RGBA/coordinates/clipping/explicit target and native Undo.
-3. Verify native 16x UV repack, padding, per-face pixel preservation, Undo and smallest proven atlas size; 512 fit is not assumed.
-4. Verify explicit Animation A while B is selected, plus native playback and Undo.
-5. Save and native-reopen the disposable project.
-6. Compare facade + left adjoining surfaces against the actual approved reference at comparable view/scale.
-7. Only after quality PASS, measure active time, correction rounds, failed/no-effect calls, unnecessary rereads and available usage.
-
-No Minecraft acceptance is required for this audit. 3D_ASSISTED GPU inference/materializer native proof remains deferred unless explicitly resumed.
+This intentionally removes redundant Geometry↔Texturing reloads and manual test design.
 
 ## Visual / Reference Proof Rule
 
-A visual/reference `PASS` requires the **actual approved reference image** plus **fresh evidence** from the current model/revision at a comparable view/scale. Tool success, source/CI success, hashes, coordinates, export, scalar metrics, UV occupancy or a clean structural diagnostic cannot create visual PASS by themselves.
+A visual/reference `PASS` requires the **actual approved reference image** plus **fresh evidence** from the current model/revision at a comparable view/scale. Tool success, source/CI success, hashes, coordinates, export, scalar metrics, UV occupancy, native repack success, or a clean structural diagnostic cannot create visual PASS by themselves.
 
-If corresponding live evidence is unavailable, report `UNVERIFIED` or `LOCAL PROOF REQUIRED` rather than upgrading the claim.
+If corresponding live evidence is unavailable, report `UNVERIFIED` or `LOCAL PROOF REQUIRED`.
 
 ## Authoring Efficiency
 
-**Authoring Efficiency** means **Cost to Accepted Result**. Static Footprint, raw call count and smaller payloads are guardrails only. Efficiency improves only when accepted quality is preserved while avoidable discovery, readback, phase bouncing, retries, recovery or correction cost decreases on a comparable fixture.
+**Authoring Efficiency** means **Cost to Accepted Result**. Static Footprint, raw call count and transport bytes are guardrails only. Efficiency improves only when accepted quality is preserved while avoidable discovery, readback, phase bouncing, retries, recovery or correction cost decreases on a comparable fixture.
 
 ## 3D-Assisted Proof Boundary
 
-AUTHORING TAXONOMY remains user-selected `DIRECT | 3D_ASSISTED`. 3D_ASSISTED source/orchestration and environment preparation are `SOURCE_READY`; GPU inference quality, installed materializer identity, native materializer Undo/stale-state behavior and end-to-end asset quality remain deferred/unproven. Source/static/CI proof never upgrades those live claims.
+AUTHORING TAXONOMY remains user-selected `DIRECT | 3D_ASSISTED`. 3D_ASSISTED source/orchestration and environment preparation remain `SOURCE_READY`; GPU inference quality, installed materializer identity, native materializer Undo/stale-state behavior and end-to-end asset quality remain deferred unless explicitly resumed. Source/static/CI proof never upgrades those live claims.
