@@ -185,7 +185,7 @@ async function main(): Promise<void> {
           animation_bone_name: AUTHORING_E2E_BONE_NAME,
           group_uuid: group.uuid,
           cube_uuid: cubeUuid,
-          next: "Switch BlockIT MCP Authoring Phase to texturing, reload/reconnect, then run verify:texturing-live with --confirm-disposable.",
+          next: "Keep the same shared AUTHORING session and run verify:texturing-live with --confirm-disposable; no Geometry-to-Texturing phase switch is required.",
         },
         initial_to: before.to,
         modified_to: after.to,
@@ -197,7 +197,7 @@ async function main(): Promise<void> {
         current_public_inspection_surface: "inspect_elements",
         cost: client.snapshotMetrics(),
         visual_quality: "not_evaluated",
-        note: "Leaves the disposable project open as the shared Texturing/Animation fixture. Runtime/readback/render/history proof is not reference-fidelity proof.",
+        note: "Leaves the disposable project open for Texturing in the same shared AUTHORING session. Runtime/readback/render/history proof is not reference-fidelity proof.",
       },
       null,
       2
