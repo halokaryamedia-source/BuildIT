@@ -138,6 +138,7 @@ describe("repository GitHub discipline", () => {
 
     const mcpGate = scripts["verify:mcp"];
     const ordered = [
+      "bun run docs:check",
       "bun run typecheck",
       "bun run typecheck:gateway",
       "bun run test:runtime",
@@ -145,7 +146,6 @@ describe("repository GitHub discipline", () => {
       "bun run measure:surface",
       "bun run measure:phases",
       "bun run build",
-      "bun run docs:check",
     ];
     let previous = -1;
     for (const command of ordered) {
