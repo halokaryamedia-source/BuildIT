@@ -589,8 +589,7 @@ export function isExactPixelAuthoringRequest(
     coordinates.every(
       (coordinate) => Number.isInteger(coordinate.x) && Number.isInteger(coordinate.y)
     ) &&
-    settings.size >= 1 &&
-    settings.size <= 2 &&
+    settings.size === 1 &&
     settings.opacity === 255 &&
     settings.softness === 0 &&
     settings.shape === "square" &&

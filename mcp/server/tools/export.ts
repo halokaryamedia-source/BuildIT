@@ -348,7 +348,7 @@ export function registerExportTools() {
         // A successful filesystem write already delivers the artifact. Avoid
         // echoing large compiled content into model context unless requested.
         const effectiveMaxContentLength =
-          max_content_length === undefined ? 0 : max_content_length;
+          max_content_length ?? (path ? 0 : 100_000);
         const truncated =
           effectiveMaxContentLength > 0 &&
           fullContent.length > effectiveMaxContentLength;
