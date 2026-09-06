@@ -9,6 +9,8 @@ This file owns **current proof interpretation**. Continuation belongs in `docs/k
 Repository: `halokaryamedia-source/BuildIT`  
 Branch: **`Local` only**.
 
+Source acceptance follows `GITHUB_RULES.md`: reusable source evidence must belong to the **same exact `Local` SHA** required by that acceptance boundary. Static/source/CI evidence never implies installed or live Blockbench proof.
+
 The latest executable/source-affecting quality commit is `1949aa9065f60f817e97fa2d0ba081c3ecd1ac80` (`test(mcp): lock request isolation against SDK advisory`). Later documentation-only synchronization may advance `Local` without invalidating that source proof.
 
 Integrated source baseline `6b3779cc0d3e3f7806699721196e484931075e8e` merged the DIRECT authoring audit with the remote TCP/brush/export repairs. Exact-SHA GitHub proof completed successfully: Repository Verify, Authoring Policy Verify and MCP Verify. The integrated baseline recorded **32 repository + 402 runtime + 117 authoring = 551 tests**, with generated docs/prompt freshness, typechecks, source surface measurements and build passing. Build identity: `sha256:c208ec49344db79fa22e1cddd330e563f14319d4ed0c724408ee0ba0a01c969c`.
