@@ -117,7 +117,7 @@ Animation / motion
 → .agents/skills/blockit-bedrock-animation/SKILL.md
 ```
 
-No mutation until router + matching specialist are loaded from the current worktree and its prerequisite gate is satisfied. Prior-chat memory or remembered Skill content is not a substitute. Load a new specialist before the first mutation when semantic ownership changes.
+No authoring mutation is allowed until the router + matching specialist are loaded from the current worktree and its prerequisite gate is satisfied. Prior-chat memory or remembered Skill content is not a substitute. Load a new specialist before the first mutation when semantic ownership changes.
 
 New-model authoring:
 
@@ -139,7 +139,7 @@ Geometry and Texturing retain distinct semantic owners while sharing the AUTHORI
 
 `HANDOFF_REQUIRED` is only for AUTHORING↔Animation. Retain resume-critical state, invoke `switch_authoring_phase` through Gateway, load the matching specialist, and continue the **same task/chat**.
 
-For normal asset authoring, do not auto-load repository continuation/history/foundation docs. Asset authoring is not software **Development**; do not route it through `development-brief` unless repository/plugin behavior changes.
+For normal asset authoring, do not automatically load repository continuation/history/foundation docs. Asset authoring is not software **Development**; do not route it through `development-brief` unless repository/plugin behavior changes.
 
 ## GitHub Work
 

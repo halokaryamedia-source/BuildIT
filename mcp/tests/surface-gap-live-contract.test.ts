@@ -59,6 +59,8 @@ describe("surface-gap live verifier contract (mock transport, not live proof)", 
     const directory = await mkdtemp(join(tmpdir(), "blockit-gap-contract-"));
     const bundlePath = join(directory, "fixture.js");
     const identity = `sha256:${"1".repeat(64)}`;
+    const instanceId = "fixture-instance";
+    const startupTime = "2026-09-06T00:00:00.000Z";
     await Bun.write(bundlePath, `globalThis.__BLOCKIT_BUILD_ID__ = "${identity}";`);
     const names = getMcpSurfaceToolNames("bedrock_entity", "geometry");
     const instructions = buildMcpServerInstructions("geometry");
@@ -75,6 +77,9 @@ describe("surface-gap live verifier contract (mock transport, not live proof)", 
           return Response.json({
             product: { id: PRODUCT_ID, profile: "bedrock_entity", authoring_phase: "geometry" },
             build_identity: identity,
+            instance_id: instanceId,
+            startup_time: startupTime,
+            exposed_tool_count: names.length,
             transport: { mode: "stateless", response_mode: "json" },
           });
         }

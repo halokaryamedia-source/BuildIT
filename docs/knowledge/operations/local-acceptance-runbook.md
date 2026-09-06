@@ -6,7 +6,7 @@ Current state: DIRECT disposable tests only; GPU/3D_ASSISTED deferred.
 
 This procedure activates only when `docs/knowledge/next-action.md` explicitly reactivates local testing. `LIVE_BLOCKBENCH` is an execution capability; it does not activate this procedure by itself. Targeted live debugging may use that capability without formal Local Acceptance.
 
-Use this runbook only for residue repository CI cannot prove. GitHub must finish source/static/CI work and prepare deterministic harness/provenance first. Do not edit source locally until a reproducible local failure identifies the first wrong owner.
+Use this runbook only for residue repository CI cannot prove. GitHub completes source/static/CI work and prepares deterministic harness/provenance first. Do not edit source locally until a reproducible local failure identifies the first wrong owner.
 
 ## 1. Acceptance Contract
 
@@ -32,57 +32,58 @@ git status --short
 git rev-parse HEAD
 ```
 
-Require a clean tree before reusing proof. Do not repeat accepted source checks from another SHA.
+Require a clean tree before reusing proof. Do not reuse source checks from another SHA.
 
 ## 3. Source Closure — Fast path from exact green GitHub proof
 
-Use the full source gate in `GITHUB_RULES.md`: successful `verify:full`, or successful `verify:repository` + `verify:mcp` on the same exact `Local` SHA. The latter is composite evidence, not an executed `verify:full`. Reuse only for a clean matching HEAD with no source/package edits. Do not rerun solely because proof came from CI.
+Use the full source gate in `GITHUB_RULES.md`: successful `verify:full`, or successful `verify:repository` + `verify:mcp` on the same exact `Local` SHA. The latter is composite evidence, not an executed `verify:full`. Reuse only for a clean matching HEAD with no source/package edits; do not rerun solely because proof came from CI.
 
-`verify:authoring` also owns committed representative-fixture static contracts such as `verify:fixture-static`; reuse its exact-SHA CI result instead of rechecking deterministic repository artifacts on desktop.
+`verify:authoring` owns committed representative-fixture static contracts such as `verify:fixture-static`; reuse its exact-SHA CI result rather than repeating deterministic asset checks locally.
 
-Install pinned local script dependencies once:
+Install pinned local verifier dependencies once:
 
 ```bash
 cd mcp
 bun install --frozen-lockfile
 ```
 
-### Missing source proof
+If exact source proof is missing or checkout changed, run once:
 
-Run `bun run verify:full` once only when exact source proof is genuinely missing or the checkout changed after that proof. `verify:closure` is an iteration diagnostic.
+```bash
+bun run verify:full
+```
 
 ## 4. Deploy Exact Plugin — prefer verified CI artifact
 
-A successful `MCP Verify` may publish artifact `blockit-mcp-verified` containing:
+A successful `MCP Verify` may publish `blockit-mcp-verified` containing `blockit_mcp.js` and `blockit-build-provenance.json`.
 
-```text
-blockit_mcp.js
-blockit-build-provenance.json
-```
-
-Prefer that exact-run artifact for acceptance. Extract it to an absolute local directory, then deploy **without rebuilding**:
+Prefer that exact-run artifact and deploy **without rebuilding**:
 
 ```bash
 bun run deploy:verified -- /absolute/path/to/artifact-dir /absolute/path/to/blockit_mcp.js
 ```
 
-`deploy:verified` fails closed unless provenance repository/ref/source SHA matches the current checkout and bundle SHA-256 + embedded `build_identity` match the artifact.
+`deploy:verified` fails closed unless repository/ref/source SHA matches current checkout and bundle SHA-256 + embedded `build_identity` match provenance.
 
-Fallback only when no matching CI artifact exists or intentionally testing unpushed local source:
+Fallback only when no matching artifact exists or intentionally testing unpushed local source:
 
 ```bash
 bun run deploy:local -- /absolute/path/to/blockit_mcp.js
 ```
 
-`deploy:local` owns build + copy; do not build twice. Preserve unsaved projects/assets/settings/credentials/other plugins before cleanup; no `git clean -xfd`.
+`deploy:local` owns build + copy; do not build twice. Preserve unsaved projects/assets/settings/credentials/other plugins; no `git clean -xfd`. Reload BlockIT and reconnect.
 
-Reload BlockIT after deployment and reconnect the client.
+## 5. Native Runtime Preflight
 
-## 5. Native Runtime Preflight — no duplicate smoke ritual
+Geometry/Texturing/Animation/Persistence/quality-fixture live verifiers share one preflight: installed `build_identity`, stable `instance_id`/`startup_time`, phase, stateless transport, initialize contract, `tools/list` count, required tools, and forbidden-tool absence.
 
-Normal Geometry/Texturing/Animation/Persistence/quality-fixture live verifiers share one preflight that checks installed `build_identity`, stable `instance_id`/`startup_time`, phase, stateless transport, initialize contract, `tools/list` count, required tools, and forbidden tool absence.
+`verify:stateless-local` is diagnostic only when that shared preflight fails or exact full-surface diagnosis is explicitly required:
 
-`verify:stateless-local` is **diagnostic only** when that shared preflight fails or exact full-surface diagnosis is explicitly required. Do not run it automatically before every live verifier. This leaves local acceptance focused on native behavior source/CI cannot prove.
+```bash
+bun run verify:stateless-local
+```
+
+Do not run it automatically before every live verifier.
 
 ## 6. Prepared DIRECT Native Sequence
 
@@ -102,40 +103,36 @@ shared AUTHORING
 → verify:persistence-live -- --verify --confirm-disposable
 ```
 
-Geometry↔Texturing stays on the shared AUTHORING surface; no phase bounce. The disposable harness owns thin per-face UV, native 16x template/repack, semantic pixel preservation, Painter target/clip, A-vs-selected-B animation targeting, Undo/Redo and persistence assertions.
+Geometry↔Texturing stays on the shared AUTHORING surface; no phase bounce. The harness owns thin per-face UV, native 16x template/repack, semantic pixel preservation, Painter target/clip, A-vs-selected-B animation targeting, Undo/Redo and persistence assertions.
 
-Synthetic disposable-test readiness never proves user asset approval. Tool success, export success, low call count, or a scalar score cannot override **QUALITY FAIL**.
+Synthetic readiness never proves user asset approval. Tool/export success, low call count, or a scalar score cannot override **QUALITY FAIL**.
 
 ## 7. Representative quality fixture — current Lift example
 
 The current Lift workspace is **only a representative test fixture** for BlockIT/MCP workflow quality. It is not a product target and must not create LIFT-specific tool behavior, schema, thresholds, workflow law, or acceptance rules. Another suitable fixture may replace it without changing production Runtime semantics.
 
-Never mutate the approved fixture source for system testing. Open an exact disposable copy and, for the current example, set:
+Never mutate the approved fixture source for system testing. Open a disposable copy; for the current example:
 
 ```bash
 BLOCKIT_LIFT_DISPOSABLE_PATH=/absolute/path/to/lift-copy.bbmodel \
   bun run verify:lift-quality-live -- --confirm-disposable
 ```
 
-That example verifier hashes references, captures comparable before/candidate views + atlas, runs one native 16x padded repack candidate, records native size, then Undo-restores the original state. Its fixture-specific observations are evidence about generic MCP/workflow behavior, not product requirements. A `<=512` result is only a packing candidate.
+This example records reference/view/atlas evidence around one native 16x padded repack and Undo-restores original state. Fixture observations are evidence about generic MCP/workflow behavior, not product requirements. A `<=512` result is only a packing candidate.
 
-Visual/reference `PASS` still requires the actual approved reference plus fresh comparable model evidence. No source/static metric or automatic similarity score may create visual PASS.
+Visual/reference `PASS` still requires the approved reference plus fresh comparable model evidence. Static metrics or automatic similarity scores cannot create visual PASS.
 
-## 8. Gateway Stability — only when lifecycle proof is requested
+## 8. Gateway Stability
 
-Gateway lifecycle is separate from normal live authoring harness. When explicitly required, use one continuous client task and prove offline→online recovery, AUTHORING↔Animation catalog handoff, plugin reload recovery, and close/open recovery without a new chat. Geometry↔Texturing remains shared AUTHORING.
-
-A mutation interruption may return `OUTCOME_UNKNOWN`; inspect state before retrying. Do not blindly repeat a destructive request.
+Only when lifecycle proof is requested: use one continuous client task and prove offline→online recovery, AUTHORING↔Animation catalog handoff, plugin reload recovery, and close/open recovery without a new chat. Geometry↔Texturing remains shared AUTHORING. After `OUTCOME_UNKNOWN`, inspect state before retry.
 
 ## 9. 3D_ASSISTED — deferred unless explicitly resumed
 
 Setup/binding/source checks live in `mcp/scripts/three-d-assisted/README.md`. Do not execute GPU/native work while deferred.
 
-When resumed:
-
 ```text
 Approved Reference Board
-→ deterministic LEFT/FRONT/BACK extraction
+→ LEFT/FRONT/BACK extraction
 → Hunyuan3D v1 Shape Reconstruction
 → Shape GLB Gate
 → PrimitiveAnything
@@ -162,10 +159,9 @@ Quality must stay accepted while Cost to Accepted Result decreases. Do not inven
 
 ## 11. Failure / Completion
 
-Classify the first wrong owner before correction; follow `AGENTS.md` retry boundaries. If a live verifier exposes a source defect, return only that defect to the appropriate development context; do not restart the entire GitHub audit.
+Classify the first wrong owner before correction. If a live verifier exposes a source defect, return only that defect to the appropriate development context; do not restart the entire GitHub audit.
 
-Update state owners only when state changes:
-
+Update only changed owners:
 - `docs/knowledge/current-validation.md` — proof interpretation;
 - `docs/knowledge/next-action.md` — continuation;
 - `docs/knowledge/implementation-map.md` — source ownership.
