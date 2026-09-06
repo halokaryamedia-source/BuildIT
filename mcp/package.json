@@ -35,6 +35,7 @@
     "verify:texturing-live": "bun run ./scripts/verify-texturing-live.ts",
     "verify:animation-live": "bun run ./scripts/verify-animation-live.ts",
     "verify:persistence-live": "bun run ./scripts/verify-persistence-live.ts",
+    "verify:lift-quality-live": "bun run ./scripts/verify-lift-quality-live.ts",
     "deploy:local": "bun run build && bun run ./scripts/deploy-local.ts",
     "three-d-assisted:run": "bun run ./scripts/three-d-assisted-run.ts",
     "three-d-assisted:prepare": "bun run ./scripts/three-d-assisted-fixture.ts prepare",
