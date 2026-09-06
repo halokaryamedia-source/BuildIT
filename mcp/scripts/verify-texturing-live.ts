@@ -32,6 +32,8 @@ const REQUIRED_TOOLS = [
 ] as const;
 const VARIANT_GROUP_NAME = "e2e_variant_group";
 const DECOY_TEXTURE_NAME = "e2e_decoy";
+const THIN_CUBE_NAME = "e2e_thin_per_face";
+const THIN_CUBE_SIZE = [1, 4, 0.5] as const;
 const FACE_KEYS = ["north", "south", "east", "west", "up", "down"] as const;
 
 async function atlasImage(client: LiveMcpClient, texture: string) {
@@ -77,18 +79,50 @@ async function pickPixel(
   );
 }
 
-async function inspectBodyUv(client: LiveMcpClient): Promise<JsonObject> {
+async function inspectCubeUv(
+  client: LiveMcpClient,
+  id: string
+): Promise<JsonObject> {
   return structuredObject(
     await client.callTool(
       "inspect_elements",
       {
         mode: "detail",
-        id: AUTHORING_E2E_CUBE_NAME,
+        id,
         detail: "uv",
       },
       "inspection"
     ),
     "inspect_elements"
+  );
+}
+
+async function inspectBodyUv(client: LiveMcpClient): Promise<JsonObject> {
+  return inspectCubeUv(client, AUTHORING_E2E_CUBE_NAME);
+}
+
+function sameVec3(actual: unknown, expected: readonly number[]): boolean {
+  return (
+    Array.isArray(actual) &&
+    actual.length === 3 &&
+    actual.every((value, index) => value === expected[index])
+  );
+}
+
+function assertThinPerFaceState(detail: JsonObject, context: string): void {
+  expect(
+    sameVec3(detail.size, THIN_CUBE_SIZE),
+    `${context} thickened or resized the thin fixture: ${JSON.stringify(detail.size)}.`
+  );
+  const uv = (detail.uv ?? {}) as JsonObject;
+  const quality = (uv.quality_summary ?? {}) as JsonObject;
+  expect(
+    uv.mode === "per_face" && uv.box_uv === false && uv.autouv === 0,
+    `${context} lost explicit per-face UV mode: ${JSON.stringify(uv)}.`
+  );
+  expect(
+    quality.degenerate_faces === 0,
+    `${context} collapsed a meaningful thin face: ${JSON.stringify(quality)}.`
   );
 }
 
@@ -215,6 +249,10 @@ async function main(): Promise<void> {
   );
   const bitmapWidth = bitmap.width;
   const bitmapHeight = bitmap.height;
+  assertThinPerFaceState(
+    await inspectCubeUv(client, THIN_CUBE_NAME),
+    "Initial native template"
+  );
 
   const initialUv = await inspectBodyUv(client);
   const initialUvFingerprint = uvMappingFingerprint(initialUv);
@@ -292,6 +330,10 @@ async function main(): Promise<void> {
     rebuildTemplate.pixel_density === 16 && rebuildTemplate.padding === true,
     `Unexpected rebuild template contract: ${JSON.stringify(rebuildTemplate)}.`
   );
+  assertThinPerFaceState(
+    await inspectCubeUv(client, THIN_CUBE_NAME),
+    "Padded native template rebuild"
+  );
 
   const rebuiltUv = await inspectBodyUv(client);
   const rebuiltUvFingerprint = uvMappingFingerprint(rebuiltUv);
@@ -324,6 +366,10 @@ async function main(): Promise<void> {
     uvMappingFingerprint(await inspectBodyUv(client)) === initialUvFingerprint,
     "Undo did not restore the exact pre-rebuild face UV mapping."
   );
+  assertThinPerFaceState(
+    await inspectCubeUv(client, THIN_CUBE_NAME),
+    "Template rebuild Undo"
+  );
   await exactRedo(client);
   expect(
     imageDigest(await atlasImage(client, baseTextureUuid)) === afterRebuildHash,
@@ -332,6 +378,10 @@ async function main(): Promise<void> {
   expect(
     uvMappingFingerprint(await inspectBodyUv(client)) === rebuiltUvFingerprint,
     "Redo did not restore the exact padded-rebuild face UV mapping."
+  );
+  assertThinPerFaceState(
+    await inspectCubeUv(client, THIN_CUBE_NAME),
+    "Template rebuild Redo"
   );
 
   await client.callTool(
@@ -493,6 +543,7 @@ async function main(): Promise<void> {
         native_template_16x_ready: true,
         padded_rebuild_same_uuid: true,
         semantic_rgba_preserved_across_repack: true,
+        thin_per_face_survived_native_template_repack_without_thickening: true,
         rebuild_undo_restored_atlas_and_uv: true,
         rebuild_redo_restored_atlas_and_uv: true,
         explicit_target_with_selected_decoy: true,
@@ -510,7 +561,7 @@ async function main(): Promise<void> {
         cost: client.snapshotMetrics(),
         visual_quality: "not_evaluated",
         next: "Use the existing AUTHORING→Animation Gateway handoff with disposable-test readiness, reconnect once, then run verify:animation-live with --confirm-disposable.",
-        note: "Runs Texturing on the same shared AUTHORING session created by Geometry. Exercises native 16x template/repack, semantic pixel preservation, explicit target isolation, native size-2 Painter, bounded clipping and exact Undo/Redo. This is native behavior proof, not reference-fidelity approval.",
+        note: "Runs Texturing on the same shared AUTHORING session created by Geometry. Exercises native 16x template/repack, semantic pixel preservation, sub-unit per-face representation without geometry thickening, explicit target isolation, native size-2 Painter, bounded clipping and exact Undo/Redo. This is native behavior proof, not reference-fidelity approval.",
       },
       null,
       2
