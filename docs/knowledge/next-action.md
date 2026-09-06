@@ -1,6 +1,6 @@
 # Next Action
 
-Updated: 2026-09-07 — REMOTE_GITHUB daily-flow hardening recorded; LOCAL_CODE/LIVE work explicitly deferred by user.
+Updated: 2026-09-07 — daily-flow residue recorded; LOCAL_CODE/LIVE work explicitly deferred by user.
 Branch: **`Local` only**. Proof → `current-validation.md`.
 
 ## Status
@@ -11,16 +11,16 @@ Branch: **`Local` only**. Proof → `current-validation.md`.
   - MCP Verify `34046872042`: PASS — 409 runtime + 120 authoring; freshness, typechecks, measurements, build PASS.
   - Artifact `blockit-mcp-verified` ID `9993371261`; bundle SHA-256 `9896b8c25e293b7f33dc2ebf3119942809ec4df548839f4ac753366bc8521f87`; build identity `sha256:c208ec49344db79fa22e1cddd330e563f14319d4ed0c724408ee0ba0a01c969c`.
 - LIFT is only a replaceable representative fixture. Preserve `workspace/active/lift/lift.bbmodel`; mutate disposable copies only.
-- REMOTE_GITHUB daily-flow slice in the current delivery: compact `manage_cubes` correction continuation state and replace legacy `modify_cube` runtime error vocabulary. Public ToolSpec/schema/generated docs are intentionally unchanged.
 - LOCAL_CODE/LIVE work is **USER_DEFERRED** until explicitly reactivated.
-- LOCAL_CODE residue for daily-flow hardening: deterministic material-instance Cube targeting, explicit Animation identity/batch targeting, deterministic blank-atlas dimensions, and public Geometry/Texture wording/title cleanup. These public schema/description/spec edits must ship with canonical `docs:build` output; do not hand-edit generated docs.
+- No new daily-flow Runtime/source implementation is accepted from the interrupted REMOTE_GITHUB delivery on 2026-09-07; only continuation state was published. Prepared/unreferenced Git objects are not source authority or proof.
+- LOCAL_CODE residue for daily-flow hardening: compact `manage_cubes` correction continuation state; replace legacy `modify_cube` runtime error vocabulary; deterministic material-instance Cube targeting; explicit Animation identity/batch targeting; deterministic blank-atlas dimensions; and public Geometry/Texture wording/title cleanup. Public schema/description/spec edits must ship with canonical `docs:build` output; do not hand-edit generated docs.
 - Separate existing LOCAL_CODE residue: upgrade `@modelcontextprotocol/sdk` 1.25.3 to a patched maintained v1, regenerate `bun.lock`, run the owning source verifier. Do not combine this dependency maintenance with daily-flow contract changes unless required by a reproduced dependency conflict.
 - AUTHORING TAXONOMY: Geometry Strategy remains user-selected `DIRECT | 3D_ASSISTED`; 3D-Assisted native/GPU quality stays deferred unless resumed.
 
 ## Next
 
-1. Until the user reactivates LOCAL_CODE/LIVE work: preserve the current remote-completed daily-flow slice; do not redo it and do not publish coupled public-contract source without generated output.
-2. On LOCAL_CODE reactivation, complete the daily-flow public-contract residue as one coherent source+generated-doc delivery, then run its owning source verifier.
+1. Until the user reactivates LOCAL_CODE/LIVE work: do not publish coupled daily-flow public-contract source without canonical generated output, and do not treat interrupted prepared objects as implementation.
+2. On LOCAL_CODE reactivation, complete the daily-flow hardening as one coherent source/test/generated-doc delivery, then run its owning source verifier.
 3. Handle the SDK upgrade as a separate logical maintenance delivery unless current evidence proves it must be coupled.
 4. After an accepted exact source closure is deployed, reload BlockIT, keep the AI client on Gateway, and confirm fresh build identity/catalog.
 5. Disposable live sequence:
