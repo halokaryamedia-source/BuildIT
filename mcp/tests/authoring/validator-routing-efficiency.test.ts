@@ -5,19 +5,22 @@ async function source(path: string): Promise<string> {
 }
 
 describe("validator routing efficiency", () => {
-  test("router uses summary-first structural validation instead of vision spam", async () => {
-    const [router, validator] = await Promise.all([
+  test("Gateway authoring does not chase Direct Runtime validator resources", async () => {
+    const [router, validator, gateway] = await Promise.all([
       source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md"),
       source("server/resources/validator.ts"),
+      source("gateway/index.ts"),
     ]);
 
     expect(router.length).toBeLessThan(5_000);
-    expect(router).toContain(
-      "structural validation gate    → validator://status; details only when nonzero"
-    );
-    expect(router).toContain(
-      "Validator gate → read `validator://status` first; zero problems means no detail-resource read."
-    );
+    expect(router).toContain("`validator://*` resources are Direct Runtime/Inspector only");
+    expect(router).toContain("Gateway client must not search for or emulate them");
+    expect(router).not.toContain("structural validation gate    → validator://status");
+    expect(router).not.toContain("Validator gate → read `validator://status` first");
+
+    expect(gateway).toContain("Runtime resources and prompts are not proxied");
+    expect(gateway).not.toContain("registerResource(");
+    expect(gateway).not.toContain("registerPrompt(");
 
     expect(validator).toContain('uriTemplate: "validator://status"');
     expect(validator).toContain(
@@ -26,9 +29,7 @@ describe("validator routing efficiency", () => {
     expect(validator).toContain('errors: "validator://errors"');
     expect(validator).toContain('warnings: "validator://warnings"');
 
-    expect(router).toContain(
-      "visible/reference comparison  → capture_model_views"
-    );
+    expect(router).toContain("visible/reference comparison  → capture_model_views");
     expect(router).not.toMatch(/validator:\/\/status.*visual (pass|quality)/i);
   });
 });

@@ -213,6 +213,8 @@ describe("BlockIT Gateway contract", () => {
     expect(source).toContain("Runtime resources and prompts are not proxied");
     expect(source).toContain("inputSchema: tool.inputSchema ?? {}");
     expect(source).not.toContain("structuredContent: { capability: tool }");
+    expect(source).not.toContain("registerResource(");
+    expect(source).not.toContain("registerPrompt(");
     expect(source).not.toContain("console.log");
     expect(backendSource).toContain("new StreamableHTTPClientTransport");
     expect(backendSource.match(/\.callTool\(/g)?.length ?? 0).toBe(1);
