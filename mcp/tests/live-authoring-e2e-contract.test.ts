@@ -29,7 +29,7 @@ describe("live authoring E2E harness", () => {
     expect(helper).toContain("--confirm-disposable");
   });
 
-  test("Geometry uses current consolidated tools and hands Texturing the same shared AUTHORING session", async () => {
+  test("Geometry uses current consolidated tools, preserves a thin per-face fixture, and hands Texturing the same shared AUTHORING session", async () => {
     const geometry = await source("scripts/verify-geometry-live.ts");
     for (const tool of [
       "create_project",
@@ -47,12 +47,16 @@ describe("live authoring E2E harness", () => {
     }
     expect(geometry).toContain("operation: \"create\"");
     expect(geometry).toContain("operation: \"update\"");
+    expect(geometry).toContain('THIN_CUBE_NAME = "e2e_thin_per_face"');
+    expect(geometry).toContain("faces: THIN_FACE_UV");
+    expect(geometry).toContain("thin_per_face_without_geometry_thickening");
+    expect(geometry).toContain("quality.degenerate_faces === 0");
     expect(geometry).toContain("same shared AUTHORING session");
     expect(geometry).toContain("no Geometry-to-Texturing phase switch is required");
     expect(geometry).toContain("client.snapshotMetrics()");
   });
 
-  test("Texturing prebuilds native UV, semantic-pixel, target-isolation, clipping and history acceptance without an AUTHORING bounce", async () => {
+  test("Texturing prebuilds native UV/repack, thin per-face preservation, target-isolation, clipping and history acceptance without an AUTHORING bounce", async () => {
     const texturing = await source("scripts/verify-texturing-live.ts");
     for (const contract of [
       "type: \"template\"",
@@ -72,11 +76,14 @@ describe("live authoring E2E harness", () => {
       "undo",
       "redo",
       "semantic_rgba_preserved_across_repack",
+      "thin_per_face_survived_native_template_repack_without_thickening",
       "native_size_2_brush_changed_target_only",
       "bounded_shape_clip_preserved_outside_pixel",
     ]) {
       expect(texturing).toContain(contract);
     }
+    expect(texturing).toContain('THIN_CUBE_NAME = "e2e_thin_per_face"');
+    expect(texturing).toContain("quality.degenerate_faces === 0");
     expect(texturing).toContain('expectedPhase: "geometry"');
     expect(texturing).toContain("same shared AUTHORING session created by Geometry");
     expect(texturing).not.toContain('expectedPhase: "texturing"');
