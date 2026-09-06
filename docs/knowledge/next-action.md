@@ -1,31 +1,32 @@
 # Next Action
 
-Updated: 2026-09-07 — GitHub-first source/provenance closure refreshed; representative fixture is test media, not product scope.
+Updated: 2026-09-07 — GitHub-first closure current; named assets are test media, not product scope.
 Branch: **`Local` only**. Proof → `current-validation.md`.
 
 ## Status
 
 - LIVE ACCEPTANCE HARNESS: **SOURCE_READY / LIVE NOT_RUN**.
-- Current exact source closure: `1c1f74e160ce520d53fda3a3f271d9323b28558b`.
-  - Repository Verify run `34046872083`: PASS.
-  - MCP Verify run `34046872042`: PASS — 409 runtime + 120 authoring, generated freshness, typechecks, measurements and build PASS.
-  - Verified CI artifact `blockit-mcp-verified`, artifact ID `9993371261`, bundle SHA-256 `9896b8c25e293b7f33dc2ebf3119942809ec4df548839f4ac753366bc8521f87`, embedded build identity `sha256:c208ec49344db79fa22e1cddd330e563f14319d4ed0c724408ee0ba0a01c969c`.
-- LIFT is **only the current representative acceptance fixture** for selected quality/effectiveness checks. It is not a product target and must not create LIFT-specific MCP/runtime/tool behavior. Preserve `workspace/active/lift/lift.bbmodel`; any fixture mutation uses a disposable copy.
-- `@modelcontextprotocol/sdk` 1.25.3 remains the only known `LOCAL_CODE` source-authoring residue; patched compatible target is >=1.26.0 and `bun.lock` must be generated canonically.
-- AUTHORING TAXONOMY: user-selected `DIRECT | 3D_ASSISTED`.
-- 3D_ASSISTED: SOURCE_READY; GPU/native quality deferred unless explicitly resumed.
-- LEGACY UI FALLBACKS: debug/maintenance only.
+- Accepted source/provenance SHA: `1c1f74e160ce520d53fda3a3f271d9323b28558b`.
+  - Repository Verify `34046872083`: PASS.
+  - MCP Verify `34046872042`: PASS — 409 runtime + 120 authoring; freshness, typechecks, measurements, build PASS.
+  - Verified artifact `blockit-mcp-verified` ID `9993371261`; bundle SHA-256 `9896b8c25e293b7f33dc2ebf3119942809ec4df548839f4ac753366bc8521f87`; build identity `sha256:c208ec49344db79fa22e1cddd330e563f14319d4ed0c724408ee0ba0a01c969c`.
+- LIFT is **only a replaceable representative acceptance fixture**. It must not create LIFT-specific MCP/runtime/tool behavior. Preserve canonical `workspace/active/lift/lift.bbmodel`; mutate disposable copies only.
+- Known `LOCAL_CODE` source residue: upgrade `@modelcontextprotocol/sdk` 1.25.3 to patched compatible >=1.26.0 and regenerate canonical `bun.lock`.
+- AUTHORING strategy remains user-selected `DIRECT | 3D_ASSISTED`; 3D_ASSISTED native/GPU quality stays deferred unless resumed.
 
 ## Next
 
-1. `LOCAL_CODE` residue only: upgrade MCP SDK to a patched compatible version, regenerate `bun.lock`, and run the owning source verifier. Do not redo GitHub-side design/harness/provenance work.
-2. For the resulting exact post-upgrade SHA, use its verified CI bundle/provenance rather than rebuilding merely for deployment. Deploy that exact bundle, reload BlockIT, reconnect, then in one shared AUTHORING session run:
+1. `LOCAL_CODE` residue only: upgrade SDK, regenerate `bun.lock`, run the owning source verifier. Do not redo GitHub-side design/harness/provenance work.
+2. Push that exact source closure and use its verified CI bundle/provenance for deployment. Reload BlockIT and reconnect.
+3. Generic live acceptance on disposable state:
    - `bun run verify:geometry-live -- --confirm-disposable`
    - `bun run verify:texturing-live -- --confirm-disposable`
-   These are generic MCP/native acceptance checks: consolidated tools, thin per-face UV without geometry thickening, native 16x template/repack, semantic pixel preservation, Painter target/clip, and Undo/Redo.
-3. Perform only the real AUTHORING→Animation handoff with clearly synthetic disposable-test readiness; reconnect once. Run `bun run verify:animation-live -- --confirm-disposable`.
-4. Persistence: run `bun run verify:persistence-live -- --prepare --confirm-disposable`, close/reopen the exported disposable `.bbmodel` once in Blockbench, then run the same command with `--verify`.
-5. Only when validating the visual-quality/efficiency workflow or historical Lift issue closure, use LIFT as the representative fixture: open a disposable copy, set `BLOCKIT_LIFT_DISPOSABLE_PATH`, and run `bun run verify:lift-quality-live -- --confirm-disposable`. This fixture-specific evidence step is **not** a generic MCP product requirement and must not drive runtime semantics.
-6. A representative-fixture visual PASS still requires the actual approved reference plus fresh comparable evidence. `<=512` is only a packing candidate. Measure Cost to Accepted Result only after quality PASS.
+   - one real AUTHORING→Animation handoff/reconnect
+   - `bun run verify:animation-live -- --confirm-disposable`
+   - `bun run verify:persistence-live -- --prepare --confirm-disposable`
+   - one native close/reopen
+   - `bun run verify:persistence-live -- --verify --confirm-disposable`
+4. Only to validate visual-quality/efficiency methodology or historical Lift issue traceability, append disposable LIFT `verify:lift-quality-live`. That fixture step is not a generic MCP requirement and must not drive product semantics.
+5. Visual PASS requires the actual approved reference plus fresh comparable evidence. Measure Cost to Accepted Result only after accepted quality.
 
 No Minecraft acceptance. Do not repeat GitHub audit/source design unless a verifier reproduces a new defect.
