@@ -3,6 +3,7 @@ import {
   GATEWAY_TOOL_NAMES,
   classifyCapabilityTier,
   classifyInterruptedCall,
+  compactGatewayCapabilityStructuredContent,
   createRuntimeSignature,
   normalizeRuntimeUrl,
   searchCapabilityCatalog,
@@ -129,6 +130,66 @@ describe("BlockIT Gateway contract", () => {
     });
   });
 
+  test("Gateway compacts manage_cubes continuation receipts without dropping UV-changing state", () => {
+    const geometryBatch = compactGatewayCapabilityStructuredContent(
+      "manage_cubes",
+      {
+        modified: 1,
+        effects: [
+          {
+            before: {
+              uuid: "cube-a",
+              from: [0, 0, 0],
+              face_uvs: { north: [0, 0, 4, 4] },
+            },
+            after: {
+              uuid: "cube-a",
+              from: [1, 0, 0],
+              box_uv_region: { logical_rect: [0, 0, 4, 4] },
+              face_uvs: { north: [0, 0, 4, 4] },
+            },
+            geometry_effect: {
+              changed_fields: ["from"],
+              center_delta: [1, 0, 0],
+            },
+          },
+        ],
+      }
+    );
+    const geometryJson = JSON.stringify(geometryBatch);
+    expect(geometryJson).not.toContain('"before"');
+    expect(geometryJson).not.toContain('"face_uvs"');
+    expect(geometryJson).toContain('"box_uv_region"');
+    expect(geometryJson).toContain('"center_delta"');
+
+    const uvUpdate = compactGatewayCapabilityStructuredContent(
+      "manage_cubes",
+      {
+        before: {
+          uuid: "cube-b",
+          face_uvs: { north: [0, 0, 4, 4] },
+        },
+        after: {
+          uuid: "cube-b",
+          face_uvs: { north: [4, 0, 8, 4] },
+        },
+        geometry_effect: {
+          changed_fields: ["faces"],
+          faces_changed: true,
+        },
+      }
+    );
+    const uvJson = JSON.stringify(uvUpdate);
+    expect(uvJson).not.toContain('"before"');
+    expect(uvJson).toContain('"face_uvs"');
+    expect(uvJson).toContain('"faces_changed"');
+
+    const unrelated = { detail: { uuid: "cube-a" } };
+    expect(
+      compactGatewayCapabilityStructuredContent("inspect_elements", unrelated)
+    ).toBe(unrelated);
+  });
+
   test("phase handoff invalidates only backend state and explicitly keeps the client task alive", async () => {
     const backendSource = await Bun.file("gateway/backend.ts").text();
 
@@ -147,6 +208,7 @@ describe("BlockIT Gateway contract", () => {
 
     expect(packageJson.scripts.gateway).toBe("bun run ./gateway/index.ts");
     expect(source).toContain("new StdioServerTransport()");
+    expect(source).toContain("compactGatewayCapabilityStructuredContent");
     expect(source).not.toContain("console.log");
     expect(backendSource).toContain("new StreamableHTTPClientTransport");
     expect(backendSource.match(/\.callTool\(/g)?.length ?? 0).toBe(1);

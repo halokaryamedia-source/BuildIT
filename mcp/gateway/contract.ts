@@ -94,6 +94,14 @@ const TIER_BOOST: Record<CapabilityTier, number> = {
   maintenance: -20,
 };
 
+const CUBE_UV_CONTINUATION_FIELDS = new Set([
+  "faces",
+  "box_uv",
+  "uv_offset",
+  "mirror_uv",
+  "autouv",
+]);
+
 function isRecord(value: unknown): value is JsonRecord {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
@@ -104,6 +112,85 @@ function stringValue(value: unknown): string | null {
 
 function numberValue(value: unknown): number | null {
   return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+function changedFieldsFromEffect(value: unknown): string[] {
+  if (!isRecord(value) || !Array.isArray(value.changed_fields)) return [];
+  return value.changed_fields.filter(
+    (field): field is string => typeof field === "string"
+  );
+}
+
+function compactCubeContinuationState(
+  value: unknown,
+  geometryEffect: unknown
+): unknown {
+  if (!isRecord(value)) return value;
+  const changedFields = changedFieldsFromEffect(geometryEffect);
+  if (changedFields.some((field) => CUBE_UV_CONTINUATION_FIELDS.has(field))) {
+    return value;
+  }
+
+  const { face_uvs: _faceUvs, ...compact } = value;
+  return compact;
+}
+
+function compactManageCubesStructuredContent(value: unknown): unknown {
+  if (!isRecord(value)) return value;
+
+  if (Array.isArray(value.effects)) {
+    return {
+      ...value,
+      effects: value.effects.map((rawEffect) => {
+        if (!isRecord(rawEffect)) return rawEffect;
+        const {
+          before: _before,
+          after,
+          geometry_effect: geometryEffect,
+          ...rest
+        } = rawEffect;
+        return {
+          ...rest,
+          ...(after !== undefined
+            ? { after: compactCubeContinuationState(after, geometryEffect) }
+            : {}),
+          ...(geometryEffect !== undefined
+            ? { geometry_effect: geometryEffect }
+            : {}),
+        };
+      }),
+    };
+  }
+
+  if (value.before !== undefined && value.after !== undefined) {
+    const {
+      before: _before,
+      after,
+      geometry_effect: geometryEffect,
+      ...rest
+    } = value;
+    return {
+      ...rest,
+      after: compactCubeContinuationState(after, geometryEffect),
+      ...(geometryEffect !== undefined
+        ? { geometry_effect: geometryEffect }
+        : {}),
+    };
+  }
+
+  return value;
+}
+
+/**
+ * Keep the Runtime receipt complete for direct/debug clients while presenting
+ * only continuation-relevant state through the stable AI-client Gateway.
+ */
+export function compactGatewayCapabilityStructuredContent(
+  capability: string,
+  value: unknown
+): unknown {
+  if (capability !== "manage_cubes") return value;
+  return compactManageCubesStructuredContent(value);
 }
 
 export function normalizeRuntimeUrl(

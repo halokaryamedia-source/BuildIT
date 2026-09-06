@@ -9,6 +9,7 @@ import {
   GATEWAY_NAME,
   GATEWAY_TOOLS,
   GATEWAY_VERSION,
+  compactGatewayCapabilityStructuredContent,
   type JsonRecord,
 } from "./contract";
 
@@ -194,7 +195,15 @@ registerGatewayTool(
   async (rawArgs) => {
     try {
       const { capability, arguments: args } = invokeInput.parse(rawArgs);
-      return await backend.invokeCapability(capability, args);
+      const result = await backend.invokeCapability(capability, args);
+      if (result.structuredContent === undefined) return result;
+      return {
+        ...result,
+        structuredContent: compactGatewayCapabilityStructuredContent(
+          capability,
+          result.structuredContent
+        ),
+      };
     } catch (error) {
       return gatewayErrorResult(error);
     }
