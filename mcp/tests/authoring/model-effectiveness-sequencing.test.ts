@@ -36,7 +36,7 @@ describe("model creation effectiveness — texture/animation sequencing", () => 
 
     expect(texturing.toLowerCase()).toContain("final box uv locked with `autouv=0`");
     expect(texturing).toContain("list_textures");
-    expect(texturing).toContain("partial-overlap blocker");
+    expect(texturing).toMatch(/no invalid\/out-of-bounds\/partial-overlap/);
     expect(texturing).toContain("No Geometry↔Texturing phase switch");
     expect(animation.toLowerCase().replaceAll("/", " ")).toContain(
       "participating hierarchy pivots are suitable"
@@ -52,7 +52,7 @@ describe("model creation effectiveness — texture/animation sequencing", () => 
 
     expect(orchestrator.toLowerCase()).not.toContain("existing geometry may be a task baseline");
     expect(orchestrator.toLowerCase()).not.toContain("without certifying reference accuracy");
-    expect(modelling.toLowerCase()).toContain("existing-asset work may use current geometry as baseline");
+    expect(modelling).toMatch(/Existing geometry is a baseline, not fidelity proof/);
     expect(foundation.toLowerCase()).toContain("existing-asset work may accept the current asset as the task baseline");
   });
 

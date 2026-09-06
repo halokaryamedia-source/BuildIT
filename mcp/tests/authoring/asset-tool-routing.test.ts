@@ -88,7 +88,7 @@ describe("asset tool routing", () => {
       "manage_material_instances",
       "HANDOFF_REQUIRED",
       "switch_authoring_phase",
-      "Primary vs Support Capabilities",
+      "Conditional Support",
       "No Geometry↔Texturing phase switch",
     ]) expect(texturing).toContain(term);
 

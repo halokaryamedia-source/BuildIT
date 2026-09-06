@@ -94,8 +94,8 @@ describe("model-wide texel density diagnostics", () => {
     expect(skill).toContain(
       "Pin atlas UUID and pass `texture_id` when multiple textures are loaded"
     );
-    expect(skill).toContain("palette roles");
-    expect(skill).toContain("identity marks");
+    // Palette/identity wording belongs to texture-design reasoning tests;
+    // this regression owns upstream routing when physical texels cannot fit.
     expect(inspection).toContain("model_units_per_physical_pixel");
     expect(inspection).toContain("outlier_model_area_fraction");
   });

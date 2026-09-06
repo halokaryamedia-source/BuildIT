@@ -14,6 +14,7 @@ description: Mandatory BlockIT Bedrock Geometry and UV Layout specialist.
 Reference-driven work requires the **actual approved reference image visible in active multimodal context**. Filename/path/manifest/prose/memory is context, not visual evidence. Unavailable → `BLOCKED`.
 
 approved image = visual authority; dimensions = numeric authority; strategy = user-selected `DIRECT | 3D_ASSISTED`. Evidence: `SUPPORTED | PROVISIONAL | CONFLICTING | UNAVAILABLE`. Never auto-switch.
+Pin landmarks/counts/materials/openings/motion to views; record differences against strict visual agreement.
 
 `DIRECT` uses semantic Groups/Cubes. `3D_ASSISTED`: Shape Reconstruction → Shape GLB PASS → PrimitiveAnything PASS → Gateway `materialize_3d_assisted_scaffold(workspace_path)` → scaffold review → semantic cleanup; unavailable → `BLOCKED`, never fallback. Use a View Pair Map only to resolve materially ambiguous front/back, left/right, mirrored, depth, or 3/4 evidence.
 
@@ -32,7 +33,7 @@ material evidence state
 ```
 A semantic label never authorizes coordinates. **No orphan/filler Cube**; `PROVISIONAL` is a coarse hypothesis; placement never verifies it.
 
-Construction forms are **not presets**. Choose the simplest recognizable Blockbench-buildable interpretation. **Use texture for surface information** needing no silhouette, real volume, contact, negative-space boundary, or separate motion.
+Construction forms are **not presets**. **Use texture for surface information** without silhouette, volume/contact, negative-space or motion requirements.
 
 Decide **transform ownership** before rotation. Shared orientation/attachment/articulation → **Group/Bone-owned**; local rigid orientation may be Cube-owned. Primary mass state: `AXIS_ALIGNED | ROTATED | UNRESOLVED`. Visible slope → explicit origin/pivot + `MASS_CENTER | ATTACHMENT | JOINT | PARENT_TRANSFORM`. Material `UNRESOLVED` → `BLOCKED`. Pivot role: attachment/joint pivot when it owns the transform. AABB overlap, hierarchy, or numeric touching is not contact proof.
 
@@ -45,7 +46,7 @@ front/back constrain width+height; sides depth+height; top/bottom width+depth; 3
 Depth: `OBSERVED` direct; `INFERRED` consistent evidence + simplest geometry; `UNRESOLVED` insufficient/conflicting. Do not invent hidden structure. Material unresolved depth/topology/orientation → `BLOCKED`. Minor drift uses one consistent interpretation; **Do not average drift. Only unresolved material conflict becomes `BLOCKED`.**
 
 ## Surface Coverage / Negative Space
-For each continuous shell/body/wall/housing/casing/skin know covered region, intentional opening/recess, adjacent contact. Enclosures use closed-shell reasoning; open forms preserve intended negative space.
+Track shell coverage, intentional openings/recesses and adjacent contact. Enclosures need closed-shell reasoning; open forms preserve negative space.
 
 **Every gap must be intentional.** Bounds, hierarchy, Cube success, or positive-volume overlap do not prove coverage. Build broad primary surfaces before trim. Review front/back/left/right/top/bottom + useful 3/4 for holes, visible interior/backfaces, seams, penetration, contact, layer offsets. **No positive-volume overlap alone is not visual PASS.**
 
@@ -63,7 +64,7 @@ Detail-only smallest span/thickness `<= 4 Blockbench units` (`1/4 block`) defaul
 Material verdict requires actual approved reference + **fresh current-revision model** evidence. Mutation makes affected captures stale:
 `claim | reference view | current view | observed difference | FAIL | UNVERIFIED | PASS`.
 
-Successful `manage_cubes` execution is **Tool success** and execution evidence only. After primary `PASS`, add identity-weighted secondary geometry only. **Tool success, coordinates, bounds, hierarchy, validators, or similarity scores cannot justify `PASS`. Similarity scores cannot justify `PASS`.**
+`manage_cubes` is **Tool success** only. After primary `PASS`, add identity-weighted detail. **Tool success, coordinates, bounds, hierarchy, validators, or similarity scores cannot justify `PASS`.**
 
 `internal geometry=PASS` requires coherent mass/proportion/depth, coverage, purposeful detail, hierarchy/pivots, no major defect → `READY_FOR_USER_REVIEW`. **User Geometry APPROVED is required before fresh/rebuilt production UV Layout.**
 
@@ -72,6 +73,9 @@ Geometry-owned fresh/rebuilt Cube UV:
 `Geometry APPROVED → create_texture(type=template), explicit pixel_density, rearrange_uv=true, power_of_two=true → native UV/template → audit → UV Layout PASS → Texturing`.
 
 No guessed/stretched islands. Justified rebuild: `create_texture(type=template, texture_id=<UUID>)`; revalidate affected texture evidence before adding PBR/variants.
+Preflight sub-unit Box UV collapse; use per-face UV rather than thickening approved geometry.
+
+At approved density choose minimum proven native power-of-two packing. Audit occupied/face area, bounds and padding; area alone cannot prove fit. Preserve asymmetric pixels/reuse and verify Undo after painted repacking. No new packer without a reproduced native limitation.
 
 Density `16x`=1 texture pixel/model unit; scale density uniformly. Face aspect must match UV aspect (direct/90°). **Never non-uniformly scale an island to squeeze it into the atlas.** Atlas pressure → justified global density, remove unnecessary geometry, intentional exact reuse/mirroring, or larger bitmap.
 
@@ -82,7 +86,7 @@ Density `16x`=1 texture pixel/model unit; scale density uniformly. Face aspect m
 
 Reuse fresh exact authored state; otherwise `inspect_elements(mode=detail)` once. State target UUID(s), cause, intended change, invariant, expected effect; returned `geometry_effect` must match intent.
 
-Capture **affected view(s) first**; expand only for material cross-view risk. `IMPROVED | UNCHANGED | REGRESSED`; progress requires `IMPROVED`. A fix that helps one view while materially regressing another is rejected. If the same causal correction direction has failed twice without new evidence → `BLOCKED`.
+Capture **affected view(s) first**; expand for cross-view risk. `IMPROVED | UNCHANGED | REGRESSED`; require `IMPROVED` without regression elsewhere. Same causal correction failing twice without new evidence → `BLOCKED`.
 
 ## Existing Assets / Shared Session
-Existing-asset work may use current geometry as baseline without certifying reference accuracy. Geometry owns shape/hierarchy/rig/pivots/UV Layout; Texturing owns atlas pixels/PBR. Both callable in shared AUTHORING; semantic ownership governs mutation. Texture-discovered Geometry/UV defect returns here without phase switch. `HANDOFF_REQUIRED` + `switch_authoring_phase` is only AUTHORING↔Animation.
+Existing geometry is a baseline, not fidelity proof. Geometry owns shape/rig/UV Layout; Texturing owns pixels/PBR. Shared AUTHORING permits direct upstream correction without phase switch. `HANDOFF_REQUIRED` + `switch_authoring_phase` is only AUTHORING↔Animation.

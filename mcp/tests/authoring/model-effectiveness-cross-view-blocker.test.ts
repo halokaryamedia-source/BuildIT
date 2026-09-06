@@ -43,7 +43,7 @@ describe("model creation effectiveness — cross-view and blocker handling", () 
     ]);
 
     for (const text of [modelling, orchestrator, workflow]) expect(text).toContain("BLOCKED");
-    expect(modelling).toContain("same causal correction direction has failed twice without new evidence");
+    expect(modelling).toMatch(/same causal correction.*twice without new evidence.*BLOCKED/i);
     expect(workflow).toContain("Same causal correction failing twice without new evidence");
     expect(orchestrator).toContain("Same routed failure twice without new evidence");
     expect(orchestrator).not.toContain("Same causal correction failing twice without new evidence");

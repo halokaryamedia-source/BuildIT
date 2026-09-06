@@ -450,8 +450,10 @@ const animationMolangPropertySchema = z.union([
 
 export const animationTimelineParameters = z
   .object({
+    animation_id: animationIdOptionalSchema,
     action: z
       .enum([
+        "select",
         "play",
         "pause",
         "stop",
@@ -504,6 +506,12 @@ export const animationTimelineParameters = z
     const usesMolang =
       params.action === "set_anim_time_update" ||
       params.action === "set_blend_weight";
+
+    const required = { set_time: "time", set_length: "length", set_fps: "fps", select_range: "range" } as const;
+    const field = required[params.action as keyof typeof required];
+    if (field && params[field] === undefined) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: [field], message: `${field} is required for ${params.action}.` });
+    }
 
     if (params.action === "loop" && params.loop_mode === undefined) {
       ctx.addIssue({
@@ -756,7 +764,7 @@ export const animationToolDocs: ToolSpec[] = [
   {
     name: "animation_timeline",
     description:
-      "Controls animation timeline state, length, snapping, loop, Molang time update, and blend weight.",
+      "Controls the explicit animation_id (or current clip when omitted). select/playback/time actions select that clip; property edits target it without changing selection. Returns affected UUID.",
     annotations: {
       title: "Animation Timeline",
       destructiveHint: true,
@@ -1924,8 +1932,18 @@ createTool(
   {
     ...animationToolDocs[4],
     parameters: animationTimelineParameters,
-    async execute({ action, time, length, fps, loop_mode, range, molang }) {
-      const animation = resolveAnimation();
+    async execute({ animation_id, action, time, length, fps, loop_mode, range, molang }) {
+      const animation = resolveAnimation(animation_id);
+      // Timeline is native global state. Resolve explicit identity before changing
+      // selection; never let a different selected clip absorb the request.
+      const timelineAction = ["select", "play", "pause", "stop", "set_time", "select_range"].includes(action);
+      if (timelineAction && AnimationItem.selected !== animation) {
+        Timeline.pause();
+        animation.select();
+        if (AnimationItem.selected !== animation) {
+          throw new Error(`Could not select animation "${animation.name}".`);
+        }
+      }
       const animationMolang = animation as _Animation & {
         anim_time_update?: string;
         blend_weight?: string;
@@ -1949,6 +1967,9 @@ createTool(
       let result = "";
 
       switch (action) {
+        case "select":
+          result = `Selected animation "${animation.name}"`;
+          break;
         case "play":
           Timeline.start();
           result = "Started animation playback";
@@ -2071,7 +2092,14 @@ createTool(
 
       Animator.preview();
 
-      return result;
+      return {
+        content: [{ type: "text" as const, text: result }],
+        structuredContent: {
+          action,
+          animation: { uuid: animation.uuid, name: animation.name },
+          timeline_time: Timeline.time,
+        },
+      };
     },
   },
   animationToolDocs[4].status

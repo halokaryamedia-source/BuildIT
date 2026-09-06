@@ -24,8 +24,8 @@ describe("pre-local usage optimization contract", () => {
   test("local correction verifies affected views before broader capture", async () => {
     const modelling = await source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md");
     expect(modelling).toContain("affected view(s) first");
-    expect(modelling).toContain("expand only for material cross-view risk");
-    expect(modelling).toContain("helps one view while materially regressing another is rejected");
+    expect(modelling).toMatch(/expand.*cross-view risk/);
+    expect(modelling).toMatch(/without regression elsewhere/);
   });
 
   test("authoring efficiency requires accepted quality plus observable runtime cost", async () => {

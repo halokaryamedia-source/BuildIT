@@ -245,6 +245,12 @@ Texture Atlas
 
 Pixels are authored against the final UV atlas/islands. No arbitrary procedural patterns/noise, stretched pixel art, reference-image transfer shortcut, or Texture used to hide Geometry. Reference + material/form intent own styling.
 
+Strict visual reference agreement is the gate: compare proportions, counts, material boundaries, palette, shading and identity at comparable views/scale. User acceptance does not certify an unresolved reference difference. Better/HD requests do not change the approved resolution, density or style.
+
+Complete one representative adjoining surface pair before propagating a material design. Judge atlas palette separately from viewport lighting. Coordinate continuity follows the surface across Cubes; Cube/UV edges do not invent seams. Replace a wrong cohort design from its base rather than layering patches; retain bounded causal correction for local defects.
+
+Preflight sub-unit Box UV surfaces before templates; use per-face UV when necessary without thickening approved geometry merely to silence warnings. Choose the smallest proven feasible native power-of-two atlas at approved density with safe island padding. Occupancy/bounds are diagnostics, not quality or packing-feasibility proof. Repacking painted pixels requires correspondence and Undo checks.
+
 If Texturing reveals a Geometry/UV blocker, route judgement to Geometry in-session, correct it on shared AUTHORING, invalidate only materially affected downstream texture evidence, then resume Texturing.
 
 ## 9. Animation

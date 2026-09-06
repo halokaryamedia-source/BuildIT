@@ -26,6 +26,7 @@ dist/
 nul
 
 # Tool cache
+/.cache/
 __pycache__/
 *.pyc
 mcp/.cache/

@@ -87,14 +87,12 @@ describe("Codex Bedrock agent legibility contract", () => {
     const texturing = await source("../.agents/skills/blockit-bedrock-texturing/SKILL.md");
 
     expect(texturing).toContain("Geometry APPROVED + UV Layout PASS");
-    expect(texturing).toContain("Do not start Painter/PBR mutation if the entry gate is not satisfied");
+    expect(texturing).toMatch(/Entry:.*Geometry APPROVED \+ UV Layout PASS/);
     expect(texturing).toContain("`uv_audit.production_gate`");
-    expect(texturing).toContain("provisional **16×16** blank default");
-    expect(texturing).toContain("must therefore **not omit blank Atlas size**");
+    expect(texturing).toMatch(/provisional.*16×16.*blank/);
+    expect(texturing).toContain("not omit blank Atlas size");
     expect(texturing).toContain("128×128 default, 256×256 opt-in");
-    expect(texturing).toContain(
-      "`gradient_tool` is only for reference-supported continuous transition"
-    );
+    expect(texturing).toMatch(/`gradient_tool`.*reference-supported continuous transition/);
   });
 
   test("persistent workspace preserves resume-critical UV gate, scale, and front orientation", async () => {

@@ -1,6 +1,6 @@
 {
   "version": "0.1.0",
-  "generatedAt": "2026-09-06T10:28:17.525Z",
+  "generatedAt": "2026-09-06T13:14:47.264Z",
   "tools": [
     {
       "name": "manage_cubes",
@@ -1154,9 +1154,16 @@
                   {
                     "type": "object",
                     "properties": {
+                      "animation_id": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Animation UUID/name; omit for current animation when supported.",
+                        "markdownDescription": "Animation UUID/name; omit for current animation when supported."
+                      },
                       "action": {
                         "type": "string",
                         "enum": [
+                          "select",
                           "play",
                           "pause",
                           "stop",

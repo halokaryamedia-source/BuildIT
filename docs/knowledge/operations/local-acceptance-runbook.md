@@ -2,7 +2,7 @@
 
 Updated: 2026-09-06  
 Owner: `LIVE_BLOCKBENCH` formal acceptance procedure  
-Current state: preparation only; GPU/live tests deferred.
+Current state: DIRECT lift system repair permits targeted tests on a disposable copy; GPU/3D_ASSISTED tests remain deferred.
 
 This procedure is active only when `docs/knowledge/next-action.md` explicitly reactivates local testing. `LIVE_BLOCKBENCH` is an execution capability; it does not activate this procedure by itself. Targeted live debugging may use that capability without formal Local Acceptance.
 
@@ -20,6 +20,8 @@ STOP Condition
 ```
 
 Static source/CI never proves installed Blockbench behavior or visual quality. Static Footprint is a guardrail. Authoring Efficiency is evaluated only after the relevant quality gate passes and means Cost to Accepted Result.
+
+DIRECT lift fixture: protect the accepted checkpoint hash; use its disposable copy. Compare the same reference/views, density and material cohorts before/after. Record active time, corrections, failed/no-effect calls, unnecessary rereads and measured usage when available (UNKNOWN otherwise). Judge atlas palette separately from viewport lighting, test an adjoining surface pair before propagation, and verify UV packing/pixel preservation plus native Undo/reopen. A compact atlas or passing suite cannot certify texture quality or usage savings. This task ends at Blockbench; Minecraft is outside acceptance.
 
 ## 2. Pin Local State
 

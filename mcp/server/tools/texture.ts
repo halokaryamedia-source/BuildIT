@@ -919,9 +919,44 @@ export function buildUvAtlasAudit(
   );
   const reuseBounded = boundedExamples(exactReuseGroups, exampleLimit);
 
+  // Exact rectangle union in logical UV units; reuse/partial overlap must not
+  // inflate occupancy. Clip to the canvas while retaining out-of-bounds errors.
+  const clipped = reusable.map(({ rect }) => [
+    Math.max(0, rect[0]), Math.max(0, rect[1]),
+    Math.min(width, rect[2]), Math.min(height, rect[3]),
+  ]).filter(r => r[2] > r[0] && r[3] > r[1]);
+  const xs = [...new Set(clipped.flatMap(r => [r[0], r[2]]))].sort((a, b) => a - b);
+  let occupiedArea = 0;
+  for (let i = 1; i < xs.length; i++) {
+    const intervals = clipped.filter(r => r[0] < xs[i] && r[2] > xs[i - 1])
+      .map(r => [r[1], r[3]]).sort((a, b) => a[0] - b[0]);
+    let end = -Infinity;
+    let span = 0;
+    for (const [lo, hi] of intervals) {
+      span += Math.max(0, hi - Math.max(lo, end));
+      end = Math.max(end, hi);
+    }
+    occupiedArea += (xs[i] - xs[i - 1]) * span;
+  }
+  const bounds = clipped.length ? {
+    min: [Math.min(...clipped.map(r => r[0])), Math.min(...clipped.map(r => r[1]))],
+    max: [Math.max(...clipped.map(r => r[2])), Math.max(...clipped.map(r => r[3]))],
+  } : null;
+
   return {
     state: "available" as const,
     logical_canvas: { width, height },
+    packing: {
+      units: "logical_uv_units" as const,
+      face_area: reusable.reduce((sum, usage) => sum + uvRectArea(usage.rect), 0),
+      occupied_area: occupiedArea,
+      occupancy_ratio: occupiedArea / (width * height),
+      occupied_bounds: bounds,
+      occupied_size: bounds ? [bounds.max[0] - bounds.min[0], bounds.max[1] - bounds.min[1]] : [0, 0],
+      padding: "unverified" as const,
+      // Native Box-UV nets contain valid touching faces. A global face-gap
+      // threshold cannot certify island padding or a smaller feasible atlas.
+    },
     enabled_faces: usages.length,
     valid_uv_faces: valid.length,
     invalid_uv: {

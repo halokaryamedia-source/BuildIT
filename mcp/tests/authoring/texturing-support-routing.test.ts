@@ -12,8 +12,8 @@ describe("texturing hot-path routing", () => {
     const support = skill.slice(supportStart, supportEnd);
 
     expect(supportStart).toBeGreaterThan(-1);
-    expect(support).toMatch(/must not enter the normal hot path/i);
-    expect(support).toMatch(/user intent specifically requires/i);
+    expect(support).toMatch(/not normal hot path/i);
+    expect(support).toMatch(/Conditional on user intent/i);
 
     for (const tool of [
       "color_picker_tool",
@@ -39,7 +39,7 @@ describe("texturing hot-path routing", () => {
       "manage_material_instances",
     ]) expect(skill).toContain(direct);
 
-    expect(support).toMatch(/Support tools do not justify extra discovery\/readback/i);
+    expect(support).toMatch(/no extra discovery\/readback/i);
     expect(support).not.toContain("manage_material");
     expect(skill).not.toContain("create_pbr_material / configure_material / assign_texture_channel");
   });

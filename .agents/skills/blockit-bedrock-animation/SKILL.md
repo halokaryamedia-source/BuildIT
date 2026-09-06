@@ -52,8 +52,9 @@ manage_animation_controller
 ```
 
 Known capability → invoke via Gateway. Unknown/stale → `search_capabilities`; schema → `describe_capability` once. **Reuse fresh UUID/state; known identity must not fall back to broad hierarchy discovery or confirmation reads.**
+Timeline: pass animation_id; select/playback/time select it, properties edit it. Reuse returned UUID; no manual selection prerequisite.
 
-Route timeline/keyframe work through `manage_animation_timeline`. For batch coherent operations, use `batch` for one shared cohort intent instead of looping per key. Controller/effect/graph/copy-paste tools are conditional.
+Use `manage_animation_timeline`; `batch` owns coherent cohort work, not loops per key. Controller/effect/graph/copy-paste are conditional.
 
 ## Motion Design Contract
 

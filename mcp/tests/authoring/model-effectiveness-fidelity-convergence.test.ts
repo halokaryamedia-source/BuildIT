@@ -21,8 +21,8 @@ describe("model creation effectiveness — fidelity convergence and evaluation i
       expect(lower).toContain("same causal correction");
       expect(lower).toContain("blocked");
     }
-    expect(normalized(modelling)).toContain("helps one view while materially regressing another");
-    expect(normalized(modelling)).toContain("progress requires `improved`");
+    expect(normalized(modelling)).toMatch(/without regression elsewhere/);
+    expect(normalized(modelling)).toMatch(/require.*`improved`/);
   });
 
   test("model-facing evaluation remains evidence-bound and non-circular", async () => {

@@ -63,7 +63,7 @@ describe("texture production discipline", () => {
     expect(shape).toBeDefined();
     expect(brush).toBeDefined();
     expect(skill).toContain("blank create_texture → explicit width+height from project UV");
-    expect(skill).toContain("provisional **16×16** blank default");
+    expect(skill).toMatch(/provisional.*16×16.*blank/);
     expect(standard).toContain("create_texture(type=blank)");
     expect(standard).toContain("create_texture(type=template)");
     expect(standard).toContain("before Texture Styling");
@@ -151,7 +151,7 @@ describe("texture production discipline", () => {
     expect(skill).toMatch(/global UV\/atlas readiness\s+→ list_textures/i);
     expect(skill).toMatch(/face mapping\s+→ inspect_elements\(mode=detail\) only when needed/i);
     expect(skill).toContain("final Box UV locked with `autouv=0`");
-    expect(skill).toContain("no invalid/out-of-bounds/partial-overlap blocker");
+    expect(skill).toMatch(/no invalid\/out-of-bounds\/partial-overlap/);
   });
 
   test("texturing uses consolidated material facade instead of public primitive aliases", async () => {

@@ -18,8 +18,8 @@ describe("peer-inspired authoring efficiency routing", () => {
   test("Texturing keeps atlas lifecycle idempotent and avoids the provisional blank default", async () => {
     const skill = await source("../.agents/skills/blockit-bedrock-texturing/SKILL.md");
     expect(skill).toMatch(/blank atlas resolution unknown\s+→ get_project_info once/i);
-    expect(skill).toMatch(/Existing base-color atlas → reuse its UUID/i);
-    expect(skill).toContain("must therefore **not omit blank Atlas size**");
+    expect(skill).toMatch(/Reuse existing atlas UUID/i);
+    expect(skill).toContain("not omit blank Atlas size");
     expect(skill).toContain("smallest bounded causal correction");
     expect(skill).toContain("fresh affected evidence");
   });
@@ -27,7 +27,7 @@ describe("peer-inspired authoring efficiency routing", () => {
   test("Animation uses one coherent batch transform instead of per-key loops", async () => {
     const skill = await source("../.agents/skills/blockit-bedrock-animation/SKILL.md");
     expect(skill).toMatch(/manage_animation_timeline \(operation: keyframes\|graph\|timeline\|batch\|copy_paste\)/i);
-    expect(skill).toMatch(/use `batch` for one shared cohort intent instead of looping per key/i);
-    expect(skill).toMatch(/Controller\/effect\/graph\/copy-paste tools are conditional/i);
+    expect(skill).toMatch(/`batch`.*coherent cohort.*not loops per key/i);
+    expect(skill).toMatch(/Controller\/effect\/graph\/copy-paste.*conditional/i);
   });
 });

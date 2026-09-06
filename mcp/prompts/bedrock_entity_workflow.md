@@ -47,9 +47,9 @@ Use structured evidence maps only when ambiguity/conflict can materially change 
 
 ## Geometry / Visual Gate
 
-The reference-grounded planning/compiler experiment is retired from the default workflow. Do not require `evidence_map`, `reference_grounded_v1`, generic role namespaces, or construction strategies for ordinary Geometry authoring. Use direct Group/Cube tools and judge the resulting form visually.
+The planning/compiler experiment is retired. No `evidence_map`, `reference_grounded_v1`, role namespaces or compiler strategies for ordinary Geometry.
 
-For ordinary Geometry, use direct explicit authoring. Decide the primary masses, required counts, parent/contact relationships, important negative spaces, and transforms before mutation. Then create only the necessary Groups and Cubes in a coherent batch. Do not require a planning schema, evidence map, role namespace, compiler strategy, or automatic coordinate inference.
+For ordinary Geometry, decide masses, counts, parent/contact, negative spaces and transforms; create necessary Groups/Cubes in a coherent batch. No automatic coordinate inference.
 
 Reuse returned UUID/from/to/origin/rotation/`box_uv_region`; do not immediately re-inspect fresh Cubes. Tool success is execution evidence only.
 
@@ -74,6 +74,7 @@ For fresh Box UV, reuse `manage_cubes(operation=create)` returned `box_uv_region
 Require integer logical UV unless justified, no invalid/out-of-bounds UV, no accidental partial overlap, deliberate exact reuse/mirror, and stable seam/orientation. Use `inspect_elements(mode=detail)` only when face-specific mapping/orientation is actually needed; one Cube inspection returns all faces.
 
 ## Texture Atlas
+Check sub-unit Box UV collapse; prefer per-face UV over thickening. Keep density; verify minimum native packing, padding, pixel preservation and Undo.
 
 Texture Atlas is the bitmap canvas; it is not UV Layout or styling.
 
@@ -84,6 +85,7 @@ Atlas creation/fill does **not** complete Texture Styling.
 ## Texture Styling
 
 Define palette roles, value/hue ramp, material zones, face-aware shading, contact/occlusion, edge treatment, hard-pixel/alpha intent, seam/orientation, identity marks, detail budget, and pixels per UV unit.
+Verify an adjoining surface pair first. Separate palette from lighting; keep shading continuous across Cubes. Replace wrong material designs, not patch overlays. Better/HD preserves density, resolution and style.
 
 Flat fill is a **BASE PASS only**, never production completion when material/form/detail is visible. Prefer controlled Minecraft pixel clusters and stepped ramps; random noise is rejected. Smooth gradient is optional only when the reference/style supports it.
 

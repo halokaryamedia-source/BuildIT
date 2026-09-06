@@ -49,7 +49,7 @@ describe("reference Minecraft-first coverage", () => {
     expect(skill).toContain("never lazy-voxelize");
     expect(guide).toContain("does not need to be 100% identical");
     expect(texturing).toContain("palette roles");
-    expect(texturing).toContain("identity marks");
+    expect(texturing).toMatch(/identity pass/i);
   });
 
   test("minor drift uses one consistent interpretation; material conflict still blocks", async () => {
