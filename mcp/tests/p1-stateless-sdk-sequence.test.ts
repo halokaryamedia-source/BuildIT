@@ -8,7 +8,9 @@ import {
 
 const MCP_URL = "http://127.0.0.1:3000/bb-mcp";
 // Current Codex legacy Streamable HTTP startup explicitly requests 2025-06-18.
-// The pinned TypeScript SDK v1.25.3 supports this revision alongside 2025-11-25.
+// The current lock resolves SDK v1.25.3. GHSA-345p-7cg4-v4c7 affects shared
+// server/transport reuse, so this fixture keeps BlockIT's request-owned pattern
+// explicit until a Bun-capable checkout can canonically upgrade the lockfile.
 const PROTOCOL_VERSION = "2025-06-18";
 
 function createFixtureServer(): McpServer {
@@ -199,5 +201,44 @@ describe("P1.4 pinned-SDK stateless request sequence", () => {
     expect(secondList.status).toBe(200);
     expect(firstList.headers.get("mcp-session-id")).toBeNull();
     expect(secondList.headers.get("mcp-session-id")).toBeNull();
+  });
+
+  test("concurrent requests with colliding JSON-RPC ids stay isolated", async () => {
+    const call = (value: string) =>
+      postWithFreshStatelessServer(
+        {
+          jsonrpc: "2.0",
+          id: 42,
+          method: "tools/call",
+          params: {
+            name: "echo_fixture",
+            arguments: { value },
+          },
+        },
+        { includeProtocolHeader: true }
+      );
+
+    const [first, second] = await Promise.all([
+      call("client-a"),
+      call("client-b"),
+    ]);
+
+    expect(first.status).toBe(200);
+    expect(second.status).toBe(200);
+    expect(first.headers.get("mcp-session-id")).toBeNull();
+    expect(second.headers.get("mcp-session-id")).toBeNull();
+
+    const firstJson = parseJson(first.text);
+    const secondJson = parseJson(second.text);
+    expect(firstJson.id).toBe(42);
+    expect(secondJson.id).toBe(42);
+    expect(
+      (firstJson.result as { content?: Array<{ type?: string; text?: string }> })
+        .content
+    ).toEqual([{ type: "text", text: "client-a" }]);
+    expect(
+      (secondJson.result as { content?: Array<{ type?: string; text?: string }> })
+        .content
+    ).toEqual([{ type: "text", text: "client-b" }]);
   });
 });
