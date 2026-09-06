@@ -162,7 +162,7 @@ describe("local runtime gate source contract", () => {
     expect(about).not.toContain("without restarting Blockbench");
 
     expect(runbook).toContain("cd mcp");
-    expect(runbook).toContain("bun run build");
+    expect(runbook).toContain("bun run deploy:local");
     expect(runbook).not.toContain("mcp/dist/mcp.js");
     expect(runbook).toContain("bun run verify:stateless-local");
   });
