@@ -12,7 +12,7 @@ Branch: **`Local` only**. Proof → `current-validation.md`.
   - Verified artifact `blockit-mcp-verified` ID `9993371261`; bundle SHA-256 `9896b8c25e293b7f33dc2ebf3119942809ec4df548839f4ac753366bc8521f87`; build identity `sha256:c208ec49344db79fa22e1cddd330e563f14319d4ed0c724408ee0ba0a01c969c`.
 - LIFT is **only a replaceable representative acceptance fixture**. It must not create LIFT-specific MCP/runtime/tool behavior. Preserve canonical `workspace/active/lift/lift.bbmodel`; mutate disposable copies only.
 - Known `LOCAL_CODE` source residue: upgrade `@modelcontextprotocol/sdk` 1.25.3 to patched compatible >=1.26.0 and regenerate canonical `bun.lock`.
-- AUTHORING strategy remains user-selected `DIRECT | 3D_ASSISTED`; 3D_ASSISTED native/GPU quality stays deferred unless resumed.
+- AUTHORING TAXONOMY: user-selected `DIRECT | 3D_ASSISTED`; 3D_ASSISTED native/GPU quality stays deferred unless resumed.
 
 ## Next
 
