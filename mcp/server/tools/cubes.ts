@@ -7,6 +7,7 @@ import { STATUS_STABLE } from "@/lib/constants";
 import { resolveCoreCube, resolveCoreGroup } from "@/lib/coreIdentity";
 import { requireOpenProject } from "@/lib/util";
 import {
+  BoxUvCapacityError,
   boxUvFootprint,
   packBoxUvOffsets,
   type BoxUvRegion,
@@ -378,7 +379,7 @@ function requireIntentionalRotationActivation(
 function requirePivotTransferMesh(cube: Cube): void {
   if (!cube.mesh) {
     throw new Error(
-      `Cube "${cube.name}" (${cube.uuid}) has no preview mesh, so a pivot-only transfer cannot safely preserve its visual position. Use inspect_element/canonical views and retry only when the Cube is present in the active rendered project.`
+      `Cube "${cube.name}" (${cube.uuid}) has no preview mesh, so a pivot-only transfer cannot safely preserve its visual position. Use inspect_elements(mode=detail)/canonical views and retry only when the Cube is present in the active rendered project.`
     );
   }
 }
@@ -560,10 +561,12 @@ function modifyCubeRequestWouldChange(
     (update.to !== undefined && !vec3Equal(update.to, cube.to)) ||
     (update.rotation !== undefined && !vec3Equal(update.rotation, cube.rotation)) ||
     (update.uv_offset !== undefined && !vec2Equal(update.uv_offset, cube.uv_offset)) ||
-    (update.autouv !== undefined && Number(update.autouv) !== cube.autouv) ||
+    (update.faces === undefined && update.autouv !== undefined && Number(update.autouv) !== cube.autouv) ||
     (update.mirror_uv !== undefined && update.mirror_uv !== cube.mirror_uv) ||
-    (update.faces !== undefined && update.faces.some(({ face, uv }) =>
-      uv.some((value, index) => value !== cube.faces[face].uv[index])
+    (update.faces !== undefined && (
+      cube.box_uv !== false || cube.autouv !== 0 || update.faces.some(({ face, uv }) =>
+        uv.some((value, index) => value !== cube.faces[face].uv[index])
+      )
     )) ||
     (update.inflate !== undefined && update.inflate !== (cube.inflate ?? 0)) ||
     (update.visibility !== undefined && update.visibility !== (cube.visibility !== false))
@@ -573,7 +576,7 @@ function modifyCubeRequestWouldChange(
 function resolveUniqueCube(reference: string): Cube {
   return resolveCoreCube(
     reference,
-    "Use list_outline or find_elements_by_criteria, then inspect_element to confirm the intended UUID."
+    "Use inspect_elements with mode=outline/search, then mode=detail to confirm the intended UUID."
   );
 }
 
@@ -581,7 +584,7 @@ function resolvePlacementGroup(reference?: string): Group | "root" {
   if (reference === undefined || reference === "root") return "root";
   return resolveCoreGroup(
     reference,
-    'Use list_outline to confirm the intended Group UUID. Omit group or pass "root" only when root placement is intentional.'
+    'Use inspect_elements with mode=outline to confirm the intended Group UUID. Omit group or pass "root" only when root placement is intentional.'
   );
 }
 
@@ -615,33 +618,18 @@ export function registerCubesTools() {
         const footprints = placements.map(({ element }) =>
           boxUvFootprint(element.from, element.to)
         );
-        if (footprints.some(([width, height]) => width > textureWidth || height > textureHeight)) {
-          // Large geometry is valid; its final atlas size is owned by the
-          // native template generator, not by provisional placement packing.
-          deferredBoxUvTemplate = true;
-        } else {
+        try {
           plannedBoxUvOffsets = packBoxUvOffsets(
             currentBoxUvOccupancy(),
             footprints,
             textureWidth,
             textureHeight
           );
-        }
-      } else if (!customFaceUvs) {
-        const textureWidth = Project?.texture_width ?? null;
-        const textureHeight = Project?.texture_height ?? null;
-        if (textureWidth !== null && textureHeight !== null) {
-          for (const { element } of placements) {
-            const [layoutWidth, layoutHeight] = boxUvFootprint(
-              element.from,
-              element.to
-            );
-            if (layoutWidth > textureWidth || layoutHeight > textureHeight) {
-              throw new Error(
-                `Cube "${element.name}" box-UV layout ${layoutWidth}×${layoutHeight} exceeds the ${textureWidth}×${textureHeight} logical UV canvas. Create the project with resolution 256, or author explicit per-face UV for this Cube.`
-              );
-            }
-          }
+        } catch (error) {
+          if (!(error instanceof BoxUvCapacityError)) throw error;
+          // Geometry must not depend on fitting a provisional atlas. Keep
+          // authored UVs untouched; the native production template owns layout.
+          deferredBoxUvTemplate = true;
         }
       }
 
@@ -706,15 +694,15 @@ export function registerCubesTools() {
           : deferredBoxUvTemplate
             ? ("deferred_for_native_template" as const)
             : null,
-        cubes: cubes.map((cube: Cube) => ({
-          uuid: cube.uuid,
-          name: cube.name,
-        })),
+        cubes: cubes.map((cube: Cube) => {
+          const { face_uvs: _faceUvs, ...state } = finalCubeState(cube);
+          return state;
+        }),
       };
       const uvNote = plannedBoxUvOffsets
-        ? " Box-UV offsets were auto-packed without overlap; keep autouv active through geometry correction, then lock the final Cubes in one batch before production paint."
+        ? " Box-UV offsets are provisional, not UV Layout PASS. After user Geometry approval, generate and verify the native production UV template before painting."
         : deferredBoxUvTemplate
-          ? " Box-UV template packing was deferred because the provisional canvas is smaller than the geometry; use create_texture(type=template) before painting."
+          ? " Box-UV template packing was deferred because the provisional canvas or occupancy cannot fit the geometry. After user Geometry approval, use create_texture(type=template) and verify UV Layout before painting."
           : "";
       return {
         content: [
@@ -853,7 +841,7 @@ export function registerCubesTools() {
         );
         if (!cube) {
           throw new Error(
-            `Cube UUID "${update.id}" not found. Use list_outline/find_elements_by_criteria, then inspect_element to confirm the exact target UUID before retrying the correction.`
+            `Cube UUID "${update.id}" not found. Use inspect_elements with mode=outline/search, then mode=detail to confirm the exact target UUID before retrying the correction.`
           );
         }
 
@@ -958,6 +946,7 @@ export function registerCubesTools() {
         modified: targets.length,
         effective_geometry_targets: effectiveGeometryTargets,
         changed_field_counts: changedFieldCounts,
+        effects,
       };
 
       return {

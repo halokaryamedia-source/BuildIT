@@ -84,7 +84,7 @@ function resolveInspectableElement(reference: string): InspectableElement {
   if (nameMatches.length === 1) return nameMatches[0];
 
   throw new Error(
-    `Element "${reference}" not found. Use list_outline, find_elements_by_criteria, or list_locator_elements to locate the intended authored element and then inspect it by UUID.`
+    `Element "${reference}" not found. Use inspect_elements with mode=outline/search to locate the intended authored element, then mode=detail with its UUID.`
   );
 }
 
@@ -250,8 +250,12 @@ export type FaceUvQuality =
       geometry_aspect_ratio: number;
       uv_aspect_ratio: number;
       best_aspect_alignment: "direct" | "rotated_90";
+      face_rotation: number;
+      aspect_space: "logical_uv" | "physical_pixels";
       aspect_ratio_scale_error: number;
       aspect_state: "matched" | "review_required";
+      logical_uv_units_per_model_unit_axes: { width: number; height: number };
+      physical_pixels_per_model_unit_axes: { width: number; height: number } | null;
       logical_uv_area_per_model_area: number;
     };
 
@@ -260,12 +264,16 @@ function ratioScaleError(first: number, second: number): number {
 }
 
 /**
- * Objective face-to-UV construction metrics. `aspect_state` is a conservative
- * review hint, not a visual or semantic PASS/FAIL verdict.
+ * Measure the authored rotation, never the better of two hypothetical mappings.
+ * Pixel-axis scale owns texel aspect when a texture is available. The historical
+ * best_aspect_alignment key now reports that actual alignment for compatibility.
+ * All verdicts remain construction review hints, not visual approval.
  */
 export function summarizeFaceUvQuality(
   geometrySize: readonly [number, number],
-  uv: readonly [number, number, number, number]
+  uv: readonly [number, number, number, number],
+  faceRotation: number = 0,
+  pixelsPerUvUnit?: readonly [number, number]
 ): FaceUvQuality {
   const width = Math.abs(geometrySize[0]);
   const height = Math.abs(geometrySize[1]);
@@ -273,23 +281,34 @@ export function summarizeFaceUvQuality(
   const uvHeight = Math.abs(uv[3] - uv[1]);
   const geometry: [number, number] = [width, height];
   const uvSize: [number, number] = [uvWidth, uvHeight];
+  const rotation = ((faceRotation % 360) + 360) % 360;
 
   if (
-    ![width, height, uvWidth, uvHeight].every(Number.isFinite) ||
-    width <= 0 ||
-    height <= 0 ||
-    uvWidth <= 0 ||
-    uvHeight <= 0
+    ![width, height, uvWidth, uvHeight].every((value) => Number.isFinite(value) && value > 0) ||
+    !Number.isInteger(rotation / 90) ||
+    (pixelsPerUvUnit !== undefined && !pixelsPerUvUnit.every((value) => Number.isFinite(value) && value > 0))
   ) {
     return { state: "degenerate", geometry_size: geometry, uv_size: uvSize };
   }
 
+  const rotated = rotation === 90 || rotation === 270;
+  const logicalAxes = {
+    width: (rotated ? uvHeight : uvWidth) / width,
+    height: (rotated ? uvWidth : uvHeight) / height,
+  };
+  const physicalAxes = pixelsPerUvUnit === undefined ? null : {
+    width: (rotated ? uvHeight * pixelsPerUvUnit[1] : uvWidth * pixelsPerUvUnit[0]) / width,
+    height: (rotated ? uvWidth * pixelsPerUvUnit[0] : uvHeight * pixelsPerUvUnit[1]) / height,
+  };
+  const effectiveAxes = physicalAxes ?? logicalAxes;
   const geometryAspect = width / height;
   const uvAspect = uvWidth / uvHeight;
-  const directError = ratioScaleError(geometryAspect, uvAspect);
-  const rotatedError = ratioScaleError(geometryAspect, 1 / uvAspect);
-  const rotated = rotatedError < directError;
-  const aspectError = rotated ? rotatedError : directError;
+  const aspectError = ratioScaleError(effectiveAxes.width, effectiveAxes.height);
+  const logicalArea = logicalAxes.width * logicalAxes.height;
+  if (![geometryAspect, uvAspect, aspectError, logicalArea, ...Object.values(logicalAxes), ...Object.values(effectiveAxes)]
+    .every((value) => Number.isFinite(value) && value > 0)) {
+    return { state: "degenerate", geometry_size: geometry, uv_size: uvSize };
+  }
 
   return {
     state: "measured",
@@ -298,13 +317,16 @@ export function summarizeFaceUvQuality(
     geometry_aspect_ratio: geometryAspect,
     uv_aspect_ratio: uvAspect,
     best_aspect_alignment: rotated ? "rotated_90" : "direct",
+    face_rotation: rotation,
+    aspect_space: physicalAxes === null ? "logical_uv" : "physical_pixels",
     aspect_ratio_scale_error: aspectError,
     aspect_state:
       aspectError > UV_FACE_ASPECT_REVIEW_FACTOR
         ? "review_required"
         : "matched",
-    logical_uv_area_per_model_area:
-      (uvWidth * uvHeight) / (width * height),
+    logical_uv_units_per_model_unit_axes: logicalAxes,
+    physical_pixels_per_model_unit_axes: physicalAxes,
+    logical_uv_area_per_model_area: logicalArea,
   };
 }
 
@@ -563,21 +585,21 @@ function safeProjectCubeSize(cube: Cube): [number, number, number] | null {
   return size.every(Number.isFinite) ? size : null;
 }
 
-function physicalPixelsPerUvUnit(
+function physicalPixelsPerUvAxes(
   textureSpace: EffectiveTextureSpace
-): number | null {
-  if (textureSpace.state !== "mapped") return null;
+): [number, number] | undefined {
+  if (textureSpace.state !== "mapped") return undefined;
   const x = textureSpace.metrics.width / textureSpace.metrics.uvWidth;
   const y =
     textureSpace.metrics.displayHeight / textureSpace.metrics.uvHeight;
   if (![x, y].every((value) => Number.isFinite(value) && value > 0)) {
-    return null;
+    return undefined;
   }
-  return Math.sqrt(x * y);
+  return [x, y];
 }
 
 function inspectProjectTexelDensity(textureSpace: EffectiveTextureSpace) {
-  const physicalScale = physicalPixelsPerUvUnit(textureSpace);
+  const physicalScale = physicalPixelsPerUvAxes(textureSpace);
   const samples: ProjectTexelDensitySample[] = [];
   let excludedDegenerateFaces = 0;
   let excludedAspectReviewFaces = 0;
@@ -602,7 +624,9 @@ function inspectProjectTexelDensity(textureSpace: EffectiveTextureSpace) {
       const geometrySize = cubeFaceGeometrySize(size, faceKey);
       const quality = summarizeFaceUvQuality(
         geometrySize,
-        uv as [number, number, number, number]
+        uv as [number, number, number, number],
+        face.rotation,
+        physicalScale
       );
       if (quality.state === "degenerate") {
         excludedDegenerateFaces += 1;
@@ -618,6 +642,7 @@ function inspectProjectTexelDensity(textureSpace: EffectiveTextureSpace) {
       );
       const modelArea =
         Math.abs(geometrySize[0]) * Math.abs(geometrySize[1]);
+      const pixelAxes = quality.physical_pixels_per_model_unit_axes;
       samples.push({
         cube_uuid: cube.uuid,
         cube_name: cube.name,
@@ -625,7 +650,7 @@ function inspectProjectTexelDensity(textureSpace: EffectiveTextureSpace) {
         model_area: modelArea,
         logical_uv_units_per_model_unit: logicalLinear,
         physical_pixels_per_model_unit:
-          physicalScale !== null ? logicalLinear * physicalScale : null,
+          pixelAxes === null ? null : Math.sqrt(pixelAxes.width * pixelAxes.height),
       });
     }
   }
@@ -643,6 +668,7 @@ function inspectProjectTexelDensity(textureSpace: EffectiveTextureSpace) {
 
 function inspectCubeUv(cube: Cube) {
   const textureSpace = inspectEffectiveTextureSpace();
+  const pixelAxes = physicalPixelsPerUvAxes(textureSpace);
   const size = cubeSize(cube);
   const densityValues: number[] = [];
   let enabledFaceCount = 0;
@@ -666,7 +692,7 @@ function inspectCubeUv(cube: Cube) {
             )
           : null;
       const quality = enabled
-        ? summarizeFaceUvQuality(cubeFaceGeometrySize(size, faceKey), uv)
+        ? summarizeFaceUvQuality(cubeFaceGeometrySize(size, faceKey), uv, face.rotation, pixelAxes)
         : null;
 
       let physicalPixelAreaPerModelArea: number | null = null;
@@ -678,22 +704,16 @@ function inspectCubeUv(cube: Cube) {
       if (quality?.state === "degenerate") {
         degenerateFaceCount += 1;
       } else if (quality?.state === "measured") {
-        densityValues.push(quality.logical_uv_area_per_model_area);
         logicalUvUnitsPerModelUnit = Math.sqrt(
           quality.logical_uv_area_per_model_area
         );
+        densityValues.push(logicalUvUnitsPerModelUnit);
         if (quality.aspect_state === "review_required") {
           aspectReviewFaceCount += 1;
         }
-        if (textureSpace.state === "mapped") {
-          const pixelsPerUvX =
-            textureSpace.metrics.width / textureSpace.metrics.uvWidth;
-          const pixelsPerUvY =
-            textureSpace.metrics.displayHeight / textureSpace.metrics.uvHeight;
-          physicalPixelAreaPerModelArea =
-            quality.logical_uv_area_per_model_area *
-            pixelsPerUvX *
-            pixelsPerUvY;
+        if (quality.physical_pixels_per_model_unit_axes !== null) {
+          const axes = quality.physical_pixels_per_model_unit_axes;
+          physicalPixelAreaPerModelArea = axes.width * axes.height;
           physicalPixelsPerModelUnit = Math.sqrt(
             physicalPixelAreaPerModelArea
           );
@@ -753,7 +773,7 @@ function inspectCubeUv(cube: Cube) {
       project_texel_density: inspectProjectTexelDensity(textureSpace),
       verdict: "review_hint_only" as const,
       note:
-        "Aspect and density diagnostics are objective construction hints only; orientation, seams, semantic reuse, and visual acceptance still require authored context and current model-view evidence.",
+        "Aspect uses actual face rotation and physical pixel axes when mapped; density is linear. Orientation, seams, semantic reuse, and visual acceptance still require authored context and current model-view evidence.",
     },
     faces,
   };

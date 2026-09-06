@@ -179,27 +179,49 @@ describe("authoring quality diagnostics", () => {
       });
   });
 
-  test("UV aspect diagnostics accept direct or 90-degree proportional mapping and flag distorted mapping", () => {
-    const direct = summarizeFaceUvQuality([8, 4], [0, 0, 16, 8]);
-    expect(direct.state).toBe("measured");
-    if (direct.state !== "measured") throw new Error("expected measured UV");
-    expect(direct.best_aspect_alignment).toBe("direct");
-    expect(direct.aspect_ratio_scale_error).toBeCloseTo(1);
-    expect(direct.aspect_state).toBe("matched");
-
-    const rotated = summarizeFaceUvQuality([8, 4], [0, 0, 4, 8]);
-    expect(rotated.state).toBe("measured");
-    if (rotated.state !== "measured") throw new Error("expected measured UV");
-    expect(rotated.best_aspect_alignment).toBe("rotated_90");
-    expect(rotated.aspect_state).toBe("matched");
-
+  test("UV aspect diagnostics follow actual 0/90/180/270 rotation, not a hypothetical best fit", () => {
+    for (const rotation of [0, 180]) {
+      expect(summarizeFaceUvQuality([8, 4], [0, 0, 16, 8], rotation)).toMatchObject({
+        state: "measured", best_aspect_alignment: "direct", aspect_ratio_scale_error: 1, aspect_state: "matched",
+      });
+      expect(summarizeFaceUvQuality([8, 4], [0, 0, 4, 8], rotation)).toMatchObject({
+        state: "measured", aspect_ratio_scale_error: 4, aspect_state: "review_required",
+      });
+    }
+    for (const rotation of [90, 270]) {
+      expect(summarizeFaceUvQuality([8, 4], [0, 0, 4, 8], rotation)).toMatchObject({
+        state: "measured", best_aspect_alignment: "rotated_90", aspect_ratio_scale_error: 1, aspect_state: "matched",
+      });
+      expect(summarizeFaceUvQuality([8, 4], [0, 0, 8, 4], rotation)).toMatchObject({
+        state: "measured", aspect_ratio_scale_error: 4, aspect_state: "review_required",
+      });
+    }
     const distorted = summarizeFaceUvQuality([8, 4], [0, 0, 8, 8]);
     expect(distorted.state).toBe("measured");
     if (distorted.state !== "measured") throw new Error("expected measured UV");
-    expect(distorted.aspect_ratio_scale_error).toBeGreaterThan(
-      UV_FACE_ASPECT_REVIEW_FACTOR
-    );
+    expect(distorted.aspect_ratio_scale_error).toBeGreaterThan(UV_FACE_ASPECT_REVIEW_FACTOR);
     expect(distorted.aspect_state).toBe("review_required");
+    expect(summarizeFaceUvQuality([8, 4], [0, 0, 4, 8], 45).state).toBe("degenerate");
+  });
+
+  test("pixel-axis metrics reveal anisotropy and correctly account for non-square physical scaling", () => {
+    expect(summarizeFaceUvQuality([8, 4], [0, 0, 8, 4], 0, [2, 1])).toMatchObject({
+      state: "measured", aspect_space: "physical_pixels", aspect_state: "review_required",
+      physical_pixels_per_model_unit_axes: { width: 2, height: 1 },
+    });
+    expect(summarizeFaceUvQuality([8, 4], [0, 0, 4, 8], 90, [2, 1])).toMatchObject({
+      state: "measured", aspect_state: "review_required",
+      physical_pixels_per_model_unit_axes: { width: 1, height: 2 },
+    });
+    expect(summarizeFaceUvQuality([8, 4], [0, 0, 8, 8], 0, [2, 1])).toMatchObject({
+      state: "measured", aspect_state: "matched",
+      physical_pixels_per_model_unit_axes: { width: 2, height: 2 },
+    });
+    expect(summarizeFaceUvQuality([8, 4], [8, 4, 0, 0], 0, [2, 2])).toMatchObject({
+      state: "measured", aspect_state: "matched",
+      physical_pixels_per_model_unit_axes: { width: 2, height: 2 },
+    });
+    expect(summarizeFaceUvQuality([8, 4], [0, 0, 8, 4], 0, [Infinity, 1]).state).toBe("degenerate");
   });
 
   test("UV diagnostics expose density spread without turning it into a visual score", () => {

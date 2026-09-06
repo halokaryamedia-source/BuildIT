@@ -5,11 +5,70 @@ import {
   modifyCubesBatchParameters,
   placeCubeParameters,
 } from "@/server/tools/cubes";
+import { BoxUvCapacityError, packBoxUvOffsets } from "@/lib/boxUvLayout";
 import { requireFiniteTranslatedElementVector3 } from "@/server/tools/element";
 import { inspectElementParameters, requireFiniteInspectableVector3 } from "@/server/tools/element-inspection";
 
 async function source(path: string): Promise<string> {
   return Bun.file(path).text();
+}
+
+// Isolated native mocks exercise the real registered executors and parameter
+// schemas without leaking Blockbench globals into other tests. Not live proof.
+const cubeRuntimeFixture = String.raw`
+import assert from "node:assert/strict";
+import { registerCubesTools } from "./server/tools/cubes.ts";
+import { registerElementInspectionTools } from "./server/tools/element-inspection.ts";
+import { getAllToolDefinitions } from "./lib/factories.ts";
+class MockCube {
+  static all = [];
+  constructor(data) {
+    Object.assign(this, {
+      uuid: "cube-" + MockCube.all.length, name: "cube",
+      from: [0,0,0], to: [16,16,16], origin: [0,0,0], rotation: [0,0,0],
+      inflate: 0, box_uv: Project.box_uv, uv_offset: [0,0], autouv: 1,
+      mirror_uv: false, visibility: true, export: true, parent: "root",
+    }, data);
+    this.faces = Object.fromEntries(["north","south","east","west","up","down"].map(key => [key, {
+      uv: [0,0,16,16], rotation: 0, enabled: true,
+      extend(change) { Object.assign(this, structuredClone(change)); },
+    }]));
+  }
+  init() { MockCube.all.push(this); return this; }
+  addTo(parent) { this.parent = parent; return this; }
+  extend(change) { Object.assign(this, structuredClone(change)); return this; }
+  mapAutoUV() {}
+}
+class MockGroup { static all = []; }
+class MockLocator { static all = []; }
+class MockNull { static all = []; }
+const undo = { started: 0, finished: 0, cancelled: 0 };
+const texture = { uuid: "atlas", name: "atlas", id: "0", width: 128, height: 128, display_height: 128,
+  getUVWidth() { return 128; }, getUVHeight() { return 128; } };
+Object.assign(globalThis, {
+  Project: { selected: true, box_uv: true, texture_width: 128, texture_height: 128, textures: [texture] },
+  Format: { id: "bedrock" }, Cube: MockCube, Group: MockGroup, Locator: MockLocator, NullObject: MockNull,
+  Texture: { getDefault: () => texture }, Canvas: { updateAll() {} },
+  Undo: { initEdit() { undo.started++; }, finishEdit() { undo.finished++; }, cancelEdit() { undo.cancelled++; } },
+});
+registerCubesTools();
+registerElementInspectionTools();
+async function invoke(name, request) {
+  const definition = getAllToolDefinitions()[name];
+  const args = await definition.parameterSchema.parseAsync(request);
+  const result = await definition.execute(args);
+  return result.structuredContent;
+}
+async function create(elements) { return invoke("manage_cubes", { operation: "create", elements }); }
+`;
+
+function runCubeRuntimeFixture(body: string): void {
+  const result = Bun.spawnSync([process.execPath, "--eval", cubeRuntimeFixture + body], {
+    cwd: process.cwd(), stdout: "pipe", stderr: "pipe",
+  });
+  if (result.exitCode !== 0) {
+    throw new Error(new TextDecoder().decode(result.stderr) || `Cube fixture exited ${result.exitCode}`);
+  }
 }
 
 describe("model creation effectiveness — correction accuracy", () => {
@@ -103,5 +162,109 @@ describe("model creation effectiveness — correction accuracy", () => {
     expect(modelling).toContain(
       "Reuse fresh exact authored state; otherwise `inspect_elements(mode=detail)` once."
     );
+  });
+
+  test("packing distinguishes capacity exhaustion from malformed data", () => {
+    expect(() => packBoxUvOffsets([], Array.from({ length: 9 }, () => [64, 32] as const), 128, 128)).toThrow(BoxUvCapacityError);
+    expect(packBoxUvOffsets([], [[64, 32]], 128, 128)).toEqual([[0, 0]]);
+    try {
+      packBoxUvOffsets([{ x: 200, y: 0, width: 1, height: 1 }, { x: NaN, y: 0, width: 1, height: 1 }], [[1, 1]], 128, 128);
+      throw new Error("malformed occupancy was accepted");
+    } catch (error) {
+      expect(error).not.toBeInstanceOf(BoxUvCapacityError);
+      expect(String(error)).toContain("finite positive");
+    }
+  });
+
+  test("nine valid Cube footprints do not make provisional atlas capacity a Geometry gate", () => {
+    runCubeRuntimeFixture(String.raw`
+const result = await create(Array.from({ length: 9 }, (_, i) => ({ name: "mass_" + i, from: [0,0,0], to: [16,16,16] })));
+assert.equal(result.added, 9);
+assert.equal(Cube.all.length, 9);
+assert.equal(result.box_uv_layout, "deferred_for_native_template");
+assert.deepEqual(result.cubes[0].from, [0,0,0]);
+assert.deepEqual(result.cubes[0].to, [16,16,16]);
+assert.deepEqual(result.cubes[0].size, [16,16,16]);
+assert.deepEqual(result.cubes[0].box_uv_region.size, [64,32]);
+assert.equal(result.visual_verdict, "not_evaluated");
+assert.deepEqual(undo, { started: 1, finished: 1, cancelled: 0 });
+`);
+  });
+
+  test("oversized existing provisional occupancy defers without hiding non-finite UV state", () => {
+    runCubeRuntimeFixture(String.raw`
+await create([{ name: "large", from: [0,0,0], to: [128,128,128] }]);
+const result = await create([{ name: "small", from: [0,0,0], to: [1,1,1] }]);
+assert.equal(result.box_uv_layout, "deferred_for_native_template");
+Cube.all[0].uv_offset = [NaN, 0];
+const before = undo.started;
+await assert.rejects(() => create([{ name: "invalid_context", from: [0,0,0], to: [1,1,1] }]), /non-finite/);
+assert.equal(undo.started, before);
+assert.equal(Cube.all.length, 2);
+`);
+  });
+
+  test("inherited per-face Geometry is not checked against a Box-UV rectangle", () => {
+    runCubeRuntimeFixture(String.raw`
+Project.box_uv = false;
+const result = await create([{ name: "wide", from: [0,0,0], to: [256,16,16] }]);
+assert.equal(result.added, 1);
+assert.deepEqual(result.cubes[0].size, [256,16,16]);
+`);
+  });
+
+  test("same face coordinates still apply a UV mode change, then reject a true no-op", () => {
+    runCubeRuntimeFixture(String.raw`
+const made = await create([{ name: "body", from: [0,0,0], to: [16,16,16] }]);
+const id = made.cubes[0].uuid;
+const request = { operation: "update", id, faces: [{ face: "north", uv: [0,0,16,16] }] };
+const updated = await invoke("manage_cubes", request);
+assert.equal(updated.after.box_uv, false);
+assert.equal(updated.after.autouv, 0);
+assert.ok(updated.changed_fields.includes("box_uv"));
+const before = undo.started;
+await assert.rejects(() => invoke("manage_cubes", { ...request, autouv: "1" }), /no authored effect/);
+assert.equal(undo.started, before);
+`);
+  });
+
+  test("batch correction returns fresh state and effects for every requested UUID", () => {
+    runCubeRuntimeFixture(String.raw`
+const made = await create([{ name: "a", from: [0,0,0], to: [16,16,16] }, { name: "b", from: [0,0,0], to: [16,16,16] }]);
+const ids = made.cubes.map(cube => cube.uuid);
+const result = await invoke("manage_cubes", { operation: "batch_update", updates: [
+  { id: ids[0], to: [18,16,16] },
+  { id: ids[1], faces: [{ face: "north", uv: [0,0,16,16] }] },
+] });
+assert.equal(result.effects.length, 2);
+assert.deepEqual(result.effects.map(effect => effect.after.uuid), ids);
+assert.deepEqual(result.effects[0].geometry_effect.size_delta, [2,0,0]);
+assert.deepEqual(result.effects[0].after.to, [18,16,16]);
+assert.equal(result.effects[1].after.box_uv, false);
+assert.equal(result.effects[1].after.autouv, 0);
+assert.equal(result.effective_geometry_targets, 1);
+assert.equal(undo.finished, 2);
+`);
+  });
+
+  test("UV inspection forwards actual rotation and pixel-axis scale to face and project diagnostics", () => {
+    runCubeRuntimeFixture(String.raw`
+await create([{ name: "panel", from: [0,0,0], to: [8,4,2] }]);
+const cube = Cube.all[0];
+for (const face of Object.values(cube.faces)) face.enabled = false;
+cube.faces.north.enabled = true;
+cube.faces.north.uv = [0,0,4,8];
+let result = await invoke("inspect_element", { id: cube.uuid, detail: "uv" });
+assert.equal(result.uv.faces.north.quality.aspect_state, "review_required");
+assert.equal(result.uv.quality_summary.project_texel_density.excluded_aspect_review_faces, 1);
+cube.faces.north.rotation = 90;
+result = await invoke("inspect_element", { id: cube.uuid, detail: "uv" });
+assert.equal(result.uv.faces.north.quality.aspect_state, "matched");
+assert.equal(result.uv.quality_summary.project_texel_density.measured_faces, 1);
+texture.width = 256;
+result = await invoke("inspect_element", { id: cube.uuid, detail: "uv" });
+assert.equal(result.uv.faces.north.quality.aspect_state, "review_required");
+assert.deepEqual(result.uv.faces.north.quality.physical_pixels_per_model_unit_axes, { width: 1, height: 2 });
+`);
   });
 });

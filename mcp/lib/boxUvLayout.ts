@@ -5,6 +5,14 @@ export type BoxUvRegion = {
   height: number;
 };
 
+/** Capacity is a provisional layout limitation, not invalid Geometry input. */
+export class BoxUvCapacityError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "BoxUvCapacityError";
+  }
+}
+
 function finiteSpan(
   from: readonly number[],
   to: readonly number[],
@@ -15,7 +23,11 @@ function finiteSpan(
   if (!Number.isFinite(start) || !Number.isFinite(end)) {
     throw new Error("Box-UV footprint requires finite Cube from/to coordinates.");
   }
-  return Math.abs(end - start);
+  const span = Math.abs(end - start);
+  if (!Number.isFinite(span)) {
+    throw new Error("Box-UV footprint requires a finite derived Cube span.");
+  }
+  return span;
 }
 
 function bedrockBoxUvAxisSize(span: number): number {
@@ -76,6 +88,8 @@ function regionsOverlap(a: BoxUvRegion, b: BoxUvRegion): boolean {
 /**
  * Deterministic first-fit Box-UV packing. Existing regions remain fixed;
  * incoming footprints are packed largest-first and returned in input order.
+ * Invalid data always throws an ordinary Error. Canvas/occupancy exhaustion
+ * throws BoxUvCapacityError so Geometry can defer provisional layout only.
  */
 export function packBoxUvOffsets(
   occupiedRegions: readonly BoxUvRegion[],
@@ -85,20 +99,9 @@ export function packBoxUvOffsets(
 ): [number, number][] {
   const width = requireCanvasDimension(logicalWidth, "Logical UV width");
   const height = requireCanvasDimension(logicalHeight, "Logical UV height");
-  const occupied = occupiedRegions.map((region, index) => {
-    const normalized = requireRegion(region, `Occupied Box-UV region[${index}]`);
-    if (
-      normalized.x < 0 ||
-      normalized.y < 0 ||
-      normalized.x + normalized.width > width ||
-      normalized.y + normalized.height > height
-    ) {
-      throw new Error(
-        `Occupied Box-UV region[${index}] exceeds the ${width}×${height} logical UV canvas. Repair existing UV state before auto-packing more Cubes.`
-      );
-    }
-    return normalized;
-  });
+  const occupied = occupiedRegions.map((region, index) =>
+    requireRegion(region, `Occupied Box-UV region[${index}]`)
+  );
 
   const planned: Array<[number, number] | null> = Array(footprints.length).fill(null);
   const ordered = footprints
@@ -115,6 +118,7 @@ export function packBoxUvOffsets(
         a.index - b.index
     );
 
+  // Validate every input before a deferrable capacity failure can mask it.
   for (const item of ordered) {
     if (
       !Number.isInteger(item.width) ||
@@ -126,8 +130,23 @@ export function packBoxUvOffsets(
         `Incoming Box-UV footprint[${item.index}] must use positive integer dimensions.`
       );
     }
+  }
+  for (const [index, region] of occupied.entries()) {
+    if (
+      region.x < 0 ||
+      region.y < 0 ||
+      region.x + region.width > width ||
+      region.y + region.height > height
+    ) {
+      throw new BoxUvCapacityError(
+        `Occupied Box-UV region[${index}] exceeds the ${width}×${height} logical UV canvas. Repair existing UV state before auto-packing more Cubes.`
+      );
+    }
+  }
+
+  for (const item of ordered) {
     if (item.width > width || item.height > height) {
-      throw new Error(
+      throw new BoxUvCapacityError(
         `Box-UV footprint ${item.width}×${item.height} exceeds the ${width}×${height} logical UV canvas.`
       );
     }
@@ -153,7 +172,7 @@ export function packBoxUvOffsets(
     }
 
     if (!found) {
-      throw new Error(
+      throw new BoxUvCapacityError(
         `Unable to auto-pack Box-UV footprint ${item.width}×${item.height} into the ${width}×${height} logical UV canvas without overlap. Increase project resolution or use explicit per-face UV.`
       );
     }
