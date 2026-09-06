@@ -3,27 +3,28 @@ name: blockit-bedrock-entity-mcp
 description: Mandatory router for every BlockIT Minecraft Bedrock Entity asset-authoring task.
 ---
 # BlockIT Bedrock Entity MCP
+Own AUTHORING/Animation tool routing, handoff.
 `geometry/rig/UV judgement` → `blockbench-bedrock-modelling`; texture/PBR → `blockit-bedrock-texturing`; animation/motion → `blockit-bedrock-animation`.
 
 ## Mandatory Authoring Latch
-Before first mutation load this router + matching current-worktree specialist:
+Before first mutation load this router + matching current worktree specialist:
 `router_loaded=YES | active_owner=GEOMETRY|TEXTURING|ANIMATION | specialist_loaded=YES | gate_satisfied=YES`.
 Any `NO` → **DO NOT MUTATE**.
 
-Geometry → approved image + Dimensions + user-selected strategy + Animation Required.
-UV → user Geometry APPROVED.
-Texture → Geometry APPROVED + UV Layout PASS.
-Animation → Texturing APPROVED → HANDOFF_REQUIRED.
+Geometry → approved image + Dimensions + user-selected strategy + Animation Required
+UV → user Geometry APPROVED
+Texture → Geometry APPROVED + UV Layout PASS
+Animation → Texturing APPROVED → HANDOFF_REQUIRED
 `HANDOFF_REQUIRED`: `target_phase`, `reason`, `readiness`, `resume_from`; `switch_authoring_phase` through Gateway → specialist → same task/chat.
 
 approved image = visual authority. Geometry Strategy is user-selected: `DIRECT | 3D_ASSISTED`; never auto-switch.
-`DIRECT` → Geometry. `3D_ASSISTED` → Shape Reconstruction → PrimitiveAnything → Cuboid Scaffold → cleanup; unavailable → `BLOCKED`, never fallback.
+`3D_ASSISTED` → Shape Reconstruction → PrimitiveAnything → Cuboid Scaffold → cleanup; unavailable → `BLOCKED`, never fallback.
 **1 Minecraft block = 16 Blockbench units.** Reuse `front_direction`.
 
 ## Fast Routing Contract
 Normal asset work **must not begin by searching repository files**.
-**Authoring Context Firewall:** do **not** inspect `mcp/tests/**`, CI/workflows, or source; do not run Bun/tests/build/verifiers/deploy in asset authoring. Source/runtime defect → stop/report; repository work needs explicit request.
-`ACTIVE STAGE + intent + known state/UUIDs → exact known Runtime capability → Gateway execution → reuse state`.
+**Authoring Context Firewall:** do **not** inspect `mcp/tests/**`, CI/workflows, or source; do not run Bun/tests/build/verifiers/deploy in asset authoring. Defect → stop/report; repo work needs explicit request.
+`ACTIVE STAGE + intent + known state/UUIDs → exact known Runtime capability → Gateway execution → reuse state`
 
 ## Authoring Stage Lock
 `DISCOVER → AUTHOR → VERIFY → CORRECT → VERIFY → DONE`.
@@ -52,7 +53,7 @@ rig IK/mirror                  → bone_rigging
 `bone_rigging` only for IK/mirror.
 `validator://*` resources are Direct Runtime/Inspector only; a Gateway client must not search for or emulate them.
 Known coherent Cubes → `manage_cubes(operation=create, elements=[...])`; uncertainty → no batch.
-Known Cubes sharing one deterministic TRANSLATE/RESIZE intent → derive absolute targets once from fresh state → `manage_cubes(operation=batch_update)`. Never loop inspect→modify per Cube; writes stay absolute/fail-closed.
+Known Cubes sharing one deterministic TRANSLATE/RESIZE intent → derive absolute targets once from fresh state → `manage_cubes(operation=batch_update)`. Never loop inspect→modify per Cube; relative intent stays reasoning-layer arithmetic.
 **Semantic cohort rule:** shared assembly motion → Group; otherwise correct the sibling cohort.
 
 ## First-Call Invariants
@@ -65,7 +66,7 @@ Validation failure repairs arguments for the **same capability**.
 
 ## Capability Discovery / Recovery
 Capability discovery is deferred spec loading after routing.
-known exact capability → invoke directly; do not describe for reassurance.
+known exact capability   → invoke directly; do not describe for reassurance.
 unknown/stale capability → one precise `search_capabilities` query, `limit=4`.
 schema needed → `describe_capability` once before mutation.
 One precise search miss → reformulate once; second miss → `BLOCKED`. A known foreign-phase capability is never a discovery miss: AUTHORING↔Animation uses handoff.
@@ -81,7 +82,7 @@ Same routed failure twice without new evidence → `BLOCKED`.
 
 ## State Reuse / Anti-Loop
 Fresh mutation → reuse state/`geometry_effect`; no confirmation readback.
-Do not automatically re-read fresh mutation targets with `inspect_elements(mode=detail)`.
+Do not automatically re-read fresh targets with `inspect_elements(mode=detail)`.
 Do not use status/search/describe/project/bounds/capture as progress confirmation.
 `inspect_model_bounds` only for envelope/scale/ground/displacement.
 Skip `get_project_info` after create/export unless lifecycle state is unknown/stale.
