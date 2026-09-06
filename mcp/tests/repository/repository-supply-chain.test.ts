@@ -101,9 +101,23 @@ describe("repository workflow supply chain", () => {
       source("../.github/workflows/mcp-verify.yml"),
     ]);
 
-    expect(repositoryWorkflow).toContain('"docs/knowledge/flow.md"');
-    expect(repositoryWorkflow).toContain('"mcp/llms.txt"');
-    expect(mcpWorkflow).toContain('"!mcp/llms.txt"');
+    for (const path of [
+      '"docs/knowledge/flow.md"',
+      '"mcp/llms.txt"',
+      '"mcp/about.md"',
+      '"mcp/gateway/README.md"',
+      '"docs/knowledge/mcp-capability-backlog.md"',
+    ]) {
+      expect(repositoryWorkflow).toContain(path);
+    }
+
+    for (const path of [
+      '"!mcp/llms.txt"',
+      '"!mcp/about.md"',
+      '"!mcp/gateway/README.md"',
+    ]) {
+      expect(mcpWorkflow).toContain(path);
+    }
   });
 
   test("repository hygiene owners are present and routed to static verification", async () => {

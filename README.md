@@ -1,6 +1,6 @@
 # BlockIT
 
-BlockIT is an AI-assisted **Minecraft Bedrock Entity** authoring workspace built around a local Blockbench MCP Runtime and a stable Codex-facing Gateway.
+BlockIT is an AI-assisted **Minecraft Bedrock Entity** authoring workspace built around a local Blockbench MCP Runtime and a stable AI-client-facing Gateway.
 
 **Project snapshot:** `v0.1` (separate from the MCP package version).
 
@@ -21,6 +21,7 @@ ChatGPT reference
 → user selects Geometry Strategy: DIRECT | 3D_ASSISTED
 → Geometry
 → user approve + checkpoint
+→ UV Layout PASS
 → Texturing
 → user approve + checkpoint
 → Animation when required
@@ -29,15 +30,15 @@ ChatGPT reference
 → final .bbmodel save
 ```
 
-The approved image is visual authority. Requested dimensions are numeric authority. Codex never infers, defaults, or auto-switches Geometry Strategy.
+The approved image is visual authority. Requested dimensions are numeric authority. The AI authoring client never infers, defaults, or auto-switches Geometry Strategy.
 
 ### DIRECT
 
-Normal reference-guided Blockbench Geometry using the existing Geometry specialist and Runtime capabilities.
+Normal reference-guided Blockbench Geometry using the Geometry specialist and Runtime capabilities.
 
 ### 3D_ASSISTED
 
-Target production package:
+One production package:
 
 ```text
 Approved Reference
@@ -48,19 +49,20 @@ Approved Reference
 → Primitive Decomposition Gate
 → dedicated atomic Cuboid Materialization
 → Semantic Geometry Cleanup
-→ normal Texturing / optional Animation
+→ normal UV Layout / Texturing / optional Animation
 ```
 
-`3D_ASSISTED` is **design-locked but not yet production-implemented end-to-end**. There is no normal GLB-only, PrimitiveAnything-only, provider-selection, or automatic fallback route.
+The external orchestrator, canonical state/decomposition contracts, and dedicated materializer capability are source-implemented. GPU inference quality, installed materializer identity/native Undo behavior, and end-to-end 3D-Assisted asset quality remain separate local/live proof.
+
+There is no normal GLB-only, PrimitiveAnything-only, provider-selection, or automatic fallback route.
 
 ## Current Product Surface
 
 ```text
-Gateway client surface           4 fixed tools
-Runtime callable union          51 tools
-Geometry native surface         25 tools
-Texturing native surface        35 tools
-Animation native surface        19 tools
+Gateway client surface        4 fixed tools
+Source callable union        52 tools
+AUTHORING source surface     47 tools
+Animation source surface     19 tools
 ```
 
 Gateway tools are always:
@@ -72,11 +74,15 @@ describe_capability
 invoke_capability
 ```
 
+Geometry and Texturing startup focus values resolve to the same shared AUTHORING capability set. AUTHORING↔Animation handoff is Gateway-managed and continues the same task/chat; normal client use does not require a manual MCP reconnect.
+
 Normal authoring has no Standard/Extended profile choice. Internal `extended` remains Legacy UI Fallback compatibility only; `risky_eval` and `from_geo_json` remain disabled.
+
+Installed Runtime counts and lifecycle behavior are proof results, not hand-maintained product facts. See `docs/knowledge/current-validation.md`.
 
 ## Evidence Boundary
 
-Static source/CI proof can establish routing, contracts, schemas, deterministic build output, and fail-closed source behavior. It does **not** prove installed Blockbench state, live Gateway survival, visual fidelity, Undo behavior, external GPU quality, or end-to-end 3D-Assisted quality.
+Static source/CI proof can establish routing, contracts, schemas, deterministic build output, and fail-closed source behavior. It does **not** prove installed Blockbench state, live Gateway survival, visual fidelity, native Undo/playback/persistence, external GPU quality, or end-to-end 3D-Assisted quality.
 
 Current state owners:
 
@@ -98,34 +104,40 @@ workspace/        persistent active/saved asset packages
 Experimental/     bounded implementation evidence and proof harnesses only
 ```
 
-## Local Development
+Historical audits, retired product paths, obsolete continuation, and old roadmaps belong in Git history rather than parallel current-state owners.
+
+## Development
 
 From `mcp/`:
 
 ```bash
 bun install --frozen-lockfile
-bun run verify:mcp
+bun run verify:full
 ```
 
-Development watch:
+Recommended local development sync:
+
+```bash
+bun run dev:sync
+```
+
+Build/watch without deployment:
 
 ```bash
 bun run dev:watch
 ```
 
-Deployment into desktop Blockbench is explicit:
+Manual deployment remains explicit:
 
 ```bash
 bun run deploy:local -- /absolute/path/to/blockit_mcp.js
 ```
 
-Normal Codex use connects through the Gateway. See `mcp/gateway/README.md`.
+Normal AI-client use connects through the Gateway. See `mcp/gateway/README.md`.
 
 ## Contributing
 
 Repository development conventions, verification routing, commit discipline, and transient-file rules are documented in `CONTRIBUTING.md`.
-
-Historical audits, retired product paths, test-model iterations, and obsolete continuation belong in Git history rather than parallel current-state files.
 
 ## License
 

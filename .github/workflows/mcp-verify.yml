@@ -8,6 +8,8 @@ on:
       - "mcp/**"
       - "!mcp/AGENTS.md"
       - "!mcp/README.md"
+      - "!mcp/about.md"
+      - "!mcp/gateway/README.md"
       - "!mcp/llms.txt"
       - "!mcp/tests/repository/**"
       - "!mcp/tests/authoring/**"

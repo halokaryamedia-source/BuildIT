@@ -3,20 +3,16 @@
 BlockIT Gateway is the stable MCP client boundary in front of the volatile Blockbench Runtime.
 
 ```text
-Codex / MCP client
-        |
-        | stdio — stable for client lifetime
-        v
+AI client
+   ↓ stdio — stable for client lifetime
 BlockIT Gateway
-        |
-        | Streamable HTTP — loopback only
-        v
+   ↓ loopback Streamable HTTP
 BlockIT Runtime inside Blockbench
 ```
 
 ## Canonical Authoring Model
 
-Gateway does not choose the modelling strategy. Normal authoring is:
+Gateway does not choose the modelling strategy.
 
 ```text
 Approved Reference + Dimensions + Requirements
@@ -28,7 +24,7 @@ Approved Reference + Dimensions + Requirements
 
 `DIRECT` is normal reference-guided Geometry.
 
-`3D_ASSISTED` is one package: Shape Reconstruction → PrimitiveAnything → dedicated atomic Cuboid Materialization → Semantic Geometry Cleanup. `manage_geometry_reference` may be used as supporting comparison evidence inside 3D-Assisted Geometry, but it is not a separate route.
+`3D_ASSISTED` is one package: Shape Reconstruction → PrimitiveAnything → dedicated atomic Cuboid Materialization → Semantic Geometry Cleanup. `manage_geometry_reference` may support comparison inside 3D-Assisted Geometry, but it is not a separate route.
 
 ## Stable Client Surface
 
@@ -64,11 +60,11 @@ A successful Runtime `switch_authoring_phase` call is reserved for the AUTHORING
 invoke switch_authoring_phase
 → Runtime surface changes AUTHORING ↔ Animation
 → Gateway invalidates backend client/catalog
-→ next capability request reconnects and refetches
-→ continue same task/chat
+→ next capability request reconnects to Runtime and refetches the catalog
+→ AI client continues the same task/chat
 ```
 
-Gateway normalizes the result with `client_reconnect_required=false` and `new_chat_required=false`. Direct Runtime clients used for debug/conformance bypass this protection.
+The backend reconnect above is internal to the Gateway. Gateway normalizes the result with `client_reconnect_required=false` and `new_chat_required=false`; normal AI-client use does not manually reconnect. Direct Runtime clients used for debug/conformance bypass this protection.
 
 ## Reliability Invariants
 
@@ -103,9 +99,9 @@ Optional loopback override:
 BLOCKIT_RUNTIME_URL=http://127.0.0.1:3000/bb-mcp
 ```
 
-## Codex Configuration
+## AI Client Configuration
 
-Use the Gateway instead of pointing Codex directly at Blockbench. Use an absolute repository path.
+Use the Gateway instead of pointing a normal client directly at Blockbench. Use an absolute repository path.
 
 ```toml
 [mcp_servers.blockit]
@@ -113,21 +109,21 @@ command = "bun"
 args = ["run", "C:/absolute/path/to/BuildIT/mcp/gateway/index.ts"]
 ```
 
-A project-scoped `.codex/config.toml` may carry the same configuration when the repository is trusted. Codex owns the Gateway process lifecycle; reloading/closing Blockbench does not replace the Codex-facing MCP process.
+A project-scoped client configuration may carry the same command when the repository is trusted. The AI client owns the Gateway process lifecycle; reloading/closing Blockbench does not replace the client-facing MCP process.
 
-## Current Surface
+## Current Source Surface
 
 ```text
 Gateway client tools     4
-Runtime callable union  51
-AUTHORING surface        Geometry + Texturing capabilities together
-Animation surface        separate
+Runtime callable union  52
+AUTHORING surface       47
+Animation surface       19
 ```
 
-Exact installed Runtime surface counts are verified from current source/deployment rather than treated as a durable product number.
+These are source-owned counts. Exact installed Runtime identity and lifecycle behavior remain verification results in `../docs/knowledge/current-validation.md`.
 
 ## Proof Boundary
 
 Source/static tests can prove the fixed Gateway surface, shared AUTHORING routing contract, loopback containment, capability priority, catalog invalidation, and retry semantics. They do not prove the live client survives Runtime lifecycle changes or that authored Geometry/UV/Texture output is visually accepted.
 
-The next local gate is one continuous Codex task that starts with Blockbench closed, observes Runtime offline→online, confirms Geometry and Texturing focus resolve to the same AUTHORING catalog, performs an in-session Geometry↔Texturing correction, crosses AUTHORING↔Animation, survives plugin reload and Blockbench close/open, and performs no manual Codex MCP reconnect or new chat.
+The pending live gate should exercise one continuous task: Runtime offline→online, shared Geometry/Texturing AUTHORING behavior, one AUTHORING↔Animation handoff through Gateway, plugin lifecycle, native authoring/history, and persistence where applicable—without a manual AI-client reconnect or new chat.

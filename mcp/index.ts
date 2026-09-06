@@ -160,7 +160,7 @@ async function restartMcpServer(): Promise<void> {
     const started = await startMcpServer();
     if (started) {
       Blockbench.showQuickMessage(
-        "BlockIT MCP server restarted. Gateway clients reconnect automatically; direct native MCP clients may need to refresh.",
+        "BlockIT MCP server restarted. Gateway-backed clients recover automatically; direct native MCP clients may need to refresh.",
         4000
       );
     }
@@ -300,15 +300,15 @@ function setupProfileActions(): void {
       click: () => void restartMcpServer(),
     }),
     new Action("blockit_enable_extended", {
-      name: "Enable BlockIT Extended MCP Profile",
-      description: "Enable the opt-in generic Blockbench fallback families.",
+      name: "Enable BlockIT Legacy UI Fallbacks",
+      description: "Enable generic Blockbench fallback families for debug/maintenance compatibility.",
       icon: "extension",
       plugin: "blockit_mcp",
       click: () => setExtendedMcpFamiliesEnabled(true),
     }),
     new Action("blockit_disable_extended", {
-      name: "Disable BlockIT Extended MCP Profile",
-      description: "Return BlockIT to the default Bedrock Entity profile.",
+      name: "Disable BlockIT Legacy UI Fallbacks",
+      description: "Disable generic debug/maintenance fallback families and keep normal Bedrock authoring behavior.",
       icon: "extension",
       plugin: "blockit_mcp",
       click: () => setExtendedMcpFamiliesEnabled(false),
@@ -361,7 +361,7 @@ BBPlugin.register("blockit_mcp", {
     setMcpProfileSwitchHandler((profile) => {
       if (serverConfig) serverConfig.profile = profile;
       Blockbench.showQuickMessage(
-        `BlockIT MCP profile switched to ${profile}. Gateway clients refresh automatically.`,
+        `BlockIT compatibility surface switched to ${profile}. Gateway clients refresh automatically.`,
         2000
       );
     });
@@ -376,8 +376,8 @@ BBPlugin.register("blockit_mcp", {
     }
 
     // Bedrock Entity remains the catalog truth. The optional extended setting
-    // may add generic fallback families, then authoring phase exposure narrows
-    // the actual MCP surface to Core + exactly one phase for this plugin load.
+    // adds Legacy UI Fallback families for debug/maintenance compatibility.
+    // Geometry and Texturing still share AUTHORING; Animation remains separate.
     const registrationProfile = resolveMcpRegistrationProfile(
       isExtendedMcpFamiliesEnabled()
     );

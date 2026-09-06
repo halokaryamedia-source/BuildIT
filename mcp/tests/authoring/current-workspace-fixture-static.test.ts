@@ -3,6 +3,7 @@ import { buildUvAtlasAudit, type UvAtlasUsage } from "@/server/tools/texture";
 
 const FIXTURE = {
   name: "lift",
+  readme: "../workspace/active/lift/README.md",
   model: "../workspace/active/lift/lift.bbmodel",
   geometry: "../workspace/active/lift/lift.geo.json",
   animation: "../workspace/active/lift/lift.animation.json",
@@ -53,6 +54,20 @@ function uvUsages(elements: JsonObject[]): UvAtlasUsage[] {
 }
 
 describe("current representative workspace fixture", () => {
+  test("keeps current asset continuity on the canonical workspace state vocabulary", async () => {
+    const readme = await Bun.file(FIXTURE.readme).text();
+
+    expect(readme).toContain("Current Stage: COMPLETE");
+    expect(readme).toContain("Geometry: APPROVED");
+    expect(readme).toContain("UV Layout: PASS");
+    expect(readme).toContain("Texturing: APPROVED");
+    expect(readme).toContain("Animation: APPROVED");
+    expect(readme).toContain("Geometry Strategy: DIRECT");
+    expect(readme).toContain("Fixture boundary:");
+    expect(readme).not.toContain("Current Stage: DELIVERED");
+    expect(readme).not.toContain("## Prior tests / remaining proof");
+  });
+
   test("is a healthy non-trivial Bedrock input without becoming product law", async () => {
     const model = await json(FIXTURE.model);
     const elements = (model.elements ?? []) as JsonObject[];

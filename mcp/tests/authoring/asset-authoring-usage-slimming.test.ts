@@ -146,6 +146,21 @@ describe("pre-local asset-authoring usage slimming", () => {
     expect(batch).toContain("geometry_effect");
   });
 
+  test("legacy UI fallback compatibility never presents itself as a normal authoring profile", async () => {
+    const [index, settings, profile] = await Promise.all([
+      source("index.ts"),
+      source("ui/settings.ts"),
+      source("lib/registrationProfile.ts"),
+    ]);
+
+    expect(index).toContain('name: "Enable BlockIT Legacy UI Fallbacks"');
+    expect(index).toContain('name: "Disable BlockIT Legacy UI Fallbacks"');
+    expect(index).not.toContain("Extended MCP Profile");
+    expect(settings).toContain('name: "Legacy UI Fallbacks (Debug)"');
+    expect(settings).toContain("not an authoring profile");
+    expect(profile).toContain('export type McpRegistrationProfile = "bedrock_entity" | "extended";');
+  });
+
   test("capability architecture keeps the existing registration profile", async () => {
     const profile = await source("lib/registrationProfile.ts");
     expect(profile).toContain('export type McpRegistrationProfile = "bedrock_entity" | "extended";');

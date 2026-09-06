@@ -5,12 +5,25 @@ async function text(path: string): Promise<string> {
 }
 
 describe("current developer-facing documentation sync", () => {
-  test("current proof, Runtime shape, and developer-loop ownership stay aligned", async () => {
-    const [flow, llms, implementation, packageRules] = await Promise.all([
+  test("current proof, Runtime shape, developer loop, and user-facing surfaces stay aligned", async () => {
+    const [
+      flow,
+      llms,
+      implementation,
+      packageRules,
+      rootReadme,
+      mcpReadme,
+      gatewayReadme,
+      about,
+    ] = await Promise.all([
       text("../docs/knowledge/flow.md"),
       text("llms.txt"),
       text("../docs/knowledge/implementation-map.md"),
       text("AGENTS.md"),
+      text("../README.md"),
+      text("README.md"),
+      text("gateway/README.md"),
+      text("about.md"),
     ]);
 
     expect(flow).toContain("current proof state        → docs/knowledge/current-validation.md");
@@ -32,6 +45,28 @@ describe("current developer-facing documentation sync", () => {
     );
     expect(implementation).toContain("`mcp/tests/developer-loop.test.ts`");
     expect(implementation).toContain(`${api.tools.length} declared source ToolSpecs`);
+
+    expect(rootReadme).toContain("Source callable union        52 tools");
+    expect(rootReadme).toContain("AUTHORING source surface     47 tools");
+    expect(rootReadme).not.toContain("Runtime callable union          51 tools");
+    expect(rootReadme).not.toContain("not yet production-implemented end-to-end");
+
+    expect(mcpReadme).toContain("Source callable union        52 tools");
+    expect(mcpReadme).toContain("materialize_3d_assisted_scaffold");
+    expect(mcpReadme).not.toContain(
+      "Remaining implementation is the thin public materializer ToolSpec binding"
+    );
+
+    expect(gatewayReadme).toContain("Runtime callable union  52");
+    expect(gatewayReadme).toContain("client_reconnect_required=false");
+    expect(gatewayReadme).toContain("without a manual AI-client reconnect");
+
+    expect(about).toContain("shared AUTHORING Runtime surface");
+    expect(about).toContain("without a manual MCP reconnect");
+    expect(about).not.toContain("Only the active authoring phase is exposed at a time");
+    expect(about).not.toContain("reloading/restarting BlockIT MCP");
+
+    expect(await Bun.file("../docs/knowledge/mcp-capability-backlog.md").exists()).toBe(false);
   });
 
   test("execution context markers, GitHub-first defaults, and proof ceilings stay synchronized", async () => {
