@@ -1,10 +1,15 @@
 import { describe, expect, test } from "bun:test";
+import * as fs from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { getAllToolDefinitions } from "@/lib/factories";
 import { createProjectParameters } from "@/server/tools/project";
 import { addGroupParameters, duplicateElementParameters, requireFiniteTranslatedElementVector3 } from "@/server/tools/element";
 import {
   BLOCKIT_MODEL_CODEC_IDS,
   exportModelParameters,
   listExportFormatsParameters,
+  registerExportTools,
 } from "@/server/tools/export";
 
 async function source(path: string): Promise<string> {
@@ -41,6 +46,81 @@ describe("pre-local generic semantics narrowing", () => {
     expect(exportModelParameters.parse({}).codec_id).toBe("bedrock");
     expect(exportModelParameters.safeParse({ codec_id: "project" }).success).toBe(true);
     expect(exportModelParameters.safeParse({ codec_id: "obj" }).success).toBe(false);
+  });
+
+  test("export executor returns no-path content and keeps verified writes metadata-first", async () => {
+    if (!getAllToolDefinitions().export_model) registerExportTools();
+    const tool = getAllToolDefinitions().export_model;
+    const directory = fs.mkdtempSync(join(tmpdir(), "blockit-export-contract-"));
+    let compiled = '{"minecraft:geometry":[]}';
+    const project = {
+      name: "export-fixture", uuid: "export-fixture", saved: false,
+      save_path: "", export_path: "", export_codec: "",
+    };
+    const globals = {
+      Project: project,
+      Format: { id: "bedrock" },
+      Codecs: {
+        bedrock: {
+          name: "Bedrock", extension: "json", compile: () => compiled,
+          afterSave: (path: string) => {
+            project.export_path = path;
+            project.export_codec = "bedrock";
+            project.saved = true;
+          },
+        },
+      },
+      requireNativeModule: (name: string) => name === "fs" ? fs : null,
+    };
+    const saved = Object.keys(globals).map((key) =>
+      [key, Object.getOwnPropertyDescriptor(globalThis, key)] as const
+    );
+    const invoke = async (args: Record<string, unknown>) => {
+      const result = await tool.execute(exportModelParameters.parse(args));
+      if (typeof result === "string" || !result.structuredContent) {
+        throw new Error("Expected structured export receipt.");
+      }
+      return result.structuredContent as {
+        content: string | null; truncated: boolean; wrote_to_path: string | null;
+      };
+    };
+    try {
+      for (const [key, value] of Object.entries(globals)) {
+        Object.defineProperty(globalThis, key, { configurable: true, writable: true, value });
+      }
+      const noPath = await invoke({});
+      expect(noPath.content).toBe(compiled);
+      expect(noPath.wrote_to_path).toBeNull();
+      expect(noPath.truncated).toBe(false);
+      expect((await invoke({ max_content_length: 0 })).content).toBeNull();
+
+      const path = join(directory, "default.geo.json");
+      const written = await invoke({ path });
+      expect(written.content).toBeNull();
+      expect(written.wrote_to_path).toBe(path);
+      expect(fs.readFileSync(path, "utf8")).toBe(compiled);
+
+      const explicitPath = join(directory, "explicit.geo.json");
+      expect((await invoke({ path: explicitPath, max_content_length: 6 })).content)
+        .toBe(compiled.slice(0, 6));
+
+      compiled = JSON.stringify({ label: "x".repeat(100_001) });
+      const bounded = await invoke({});
+      expect(bounded.content).toHaveLength(100_000);
+      expect(bounded.truncated).toBe(true);
+
+      compiled = JSON.stringify({ label: "a😀b" });
+      const limit = compiled.indexOf("😀") + 1;
+      const unicode = await invoke({ max_content_length: limit });
+      expect(unicode.content).toBe(compiled.slice(0, limit - 1));
+      expect(unicode.truncated).toBe(true);
+    } finally {
+      for (const [key, descriptor] of saved) {
+        if (descriptor) Object.defineProperty(globalThis, key, descriptor);
+        else Reflect.deleteProperty(globalThis, key);
+      }
+      fs.rmSync(directory, { recursive: true, force: true });
+    }
   });
 
   test("fixed export-format discovery is default-disabled without removing export capability", async () => {

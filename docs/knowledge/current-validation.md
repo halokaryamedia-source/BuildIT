@@ -6,6 +6,8 @@ This file owns **current proof interpretation**. Continuation belongs in `docs/k
 
 ## Laporan issue dan pemborosan — lift DIRECT
 
+**Integrasi GitHub:** pekerjaan lokal digabung dengan remote `72f3ed1` (termasuk `a8219c3` TCP/brush/export). `bun run verify:full` pada hasil gabungan PASS: 32 repository + 402 runtime + 117 authoring = **551 tes**. Build hasil merge: sha256:c208ec49344db79fa22e1cddd330e563f14319d4ed0c724408ee0ba0a01c969c. Fixture brush remote disesuaikan dengan NumSlider native dan pemilihan brush sebelum setting; batas kualitas/native tetap belum berubah. Pengguna melanjutkan dari GitHub; live acceptance yang tertunda tidak dijalankan dalam handoff ini.
+
 **Status sebenarnya: perbaikan source dan panduan sudah diuji; hasil perbaikannya di Blockbench belum diverifikasi. Seluruh masalah kualitas/efisiensi belum dapat dinyatakan selesai.** Batas pekerjaan adalah Blockbench, tanpa pengujian Minecraft.
 
 ### Apa yang sudah dan belum diuji

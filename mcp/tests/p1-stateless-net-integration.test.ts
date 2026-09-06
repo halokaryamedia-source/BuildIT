@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
-import { createConnection, createServer as createTcpServer, type AddressInfo } from "node:net";
+import { createConnection, createServer as createTcpServer, type AddressInfo, type Socket } from "node:net";
 import { performance } from "node:perf_hooks";
 import { z } from "zod";
 import { createTool } from "@/lib/factories";
@@ -316,6 +316,90 @@ describe("P1.4 raw-net stateless integration", () => {
       (callBody.result as { content?: Array<{ type?: string; text?: string }> })
         .content
     ).toEqual([{ type: "text", text: "raw-net-ok" }]);
+  });
+
+  test("fragmented headers and UTF-8 bodies wait for new data before dispatch", async () => {
+    const address = server.address();
+    if (!address || typeof address === "string") {
+      throw new Error("Expected active TCP listener.");
+    }
+
+    const body = JSON.stringify({
+      jsonrpc: "2.0",
+      id: 75,
+      method: "tools/call",
+      params: { name: FIXTURE_TOOL, arguments: { value: "fragmented ✓" } },
+    });
+    const header =
+      `POST ${ENDPOINT} HTTP/1.1\r\nHost: ${HOST}\r\n` +
+      "Content-Type: application/json\r\nAccept: application/json, text/event-stream\r\n" +
+      `MCP-Protocol-Version: ${PROTOCOL_VERSION}\r\n` +
+      `Content-Length: ${Buffer.byteLength(body)}\r\nConnection: close\r\n\r\n`;
+    const request = Buffer.from(header + body);
+    const utf8Split = request.indexOf(Buffer.from("✓")) + 1;
+    expect(utf8Split).toBeGreaterThan(Buffer.byteLength(header));
+    const fragments = [
+      request.subarray(0, 8),
+      request.subarray(8, utf8Split),
+      request.subarray(utf8Split),
+    ];
+
+    const response = await new Promise<string>((resolve, reject) => {
+      const chunks: Buffer[] = [];
+      let peer: Socket | undefined;
+      let socket: Socket;
+      let nextFragment = 1;
+      let receivedBytes = 0;
+      let sentBytes = fragments[0].length;
+      let settled = false;
+      let nextWrite: ReturnType<typeof setTimeout> | undefined;
+
+      const finish = (error?: Error) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(deadline);
+        if (nextWrite !== undefined) clearTimeout(nextWrite);
+        server.off("connection", onConnection);
+        peer?.off("data", onPeerData);
+        socket.destroy();
+        peer?.destroy();
+        if (error) reject(error);
+        else resolve(Buffer.concat(chunks).toString("utf8"));
+      };
+      const onPeerData = (chunk: Buffer) => {
+        receivedBytes += chunk.length;
+        if (receivedBytes < sentBytes || nextFragment >= fragments.length) return;
+        const fragment = fragments[nextFragment++];
+        sentBytes += fragment.length;
+        // Only feed the next fragment after the real parser has observed the
+        // previous one and yielded; TCP coalescing cannot hide the incomplete read.
+        nextWrite = setTimeout(() => {
+          if (!socket.destroyed) socket.write(fragment);
+        }, 0);
+      };
+      const onConnection = (accepted: Socket) => {
+        peer = accepted;
+        peer.on("data", onPeerData);
+      };
+      const deadline = setTimeout(
+        () => finish(new Error("Fragmented MCP request did not complete.")),
+        2500
+      );
+      server.once("connection", onConnection);
+      socket = createConnection({ host: HOST, port: address.port });
+      socket.setNoDelay(true);
+      socket.on("data", (chunk: Buffer) => chunks.push(chunk));
+      socket.once("error", finish);
+      socket.once("end", () => finish());
+      socket.once("close", () => finish());
+      socket.once("connect", () => socket.write(fragments[0]));
+    });
+
+    expect(response.startsWith("HTTP/1.1 200 ")).toBe(true);
+    expect(response.match(/HTTP\/1\.1 /g)).toHaveLength(1);
+    const payload = JSON.parse(response.slice(response.indexOf("\r\n\r\n") + 4));
+    expect(payload.id).toBe(75);
+    expect(payload.result.content).toEqual([{ type: "text", text: "fragmented ✓" }]);
   });
 
   test("active keep-alive sockets can be closed deterministically", async () => {

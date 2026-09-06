@@ -554,15 +554,9 @@ export default function createNetServer (
         }
       } finally {
         processing = false
-        if (
-          buffer.length > 0 &&
-          !awaitingDrain &&
-          !socketEnded &&
-          !socket.destroyed &&
-          socket.writable
-        ) {
-          void processBufferedRequests()
-        }
+        // An incomplete header/body must wait for the next data event.
+        // Complete buffered requests are drained by the loop above; backpressure
+        // resumes through drain. Re-entering here spins on unchanged bytes.
       }
     }
 

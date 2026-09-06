@@ -1,5 +1,8 @@
 import { describe, expect, test } from "bun:test";
+import { getAllToolDefinitions } from "@/lib/factories";
 import {
+  paintWithBrushParameters,
+  registerPaintTools,
   isExactPixelAuthoringRequest,
   normalizeTexturePixelRegion,
   paintFillToolParameters,
@@ -390,6 +393,114 @@ describe("texturing authoring contract", () => {
     expect(brush).toContain("startPaintTool");
     expect(brush).toContain("movePaintTool");
     expect(brush).toContain("stopPaintTool");
+  });
+
+  test("brush executor preserves size-1 pixels and delegates size-2 to native Painter", async () => {
+    if (!getAllToolDefinitions().paint_with_brush) registerPaintTools();
+    const tool = getAllToolDefinitions().paint_with_brush;
+    const writes: number[][] = [];
+    const nativeCalls: unknown[][] = [];
+    const undoCalls: string[] = [];
+    class FixtureNumSlider {
+      value = 0;
+      change(modifier: (value: number) => number) { this.value = modifier(this.value); }
+      update() {}
+    }
+    const controls = {
+      slider_brush_size: new FixtureNumSlider(),
+      brush_tool: { select: () => nativeCalls.push(["select"]) },
+    };
+    const ctx = {
+      save() {},
+      restore() {},
+      globalAlpha: 1,
+      globalCompositeOperation: "source-over",
+      fillStyle: "",
+      fillRect: (x: number, y: number, width: number, height: number) => {
+        writes.push([x, y, width, height]);
+      },
+    };
+    const active = {
+      canvas: { width: 16, height: 16 },
+      offset: [0, 0],
+      ctx,
+    };
+    const texture = {
+      uuid: "brush-fixture",
+      id: "0",
+      name: "brush-fixture",
+      width: 16,
+      height: 16,
+      display_height: 16,
+      layers_enabled: false,
+      layers: [],
+      getActiveCanvas: () => active,
+      edit: (callback: (canvas: typeof active.canvas, env: typeof active) => void) =>
+        callback(active.canvas, active),
+    };
+    const globals = {
+      NumSlider: FixtureNumSlider,
+      Project: { textures: [texture] },
+      Texture: { selected: texture, all: [texture], getDefault: () => texture },
+      BarItems: controls,
+      ColorPanel: { set() {} },
+      Canvas: { updateAll() {} },
+      Undo: {
+        initEdit: () => undoCalls.push("init"),
+        finishEdit: () => undoCalls.push("finish"),
+        cancelEdit: () => undoCalls.push("cancel"),
+      },
+      Painter: {
+        mirror_painting: false,
+        lock_alpha: false,
+        erase_mode: false,
+        startPaintTool: (target: unknown, x: number, y: number) => {
+          expect(target).toBe(texture);
+          nativeCalls.push(["start", controls.slider_brush_size.value, x, y]);
+        },
+        stopPaintTool: () => nativeCalls.push(["stop"]),
+      },
+    };
+    const saved = Object.keys(globals).map((key) =>
+      [key, Object.getOwnPropertyDescriptor(globalThis, key)] as const
+    );
+    try {
+      for (const [key, value] of Object.entries(globals)) {
+        Object.defineProperty(globalThis, key, { configurable: true, writable: true, value });
+      }
+      for (const size of [1, 2]) {
+        writes.length = 0;
+        nativeCalls.length = 0;
+        undoCalls.length = 0;
+        const result = await tool.execute(paintWithBrushParameters.parse({
+          coordinates: [{ x: 3, y: 4 }],
+          brush_settings: {
+            size, opacity: 255, softness: 0, shape: "square",
+            blend_mode: "default", color: "#112233",
+          },
+          connect_strokes: false,
+        }));
+        if (size === 1) {
+          expect(writes).toEqual([[3, 4, 1, 1]]);
+          expect(nativeCalls).toEqual([["select"]]);
+          expect(undoCalls).toEqual(["init", "finish"]);
+          expect(typeof result).not.toBe("string");
+          if (typeof result === "string") throw new Error("Expected exact-pixel receipt.");
+          expect(result.structuredContent).toMatchObject({
+            mode: "exact_pixels", affected_rect: [3, 4, 4, 5], affected_size: [1, 1],
+          });
+        } else {
+          expect(writes).toEqual([]);
+          expect(undoCalls).toEqual([]);
+          expect(nativeCalls).toEqual([["select"], ["start", 2, 3, 4], ["stop"]]);
+        }
+      }
+    } finally {
+      for (const [key, descriptor] of saved) {
+        if (descriptor) Object.defineProperty(globalThis, key, descriptor);
+        else Reflect.deleteProperty(globalThis, key);
+      }
+    }
   });
 
   test("create_texture sizes its fresh canvas to authored dimensions before filling", async () => {
