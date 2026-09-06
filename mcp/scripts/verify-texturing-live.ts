@@ -164,8 +164,11 @@ async function exactRedo(client: LiveMcpClient): Promise<void> {
 
 async function main(): Promise<void> {
   requireDisposableConsent();
+  // Geometry and Texturing share the same AUTHORING Runtime surface. This
+  // verifier intentionally continues the Geometry-started session instead of
+  // forcing a redundant Geometry→Texturing reload solely for testing.
   const client = new LiveMcpClient({
-    expectedPhase: "texturing",
+    expectedPhase: "geometry",
     requiredTools: REQUIRED_TOOLS,
   });
   const environment = await client.preflight();
@@ -482,7 +485,7 @@ async function main(): Promise<void> {
         ok: true,
         proof: "live_texturing_e2e",
         profile: "bedrock_entity",
-        phase: "texturing",
+        phase: "geometry (shared AUTHORING; Texturing semantics)",
         build_identity: environment.buildIdentity,
         project: AUTHORING_E2E_PROJECT_NAME,
         texture_uuid: baseTextureUuid,
@@ -506,8 +509,8 @@ async function main(): Promise<void> {
         },
         cost: client.snapshotMetrics(),
         visual_quality: "not_evaluated",
-        next: "Switch BlockIT MCP Authoring Phase to animation, reload/reconnect, then run verify:animation-live with --confirm-disposable.",
-        note: "Exercises native 16x template/repack, semantic pixel preservation, explicit target isolation, native size-2 Painter, bounded clipping and exact Undo/Redo. This is native behavior proof, not reference-fidelity approval.",
+        next: "Use the existing AUTHORING→Animation Gateway handoff with disposable-test readiness, reconnect once, then run verify:animation-live with --confirm-disposable.",
+        note: "Runs Texturing on the same shared AUTHORING session created by Geometry. Exercises native 16x template/repack, semantic pixel preservation, explicit target isolation, native size-2 Painter, bounded clipping and exact Undo/Redo. This is native behavior proof, not reference-fidelity approval.",
       },
       null,
       2
