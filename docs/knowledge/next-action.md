@@ -12,7 +12,7 @@ Branch: **`Local` only**. Proof → `current-validation.md`.
   - Artifact `blockit-mcp-verified` ID `9993371261`; bundle SHA-256 `9896b8c25e293b7f33dc2ebf3119942809ec4df548839f4ac753366bc8521f87`; build identity `sha256:c208ec49344db79fa22e1cddd330e563f14319d4ed0c724408ee0ba0a01c969c`.
 - LIFT is only a replaceable representative fixture. Preserve `workspace/active/lift/lift.bbmodel`; mutate disposable copies only.
 - `LOCAL_CODE` residue: upgrade `@modelcontextprotocol/sdk` 1.25.3 to a patched maintained v1, regenerate `bun.lock`, run the owning source verifier.
-- Geometry Strategy remains user-selected `DIRECT | 3D_ASSISTED`; 3D-Assisted native/GPU quality stays deferred unless resumed.
+- AUTHORING TAXONOMY: Geometry Strategy remains user-selected `DIRECT | 3D_ASSISTED`; 3D-Assisted native/GPU quality stays deferred unless resumed.
 
 ## Next
 
