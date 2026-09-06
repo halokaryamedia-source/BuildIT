@@ -27,9 +27,10 @@ LIVE_BLOCKBENCH = LOCAL_CODE + deployed BlockIT runtime + functioning Gateway/ru
 Proof ceiling follows the context above. Exact-commit source acceptance and cloud workspace capability follow `GITHUB_RULES.md`.
 
 ```text
-required acceptance <= current proof ceiling → continue
-needs unavailable generator/runtime → handoff before substantial edits
-bounded source result complete here → accept covered CI proof; label only missing local/live proof
+REMOTE_GITHUB available → exhaust source/static/CI-verifiable work first
+higher-context dependency → partition work; prebuild tests/harness/provenance/evidence here
+handoff only the minimum LOCAL_CODE/LIVE_BLOCKBENCH residue; never transfer the whole task for one residue
+covered source result complete → accept CI proof; label only genuinely missing higher-context proof
 ```
 
 ### Observe / recover context
@@ -67,6 +68,7 @@ Goal
 Success Metric
 First Evidence Required / first wrong owner
 In Scope / Out of Scope
+Execution Partition / higher-context residue
 Proof Required
 STOP Condition
 ```
@@ -79,7 +81,7 @@ Concrete bug/stale rule/test/CI routing or behavior-preserving cleanup starts at
 
 ### Standard Development
 
-Use when requirement/owner are clear but work exceeds bounded maintenance.
+Use when requirement/owner are clear but work exceeds bounded maintenance. Do not escalate the whole task merely because one final generator, filesystem, or native-runtime proof needs a higher context; finish the GitHub-verifiable partition first.
 
 ### Complex / Ambiguous Development
 
@@ -142,7 +144,7 @@ For normal asset authoring, do not automatically load repository continuation/hi
 
 ## GitHub Work
 
-`GITHUB_RULES.md` owns branch/ref, transfer, atomic delivery, CI/security, retries, STOP.
+`GITHUB_RULES.md` owns branch/ref, GitHub-first partitioning, transfer, atomic delivery, CI/security, retries, STOP.
 
 ## Source Precedence
 

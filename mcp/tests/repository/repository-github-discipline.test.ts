@@ -30,6 +30,22 @@ describe("repository GitHub discipline", () => {
     expect(rules).toContain("docs/knowledge/current-validation.md");
   });
 
+  test("development exhausts GitHub-verifiable work before handing off only higher-context residue", async () => {
+    const [root, rules, packageRules, brief] = await Promise.all([
+      source("../AGENTS.md"),
+      source("../GITHUB_RULES.md"),
+      source("AGENTS.md"),
+      source("../.agents/skills/development-brief/SKILL.md"),
+    ]);
+
+    requireInvariant(root, /exhaust source\/static\/CI-verifiable work first[\s\S]*handoff only the minimum[\s\S]*never transfer the whole task/i, "AGENTS.md", "root routes by minimum higher-context residue");
+    requireInvariant(rules, /GitHub-first execution partition[\s\S]*Do not transfer the whole task[\s\S]*minimum residue/i, "GITHUB_RULES.md", "GitHub work is exhausted before escalation");
+    requireInvariant(rules, /verified build artifact[\s\S]*source SHA[\s\S]*build identity[\s\S]*no commit-back/i, "GITHUB_RULES.md", "CI artifacts retain provenance without source writeback");
+    requireInvariant(packageRules, /higher-context dependency[\s\S]*does not[^\n]*transfer the whole MCP task[\s\S]*minimum generator\/filesystem\/native residue/i, "mcp/AGENTS.md", "MCP development partitions rather than wholesale handoff");
+    requireInvariant(packageRules, /generated dependent cannot be produced[\s\S]*independent GitHub-verifiable work[\s\S]*source\+generation residue/i, "mcp/AGENTS.md", "generator limitations leave only coupled residue");
+    requireInvariant(brief, /Execution Partition[\s\S]*GitHub-first[\s\S]*Higher-context residue[\s\S]*must not be redone/i, "development-brief/SKILL.md", "complex work carries an explicit GitHub-first partition");
+  });
+
   test("root routing exposes bounded, standard, complex, and asset-authoring lanes", async () => {
     const root = await source("../AGENTS.md");
     expect(root.length).toBeLessThan(7_000);
@@ -45,7 +61,7 @@ describe("repository GitHub discipline", () => {
     ]) expect(root).toContain(heading);
 
     requireInvariant(root, /Bounded contract[\s\S]*Goal[\s\S]*Acceptance[\s\S]*Proof Required[\s\S]*STOP Condition/i, "AGENTS.md", "bounded work keeps acceptance/proof/stop gates");
-    requireInvariant(root, /Standard contract[\s\S]*Goal[\s\S]*Success Metric[\s\S]*In Scope \/ Out of Scope[\s\S]*Proof Required[\s\S]*STOP Condition/i, "AGENTS.md", "standard work keeps success/scope/proof gates");
+    requireInvariant(root, /Standard contract[\s\S]*Goal[\s\S]*Success Metric[\s\S]*In Scope \/ Out of Scope[\s\S]*Execution Partition[\s\S]*Proof Required[\s\S]*STOP Condition/i, "AGENTS.md", "standard work keeps success/scope/partition/proof gates");
     requireInvariant(root, /Complex \/ Ambiguous Development[\s\S]*development-brief[\s\S]*(architecture|redesign)[\s\S]*(quality|efficiency)/i, "AGENTS.md", "complex work escalates to the brief");
     requireInvariant(root, /Asset authoring[\s\S]*not software \*\*Development\*\*[\s\S]*not route it through `development-brief`/i, "AGENTS.md", "asset work bypasses repository-development ceremony");
     expect(root).not.toMatch(/Developing Execution|Ambiguous Developing/);
@@ -59,18 +75,19 @@ describe("repository GitHub discipline", () => {
       "## Entry boundary",
       "## Mandatory Development continuity",
       "## Development Contract",
+      "## Execution Partition",
       "## Effectiveness vocabulary",
       "## Failure classification",
       "## Completion Boundary",
     ]) expect(brief).toContain(heading);
 
     requireInvariant(brief, /not\*\* load this Skill for bounded maintenance[\s\S]*clear standard change/i, "development-brief/SKILL.md", "clear work does not escalate");
-    requireInvariant(brief, /Goal[\s\S]*Success Metric[\s\S]*Forbidden Proxy \/ Non-Goal[\s\S]*Proof Required[\s\S]*STOP Condition/i, "development-brief/SKILL.md", "complex work preserves outcome/proof contract");
+    requireInvariant(brief, /Goal[\s\S]*Success Metric[\s\S]*Forbidden Proxy \/ Non-Goal[\s\S]*Execution Partition[\s\S]*Proof Required[\s\S]*STOP Condition/i, "development-brief/SKILL.md", "complex work preserves outcome/partition/proof contract");
     expect(brief).toContain("Cost to Accepted Result");
     expect(brief).not.toMatch(/BlockIT Developing|Mandatory Developing|Developing Execution Gate/);
   });
 
-  test("generated MCP ownership is preflighted before substantial public-contract editing", async () => {
+  test("generated MCP ownership is preflighted without transferring independent GitHub preparation", async () => {
     const [packageRules, specialist] = await Promise.all([
       source("AGENTS.md"),
       source("../.agents/skills/mcp-server-development/SKILL.md"),
@@ -78,6 +95,7 @@ describe("repository GitHub discipline", () => {
 
     requireInvariant(packageRules, /Before substantial implementation[\s\S]*public schema\/description\/spec[\s\S]*docs:build[\s\S]*docs:check[\s\S]*(STOP|defer)/i, "mcp/AGENTS.md", "API generation is preflighted");
     requireInvariant(packageRules, /canonical runtime prompt source[\s\S]*prompts:build[\s\S]*prompts\/manifest\.json[\s\S]*(STOP|defer)/i, "mcp/AGENTS.md", "prompt generation is preflighted");
+    requireInvariant(packageRules, /partition first[\s\S]*independent[\s\S]*(tests|regression|harness)/i, "mcp/AGENTS.md", "unavailable generators do not transfer unrelated preparation");
     requireInvariant(specialist, /Preflight generated ownership[\s\S]*(schema|description|spec)[\s\S]*runtime prompt[\s\S]*mcp\/AGENTS\.md/i, "mcp-server-development/SKILL.md", "specialist follows package generator ownership");
   });
 
@@ -100,7 +118,7 @@ describe("repository GitHub discipline", () => {
     requireInvariant(gate, /Do not rerun[^\n]*locally[^\n]*CI/i, "GITHUB_RULES.md", "accepted CI source checks do not require a duplicate local run");
     requireInvariant(gate, /cloud development workspace[\s\S]*checkout[\s\S]*Bun[\s\S]*filesystem[\s\S]*actually available/i, "GITHUB_RULES.md", "workspace capability is executable rather than device-named");
     requireInvariant(gate, /generated output[\s\S]*committed with its source[\s\S]*LIVE_BLOCKBENCH/i, "GITHUB_RULES.md", "CI acceptance retains generator and live boundaries");
-    requireInvariant(root, /bounded source result complete here[^\n]*only missing local\/live proof/i, "AGENTS.md", "routing does not invent a local proof blocker");
+    requireInvariant(root, /covered source result complete[\s\S]*genuinely missing higher-context proof/i, "AGENTS.md", "routing does not invent a local proof blocker");
 
     for (const owner of [runbook, validation]) {
       expect(owner).toContain("GITHUB_RULES.md");
@@ -173,6 +191,7 @@ describe("repository GitHub discipline", () => {
     expect(repository).toContain('"mcp/tests/repository/**"');
     expect(authoring).not.toContain('"mcp/package.json"');
     expect(authoring).toContain('"mcp/tests/authoring/**"');
+    expect(authoring).toContain('"workspace/active/**"');
     expect(authoring).toContain('"Experimental/three-d-assisted-hunyuan-poc/**"');
     expect(mcp).toContain('"mcp/**"');
     expect(mcp).toContain('"!mcp/tests/repository/**"');
@@ -199,6 +218,7 @@ describe("repository GitHub discipline", () => {
       "texture-production-discipline.test.ts",
       "animation-professional-reasoning.test.ts",
       "three-d-assisted-hunyuan-reproducibility.test.ts",
+      "lift-static-acceptance.test.ts",
     ]) {
       expect(await Bun.file(`tests/authoring/${name}`).exists(), name).toBe(true);
       expect(await Bun.file(`tests/${name}`).exists(), name).toBe(false);
@@ -259,6 +279,8 @@ describe("repository GitHub discipline", () => {
     expect(runbook.length).toBeLessThan(8_000);
     expect(runbook).toMatch(/Fast path[^\n]*exact green/i);
     expect(runbook).toContain("bun run verify:full");
+    expect(runbook).toContain("deploy:verified");
+    expect(runbook).toMatch(/verify:stateless-local[^\n]*diagnostic/i);
     expect(runbook).toContain("Cost to Accepted Result");
     expect(runbook).toContain("docs/knowledge/current-validation.md");
     expect(runbook).not.toContain("docs/foundation/validation-report.md");

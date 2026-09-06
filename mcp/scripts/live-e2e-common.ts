@@ -11,6 +11,8 @@ export const AUTHORING_E2E_ATLAS_NAME = "e2e_atlas";
 export const AUTHORING_E2E_ANIMATION_A_NAME = "animation.blockit_e2e_motion_a";
 export const AUTHORING_E2E_ANIMATION_B_NAME = "animation.blockit_e2e_motion_b";
 
+const FORBIDDEN_LIVE_TOOLS = new Set(["risky_eval", "from_geo_json"]);
+
 export type JsonObject = Record<string, unknown>;
 export type ContentItem =
   | { type: "text"; text: string }
@@ -193,7 +195,7 @@ export class LiveMcpClient {
 
   private async localBuildIdentity(): Promise<string> {
     const file = Bun.file(this.bundlePath);
-    expect(await file.exists(), `Missing ${this.bundlePath}. Build and deploy BlockIT first.`);
+    expect(await file.exists(), `Missing ${this.bundlePath}. Build or deploy a verified CI artifact first.`);
     const match = (await file.text()).match(
       /globalThis\.__BLOCKIT_BUILD_ID__\s*=\s*["'](sha256:[a-f0-9]{64})["']/
     );
@@ -201,19 +203,26 @@ export class LiveMcpClient {
     return match[1];
   }
 
-  async preflight(): Promise<{ buildIdentity: string }> {
-    const buildIdentity = await this.localBuildIdentity();
+  private async healthJson(): Promise<JsonObject> {
     this.metrics.http_calls += 1;
-    const healthResponse = await fetch(`${this.targetUrl}/health`, {
+    const response = await fetch(`${this.targetUrl}/health`, {
       headers: { connection: "close" },
     });
-    const healthText = await healthResponse.text();
-    this.metrics.response_bytes += new TextEncoder().encode(healthText).length;
-    expect(
-      healthResponse.status === 200,
-      `BlockIT /health returned HTTP ${healthResponse.status}.`
-    );
-    const health = JSON.parse(healthText) as JsonObject;
+    const text = await response.text();
+    this.metrics.response_bytes += new TextEncoder().encode(text).length;
+    expect(response.status === 200, `BlockIT /health returned HTTP ${response.status}.`);
+    try {
+      const value = JSON.parse(text) as unknown;
+      expect(value && typeof value === "object" && !Array.isArray(value), "BlockIT /health returned non-object JSON.");
+      return value as JsonObject;
+    } catch (error) {
+      throw new Error(`BlockIT /health returned invalid JSON: ${String(error)}`);
+    }
+  }
+
+  async preflight(): Promise<{ buildIdentity: string }> {
+    const buildIdentity = await this.localBuildIdentity();
+    const health = await this.healthJson();
     const product = (health.product ?? {}) as JsonObject;
     const transport = (health.transport ?? {}) as JsonObject;
 
@@ -233,6 +242,18 @@ export class LiveMcpClient {
     expect(
       transport.mode === "stateless" && transport.response_mode === "json",
       "Live MCP transport is not the expected stateless JSON contract."
+    );
+    expect(
+      typeof health.instance_id === "string" && typeof health.startup_time === "string",
+      "Live /health has no stable runtime instance_id/startup_time identity."
+    );
+
+    const secondHealth = await this.healthJson();
+    expect(
+      secondHealth.instance_id === health.instance_id &&
+        secondHealth.startup_time === health.startup_time &&
+        secondHealth.build_identity === health.build_identity,
+      `BlockIT runtime process changed during preflight: first=${String(health.instance_id)}/${String(health.startup_time)} second=${String(secondHealth.instance_id)}/${String(secondHealth.startup_time)}.`
     );
 
     const initialize = await this.postRpc(
@@ -263,7 +284,18 @@ export class LiveMcpClient {
     const listResult = (listed.result ?? {}) as {
       tools?: Array<{ name?: string }>;
     };
-    const names = new Set((listResult.tools ?? []).map((tool) => tool.name));
+    const toolNames = (listResult.tools ?? [])
+      .map((tool) => tool.name)
+      .filter((name): name is string => typeof name === "string");
+    const names = new Set(toolNames);
+    expect(
+      typeof health.exposed_tool_count === "number" &&
+        health.exposed_tool_count === toolNames.length,
+      `Live tools/list count differs from /health exposed_tool_count: health=${String(health.exposed_tool_count)} list=${toolNames.length}.`
+    );
+    for (const forbidden of FORBIDDEN_LIVE_TOOLS) {
+      expect(!names.has(forbidden), `Forbidden live tool is exposed: ${forbidden}.`);
+    }
     for (const required of this.requiredTools) {
       expect(names.has(required), `Live ${this.expectedPhase} surface is missing ${required}.`);
     }

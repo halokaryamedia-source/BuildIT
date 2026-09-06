@@ -31,11 +31,13 @@ LOCAL_CODE      = local checkout + Bun/tests/build/generators/filesystem
 LIVE_BLOCKBENCH = LOCAL_CODE + deployed/reloaded BlockIT + reconnected live MCP client
 ```
 
-- `REMOTE_GITHUB` may implement MCP changes when acceptance is fully source/static/CI-verifiable. It cannot claim local command execution, canonical generated output it cannot produce, installed-plugin freshness, or live Blockbench behavior.
-- `LOCAL_CODE` owns local generators, typecheck/tests/build, filesystem behavior, and exact generated-artifact synchronization. A successful local build still does not prove the installed Blockbench runtime.
-- `LIVE_BLOCKBENCH` is required for `verify:stateless-local`, installed `build_identity`, live `tools/list`, Undo/playback/persistence, and model/visual/runtime proof.
+- `REMOTE_GITHUB` is the default MCP development workbench for exact-source diagnosis, implementation, regression/static tests, CI routing, verified build artifacts, deterministic fixtures, and live-harness preparation when those claims are source/static/CI-verifiable.
+- `LOCAL_CODE` owns canonical generator-authored committed output, dependency/lockfile mutation, and filesystem/toolchain work that cannot be authored through the current GitHub capability. A successful local build still does not prove installed Blockbench runtime.
+- `LIVE_BLOCKBENCH` is required for installed `build_identity`, native `tools/list`/runtime behavior, Undo/playback/persistence, and model/visual proof. `verify:stateless-local` remains a diagnostic live command, not a mandatory extra step when a later live verifier already performs the shared freshness/runtime preflight.
 
-If complete delivery needs generated output or runtime proof above the current ceiling, transfer **before substantial edits accumulate**. Do not use CI to author generated files and do not hand-edit generated output.
+A higher-context dependency does **not** transfer the whole MCP task. Complete all independent GitHub-verifiable source/test/harness/provenance work first, then hand off only the minimum generator/filesystem/native residue. Do not use CI to author generated files and do not hand-edit generated output.
+
+Read-only CI may produce and upload an **exact-SHA verified build artifact** after the owning verifier passes. It must carry source SHA plus bundle hash/build identity/toolchain/verifier provenance, must not commit back, and is still source/build evidence rather than installed-live proof.
 
 ## MCP Public Contract Pattern
 
@@ -79,8 +81,9 @@ Before substantial implementation that can change a public schema/description/sp
 
 ```text
 LOCAL_CODE or LIVE_BLOCKBENCH can run docs:build + docs:check?
-  YES → continue
-  NO / REMOTE_GITHUB → transfer or STOP/defer before source edits accumulate
+  YES → canonical source + generated output may be delivered together
+  NO / REMOTE_GITHUB → partition first: finish independent diagnosis/tests/harness/CI prep;
+                       STOP/defer only the canonical source edit that would require unavailable generated output
 ```
 
 Before substantial editing of canonical runtime prompt source:
@@ -88,11 +91,12 @@ Before substantial editing of canonical runtime prompt source:
 ```text
 LOCAL_CODE or LIVE_BLOCKBENCH can run prompts:build
 + carry prompts/manifest.json in the same logical delivery?
-  YES → continue
-  NO / REMOTE_GITHUB → transfer or STOP/defer before prompt edits accumulate
+  YES → canonical prompt + manifest may be delivered together
+  NO / REMOTE_GITHUB → partition first: finish independent regression/routing/preparation work;
+                       STOP/defer only the prompt-source/generation residue
 ```
 
-The same package version + canonical prompt content must produce the same manifest bytes; no wall-clock-only metadata. GitHub Actions may verify generated freshness, but is not the authoring path and must not create/commit generated output to `Local`.
+The same package version + canonical prompt content must produce the same manifest bytes; no wall-clock-only metadata. GitHub Actions may verify generated freshness and emit verified build artifacts, but is not the authoring path and must not create/commit generated output to `Local`.
 
 Public schema/description/spec change: edit source → update manifest ownership only when needed → `bun run docs:build` → `bun run docs:check`.
 
@@ -118,7 +122,7 @@ Closure rules:
 - Use **SEMANTIC MIRROR** only where separate human-facing owners are intentional; protect the invariant, forbidden stale concepts, and workflow ordering rather than cosmetic prose.
 - Treat missing **CI ROUTING** as a routing defect: update the workflow/path owner instead of weakening tests or changing unrelated source.
 - Do not auto-rewrite `CONTEXT.md`, proof state, continuation state, Skills, or human-owned docs from source code. Their semantics remain manually owned and test-protected.
-- If any required GENERATED dependent cannot be produced in the current execution context, transfer before mutating its canonical source.
+- If a required **GENERATED** dependent cannot be produced in the current context, do not mutate the canonical source into an incomplete state. Finish independent GitHub-verifiable work, then transfer only the source+generation residue.
 
 For LOCAL_CODE cross-surface work, `bun run verify:closure` is the compact closure gate: repository semantic contracts → authoring semantic contracts → generated freshness. It does **not** replace `verify:mcp` when executable or public MCP behavior changed.
 
@@ -132,19 +136,22 @@ SHARED SOURCE dependents
 GENERATED dependents
 SEMANTIC MIRROR dependents
 CI ROUTING
+GitHub-verifiable partition
+higher-context residue
 state/proof owners if their state actually changes
 ```
 
-Every material row must end as `UPDATED | VERIFIED_UNCHANGED | NOT_APPLICABLE` before completion.
+Every material row must end as `UPDATED | VERIFIED_UNCHANGED | NOT_APPLICABLE | RESIDUE_HANDOFF` before completion; `RESIDUE_HANDOFF` is valid only when its required capability is intrinsically above `REMOTE_GITHUB`.
 
 Minimum impact rules:
 
 - authoring semantics / stage / handoff → `docs/knowledge/flow.md`, affected router/specialist Skills, runtime prompt/phase/handoff contract when exposed, Local Acceptance runbook, and semantic regressions;
 - public Tool / Resource / Prompt → exact source owner, direct callers, docs/prompt generator owner + committed generated output, contract tests, and Gateway only when boundary/discovery semantics actually change;
 - implementation-only change → implementation + direct regressions; do not churn Flow/Skills/docs when public semantics and proof state are unchanged;
+- live/native acceptance gap → prepare deterministic verifier/fixture/evidence capture in GitHub when possible; only execution remains live;
 - proof/continuation → update `current-validation.md` / `next-action.md` only after corresponding evidence or continuation state actually changes.
 
-If any required generated dependent cannot be produced in the current execution context, transfer before editing its canonical source. Use `verify:closure` as the compact cross-surface preflight; use `verify:full` once for a final delivery that also affects executable/public MCP behavior.
+If a generated dependent cannot be produced here, only its coupled canonical edit remains higher-context residue; unrelated regression, routing, harness, provenance, or static acceptance work continues in GitHub. Use `verify:closure` as the compact cross-surface preflight; use `verify:full` once for a final delivery that also affects executable/public MCP behavior.
 
 ## Test Ownership / Anti-Stale
 
@@ -164,6 +171,8 @@ tests/*.test.ts              executable/runtime/import-safe contracts
 tests/authoring/*.test.ts    authoring semantics and policy
 tests/repository/*.test.ts   repository/docs/CI ownership and routing
 ```
+
+Asset-specific static acceptance may live under `tests/authoring/` when it only validates versioned repository artifacts and never creates visual/native PASS. Keep production Runtime generic.
 
 ## Verification
 
@@ -185,8 +194,8 @@ main release boundary                              → bun run verify:release
 
 ### During iteration
 
-- `LOCAL_CODE` / `LIVE_BLOCKBENCH`: run the smallest local regression that can falsify the change; run `typecheck` when useful.
-- `REMOTE_GITHUB`: inspect the smallest relevant GitHub Actions proof; do not treat CI as local execution.
+- `REMOTE_GITHUB`: use exact-SHA CI for source/build proof and prepare later local/live execution as scripts/fixtures rather than prose where practical.
+- `LOCAL_CODE` / `LIVE_BLOCKBENCH`: run only checks that were not already accepted on the same clean source SHA or that specifically test the local/native residue.
 - Regenerate affected docs/prompt output before final delivery when the current context can canonically do so.
 - Do not rerun a canonical full verifier after each edit.
 
@@ -206,7 +215,7 @@ bun install --frozen-lockfile
 bun run verify:full
 ```
 
-A file under `mcp/tests/` alone never upgrades a static policy change into a full MCP gate. GitHub/static proof covers source contracts/buildability, not live Blockbench rendering, Undo, playback, persistence, or visual fidelity.
+A file under `mcp/tests/` alone never upgrades a static policy change into a full MCP gate. GitHub/static proof covers source contracts/buildability and exact-SHA verified build artifacts, not live Blockbench rendering, Undo, playback, persistence, or visual fidelity.
 
 ## Security / Capability Boundary
 

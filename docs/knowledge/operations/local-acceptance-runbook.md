@@ -6,7 +6,7 @@ Current state: DIRECT disposable tests only; GPU/3D_ASSISTED deferred.
 
 This procedure is active only when `docs/knowledge/next-action.md` explicitly reactivates local testing. `LIVE_BLOCKBENCH` is an execution capability; it does not activate this procedure by itself. Targeted live debugging may use that capability without formal Local Acceptance.
 
-Use this runbook only for claims repository CI cannot prove. Do not edit source until a reproducible local failure identifies the first wrong owner.
+Use this runbook only for residue repository CI cannot prove. GitHub must finish source/static/CI work and prepare deterministic harness/provenance first. Do not edit source locally until a reproducible local failure identifies the first wrong owner.
 
 ## 1. Acceptance Contract
 
@@ -15,12 +15,13 @@ Goal
 Success Metric
 Forbidden Proxy / Non-Goal
 First Evidence Required
+GitHub-completed
+Higher-context residue
 Proof Required
 STOP Condition
 ```
 
 Static source/CI never proves installed Blockbench behavior or visual quality. Static Footprint is a guardrail. Authoring Efficiency is evaluated only after the relevant quality gate passes and means Cost to Accepted Result.
-
 
 ## 2. Pin Local State
 
@@ -31,13 +32,15 @@ git status --short
 git rev-parse HEAD
 ```
 
-Require a clean tree before reusing proof.
+Require a clean tree before reusing proof. Do not repeat accepted source checks from another SHA.
 
-## 3. Source Closure + Build
+## 3. Source Closure — Fast path from exact green GitHub proof
 
-### Fast path — reuse exact green source proof
+Use the full source gate in `GITHUB_RULES.md`: successful `verify:full`, or successful `verify:repository` + `verify:mcp` on the same exact `Local` SHA. The latter is composite evidence, not an executed `verify:full`. Reuse only for a clean matching HEAD with no source/package edits. Do not rerun solely because proof came from CI.
 
-Use the full source gate in `GITHUB_RULES.md`: successful `verify:full`, or successful `verify:repository` + `verify:mcp` on the same exact `Local` SHA. CI proof is accepted; the latter is composite evidence, not an executed `verify:full`. Reuse only for a clean matching HEAD with no source/package edits. Do not rerun solely because proof came from CI.
+`verify:authoring` also owns committed asset-static contracts such as `verify:lift-static`; reuse its exact-SHA CI result rather than rechecking deterministic repository artifacts on desktop.
+
+Install the pinned local script dependencies once:
 
 ```bash
 cd mcp
@@ -46,149 +49,103 @@ bun install --frozen-lockfile
 
 ### Missing source proof
 
-Run `bun run verify:full` once when exact source proof is missing. `verify:closure` is an iteration diagnostic.
+Run `bun run verify:full` once only when exact source proof is genuinely missing or the checkout changed after that proof. `verify:closure` is an iteration diagnostic.
 
-Section 4 proves deployment separately. `deploy:local` owns build and copy; do not build twice.
+## 4. Deploy Exact Plugin — prefer verified CI artifact
 
-Source tool counts belong to `measure:phases`; installed counts belong to `verify:stateless-local` and live `tools/list` proof.
+A successful `MCP Verify` may publish artifact `blockit-mcp-verified` containing:
 
-## 4. Deploy Exact Plugin
+```text
+blockit_mcp.js
+blockit-build-provenance.json
+```
+
+Prefer that exact-run artifact for acceptance. Extract it to an absolute local directory, then deploy **without rebuilding**:
+
+```bash
+bun run deploy:verified -- /absolute/path/to/artifact-dir /absolute/path/to/blockit_mcp.js
+```
+
+`deploy:verified` fails closed unless provenance repository/ref/source SHA matches the current checkout and bundle SHA-256 + embedded `build_identity` match the verified artifact.
+
+Fallback only when no matching CI artifact exists or intentionally testing unpushed local source:
 
 ```bash
 bun run deploy:local -- /absolute/path/to/blockit_mcp.js
 ```
 
-Before cleanup: check unsaved projects and plugin IDs; stop checkout-owned watchers. Delete only verified legacy BlockIT files/cache within checked absolute paths. Preserve assets/settings/credentials/other plugins; no `git clean -xfd`. An unchanged verified bundle can use `scripts/deploy-local.ts` directly.
+`deploy:local` owns build + copy; do not build twice. Before cleanup, preserve unsaved projects/assets/settings/credentials/other plugins; no `git clean -xfd`.
 
-Reload BlockIT after deployment and prove Gateway lifecycle.
+Reload BlockIT after deployment and reconnect the client.
 
-## 5. Native Runtime Smoke
+## 5. Native Runtime Preflight — no duplicate smoke ritual
 
-With the freshly built plugin loaded:
+Normal Geometry/Texturing/Animation/Persistence/Lift live verifiers share one preflight that checks installed `build_identity`, stable `instance_id`/`startup_time`, phase, stateless transport, initialize contract, `tools/list` count, required tools, and forbidden tool absence.
+
+Therefore `verify:stateless-local` is **diagnostic only** when that shared preflight fails or when exact full-surface diagnosis is explicitly required. Do not run it automatically before every live verifier.
+
+This reduces local acceptance to native behavior that source/CI cannot prove.
+
+## 6. Prepared DIRECT Native Sequence
+
+Use the repository-owned disposable harness; do not redesign tests in Blockbench.
+
+```text
+shared AUTHORING
+→ verify:geometry-live -- --confirm-disposable
+→ verify:texturing-live -- --confirm-disposable
+→ one AUTHORING→Animation handoff
+→ verify:animation-live -- --confirm-disposable
+→ verify:persistence-live -- --prepare --confirm-disposable
+→ one native close/reopen
+→ verify:persistence-live -- --verify --confirm-disposable
+```
+
+Geometry/Texturing intentionally share AUTHORING; no phase bounce. The harness owns thin per-face UV, native 16x template/repack, semantic pixel preservation, Painter target/clip, A-vs-selected-B animation targeting, Undo/Redo and persistence assertions.
+
+Synthetic disposable-test readiness never proves user asset approval. Tool success, export success, low call count, or a scalar score cannot override **QUALITY FAIL**.
+
+## 7. Lift Quality Residue
+
+Never mutate `workspace/active/lift/lift.bbmodel` for system testing. Open an exact disposable copy and set its absolute path:
 
 ```bash
-bun run verify:stateless-local
+BLOCKIT_LIFT_DISPOSABLE_PATH=/absolute/path/to/lift-copy.bbmodel \
+  bun run verify:lift-quality-live -- --confirm-disposable
 ```
 
-This proves installed Runtime identity/current native `tools/list`; it does not prove normal Gateway survival or visual fidelity.
+The verifier hashes approved references, captures comparable before/candidate front/left/3Q + atlas, runs one native 16x padded repack candidate, records native size, then Undo-restores the original state. A `<=512` result is only a packing candidate.
 
-## 6. Gateway Stability Gate
+Visual/reference `PASS` still requires the actual approved reference plus fresh comparable model evidence. No source/static metric or automatic similarity score may create visual PASS.
 
-Configure Codex to use the stdio Gateway, not the direct Runtime endpoint.
+## 8. Gateway Stability — only when lifecycle proof is requested
 
-Required continuous-session sequence:
+Gateway lifecycle is separate from normal live authoring harness. When explicitly required, use one continuous client task and prove offline→online recovery, AUTHORING↔Animation catalog handoff, plugin reload recovery, and close/open recovery without a new chat. Geometry↔Texturing remains shared AUTHORING.
 
-```text
-1. Start one Codex task with Blockbench closed; Gateway stays callable and reports Runtime offline.
-2. Open Blockbench; the same task reports Runtime online.
-3. Search/describe/invoke one safe Geometry capability.
-4. In the same AUTHORING surface, verify one current Texturing capability is discoverable without a phase switch.
-5. Geometry↔Texturing stays on the shared AUTHORING surface; do not call switch_authoring_phase for this correction boundary.
-6. When Animation is required and Texturing is approved, switch_authoring_phase AUTHORING → Animation.
-7. Same task sees Animation capabilities; no client reconnect/new chat.
-8. Switch Animation → Geometry/AUTHORING and continue the same task.
-9. Reload BlockIT; the same Gateway process recovers.
-10. Close/open Blockbench; the same Gateway process recovers.
-```
+A mutation interruption may return `OUTCOME_UNKNOWN`; inspect state before retrying. Do not blindly repeat a destructive request.
 
-PASS requires:
+## 9. 3D_ASSISTED — deferred unless explicitly resumed
 
-```text
-Gateway client tools stay fixed
-Runtime offline/online is truthful
-Geometry/Texturing share AUTHORING without phase bounce
-AUTHORING↔Animation invalidates backend catalog only
-client_reconnect_required=false
-new_chat_required=false
-manual MCP reconnect count = 0 after initial configuration
-new chat count = 0
-interrupted mutation is never blindly retried
-```
+Setup/binding/source checks live in `mcp/scripts/three-d-assisted/README.md`. Do not execute GPU/native work while deferred.
 
-A mutation transport interruption may return `OUTCOME_UNKNOWN`; inspect state before retrying.
-
-Animation requires `readiness={geometry_approved:true, uv_layout:"PASS", texture_approved:true, checkpoint:<saved .bbmodel>, no_blockers:true}`. Internal PASS is READY_FOR_USER_REVIEW. Synthetic disposable-test readiness never proves asset approval.
-
-## 7. DIRECT Smoke Gate
-
-Use one small disposable normal asset:
-
-```text
-Approved Reference visible
-+ requested dimensions
-+ Geometry Strategy = DIRECT
-+ Animation Required = YES | NO
-→ Geometry internal verify
-→ user Geometry APPROVED
-→ checkpoint
-→ native production UV Layout
-→ UV Layout PASS
-→ Texturing + Texture Verify
-→ user Texture APPROVED
-→ checkpoint
-→ optional AUTHORING→Animation handoff + user Animation approval
-→ Finalization
-→ editable .bbmodel
-```
-
-Tool success, export success, low call count, or a scalar score cannot override QUALITY FAIL.
-
-## 8. 3D_ASSISTED External Pipeline Gate
-
-Prepare setup/binding/source checks first: `mcp/scripts/three-d-assisted/README.md`. Stop while testing is deferred. GPU/live proof requires approved intake and a stable Gateway/DIRECT baseline.
+When resumed, the package remains:
 
 ```text
 Approved Reference Board
 → deterministic LEFT/FRONT/BACK extraction
 → Hunyuan3D v1 Shape Reconstruction
-→ Shape GLB Gate → shape.glb/state
+→ Shape GLB Gate
 → PrimitiveAnything
-→ Primitive Decomposition Gate → primitive-decomposition.json/state
-```
-
-Reference is visual authority; dimensions are numeric authority. External output is intermediate evidence. Allow one diagnosed Hunyuan regeneration; no blind PrimitiveAnything reruns.
-
-## 9. Dedicated Materializer Gate
-
-After decomposition PASS: Gateway → `materialize_3d_assisted_scaffold(workspace_path)`.
-
-```text
-Active Workspace path
-→ validate strategy + state schema + current hashes
-→ prevalidate complete decomposition
-→ one atomic Undo transaction
-→ one temporary pa_<id> Group/Bone + Cube per primitive
-→ complete scaffold OR no accepted scaffold state
-```
-
-Required proof: valid decomposition creates expected native editable Cubes; invalid/stale hash fails before mutation; partial conversion is not accepted; one Undo restores pre-materialization state; no production Mesh, generic UI import, or `from_geo_json`.
-
-## 10. End-to-End 3D_ASSISTED Gate
-
-```text
-Approved Reference + Dimensions + 3D_ASSISTED
-→ external pipeline PASS
-→ materializer PASS
+→ Primitive Decomposition Gate
+→ materialize_3d_assisted_scaffold
 → Semantic Geometry Cleanup
-→ remove live Shape GLB/reference_model
-→ internal Geometry verify
-→ user Geometry APPROVED
-→ native production UV Layout → UV Layout PASS
-→ Texturing + Texture Verify → user Texture APPROVED
-→ optional Animation → user Animation APPROVED
-→ Finalization
-→ final editable .bbmodel
 ```
 
-`manage_geometry_reference` may support comparison during cleanup, but it is not a separate route and must not remain in production export.
+External output is intermediate evidence. Materialization requires current hashes, complete preflight, one atomic Undo transaction, and no accepted partial scaffold. `manage_geometry_reference` is comparison evidence only and must not survive production export.
 
-## 11. Legacy UI Fallback Proof — Debug Only
+## 10. Authoring Efficiency
 
-Internal `extended` exists only for explicit Legacy UI Fallback debugging/maintenance. Do not use generic UI fallback as a substitute for a missing authored BlockIT capability.
-
-## 12. Authoring Efficiency
-
-After quality PASS, measure calls, discovery, capability-search misses, redundant readbacks, correction attempts, same-cause retries, recovery, handoffs and available elapsed cost.
+After quality PASS, compare calls, discovery, redundant readbacks, correction attempts, same-cause retries, recovery, handoffs and available elapsed cost.
 
 ```text
 NECESSARY | AVOIDABLE | CONTRACT_CAUSED | REASONING_CAUSED | RECOVERY
@@ -197,11 +154,11 @@ IMPROVED | UNCHANGED | REGRESSED
 
 Quality must stay accepted while Cost to Accepted Result decreases. Do not invent token/latency numbers.
 
-## 13. Failure / Completion
+## 11. Failure / Completion
 
-Classify the first wrong owner before correction; follow `AGENTS.md` failure/retry boundaries.
+Classify the first wrong owner before correction; follow `AGENTS.md` retry boundaries. If a live verifier exposes a source defect, return only that defect to the appropriate development context; do not restart the entire GitHub audit.
 
-Update only state owners when their state changes:
+Update state owners only when state changes:
 
 - `docs/knowledge/current-validation.md` — proof interpretation;
 - `docs/knowledge/next-action.md` — continuation;

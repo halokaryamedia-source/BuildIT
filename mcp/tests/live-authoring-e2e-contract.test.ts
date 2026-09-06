@@ -5,10 +5,15 @@ async function source(path: string): Promise<string> {
 }
 
 describe("live authoring E2E harness", () => {
-  test("shared client owns freshness, phase proof, surface proof, observable cost, and stable fixture identities", async () => {
+  test("shared client owns freshness, stable runtime, safe surface proof, observable cost, and stable fixture identities", async () => {
     const helper = await source("scripts/live-e2e-common.ts");
     for (const contract of [
       "build_identity",
+      "instance_id",
+      "startup_time",
+      "exposed_tool_count",
+      "risky_eval",
+      "from_geo_json",
       "ACTIVE STAGE",
       "tools/list",
       "mutation_calls",
@@ -140,7 +145,7 @@ describe("live authoring E2E harness", () => {
     expect(persistence).toContain("expectedPhase: \"animation\"");
   });
 
-  test("package exposes explicit phase/persistence verifiers without an automatic authoring orchestrator", async () => {
+  test("package exposes explicit phase/persistence verifiers plus GitHub-first static/deploy entrypoints without an automatic authoring orchestrator", async () => {
     const pkg = JSON.parse(await source("package.json")) as {
       scripts: Record<string, string>;
     };
@@ -155,6 +160,12 @@ describe("live authoring E2E harness", () => {
     );
     expect(pkg.scripts["verify:persistence-live"]).toBe(
       "bun run ./scripts/verify-persistence-live.ts"
+    );
+    expect(pkg.scripts["verify:lift-static"]).toBe(
+      "bun test tests/authoring/lift-static-acceptance.test.ts"
+    );
+    expect(pkg.scripts["deploy:verified"]).toBe(
+      "bun run ./scripts/verified-build-artifact.ts deploy"
     );
     expect(pkg.scripts["verify:authoring-live"]).toBeUndefined();
   });

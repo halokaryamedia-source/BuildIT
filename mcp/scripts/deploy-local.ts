@@ -92,7 +92,9 @@ async function main(): Promise<void> {
   console.log("BlockIT local plugin deployed.");
   console.log(`target: ${receipt.target}`);
   console.log(`build_identity: ${receipt.build_identity}`);
-  console.log("Reload Blockbench/BlockIT explicitly, reconnect the MCP client, then run verify:stateless-local.");
+  console.log(
+    "Reload Blockbench/BlockIT, reconnect, then run the relevant live verifier. Its shared preflight owns freshness/runtime checks; use verify:stateless-local only for diagnosis when that preflight fails."
+  );
 }
 
 if (import.meta.main) {

@@ -40,9 +40,14 @@ describe("repository workflow supply chain", () => {
       source("../.github/workflows/blockbench-web-poc.yml"),
     ]);
 
-    for (const workflow of [repository, authoring, mcp, release]) {
+    for (const workflow of [repository, authoring, release]) {
       expectImmutableActions(workflow, ["actions/checkout", "oven-sh/setup-bun"]);
     }
+    expectImmutableActions(mcp, [
+      "actions/checkout",
+      "oven-sh/setup-bun",
+      "actions/upload-artifact",
+    ]);
     expectImmutableActions(experimental, [
       "actions/checkout",
       "actions/setup-node",
@@ -77,6 +82,17 @@ describe("repository workflow supply chain", () => {
     expect(releaseWorkflow).toContain("bun install --frozen-lockfile");
     expect(authoringWorkflow).toContain("bun install --frozen-lockfile --production");
     expect(repositoryWorkflow).not.toContain("bun install");
+  });
+
+  test("MCP verification publishes only a read-only exact-SHA verified build artifact", async () => {
+    const workflow = await source("../.github/workflows/mcp-verify.yml");
+    expect(workflow).toContain("bun run ./scripts/verified-build-artifact.ts write-ci");
+    expect(workflow).toContain("name: blockit-mcp-verified");
+    expect(workflow).toContain("mcp/dist/blockit_mcp.js");
+    expect(workflow).toContain("mcp/dist/blockit-build-provenance.json");
+    expect(workflow).toContain("if-no-files-found: error");
+    expect(workflow).not.toMatch(/contents:\s*write/i);
+    expect(workflow).not.toContain("git push");
   });
 
   test("developer-facing static docs route to repository verification rather than the full MCP gate", async () => {

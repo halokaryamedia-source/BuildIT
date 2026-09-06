@@ -7,7 +7,7 @@ description: Escalation contract for complex or ambiguous BlockIT Development. U
 
 Use this Skill only when the lightweight routes in root `AGENTS.md` are insufficient. It protects complex work without turning every repository change into planning ceremony.
 
-Root `AGENTS.md` owns route selection, boot, source precedence, and the Development Execution Gate. `GITHUB_RULES.md` owns GitHub execution/history/CI.
+Root `AGENTS.md` owns route selection, boot, source precedence, and the Development Execution Gate. `GITHUB_RULES.md` owns GitHub-first partitioning, execution/history/CI, and higher-context handoff.
 
 ## Entry boundary
 
@@ -29,7 +29,7 @@ AGENTS.md
 → smallest owner/evidence needed
 ```
 
-This prevents a new ChatGPT, Codex, or Opencode session from inventing boundaries or repeating completed work. Reuse an already-current in-session boot. If continuation conflicts with current source, current source wins; reconcile the stale record without creating a separate ceremony commit when safe.
+Reuse an already-current in-session boot. Current source wins over stale continuation; reconcile stale state only when its owner actually changes.
 
 ## Development Contract
 
@@ -42,6 +42,7 @@ Forbidden Proxy / Non-Goal
 First Evidence Required
 Failure Classification / first wrong owner
 In scope / out of scope
+Execution Partition / higher-context residue
 Proof Required
 STOP Condition
 ```
@@ -51,7 +52,6 @@ Add only when they materially change the decision:
 ```text
 Generic requirement
 Suggested method / fixture
-Execution channel
 Input authority / expected output
 Build owner / Acceptance POV
 Acceptance criteria
@@ -60,6 +60,24 @@ Material unknowns
 ```
 
 `UNKNOWN` is valid for the first wrong owner only when the evidence needed to resolve it is explicit. A proposed method is not automatically the requirement. Samples/fixtures are evidence unless object-specific behavior is requested.
+
+## Execution Partition
+
+Start repository Development from `REMOTE_GITHUB` whenever that capability is actually available. Do not hand the whole task to Codex/`LOCAL_CODE`/`LIVE_BLOCKBENCH` because one final step needs a generator, filesystem, installed runtime, or visual proof.
+
+```text
+GitHub-first
+→ diagnose + design
+→ source/static implementation that can be completed coherently
+→ regressions + CI/security/provenance
+→ deterministic fixtures/harness/evidence preparation
+→ exact-SHA source/build proof
+
+Higher-context residue
+→ only the coupled generator/lockfile/filesystem/native/visual action that GitHub cannot perform
+```
+
+The handoff must name why the residue intrinsically exceeds `REMOTE_GITHUB`, its first command/action, acceptance, and what **must not be redone**. A prepared live harness is not live proof; a CI artifact is not deployment.
 
 ## Effectiveness vocabulary
 
@@ -110,13 +128,13 @@ Do not patch a downstream owner because it is easier to edit.
 
 ## Procedure
 
-1. **Recover and ground** — apply mandatory continuity and separate fact, proposal, history, and unknown.
-2. **State the contract** — Goal, Success Metric, Forbidden Proxy, evidence, scope, proof, STOP.
-3. **Preflight regressions** — inspect only affected owners/tests; repair stale tests as stale tests.
+1. **Recover and ground** — apply mandatory continuity; separate fact, proposal, history, unknown.
+2. **State the contract** — outcome, forbidden proxy, scope, execution partition, proof, STOP.
+3. **Exhaust GitHub-first work** — finish every coherent source/test/harness/provenance slice that does not require the higher context.
 4. **Get first evidence** — runtime/quality claims require matching evidence, not static proxies.
 5. **Diagnose first wrong owner** — `No change required` and `UNKNOWN pending named evidence` are valid.
-6. **Choose one build owner** — add at most one specialist only when it contributes material procedure.
-7. **Implement one coherent patch** — follow `GITHUB_RULES.md`, compare final proof to the original Success Metric, then STOP.
+6. **Implement one coherent delivery** — follow `GITHUB_RULES.md`; hand off only named residue when unavoidable.
+7. **Compare proof to Success Metric** — report source vs higher-context proof separately, then STOP.
 
 ## Owner Selection
 
@@ -127,10 +145,8 @@ model/visual judgement            → blockbench-bedrock-modelling
 TypeScript/Bun mechanics          → exact affected source/build owner + mcp/AGENTS.md
 ```
 
-TypeScript and Bun are implementation mechanics, not standalone semantic routing destinations. Use normal language/build correctness at the real owner; create or load a specialist only when the problem has a distinct reusable decision boundary.
-
-If no specialist adds material procedure, do not load one.
+TypeScript and Bun are implementation mechanics, not standalone semantic routing destinations. Use a specialist only when it adds material reusable procedure.
 
 ## Completion Boundary
 
-Report implementation separately from live verification where required. Do not invent another planning/review layer merely to appear more rigorous.
+Report implementation separately from local/live verification where required. A valid completion may contain a **minimum higher-context residue** only after GitHub-verifiable work is exhausted. Do not invent another planning/review layer merely to appear more rigorous.

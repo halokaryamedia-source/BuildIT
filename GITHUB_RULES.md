@@ -1,6 +1,6 @@
 # GitHub Rules — BlockIT
 
-Canonical GitHub operating rules for AI/ChatGPT in this repository. Root and nearest `AGENTS.md` files may narrow domain behavior, but they must not weaken safety, integrity, proof, efficiency, history, security, or STOP boundaries.
+Canonical GitHub operating rules for AI/ChatGPT in this repository. Root and nearest `AGENTS.md` files may narrow domain behavior, but they must not weaken safety, integrity, proof, efficiency, history, security, GitHub-first execution, or STOP boundaries.
 
 `Local` is the working repository authority unless the user explicitly changes it.
 
@@ -11,6 +11,7 @@ Apply Core Rules 1–7 in order. Root `AGENTS.md` classifies the execution conte
 ```text
 PIN
 → EXECUTION CONTEXT
+→ EXHAUST REMOTE_GITHUB PARTITION
 → READ MINIMUM
 → DIAGNOSE
 → TOOL + TRANSFER GATE
@@ -43,11 +44,39 @@ LOCAL_CODE      = local checkout + Bun/tests/build/generators/filesystem
 LIVE_BLOCKBENCH = LOCAL_CODE + deployed/reloaded BlockIT + reconnected live MCP client
 ```
 
-- `REMOTE_GITHUB` may implement changes whose requested acceptance is fully source/static/CI-verifiable.
-- `LOCAL_CODE` additionally owns canonical local generators, build/test, and filesystem proof.
-- `LIVE_BLOCKBENCH` is required for installed build identity, live `tools/list`, Blockbench Undo/playback/persistence, and live visual/runtime proof.
-- If complete delivery or required proof exceeds the current context, transfer before substantial edits accumulate. A bounded source result may still be delivered when complete within the current ceiling, with remaining proof labeled `LOCAL PROOF REQUIRED`.
-- GitHub Actions may verify repository contracts; CI is not a substitute for generator-authored committed output or live Blockbench proof.
+- `REMOTE_GITHUB` may implement changes whose requested acceptance is source/static/CI-verifiable.
+- `LOCAL_CODE` additionally owns canonical local generators, filesystem proof, and work that genuinely requires an executable development workspace.
+- `LIVE_BLOCKBENCH` is required for installed build identity, native Blockbench Undo/playback/persistence, and live visual/runtime claims.
+- GitHub Actions may verify repository contracts and may emit bounded exact-SHA build artifacts with provenance. CI is not a substitute for generator-authored committed output, source writeback, or live Blockbench proof.
+
+### GitHub-first execution partition
+
+`REMOTE_GITHUB` is the default repository-development workbench whenever the current ChatGPT/GitHub capability can read/write the intended ref and CI can falsify the claim. **Do not transfer the whole task merely because one dependent requires `LOCAL_CODE` or `LIVE_BLOCKBENCH`.**
+
+Before any higher-context handoff, partition the requested outcome:
+
+```text
+GitHub-verifiable
+→ exact-source diagnosis/design
+→ implementation that does not require unavailable generated output
+→ regression/static/integration tests
+→ CI routing + security/provenance
+→ deterministic fixtures/harness/evidence-capture preparation
+→ exact-SHA source/build artifact when CI can produce it read-only
+
+higher-context residue
+→ canonical generated output that must be authored in a capable workspace
+→ dependency/lockfile or filesystem mutation requiring the toolchain
+→ installed-runtime/native Blockbench/visual proof
+```
+
+Rules:
+
+- Exhaust the GitHub-verifiable partition first. A higher-context residue is **not** permission to postpone independent source/test/harness/provenance work.
+- Prebuild the local/live test procedure in the repository when deterministic scripting can reduce later interactive work.
+- Hand off only the **minimum residue** with exact inputs, commands/actions, acceptance, and `do not redo` guidance.
+- Never claim that a prepared harness, CI artifact, static fixture, or source test performed the higher-context action itself.
+- If a canonical source edit cannot be complete without generated output unavailable here, do not move `Local` with that incomplete edit. Finish all independent GitHub-side preparation, then hand off only that canonical edit/generation residue.
 
 ### Device-independent source acceptance
 
@@ -59,7 +88,7 @@ Record repository/ref, commit SHA, run/job, canonical command, and conclusion wh
 
 Do not rerun an accepted source check locally solely because it ran in CI. Reuse requires a clean matching checkout; changed source/package inputs invalidate reuse. Environment-specific failures require corresponding targeted environment proof. Missing checks remain missing; do not create commits/temporary workflows just to trigger them.
 
-A cloud development workspace can satisfy `LOCAL_CODE` when its exact checkout, Bun, generators and filesystem execution are actually available. It need not be the user's PC. A product name or an unconnected workspace is not capability proof. Canonical generated output must still be authored in a capable development workspace and committed with its source; Actions remains verification, not a source editor/writeback path.
+A cloud development workspace can satisfy `LOCAL_CODE` when its exact checkout, Bun, generators and filesystem execution are actually available. It need not be the user's PC. A product name or an unconnected workspace is not capability proof. Canonical generated output must still be authored in a capable development workspace and committed with its source; Actions remains verification/artifact infrastructure, not a source editor/writeback path. `LIVE_BLOCKBENCH` remains separately required for installed/native/visual proof.
 
 Installed-plugin identity, native Undo/playback/persistence, Gateway lifecycle and visual claims still require matching `LIVE_BLOCKBENCH` evidence. Report `LOCAL PROOF REQUIRED` only for genuinely missing local/live proof, not for an already accepted CI source gate.
 
@@ -116,25 +145,26 @@ derived artifact wrong
 
 ## 4. TOOL + TRANSFER GATE — choose a method that fits
 
-Choose the simplest method that can complete the intended result **inside the current execution-context ceiling**.
+Choose the simplest method that completes the largest valid partition inside the current execution-context ceiling. Escalation is by **residue**, not by whole task.
 
 ```text
 REMOTE_GITHUB
 → exact current file/branch state: direct GitHub fetch
-→ one bounded UTF-8 file: Contents API
+→ bounded UTF-8 edit: Contents API
 → coherent multi-file UTF-8 change: atomic Git delivery
 → CI diagnosis: run → failing job/step → relevant log
+→ verified exact-SHA build artifact: read-only CI + provenance + artifact upload
 
 LOCAL_CODE
-→ precise patch iteration / local generator / build / filesystem-heavy work
-→ local git workspace or another fitting local capability
+→ canonical generator / dependency lock / filesystem-heavy mutation
+→ precise local patch only for residue that GitHub could not complete
 
 LIVE_BLOCKBENCH
-→ installed plugin / Blockbench / visual / local-runtime claim
-→ matching live runtime capability
+→ installed plugin / Blockbench native / visual / local-runtime claim
+→ execute the already-prepared bounded harness where possible
 
-required completion cannot fit current context
-→ Execution Handoff
+required completion exceeds current context
+→ finish GitHub-valid partition → Execution Handoff of minimum residue
 ```
 
 ### ChatGPT atomic Git delivery
@@ -157,11 +187,11 @@ pin exact Local HEAD + base tree
 
 Requirements:
 
-- Complete intended file set and final contents are known before the first Git object is created.
+- Complete intended file set and final contents are known before the first ref movement.
 - Full-file replacement requires exact complete current content; never reconstruct unseen source from snippets.
 - One logical change produces one reviewable commit, not candidate/checkpoint/retry commits.
 - Unreferenced blobs/tree are allowed only as preparation for that already-complete delivery.
-- If required generated artifacts, binaries, runtime outputs, or canonical generators are unavailable, return to this transfer gate before moving `Local`.
+- If a required generated artifact or native result is unavailable, do not publish an incomplete canonical change. Preserve completed independent GitHub work and hand off only the generation/runtime residue.
 
 ### Transfer prohibitions
 
@@ -175,11 +205,11 @@ Also:
 - Keep blob/content SHA, commit SHA, tree SHA, ref, workflow-run ID, artifact ID, and job ID distinct.
 - Low-level Git is not an iterative scratch editor or retry strategy.
 - Never force-push, rewrite history, destructive-reset, or change repository structure to work around stale state, CI failure, connector limits, or messy history.
-- GitHub Actions is verification/deployment infrastructure, not a remote shell, source editor, generator-authoring path, or transfer engine.
+- GitHub Actions is verification/deployment/artifact infrastructure, not a remote shell, source editor, generator-authoring path, or transfer hack. Exact-SHA verified build artifacts are allowed when they are read-only outputs with explicit provenance and no commit-back.
 
 ### Execution Handoff
 
-Use when the required delivery/proof exceeds the current context. Provide:
+Use only for the remaining delivery/proof above the current context. Provide:
 
 ```text
 FROM_CONTEXT: REMOTE_GITHUB | LOCAL_CODE
@@ -187,15 +217,15 @@ TO_CONTEXT: LOCAL_CODE | LIVE_BLOCKBENCH
 repository
 branch/ref
 pinned HEAD
-completed
-pending
-why higher capability is required
+GitHub-completed
+residue only
+why higher capability is intrinsically required
 first command/action
 acceptance
 do not redo
 ```
 
-Do not claim local/runtime completion until the receiving context actually executes it.
+Do not claim local/runtime completion until the receiving context actually executes it. Do not ask the receiving context to repeat accepted source/CI checks or redesign a harness already prepared here.
 
 ## 5. WRITE ONCE — deliver one meaningful logical state
 
@@ -206,7 +236,7 @@ repo/ref/current state pinned
 scope + owners final
 complete final contents ready
 no scratch/temporary paths
-selected method carries whole delivery
+selected method carries whole GitHub-valid delivery
 expected relevant proof known
 
 any NO
@@ -237,7 +267,7 @@ prepare complete logical change
 → one categorized logical commit
 → push/ref update once
 → relevant CI
-→ STOP
+→ STOP or hand off only named residue
 ```
 
 Message format: `<type>(<optional-scope>): <concise logical outcome>`.
@@ -263,7 +293,7 @@ Validation is evidence, not ceremony.
 
 | Failure | Action |
 |---|---|
-| Known capability mismatch / unsupported transfer | STOP method; **0 retries**; use fitting path |
+| Known capability mismatch / unsupported transfer | STOP that method; **0 retries**; finish other valid GitHub partitions, then hand off residue |
 | Permission/safety denial | STOP; **0 retries** unless condition changes |
 | Capability genuinely uncertain | at most **1 bounded probe** |
 | 422 malformed but valid method | correct once |
@@ -284,10 +314,10 @@ If current-task writes already occurred before a block, perform at most one boun
 Stop when:
 
 ```text
-requested outcome + relevant proof satisfied
+requested GitHub-valid outcome + relevant proof satisfied, and any unavoidable residue is explicitly handed off
 → STOP
 
-confirmed capability mismatch + valid handoff delivered
+confirmed capability mismatch after GitHub-valid partitions are exhausted + minimum-residue handoff delivered
 → STOP
 
 authoritative permission/safety/policy boundary blocks the operation
@@ -307,6 +337,7 @@ uncertain-capability probe          <= 1
 same-cause retry                    <= 2
 capability-denial retry             0
 transfer strategies                 1 default; 2 maximum
+handoff scope                       minimum higher-context residue only
 intentional writes/file             1
 logical commits/task                1 by default
 push/ref updates/task               1 by default
@@ -357,9 +388,10 @@ Branch/tag deletion, PR merge/close, release publication/deletion, environment b
 - Correctly skipped irrelevant workflows are not missing proof.
 - Required-but-skipped checks are CI/ruleset routing defects, not reasons to change unrelated code.
 - Verification workflows are read-only by default and do not commit back to `Local`.
+- Read-only CI may upload exact-SHA verified build/test artifacts for later local/live consumption when source SHA, artifact hash/build identity, verifier, and toolchain provenance are explicit. Artifact existence is source/build evidence, not deployment or live proof.
 - Do not create one-shot workflows to compensate for missing development/transfer capability.
 - Use least-privilege permissions and preserve pinned/trusted action versions.
-- Treat event-derived strings as untrusted input.
+- Treat event-derived strings as untrusted input; validate or pass them as data, never evaluate them as code.
 - Never execute untrusted PR code with secrets/write tokens through `pull_request_target` or privileged persistent runners.
 
 ### Approved `Experimental/` runtime exception
