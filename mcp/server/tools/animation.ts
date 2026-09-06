@@ -804,7 +804,7 @@ function resolveAnimation(reference?: string) {
 function resolveRigGroup(reference: string): Group {
   return resolveCoreGroup(
     reference,
-    "Use list_outline to confirm the intended Group UUID."
+    "Use inspect_elements(mode=outline) to confirm the intended Group UUID."
   );
 }
 
@@ -827,7 +827,7 @@ function resolveRigElement(reference: string): OutlinerElement {
   }
 
   throw new Error(
-    `Outliner element "${reference}" not found. Use list_outline to confirm the intended child UUID.`
+    `Outliner element "${reference}" not found. Use inspect_elements(mode=outline) to confirm the intended child UUID.`
   );
 }
 

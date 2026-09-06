@@ -404,7 +404,7 @@ function resolveParentGroup(reference: string): Group | "root" {
   if (reference === "root") return "root";
   return resolveCoreGroup(
     reference,
-    'Use list_outline to confirm the intended Group UUID. Use "root" only when root parenting is intentional.'
+    'Use inspect_elements(mode=outline) to confirm the intended Group UUID. Use "root" only when root parenting is intentional.'
   );
 }
 
@@ -412,7 +412,7 @@ function resolveOptionalGroupScope(reference?: string): Group | null {
   if (reference === undefined) return null;
   return resolveCoreGroup(
     reference,
-    "Use list_outline to confirm the intended Group UUID, or omit parent_group when no scope is intended."
+    "Use inspect_elements(mode=outline) to confirm the intended Group UUID, or omit parent_group when no scope is intended."
   );
 }
 
@@ -468,7 +468,7 @@ function resolveUniqueDestructiveElement(reference: string): ResolvedElement {
   }
 
   throw new Error(
-    `Element "${reference}" not found. Use list_outline or find_elements_by_criteria to confirm the intended UUID before retrying the destructive operation.`
+    `Element "${reference}" not found. Use inspect_elements(mode=outline|search) to confirm the intended UUID before retrying the destructive operation.`
   );
 }
 
@@ -1376,7 +1376,7 @@ export function registerElementTools() {
       requireOpenProject("modifying a Group");
       const group = resolveCoreGroup(
         id,
-        "Use list_outline or find_elements_by_criteria, then inspect_element to confirm the intended Group UUID."
+        "Use inspect_elements(mode=search), then inspect_elements(mode=detail) to confirm the intended Group UUID."
       );
       const sameOrigin =
         origin === undefined || vector3Equals(origin, group.origin);

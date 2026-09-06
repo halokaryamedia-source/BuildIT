@@ -223,6 +223,8 @@ createResource("textures", {
       id: texture.id,
       width: texture.width,
       height: texture.height,
+      uvWidth: texture.getUVWidth(),
+      uvHeight: texture.getUVHeight(),
       frameCount: texture.frameCount,
       // @ts-ignore - ratio property exists at runtime
       ratio: texture.ratio,

@@ -116,13 +116,21 @@ type RuntimeMutableBarItem = BarItem & {
 /**
  * Programmatically sets a BarItems slider/widget's value, tolerating the API
  * drift between Blockbench widget subclasses where some expose `.set(n)`,
- * `.change(n)`, or only a mutable `.value`. Blockbench's public BarItems type is
+ * `.change(modifier)` for NumSlider, or a mutable `.value`. Blockbench's public BarItems type is
  * the common BarItem base class, so subclass-only mutators are localized behind
  * this runtime adapter instead of being cast throughout paint tools.
  */
 export function setBarItemValue(id: string, value: unknown): void {
   const item = BarItems?.[id] as RuntimeMutableBarItem | undefined;
   if (!item) return;
+
+  // NumSlider.change accepts a modifier and persists per-tool settings.
+  // Assigning .value alone is ignored by its get()/update() methods.
+  if (item instanceof NumSlider && typeof value === "number") {
+    item.change(() => value);
+    item.update();
+    return;
+  }
 
   if (typeof item.set === "function") {
     try {

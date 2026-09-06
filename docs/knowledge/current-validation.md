@@ -8,15 +8,15 @@ This file owns **current proof interpretation**. Continuation belongs in `docs/k
 
 ```text
 BEDROCK RUNTIME CALLABLE CATALOG:      51 tools across retained families
-SHARED AUTHORING SURFACE:              SOURCE UPDATED — Geometry/Texturing startup stages share one surface
-ANIMATION SURFACE:                     separate runtime surface
-GATEWAY CLIENT SURFACE:                4 fixed tools — SOURCE/STATIC
+SHARED AUTHORING SURFACE:              BASIC LIVE PASS — 46 tools, Geometry/Texturing together
+ANIMATION SURFACE:                     BASIC HANDOFF LIVE PASS — 19 tools
+GATEWAY CLIENT SURFACE:                4 fixed tools — SOURCE + SAME-TASK LIVE
 AUTHORING TAXONOMY:                    user-selected DIRECT | 3D_ASSISTED — SOURCE/STATIC
-MCP RESOURCE/PROMPT CONTRACT:          AUDITED / LOCAL_CODE UPDATE REQUIRED
-DIRECT AUTHORING:                      SOURCE_READY / LOCAL LIVE PROOF REQUIRED
+MCP RESOURCE/PROMPT CONTRACT:          UPDATED / GENERATORS + REGRESSIONS PASS
+DIRECT AUTHORING:                      DISPOSABLE BASIC LIVE PASS / ASSET QUALITY UNVERIFIED
 3D_ASSISTED EXTERNAL ORCHESTRATOR:     SOURCE_READY / LOCAL GPU PROOF REQUIRED
 3D_ASSISTED MATERIALIZER ENGINE:       SOURCE_READY / PUBLIC TOOL BINDING PENDING LOCAL_CODE
-GATEWAY LIVE STABILITY:                PENDING — local Codex + Blockbench required
+GATEWAY LIVE STABILITY:                BASIC PASS — reconnect after restart + phase catalog refresh
 REMOTE MCP VERIFY:                     GREEN @ 071d0bb / SOURCE CI ONLY
 CURRENT MODEL-QUALITY CLAIM:           NONE
 ```
@@ -34,7 +34,20 @@ Current source owns:
 - pinned Hunyuan3D v1 and PrimitiveAnything provenance, strict state/decomposition schemas, SHA-256 stale detection, and explicit Shape/Decomposition gates;
 - an internal Blockbench materializer engine that prevalidates canonical workspace state before one Group+Cube Undo transaction and cancels on failure.
 
-The public Resource/Prompt/handoff closure remains intentionally deferred to `LOCAL_CODE` because canonical prompt and API changes require `prompts:build`, `docs:build`, and committed generated output. The materializer engine is likewise not yet registered as a public MCP ToolSpec.
+Resource/Prompt/handoff closure is implemented with canonical `prompts:build` and `docs:build` output. Internal PASS remains READY_FOR_USER_REVIEW; Animation readiness requires explicit approval fields and a saved checkpoint. The materializer engine is still not registered as a public MCP ToolSpec.
+
+## Local Source and Desktop Closure — 2026-09-06
+
+Repository: `halokaryamedia-source/BuildIT`, branch `Local`, delivery based on `88331a96973c8c36849f8b15b689ab9a1ed0439a`. Bun **1.3.11**, installed Blockbench **5.1.6**. This section describes the local delivery, not the older remote CI SHA below.
+
+- Frozen-lockfile install, canonical generators, Geometry/UV regressions, and final `bun run verify:full`: PASS. Tests cover async template completion/error/cancellation/audit rollback, retained redo history, meaningful collapsed UV, complete discovery schemas, approval requirements, and native numeric-slider mutation.
+- No user project was open before cleanup. No old checkout build/dependency/cache directories existed initially. Removed only legacy `mcp.js`, `mcp.about.md`, `mcp.icon.svg` from the verified Blockbench plugin directory; no legacy registry entry was loaded. Other plugins/settings/assets/credentials were retained.
+- Canonical installed path: `C:/Users/Administrator/AppData/Roaming/Blockbench/plugins/blockit_mcp.js`; its registration was aligned from checkout `dist` to this path. Deployment byte comparison and runtime `build_identity` match: `sha256:ed62edfdf0e0674fc4808b9f84d30253608f2b1f1e1922e7e3457a454977046c`.
+- `bun run verify:stateless-local`: **12/12 PASS**. Gateway survives Blockbench restart in the same task and refreshes its catalog; final AUTHORING catalog is 46 tools. Texturing focus retained Geometry capabilities with `surface_changed=false`; Animation exposed 19 tools and returned to Geometry without a new task. Missing Animation readiness was rejected. Positive handoff used clearly labeled synthetic disposable-test readiness, never asset approval.
+- `bun run scripts/verify-template-live.ts --confirm-disposable`: PASS. Native density 32 gives 2 bitmap pixels/UV unit; rebuild density 16 gives 1. Brush sizes 1/2 change exactly 1/4 decoded pixels. Brush and rebuild Undo/Redo restore full atlas hashes; rebuild retains UUID and one atlas. Editable disposable checkpoint export was verified. Python/Pillow was used only for decoded-pixel comparison.
+- `bun run verify:surface-gap-live -- --confirm-disposable`: PASS. Open 0.5-unit gap warns; contact or complete coverage clears warning; hidden cover restores warning.
+
+Cancellation/error restoration has local controlled regression proof; live successful template/rebuild/brush Undo has native desktop proof. Interactive cancellation, long-running lifecycle endurance, real-asset persistence/visual quality and 3D-assisted execution are not claimed. Disposable fixtures under `mcp/.cache/template-live/` are development artifacts, not Active Workspace assets.
 
 ## Static Verification State
 
@@ -46,13 +59,12 @@ Device-independent acceptance follows `GITHUB_RULES.md`: accept an exact success
 
 Static source/CI does not prove:
 
-- installed shared AUTHORING `tools/list` until local deploy;
-- Gateway survival across Blockbench/plugin lifecycle changes;
+- long-running Gateway lifecycle endurance beyond the tested restart/handoffs;
 - final geometry surface/gap quality or semantic-cohort correctness;
 - final UV layout quality, texel density, orientation, seams, or mapped styling;
 - Hunyuan Shape GLB quality on a selected asset;
 - PrimitiveAnything decomposition quality on a selected asset;
-- public Resource/Prompt/materializer binding until LOCAL_CODE regenerates exact outputs;
+- public materializer binding and its generated documentation;
 - materializer native Undo/stale-state behavior inside desktop Blockbench.
 
 ## 3D-Assisted Proof Model

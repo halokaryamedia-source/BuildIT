@@ -138,7 +138,7 @@ describe_capability
 invoke_capability
 ```
 
-The retained Bedrock Runtime callable union remains **51 tools**. Geometry and Texturing startup stages resolve to the same shared AUTHORING exposure; Animation remains separate. Exact installed `tools/list` and lifecycle behavior require LOCAL/LIVE proof after deployment. Generated API inventory contains **77 declared source ToolSpecs**, including disabled/source-preserved definitions; that inventory is not the active client surface. A materializer is a Runtime capability behind the existing Gateway, never a fifth Gateway tool.
+The retained Bedrock Runtime callable union remains **51 tools**. Geometry and Texturing share **46** installed AUTHORING tools; Animation exposes **19**. Exact installed identity and lifecycle evidence belong in `current-validation.md`. Generated API inventory contains **63 declared source ToolSpecs**, including disabled/source-preserved definitions and phase control; that inventory is not the active client surface. A materializer is a Runtime capability behind the existing Gateway, never a fifth Gateway tool.
 
 ## Hot-Path Defect Index
 

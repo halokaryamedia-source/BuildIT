@@ -38,8 +38,9 @@ describe("pre-local plugin runtime cleanup", () => {
     expect(failClosedReturn).toBeLessThan(readyUi);
     expect(listeningHook).toBeLessThan(readyUi);
 
-    expect(tools).toContain("phaseSwitchHandler?.(target_phase)");
-    expect(tools).toContain("surface_changed: true");
+    expect(tools).toMatch(/if \(!phaseSwitchHandler\).*throw/);
+    expect(tools).toContain("phaseSwitchHandler(target_phase)");
+    expect(tools).not.toContain("surface_changed: true");
     expect(tools).toContain("reload_required: false");
   });
 

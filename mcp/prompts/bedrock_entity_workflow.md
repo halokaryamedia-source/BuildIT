@@ -14,15 +14,17 @@ TEXTURE STYLING = color, material, shading, highlights, detail
 TEXTURE VERIFY  = fresh atlas + mapped-model visual validation
 ```
 
-`create_texture` creates a **Texture Atlas**; it does not create UV Layout or complete Texture Styling. `uv_offset`, `autouv`, `mirror_uv`, per-face UV, and `box_uv_region` belong to **UV Layout**. Painter tools belong to **Texture Styling**.
+`create_texture(type=blank)` creates a **Texture Atlas** only. `create_texture(type=template)` invokes native UV generation and creates/rebuilds the atlas under Geometry-owned UV Layout; neither mode completes Texture Styling. `uv_offset`, `autouv`, `mirror_uv`, per-face UV, and `box_uv_region` belong to **UV Layout**. Painter tools belong to **Texture Styling**.
 
 ## Minimum Necessary Evidence
+
+Internal PASS means READY_FOR_USER_REVIEW. Explicit user Geometry APPROVED precedes UV Layout PASS; user Texture APPROVED and a saved .bbmodel checkpoint precede Animation/finalization. Geometry and Texturing share AUTHORING; only AUTHORING/Animation transitions use Gateway handoff in the same task.
 
 Reuse fresh tool state. Do not inspect every Cube, capture after every mutation, or call `get_project_info` after known create/export state. `inspect_model_bounds` is only for envelope/scale/ground/displacement. `UNVERIFIED` is not a retry command.
 
 Reference-driven work requires the actual approved image in active multimodal context. Path/memory is not image evidence. Missing material reference evidence → `BLOCKED`.
 
-For new Geometry, use the stable direct method: create the project, add only the required Groups and Cubes, set explicit positions/sizes/parents/transforms, then capture canonical views for visual review. Do not use the retired reference-grounded plan/compiler flow.
+Choose Geometry Strategy explicitly with the user: DIRECT or 3D_ASSISTED, never inferred or switched automatically. For DIRECT Geometry, use the stable direct method: create the project, add only the required Groups and Cubes, set explicit positions/sizes/parents/transforms, then capture canonical views for visual review. Do not use the retired reference-grounded plan/compiler flow.
 
 ## Simple Rigid Fast Path
 
@@ -65,7 +67,7 @@ Correction: reuse fresh target state; otherwise `inspect_elements(mode=detail)` 
 
 UV Layout answers: **which atlas region does each surface read?**
 
-For fresh Box UV, reuse `manage_cubes(operation=create)` returned `box_uv_region`; do not rediscover it by ritual. Keep auto UV active during geometry correction. After geometry `PASS`, lock final Box-UV Cubes in one `manage_cubes(operation=batch_update)` with `autouv=0`, then call `list_textures` once for global UV audit.
+For fresh Box UV, reuse `manage_cubes(operation=create)` returned `box_uv_region`; do not rediscover it by ritual. Keep auto UV active during geometry correction. After explicit user Geometry APPROVED, generate final mapping with `create_texture(type=template)` and inspect its returned `uv_audit`. To rebuild the single existing atlas, pass its `texture_id`; remapping invalidates affected texture evidence. For already authored UV, lock final Box-UV Cubes with `autouv=0` and use `list_textures` for the audit.
 
 Require integer logical UV unless justified, no invalid/out-of-bounds UV, no accidental partial overlap, deliberate exact reuse/mirror, and stable seam/orientation. Use `inspect_elements(mode=detail)` only when face-specific mapping/orientation is actually needed; one Cube inspection returns all faces.
 

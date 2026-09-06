@@ -32,6 +32,9 @@ export function isDeterministicTextureSource(value: string): boolean {
 export const createTextureParameters = z
   .object({
     name: z.string().min(1).describe("Non-empty texture name."),
+    texture_id: textureIdOptionalSchema.describe(
+      "Template rebuild only: UUID of the existing single base atlas to repack in place, preserving its identity and mapped pixels."
+    ),
     type: z
       .enum(["blank", "template"])
       .default("blank")
@@ -121,6 +124,9 @@ export const createTextureParameters = z
     path: ["layer_name", "fill_color"],
   })
   .superRefine((params, ctx) => {
+    if (params.texture_id !== undefined && params.type !== "template") {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["texture_id"], message: "texture_id is only supported for template rebuild." });
+    }
     if (params.type !== "template") return;
     if (params.data !== undefined) {
       ctx.addIssue({
@@ -544,7 +550,7 @@ function applyTextureElementType(
 function resolveApplyTextureElement(reference: string): ApplyTextureElement {
   return resolveCoreCubeOrGroup(
     reference,
-    "Use list_outline or find_elements_by_criteria to confirm the intended Cube/Group UUID before applying a texture."
+    "Use inspect_elements(mode=outline|search) to confirm the intended Cube/Group UUID before applying a texture."
   );
 }
 
@@ -711,6 +717,7 @@ export type UvAtlasUsage = {
   autouv: number;
   mirror_uv: boolean;
   face_rotation: number;
+  surface_area?: number;
 };
 
 type NormalizedUvUsage = UvAtlasUsage & {
@@ -820,6 +827,7 @@ export function buildUvAtlasAudit(
     uv.some((value) => !Number.isInteger(value))
   );
   const degenerateUv = valid.filter(({ rect }) => uvRectArea(rect) === 0);
+  const collapsedSurfaceUv = degenerateUv.filter(({ surface_area }) => surface_area === undefined || surface_area > 0);
 
   const unlockedByCube = new Map<string, UvAtlasUsage>();
   for (const usage of valid) {
@@ -887,6 +895,7 @@ export function buildUvAtlasAudit(
   if (fractionalUv.length > 0) reasons.push("FRACTIONAL_UV");
   if (unlocked.length > 0) reasons.push("BOX_UV_AUTOUV_UNLOCKED");
   if (partialOverlapPairCount > 0) reasons.push("PARTIAL_OVERLAP");
+  if (collapsedSurfaceUv.length > 0) reasons.push("COLLAPSED_SURFACE_UV");
 
   const invalidBounded = boundedExamples(
     invalidUv.map(uvUsageExample),
@@ -931,6 +940,10 @@ export function buildUvAtlasAudit(
       count: degenerateUv.length,
       ...degenerateBounded,
     },
+    collapsed_surface_uv: {
+      count: collapsedSurfaceUv.length,
+      ...boundedExamples(collapsedSurfaceUv.map(uvUsageExample), exampleLimit),
+    },
     unlocked_box_uv_cubes: {
       count: unlocked.length,
       ...unlockedBounded,
@@ -967,7 +980,9 @@ function collectUvAtlasUsages(): UvAtlasUsage[] {
   for (const cube of Cube.all) {
     for (const faceKey of CUBE_FACE_KEYS) {
       const face = cube.faces[faceKey];
-      if (!face || face.enabled === false) continue;
+      if (!face || face.enabled === false || face.texture === null) continue;
+      const size = cube.size();
+      const axes = faceKey === "up" || faceKey === "down" ? [0, 2] : faceKey === "east" || faceKey === "west" ? [2, 1] : [0, 1];
       usages.push({
         cube_uuid: cube.uuid,
         cube_name: cube.name,
@@ -977,6 +992,7 @@ function collectUvAtlasUsages(): UvAtlasUsage[] {
         autouv: cube.autouv,
         mirror_uv: cube.mirror_uv === true,
         face_rotation: face.rotation,
+        surface_area: Math.abs(size[axes[0]] * size[axes[1]]),
       });
     }
   }
@@ -1183,12 +1199,52 @@ function requireTextureCreationPreflight(params: {
 // Tool Registration
 // ============================================================================
 
+// Native generateTemplate owns its Undo edit, but cancellation discards its save
+// without reverting. Retain a native snapshot until the returned atlas is accepted.
+export async function runNativeTemplateEdit<T>(generate: () => Promise<void>, accept: () => T): Promise<T> {
+  if (Undo.current_save) throw new Error("Finish the current edit before generating a template.");
+  const project = Project;
+  const saved = project.saved;
+  const history = [...Undo.history];
+  const index = Undo.index;
+  const aspects = (): UndoAspects => ({ elements: [...Cube.all], textures: [...Texture.all], bitmap: true, uv_only: true, uv_mode: true, selected_texture: true, texture_order: true });
+  Undo.initEdit(aspects());
+  const before = Undo.current_save!;
+  Undo.cancelEdit(false);
+  try {
+    await generate();
+    const entry = Undo.history[Undo.index - 1];
+    if (!entry || history.includes(entry)) throw new Error("Native template generation was cancelled before completion.");
+    const result = accept();
+    // Include the existing atlas in rebuild Undo, and any post-generation metadata.
+    Undo.initEdit(aspects());
+    entry.before = before;
+    entry.post = Undo.current_save!;
+    Undo.cancelEdit(false);
+    return result;
+  } catch (error) {
+    Undo.initEdit(aspects());
+    const current = Undo.current_save!;
+    Undo.cancelEdit(false);
+    Undo.loadSave(before, current);
+    Undo.history.splice(0, Undo.history.length, ...history);
+    Undo.index = index;
+    project.saved = saved;
+    Canvas.updateAll();
+    throw error;
+  } finally {
+    if (Dialog.open?.id === "generate_template_progress") Dialog.open.hide();
+    Blockbench.setProgress(0);
+  }
+}
+
 export function registerTextureTools() {
   createTool(textureToolDocs[0].name, {
     ...textureToolDocs[0],
     parameters: createTextureParameters,
     async execute({
       name,
+      texture_id,
       type,
       width,
       height,
@@ -1208,7 +1264,16 @@ export function registerTextureTools() {
       const textureGroup =
         group !== undefined ? resolveTextureToolMaterial(group) : undefined;
 
-      requireTextureCreationPreflight({
+      const rebuildTexture = texture_id === undefined ? undefined : resolveCoreTexture(texture_id, "Use list_textures to identify the base atlas.");
+      if (rebuildTexture) {
+        const baseAtlases = Texture.all.filter(texture => textureProductionRole(texture) === "base_color_candidate");
+        if (baseAtlases.length !== 1 || baseAtlases[0] !== rebuildTexture) {
+          throw new Error("Template rebuild requires the single existing base-color atlas.");
+        }
+        if (Texture.all.some(texture => texture !== rebuildTexture)) {
+          throw new Error("Rebuild UV before adding variants or PBR channels; dependent atlases require matching remapping.");
+        }
+      } else requireTextureCreationPreflight({
         width,
         height,
         data,
@@ -1226,34 +1291,24 @@ export function registerTextureTools() {
         const generator = (
           globalThis as typeof globalThis & {
             TextureGenerator?: {
-              addBitmap: (
+              generateTemplate: (
                 options: Record<string, unknown>,
-                callback?: (texture: Texture) => Texture
-              ) => void;
+                callback: (dataUrl: string) => Texture
+              ) => Promise<void>;
             };
           }
         ).TextureGenerator;
-        if (!generator?.addBitmap) {
+        if (!generator?.generateTemplate) {
           throw new Error(
             "Blockbench TextureGenerator is unavailable. Reload BlockIT/Blockbench before creating a texture template."
           );
         }
 
-        const outliner = (globalThis as typeof globalThis & {
-          Outliner?: { selected?: unknown[] };
-          SharedActions?: { runSpecific?: (action: string, scope: string) => void };
-        });
-        if ((outliner.Outliner?.selected?.length ?? 0) === 0) {
-          if (typeof outliner.SharedActions?.runSpecific !== "function") {
-            throw new Error(
-              "Blockbench selection actions are unavailable. Reload BlockIT/Blockbench before creating a texture template."
-            );
-          }
-          outliner.SharedActions.runSpecific("select_all", "outliner");
-        }
-        if ((outliner.Outliner?.selected?.length ?? 0) === 0) {
+        // The native callback route uses all visible elements for Bedrock's
+        // single atlas; changing the user's selection is unnecessary.
+        if (!Cube.all.some(cube => cube.visibility)) {
           throw new Error(
-            "Template generation requires at least one visible selected Cube. Select the model elements and retry."
+            "Template generation requires at least one visible Cube."
           );
         }
 
@@ -1272,9 +1327,8 @@ export function registerTextureTools() {
           : undefined;
 
         let templateTexture: Texture | undefined;
-        await new Promise<void>((resolve, reject) => {
-          try {
-            generator.addBitmap({
+        return await runNativeTemplateEdit(async () => {
+            await generator.generateTemplate({
               name,
               type: "template",
               resolution: pixel_density,
@@ -1284,16 +1338,16 @@ export function registerTextureTools() {
               double_use: keep_multi_texture_occupancy,
               padding,
               particle: "auto",
-            }, (created: Texture) => {
-                templateTexture = created;
-                resolve();
-                return created;
+              texture: rebuildTexture ?? Texture.getDefault(),
+            }, (dataUrl: string) => {
+                templateTexture = rebuildTexture
+                  ? rebuildTexture.updateSource(dataUrl)
+                  : new Texture({ name, keep_size: true }).fromDataURL(dataUrl).add(false).select();
+                return templateTexture;
             });
-          } catch (error) {
-            reject(error);
-          }
-        });
-
+            if (templateTexture) await templateTexture.img.decode();
+            Canvas.updateAll();
+        }, () => {
         if (!templateTexture) {
           throw new Error("Blockbench did not return the generated texture template.");
         }
@@ -1309,7 +1363,7 @@ export function registerTextureTools() {
           templateUvAudit.production_gate.state !== "ready"
         ) {
           throw new Error(
-            "Native template generation finished without a valid UV atlas. The texture was not accepted; reload BlockIT/Blockbench and retry from a clean project."
+            "Native template generation finished without a valid UV atlas. The edit was rolled back; inspect the affected geometry/UV before retrying."
           );
         }
         templateTexture.render_mode = render_mode;
@@ -1334,6 +1388,8 @@ export function registerTextureTools() {
             padding,
             uv_locked: true,
           },
+          uv_audit: templateUvAudit,
+          rebuilt: Boolean(rebuildTexture),
         };
         return {
           content: [
@@ -1344,6 +1400,7 @@ export function registerTextureTools() {
           ],
           structuredContent: templateResult,
         };
+        });
       }
 
       Undo.initEdit({

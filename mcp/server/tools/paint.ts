@@ -589,8 +589,7 @@ export function isExactPixelAuthoringRequest(
     coordinates.every(
       (coordinate) => Number.isInteger(coordinate.x) && Number.isInteger(coordinate.y)
     ) &&
-    settings.size >= 1 &&
-    settings.size <= 2 &&
+    settings.size === 1 &&
     settings.opacity === 255 &&
     settings.softness === 0 &&
     settings.shape === "square" &&
@@ -1081,6 +1080,9 @@ export function registerPaintTools() {
         // settings can still qualify for the bounded exact-pixel path.
         const blendMode = brush_settings?.blend_mode ?? "default";
 
+        // Native sliders store settings on the selected tool.
+        // @ts-ignore - official Blockbench Painter tool ID
+        BarItems.brush_tool.select();
         setBarItemValue("slider_brush_size", size);
         setBarItemValue("slider_brush_opacity", opacity);
         setBarItemValue("slider_brush_softness", softness);
@@ -1183,15 +1185,12 @@ export function registerPaintTools() {
           };
         }
 
-        // @ts-ignore - official Blockbench Painter tool ID
-        BarItems.brush_tool.select();
-
         const first = coordinates[0];
         getRuntimePainter().startPaintTool(
           texture,
           first.x,
           first.y,
-          {},
+          undefined,
           { shiftKey: false }
         );
         for (const coord of coordinates.slice(1)) {

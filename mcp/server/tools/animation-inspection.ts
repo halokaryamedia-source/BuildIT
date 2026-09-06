@@ -105,7 +105,7 @@ function resolveGroup(reference: string): Group {
   }
 
   throw new Error(
-    `Group "${reference}" not found. Use list_outline to confirm the intended Group UUID.`
+    `Group "${reference}" not found. Use inspect_elements(mode=outline) to confirm the intended Group UUID.`
   );
 }
 

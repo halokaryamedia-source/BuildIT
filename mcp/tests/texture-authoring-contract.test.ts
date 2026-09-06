@@ -347,7 +347,7 @@ describe("texturing authoring contract", () => {
         lockAlpha: false,
         eraseMode: false,
       })
-    ).toBe(true);
+    ).toBe(false);
     expect(
       isExactPixelAuthoringRequest([{ x: 3, y: 4 }], {
         size: 3,

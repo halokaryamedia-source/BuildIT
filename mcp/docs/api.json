@@ -1,6 +1,6 @@
 {
   "version": "0.1.0",
-  "generatedAt": "2026-09-05T12:58:28.753Z",
+  "generatedAt": "2026-09-06T09:30:09.853Z",
   "tools": [
     {
       "name": "manage_cubes",
@@ -5046,6 +5046,82 @@
       }
     },
     {
+      "name": "switch_authoring_phase",
+      "title": "switch_authoring_phase",
+      "description": "Changes startup focus within shared AUTHORING or hands off AUTHORING↔Animation through Gateway in the same task. Animation requires recorded user approvals and a checkpoint; internal PASS is not approval.",
+      "status": "stable",
+      "category": "Project",
+      "annotations": {},
+      "parameters": {
+        "$ref": "#/definitions/switch_authoring_phase",
+        "definitions": {
+          "switch_authoring_phase": {
+            "type": "object",
+            "properties": {
+              "target_phase": {
+                "type": "string",
+                "enum": [
+                  "geometry",
+                  "texturing",
+                  "animation"
+                ]
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 1
+              },
+              "resume_from": {
+                "type": "string",
+                "minLength": 1
+              },
+              "readiness": {
+                "type": "object",
+                "properties": {
+                  "geometry_approved": {
+                    "type": "boolean",
+                    "const": true
+                  },
+                  "uv_layout": {
+                    "type": "string",
+                    "const": "PASS"
+                  },
+                  "texture_approved": {
+                    "type": "boolean",
+                    "const": true
+                  },
+                  "checkpoint": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Saved .bbmodel checkpoint path; records explicit user approval, never inferred by the caller.",
+                    "markdownDescription": "Saved .bbmodel checkpoint path; records explicit user approval, never inferred by the caller."
+                  },
+                  "no_blockers": {
+                    "type": "boolean",
+                    "const": true
+                  }
+                },
+                "required": [
+                  "geometry_approved",
+                  "uv_layout",
+                  "texture_approved",
+                  "checkpoint",
+                  "no_blockers"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "target_phase",
+              "reason",
+              "resume_from"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      }
+    },
+    {
       "name": "manage_material",
       "title": "Manage Material",
       "description": "Creates, configures, assigns channels, or saves one Bedrock PBR material through one focused boundary.",
@@ -5335,6 +5411,12 @@
                 "minLength": 1,
                 "description": "Non-empty texture name.",
                 "markdownDescription": "Non-empty texture name."
+              },
+              "texture_id": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Template rebuild only: UUID of the existing single base atlas to repack in place, preserving its identity and mapped pixels.",
+                "markdownDescription": "Template rebuild only: UUID of the existing single base atlas to repack in place, preserving its identity and mapped pixels."
               },
               "type": {
                 "type": "string",
@@ -5971,25 +6053,25 @@
     {
       "name": "projects",
       "title": "Blockbench Projects",
-      "description": "Returns information about available projects. List URIs use the slugified project name (e.g. `projects://my-character`) when unique, or `projects://<slug>~<uuid-prefix>` on collision. Reads accept UUID, exact name, or slug.",
+      "description": "Browse Blockbench project metadata by stable resource URI. Use focused project tools when a modelling decision needs current operational state rather than browsing context.",
       "uriTemplate": "projects://{id}"
     },
     {
       "name": "nodes",
       "title": "Blockbench Nodes",
-      "description": "Returns the current 3D nodes in the editor. List URIs use slugified names (e.g. `nodes://head`) when unique, with `~<uuid-prefix>` on collision. Reads accept UUID, exact name, or slug.",
+      "description": "Broad read-only Blockbench node observability retained for native gaps such as TextureMesh. It is not a focused authored-state owner; prefer dedicated inspection tools when available.",
       "uriTemplate": "nodes://{id}"
     },
     {
       "name": "textures",
       "title": "Blockbench Textures",
-      "description": "Returns information about textures. List URIs use slugified names (e.g. `textures://skin`) when unique, with `~<uuid-prefix>` on collision. Reads accept UUID, exact name, slug, or short numeric texture id.",
+      "description": "Browse Texture metadata by URI. This resource does not return raw image/source payload; use `get_texture` when image data is actually needed.",
       "uriTemplate": "textures://{id}"
     },
     {
       "name": "reference_models",
       "title": "Reference Models",
-      "description": "Returns reference models in the current project. Requires the Reference Models plugin. List URIs use slugified names (e.g. `reference_models://turntable`) with `~<uuid-prefix>` on collision. Reads accept UUID, exact name, or slug.",
+      "description": "Returns information about reference models in the current Blockbench project. Requires the Reference Models plugin. List URIs use the slugified name (e.g. `reference_models://turntable`) when unique, with a `~<uuid-prefix>` suffix on collision. Reads also accept the raw UUID or exact name.",
       "uriTemplate": "reference_models://{id}"
     },
     {

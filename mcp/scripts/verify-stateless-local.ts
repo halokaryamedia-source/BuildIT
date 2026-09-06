@@ -362,7 +362,7 @@ async function verify(): Promise<void> {
     initializeResponse.status === 200 &&
     initializeResponse.headers.get("mcp-session-id") === null &&
     initializeResult?.protocolVersion === PROTOCOL_VERSION &&
-    instructions.includes(`ACTIVE PHASE: ${phase.toUpperCase()}`);
+    instructions.includes(`ACTIVE STAGE: ${phase.toUpperCase()}.`);
   if (!initializeOk) {
     stop(
       "MCP_INITIALIZE_CONTRACT_MISMATCH",
@@ -448,9 +448,9 @@ async function verify(): Promise<void> {
 
   console.log(`\nResult: ${checks.length}/${checks.length} passed.`);
   console.log("SERVER / BLOCKBENCH MCP: PASS");
-  console.log("NEXT: Reconnect Codex using a fresh connection and compare its registry.");
+  console.log("NEXT: Use Gateway search_capabilities in the same task to refresh and compare its Runtime catalog.");
   console.log(
-    "Do not modify MCP source unless fresh Codex/server evidence identifies a real contract mismatch."
+    "Do not modify MCP source unless fresh Gateway/Runtime evidence identifies a real contract mismatch."
   );
 }
 

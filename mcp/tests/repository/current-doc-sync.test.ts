@@ -19,7 +19,8 @@ describe("current developer-facing documentation sync", () => {
     expect(llms).toContain("51 callable tools");
     expect(llms).toContain("MCP CORE + AUTHORING");
     expect(llms).toContain("Geometry and Texturing startup focus values expose the same AUTHORING capability set");
-    expect(llms).toContain("77 declared source ToolSpecs");
+    const api = JSON.parse(await text("docs/api.json"));
+    expect(llms).toContain(`${api.tools.length} declared source ToolSpecs`);
     expect(llms).not.toContain("MCP CORE + exactly one ACTIVE PHASE");
     expect(llms).not.toContain("currently **25 exposed tools**");
 
@@ -30,7 +31,7 @@ describe("current developer-facing documentation sync", () => {
       "developer loop: `dev:watch`, prompt watch regeneration, `deploy:local`"
     );
     expect(implementation).toContain("`mcp/tests/developer-loop.test.ts`");
-    expect(implementation).toContain("77 declared source ToolSpecs");
+    expect(implementation).toContain(`${api.tools.length} declared source ToolSpecs`);
   });
 
   test("execution context markers, defaults, and proof ceilings stay synchronized", async () => {

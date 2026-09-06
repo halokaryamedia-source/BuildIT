@@ -45,9 +45,9 @@ bun install --frozen-lockfile
 
 ### Missing source proof
 
-Run `bun run verify:full` once in a capable workspace, or obtain the missing exact-SHA CI evidence. Do not combine different SHAs or substitute ancestor success. `verify:closure` is an iteration diagnostic, not an additional final gate.
+Run `bun run verify:full` once when exact source proof is missing. `verify:closure` is an iteration diagnostic.
 
-Source proof does not prove local build/deploy, installed identity or native runtime behavior. Section 4 uses `deploy:local`, which owns build and copy; do not build again immediately before it without a diagnosed need.
+Section 4 proves deployment separately. `deploy:local` owns build and copy; do not build twice.
 
 Source tool counts belong to `measure:phases`; installed counts belong to `verify:stateless-local` and live `tools/list` proof.
 
@@ -57,7 +57,9 @@ Source tool counts belong to `measure:phases`; installed counts belong to `verif
 bun run deploy:local -- /absolute/path/to/blockit_mcp.js
 ```
 
-Reload the plugin in Blockbench after manual deployment. Deployment alone does not prove Gateway lifecycle.
+Before cleanup: check unsaved projects and plugin IDs; stop checkout-owned watchers. Delete only verified legacy BlockIT files/cache within checked absolute paths. Preserve assets/settings/credentials/other plugins; no `git clean -xfd`. An unchanged verified bundle can use `scripts/deploy-local.ts` directly.
+
+Reload BlockIT after deployment and prove Gateway lifecycle.
 
 ## 5. Native Runtime Smoke
 
@@ -102,7 +104,9 @@ new chat count = 0
 interrupted mutation is never blindly retried
 ```
 
-A mutation transport interruption may return `OUTCOME_UNKNOWN`; inspect current model state before retrying.
+A mutation transport interruption may return `OUTCOME_UNKNOWN`; inspect state before retrying.
+
+Animation requires `readiness={geometry_approved:true, uv_layout:"PASS", texture_approved:true, checkpoint:<saved .bbmodel>, no_blockers:true}`. Internal PASS is READY_FOR_USER_REVIEW. Synthetic disposable-test readiness never proves asset approval.
 
 ## 7. DIRECT Smoke Gate
 
@@ -194,15 +198,7 @@ Quality must stay accepted while Cost to Accepted Result decreases. Do not inven
 
 ## 13. Failure / Completion
 
-First wrong owner examples:
-
-```text
-AGENT_REASONING | SKILL_INSTRUCTION | GATEWAY_ROUTING | MCP_PUBLIC_CONTRACT
-MCP_RESULT_QUALITY | MCP_PHASE/HANDOFF | STATE_DISCOVERY | VISUAL_FEEDBACK
-BLOCKBENCH_RUNTIME | ENVIRONMENT/INSTALL | SHAPE_RECONSTRUCTION
-PRIMITIVE_DECOMPOSITION | MATERIALIZER | TEXTURE/PBR | ANIMATION
-PERSISTENCE/EXPORT | UNKNOWN
-```
+Classify the first wrong owner before correction; follow `AGENTS.md` failure/retry boundaries.
 
 Update only state owners when their state changes:
 

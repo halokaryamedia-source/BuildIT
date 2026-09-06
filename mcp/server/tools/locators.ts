@@ -223,7 +223,7 @@ function nullObjectSummary(element: NullObject) {
 function resolveParent(reference: string): Group {
   return resolveCoreGroup(
     reference,
-    "Locator and Null Object elements must be parented to an explicit Bedrock Group/bone. Use list_outline to confirm the Group UUID."
+    "Locator and Null Object elements must be parented to an explicit Bedrock Group/bone. Use inspect_elements(mode=outline) to confirm the Group UUID."
   );
 }
 

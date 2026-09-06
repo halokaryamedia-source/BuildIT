@@ -19,7 +19,7 @@ import { uiToolDocs } from "../server/tools/ui";
 import { materialInstanceToolDocs } from "../server/tools/material-instances";
 import { historyToolDocs } from "../server/tools/history";
 import { exportToolDocs } from "../server/tools/export";
-import { consolidatedInspectionToolDocs, consolidatedMaterialToolDocs, consolidatedAnimationTimelineToolDocs, consolidatedMaterialInstancesToolDocs } from "../server/tools";
+import { consolidatedInspectionToolDocs, consolidatedMaterialToolDocs, consolidatedAnimationTimelineToolDocs, consolidatedMaterialInstancesToolDocs, phaseControlToolDocs } from "../server/tools";
 
 export interface CategoryGroup {
   category: string;
@@ -45,7 +45,7 @@ export const toolManifest: CategoryGroup[] = [
   { category: "Import/Export", tools: importToolDocs },
   { category: "Material Instances", tools: [consolidatedMaterialInstancesToolDocs, ...materialInstanceToolDocs.filter((tool) => !["get_face_material_instances", "set_face_material_instance", "list_material_instances", "bulk_set_material_instances", "clear_material_instances"].includes(tool.name))] },
   { category: "Paint Tools", tools: paintToolDocs },
-  { category: "Project", tools: projectToolDocs },
+  { category: "Project", tools: [...projectToolDocs, phaseControlToolDocs] },
   { category: "Textures", tools: [consolidatedMaterialToolDocs, ...textureToolDocs.filter((tool) => !["create_pbr_material", "configure_material", "assign_texture_channel", "save_material_config"].includes(tool.name))] },
   { category: "UI Interaction", tools: uiToolDocs },
 ];
@@ -70,28 +70,28 @@ export const resourceDocs: ResourceSpec[] = [
     uriTemplate: "projects://{id}",
     title: "Blockbench Projects",
     description:
-      "Returns information about available projects. List URIs use the slugified project name (e.g. `projects://my-character`) when unique, or `projects://<slug>~<uuid-prefix>` on collision. Reads accept UUID, exact name, or slug.",
+      "Browse Blockbench project metadata by stable resource URI. Use focused project tools when a modelling decision needs current operational state rather than browsing context.",
   },
   {
     name: "nodes",
     uriTemplate: "nodes://{id}",
     title: "Blockbench Nodes",
     description:
-      "Returns the current 3D nodes in the editor. List URIs use slugified names (e.g. `nodes://head`) when unique, with `~<uuid-prefix>` on collision. Reads accept UUID, exact name, or slug.",
+      "Broad read-only Blockbench node observability retained for native gaps such as TextureMesh. It is not a focused authored-state owner; prefer dedicated inspection tools when available.",
   },
   {
     name: "textures",
     uriTemplate: "textures://{id}",
     title: "Blockbench Textures",
     description:
-      "Returns information about textures. List URIs use slugified names (e.g. `textures://skin`) when unique, with `~<uuid-prefix>` on collision. Reads accept UUID, exact name, slug, or short numeric texture id.",
+      "Browse Texture metadata by URI. This resource does not return raw image/source payload; use `get_texture` when image data is actually needed.",
   },
   {
     name: "reference_models",
     uriTemplate: "reference_models://{id}",
     title: "Reference Models",
     description:
-      "Returns reference models in the current project. Requires the Reference Models plugin. List URIs use slugified names (e.g. `reference_models://turntable`) with `~<uuid-prefix>` on collision. Reads accept UUID, exact name, or slug.",
+      "Returns information about reference models in the current Blockbench project. Requires the Reference Models plugin. List URIs use the slugified name (e.g. `reference_models://turntable`) when unique, with a `~<uuid-prefix>` suffix on collision. Reads also accept the raw UUID or exact name.",
   },
   {
     name: "validator-status",

@@ -25,7 +25,7 @@ MCP CORE + ANIMATION
 
 Geometry and Texturing startup focus values expose the same AUTHORING capability set. They remain separate semantic stages/owners, but a Geometry↔Texturing correction does not require a Runtime phase switch. `HANDOFF_REQUIRED` + `switch_authoring_phase` is reserved for crossing AUTHORING↔Animation through the Gateway.
 
-Generated API documentation enumerates **77 declared source ToolSpecs**, including disabled/source-preserved definitions. That documentation count is not the normal callable catalog and is not the installed surface count.
+Generated API documentation enumerates **63 declared source ToolSpecs**, including disabled/source-preserved definitions and phase control. That documentation count is not the normal callable catalog and is not the installed surface count.
 
 ## Bedrock Authoring Invariants
 - 1 Minecraft block = 16 Blockbench units.

@@ -283,7 +283,7 @@ export class LiveMcpClient {
       arguments: toolArgs,
     });
     const result = (envelope.result ?? {}) as ToolCallPayload;
-    expect(result.isError !== true, `${name} returned MCP isError=true.`);
+    expect(result.isError !== true, `${name} returned MCP isError=true: ${JSON.stringify(result.content)}`);
     return result;
   }
 

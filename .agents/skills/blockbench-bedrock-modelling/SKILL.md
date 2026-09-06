@@ -71,7 +71,7 @@ Successful `manage_cubes` execution is **Tool success** and execution evidence o
 Geometry-owned fresh/rebuilt Cube UV:
 `Geometry APPROVED → create_texture(type=template), explicit pixel_density, rearrange_uv=true, power_of_two=true → native UV/template → audit → UV Layout PASS → Texturing`.
 
-No guessed rectangles, stretched reference images, or hand-scaled islands; preserve UV without rebuild reason.
+No guessed/stretched islands. Justified rebuild: `create_texture(type=template, texture_id=<UUID>)`; revalidate affected texture evidence before adding PBR/variants.
 
 Density `16x`=1 texture pixel/model unit; scale density uniformly. Face aspect must match UV aspect (direct/90°). **Never non-uniformly scale an island to squeeze it into the atlas.** Atlas pressure → justified global density, remove unnecessary geometry, intentional exact reuse/mirroring, or larger bitmap.
 

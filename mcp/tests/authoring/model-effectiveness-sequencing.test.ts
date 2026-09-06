@@ -1,5 +1,4 @@
 import { describe, expect, test } from "bun:test";
-import { getMcpPhaseReadinessSummary } from "@/lib/authoringPhase";
 
 async function source(path: string): Promise<string> {
   return Bun.file(path).text();
@@ -15,10 +14,6 @@ describe("model creation effectiveness — texture/animation sequencing", () => 
       source("../.agents/skills/blockit-bedrock-texturing/SKILL.md"),
       source("../.agents/skills/blockit-bedrock-animation/SKILL.md"),
     ]);
-
-    expect(getMcpPhaseReadinessSummary("geometry")).toContain("geometry=PASS");
-    expect(getMcpPhaseReadinessSummary("geometry")).toContain("uv_layout=PASS");
-    expect(getMcpPhaseReadinessSummary("texturing")).toContain("texture_verify=PASS");
 
     for (const text of [agents, flow, workspace, orchestrator, texturing]) {
       expect(text).toContain("Geometry APPROVED");

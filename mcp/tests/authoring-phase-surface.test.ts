@@ -149,9 +149,9 @@ describe("authoring stage MCP surface", () => {
   });
 
   test("handoff is reserved for AUTHORING and Animation boundary", () => {
-    expect(getMcpPhaseReadinessSummary("geometry")).toContain("geometry=PASS");
-    expect(getMcpPhaseReadinessSummary("geometry")).toContain("uv_layout=PASS");
-    expect(getMcpPhaseReadinessSummary("texturing")).toContain("texture_verify=PASS");
+    expect(getMcpPhaseReadinessSummary("geometry")).toContain("Geometry APPROVED");
+    expect(getMcpPhaseReadinessSummary("geometry")).toContain("UV Layout PASS");
+    expect(getMcpPhaseReadinessSummary("texturing")).toContain("Texture APPROVED");
 
     for (const phase of ["geometry", "texturing"] as const) {
       const contract = buildMcpPhaseHandoffContract(phase);

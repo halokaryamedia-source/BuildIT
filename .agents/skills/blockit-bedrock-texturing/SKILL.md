@@ -59,4 +59,4 @@ Reference + fresh `get_texture` + fresh **mapped model-view evidence** from `cap
 Check square texels, bleed/reuse, material scale/direction, semantic color/form/identity, no arbitrary pattern.
 `FAIL` → **smallest bounded causal correction** → fresh affected evidence → `IMPROVED | UNCHANGED | REGRESSED`; same causal direction twice → `BLOCKED`.
 
-Animation required → `HANDOFF_REQUIRED(target_phase=animation, readiness=geometry=APPROVED; uv_layout=PASS; texture_verify=PASS)` → `switch_authoring_phase` through Gateway → same task/chat.
+Animation → user Texture APPROVED + checkpoint → `HANDOFF_REQUIRED(target_phase=animation)` → `switch_authoring_phase` through Gateway → same task/chat. `readiness` attests user approvals; internal PASS is not approval.
