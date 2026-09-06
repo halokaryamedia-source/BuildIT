@@ -19,6 +19,16 @@ const REQUIRED_TOOLS = [
   "undo",
   "redo",
 ] as const;
+const THIN_CUBE_NAME = "e2e_thin_per_face";
+const THIN_CUBE_SIZE = [1, 4, 0.5] as const;
+const THIN_FACE_UV = [
+  { face: "north", uv: [0, 0, 1, 4] },
+  { face: "south", uv: [2, 0, 3, 4] },
+  { face: "east", uv: [4, 0, 4.5, 4] },
+  { face: "west", uv: [5, 0, 5.5, 4] },
+  { face: "up", uv: [6, 0, 7, 0.5] },
+  { face: "down", uv: [8, 0, 9, 0.5] },
+] as const;
 
 function sameVec3(actual: unknown, expected: readonly number[]): boolean {
   return (
@@ -28,14 +38,35 @@ function sameVec3(actual: unknown, expected: readonly number[]): boolean {
   );
 }
 
-async function inspectCube(client: LiveMcpClient, uuid: string): Promise<JsonObject> {
+async function inspectCube(
+  client: LiveMcpClient,
+  id: string,
+  detail: "geometry" | "uv" = "geometry"
+): Promise<JsonObject> {
   return structuredObject(
     await client.callTool(
       "inspect_elements",
-      { mode: "detail", id: uuid, detail: "geometry" },
+      { mode: "detail", id, detail },
       "inspection"
     ),
     "inspect_elements"
+  );
+}
+
+function assertThinPerFaceState(detail: JsonObject, context: string): void {
+  expect(
+    sameVec3(detail.size, THIN_CUBE_SIZE),
+    `${context} changed the approved thin geometry: ${JSON.stringify(detail.size)}.`
+  );
+  const uv = (detail.uv ?? {}) as JsonObject;
+  const quality = (uv.quality_summary ?? {}) as JsonObject;
+  expect(
+    uv.mode === "per_face" && uv.box_uv === false && uv.autouv === 0,
+    `${context} did not keep explicit per-face UV: ${JSON.stringify(uv)}.`
+  );
+  expect(
+    quality.degenerate_faces === 0 && quality.aspect_review_faces === 0,
+    `${context} produced collapsed or aspect-invalid thin-face UV: ${JSON.stringify(quality)}.`
   );
 }
 
@@ -49,7 +80,7 @@ async function captureFront(client: LiveMcpClient) {
         framing: {
           mode: "explicit",
           min: [-8, -2, -6],
-          max: [8, 12, 6],
+          max: [10, 12, 6],
         },
       },
       "evidence"
@@ -112,6 +143,36 @@ async function main(): Promise<void> {
   const cubeUuid = cubes?.[0]?.uuid;
   expect(typeof cubeUuid === "string", "manage_cubes create returned no Cube UUID.");
 
+  const thinPlacement = structuredObject(
+    await client.callTool(
+      "manage_cubes",
+      {
+        operation: "create",
+        group: group.uuid,
+        elements: [
+          {
+            name: THIN_CUBE_NAME,
+            from: [7, 0, -0.25],
+            to: [8, 4, 0.25],
+          },
+        ],
+        faces: THIN_FACE_UV,
+      },
+      "mutation"
+    ),
+    "manage_cubes"
+  );
+  const thinCubes = thinPlacement.cubes as Array<JsonObject> | undefined;
+  const thinCubeUuid = thinCubes?.[0]?.uuid;
+  expect(
+    typeof thinCubeUuid === "string",
+    "manage_cubes thin per-face fixture returned no Cube UUID."
+  );
+  assertThinPerFaceState(
+    await inspectCube(client, thinCubeUuid, "uv"),
+    "Geometry thin-face preflight"
+  );
+
   const before = await inspectCube(client, cubeUuid);
   expect(
     sameVec3(before.from, [-4, 0, -2]),
@@ -171,6 +232,10 @@ async function main(): Promise<void> {
     sameVec3(redone.to, [6, 8, 2]),
     `Redo did not restore modified Cube geometry: ${JSON.stringify(redone.to)}.`
   );
+  assertThinPerFaceState(
+    await inspectCube(client, thinCubeUuid, "uv"),
+    "Geometry body Undo/Redo"
+  );
 
   console.log(
     JSON.stringify(
@@ -185,6 +250,7 @@ async function main(): Promise<void> {
           animation_bone_name: AUTHORING_E2E_BONE_NAME,
           group_uuid: group.uuid,
           cube_uuid: cubeUuid,
+          thin_cube_uuid: thinCubeUuid,
           next: "Keep the same shared AUTHORING session and run verify:texturing-live with --confirm-disposable; no Geometry-to-Texturing phase switch is required.",
         },
         initial_to: before.to,
@@ -192,12 +258,13 @@ async function main(): Promise<void> {
         render_changed: true,
         undo_restored_initial_geometry: true,
         redo_restored_modified_geometry: true,
+        thin_per_face_without_geometry_thickening: true,
         modification_receipt_present: Object.keys(modification).length > 0,
         current_public_cube_surface: "manage_cubes",
         current_public_inspection_surface: "inspect_elements",
         cost: client.snapshotMetrics(),
         visual_quality: "not_evaluated",
-        note: "Leaves the disposable project open for Texturing in the same shared AUTHORING session. Runtime/readback/render/history proof is not reference-fidelity proof.",
+        note: "Leaves the disposable project open for Texturing in the same shared AUTHORING session. Thin-face proof checks representation/UV preflight without thickening geometry. Runtime/readback/render/history proof is not reference-fidelity proof.",
       },
       null,
       2
