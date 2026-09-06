@@ -22,7 +22,7 @@ const server = new McpServer(
   },
   {
     instructions:
-      "Stable BlockIT client boundary. Normal authoring is one Reference-Grounded flow: approved image + optional 3D Evidence, then Geometry → Texturing → optional Animation. Blockbench may reload without changing this MCP tool list. Capability discovery prioritizes primary authoring tools over support/experimental/maintenance fallbacks. Phase handoffs continue the same task; invoke_capability never auto-retries an interrupted backend call.",
+      "Stable BlockIT client boundary. Use a known Runtime capability directly and search only when the capability is unknown or stale. This Gateway exposes tools only; Runtime resources and prompts are not proxied. Normal authoring is approved image + optional 3D Evidence, then Geometry → Texturing → optional Animation. Phase handoffs continue the same task; invoke_capability never auto-retries an interrupted backend call.",
   }
 );
 
@@ -76,7 +76,7 @@ function gatewayErrorResult(error: unknown) {
 
 const searchInput = z.object({
   query: z.string().default(""),
-  limit: z.number().int().min(1).max(50).default(12),
+  limit: z.number().int().min(1).max(50).default(4),
 });
 
 const describeInput = z.object({
@@ -176,7 +176,14 @@ registerGatewayTool(
             text: `Capability ${capability} is available on the current BlockIT Runtime surface.`,
           },
         ],
-        structuredContent: { capability: tool },
+        structuredContent: {
+          capability: {
+            name: tool.name,
+            description: tool.description ?? "",
+            inputSchema: tool.inputSchema ?? {},
+            annotations: tool.annotations ?? {},
+          },
+        },
       };
     } catch (error) {
       return gatewayErrorResult(error);

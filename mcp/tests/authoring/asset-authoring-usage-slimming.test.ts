@@ -20,7 +20,7 @@ describe("pre-local asset-authoring usage slimming", () => {
     expect(agents).toContain("No authoring mutation is allowed until the router + matching specialist are loaded");
   });
 
-  test("normal authoring skill stack remains compact while hard gates stay present", async () => {
+  test("normal authoring skill stack remains compact while hard gates and anti-loop routing stay present", async () => {
     const orchestrator = await source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md");
     const modelling = await source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md");
     const texturing = await source("../.agents/skills/blockit-bedrock-texturing/SKILL.md");
@@ -31,14 +31,22 @@ describe("pre-local asset-authoring usage slimming", () => {
 
     for (const required of [
       "Mandatory Authoring Latch",
-      "Tool Lane Discipline",
+      "Authoring Context Firewall",
+      "Tool Lane",
       "State Reuse / Anti-Loop",
       "HANDOFF_REQUIRED",
       "capture_model_views",
       "manage_cubes",
       "export_model",
       "geometry/rig/UV judgement",
+      "mcp/tests/**",
+      "limit=4",
+      "Gateway client must not search for or emulate them",
     ]) expect(orchestrator).toContain(required);
+
+    expect(orchestrator).toMatch(/do \*\*not\*\* inspect.*CI\/workflows/i);
+    expect(orchestrator).toMatch(/do not run Bun\/tests\/build\/verifiers\/deploy/i);
+    expect(orchestrator).not.toContain("structural validation gate    → validator://status");
 
     for (const required of [
       "Primary Mass / Proportion / Depth",
@@ -52,9 +60,12 @@ describe("pre-local asset-authoring usage slimming", () => {
 
     for (const required of [
       "Geometry APPROVED + UV Layout PASS",
-      "Reference-Grounded Texture Intent",
+      "Reference-Grounded Palette",
+      "Coherent Styling Window / Anti-Micro-Loop",
+      "No evidence-per-micro-mutation loop",
       "Atlas-Island Discipline",
-      "No noise-first or generic texture-pattern pass",
+      "color_picker_tool",
+      "BASE | SHADOW | HIGHLIGHT | ACCENT/IDENTITY",
     ]) expect(texturing).toContain(required);
 
     expect(orchestrator).not.toContain("FAIL / UNVERIFIED / PASS");
@@ -130,7 +141,7 @@ describe("pre-local asset-authoring usage slimming", () => {
     expect(locatorSource).toContain("function mutationResult(");
     expect(locatorSource).toContain("structuredContent: summary");
     const orchestrator = await source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md");
-    expect(orchestrator).toContain("Do not automatically re-read fresh mutation targets with `inspect_elements(mode=detail)`");
+    expect(orchestrator).toContain("Do not automatically re-read fresh targets with `inspect_elements(mode=detail)`");
   });
 
   test("Cube correction results avoid redundant state and identity copies", async () => {

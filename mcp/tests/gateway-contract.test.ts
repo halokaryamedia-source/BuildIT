@@ -201,7 +201,7 @@ describe("BlockIT Gateway contract", () => {
     expect(backendSource).toContain("continue same task through Gateway");
   });
 
-  test("stdio Gateway is a first-class package command and does not log protocol traffic to stdout", async () => {
+  test("stdio Gateway keeps discovery bounded and does not advertise unproxied Runtime surfaces", async () => {
     const packageJson = await Bun.file("package.json").json();
     const source = await Bun.file("gateway/index.ts").text();
     const backendSource = await Bun.file("gateway/backend.ts").text();
@@ -209,6 +209,10 @@ describe("BlockIT Gateway contract", () => {
     expect(packageJson.scripts.gateway).toBe("bun run ./gateway/index.ts");
     expect(source).toContain("new StdioServerTransport()");
     expect(source).toContain("compactGatewayCapabilityStructuredContent");
+    expect(source).toContain('max(50).default(4)');
+    expect(source).toContain("Runtime resources and prompts are not proxied");
+    expect(source).toContain("inputSchema: tool.inputSchema ?? {}");
+    expect(source).not.toContain("structuredContent: { capability: tool }");
     expect(source).not.toContain("console.log");
     expect(backendSource).toContain("new StreamableHTTPClientTransport");
     expect(backendSource.match(/\.callTool\(/g)?.length ?? 0).toBe(1);

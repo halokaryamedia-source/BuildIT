@@ -37,6 +37,8 @@ invoke_capability
 
 Blockbench/plugin reload and Runtime stage changes do not change this client-facing `tools/list`.
 
+The Gateway intentionally exposes **tools only**. Runtime MCP resources and prompts are not proxied through the Gateway. `validator://*`, broad Runtime resources, and the Runtime prompt surface remain Direct Runtime/Inspector/conformance surfaces; normal Gateway authoring must not search for or emulate those names as capabilities.
+
 ## Capability Discovery
 
 The live Runtime catalog is surface-filtered. Geometry and Texturing startup focus values expose the same shared AUTHORING capabilities; Animation has its own surface. Gateway search assigns internal priority only for discovery:
@@ -47,6 +49,8 @@ SUPPORT      valid conditional capability
 EXPERIMENTAL explicit matching intent only
 MAINTENANCE  legacy/debug fallback; de-prioritized
 ```
+
+Known hot-path capabilities should be invoked directly. Search is for unknown/stale capability names, not progress confirmation. `search_capabilities` returns at most **4 results by default**; callers may explicitly request a larger bound when truncation is material. `describe_capability` is for actual schema uncertainty, not reassurance before every call.
 
 Tiering never deletes capability. Exact intent may still discover an exposed support/experimental/maintenance capability.
 
@@ -65,6 +69,12 @@ invoke switch_authoring_phase
 ```
 
 The backend reconnect above is internal to the Gateway. Gateway normalizes the result with `client_reconnect_required=false` and `new_chat_required=false`; normal AI-client use does not manually reconnect. Direct Runtime clients used for debug/conformance bypass this protection.
+
+## Context / Result Economy
+
+The Runtime remains the complete native/debug evidence owner. The Gateway may present a smaller continuation-oriented result when the omitted material is redundant for normal AI authoring; it must preserve failure/uncertainty evidence needed to recover safely.
+
+Normal authoring does not use `status`, search, describe, repository tests, or Runtime resources as confirmation ceremonies after a successful mutation.
 
 ## Reliability Invariants
 
@@ -124,6 +134,6 @@ These are source-owned counts. Exact installed Runtime identity and lifecycle be
 
 ## Proof Boundary
 
-Source/static tests can prove the fixed Gateway surface, shared AUTHORING routing contract, loopback containment, capability priority, catalog invalidation, and retry semantics. They do not prove the live client survives Runtime lifecycle changes or that authored Geometry/UV/Texture output is visually accepted.
+Source/static tests can prove the fixed Gateway surface, shared AUTHORING routing contract, loopback containment, capability priority, catalog invalidation, retry semantics, and result compaction contracts. They do not prove live client survival, native Blockbench behavior, visual fidelity, or reduced model usage.
 
 The pending live gate should exercise one continuous task: Runtime offline→online, shared Geometry/Texturing AUTHORING behavior, one AUTHORING↔Animation handoff through Gateway, plugin lifecycle, native authoring/history, and persistence where applicable—without a manual AI-client reconnect or new chat.
