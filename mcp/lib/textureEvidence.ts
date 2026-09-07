@@ -29,9 +29,9 @@ export const textureEvidenceOptionsSchema = z
   .strict();
 
 /**
- * Generator-ready replacement for the existing get_texture input contract.
- * It remains internal until canonical generated API output can be authored with
- * the public ToolSpec change.
+ * Public focused-evidence contract used by the runtime get_texture adapter.
+ * It supports bounded PNG evidence plus optional optimistic revision checking
+ * without placing raw RGBA in structuredContent.
  */
 export const focusedGetTextureParameters = z
   .object({
