@@ -1,34 +1,29 @@
 # Next Action
 
-Updated: 2026-09-07 — REMOTE_GITHUB authoring-efficiency partition closed.
-Branch: **`Local` only**. Proof → `current-validation.md`.
+Updated: 2026-09-07 — REMOTE_GITHUB generic quality-first partition closed.
+Branch: **`Local` only**. Proof → `current-validation.md`. Historical usage evidence → `Experimental/authoring-usage-audit-2026-09-07.md`.
 
 ## Status
 
-- REMOTE_GITHUB for current Astra/authoring-efficiency scope: **COMPLETE**.
-- Accepted task source: `f3f7f8062d8e2cfafe79a273443dee2ab2f2a145`.
-  - MCP Verify `34084250543`: PASS.
-  - Verified artifact `blockit-mcp-verified` ID `10004673848`; bundle SHA-256 `46c821431ead51618fa7ef5fa3fe385e510fc344fa70e71c10413030473e355b`; build identity `sha256:8213f7e2e8bd6360d918394fa0ba7f9cdc96ec036ad38b58a4bfff4c78c49f41`.
-- Remote closure: `manage_cubes` Gateway receipt compaction; tools-only Gateway; discovery default `4`; compact describe; asset-authoring cwd/development firewall; Texturing palette/cohort/anti-micro-loop + minimum affected views.
-- Codex asset authoring cwd: repository root or `workspace/active/<asset>/`, **not `mcp/`**.
-- LIVE ACCEPTANCE HARNESS: **SOURCE_READY / LIVE NOT_RUN**. Actual Astra usage reduction and visual Texture quality remain **UNVERIFIED**.
-- AUTHORING TAXONOMY: Geometry Strategy remains user-selected `DIRECT | 3D_ASSISTED`; native/GPU/visual 3D-Assisted proof remains deferred.
+- REMOTE_GITHUB generic quality/authoring scope: **COMPLETE** at source SHA `8e2a54f3016f744e3cd1bedef27379bdb07c3885`.
+- Authoring Policy Verify `34119139741`: **PASS**.
+- Generic source closure now covers:
+  - Geometry assembly/coverage and motion-ready rig/contact reasoning;
+  - mapped resize UV/pixel-impact preflight and requested-atlas constraint handling;
+  - Texturing representative material proof, variant/base integrity, hidden-surface review, and live-state authority;
+  - Animation extreme-pose readiness, external-query semantics, and repeated full-loop review;
+  - progressive-disclosure Finalization with requested deliverables, identifier/reference consistency, proof labels, and current-summary README discipline.
+- This work changes generic quality behavior only; historical objects/assets are **not** repair targets.
+- Static footprint ceilings remain enforced by `verify:authoring`.
+- LIVE ACCEPTANCE HARNESS: **SOURCE_READY / LIVE NOT_RUN**. Actual Astra usage reduction, native Blockbench behavior, and visual quality remain **UNVERIFIED**.
+- AUTHORING TAXONOMY: Geometry Strategy remains user-selected `DIRECT | 3D_ASSISTED`; native/GPU/visual 3D_ASSISTED proof remains deferred.
 
-## LOCAL_CODE residue — Texturing efficiency
+## Deferred public-contract residue
 
-One coherent public-contract/source/generated-doc delivery:
+Revision-aware focused texture reads, coherent multi-operation paint transactions, related normalized receipts, and any other public schema/result changes remain generator-coupled under `mcp/AGENTS.md`.
 
-1. Wire `mcp/lib/textureRevision.ts` into `get_texture` + paint receipts.
-2. Add revision-aware region texture evidence; avoid full-atlas resend for local corrections.
-3. Add domain-specific coherent multi-operation texture mutation with full preflight + one native Undo; **no generic Gateway batch/planner**.
-4. Normalize paint receipts: operation, texture identity/revision, `affected_rect`, `affected_size`, effect scope.
-5. Separate project-wide UV audit/density from focused local reads where public-contract change is justified.
-6. `bun run docs:build` → `bun run docs:check` → owning MCP verifier.
+The current task is explicitly REMOTE_GITHUB-only. Do **not** mutate canonical public contracts into a state whose required generated docs/manifest cannot be authored here, and do not transfer the whole task to LOCAL_CODE. Keep only that coupled residue deferred until a future scope explicitly provides a capable canonical-generation context.
 
-Do not reduce `capture_model_views` resolution or weaken final full-atlas/full-model evidence without representative quality proof.
+## Next meaningful proof
 
-Separate maintenance: upgrade `@modelcontextprotocol/sdk` 1.25.3 to a patched maintained v1, regenerate `bun.lock`, verify separately.
-
-## After LOCAL_CODE
-
-Deploy exact accepted build; keep Codex on Gateway; compare the same asset/reference with Astra Low. Quality PASS first, then compare calls, discovery, image evidence, correction loops, elapsed cost, and actual Codex usage. LIVE/native/visual claims require `LIVE_BLOCKBENCH`.
+When live testing is explicitly reactivated on an exact matching build, use the existing generic geometry/texturing/animation/persistence harnesses. Quality PASS comes before any comparable-fixture cost claim; byte count or raw call count is not token/allowance proof.
