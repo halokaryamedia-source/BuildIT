@@ -5,7 +5,7 @@ description: Minecraft Bedrock Entity animation specialist for authored motion, 
 
 # BlockIT Bedrock Animation
 
-Use at `ACTIVE PHASE: ANIMATION` after Texturing approval and a suitable hierarchy/pivot setup.
+Use at `ACTIVE PHASE: ANIMATION` after Texturing approval when participating hierarchy/pivots are suitable.
 
 ## Boundary
 
