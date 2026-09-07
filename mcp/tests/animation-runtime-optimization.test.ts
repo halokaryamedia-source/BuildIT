@@ -106,17 +106,21 @@ describe("Animation runtime efficiency contracts", () => {
     ).toBe(false);
   });
 
-  test("runtime wiring keeps the public Animation tool count unchanged", async () => {
+  test("runtime wiring runs after consolidated Animation registration without adding tools", async () => {
     const [wiring, registration] = await Promise.all([
       Bun.file("server/tools/animation-runtime-wiring.ts").text(),
-      Bun.file("server/tools/prelocal-wiring.ts").text(),
+      Bun.file("server/tools.ts").text(),
     ]);
 
     expect(wiring).toContain("wireAnimationRuntimeContracts");
     expect(wiring).toContain("optimizedAnimationTimelineParameters");
     expect(wiring).toContain("withTemporaryAnimationPreview");
     expect(wiring).toContain("loop_endpoint_mismatch_candidates");
+    expect(registration).toContain("registerConsolidatedAnimationTimelineTool();");
     expect(registration).toContain("wireAnimationRuntimeContracts();");
+    expect(
+      registration.indexOf("registerConsolidatedAnimationTimelineTool();")
+    ).toBeLessThan(registration.indexOf("wireAnimationRuntimeContracts();"));
     expect(wiring).not.toContain("createTool(");
   });
 });
