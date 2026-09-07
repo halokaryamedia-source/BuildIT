@@ -47,6 +47,7 @@ const GEOMETRY_MAINTENANCE_TOOLS = new Set([
   "manage_geometry_reference",
 ]);
 const CORE_TEXTURE_TOOLS = new Set(["list_textures"]);
+const ANIMATION_EXCLUDED_CORE_TOOLS = new Set(["create_project"]);
 
 function isAuthoringStage(phase: McpAuthoringPhase): boolean {
   return phase !== "animation";
@@ -196,6 +197,13 @@ export function isMcpToolExposedForPhase(
   family: McpRegistrationFamily,
   phase: McpAuthoringPhase
 ): boolean {
+  if (
+    phase === "animation" &&
+    ANIMATION_EXCLUDED_CORE_TOOLS.has(toolName)
+  ) {
+    return false;
+  }
+
   const category = classifyMcpToolPhase(toolName, family);
   if (category === "core") return true;
   if (phase === "animation") return category === "animation";
