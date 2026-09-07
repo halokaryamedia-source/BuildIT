@@ -138,6 +138,8 @@ approved image + explicit asset requirements
 
 For normal asset authoring, do not automatically load repository continuation/history/foundation docs, scan source/tests/CI, or run development verifiers. Asset authoring is not software **Development**; do not route it through `development-brief` unless repository/plugin behavior changes.
 
+At `FINALIZATION`, load only `docs/foundation/09-finalization-standard.md`; do not load it during earlier authoring stages.
+
 ## GitHub Work
 
 `GITHUB_RULES.md` owns branch/ref, GitHub-first partitioning, transfer, atomic delivery, CI/security, retries, and STOP.
