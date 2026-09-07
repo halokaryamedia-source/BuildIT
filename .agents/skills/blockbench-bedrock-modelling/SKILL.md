@@ -14,9 +14,9 @@ description: Mandatory BlockIT Bedrock Geometry and UV Layout specialist.
 Reference-driven work requires the **actual approved reference image** visible in **active multimodal context**. Filename/path/manifest/prose/memory is context, not visual evidence. Unavailable → `BLOCKED`.
 
 approved image = visual authority; dimensions = numeric authority; strategy = user-selected `DIRECT | 3D_ASSISTED`.
-Evidence: `SUPPORTED | PROVISIONAL | CONFLICTING | UNAVAILABLE`. Use a View Pair Map only for material cross-view ambiguity.
+Evidence: `SUPPORTED | PROVISIONAL | CONFLICTING | UNAVAILABLE`. Use a View Pair Map only to resolve materially ambiguous front/back, left/right, mirrored, depth, or 3/4 evidence.
 
-`DIRECT` uses semantic Groups/Cubes. `3D_ASSISTED` = Shape Reconstruction → Shape GLB PASS → PrimitiveAnything PASS → Gateway `materialize_3d_assisted_scaffold(workspace_path)` → semantic cleanup. Unavailable → `BLOCKED`; no fallback; scaffold evidence never replaces approved image.
+`DIRECT` uses Groups/Cubes. `3D_ASSISTED` = Shape Reconstruction → Shape GLB PASS → PrimitiveAnything PASS → Gateway `materialize_3d_assisted_scaffold(workspace_path)` → cleanup. Unavailable → `BLOCKED`; no fallback; scaffold never replaces approved image.
 
 ## Semantic Form / Construction / Transform Gate
 Before exact coordinates determine:
@@ -44,7 +44,7 @@ Coordinates follow one coherent 3D interpretation:
 
 Front/back constrain width+height; sides depth+height; top/bottom width+depth; 3/4 cross-checks. **Front agreement does not certify depth.** Adjacent primary cohorts sharing a boundary use one partition, not independent guesses.
 
-Depth: `OBSERVED` direct; `INFERRED` consistent evidence; `UNRESOLVED` insufficient/conflicting. Minor drift uses one interpretation. **Do not average drift.** Material conflict → `BLOCKED`.
+Depth: `OBSERVED` direct; `INFERRED` consistent evidence; `UNRESOLVED` insufficient/conflicting. Minor drift uses one interpretation. **Do not average drift. Only unresolved material conflict becomes `BLOCKED`.**
 
 ## Surface Coverage / Negative Space
 Every gap must be intentional. Enclosures need closed-shell reasoning; open forms preserve negative spaces. Build broad primary surfaces before trim.
@@ -77,7 +77,7 @@ No guessed/stretched islands. Rebuild only when justified: `create_texture(type=
 
 Choose the minimum proven native power-of-two packing at approved density. Audit padding, aspect, orientation, overlap, semantic exact reuse, and unique asymmetric regions. Density `16x` = 1 texture pixel/model unit. Face aspect must match UV aspect (direct/90°); never squeeze an island. `uv_audit.production_gate=ready` is hygiene, not UV Layout PASS.
 
-Requested atlas size and density are constraints, not hints. Do not silently enlarge the atlas: test the current native representation, valid per-face UV, and semantic reuse first; if the request still cannot fit, surface the measured tradeoff before changing it.
+Requested atlas size and density are constraints. Do not silently enlarge the atlas: test native representation, per-face UV, and semantic reuse first; if it still cannot fit, surface the measured tradeoff.
 
 ## Local Correction / Convergence
 `TRANSLATE placement | RESIZE extent | ROTATE orientation | REATTACH contact/parent | SPLIT distinct volume/orientation | MERGE/REMOVE compensatory geometry | ADD MASS genuinely missing volume`.

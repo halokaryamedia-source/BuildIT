@@ -14,7 +14,7 @@ unlocked/invalid UV → Geometry owner + bounded UV correction; no phase switch.
 Reuse fresh state.
 ```text
 global UV/atlas readiness → list_textures
-face map → inspect_elements(mode=detail)
+face mapping → inspect_elements(mode=detail) only when needed
 blank atlas resolution unknown → get_project_info once
 atlas → list_textures / activate_texture / create_texture / get_texture
 regions → draw_shape_tool / paint_fill_tool
@@ -52,7 +52,7 @@ Broad → `draw_shape_tool`/`paint_fill_tool`; same-color disconnected detail �
 Variants preserve production base role + compatible dimensions/mapping; never demote/re-group base to pass preflight.
 
 ## Texture Styling
-Reference-derived palette **ramp**, material zones, form/contact/occlusion, identity/detail. **generic palette**, copied unrelated texture, flat rectangles, random high-contrast noise are not completion.
+Reference-derived palette **ramp**, material zones, form/contact/occlusion, edge, identity/detail. **generic palette**, copied unrelated texture, flat rectangles, random high-contrast noise are not completion.
 `BASE PASS → VALUE / FORM PASS → IDENTITY PASS → SECONDARY DETAIL PASS → VERIFY`. No noise-first pass.
 
 ## Texture Verify
