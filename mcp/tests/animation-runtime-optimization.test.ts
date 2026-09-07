@@ -106,10 +106,11 @@ describe("Animation runtime efficiency contracts", () => {
     ).toBe(false);
   });
 
-  test("runtime wiring runs after consolidated Animation registration without adding tools", async () => {
-    const [wiring, registration] = await Promise.all([
+  test("runtime wiring and specialist guidance stay aligned without adding tools", async () => {
+    const [wiring, registration, specialist] = await Promise.all([
       Bun.file("server/tools/animation-runtime-wiring.ts").text(),
       Bun.file("server/tools.ts").text(),
+      Bun.file("../.agents/skills/blockit-bedrock-animation/SKILL.md").text(),
     ]);
 
     expect(wiring).toContain("wireAnimationRuntimeContracts");
@@ -126,5 +127,11 @@ describe("Animation runtime efficiency contracts", () => {
       registration.indexOf("registerConsolidatedAnimationTimelineTool();")
     ).toBeLessThan(registration.indexOf("wireAnimationRuntimeContracts();"));
     expect(wiring).not.toContain("createTool(");
+
+    expect(specialist).toContain("capture_model_views(animation_preview)");
+    expect(specialist).toContain("views × times <= 8");
+    expect(specialist).toContain('operation="batch"');
+    expect(specialist).toContain("batch_operation=");
+    expect(specialist).toContain("participating hierarchy/pivots are suitable");
   });
 });
