@@ -10,7 +10,8 @@ describe("Gateway capability discovery contract", () => {
 
     expect(skill).toContain("deferred spec loading after routing");
     expect(skill).toContain("known exact capability   → invoke directly");
-    expect(skill).toContain("one precise search_capabilities query");
+    expect(skill).toMatch(/one precise `?search_capabilities`? query/i);
+    expect(skill).toContain("`limit=4`");
     expect(skill).toContain("`describe_capability` once");
     expect(skill).toContain("One precise search miss");
     expect(skill).toContain("reformulate once");

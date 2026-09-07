@@ -18,6 +18,15 @@ describe("asset tool routing", () => {
     expect(skill).toContain("DISCOVER → AUTHOR → VERIFY → CORRECT → VERIFY → DONE");
   });
 
+  test("asset-authoring cwd does not promote MCP development ceremony", async () => {
+    const skill = await source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md");
+
+    expect(skill).toContain("workspace/active/<asset>/");
+    expect(skill).toContain("as cwd, not `mcp/`");
+    expect(skill).toContain("deeper MCP development rules are not authoring plan");
+    expect(skill).toContain("Do **not** inspect tests/CI/source or run Bun/build/verifiers/deploy");
+  });
+
   test("Geometry strategy is explicit, user-selected, and keeps 3D-Assisted indivisible", async () => {
     const [router, modelling] = await Promise.all([
       source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md"),
