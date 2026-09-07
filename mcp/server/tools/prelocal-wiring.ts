@@ -31,7 +31,6 @@ import {
 } from "@/lib/textureVariantPlan";
 import { textureIdSchema } from "@/lib/zodObjects";
 import { createTextureParameters } from "./texture";
-import { wireAnimationRuntimeContracts } from "./animation-runtime-wiring";
 
 /**
  * Runtime closure for source-prepared texture contracts. Keeping this adapter
@@ -396,14 +395,10 @@ export function registerPaintTextureTransactionTool(): void {
  * Replaces only the prepared create/get contracts after the canonical texture
  * family has registered. Legacy branches still dispatch to the original
  * create_texture executor; variant and focused evidence use their dedicated
- * source-owned policy helpers. Animation evidence/routing adapters are wired
- * here only because this is the last default family boundary after Animation,
- * Animation inspection, and camera registration are already available.
+ * source-owned policy helpers.
  */
 export function wireTextureRuntimeContracts(): void {
   if (textureRuntimeContractsWired) return;
-
-  wireAnimationRuntimeContracts();
 
   const createDefinition = requireRuntimeToolDefinition("create_texture");
   const originalCreate = createDefinition.execute.bind(createDefinition);
