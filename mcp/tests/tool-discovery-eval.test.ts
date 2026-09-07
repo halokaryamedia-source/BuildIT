@@ -96,9 +96,9 @@ describe("tool discovery eval", () => {
       )
     );
 
-    expect(raw.enabled_tool_count).toBe(52);
-    expect(raw.expected_tool_count).toBe(38);
-    expect(raw.case_count).toBe(106);
+    expect(raw.enabled_tool_count).toBe(53);
+    expect(raw.expected_tool_count).toBe(39);
+    expect(raw.case_count).toBe(108);
     expect(raw.missing_expected_tools).toEqual([]);
     expect(raw.upstream_reference.default_limit).toBe(8);
     expect(raw.proxy_note).toContain("not installed-client proof");
