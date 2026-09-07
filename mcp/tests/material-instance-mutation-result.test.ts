@@ -20,7 +20,7 @@ describe("material-instance mutation result contract", () => {
       }
     );
 
-    expect(summary).toEqual({
+    expect(JSON.parse(JSON.stringify(summary))).toEqual({
       operation: "set",
       cube_count: 2,
       face_count: 4,
