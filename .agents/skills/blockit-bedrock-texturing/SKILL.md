@@ -1,6 +1,6 @@
 ---
 name: blockit-bedrock-texturing
-description: Mandatory BlockIT Bedrock Texture specialist.
+description: Bedrock Texture specialist.
 ---
 # BlockIT Bedrock Texturing
 Geometry/UV capabilities remain callable for bounded upstream correction; Texturing **must not borrow Cube mutation**.
@@ -8,7 +8,7 @@ Geometry/UV capabilities remain callable for bounded upstream correction; Textur
 ## Entry / Correction
 **No Geometry↔Texturing phase switch.** `HANDOFF_REQUIRED` + `switch_authoring_phase` only for AUTHORING↔Animation.
 Entry: **Geometry APPROVED + UV Layout PASS**, **final Box UV locked with `autouv=0`**, no invalid/out-of-bounds/partial-overlap.
-unlocked/invalid UV → Geometry owner + bounded UV correction.
+unlocked/invalid UV → Geometry owner + bounded UV correction; no phase switch.
 
 ## Direct Routing
 Reuse fresh state.
@@ -28,10 +28,10 @@ evidence → capture_model_views
 `uv_audit.production_gate`=ready is hygiene, **not UV Layout PASS**. Review face aspect ratio, texel density, orientation, padding/seams, semantic UV reuse. Reuse needs compatible semantics/orientation; zero reuse is valid.
 Requested atlas size/density are constraints: never silently enlarge; test native/per-face/reuse first, then report tradeoff.
 
-## Conditional Support
+## Conditional Support — Not Default Routing
 Conditional on user intent; not normal hot path:
 `gradient_tool | color_picker_tool | copy_brush_tool | paint_settings | create_brush_preset | load_brush_preset | texture_selection | texture_layer_management | add_texture_group | list_materials | get_material_info | import_texture_set`.
-`gradient_tool`: reference-supported continuous transition; no extra discovery/readback.
+`gradient_tool`: reference-supported continuous transition; no discovery/readback.
 
 ## First-Call Invariants
 `blank create_texture → explicit width+height from project UV`; **not omit blank Atlas size**.

@@ -30,6 +30,12 @@ describe("REMOTE_GITHUB authoring handoff contracts", () => {
         ],
       }).success
     ).toBe(true);
+    expect(
+      paintTransactionParameters.safeParse({
+        expected_revision: `sha256:16x16:${"b".repeat(64)}`,
+        operations: [],
+      }).success
+    ).toBe(false);
 
     expect(
       createTextureVariantParameters.safeParse({
