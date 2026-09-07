@@ -2,9 +2,9 @@ import { z } from "zod";
 import { textureIdSchema } from "@/lib/zodObjects";
 
 /**
- * Generator-ready variant creation branch for the existing texture creation
- * family. It is intentionally not exposed from REMOTE_GITHUB until canonical
- * generated API output can be authored with the source change.
+ * Public variant-creation contract used by the runtime create_texture adapter.
+ * The legacy blank/template schema remains authoritative for existing creation
+ * modes while this strict branch owns type=variant requests.
  */
 export const createTextureVariantParameters = z
   .object({
@@ -49,9 +49,9 @@ function requirePositiveBitmapDimension(value: number, label: string): void {
 }
 
 /**
- * Pure preflight for the future public variant-from-base wiring. The plan keeps
- * one established base atlas authoritative and requires an explicit non-material
- * group for the variant, matching the current production-role semantics.
+ * Pure preflight for public variant-from-base creation. The plan keeps one
+ * established base atlas authoritative and requires an explicit non-material
+ * group for the variant, matching the production-role semantics.
  */
 export function planTextureVariantFromBase(input: TextureVariantPlanInput) {
   const requestedName = input.requested_name.trim();
