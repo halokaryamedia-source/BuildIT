@@ -43,7 +43,7 @@ Known → invoke; unknown → `search_capabilities(limit=4)`; describe on schema
 Approved image required. Define palette roles `BASE | SHADOW | HIGHLIGHT | ACCENT/IDENTITY` per cohort; one hue ramp/material; separate palette from lighting. `color_picker_tool` samples atlas, not reference.
 
 ### Atlas-Island Discipline
-Integer texels; marks follow orientation. **pixels per UV unit** owns detail scale; simplify/omit or return to Geometry/UV. `alpha` is intentional.
+Integer texels; marks follow orientation. **pixels per UV unit** owns detail scale; simplify/omit when the detail is not material; return to Geometry/UV when detail cannot fit at the approved density without breaking the mapping. `alpha` is intentional.
 
 ## Coherent Styling Window / Anti-Micro-Loop
 Plan material/palette/form/identity first. Prove one representative patch/cohort has material identity, form/contact and detail scale; formula/gradient/color count is not quality evidence.
