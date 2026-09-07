@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { focusedGetTextureParameters } from "@/lib/textureEvidence";
 import { paintTransactionParameters } from "@/lib/paintTransaction";
 import { createTextureVariantParameters } from "@/lib/textureVariantPlan";
+import { PAINT_TEXTURE_TRANSACTION_TOOL_NAME } from "@/lib/paintTransactionPolicy";
 
 describe("REMOTE_GITHUB authoring handoff contracts", () => {
   test("prepared schemas remain strict enough for minor local wiring", () => {
@@ -63,6 +64,9 @@ describe("REMOTE_GITHUB authoring handoff contracts", () => {
         source_texture_id: "base",
       }).success
     ).toBe(false);
+    expect(PAINT_TEXTURE_TRANSACTION_TOOL_NAME).toBe(
+      "paint_texture_transaction"
+    );
   });
 
   test("continuation stays compact and routes local work to prepared owners", async () => {
@@ -71,13 +75,21 @@ describe("REMOTE_GITHUB authoring handoff contracts", () => {
     for (const marker of [
       "SOURCE_READY / PREWIRED",
       "textureEvidence.ts",
+      "textureEvidenceDelivery.ts",
       "paintTransaction.ts",
+      "paintTransactionPolicy.ts",
       "textureVariantPlan.ts",
+      "bedrockProjectIdentity.ts",
       "bedrockExportIntegrity.ts",
+      "bedrockExportWritePolicy.ts",
+      "paint_texture_transaction",
+      "Project.model_identifier",
       "manage_cubes",
+      "NATIVE_MERGE_REQUIRED",
       "docs:build",
       "docs:check",
       "verify:mcp",
+      "verify:full",
       "AUTHORING TAXONOMY",
     ]) {
       expect(continuation).toContain(marker);
