@@ -12,6 +12,7 @@ import {
   compactGatewayCapabilityStructuredContent,
   type JsonRecord,
 } from "./contract";
+import { projectCapabilityInputSchema } from "./schemaProjection";
 
 const backend = new BlockitRuntimeBackend();
 
@@ -81,6 +82,16 @@ const searchInput = z.object({
 
 const describeInput = z.object({
   capability: z.string().min(1),
+  branch: z
+    .object({
+      field: z.string().min(1),
+      value: z.string().min(1),
+    })
+    .strict()
+    .optional()
+    .describe(
+      "Optional consolidated-capability branch projection. Use only when the branch discriminator/value is already known."
+    ),
 });
 
 const invokeInput = z.object({
@@ -156,7 +167,7 @@ registerGatewayTool(
   {
     title: "Describe BlockIT Capability",
     description:
-      "Returns the current Runtime description, annotations, and input schema for one exact capability before invocation.",
+      "Returns the current Runtime description, annotations, and input schema for one exact capability. When a consolidated branch is already known, branch projection returns only continuation-relevant fields instead of the full multi-branch schema.",
     inputSchema: describeInput.shape,
     annotations: {
       readOnlyHint: true,
@@ -167,21 +178,32 @@ registerGatewayTool(
   },
   async (rawArgs) => {
     try {
-      const { capability } = describeInput.parse(rawArgs);
+      const { capability, branch } = describeInput.parse(rawArgs);
       const tool = await backend.describeCapability(capability);
+      const projection = projectCapabilityInputSchema(
+        capability,
+        tool.inputSchema ?? {},
+        branch
+      );
       return {
         content: [
           {
             type: "text" as const,
-            text: `Capability ${capability} is available on the current BlockIT Runtime surface.`,
+            text: projection.projected
+              ? `Capability ${capability} branch ${branch!.field}=${branch!.value} is available on the current BlockIT Runtime surface.`
+              : `Capability ${capability} is available on the current BlockIT Runtime surface.`,
           },
         ],
         structuredContent: {
           capability: {
             name: tool.name,
             description: tool.description ?? "",
-            inputSchema: tool.inputSchema ?? {},
+            inputSchema: projection.inputSchema,
             annotations: tool.annotations ?? {},
+            schema_projection: {
+              projected: projection.projected,
+              branch: projection.branch,
+            },
           },
         },
       };
