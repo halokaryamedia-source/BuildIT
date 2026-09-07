@@ -1,3 +1,6 @@
+export const PAINT_TEXTURE_TRANSACTION_TOOL_NAME =
+  "paint_texture_transaction" as const;
+
 export type PaintTransactionV1Target = {
   texture_uuid: string;
   texture_name: string;
