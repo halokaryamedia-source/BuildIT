@@ -27,9 +27,7 @@ describe("professional animation reasoning contract", () => {
       "new known clip → create_animation → reuse returned UUID/state; timeline if needed"
     );
     expect(skill).toContain("existing/unknown detail → inspect_animation");
-    expect(skill).toContain(
-      "`create_animation` receipt → reuse; **no confirmation inspect**."
-    );
+    expect(skill).toContain("no confirmation inspect");
 
     for (const marker of [
       "uuid: createdAnimation.uuid",

@@ -23,7 +23,7 @@ bone/pivot/IK/parenting structure must change
 → continue same task with Geometry specialist
 ```
 
-Do not search for `bone_rigging` while Animation is active. Phase handoff needs no reconnect, Blockbench reload, or new chat.
+Do not search for `bone_rigging` while Animation is active. Handoff: no reconnect, Blockbench reload, or new chat.
 
 ## Direct Routing
 
@@ -40,17 +40,17 @@ Primary path:
 `new known clip → create_animation → reuse returned UUID/state; timeline if needed`
 `existing/unknown detail → inspect_animation`
 
-Conditional support:
+Conditional:
 
 ```text
 manage_animation_effects
 manage_animation_controller
 ```
 
-Known capability → invoke via Gateway. Unknown/stale → `search_capabilities`; schema → `describe_capability` once. `create_animation` receipt → reuse; **no confirmation inspect**.
+Known capability → invoke via Gateway. Unknown/stale → `search_capabilities`; schema → `describe_capability` once. **Reuse fresh UUID/state; known identity must not fall back to broad hierarchy discovery or confirmation reads.**
 Timeline: pass animation_id; select/playback/time select it, properties edit it. Reuse returned UUID; no manual selection prerequisite.
 
-Use `manage_animation_timeline`; `batch` owns coherent cohort work, not per-key loops. Other operations are conditional.
+Use `manage_animation_timeline`; `batch` owns coherent cohort work, not loops per key. Controller/effect/graph/copy-paste are conditional.
 
 ## Motion Design Contract
 
@@ -97,7 +97,7 @@ Correction verdict: `IMPROVED | UNCHANGED | REGRESSED`; tool success is not moti
 
 Internal Animation `PASS` means `READY_FOR_USER_REVIEW`; user inspects live Blockbench. Revision → continue Animation. Explicit approve → checkpoint save → Finalization.
 
-If a material rig/pivot/hierarchy blocker is found, return to Geometry through Gateway, repair the owning structure, and re-approve only materially affected stages.
+Material rig/pivot/hierarchy blocker → Geometry through Gateway; repair owning structure; re-approve only affected stages.
 
 ## Protected Gaps
 
