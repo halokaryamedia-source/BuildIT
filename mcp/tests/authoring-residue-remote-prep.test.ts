@@ -7,6 +7,7 @@ import {
 } from "@/lib/textureEvidence";
 import {
   applyPaintTransactionRgba,
+  buildPaintTransactionReceipt,
   paintTransactionParameters,
   planPaintTransaction,
 } from "@/lib/paintTransaction";
@@ -18,6 +19,7 @@ import {
   analyzeBedrockGeometryOverwrite,
   bedrockAnimationIdentifiers,
   missingRequestedDeliverables,
+  planBedrockGeometryWrite,
   requireExpectedGeometryIdentifier,
 } from "@/lib/bedrockExportIntegrity";
 import { cubeToolDocs } from "@/server/tools/cubes";
@@ -64,7 +66,7 @@ describe("REMOTE_GITHUB authoring residue preparation", () => {
     ).rejects.toThrow("changed since the caller observed it");
   });
 
-  test("paint transaction preflights every operation and produces an atomic RGBA candidate", () => {
+  test("paint transaction preflights every operation and produces an atomic RGBA candidate and compact receipt", () => {
     const source = new Uint8ClampedArray(4 * 4 * 4);
     const operations = [
       {
@@ -113,6 +115,19 @@ describe("REMOTE_GITHUB authoring residue preparation", () => {
         operations,
       }).success
     ).toBe(true);
+
+    const receipt = buildPaintTransactionReceipt({
+      texture_uuid: "texture-1",
+      texture_name: "base",
+      before_revision: `sha256:4x4:${"a".repeat(64)}`,
+      after_revision: `sha256:4x4:${"b".repeat(64)}`,
+      operation_count: plan.operation_count,
+      pixel_writes: plan.pixel_writes,
+      affected_rect: plan.affected_rect,
+    });
+    expect(receipt.execution).toBe("applied");
+    expect(receipt.revision.before).not.toBe(receipt.revision.after);
+    expect(receipt.affected_size).toEqual([4, 4]);
   });
 
   test("variant-from-base plan preserves the sole production base role", () => {
@@ -165,7 +180,7 @@ describe("REMOTE_GITHUB authoring residue preparation", () => {
     ).toThrow("non-material TextureGroup");
   });
 
-  test("Bedrock export integrity distinguishes safe single-owner replacement from native merge", () => {
+  test("Bedrock export integrity plans new, owned replacement, merge, and identifier repair explicitly", () => {
     const single = {
       "minecraft:geometry": [
         { description: { identifier: "geometry.blockit_fixture" }, bones: [] },
@@ -188,6 +203,37 @@ describe("REMOTE_GITHUB authoring residue preparation", () => {
     );
     expect(multiAnalysis.safe_single_model_replace).toBe(false);
     expect(multiAnalysis.requires_native_merge).toBe(true);
+
+    expect(
+      planBedrockGeometryWrite({
+        destination_exists: false,
+        overwrite_requested: false,
+        expected_identifier: "geometry.blockit_fixture",
+      }).action
+    ).toBe("CREATE_NEW");
+    expect(
+      planBedrockGeometryWrite({
+        destination_exists: true,
+        overwrite_requested: false,
+        expected_identifier: "geometry.blockit_fixture",
+      }).action
+    ).toBe("OVERWRITE_CONSENT_REQUIRED");
+    expect(
+      planBedrockGeometryWrite({
+        destination_exists: true,
+        overwrite_requested: true,
+        existing_document: single,
+        expected_identifier: "geometry.blockit_fixture",
+      }).action
+    ).toBe("REPLACE_SINGLE");
+    expect(
+      planBedrockGeometryWrite({
+        destination_exists: true,
+        overwrite_requested: true,
+        existing_document: multi,
+        expected_identifier: "geometry.blockit_fixture",
+      }).action
+    ).toBe("NATIVE_MERGE_REQUIRED");
 
     expect(() =>
       requireExpectedGeometryIdentifier(

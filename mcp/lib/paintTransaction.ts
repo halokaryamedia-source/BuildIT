@@ -5,14 +5,14 @@ import {
 } from "@/lib/zodObjects";
 import { textureRevisionSchema } from "@/lib/textureEvidence";
 
-const transactionCoordinateSchema = z
+export const paintTransactionCoordinateSchema = z
   .object({
     x: z.number().int().nonnegative(),
     y: z.number().int().nonnegative(),
   })
   .strict();
 
-const transactionRectSchema = z
+export const paintTransactionRectSchema = z
   .object({
     x: z.number().int().nonnegative(),
     y: z.number().int().nonnegative(),
@@ -25,7 +25,7 @@ const setPixelsOperationSchema = z
   .object({
     operation: z.literal("set_pixels"),
     color: requiredHexColorSchema,
-    coordinates: z.array(transactionCoordinateSchema).min(1),
+    coordinates: z.array(paintTransactionCoordinateSchema).min(1),
   })
   .strict();
 
@@ -33,14 +33,14 @@ const fillRectOperationSchema = z
   .object({
     operation: z.literal("fill_rect"),
     color: requiredHexColorSchema,
-    rect: transactionRectSchema,
+    rect: paintTransactionRectSchema,
   })
   .strict();
 
 const erasePixelsOperationSchema = z
   .object({
     operation: z.literal("erase_pixels"),
-    coordinates: z.array(transactionCoordinateSchema).min(1),
+    coordinates: z.array(paintTransactionCoordinateSchema).min(1),
   })
   .strict();
 
@@ -282,4 +282,57 @@ export function applyPaintTransactionRgba(
   }
 
   return { pixels: result, ...plan };
+}
+
+export function buildPaintTransactionReceipt(input: {
+  texture_uuid: string;
+  texture_name: string;
+  before_revision: string;
+  after_revision: string;
+  operation_count: number;
+  pixel_writes: number;
+  affected_rect: AffectedRect;
+}) {
+  const beforeRevision = textureRevisionSchema.parse(input.before_revision);
+  const afterRevision = textureRevisionSchema.parse(input.after_revision);
+  if (!input.texture_uuid.trim() || !input.texture_name.trim()) {
+    throw new Error("Paint transaction receipt requires explicit texture identity.");
+  }
+  if (!Number.isSafeInteger(input.operation_count) || input.operation_count <= 0) {
+    throw new Error("Paint transaction receipt operation_count must be positive.");
+  }
+  if (!Number.isSafeInteger(input.pixel_writes) || input.pixel_writes <= 0) {
+    throw new Error("Paint transaction receipt pixel_writes must be positive.");
+  }
+  const [left, top, right, bottom] = input.affected_rect;
+  if (
+    ![left, top, right, bottom].every(Number.isSafeInteger) ||
+    left < 0 ||
+    top < 0 ||
+    right <= left ||
+    bottom <= top
+  ) {
+    throw new Error("Paint transaction receipt requires a finite non-empty affected_rect.");
+  }
+  if (beforeRevision === afterRevision) {
+    throw new Error(
+      "Paint transaction postcondition revision did not change; do not report an applied mutation receipt."
+    );
+  }
+
+  return {
+    execution: "applied" as const,
+    texture: {
+      uuid: input.texture_uuid,
+      name: input.texture_name,
+    },
+    revision: {
+      before: beforeRevision,
+      after: afterRevision,
+    },
+    operation_count: input.operation_count,
+    pixel_writes: input.pixel_writes,
+    affected_rect: input.affected_rect,
+    affected_size: [right - left, bottom - top] as [number, number],
+  };
 }

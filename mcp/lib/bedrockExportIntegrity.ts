@@ -62,6 +62,62 @@ export function analyzeBedrockGeometryOverwrite(
   };
 }
 
+export function planBedrockGeometryWrite(input: {
+  destination_exists: boolean;
+  overwrite_requested: boolean;
+  existing_document?: unknown;
+  expected_identifier: string;
+}) {
+  if (!input.expected_identifier.trim()) {
+    throw new Error("Bedrock geometry write plan requires an expected identifier.");
+  }
+
+  if (!input.destination_exists) {
+    return {
+      action: "CREATE_NEW" as const,
+      expected_identifier: input.expected_identifier,
+    };
+  }
+
+  if (!input.overwrite_requested) {
+    return {
+      action: "OVERWRITE_CONSENT_REQUIRED" as const,
+      expected_identifier: input.expected_identifier,
+    };
+  }
+
+  if (input.existing_document === undefined) {
+    throw new Error(
+      "Existing Bedrock geometry content is required before planning an owned overwrite."
+    );
+  }
+
+  const analysis = analyzeBedrockGeometryOverwrite(
+    input.existing_document,
+    input.expected_identifier
+  );
+  if (analysis.safe_single_model_replace) {
+    return {
+      action: "REPLACE_SINGLE" as const,
+      expected_identifier: input.expected_identifier,
+      analysis,
+    };
+  }
+  if (analysis.requires_native_merge) {
+    return {
+      action: "NATIVE_MERGE_REQUIRED" as const,
+      expected_identifier: input.expected_identifier,
+      analysis,
+    };
+  }
+
+  return {
+    action: "IDENTIFIER_REPAIR_REQUIRED" as const,
+    expected_identifier: input.expected_identifier,
+    analysis,
+  };
+}
+
 export function requireExpectedGeometryIdentifier(
   document: unknown,
   expectedIdentifier: string
