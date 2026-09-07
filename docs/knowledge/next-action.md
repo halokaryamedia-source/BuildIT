@@ -22,11 +22,11 @@ Branch: **`Local` only**. Proof → `current-validation.md`; history → `Experi
 Do not redesign these contracts.
 
 1. `get_texture`: full-composite revision, optional bounded region, encode only requested crop as PNG `content.image`; structured result stays metadata-only (no raw RGBA).
-2. Exact paint transaction v1: non-layered base editable bitmap only; layered texture → fail closed and use native Painter. One preflighted transaction = one native Undo unit.
-3. Variant: clone explicit base UUID, preserve dimensions/UV/base role, explicit non-material target group; selection is not authority.
-4. New project: explicit `model_identifier` wins; otherwise `geometry.<project_slug>` from `bedrockProjectIdentity.ts`; assign native `Project.model_identifier` at creation, never repair compiled JSON as authority.
+2. `paint_texture_transaction`: one domain-specific exact-pixel capability; non-layered base editable bitmap only. Layered texture → fail closed/use native Painter. One complete preflight = one native Undo unit.
+3. Variant stays a `create_texture` branch: clone explicit base UUID, preserve dimensions/UV/base role, explicit non-material target group; selection is not authority.
+4. `create_project`: explicit `model_identifier` wins; otherwise `geometry.<project_slug>`; assign native `Project.model_identifier` immediately, never repair compiled JSON as authority.
 5. `manage_cubes`: remove vague manual advertised shape and derive discovery from canonical detailed ToolSpec.
-6. Bedrock write v1: direct only `CREATE_NEW | REPLACE_SINGLE`; multi-geometry = `NATIVE_MERGE_REQUIRED` fail-closed, no custom JSON splice.
+6. `export_model`: direct Bedrock write v1 only `CREATE_NEW | REPLACE_SINGLE`; multi-geometry = `NATIVE_MERGE_REQUIRED` fail-closed, no custom JSON splice.
 
 ## Local order
 
