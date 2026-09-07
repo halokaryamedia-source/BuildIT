@@ -1,0 +1,29 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "Small Cannon Boat — Smoke",
+    "description": "Boat visuals, animations and muzzle smoke. Requires matching behavior entity.",
+    "uuid": "12a0cf76-6882-4baf-b023-401414c39b53",
+    "version": [
+      1,
+      0,
+      0
+    ],
+    "min_engine_version": [
+      1,
+      20,
+      0
+    ]
+  },
+  "modules": [
+    {
+      "type": "resources",
+      "uuid": "a1e9a386-4db7-4055-bfa6-79d5ec7f1ccd",
+      "version": [
+        1,
+        0,
+        0
+      ]
+    }
+  ]
+}

@@ -1,5 +1,13 @@
 # Businessman NPC
 
+## Latest expressive idle revision
+- Added gentle body sway and quicker crossed-leg movement, with right forearm counter-motion;6-second loop retained. Saved project and animation JSON updated; geometry and atlas unchanged. See ANIMATION.md. Playback enabled for review.
+
+## Crossed-leg revision recovered and saved
+- Latest user request: right ankle/calf crossed over left leg; left foot stays grounded. Right hand moved to raised thigh. 22 cubes retained and existing UV/materials preserved.
+- Current geometry deliverable is businessman_npc_crossed.geo.json; previous businessman_npc.geo.json represents the old uncrossed pose. Use crossed geometry with existing businessman_npc.animation.json.
+- Existing6-second seated_idle reviewed at0/1.5/4.5/6: minY0; footprint maximum observed14.94x13.79; start/end bounds equal. Crossing is the rest pose, not a transition animation. Project checkpoint saved; playback enabled for user review.
+
 ## Animation review checkpoint
 - User approved final texture. Animation handoff completed; seated_idle6-second loop authored and saved. See ANIMATION.md for motion and checks. Project, atlas, geometry and animation JSON available. Animation user acceptance pending.
 
@@ -26,3 +34,6 @@ Hierarchy: npc_root owns suitcase and pelvis; pelvis owns body and thigh/calf ch
 READY_FOR_USER_REVIEW geometry. Review approval required before native UV template generation. Then128px atlas, intentional reuse/mirroring, clear transparent unused space. Texture approval before Animation handoff same task. Animation planned6-second seated idle: subtle chest breath and1–2degree head motion with coordinated support hand, fixed pelvis/case/feet and seamless start/end. No standing transition or behavior pack.
 
 Saved businessman_npc.bbmodel; geometry-preview.png uses temporary element colors. Coffee and palm assets remain separate.
+
+## Final user acceptance
+- User approved all geometry, texture, crossed-leg pose and expressive idle; final project save verified. Asset complete. Use businessman_npc_crossed.geo.json with businessman_npc.animation.json and businessman_npc.png.

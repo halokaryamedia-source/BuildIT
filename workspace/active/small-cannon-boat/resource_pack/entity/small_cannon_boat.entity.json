@@ -1,0 +1,32 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "buildit:small_cannon_boat",
+      "materials": {
+        "default": "entity_alphatest"
+      },
+      "textures": {
+        "default": "textures/entity/small_cannon_boat"
+      },
+      "geometry": {
+        "default": "geometry.small_cannon_boat"
+      },
+      "animations": {
+        "float_idle": "animation.small_cannon_boat.float_idle",
+        "cannon_fire": "animation.small_cannon_boat.cannon_fire"
+      },
+      "scripts": {
+        "animate": [
+          "float_idle"
+        ]
+      },
+      "particle_effects": {
+        "cannon_smoke": "buildit:cannon_smoke"
+      },
+      "render_controllers": [
+        "controller.render.small_cannon_boat"
+      ]
+    }
+  }
+}

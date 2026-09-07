@@ -1,0 +1,120 @@
+{
+  "format_version": "1.8.0",
+  "animations": {
+    "animation.small_cannon_boat.float_idle": {
+      "animation_length": 4,
+      "bones": {
+        "boat": {
+          "position": [
+            0.0,
+            "0.45 * math.sin(query.anim_time * 90)",
+            0.0
+          ],
+          "rotation": [
+            "-(2 * math.sin(query.anim_time * 90))",
+            0.0,
+            "3 * math.sin(query.anim_time * 90 + 35)"
+          ]
+        }
+      },
+      "loop": true
+    },
+    "animation.small_cannon_boat.cannon_fire": {
+      "animation_length": 0.6,
+      "bones": {
+        "barrel": {
+          "position": {
+            "0": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "0.08": [
+              0.0,
+              -0.087156,
+              -0.996195
+            ],
+            "0.2": [
+              0.0,
+              -0.065367,
+              -0.747146
+            ],
+            "0.4": [
+              0.0,
+              -0.017431,
+              -0.199239
+            ],
+            "0.6": [
+              0.0,
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "boat": {
+          "position": {
+            "0": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "0.08": [
+              0.0,
+              -0.12,
+              -0.65
+            ],
+            "0.24": [
+              0.0,
+              0.12,
+              -0.3
+            ],
+            "0.4": [
+              0.0,
+              -0.04,
+              0.1
+            ],
+            "0.6": [
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          "rotation": {
+            "0": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "0.08": [
+              2.0,
+              0.0,
+              0.6
+            ],
+            "0.24": [
+              -1.0,
+              0.0,
+              -0.3
+            ],
+            "0.4": [
+              0.35,
+              0.0,
+              0.1
+            ],
+            "0.6": [
+              0.0,
+              0.0,
+              0.0
+            ]
+          }
+        }
+      },
+      "particle_effects": {
+        "0.04": {
+          "effect": "cannon_smoke",
+          "locator": "muzzle",
+          "bind_to_actor": false
+        }
+      }
+    }
+  }
+}

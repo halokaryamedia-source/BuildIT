@@ -1,0 +1,195 @@
+{
+  "format_version": "1.12.0",
+  "minecraft:geometry": [
+    {
+      "description": {
+        "identifier": "geometry.station_name_board",
+        "texture_width": 128,
+        "texture_height": 128,
+        "visible_bounds_width": 3,
+        "visible_bounds_height": 2.5,
+        "visible_bounds_offset": [
+          0,
+          0.75,
+          0
+        ]
+      },
+      "bones": [
+        {
+          "name": "posts",
+          "pivot": [
+            0,
+            0,
+            0
+          ],
+          "cubes": [
+            {
+              "origin": [
+                9,
+                0,
+                -1
+              ],
+              "size": [
+                2,
+                10,
+                2
+              ],
+              "uv": [
+                0,
+                22
+              ]
+            },
+            {
+              "origin": [
+                -11,
+                0,
+                -1
+              ],
+              "size": [
+                2,
+                10,
+                2
+              ],
+              "uv": [
+                9,
+                22
+              ]
+            }
+          ]
+        },
+        {
+          "name": "frame",
+          "pivot": [
+            0,
+            0,
+            0
+          ],
+          "cubes": [
+            {
+              "origin": [
+                -16,
+                10,
+                -1
+              ],
+              "size": [
+                32,
+                2,
+                2
+              ],
+              "uv": [
+                0,
+                0
+              ]
+            },
+            {
+              "origin": [
+                -16,
+                22,
+                -1
+              ],
+              "size": [
+                32,
+                2,
+                2
+              ],
+              "uv": [
+                0,
+                5
+              ]
+            },
+            {
+              "origin": [
+                14,
+                12,
+                -1
+              ],
+              "size": [
+                2,
+                10,
+                2
+              ],
+              "uv": [
+                18,
+                22
+              ]
+            },
+            {
+              "origin": [
+                -16,
+                12,
+                -1
+              ],
+              "size": [
+                2,
+                10,
+                2
+              ],
+              "uv": [
+                27,
+                22
+              ]
+            },
+            {
+              "origin": [
+                9,
+                11,
+                -1.5
+              ],
+              "size": [
+                2,
+                2,
+                1
+              ],
+              "uv": [
+                0,
+                35
+              ]
+            },
+            {
+              "origin": [
+                -11,
+                11,
+                -1.5
+              ],
+              "size": [
+                2,
+                2,
+                1
+              ],
+              "uv": [
+                7,
+                35
+              ]
+            }
+          ]
+        },
+        {
+          "name": "panel",
+          "pivot": [
+            0,
+            0,
+            0
+          ],
+          "cubes": [
+            {
+              "origin": [
+                -14,
+                12,
+                -0.5
+              ],
+              "size": [
+                28,
+                10,
+                1
+              ],
+              "uv": [
+                0,
+                10
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,75 @@
+{
+	"format_version": "1.12.0",
+	"minecraft:geometry": [
+		{
+			"description": {
+				"identifier": "geometry.unknown",
+				"texture_width": 128,
+				"texture_height": 128,
+				"visible_bounds_width": 3,
+				"visible_bounds_height": 2.5,
+				"visible_bounds_offset": [0, 0.75, 0]
+			},
+			"bones": [
+				{
+					"name": "tank_frame",
+					"pivot": [0, 0, 0],
+					"cubes": [
+						{"origin": [-10, 3, -3], "size": [20, 1, 6], "uv": [0, 34]},
+						{"origin": [-10, 4, -4], "size": [20, 1, 8], "uv": [0, 14]},
+						{"origin": [-10, 5, -5], "size": [20, 3, 10], "uv": [0, 0]},
+						{"origin": [-10, 8, -4], "size": [20, 1, 8], "uv": [0, 24]},
+						{"origin": [-10, 9, -3], "size": [20, 1, 6], "uv": [0, 42]},
+						{"origin": [10, 5, -3], "size": [1, 3, 6], "uv": [0, 58]},
+						{"origin": [-11, 5, -3], "size": [1, 3, 6], "uv": [15, 58]},
+						{"origin": [-8, 10, -3], "size": [16, 1, 6], "uv": [0, 50]},
+						{"origin": [-8, 0, -4], "size": [2, 4, 1], "uv": [22, 68]},
+						{"origin": [-8, 0, 3], "size": [2, 4, 1], "uv": [41, 69]},
+						{"origin": [6, 1, -6], "size": [1, 1, 12], "uv": [45, 50]},
+						{"origin": [6, 2, -2], "size": [1, 1, 4], "uv": [30, 65]}
+					]
+				},
+				{
+					"name": "engine",
+					"pivot": [0, 0, 0],
+					"cubes": [
+						{"origin": [2, 11, -2], "size": [6, 3, 5], "uv": [53, 39]},
+						{"origin": [1, 14, -2], "size": [6, 1, 5], "uv": [57, 14]},
+						{"origin": [3, 15, 0], "size": [2, 1, 2], "uv": [67, 69]},
+						{"origin": [8, 12, -2], "size": [1, 3, 4], "uv": [61, 6]},
+						{"origin": [3, 11, 3], "size": [4, 3, 1], "uv": [67, 64]},
+						{"origin": [3, 13, -4], "size": [4, 2, 2], "uv": [43, 64]}
+					]
+				},
+				{
+					"name": "pump",
+					"pivot": [0, 0, 0],
+					"cubes": [
+						{"origin": [-7, 11, -2], "size": [4, 1, 4], "uv": [61, 0]},
+						{"origin": [-7, 12, -1], "size": [3, 3, 3], "uv": [30, 58]},
+						{"origin": [-8, 15, -2], "size": [5, 1, 5], "uv": [57, 27]},
+						{"origin": [-9, 10, 0], "size": [1, 2, 1], "uv": [36, 71]},
+						{"origin": [-10, 12, 0], "size": [2, 2, 1], "uv": [29, 71]},
+						{"origin": [-11, 10, 1], "size": [2, 1, 1], "uv": [72, 6]}
+					]
+				},
+				{
+					"name": "wheels",
+					"pivot": [0, 0, 0],
+					"cubes": [
+						{"origin": [5, 1, -6], "size": [3, 2, 1], "uv": [48, 70]},
+						{"origin": [6, 0, -6], "size": [1, 1, 1], "uv": [72, 51]},
+						{"origin": [6, 3, -6], "size": [1, 1, 1], "uv": [72, 54]},
+						{"origin": [5, 1, 5], "size": [3, 2, 1], "uv": [57, 70]},
+						{"origin": [6, 0, 5], "size": [1, 1, 1], "uv": [72, 57]},
+						{"origin": [6, 3, 5], "size": [1, 1, 1], "uv": [72, 60]}
+					]
+				},
+				{
+					"name": "hose",
+					"pivot": [0, 0, 0]
+				}
+			]
+		}
+	]
+}
