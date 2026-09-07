@@ -39,13 +39,13 @@ Conditional on user intent; not normal hot path:
 Known → invoke; unknown → `search_capabilities(limit=4)`; describe on schema uncertainty. No confirmation rereads.
 **Pin atlas UUID and pass `texture_id` when multiple textures are loaded.**
 
-## Palette
+## Reference-Grounded Palette
 Approved image required. Define palette roles `BASE | SHADOW | HIGHLIGHT | ACCENT/IDENTITY` per cohort; one hue ramp/material; separate palette from lighting. `color_picker_tool` samples atlas, not reference.
 
-### Islands
+### Atlas-Island Discipline
 Integer texels; marks follow orientation. **pixels per UV unit** owns detail scale. Omit immaterial detail; return to Geometry/UV when detail cannot fit at the approved density. `alpha` is intentional.
 
-## Styling / Anti-Micro-Loop
+## Coherent Styling Window / Anti-Micro-Loop
 Plan material/palette/form/identity first. Prove one representative patch/cohort has material identity, form/contact and detail scale; formula/gradient/color count is not quality evidence.
 Broad → `draw_shape_tool`/`paint_fill_tool`; same-color disconnected detail → one `paint_with_brush` batch (`connect_strokes=false`).
 **No evidence-per-micro-mutation loop.** Do not `get_texture`/capture after each edit; finish one cohort pass, then one evidence bundle.
