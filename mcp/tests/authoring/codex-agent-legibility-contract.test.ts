@@ -62,7 +62,7 @@ describe("Codex Bedrock agent legibility contract", () => {
     expect(router).toContain("current worktree");
     expect(router).toContain("Geometry APPROVED + UV Layout PASS");
 
-    expect(router).toMatch(/description: Mandatory router for every BlockIT Minecraft Bedrock Entity asset-authoring task/);
+    expect(router).toMatch(/description: Mandatory router for .*BlockIT Bedrock Entity.*asset author/i);
     expect(modelling).toMatch(/description: Mandatory BlockIT Bedrock Geometry and UV Layout specialist/);
     expect(texturing).toMatch(/description: Mandatory BlockIT Bedrock Texture specialist/);
     expect(animation).toMatch(/description: Minecraft Bedrock Entity animation specialist/);

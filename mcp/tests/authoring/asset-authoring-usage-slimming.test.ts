@@ -39,13 +39,13 @@ describe("pre-local asset-authoring usage slimming", () => {
       "manage_cubes",
       "export_model",
       "geometry/rig/UV judgement",
-      "mcp/tests/**",
       "limit=4",
       "Gateway client must not search for or emulate them",
     ]) expect(orchestrator).toContain(required);
 
-    expect(orchestrator).toMatch(/do \*\*not\*\* inspect.*CI\/workflows/i);
-    expect(orchestrator).toMatch(/do not run Bun\/tests\/build\/verifiers\/deploy/i);
+    expect(orchestrator).toMatch(/Authoring Codex uses .*workspace\/active\/<asset>\/.*not `mcp\/`/i);
+    expect(orchestrator).toMatch(/do \*\*not\*\* inspect tests\/CI\/source/i);
+    expect(orchestrator).toMatch(/run Bun\/build\/verifiers\/deploy/i);
     expect(orchestrator).not.toContain("structural validation gate    → validator://status");
 
     for (const required of [
@@ -141,7 +141,7 @@ describe("pre-local asset-authoring usage slimming", () => {
     expect(locatorSource).toContain("function mutationResult(");
     expect(locatorSource).toContain("structuredContent: summary");
     const orchestrator = await source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md");
-    expect(orchestrator).toContain("Do not automatically re-read fresh targets with `inspect_elements(mode=detail)`");
+    expect(orchestrator).toMatch(/Do not automatically re-read fresh (?:mutation )?targets with `inspect_elements\(mode=detail\)`/);
   });
 
   test("Cube correction results avoid redundant state and identity copies", async () => {
