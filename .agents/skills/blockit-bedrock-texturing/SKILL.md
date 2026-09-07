@@ -13,7 +13,7 @@ unlocked/invalid UV → Geometry owner + bounded UV correction; no phase switch.
 ## Direct Routing
 Reuse fresh state.
 ```text
-UV/atlas → list_textures
+global UV/atlas readiness → list_textures
 face map → inspect_elements(mode=detail)
 blank atlas resolution unknown → get_project_info once
 atlas → list_textures / activate_texture / create_texture / get_texture
@@ -40,7 +40,7 @@ Known → invoke; unknown → `search_capabilities(limit=4)`; describe on schema
 **Pin atlas UUID and pass `texture_id` when multiple textures are loaded.**
 
 ## Reference-Grounded Palette
-Approved image required. Define `BASE | SHADOW | HIGHLIGHT | ACCENT/IDENTITY` per cohort; one ramp/material; separate palette from lighting. `color_picker_tool` samples atlas, not reference.
+Approved image required. Define palette roles `BASE | SHADOW | HIGHLIGHT | ACCENT/IDENTITY` per cohort; one ramp/material; separate palette from lighting. `color_picker_tool` samples atlas, not reference.
 
 ### Atlas-Island Discipline
 Integer texels; marks follow orientation. **pixels per UV unit** owns detail scale; simplify/omit or return to Geometry/UV. `alpha` is intentional.
@@ -52,7 +52,7 @@ Broad → `draw_shape_tool`/`paint_fill_tool`; same-color disconnected detail �
 Variants preserve production base role + compatible dimensions/mapping; never demote/re-group base to pass preflight.
 
 ## Texture Styling
-Reference-derived palette **ramp**, material zones, form/contact, identity/detail. **generic palette**, copied unrelated texture, flat rectangles, random high-contrast noise are not completion.
+Reference-derived palette **ramp**, material zones, form/contact/occlusion, identity/detail. **generic palette**, copied unrelated texture, flat rectangles, random high-contrast noise are not completion.
 `BASE PASS → VALUE / FORM PASS → IDENTITY PASS → SECONDARY DETAIL PASS → VERIFY`. No noise-first pass.
 
 ## Texture Verify
@@ -61,4 +61,4 @@ Use minimum affected views; final approval also covers required hidden material 
 `FAIL` → difference/cause → **smallest bounded causal correction** → one fresh affected evidence bundle → `IMPROVED | UNCHANGED | REGRESSED`; same causal direction twice → `BLOCKED`.
 After material live changes, never derive correction masks from stale exported PNG/bbmodel; refresh affected live authority once. User acceptance remains separate.
 
-Animation → user Texture APPROVED + checkpoint → `HANDOFF_REQUIRED(target_phase=animation)` → Gateway `switch_authoring_phase`, same task. Internal PASS is not approval.
+Animation → user Texture APPROVED + checkpoint → `HANDOFF_REQUIRED(target_phase=animation, readiness=ready)` → Gateway `switch_authoring_phase`, same task. Internal PASS is not approval.

@@ -14,9 +14,9 @@ description: Mandatory BlockIT Bedrock Geometry and UV Layout specialist.
 Reference-driven work requires the **actual approved reference image** visible in **active multimodal context**. Filename/path/manifest/prose/memory is context, not visual evidence. Unavailable → `BLOCKED`.
 
 approved image = visual authority; dimensions = numeric authority; strategy = user-selected `DIRECT | 3D_ASSISTED`.
-Evidence state: `SUPPORTED | PROVISIONAL | CONFLICTING | UNAVAILABLE`. Use a View Pair Map only to resolve materially ambiguous front/back, left/right, mirrored, depth, or 3/4 evidence.
+Evidence: `SUPPORTED | PROVISIONAL | CONFLICTING | UNAVAILABLE`. Use a View Pair Map only for material cross-view ambiguity.
 
-`DIRECT` uses semantic Groups/Cubes. `3D_ASSISTED` = Shape Reconstruction → Shape GLB PASS → PrimitiveAnything PASS → Gateway `materialize_3d_assisted_scaffold(workspace_path)` → scaffold review → semantic cleanup. Unavailable → `BLOCKED`; never fallback. Shape/scaffold evidence never replaces the approved image.
+`DIRECT` uses semantic Groups/Cubes. `3D_ASSISTED` = Shape Reconstruction → Shape GLB PASS → PrimitiveAnything PASS → Gateway `materialize_3d_assisted_scaffold(workspace_path)` → semantic cleanup. Unavailable → `BLOCKED`; no fallback; scaffold evidence never replaces approved image.
 
 ## Semantic Form / Construction / Transform Gate
 Before exact coordinates determine:
@@ -32,6 +32,7 @@ transform ownership + required attachment / contact target/invariant
 material evidence state
 ```
 A semantic label never authorizes coordinates. **No orphan/filler Cube**. `PROVISIONAL` is a coarse hypothesis; placement never verifies it.
+Construction forms are **not presets**. Use texture for surface information when no silhouette/volume/contact/motion is required.
 
 Decide **transform ownership** before rotation. Shared orientation/attachment/articulation → **Group/Bone-owned**; local rigid orientation may be Cube-owned. Primary mass state: `AXIS_ALIGNED | ROTATED | UNRESOLVED`. Visible slope → explicit origin/pivot + `MASS_CENTER | ATTACHMENT | JOINT | PARENT_TRANSFORM`. Material `UNRESOLVED` → `BLOCKED`. Pivot role is attachment/joint pivot when it owns the transform. AABB overlap, hierarchy, or numeric touching is not contact proof.
 
@@ -43,7 +44,7 @@ Coordinates follow one coherent 3D interpretation:
 
 Front/back constrain width+height; sides depth+height; top/bottom width+depth; 3/4 cross-checks. **Front agreement does not certify depth.** Adjacent primary cohorts sharing a boundary use one partition, not independent guesses.
 
-Depth: `OBSERVED` direct; `INFERRED` consistent evidence + simplest geometry; `UNRESOLVED` insufficient/conflicting. Do not invent hidden structure or average material conflict; unresolved material conflict → `BLOCKED`.
+Depth: `OBSERVED` direct; `INFERRED` consistent evidence; `UNRESOLVED` insufficient/conflicting. Minor drift uses one interpretation. **Do not average drift.** Material conflict → `BLOCKED`.
 
 ## Surface Coverage / Negative Space
 Every gap must be intentional. Enclosures need closed-shell reasoning; open forms preserve negative spaces. Build broad primary surfaces before trim.
