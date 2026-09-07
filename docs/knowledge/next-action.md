@@ -1,37 +1,33 @@
 # Next Action
 
-Updated: 2026-09-07 — daily-flow residue recorded; LOCAL_CODE/LIVE work explicitly deferred by user.
+Updated: 2026-09-07 — REMOTE_GITHUB authoring-efficiency partition closed.
 Branch: **`Local` only**. Proof → `current-validation.md`.
 
 ## Status
 
-- LIVE ACCEPTANCE HARNESS: **SOURCE_READY / LIVE NOT_RUN**.
-- Accepted source/provenance SHA: `1c1f74e160ce520d53fda3a3f271d9323b28558b`.
-  - Repository Verify `34046872083`: PASS.
-  - MCP Verify `34046872042`: PASS — 409 runtime + 120 authoring; freshness, typechecks, measurements, build PASS.
-  - Artifact `blockit-mcp-verified` ID `9993371261`; bundle SHA-256 `9896b8c25e293b7f33dc2ebf3119942809ec4df548839f4ac753366bc8521f87`; build identity `sha256:c208ec49344db79fa22e1cddd330e563f14319d4ed0c724408ee0ba0a01c969c`.
-- LIFT is only a replaceable representative fixture. Preserve `workspace/active/lift/lift.bbmodel`; mutate disposable copies only.
-- LOCAL_CODE/LIVE work is **USER_DEFERRED** until explicitly reactivated.
-- No new daily-flow Runtime/source implementation is accepted from the interrupted REMOTE_GITHUB delivery on 2026-09-07; only continuation state was published. Prepared/unreferenced Git objects are not source authority or proof.
-- LOCAL_CODE residue for daily-flow hardening: compact `manage_cubes` correction continuation state; replace legacy `modify_cube` runtime error vocabulary; deterministic material-instance Cube targeting; explicit Animation identity/batch targeting; deterministic blank-atlas dimensions; and public Geometry/Texture wording/title cleanup. Public schema/description/spec edits must ship with canonical `docs:build` output; do not hand-edit generated docs.
-- Separate existing LOCAL_CODE residue: upgrade `@modelcontextprotocol/sdk` 1.25.3 to a patched maintained v1, regenerate `bun.lock`, run the owning source verifier. Do not combine this dependency maintenance with daily-flow contract changes unless required by a reproduced dependency conflict.
-- AUTHORING TAXONOMY: Geometry Strategy remains user-selected `DIRECT | 3D_ASSISTED`; 3D-Assisted native/GPU quality stays deferred unless resumed.
+- REMOTE_GITHUB for current Astra/authoring-efficiency scope: **COMPLETE**.
+- Accepted task source SHA: `f3f7f8062d8e2cfafe79a273443dee2ab2f2a145`.
+  - MCP Verify `34084250543`: PASS (`bun run verify:mcp`, including authoring, Gateway typecheck, generated freshness, measurements, build).
+  - Verified artifact `blockit-mcp-verified` ID `10004673848`; bundle SHA-256 `46c821431ead51618fa7ef5fa3fe385e510fc344fa70e71c10413030473e355b`; build identity `sha256:8213f7e2e8bd6360d918394fa0ba7f9cdc96ec036ad38b58a4bfff4c78c49f41`.
+- Remote closure includes: `manage_cubes` Gateway receipt compaction; Gateway tools-only boundary; discovery default `4` in public + backend paths; compact describe; asset-authoring cwd/test-development firewall; Texturing palette/cohort/anti-micro-loop + minimum affected views.
+- Normal Codex asset authoring should start from repository root or `workspace/active/<asset>/`, **not `mcp/`**.
+- Actual Astra allowance reduction and visual Texture quality remain **UNVERIFIED** until comparable live authoring runs exist.
 
-## Next
+## LOCAL_CODE residue — Texturing efficiency
 
-1. Until the user reactivates LOCAL_CODE/LIVE work: do not publish coupled daily-flow public-contract source without canonical generated output, and do not treat interrupted prepared objects as implementation.
-2. On LOCAL_CODE reactivation, complete the daily-flow hardening as one coherent source/test/generated-doc delivery, then run its owning source verifier.
-3. Handle the SDK upgrade as a separate logical maintenance delivery unless current evidence proves it must be coupled.
-4. After an accepted exact source closure is deployed, reload BlockIT, keep the AI client on Gateway, and confirm fresh build identity/catalog.
-5. Disposable live sequence:
-   - `bun run verify:geometry-live -- --confirm-disposable`
-   - `bun run verify:texturing-live -- --confirm-disposable`
-   - AUTHORING→Animation through Gateway, same task/chat
-   - `bun run verify:animation-live -- --confirm-disposable`
-   - `bun run verify:persistence-live -- --prepare --confirm-disposable`
-   - native close/reopen
-   - `bun run verify:persistence-live -- --verify --confirm-disposable`
-6. Run `verify:lift-quality-live` only when validating the visual-quality/efficiency method; it must not drive product semantics.
-7. Visual PASS needs the actual approved reference + fresh comparable evidence. Measure Cost to Accepted Result only after quality PASS.
+Implement as one coherent public-contract/source/generated-doc delivery:
 
-No Minecraft acceptance. Re-audit source design only if a verifier reproduces a new defect.
+1. Wire existing `mcp/lib/textureRevision.ts` into `get_texture` and paint mutation receipts.
+2. Add revision-aware bounded/region texture evidence so local corrections do not resend the full atlas unnecessarily.
+3. Add a domain-specific coherent multi-operation texture mutation path with full preflight + one native Undo unit; do **not** add a generic Gateway batch/planner.
+4. Normalize paint receipts around `operation`, texture identity/revision, `affected_rect`, `affected_size`, and effect scope.
+5. Separate project-wide UV audit/density from focused local reads where the public contract changes justify it.
+6. Regenerate canonical MCP docs with `bun run docs:build`, run `bun run docs:check`, then the owning MCP verifier.
+
+Do not reduce `capture_model_views` resolution or weaken final full-atlas/full-model visual evidence without representative quality proof.
+
+Separate maintenance residue: upgrade `@modelcontextprotocol/sdk` 1.25.3 to a patched maintained v1, regenerate `bun.lock`, and verify separately.
+
+## After LOCAL_CODE
+
+Deploy the exact accepted build, keep Codex on Gateway, and compare the same asset/reference with Astra Low. Quality PASS comes first; only then compare calls, discovery, image evidence, correction loops, elapsed cost, and actual Codex usage. LIVE/native/visual claims require `LIVE_BLOCKBENCH` evidence.

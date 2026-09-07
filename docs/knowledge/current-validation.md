@@ -9,7 +9,7 @@ This file owns **current proof interpretation**. Continuation belongs in `docs/k
 Repository: `halokaryamedia-source/BuildIT`  
 Branch: **`Local` only**.
 
-Per `GITHUB_RULES.md`, device-independent source acceptance must use complete checks on the same exact `Local` SHA. The current source/provenance closure is `1c1f74e160ce520d53fda3a3f271d9323b28558b`.
+Per `GITHUB_RULES.md`, device-independent source acceptance must use complete checks on the same exact `Local` SHA. The last full Repository Verify + MCP Verify composite closure remains `1c1f74e160ce520d53fda3a3f271d9323b28558b`.
 
 GitHub **Repository Verify** run `34046872083` completed successfully for that exact SHA and executed the repository routing/policy verifier.
 
@@ -30,7 +30,24 @@ The same MCP run also produced exact-SHA provenance and uploaded `blockit-mcp-ve
 - verified bundle SHA-256: `9896b8c25e293b7f33dc2ebf3119942809ec4df548839f4ac753366bc8521f87`;
 - embedded build identity: `sha256:c208ec49344db79fa22e1cddd330e563f14319d4ed0c724408ee0ba0a01c969c`.
 
-This is **SOURCE/CI/build-artifact proof only**. It does not prove the bundle has been deployed/reloaded in Blockbench and none of the prepared live acceptance harnesses has run against that installed build.
+### Authoring-efficiency / Gateway REMOTE_GITHUB closure — ACCEPTED
+
+The current authoring-efficiency GitHub partition is accepted at exact source SHA `f3f7f8062d8e2cfafe79a273443dee2ab2f2a145`.
+
+GitHub **MCP Verify** run `34084250543` completed successfully on that exact SHA and executed `bun run verify:mcp`, including generated freshness, TypeScript + Gateway typecheck, runtime tests, `verify:authoring`, surface/phase measurements, and build. The run also completed exact-SHA provenance and verified bundle upload.
+
+Verified artifact:
+
+- name: `blockit-mcp-verified`;
+- artifact ID: `10004673848`;
+- artifact ZIP digest: `sha256:2adf4fa0f747fa1dd390b7bdeb2135403fda4e61d0023e2829d32fba6e43ac13`;
+- verified bundle SHA-256: `46c821431ead51618fa7ef5fa3fe385e510fc344fa70e71c10413030473e355b`;
+- embedded build identity: `sha256:8213f7e2e8bd6360d918394fa0ba7f9cdc96ec036ad38b58a4bfff4c78c49f41`;
+- Bun: `1.3.14`.
+
+This closure covers the current remote authoring-efficiency changes: compact Gateway continuation receipts for `manage_cubes`; bounded Gateway discovery default `4`; compact Gateway describe behavior and tools-only boundary; asset-authoring cwd/test-development firewall; and compact Texturing palette/cohort/anti-micro-loop guidance. It is **SOURCE/CI/build-artifact proof only**. It does not prove actual Astra/Codex allowance reduction, installed Runtime behavior, or visual texture quality.
+
+The remaining proposed high-ROI Texturing optimizations alter Runtime Tool schemas/results and therefore require canonical `LOCAL_CODE` generation/verification before they can become source authority. Continuation owns that residue.
 
 ## Live Acceptance Harness — SOURCE_READY / LIVE NOT_RUN
 
