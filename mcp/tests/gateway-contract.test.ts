@@ -9,6 +9,10 @@ import {
   searchCapabilityCatalog,
   type BackendTool,
 } from "@/gateway/contract";
+import {
+  getCapabilityBranchFields,
+  projectCapabilityInputSchema,
+} from "@/gateway/schemaProjection";
 
 describe("BlockIT Gateway contract", () => {
   test("client-facing MCP surface stays deliberately small and fixed", () => {
@@ -79,6 +83,59 @@ describe("BlockIT Gateway contract", () => {
       capability_id: "manage_geometry_reference",
       tier: "experimental",
     });
+  });
+
+  test("branch projection keeps only continuation-relevant consolidated Animation fields", () => {
+    const inputSchema = {
+      type: "object",
+      properties: {
+        operation: { type: "string" },
+        animation_id: { type: "string" },
+        action: { type: "string" },
+        bone_name: { type: "string" },
+        channel: { type: "string" },
+        keyframes: { type: "array" },
+        batch_operation: { type: "string" },
+        selection: { type: "string" },
+        range: { type: "object" },
+        pattern: { type: "object" },
+        parameters: { type: "object" },
+        custom_curve: { type: "object" },
+      },
+      required: ["operation"],
+    };
+
+    const keyframes = projectCapabilityInputSchema(
+      "manage_animation_timeline",
+      inputSchema,
+      { field: "operation", value: "keyframes" }
+    );
+    expect(keyframes.projected).toBe(true);
+    expect(Object.keys((keyframes.inputSchema as any).properties).sort()).toEqual([
+      "action",
+      "animation_id",
+      "bone_name",
+      "channel",
+      "keyframes",
+      "operation",
+    ]);
+    expect((keyframes.inputSchema as any).properties.operation.const).toBe("keyframes");
+
+    const batchFields = getCapabilityBranchFields("manage_animation_timeline", {
+      field: "operation",
+      value: "batch",
+    });
+    expect(batchFields).toContain("animation_id");
+    expect(batchFields).toContain("batch_operation");
+    expect(batchFields).not.toContain("keyframes");
+
+    expect(() =>
+      projectCapabilityInputSchema(
+        "manage_animation_timeline",
+        inputSchema,
+        { field: "operation", value: "unknown" }
+      )
+    ).toThrow(/does not expose a describe projection/);
   });
 
   test("runtime signature ignores changing health timestamps but detects surface identity changes", () => {
@@ -209,10 +266,11 @@ describe("BlockIT Gateway contract", () => {
     expect(packageJson.scripts.gateway).toBe("bun run ./gateway/index.ts");
     expect(source).toContain("new StdioServerTransport()");
     expect(source).toContain("compactGatewayCapabilityStructuredContent");
+    expect(source).toContain("projectCapabilityInputSchema");
+    expect(source).toContain("inputSchema: projection.inputSchema");
     expect(source).toContain('max(50).default(4)');
     expect(backendSource).toMatch(/searchCapabilities\(\s*query: string,\s*limit: number = 4/);
     expect(source).toContain("Runtime resources and prompts are not proxied");
-    expect(source).toContain("inputSchema: tool.inputSchema ?? {}");
     expect(source).not.toContain("structuredContent: { capability: tool }");
     expect(source).not.toContain("registerResource(");
     expect(source).not.toContain("registerPrompt(");
