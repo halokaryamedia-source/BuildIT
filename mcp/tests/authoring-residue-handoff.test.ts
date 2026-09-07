@@ -96,6 +96,6 @@ describe("REMOTE_GITHUB authoring handoff contracts", () => {
     }
     expect(continuation).toContain("Historical assets are evidence, not repair targets");
     expect(continuation).toContain("Local should be limited to canonical generation");
-    expect(continuation).not.toContain("another design phase");
+    expect(continuation).toContain("No object-specific repair queue or another design phase");
   });
 });
