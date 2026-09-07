@@ -65,25 +65,25 @@ describe("REMOTE_GITHUB authoring handoff contracts", () => {
     ).toBe(false);
   });
 
-  test("continuation is a bounded local wiring checklist, not another design phase", async () => {
+  test("continuation stays compact and routes local work to prepared owners", async () => {
     const continuation = await Bun.file("../docs/knowledge/next-action.md").text();
+    expect(continuation.length).toBeLessThan(2_500);
     for (const marker of [
-      "LOCAL_CODE — minor closure only",
-      "Do not redesign the contracts",
-      "focusedGetTextureParameters",
-      "paintTransactionParameters",
-      "createTextureVariantParameters",
-      "cubeToolInputSchema",
-      "inputSchema: cubeToolInputSchema",
-      "planBedrockGeometryWrite",
-      "NATIVE_MERGE_REQUIRED",
-      "bun run docs:build",
-      "bun run docs:check",
-      "bun run verify:mcp",
+      "SOURCE_READY / PREWIRED",
+      "textureEvidence.ts",
+      "paintTransaction.ts",
+      "textureVariantPlan.ts",
+      "bedrockExportIntegrity.ts",
+      "manage_cubes",
+      "docs:build",
+      "docs:check",
+      "verify:mcp",
+      "AUTHORING TAXONOMY",
     ]) {
       expect(continuation).toContain(marker);
     }
-    expect(continuation).toContain("not repair targets");
-    expect(continuation.toLowerCase()).toContain("do not create a generic executor/planner");
+    expect(continuation).toContain("Historical assets are evidence, not repair targets");
+    expect(continuation).toContain("Local should be limited to canonical generation");
+    expect(continuation).not.toContain("another design phase");
   });
 });
