@@ -7,9 +7,19 @@ import {
 } from "@/lib/factories";
 import { resolveCoreAnimation } from "@/lib/coreIdentity";
 import { withTemporaryAnimationPreview } from "@/lib/animationPreviewState";
-import { animationChannelEnum } from "@/lib/zodObjects";
+import {
+  animationChannelEnum,
+  animationIdOptionalSchema,
+} from "@/lib/zodObjects";
 import { captureModelViewsParameters } from "./camera";
 import { inspectAnimationParameters } from "./animation-inspection";
+import {
+  animationCopyPasteParameters,
+  animationGraphEditorParameters,
+  animationTimelineParameters,
+  batchKeyframeOperationsParameters,
+  manageKeyframesParameters,
+} from "./animation";
 
 type JsonRecord = Record<string, unknown>;
 
@@ -111,6 +121,62 @@ export const focusedInspectAnimationParameters =
       });
     }
   });
+
+function withTimelineBranch<T extends z.ZodType>(
+  schema: T,
+  operation: "keyframes" | "graph" | "timeline" | "copy_paste"
+) {
+  return z.intersection(
+    z.object({ operation: z.literal(operation) }),
+    z.preprocess((value) => {
+      if (!value || typeof value !== "object" || Array.isArray(value)) return value;
+      const { operation: _operation, ...payload } = value as Record<string, unknown>;
+      return payload;
+    }, schema)
+  );
+}
+
+const batchTimelinePayload = z
+  .preprocess((value) => {
+    if (!value || typeof value !== "object" || Array.isArray(value)) return value;
+    const {
+      operation: _outerOperation,
+      batch_operation: batchOperation,
+      animation_id: _animationId,
+      ...payload
+    } = value as Record<string, unknown>;
+    return {
+      ...payload,
+      operation: batchOperation,
+    };
+  }, batchKeyframeOperationsParameters)
+  .transform(({ operation, ...payload }) => ({
+    ...payload,
+    batch_operation: operation,
+  }));
+
+const batchTimelineBranch = z.intersection(
+  z.object({
+    operation: z.literal("batch"),
+    animation_id: animationIdOptionalSchema.describe(
+      "Optional explicit authored Animation target. Omit only when the intended clip is already selected."
+    ),
+  }),
+  batchTimelinePayload
+);
+
+/**
+ * Corrected consolidated timeline contract. The public branch discriminator is
+ * `operation`; the batch primitive's own operation is exposed as
+ * `batch_operation` so one request never has to satisfy two conflicting values.
+ */
+export const optimizedAnimationTimelineParameters = z.union([
+  withTimelineBranch(manageKeyframesParameters, "keyframes"),
+  withTimelineBranch(animationGraphEditorParameters, "graph"),
+  withTimelineBranch(animationTimelineParameters, "timeline"),
+  batchTimelineBranch,
+  withTimelineBranch(animationCopyPasteParameters, "copy_paste"),
+]);
 
 let animationRuntimeContractsWired = false;
 
@@ -437,6 +503,55 @@ function filterFocusedAnimationResult(
   return next;
 }
 
+async function executeOptimizedAnimationTimeline(
+  request: z.infer<typeof optimizedAnimationTimelineParameters>,
+  context?: unknown
+) {
+  const operation = request.operation;
+  if (operation === "batch") {
+    const {
+      operation: _operation,
+      batch_operation,
+      animation_id,
+      ...batchArgs
+    } = request;
+
+    if (animation_id !== undefined) {
+      const animation = resolveCoreAnimation(animation_id, {
+        allowSelected: false,
+      });
+      if (AnimationItem.selected !== animation) {
+        Timeline.pause();
+        animation.select();
+        if (AnimationItem.selected !== animation) {
+          throw new Error(
+            `Could not select animation "${animation.name}" for the batch operation.`
+          );
+        }
+      }
+    }
+
+    return requireRuntimeToolDefinition("batch_keyframe_operations").execute(
+      {
+        ...batchArgs,
+        operation: batch_operation,
+      },
+      context
+    );
+  }
+
+  const target =
+    operation === "keyframes"
+      ? "manage_keyframes"
+      : operation === "graph"
+        ? "animation_graph_editor"
+        : operation === "timeline"
+          ? "animation_timeline"
+          : "animation_copy_paste";
+  const { operation: _operation, ...args } = request;
+  return requireRuntimeToolDefinition(target).execute(args, context);
+}
+
 /**
  * Adds focused, lower-context Animation contracts while preserving the mature
  * canonical executors. No new public Runtime tool is introduced.
@@ -498,6 +613,34 @@ export function wireAnimationRuntimeContracts(): void {
       structuredContent,
     };
   };
+
+  const timelineDefinition = requireRuntimeToolDefinition(
+    "manage_animation_timeline"
+  );
+  timelineDefinition.title = "Manage Bedrock Animation Timeline";
+  timelineDefinition.description =
+    "Authors one Bedrock Animation timeline through keyframes, graph/easing, timeline properties, coherent batch edits, or copy/paste. Batch uses batch_operation for offset/scale/reverse/mirror/smooth/bake.";
+  timelineDefinition.annotations = {
+    ...(timelineDefinition.annotations ?? {}),
+    title: timelineDefinition.title,
+  };
+  timelineDefinition.parameterSchema = optimizedAnimationTimelineParameters;
+  timelineDefinition.inputSchema = {
+    ...timelineDefinition.inputSchema,
+    operation: z
+      .enum(["keyframes", "graph", "timeline", "batch", "copy_paste"])
+      .describe("Animation timeline branch."),
+    batch_operation: z
+      .enum(["offset", "scale", "reverse", "mirror", "smooth", "bake"])
+      .optional()
+      .describe("Required only when operation=batch."),
+    animation_id: animationIdOptionalSchema,
+  };
+  timelineDefinition.execute = async (rawArgs, context) =>
+    executeOptimizedAnimationTimeline(
+      optimizedAnimationTimelineParameters.parse(rawArgs),
+      context
+    );
 
   const captureDefinition = requireRuntimeToolDefinition("capture_model_views");
   const originalCaptureDefinition: RuntimeToolDefinition = {
