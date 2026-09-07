@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { textureIdOptionalSchema } from "@/lib/zodObjects";
 import {
   computeTextureRevision,
   requireTextureRevisionDimensions,
@@ -22,6 +23,19 @@ export const textureEvidenceRegionSchema = z
 
 export const textureEvidenceOptionsSchema = z
   .object({
+    region: textureEvidenceRegionSchema.optional(),
+    expected_revision: textureRevisionSchema.optional(),
+  })
+  .strict();
+
+/**
+ * Generator-ready replacement for the existing get_texture input contract.
+ * It remains internal until canonical generated API output can be authored with
+ * the public ToolSpec change.
+ */
+export const focusedGetTextureParameters = z
+  .object({
+    texture: textureIdOptionalSchema,
     region: textureEvidenceRegionSchema.optional(),
     expected_revision: textureRevisionSchema.optional(),
   })
@@ -70,6 +84,30 @@ export function normalizeTextureEvidenceRegion(
     );
   }
   return parsed;
+}
+
+export function textureEvidenceRegionToLogicalUv(
+  region: TextureEvidenceRegion,
+  bitmapWidth: number,
+  bitmapHeight: number,
+  uvWidth: number,
+  uvHeight: number
+): [number, number, number, number] {
+  const normalized = normalizeTextureEvidenceRegion(
+    region,
+    bitmapWidth,
+    bitmapHeight
+  );
+  const [validatedUvWidth, validatedUvHeight] = requireTextureRevisionDimensions(
+    uvWidth,
+    uvHeight
+  );
+  return [
+    (normalized.x / bitmapWidth) * validatedUvWidth,
+    (normalized.y / bitmapHeight) * validatedUvHeight,
+    ((normalized.x + normalized.width) / bitmapWidth) * validatedUvWidth,
+    ((normalized.y + normalized.height) / bitmapHeight) * validatedUvHeight,
+  ];
 }
 
 export function cropTextureRgba(
