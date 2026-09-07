@@ -1,5 +1,10 @@
 # Workspace Agent Routing
 
+## Instruction priority
+
+- Current user intent takes precedence over workflow guidance in `AGENTS.md` and Skills; repository safety/integrity rules and actual capability limits still apply.
+- Do not invent confirmation gates. If a Skill would pause, block, or redirect an explicit request, apply only the exact necessary constraint and name the rule when it materially changes the outcome.
+
 ## Branch and boot
 
 - `Local` is working authority; `main` changes only on explicit user request.
@@ -16,7 +21,7 @@ CONTEXT: LIVE_BLOCKBENCH
 SWITCH CONTEXT: <REMOTE_GITHUB | LOCAL_CODE | LIVE_BLOCKBENCH>
 ```
 
-A marker is intent, not proof. If it overstates capability, use the highest provable context and report the mismatch. Without a marker, choose the lowest sufficient provable context. Never infer `LOCAL_CODE` from “Codex” or a local-sounding task; never infer `LIVE_BLOCKBENCH` because Blockbench is mentioned. `LIVE_BLOCKBENCH` is never assumed.
+A marker is intent, not proof. Without one, choose the lowest sufficient provable context. Never infer `LOCAL_CODE` from “Codex” or `LIVE_BLOCKBENCH` from mentioning Blockbench.
 
 ```text
 REMOTE_GITHUB   = GitHub repository + CI; no local worktree/Bun/installed Blockbench
@@ -28,9 +33,9 @@ Proof ceiling follows actual context; exact-commit source acceptance follows `GI
 
 ```text
 REMOTE_GITHUB → exhaust source/static/CI-verifiable work first
-higher-context dependency → partition; prepare tests/harness/provenance/evidence here
-handoff only the minimum LOCAL_CODE/LIVE_BLOCKBENCH residue
-never transfer the whole task because one residue needs higher capability
+higher-context dependency → partition; prepare independent tests/harness/evidence here
+handoff only the minimum higher-context residue
+never transfer the whole task because one residue needs more capability
 covered source result complete → accept CI proof; label only genuinely missing higher-context proof
 ```
 
@@ -40,8 +45,9 @@ For read-only `amati`, inspect, audit, or recovery:
 
 ```text
 AGENTS.md → GITHUB_RULES.md Core Rules
-→ CONTEXT.md / next-action only if material
-→ smallest owner → report → STOP
+→ smallest owner/evidence that can answer the question
+→ CONTEXT.md / next-action only when prior state is material
+→ report → STOP
 ```
 
 ### Repository / Plugin Work
@@ -49,7 +55,8 @@ AGENTS.md → GITHUB_RULES.md Core Rules
 ```text
 AGENTS.md → GITHUB_RULES.md Core Rules → EXECUTION CONTEXT
 → Bounded | Standard | Complex
-→ nearest AGENTS.md + exact owner → only material continuity/evidence
+→ nearest AGENTS.md + exact owner
+→ only evidence/continuity that can change the decision
 ```
 
 #### Development Execution Gate
@@ -76,26 +83,21 @@ STOP Condition
 
 ### Bounded Maintenance
 
-Concrete bug/stale rule/test/CI routing or behavior-preserving cleanup starts at its exact owner.
+Concrete bug, stale rule/test, CI routing defect, or behavior-preserving cleanup starts at the exact owner. Do not load `development-brief` merely because source code is involved.
 
 ### Standard Development
 
-Use when requirement and owner are clear but work exceeds bounded maintenance. Finish the GitHub-verifiable partition before escalating any generator/filesystem/native residue.
+Use when requirement and owner are clear but work exceeds bounded maintenance. Finish the GitHub-verifiable partition before escalating generator/filesystem/native residue.
 
 ### Complex / Ambiguous Development
 
-Use `.agents/skills/development-brief/SKILL.md` for architecture/redesign, unclear or cross-owner requirements, material public contracts, unresolved success criteria, or quality/efficiency work. It keeps `Forbidden Proxy / Non-Goal` explicit.
+Use `.agents/skills/development-brief/SKILL.md` only when architecture, cross-owner ambiguity, unresolved success criteria, or a material unknown prevents a reliable standard contract. A clear optimization request does not become Complex merely because quality or efficiency matters.
 
 ## Task Class After Context
 
 ### Reference Preparation
 
-Image generation belongs in **ChatGPT** using `blockbench-reference-generator`:
-
-```text
-source image / user intent → canonical five-preview board → user approval
-→ actual approved reference image handed to Codex
-```
+Image/reference generation belongs in **ChatGPT** using `.agents/skills/blockbench-reference-generator/SKILL.md`. Codex authoring consumes the actual user-approved reference image; it does not recreate the reference workflow.
 
 ### Asset Authoring
 
@@ -103,9 +105,8 @@ Before any BlockIT Bedrock Entity authoring mutation:
 
 ```text
 current AGENTS.md
-→ current .agents/skills/blockit-bedrock-entity-mcp/SKILL.md
-→ semantic owner
-→ exactly one matching current specialist:
+→ .agents/skills/blockit-bedrock-entity-mcp/SKILL.md
+→ exactly one matching current-worktree specialist
 
 Geometry / rig / pivots / UV Layout
 → .agents/skills/blockbench-bedrock-modelling/SKILL.md
@@ -117,43 +118,37 @@ Animation / motion
 → .agents/skills/blockit-bedrock-animation/SKILL.md
 ```
 
-No authoring mutation is allowed until the router + matching specialist are loaded from the current worktree and its prerequisite gate is satisfied. Prior-chat memory or remembered Skill content is not a substitute. Load a new specialist before the first mutation when semantic ownership changes.
+No authoring mutation is allowed until the router + matching specialist are loaded from the current worktree and the specialist entry gate is satisfied. Load a new specialist only when semantic ownership changes.
 
-New-model authoring:
+Hot path:
 
 ```text
-approved image → Active Workspace
-→ Requirement Gate: Asset + Dimensions + Geometry Strategy + Animation Required
-→ create Blockbench project
-→ BlockIT Gateway → shared AUTHORING surface
-→ Geometry form
-→ internal verify → READY_FOR_USER_REVIEW → user Geometry APPROVED
-→ Geometry-owned UV Layout → UV Layout PASS
-→ Texturing → Texture Verify → user Texture APPROVED
-→ Animation handoff when required → Finalization
+approved image + explicit asset requirements
+→ active stage/owner
+→ exact known Runtime capability
+→ mutate
+→ reuse returned state
+→ minimum evidence that can change the verdict
 ```
 
-`Geometry Strategy` is user-selected `DIRECT | 3D_ASSISTED`; never infer/default/auto-switch it. `3D_ASSISTED` is one package: Shape Reconstruction → PrimitiveAnything → Cuboid Scaffold → semantic Geometry cleanup. If its execution is unavailable, `BLOCKED`; never emulate/fallback.
+`Geometry Strategy` is user-selected `DIRECT | 3D_ASSISTED`; never infer, default, or silently switch it. AUTHORING↔Animation handoff uses Gateway `switch_authoring_phase`; Geometry↔Texturing correction stays in AUTHORING.
 
-Geometry and Texturing retain distinct semantic owners while sharing the AUTHORING Runtime surface. A texture-discovered Geometry/UV defect returns directly to the Geometry owner; no `switch_authoring_phase` is required for Geometry↔Texturing correction.
-
-`HANDOFF_REQUIRED` is only for AUTHORING↔Animation. Retain resume-critical state, invoke `switch_authoring_phase` through Gateway, load the matching specialist, and continue the **same task/chat**.
-
-For normal asset authoring, do not automatically load repository continuation/history/foundation docs. Asset authoring is not software **Development**; do not route it through `development-brief` unless repository/plugin behavior changes.
+For normal asset authoring, do not automatically load repository continuation/history/foundation docs, scan source/tests/CI, or run development verifiers. Asset authoring is not software **Development**; do not route it through `development-brief` unless repository/plugin behavior changes.
 
 ## GitHub Work
 
-`GITHUB_RULES.md` owns branch/ref, GitHub-first partitioning, transfer, atomic delivery, CI/security, retries, STOP.
+`GITHUB_RULES.md` owns branch/ref, GitHub-first partitioning, transfer, atomic delivery, CI/security, retries, and STOP.
 
 ## Source Precedence
 
-current user → current source/proof → root/nearest `AGENTS.md` → foundation → `next-action.md` → `CONTEXT.md` → history.
+current user → current source/proof → nearest `AGENTS.md` → required specialist → foundation/continuity only when material → history.
 
 ## Work Discipline
 
 - Fix the minimum complete owner; no fallback/framework/profile layers without evidence.
+- Reuse fresh returned state; do not add reassurance reads or progress checks.
 - Stop the same failed direction after two attempts without new evidence.
-- `No change required` is valid; never claim proof above context ceiling.
+- `No change required` is valid; never claim proof above the context ceiling.
 - **Authoring Efficiency** = cost to accepted result; **Static Footprint** = guardrail only.
 
 ```text
@@ -170,6 +165,6 @@ Minecraft Bedrock Entity (`bedrock`) remains default. For `mcp/**`, `mcp/AGENTS.
 
 ## Canonical Owners
 
-GitHub → `GITHUB_RULES.md`; flow → `docs/knowledge/flow.md`; continuation → `next-action.md`; assets → `workspace/active/<project>/README.md`; facts → `CONTEXT.md`; ownership → `implementation-map.md`; proof → `current-validation.md`; policy → `docs/foundation/`; research → `Experimental/`.
+GitHub → `GITHUB_RULES.md`; flow → `docs/knowledge/flow.md`; continuation → `docs/knowledge/next-action.md`; assets → `workspace/active/<project>/README.md`; facts → `CONTEXT.md`; ownership → `docs/knowledge/implementation-map.md`; proof → `docs/knowledge/current-validation.md`; policy → `docs/foundation/`; research → `Experimental/`.
 
 Do not create duplicate navigation, review archives, decision logs, roadmaps, or parallel state systems.
