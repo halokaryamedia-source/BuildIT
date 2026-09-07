@@ -116,6 +116,10 @@ describe("Animation runtime efficiency contracts", () => {
     expect(wiring).toContain("optimizedAnimationTimelineParameters");
     expect(wiring).toContain("withTemporaryAnimationPreview");
     expect(wiring).toContain("loop_endpoint_mismatch_candidates");
+    expect(wiring).toContain("Create Bedrock Animation Clip");
+    expect(wiring).toContain("not project creation");
+    expect(wiring).toContain("Inspect Animation Clip or Controller");
+    expect(wiring).toContain("not model-element inspection");
     expect(registration).toContain("registerConsolidatedAnimationTimelineTool();");
     expect(registration).toContain("wireAnimationRuntimeContracts();");
     expect(
