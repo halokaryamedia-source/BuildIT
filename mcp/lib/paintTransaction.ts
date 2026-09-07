@@ -51,8 +51,9 @@ export const paintTransactionOperationSchema = z.union([
 ]);
 
 /**
- * Internal, generator-ready contract for one bounded exact-pixel transaction.
- * It is intentionally not registered as a public MCP tool in REMOTE_GITHUB.
+ * Public contract for one bounded exact-pixel transaction. Runtime registration
+ * is owned by server/tools/prelocal-wiring.ts so policy/planning remains pure
+ * and independently testable.
  */
 export const paintTransactionParameters = z
   .object({
