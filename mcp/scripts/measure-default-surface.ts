@@ -12,8 +12,10 @@ const PROTOCOL_VERSION = "2025-06-18";
 // ceilings were raised by its measured delta.
 // 2026-09-02: Live phase orchestration adds one Core control tool. Catalog
 // count and aggregate input-schema ceiling move by the measured capability delta.
+// 2026-09-08: exact texture mutation gained one public revision-protected
+// transaction tool; legacy paint operations remain available for interactive strokes.
 const SURFACE_BUDGET = {
-  tool_count: 52,
+  tool_count: 53,
   initialize_instructions_chars: 700,
   tools_list_response_chars: 82_000,
   input_schema_chars: 58_700,
