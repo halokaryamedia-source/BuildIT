@@ -3,10 +3,11 @@ import {
   bedrockGeometryIdentifierInputSchema,
   resolveBedrockProjectModelIdentifier,
 } from "@/lib/bedrockProjectIdentity";
-import { requirePaintTransactionV1Target } from "@/lib/paintTransactionPolicy";
 import {
-  buildTextureEvidenceSnapshot,
-} from "@/lib/textureEvidence";
+  PAINT_TEXTURE_TRANSACTION_TOOL_NAME,
+  requirePaintTransactionV1Target,
+} from "@/lib/paintTransactionPolicy";
+import { buildTextureEvidenceSnapshot } from "@/lib/textureEvidence";
 import { buildTextureEvidenceDeliveryMetadata } from "@/lib/textureEvidenceDelivery";
 import { planBedrockGeometryWrite } from "@/lib/bedrockExportIntegrity";
 import { requireDirectBedrockGeometryWriteV1 } from "@/lib/bedrockExportWritePolicy";
@@ -33,7 +34,8 @@ describe("pre-local wiring policy", () => {
     );
   });
 
-  test("exact paint transaction v1 fails closed on layered textures", () => {
+  test("exact paint transaction v1 has one domain-specific name and fails closed on layered textures", () => {
+    expect(PAINT_TEXTURE_TRANSACTION_TOOL_NAME).toBe("paint_texture_transaction");
     expect(
       requirePaintTransactionV1Target({
         texture_uuid: "base-uuid",
