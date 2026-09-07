@@ -96,7 +96,7 @@ Fix the first wrong owner, not the easiest downstream file.
 3. **Preflight regressions** and exhaust GitHub-first work.
 4. Get the first evidence that can falsify the current diagnosis.
 5. Fix the first wrong owner; `No change required` and named `UNKNOWN` are valid.
-6. Deliver one coherent change under `GITHUB_RULES.md`; hand off only the residue.
+6. Implement one coherent delivery under `GITHUB_RULES.md`; hand off only the residue.
 7. Compare proof to Success Metric, report any higher-context gap, then STOP.
 
 ## Owner Selection

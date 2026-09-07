@@ -21,7 +21,7 @@ CONTEXT: LIVE_BLOCKBENCH
 SWITCH CONTEXT: <REMOTE_GITHUB | LOCAL_CODE | LIVE_BLOCKBENCH>
 ```
 
-A marker is intent, not proof. Without one, choose the lowest sufficient provable context. Never infer `LOCAL_CODE` from “Codex” or `LIVE_BLOCKBENCH` from mentioning Blockbench.
+A marker is intent, not proof. Without a marker, choose the lowest sufficient provable context. Never infer `LOCAL_CODE` from “Codex”; never infer `LIVE_BLOCKBENCH` from mentioning Blockbench. `LIVE_BLOCKBENCH` is never assumed.
 
 ```text
 REMOTE_GITHUB   = GitHub repository + CI; no local worktree/Bun/installed Blockbench
@@ -74,6 +74,7 @@ STOP Condition
 ```text
 Goal
 Success Metric
+Forbidden Proxy / Non-Goal
 First Evidence Required / first wrong owner
 In Scope / Out of Scope
 Execution Partition / higher-context residue
@@ -120,6 +121,8 @@ Animation / motion
 
 No authoring mutation is allowed until the router + matching specialist are loaded from the current worktree and the specialist entry gate is satisfied. Load a new specialist only when semantic ownership changes.
 
+Geometry↔Texturing use the shared AUTHORING surface: Geometry APPROVED → UV Layout PASS → Texturing → Texturing APPROVED. Animation remains a Gateway handoff.
+
 Hot path:
 
 ```text
@@ -131,7 +134,7 @@ approved image + explicit asset requirements
 → minimum evidence that can change the verdict
 ```
 
-`Geometry Strategy` is user-selected `DIRECT | 3D_ASSISTED`; never infer, default, or silently switch it. AUTHORING↔Animation handoff uses Gateway `switch_authoring_phase`; Geometry↔Texturing correction stays in AUTHORING.
+`Geometry Strategy` is user-selected `DIRECT | 3D_ASSISTED`; never infer, default, or silently switch it. AUTHORING↔Animation handoff uses Gateway `switch_authoring_phase` in the same task; Geometry↔Texturing correction stays in AUTHORING.
 
 For normal asset authoring, do not automatically load repository continuation/history/foundation docs, scan source/tests/CI, or run development verifiers. Asset authoring is not software **Development**; do not route it through `development-brief` unless repository/plugin behavior changes.
 
