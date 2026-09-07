@@ -238,6 +238,11 @@ const TOOL_DISCOVERY_INTENT_GROUPS = [
     "draw on the texture using brush settings",
   ],
   [
+    "paint_texture_transaction",
+    "atomically paint exact texture pixels with revision protection",
+    "apply several exact pixel edits as one undo transaction",
+  ],
+  [
     "texture_selection",
     "select a rectangular area of the texture",
     "invert the current texture selection",
@@ -565,17 +570,17 @@ export function assertToolDiscoveryEvalIntegrity(
 ): void {
   const failures: string[] = [];
 
-  if (report.enabled_tool_count !== 52) {
+  if (report.enabled_tool_count !== 53) {
     failures.push(
-      `enabled_tool_count=${report.enabled_tool_count}; expected 52`
+      `enabled_tool_count=${report.enabled_tool_count}; expected 53`
     );
   }
   if (report.case_count < 100 || report.case_count > 150) {
     failures.push(`case_count=${report.case_count}; expected 100..150`);
   }
-  if (report.expected_tool_count !== 38) {
+  if (report.expected_tool_count !== 39) {
     failures.push(
-      `expected_tool_count=${report.expected_tool_count}; expected 38`
+      `expected_tool_count=${report.expected_tool_count}; expected 39`
     );
   }
   if (report.missing_expected_tools.length > 0) {
