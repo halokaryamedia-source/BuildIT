@@ -40,7 +40,7 @@ Known → invoke; unknown → `search_capabilities(limit=4)`; describe on schema
 **Pin atlas UUID and pass `texture_id` when multiple textures are loaded.**
 
 ## Reference-Grounded Palette
-Approved image required. Define palette roles `BASE | SHADOW | HIGHLIGHT | ACCENT/IDENTITY` per cohort; one ramp/material; separate palette from lighting. `color_picker_tool` samples atlas, not reference.
+Approved image required. Define palette roles `BASE | SHADOW | HIGHLIGHT | ACCENT/IDENTITY` per cohort; one hue ramp/material; separate palette from lighting. `color_picker_tool` samples atlas, not reference.
 
 ### Atlas-Island Discipline
 Integer texels; marks follow orientation. **pixels per UV unit** owns detail scale; simplify/omit or return to Geometry/UV. `alpha` is intentional.
