@@ -17,6 +17,31 @@ describe("professional animation reasoning contract", () => {
     ).toBe(true);
   });
 
+  test("new animation reuses create receipt instead of confirmation inspection", async () => {
+    const [skill, animationSource] = await Promise.all([
+      source("../.agents/skills/blockit-bedrock-animation/SKILL.md"),
+      source("server/tools/animation.ts"),
+    ]);
+
+    expect(skill).toContain(
+      "new known clip → create_animation → reuse returned UUID/state; timeline if needed"
+    );
+    expect(skill).toContain("existing/unknown detail → inspect_animation");
+    expect(skill).toContain(
+      "`create_animation` receipt → reuse; **no confirmation inspect**."
+    );
+
+    for (const marker of [
+      "uuid: createdAnimation.uuid",
+      "name: createdAnimation.name",
+      "length: createdAnimation.length",
+      "snapping: createdAnimation.snapping",
+      "structuredContent: result",
+    ]) {
+      expect(animationSource).toContain(marker);
+    }
+  });
+
   test("active animation guidance requires a motion design contract without preset metrics", async () => {
     const [skill, policy] = await Promise.all([
       source("../.agents/skills/blockit-bedrock-animation/SKILL.md"),
