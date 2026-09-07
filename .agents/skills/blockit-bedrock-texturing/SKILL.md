@@ -6,9 +6,9 @@ description: Mandatory BlockIT Bedrock Texture specialist.
 Geometry/UV capabilities remain callable for bounded upstream correction; Texturing **must not borrow Cube mutation**.
 
 ## Entry / Correction
-**No Geometry↔Texturing phase switch.** `HANDOFF_REQUIRED` + `switch_authoring_phase` only for AUTHORING↔Animation; same task.
+**No Geometry↔Texturing phase switch.** `HANDOFF_REQUIRED` + `switch_authoring_phase` only for AUTHORING↔Animation.
 Entry: **Geometry APPROVED + UV Layout PASS**, **final Box UV locked with `autouv=0`**, no invalid/out-of-bounds/partial-overlap.
-unlocked/invalid UV → Geometry owner + bounded UV correction; no phase switch.
+unlocked/invalid UV → Geometry owner + bounded UV correction.
 
 ## Direct Routing
 Reuse fresh state.
@@ -28,7 +28,7 @@ evidence → capture_model_views
 `uv_audit.production_gate`=ready is hygiene, **not UV Layout PASS**. Review face aspect ratio, texel density, orientation, padding/seams, semantic UV reuse. Reuse needs compatible semantics/orientation; zero reuse is valid.
 Requested atlas size/density are constraints: never silently enlarge; test native/per-face/reuse first, then report tradeoff.
 
-## Conditional Support — Not Default Routing
+## Conditional Support
 Conditional on user intent; not normal hot path:
 `gradient_tool | color_picker_tool | copy_brush_tool | paint_settings | create_brush_preset | load_brush_preset | texture_selection | texture_layer_management | add_texture_group | list_materials | get_material_info | import_texture_set`.
 `gradient_tool`: reference-supported continuous transition; no extra discovery/readback.
@@ -43,7 +43,7 @@ Known → invoke; unknown → `search_capabilities(limit=4)`; describe on schema
 Approved image required. Define palette roles `BASE | SHADOW | HIGHLIGHT | ACCENT/IDENTITY` per cohort; one hue ramp/material; separate palette from lighting. `color_picker_tool` samples atlas, not reference.
 
 ### Atlas-Island Discipline
-Integer texels; marks follow orientation. **pixels per UV unit** owns detail scale; simplify/omit when the detail is not material; return to Geometry/UV when detail cannot fit at the approved density without breaking the mapping. `alpha` is intentional.
+Integer texels; marks follow orientation. **pixels per UV unit** owns detail scale. Omit immaterial detail; return to Geometry/UV when detail cannot fit at the approved density. `alpha` is intentional.
 
 ## Coherent Styling Window / Anti-Micro-Loop
 Plan material/palette/form/identity first. Prove one representative patch/cohort has material identity, form/contact and detail scale; formula/gradient/color count is not quality evidence.
