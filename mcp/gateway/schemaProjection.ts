@@ -47,6 +47,7 @@ const CAPABILITY_BRANCH_FIELDS: Record<string, CapabilityProjection> = {
       ],
       batch: [
         "operation",
+        "animation_id",
         "batch_operation",
         "selection",
         "range",
