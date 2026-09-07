@@ -122,6 +122,17 @@ describe("tool discovery eval", () => {
       expect(report.metrics.top_8_recall).toBe(1);
     }
 
+    // Animation is deliberately narrow enough that every routed exact-capability
+    // query must resolve first on the current static proxy. This locks the
+    // create_animation/create_project and inspect_animation/inspect_elements
+    // collisions that motivated the Animation efficiency pass.
+    expect(routed.phase_reports.animation.surface_tool_count).toBe(18);
+    expect(routed.phase_reports.animation.metrics.top_1_accuracy).toBe(1);
+    expect(routed.phase_reports.animation.metrics.top_3_recall).toBe(1);
+    expect(routed.phase_reports.animation.metrics.top_8_recall).toBe(1);
+    expect(routed.phase_reports.animation.metrics.mean_reciprocal_rank).toBe(1);
+    expect(routed.phase_reports.animation.collision_pairs).toEqual([]);
+
     expect(routedMetrics.top_1_accuracy).toBeGreaterThanOrEqual(0.83);
     expect(routedMetrics.top_3_recall).toBeGreaterThanOrEqual(0.93);
     expect(routedMetrics.top_8_recall).toBe(1);
