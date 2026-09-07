@@ -210,6 +210,7 @@ describe("BlockIT Gateway contract", () => {
     expect(source).toContain("new StdioServerTransport()");
     expect(source).toContain("compactGatewayCapabilityStructuredContent");
     expect(source).toContain('max(50).default(4)');
+    expect(backendSource).toMatch(/searchCapabilities\(\s*query: string,\s*limit: number = 4/);
     expect(source).toContain("Runtime resources and prompts are not proxied");
     expect(source).toContain("inputSchema: tool.inputSchema ?? {}");
     expect(source).not.toContain("structuredContent: { capability: tool }");

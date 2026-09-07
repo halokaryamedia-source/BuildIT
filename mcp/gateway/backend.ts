@@ -295,7 +295,7 @@ export class BlockitRuntimeBackend {
 
   async searchCapabilities(
     query: string,
-    limit: number = 12
+    limit: number = 4
   ): Promise<CapabilitySummary[]> {
     return this.runExclusive(async () => {
       await this.ensureCatalogUnsafe();
