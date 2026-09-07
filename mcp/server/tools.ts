@@ -24,6 +24,7 @@ import { registerAnimationTools } from "./tools/animation";
 import { registerAnimationEffectTools } from "./tools/animation-effects";
 import { registerAnimationControllerTools } from "./tools/animation-controller";
 import { registerAnimationInspectionTools } from "./tools/animation-inspection";
+import { wireAnimationRuntimeContracts } from "./tools/animation-runtime-wiring";
 import { registerCubesTools } from "./tools/cubes";
 import { registerElementTools } from "./tools/element";
 import { registerElementInspectionTools } from "./tools/element-inspection";
@@ -385,6 +386,7 @@ export function registerMcpProfile(
   if (profile === DEFAULT_MCP_REGISTRATION_PROFILE) registerConsolidatedInspectionTool();
   if (profile === DEFAULT_MCP_REGISTRATION_PROFILE) registerConsolidatedMaterialTool();
   if (profile === DEFAULT_MCP_REGISTRATION_PROFILE) registerConsolidatedAnimationTimelineTool();
+  if (profile === DEFAULT_MCP_REGISTRATION_PROFILE) wireAnimationRuntimeContracts();
   if (profile === DEFAULT_MCP_REGISTRATION_PROFILE) registerConsolidatedMaterialInstancesTool();
 
   phaseSurfaceCache.clear();
