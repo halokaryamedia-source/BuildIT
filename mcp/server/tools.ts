@@ -32,6 +32,10 @@ import { registerImportTools } from "./tools/import";
 import { registerPaintTools } from "./tools/paint";
 import { registerProjectTools } from "./tools/project";
 import { registerTextureTools } from "./tools/texture";
+import {
+  registerPaintTextureTransactionTool,
+  wireTextureRuntimeContracts,
+} from "./tools/prelocal-wiring";
 import { registerUITools } from "./tools/ui";
 import { registerMaterialInstanceTools } from "./tools/material-instances";
 import { registerHistoryTools } from "./tools/history";
@@ -221,6 +225,16 @@ function registerElementFamilyTools(): void {
   registerLocatorTools();
 }
 
+function registerPaintFamilyTools(): void {
+  registerPaintTools();
+  registerPaintTextureTransactionTool();
+}
+
+function registerTextureFamilyTools(): void {
+  registerTextureTools();
+  wireTextureRuntimeContracts();
+}
+
 /**
  * Registration ownership stays family-level. The profile selects which existing
  * family registration functions are invoked; it does not introduce per-tool
@@ -240,10 +254,10 @@ const registrationFunctions: Record<
   history: registerHistoryTools,
   import: registerImportTools,
   material_instances: registerMaterialInstanceTools,
-  paint: registerPaintTools,
+  paint: registerPaintFamilyTools,
   project: registerProjectTools,
   phase_control: registerPhaseControlTool,
-  textures: registerTextureTools,
+  textures: registerTextureFamilyTools,
   ui: registerUITools,
   validator_resources: registerValidatorResources,
 };
