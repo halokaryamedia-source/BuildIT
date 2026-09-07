@@ -34,6 +34,7 @@
     "verify:geometry-live": "bun run ./scripts/verify-geometry-live.ts",
     "verify:surface-gap-live": "bun run ./scripts/verify-surface-gap-live.ts",
     "verify:texturing-live": "bun run ./scripts/verify-texturing-live.ts",
+    "verify:prelocal-wiring-live": "bun run ./scripts/verify-prelocal-wiring-live.ts",
     "verify:animation-live": "bun run ./scripts/verify-animation-live.ts",
     "verify:persistence-live": "bun run ./scripts/verify-persistence-live.ts",
     "verify:lift-quality-live": "bun run ./scripts/verify-lift-quality-live.ts",
