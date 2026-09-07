@@ -36,6 +36,17 @@ describe("REMOTE_GITHUB authoring handoff contracts", () => {
         operations: [],
       }).success
     ).toBe(false);
+    expect(
+      paintTransactionParameters.safeParse({
+        operations: [
+          {
+            operation: "fill_rect",
+            color: "#FFFFFFFF",
+            rect: { x: 0, y: 0, width: 4, height: 4 },
+          },
+        ],
+      }).success
+    ).toBe(false);
 
     expect(
       createTextureVariantParameters.safeParse({
@@ -52,5 +63,27 @@ describe("REMOTE_GITHUB authoring handoff contracts", () => {
         source_texture_id: "base",
       }).success
     ).toBe(false);
+  });
+
+  test("continuation is a bounded local wiring checklist, not another design phase", async () => {
+    const continuation = await Bun.file("../docs/knowledge/next-action.md").text();
+    for (const marker of [
+      "LOCAL_CODE — minor closure only",
+      "Do not redesign the contracts",
+      "focusedGetTextureParameters",
+      "paintTransactionParameters",
+      "createTextureVariantParameters",
+      "cubeToolInputSchema",
+      "inputSchema: cubeToolInputSchema",
+      "planBedrockGeometryWrite",
+      "NATIVE_MERGE_REQUIRED",
+      "bun run docs:build",
+      "bun run docs:check",
+      "bun run verify:mcp",
+    ]) {
+      expect(continuation).toContain(marker);
+    }
+    expect(continuation).toContain("not repair targets");
+    expect(continuation.toLowerCase()).toContain("do not create a generic executor/planner");
   });
 });
