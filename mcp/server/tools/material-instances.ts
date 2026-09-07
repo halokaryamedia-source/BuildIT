@@ -109,6 +109,8 @@ function findCubeOrThrow(id: string): Cube {
 }
 
 type MaterialFace = z.infer<typeof faceEnum>;
+type MaterialInstanceMutationOperation = "set" | "bulk_set" | "clear";
+type MaterialInstanceCubeIdentity = { uuid: string; name: string };
 
 function resolveExplicitOrSelectedCubes(
   cubeId: string | undefined,
@@ -135,6 +137,31 @@ function setMaterialNameOnFaces(
     modified += 1;
   }
   return modified;
+}
+
+export function buildMaterialInstanceMutationSummary(
+  operation: MaterialInstanceMutationOperation,
+  cubes: readonly MaterialInstanceCubeIdentity[],
+  faceCount: number,
+  details: Record<string, unknown> = {}
+) {
+  return {
+    operation,
+    cube_count: cubes.length,
+    face_count: faceCount,
+    cubes: cubes.map((cube) => ({ uuid: cube.uuid, name: cube.name })),
+    ...details,
+  };
+}
+
+function materialInstanceMutationResult(
+  result: ReturnType<typeof buildMaterialInstanceMutationSummary>,
+  text: string
+) {
+  return {
+    content: [{ type: "text" as const, text }],
+    structuredContent: result,
+  };
 }
 
 // ============================================================================
@@ -272,7 +299,16 @@ export function registerMaterialInstanceTools() {
         Undo.finishEdit("Set material instances");
         Canvas.updateAll();
 
-        return `Set material instance "${material_name}" on ${modifiedCount} face(s) across ${cubes.length} cube(s).`;
+        const result = buildMaterialInstanceMutationSummary(
+          "set",
+          cubes,
+          modifiedCount,
+          { material_name, faces: [...faces] }
+        );
+        return materialInstanceMutationResult(
+          result,
+          `Set material instance "${material_name}" on ${modifiedCount} face(s) across ${cubes.length} cube(s).`
+        );
       },
     },
     materialInstanceToolDocs[1].status
@@ -375,7 +411,16 @@ export function registerMaterialInstanceTools() {
         Undo.finishEdit("Bulk set material instances");
         Canvas.updateAll();
 
-        return `Applied ${assignments.length} material instance assignment(s) affecting ${totalModified} face(s) on ${cubesToEdit.length} cube(s).`;
+        const result = buildMaterialInstanceMutationSummary(
+          "bulk_set",
+          cubesToEdit,
+          totalModified,
+          { assignment_count: assignments.length }
+        );
+        return materialInstanceMutationResult(
+          result,
+          `Applied ${assignments.length} material instance assignment(s) affecting ${totalModified} face(s) on ${cubesToEdit.length} cube(s).`
+        );
       },
     },
     materialInstanceToolDocs[3].status
@@ -392,9 +437,19 @@ export function registerMaterialInstanceTools() {
               cube_id,
               "No cube specified and no cubes selected. Provide a cube_id, select cubes, or set all_cubes=true."
             );
+        const facesToClear = faces || faceEnum.options;
 
         if (cubes.length === 0) {
-          return "No cubes to process.";
+          const result = buildMaterialInstanceMutationSummary(
+            "clear",
+            cubes,
+            0,
+            { faces: [...facesToClear], all_cubes }
+          );
+          return materialInstanceMutationResult(
+            result,
+            "No cubes to process; no material instances changed."
+          );
         }
 
         Undo.initEdit({
@@ -402,7 +457,6 @@ export function registerMaterialInstanceTools() {
           uv_only: true,
         });
 
-        const facesToClear = faces || faceEnum.options;
         let clearedCount = 0;
         for (const cube of cubes) {
           clearedCount += setMaterialNameOnFaces(
@@ -416,7 +470,16 @@ export function registerMaterialInstanceTools() {
         Undo.finishEdit("Clear material instances");
         Canvas.updateAll();
 
-        return `Cleared material instances from ${clearedCount} face(s) across ${cubes.length} cube(s).`;
+        const result = buildMaterialInstanceMutationSummary(
+          "clear",
+          cubes,
+          clearedCount,
+          { faces: [...facesToClear], all_cubes }
+        );
+        return materialInstanceMutationResult(
+          result,
+          `Cleared material instances from ${clearedCount} face(s) across ${cubes.length} cube(s).`
+        );
       },
     },
     materialInstanceToolDocs[4].status
