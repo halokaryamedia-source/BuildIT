@@ -1,6 +1,6 @@
 # BlockIT Flow
 
-Updated: 2026-09-05
+Updated: 2026-09-07
 
 This is the **single detailed current flow**. Root `AGENTS.md` owns deterministic task/Skill routing; `workspace/README.md` owns asset continuity; `next-action.md` owns implementation continuation.
 
@@ -293,18 +293,21 @@ Routine Geometry↔Texturing correction uses the shared AUTHORING surface; no ph
 
 ## 11. Finalization
 
-After all required approvals/gates:
+After all required approvals/gates, load `docs/foundation/09-finalization-standard.md` and apply it only for `FINALIZATION`:
 
 ```text
 FINALIZATION
-→ technical validation only
+→ current-state authority
+→ requested deliverable contract
 → format/dimensions/hierarchy/references/UV/textures/animation refs
-→ no live Shape GLB/reference_model
-→ no temporary/debug elements
-→ workspace consistent
+→ native identifier/reference consistency
+→ requested exports present for the current revision
+→ no live Shape GLB/reference_model or temporary/debug elements
+→ proof labels no stronger than evidence
+→ workspace current summary consistent
 ```
 
-Finalization cannot silently alter approved visual work. Material defect → reopen exact owner → repair → required re-approval → Finalization again. PASS with no material change → final save + `COMPLETE`.
+Finalization cannot silently alter approved visual work or treat native-save/export/parse success as visual or whole-asset completion. Material defect → reopen exact owner → repair → required re-approval → Finalization again. Missing requested output, identifier/reference mismatch, stale authority, contradictory current summary, or overclaimed proof → `FINALIZATION BLOCKED`. PASS with no material change → final save + `COMPLETE`.
 
 ## 12. Existing Model / Improvement
 
