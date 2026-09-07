@@ -21,7 +21,7 @@ bone/pivot/IK/parenting structure must change
 → continue same task with Geometry specialist
 ```
 
-Do not search for `bone_rigging` while Animation is active.
+Do not search for `bone_rigging` while Animation is active. `create_project` is not an Animation capability; missing project/lifecycle state returns upstream through Gateway rather than rebuilding a project inside Animation.
 Before production keys, representative extreme poses must preserve required attachment/contact and clearance. If they cannot, handoff Geometry first.
 
 ## Direct Routing
@@ -32,12 +32,15 @@ all timeline/keyframe work            → manage_animation_timeline (operation: 
 existing animation effects            → manage_animation_effects
 controller state/composition/effects  → manage_animation_controller
 new-animation particle/sound          → create_animation
+pose/time visual evidence             → capture_model_views(animation_preview)
+focused correction evidence           → inspect_animation(bone + optional channel/time_range)
 ```
 `new known clip → create_animation → reuse returned UUID/state; timeline if needed`
 `existing/unknown detail → inspect_animation`
 
-Known capability → invoke via Gateway. Unknown/stale → `search_capabilities`; schema → `describe_capability` once. **Reuse fresh UUID/state; known identity must not fall back to broad hierarchy discovery or confirmation reads.**
-Use `manage_animation_timeline`; `batch` owns coherent cohort work, not loops per key. Controller/effect/graph/copy-paste are conditional.
+Known capability → invoke via Gateway. Unknown/stale → `search_capabilities`; schema → `describe_capability` once. When the consolidated timeline branch is already known, request its projected schema with `branch: {field:"operation", value:"keyframes|graph|timeline|batch|copy_paste"}` rather than loading unrelated branches. **Reuse fresh UUID/state; known identity must not fall back to broad hierarchy discovery or confirmation reads.**
+
+Use `manage_animation_timeline`; `batch` owns coherent cohort work, not loops per key. For the batch branch, `operation="batch"` selects the public branch and `batch_operation="offset|scale|reverse|mirror|smooth|bake"` selects the actual cohort mutation. Prefer explicit `animation_id` when the target clip is already known. Controller/effect/graph/copy-paste are conditional.
 
 ## Motion Design Contract
 Before production keys define:
@@ -65,12 +68,37 @@ controller blend value    → conditional layer weight
 ```
 Chains use **driver → delayed followers**, deliberate phase/amplitude hierarchy, and attachment continuity.
 
+## Evidence Economy
+Do not mutate timeline time repeatedly just to take screenshots. For bounded pose review use one `capture_model_views` call with `animation_preview.animation_id` and explicit sample `times`; keep `views × times <= 8`. The Runtime temporarily poses the clip, captures deterministic views, and restores persistent timeline/selection state.
+
+For a known local defect, inspect only what can explain it:
+```text
+inspect_animation(
+  animation_id,
+  bone,
+  channel?,
+  time_range?,
+  diagnostics?
+)
+```
+Use `diagnostics=true` only when technical review candidates matter. Diagnostics may report out-of-length keys/effects, dangling bone animators, and loop-endpoint mismatch candidates; they are not visual scores and cannot create PASS/FAIL.
+
+Prefer:
+```text
+AUTHOR coherent keys/batch
+→ capture representative times once
+→ if mismatch: focused inspect affected bone/channel/range
+→ one causal correction
+→ recapture only affected time/view cohort
+```
+over per-key inspection, per-time `set_time`, or broad repeated animation dumps.
+
 ## Action / Effects / Verification
 When material: `anticipation → acceleration/action → impact/contact → overshoot/follow-through → recovery → neutral/handoff`.
 
 `DISCOVER → AUTHOR → VERIFY → CORRECT → VERIFY → DONE`
 Review pose/timing/weight/contact → attachment/clipping → secondary motion/effects → loop seam/neutral return.
-Cyclic/idle verification requires repeated full-loop playback; three static snapshots do not prove timing, phase, contact, or seam.
+Cyclic/idle verification requires repeated full-loop playback; bounded static pose samples locate pose/contact defects but do not by themselves prove timing, phase, contact, or seam.
 
 Correction verdict: `IMPROVED | UNCHANGED | REGRESSED`; tool success is not motion quality. Same causal correction direction failing twice without new evidence → `BLOCKED`.
 
