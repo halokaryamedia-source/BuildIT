@@ -12,7 +12,7 @@ Branch: **`Local` only**. Proof → `current-validation.md`.
 - Remote closure: `manage_cubes` Gateway receipt compaction; tools-only Gateway; discovery default `4`; compact describe; asset-authoring cwd/development firewall; Texturing palette/cohort/anti-micro-loop + minimum affected views.
 - Codex asset authoring cwd: repository root or `workspace/active/<asset>/`, **not `mcp/`**.
 - LIVE ACCEPTANCE HARNESS: **SOURCE_READY / LIVE NOT_RUN**. Actual Astra usage reduction and visual Texture quality remain **UNVERIFIED**.
-- `3D_ASSISTED` source/environment readiness is unchanged; native/GPU/visual proof remains deferred.
+- AUTHORING TAXONOMY: Geometry Strategy remains user-selected `DIRECT | 3D_ASSISTED`; native/GPU/visual 3D-Assisted proof remains deferred.
 
 ## LOCAL_CODE residue — Texturing efficiency
 
