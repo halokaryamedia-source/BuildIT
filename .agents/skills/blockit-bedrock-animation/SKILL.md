@@ -30,7 +30,7 @@ pose/time visual evidence             → capture_model_views(animation_preview)
 
 Known → Gateway. Unknown/stale → `search_capabilities`; schema → `describe_capability` once. Reuse fresh UUID/state; known identity must not fall back to broad hierarchy discovery or confirmation reads.
 
-`batch` operation="batch" owns one coherent cohort, not loops per key. `properties` batches clip-native state; `native_operations` owns nested controller/blend curves. `resource_operations` owns client-entity runtime JSON + file-backed controller variables/remap curves. Controller/effect/graph/copy-paste are conditional.
+`batch` uses operation="batch" + batch_operation= for one coherent cohort, not loops per key. `properties` batches clip-native state; `native_operations` owns nested controller/blend curves. `resource_operations` owns client-entity runtime JSON + file-backed controller variables/remap curves. Controller/effect/graph/copy-paste are conditional.
 
 ## Motion Design Contract
 
@@ -53,7 +53,7 @@ Use Molang for continuous/cyclic/reactive motion; authored poses own identity-cr
 
 No separate math tool. Author Molang through existing transforms/properties/controller/effect fields. Accept official trig, clamp/rounding, interpolation, exponential/power, random/die-roll, `math.pi`, and `math.ease_{in|out|in_out}_{back|bounce|circ|cubic|elastic|expo|quad|quart|quint|sine}`. Easing math is version-sensitive; trig uses degrees.
 
-Controller `variables/input/remap_curve` are file-backed because current Blockbench state objects do not preserve them on round-trip; use bounded `resource_operations`, never `risky_eval`.
+Controller `variables/input/remap_curve` are file-backed because Blockbench state does not preserve them; use bounded `resource_operations`, never `risky_eval`.
 
 `diagnostics=true` reports math/dependencies, native/controller state, motion dynamics, client-entity wiring, and runtime dependency candidates without evaluating gameplay truth.
 
