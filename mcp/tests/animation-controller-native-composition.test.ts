@@ -4,7 +4,7 @@ import {
   normalizeControllerBlendCurve,
   wouldCreateControllerCompositionCycle,
 } from "@/lib/animationControllerComposition";
-import { animationControllerNativeParameters } from "@/server/tools/animation-native-intelligence";
+import { animationControllerNativeParameters } from "@/server/tools/animation-controller-native-intelligence";
 
 describe("native Bedrock controller composition", () => {
   test("normalizes bounded blend curves deterministically", () => {
@@ -86,15 +86,17 @@ describe("native Bedrock controller composition", () => {
     ).toBe(false);
   });
 
-  test("advanced controller support does not expand the MCP tool catalog", async () => {
-    const source = await Bun.file(
-      "server/tools/animation-native-intelligence.ts"
-    ).text();
-    expect(source).toContain('runtimeDefinition("manage_animation_controller")');
+  test("advanced controller support does not expand MCP tool count", async () => {
+    const [source, server] = await Promise.all([
+      Bun.file("server/tools/animation-controller-native-intelligence.ts").text(),
+      Bun.file("server/server.ts").text(),
+    ]);
+    expect(source).toContain('getAllToolDefinitions()["manage_animation_controller"]');
     expect(source).toContain("native_operations");
     expect(source).toContain("set_state_blend");
     expect(source).toContain("add_animation_item");
     expect(source).toContain("wouldCreateControllerCompositionCycle");
     expect(source).not.toContain("createTool(");
+    expect(server).toContain("wireAnimationControllerNativeIntelligence();");
   });
 });

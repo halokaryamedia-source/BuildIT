@@ -19,8 +19,8 @@ unknown animation/controller          → inspect_animation
 all timeline/keyframe work            → manage_animation_timeline (operation: keyframes|graph|timeline|batch|copy_paste)
 clip/native property cohort           → manage_animation_timeline (operation: properties)
 existing animation effects            → manage_animation_effects
-controller states/effects             → manage_animation_controller
-nested controller / blend curve       → manage_animation_controller(native_operations)
+controller state/composition/effects  → manage_animation_controller
+nested controller/blend curve         → same tool (native_operations)
 pose/time visual evidence             → capture_model_views(animation_preview)
 ```
 
@@ -29,7 +29,7 @@ pose/time visual evidence             → capture_model_views(animation_preview)
 
 Known → Gateway. Unknown/stale → `search_capabilities`; schema → `describe_capability` once. Reuse fresh UUID/state; known identity must not fall back to broad hierarchy discovery or confirmation reads.
 
-`batch` owns one coherent cohort, not loops per key; use `operation="batch"` + `batch_operation="offset|scale|reverse|mirror|smooth|bake"`. `operation="properties"` batches length/loop, `anim_time_update`, `blend_weight`, `start_delay`, `loop_delay`, `override_previous_animation`, and bone `relative_to.rotation=entity|parent` in one Undo. Controller/effect/graph/copy-paste are conditional.
+`batch` owns one coherent cohort, not loops per key; use `operation="batch"` + `batch_operation="offset|scale|reverse|mirror|smooth|bake"`. `operation="properties"` batches length/loop, `anim_time_update`, `blend_weight`, delays, override, and rotation space in one Undo. Controller/effect/graph/copy-paste are conditional.
 
 ## Motion Design Contract
 
@@ -50,7 +50,7 @@ Use Molang for continuous/cyclic/reactive/parameterized motion; authored poses o
 
 ### Molang / math
 
-No separate math tool. Author Molang through transforms, properties, controller conditions/blends, and effects. Accept current official trig/inverse trig, clamp/min/max/sign/rounding/mod, lerp/inverse_lerp/lerprotate/hermite, pow/exp/ln/sqrt, random/die-roll, `math.pi`, and `math.ease_{in|out|in_out}_{back|bounce|circ|cubic|elastic|expo|quad|quart|quint|sine}`. Easing math is version-sensitive; trig uses degrees.
+No separate math tool. Author Molang through existing transforms/properties/controller/effect fields. Accept official trig, clamp/rounding, interpolation, exponential/power, random/die-roll, `math.pi`, and `math.ease_{in|out|in_out}_{back|bounce|circ|cubic|elastic|expo|quad|quart|quint|sine}`. Easing math is version-sensitive; trig uses degrees.
 
 `diagnostics=true` reports math/dependencies, native properties, controller composition, motion dynamics, and loaded client-entity wiring without evaluating gameplay truth.
 

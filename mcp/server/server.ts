@@ -11,6 +11,7 @@ import {
 import { describeMcpSurfaceToolNames } from "@/server/tools";
 import { wireAuthoringQualityIntelligence } from "@/server/tools/quality-intelligence";
 import { wireAnimationNativeIntelligence } from "@/server/tools/animation-native-intelligence";
+import { wireAnimationControllerNativeIntelligence } from "@/server/tools/animation-controller-native-intelligence";
 import {
   DEFAULT_MCP_REGISTRATION_PROFILE,
   type McpRegistrationProfile,
@@ -21,6 +22,7 @@ import {
 // Animation routing before this module body executes.
 wireAuthoringQualityIntelligence();
 wireAnimationNativeIntelligence();
+wireAnimationControllerNativeIntelligence();
 
 /**
  * Phase-aware server instructions are part of the agent contract: Codex must
