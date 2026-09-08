@@ -5,11 +5,11 @@ description: Minecraft Bedrock Entity animation specialist for authored motion, 
 
 # BlockIT Bedrock Animation
 
-Use at `ACTIVE PHASE: ANIMATION` after Texturing approval + checkpoint + Animation Readiness Preflight when participating hierarchy/pivots are suitable.
+Use at `ACTIVE PHASE: ANIMATION` after Texturing approval + checkpoint + Animation Readiness Preflight when hierarchy/pivots are suitable.
 
 ## Boundary
 
-Animation owns motion, not structural rig mutation. If bone/pivot/IK/parenting must change: `HANDOFF_REQUIRED` with `target_phase: geometry`, reason/readiness/resume target → `switch_authoring_phase`, then continue the same task. Do not search for `bone_rigging` in Animation. `create_project` is not an Animation capability. Before production keys, representative extreme poses must preserve attachment/contact/clearance; otherwise handoff Geometry first.
+Animation owns motion, not structural rig mutation. Bone/pivot/IK/parenting defect → `HANDOFF_REQUIRED` to Geometry with reason/readiness/resume target → `switch_authoring_phase` → continue same task. Do not search for `bone_rigging` in Animation. `create_project` is not an Animation capability.
 
 ## Direct Routing
 
@@ -17,6 +17,7 @@ Animation owns motion, not structural rig mutation. If bone/pivot/IK/parenting m
 new animation                         → create_animation
 unknown animation/controller          → inspect_animation
 all timeline/keyframe work            → manage_animation_timeline (operation: keyframes|graph|timeline|batch|copy_paste)
+clip/native property cohort           → manage_animation_timeline (operation: properties)
 existing animation effects            → manage_animation_effects
 controller state/composition/effects  → manage_animation_controller
 pose/time visual evidence             → capture_model_views(animation_preview)
@@ -25,9 +26,9 @@ pose/time visual evidence             → capture_model_views(animation_preview)
 `new known clip → create_animation → reuse returned UUID/state; timeline if needed`
 `existing/unknown detail → inspect_animation`
 
-Known capability → invoke through Gateway. Unknown/stale → `search_capabilities`; uncertain schema → `describe_capability` once. If a timeline branch is known, describe only `branch:{field:"operation",value:"keyframes|graph|timeline|batch|copy_paste"}`. Reuse fresh UUID/state; known identity must not fall back to broad hierarchy discovery or confirmation reads.
+Known capability → Gateway directly. Unknown/stale → one `search_capabilities`; uncertain schema → `describe_capability` once. Reuse fresh UUID/state; no confirmation read after a successful mutation.
 
-Use `manage_animation_timeline`; `batch` owns coherent cohort work, not loops per key. Batch uses `operation="batch"` plus `batch_operation="offset|scale|reverse|mirror|smooth|bake"`; pass known `animation_id`. Controller/effect/graph/copy-paste are conditional.
+`batch` owns coherent key cohorts, never loops per key; use `batch_operation="offset|scale|reverse|mirror|smooth|bake"`. `operation="properties"` sets any applicable cohort of length/snapping/loop, `anim_time_update`, `blend_weight`, `start_delay`, `loop_delay`, `override_previous_animation`, and bone `relative_to.rotation=entity|parent` in one Undo unit.
 
 ## Motion Design Contract
 
@@ -44,29 +45,30 @@ loop seam or neutral/controller handoff
 
 Archetypes are categories, not presets. No universal FPS, duration, amplitude, phase, keyframe count, or Bezier target. Do not use an animation quality score.
 
-Use Molang for continuous, cyclic, reactive or parameterized motion; authored poses own identity-critical action/contact/silhouette. `q.anim_time` is time-driven; `q.modified_distance_moved` can drive travel phase. Never invent unknown caller values or signed reverse semantics. Chains use `driver → delayed followers`.
+Use Molang for continuous/cyclic/reactive/parameterized motion; authored poses own identity-critical action/contact/silhouette. `q.anim_time` is time-driven; `q.modified_distance_moved` can own travel phase. Chains use `driver → delayed followers`. Material actions preserve `anticipation → action/impact → follow-through → recovery`.
 
-For material actions preserve `anticipation → action/impact → follow-through → recovery`.
+### Molang / math
+
+No separate math tool. Author Molang directly through transforms, animation properties, controller conditions/blends, and effect scripts. Current official math surface is supported as authored text: trig/inverse trig; clamp/min/max/sign/rounding/mod; lerp/inverse_lerp/lerprotate/hermite; pow/exp/ln/sqrt; random/die-roll; `math.pi`; and `math.ease_{in|out|in_out}_{back|bounce|circ|cubic|elastic|expo|quad|quart|quint|sine}`. Easing math is version-sensitive. Trig uses degrees.
+
+`diagnostics=true` reports used/unknown math, dependencies, version-sensitive/nondeterministic math, native properties, motion dynamics, and loaded client-entity mapping evidence. It never evaluates gameplay truth.
 
 ## Evidence Economy
 
-Do not `set_time` repeatedly just to capture frames. Use one `capture_model_views` with `animation_preview.animation_id` and explicit `times`; require `views × times <= 8`. Runtime temporarily poses the clip and restores timeline/selection state.
+Do not `set_time` repeatedly for screenshots. Use one `capture_model_views` with `animation_preview.animation_id` and explicit `times`; require `views × times <= 8`.
 
-For a local defect use focused `inspect_animation(animation_id,bone,channel?,time_range?,diagnostics?)`. `diagnostics=true` reports technical candidates such as keys/effects outside length, dangling bone animators, or loop endpoint mismatch; it never creates visual PASS/FAIL.
-
-Preferred loop:
 ```text
 AUTHOR coherent keys/batch
 → capture representative times
-→ focused inspect only the affected bone/channel/range when needed
+→ focused inspect only when evidence can change correction
 → one causal correction
-→ recapture affected time/view cohort
+→ recapture affected cohort
 ```
 
-Verify `DISCOVER → AUTHOR → VERIFY → CORRECT → VERIFY → DONE` and record `IMPROVED | UNCHANGED | REGRESSED`. Review pose/timing/weight/contact, clipping, secondary motion/effects, then loop seam/neutral return. Cyclic/idle verification requires repeated full-loop playback; three static snapshots do not prove timing, phase, contact, or seam.
+Verify `DISCOVER → AUTHOR → VERIFY → CORRECT → VERIFY → DONE`; record `IMPROVED | UNCHANGED | REGRESSED`. Cyclic/idle verification requires repeated full-loop playback; snapshots do not prove timing or seam.
 
 ## Completion
 
 Internal `PASS` means `READY_FOR_USER_REVIEW`. User approval → checkpoint → Finalization. Structural blocker → Geometry and re-approve affected stages only.
 
-Controller blend-curve mutation and bone-binding expressions remain protected; never use `risky_eval` or generic UI fallbacks.
+Controller blend-curve mutation and bone-binding expressions beyond native `relative_to.rotation=entity` remain protected; never use `risky_eval` or generic UI fallbacks.

@@ -10,15 +10,17 @@ import {
 } from "@/lib/authoringPhase";
 import { describeMcpSurfaceToolNames } from "@/server/tools";
 import { wireAuthoringQualityIntelligence } from "@/server/tools/quality-intelligence";
+import { wireAnimationNativeIntelligence } from "@/server/tools/animation-native-intelligence";
 import {
   DEFAULT_MCP_REGISTRATION_PROFILE,
   type McpRegistrationProfile,
 } from "@/lib/registrationProfile";
 
-// Existing read tools gain bounded domain intelligence without expanding the
-// MCP catalog or its discovery schemas. server/tools has already registered the
-// default catalog before this module body executes.
+// Existing tools gain bounded intelligence/capability without expanding the MCP
+// catalog. server/tools has already registered the default catalog and canonical
+// Animation routing before this module body executes.
 wireAuthoringQualityIntelligence();
+wireAnimationNativeIntelligence();
 
 /**
  * Phase-aware server instructions are part of the agent contract: Codex must
