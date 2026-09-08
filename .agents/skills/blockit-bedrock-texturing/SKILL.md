@@ -11,7 +11,6 @@ Entry: **Geometry APPROVED + UV Layout PASS**, final Box UV locked with `autouv=
 unlocked/invalid UV → Geometry owner + bounded UV correction; no phase switch.
 
 ## Direct Routing
-Reuse fresh state.
 ```text
 global UV/atlas readiness → list_textures
 face mapping → inspect_elements(mode=detail) only when needed
@@ -48,9 +47,9 @@ A generic palette, copied unrelated texture, flat rectangles, or random high-con
 `BASE PASS → VALUE / FORM PASS → IDENTITY PASS → SECONDARY DETAIL PASS → VERIFY`.
 
 ### Alpha / PBR / Paint Safety
-Alpha: cutout→`entity_alphatest`; translucent→`entity_alphablend`; emissive may use alpha; unknown=`UNVERIFIED`.
+Alpha: cutout→`entity_alphatest`; translucent→`entity_alphablend`; unknown=`UNVERIFIED`.
 Variants preserve production base role + compatible dimensions/mapping; PBR; one/channel; `normal XOR height`.
-Material: `authoring_status`; MERS=MER+`subsurface_value>0` (alpha=subsurface).
+Material: `authoring_status`; MERS=MER+`subsurface_value>0`.
 `paint_settings`: `pixel_perfect`, `lock_alpha`, `paint_side_restrict`; Mirror after semantic symmetry.
 
 ## Coherent Styling Window / Anti-Micro-Loop
