@@ -102,15 +102,19 @@ describe("P1.4 stateless Streamable HTTP ownership", () => {
 
     expect(uiSource).not.toContain("sessionManager");
     expect(uiSource).not.toContain("sessions:");
-    expect(uiSource).toContain("createSurfaceManifest");
+    expect(uiSource).not.toContain("createSurfaceManifest");
+    expect(uiSource).toContain("tools: Object.values(tools)");
+    expect(uiSource).toContain("availableToolCount(): number");
 
     expect(statusSource).not.toContain("sessionManager");
     expect(statusSource).not.toContain("server_one_client");
     expect(statusSource).not.toContain("server_clients");
+    expect(statusSource).toContain('return "BlockIT Ready"');
 
     expect(templateSource).not.toContain("sessions.length");
     expect(templateSource).not.toContain("connected_clients");
-    expect(templateSource).toContain("surface.tools.exposed_count");
+    expect(templateSource).not.toContain("exposed /");
+    expect(templateSource).toContain("availableToolCount");
   });
 
   test("Origin rejection still precedes stateless MCP server construction", async () => {
