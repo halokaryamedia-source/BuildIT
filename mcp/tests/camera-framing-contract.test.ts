@@ -80,4 +80,18 @@ describe("capture_model_views explicit framing contract", () => {
     expect(modelViewReferenceContract("left").primary_evidence).toContain("depth");
     expect(modelViewReferenceContract("right").reference_slot).toBeNull();
   });
+
+  test("DIRECT core-view triad carries complete canonical correspondence without forcing five captures", () => {
+    const comparison = buildModelViewReferenceComparison(["front", "left", "top"]);
+    expect(comparison.views).toHaveLength(3);
+    expect(comparison.views.map((entry) => entry.reference_slot)).toEqual([
+      "upper_front",
+      "upper_left",
+      "lower_top",
+    ]);
+    expect(comparison.views.flatMap((entry) => entry.primary_evidence)).toEqual(
+      expect.arrayContaining(["width", "height", "length", "depth", "negative_space"])
+    );
+    expect(comparison.visual_verdict).toBe("not_evaluated");
+  });
 });
