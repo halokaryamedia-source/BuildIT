@@ -8,6 +8,15 @@ import {
   analyzeRootMotionTracks,
   type RootMotionTrackInput,
 } from "@/lib/rootMotionAnalysis";
+import {
+  analyzeProjectedEnvelopeFidelity,
+  analyzeRigGraph,
+  summarizeSurfaceQualityWarnings,
+} from "@/lib/modelQuality";
+import {
+  listBlockItThreeDAssistedReferences,
+  readThreeDAssistedReferenceEvidence,
+} from "./project";
 
 const wiredTools = new Set<string>();
 
@@ -17,27 +26,25 @@ function objectRecord(value: unknown): Record<string, unknown> | null {
     : null;
 }
 
-function augmentStructuredResult(
-  result: unknown,
-  field: string,
-  value: unknown
-): unknown {
-  const record = objectRecord(result);
-  if (!record || !("structuredContent" in record)) return result;
-  const structured = objectRecord(record.structuredContent);
-  if (!structured) return result;
-  return {
-    ...record,
-    structuredContent: {
-      ...structured,
-      [field]: value,
-    },
-  };
+function finiteVec3(value: unknown): [number, number, number] | null {
+  if (
+    !Array.isArray(value) ||
+    value.length < 3 ||
+    !value.slice(0, 3).every(
+      (entry) => typeof entry === "number" && Number.isFinite(entry)
+    )
+  ) {
+    return null;
+  }
+  return [value[0], value[1], value[2]];
 }
 
 function geometryHygieneRuntime() {
   if (typeof Cube === "undefined" || typeof Group === "undefined") {
-    return { state: "unavailable" as const, reason: "blockbench_geometry_runtime_unavailable" as const };
+    return {
+      state: "unavailable" as const,
+      reason: "blockbench_geometry_runtime_unavailable" as const,
+    };
   }
   return analyzeGeometryHygiene(
     (Cube.all ?? []).map((cube: Cube) => ({
@@ -56,33 +63,141 @@ function geometryHygieneRuntime() {
   );
 }
 
-function textureColorProfileRuntime(structuredContent: Record<string, unknown>) {
+function surfaceQualitySummaryRuntime(
+  structuredContent: Record<string, unknown>
+) {
+  const warnings = Array.isArray(structuredContent.warnings)
+    ? structuredContent.warnings.filter(
+        (warning): warning is string => typeof warning === "string"
+      )
+    : [];
+  return summarizeSurfaceQualityWarnings(warnings);
+}
+
+function rigGraphRuntime() {
+  if (typeof Group === "undefined") {
+    return {
+      state: "unavailable" as const,
+      reason: "blockbench_group_runtime_unavailable" as const,
+    };
+  }
+
+  return analyzeRigGraph(
+    (Group.all ?? []).map((group: Group) => ({
+      uuid: group.uuid,
+      name: group.name,
+      origin: [...group.origin],
+      parent_uuid:
+        group.parent instanceof Group ? group.parent.uuid : null,
+    }))
+  );
+}
+
+function referenceEnvelopeFidelityRuntime(
+  structuredContent: Record<string, unknown>
+) {
+  const bounds = objectRecord(structuredContent.bounds);
+  const modelMin = finiteVec3(bounds?.min);
+  const modelMax = finiteVec3(bounds?.max);
+  if (!modelMin || !modelMax) {
+    return {
+      state: "unavailable" as const,
+      reason: "rendered_model_bounds_unavailable" as const,
+    };
+  }
+
+  const references = listBlockItThreeDAssistedReferences();
+  if (references.length === 0) {
+    return {
+      state: "unavailable" as const,
+      reason: "no_3d_assisted_reference" as const,
+    };
+  }
+  if (references.length > 1) {
+    return {
+      state: "unavailable" as const,
+      reason: "ambiguous_3d_assisted_reference" as const,
+      reference_count: references.length,
+    };
+  }
+
+  const [reference] = references;
+  try {
+    const evidence = readThreeDAssistedReferenceEvidence(reference);
+    const analysis = analyzeProjectedEnvelopeFidelity({
+      model_bounds: { min: modelMin, max: modelMax },
+      reference_bounds: evidence.world_bounds,
+    });
+    if (analysis.state !== "available") return analysis;
+    return {
+      ...analysis,
+      reference: {
+        uuid: reference.uuid,
+        name: reference.name,
+      },
+    };
+  } catch (error) {
+    return {
+      state: "unavailable" as const,
+      reason: "3d_assisted_reference_evidence_unavailable" as const,
+      message: error instanceof Error ? error.message : String(error),
+    };
+  }
+}
+
+function textureColorProfileRuntime(
+  structuredContent: Record<string, unknown>
+) {
   if (typeof Texture === "undefined") {
-    return { state: "unavailable" as const, reason: "blockbench_texture_runtime_unavailable" as const };
+    return {
+      state: "unavailable" as const,
+      reason: "blockbench_texture_runtime_unavailable" as const,
+    };
   }
   const textureInfo = objectRecord(structuredContent.texture);
   const uuid = typeof textureInfo?.uuid === "string" ? textureInfo.uuid : null;
-  const texture = uuid ? Texture.all.find((candidate: Texture) => candidate.uuid === uuid) : undefined;
+  const texture = uuid
+    ? Texture.all.find((candidate: Texture) => candidate.uuid === uuid)
+    : undefined;
   if (!texture) {
-    return { state: "unavailable" as const, reason: "inspected_texture_not_resolved" as const };
+    return {
+      state: "unavailable" as const,
+      reason: "inspected_texture_not_resolved" as const,
+    };
   }
 
   try {
     const ctx = texture.ctx;
     const width = ctx?.canvas?.width ?? texture.width;
-    const height = ctx?.canvas?.height ?? texture.display_height ?? texture.height;
-    if (!ctx || !Number.isInteger(width) || !Number.isInteger(height) || width <= 0 || height <= 0) {
-      return { state: "unavailable" as const, reason: "texture_pixel_canvas_unavailable" as const };
+    const height =
+      ctx?.canvas?.height ?? texture.display_height ?? texture.height;
+    if (
+      !ctx ||
+      !Number.isInteger(width) ||
+      !Number.isInteger(height) ||
+      width <= 0 ||
+      height <= 0
+    ) {
+      return {
+        state: "unavailable" as const,
+        reason: "texture_pixel_canvas_unavailable" as const,
+      };
     }
     const pixels = ctx.getImageData(0, 0, width, height).data;
     return analyzeTextureColorProfile(pixels, width, height);
   } catch {
-    return { state: "unavailable" as const, reason: "texture_pixel_read_failed" as const };
+    return {
+      state: "unavailable" as const,
+      reason: "texture_pixel_read_failed" as const,
+    };
   }
 }
 
 function isAnimationControllerRuntime(item: unknown): boolean {
-  return typeof AnimationController !== "undefined" && item instanceof AnimationController;
+  return (
+    typeof AnimationController !== "undefined" &&
+    item instanceof AnimationController
+  );
 }
 
 function rootMotionRuntime(structuredContent: Record<string, unknown>) {
@@ -92,19 +207,29 @@ function rootMotionRuntime(structuredContent: Record<string, unknown>) {
     typeof Group === "undefined" ||
     typeof BoneAnimator === "undefined"
   ) {
-    return { state: "unavailable" as const, reason: "authored_animation_runtime_unavailable" as const };
+    return {
+      state: "unavailable" as const,
+      reason: "authored_animation_runtime_unavailable" as const,
+    };
   }
 
   const animationInfo = objectRecord(structuredContent.animation);
-  const animationUuid = typeof animationInfo?.uuid === "string" ? animationInfo.uuid : null;
+  const animationUuid =
+    typeof animationInfo?.uuid === "string" ? animationInfo.uuid : null;
   if (!animationUuid) {
-    return { state: "unavailable" as const, reason: "animation_identity_unavailable" as const };
+    return {
+      state: "unavailable" as const,
+      reason: "animation_identity_unavailable" as const,
+    };
   }
   const item = (AnimationItem.all as unknown[]).find(
     (candidate) => objectRecord(candidate)?.uuid === animationUuid
   );
   if (!item || isAnimationControllerRuntime(item)) {
-    return { state: "unavailable" as const, reason: "authored_animation_not_resolved" as const };
+    return {
+      state: "unavailable" as const,
+      reason: "authored_animation_not_resolved" as const,
+    };
   }
   const animation = item as _Animation;
 
@@ -130,10 +255,14 @@ function rootMotionRuntime(structuredContent: Record<string, unknown>) {
   return analyzeRootMotionTracks(tracks);
 }
 
+type ToolAugmentation = {
+  field: string;
+  read: (structuredContent: Record<string, unknown>) => unknown;
+};
+
 function wireTool(
   toolName: string,
-  field: string,
-  readAugmentation: (structuredContent: Record<string, unknown>) => unknown
+  augmentations: readonly ToolAugmentation[]
 ): void {
   if (wiredTools.has(toolName)) return;
   const definition = getAllToolDefinitions()[toolName];
@@ -144,7 +273,19 @@ function wireTool(
     const record = objectRecord(result);
     const structured = record ? objectRecord(record.structuredContent) : null;
     if (!structured) return result;
-    return augmentStructuredResult(result, field, readAugmentation(structured)) as typeof result;
+
+    const additions: Record<string, unknown> = {};
+    for (const augmentation of augmentations) {
+      additions[augmentation.field] = augmentation.read(structured);
+    }
+
+    return {
+      ...record,
+      structuredContent: {
+        ...structured,
+        ...additions,
+      },
+    } as typeof result;
   };
   wiredTools.add(toolName);
 }
@@ -154,7 +295,19 @@ function wireTool(
  * No MCP Tool is added and no input/public discovery schema changes.
  */
 export function wireAuthoringQualityIntelligence(): void {
-  wireTool("inspect_model_bounds", "geometry_hygiene", () => geometryHygieneRuntime());
-  wireTool("get_texture", "color_profile", textureColorProfileRuntime);
-  wireTool("inspect_animation", "root_motion", rootMotionRuntime);
+  wireTool("inspect_model_bounds", [
+    { field: "geometry_hygiene", read: () => geometryHygieneRuntime() },
+    { field: "surface_quality_summary", read: surfaceQualitySummaryRuntime },
+    { field: "rig_graph", read: () => rigGraphRuntime() },
+    {
+      field: "reference_envelope_fidelity",
+      read: referenceEnvelopeFidelityRuntime,
+    },
+  ]);
+  wireTool("get_texture", [
+    { field: "color_profile", read: textureColorProfileRuntime },
+  ]);
+  wireTool("inspect_animation", [
+    { field: "root_motion", read: rootMotionRuntime },
+  ]);
 }

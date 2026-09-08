@@ -5,6 +5,11 @@ import {
   analyzeRootMotionTrack,
   analyzeRootMotionTracks,
 } from "@/lib/rootMotionAnalysis";
+import {
+  analyzeProjectedEnvelopeFidelity,
+  analyzeRigGraph,
+  summarizeSurfaceQualityWarnings,
+} from "@/lib/modelQuality";
 
 describe("bounded authoring quality intelligence", () => {
   test("geometry hygiene exposes precision corrections and duplicate bone identity without mutating", () => {
@@ -66,6 +71,73 @@ describe("bounded authoring quality intelligence", () => {
     expect(result.duplicate_bone_names.name_count).toBe(0);
   });
 
+  test("projected reference fidelity identifies the weakest coarse view without claiming silhouette PASS", () => {
+    const result = analyzeProjectedEnvelopeFidelity({
+      model_bounds: { min: [0, 0, 0], max: [16, 16, 8] },
+      reference_bounds: { min: [0, 0, 0], max: [16, 16, 16] },
+    });
+
+    expect(result.state).toBe("available");
+    if (result.state !== "available") throw new Error("expected reference fidelity");
+    expect(result.silhouette_fidelity).toBe(false);
+    expect(result.visual_verdict).toBe("not_evaluated");
+    expect(result.views.front.iou).toBe(1);
+    expect(result.views.side.iou).toBe(0.5);
+    expect(result.views.side.source_coverage).toBe(0.5);
+    expect(result.views.side.model_precision).toBe(1);
+    expect(result.views.top.iou).toBe(0.5);
+    expect(result.average_iou).toBe(0.6667);
+    expect(result.worst_view).toBe("side");
+    expect(result.review_order).toEqual(["side", "top", "front"]);
+    expect(result.volume_envelope.dimension_ratio.length).toBe(0.5);
+  });
+
+  test("surface warnings become a compact machine-readable risk summary", () => {
+    const result = summarizeSurfaceQualityWarnings([
+      "1 hidden/non-rendered Cube(s) were excluded from rendered bounds.",
+      "Possible z-fighting: Cube A and Cube B expose overlapping surfaces.",
+      "Possible micro-gap: Cube C and Cube D have a narrow seam.",
+      "Surface-quality diagnostics stopped after 20000 nearby Cube pair(s); absence of further warnings is not a clean-surface claim.",
+      "3 additional surface-quality warning(s) were omitted from this bounded diagnostic.",
+    ]);
+
+    expect(result.state).toBe("review_required");
+    expect(result.counts.z_fighting).toBe(1);
+    expect(result.counts.micro_gap).toBe(1);
+    expect(result.categorized_risk_count).toBe(2);
+    expect(result.additional_warnings_omitted).toBe(3);
+    expect(result.scan_complete).toBe(false);
+    expect(result.details_complete).toBe(false);
+  });
+
+  test("rig graph reports hierarchy and bounded pivot review hints without inventing a failure", () => {
+    const result = analyzeRigGraph([
+      { uuid: "root", name: "root", origin: [0, 0, 0], parent_uuid: null },
+      { uuid: "arm", name: "arm", origin: [0, 0, 0], parent_uuid: "root" },
+      { uuid: "hand", name: "hand", origin: [1, 0, 0], parent_uuid: "root" },
+    ]);
+
+    expect(result.state).toBe("valid_graph");
+    if (result.state !== "valid_graph") throw new Error("expected valid rig graph");
+    expect(result.group_count).toBe(3);
+    expect(result.root_count).toBe(1);
+    expect(result.leaf_count).toBe(2);
+    expect(result.branch_group_count).toBe(1);
+    expect(result.max_depth).toBe(1);
+    expect(result.pivot_edges.measured_count).toBe(2);
+    expect(result.pivot_edges.coincident_count).toBe(1);
+    expect(result.pivot_edges.max).toBe(1);
+    expect(result.review_hints).toContain("COINCIDENT_PARENT_CHILD_PIVOT");
+  });
+
+  test("rig graph fails closed on unresolved parent identity", () => {
+    const result = analyzeRigGraph([
+      { uuid: "arm", name: "arm", origin: [0, 0, 0], parent_uuid: "missing" },
+    ]);
+    expect(result.state).toBe("invalid_graph");
+    expect(result.unresolved_parent_count).toBe(1);
+  });
+
   test("texture color profile is deterministic, sampled, and palette-bounded", () => {
     const pixels = new Uint8ClampedArray([
       255, 0, 0, 255,
@@ -73,8 +145,14 @@ describe("bounded authoring quality intelligence", () => {
       0, 0, 255, 255,
       0, 0, 0, 0,
     ]);
-    const first = analyzeTextureColorProfile(pixels, 2, 2, { maxSamples: 4, paletteSize: 2 });
-    const second = analyzeTextureColorProfile(pixels, 2, 2, { maxSamples: 4, paletteSize: 2 });
+    const first = analyzeTextureColorProfile(pixels, 2, 2, {
+      maxSamples: 4,
+      paletteSize: 2,
+    });
+    const second = analyzeTextureColorProfile(pixels, 2, 2, {
+      maxSamples: 4,
+      paletteSize: 2,
+    });
 
     expect(first).toEqual(second);
     expect(first.sampling.sampled_pixels).toBe(4);
