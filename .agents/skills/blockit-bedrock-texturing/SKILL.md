@@ -35,8 +35,8 @@ Requested atlas size/density are constraints: never silently enlarge.
 `create_texture`: provisional **16×16 blank**; production **128×128 default, 256×256 opt-in**. Reuse existing atlas UUID.
 
 ## Texture Workplan / Coverage
-Partition every enabled surface into material cohorts; define palette roles `BASE | SHADOW | HIGHLIGHT | ACCENT/IDENTITY`, form/contact/edge/identity/detail and UV-share intent.
-Ledger: `UNPAINTED | BASE_ONLY | STYLED | INTENTIONAL_FLAT | INTENTIONAL_TRANSPARENT | SHARED`. Every face closes; exceptions require explicit intent.
+Partition every enabled surface into material cohorts; define palette roles `BASE | SHADOW | HIGHLIGHT | ACCENT/IDENTITY`, form/contact/occlusion/edge/identity/detail and UV-share intent.
+Face Coverage Ledger: `UNPAINTED | BASE_ONLY | STYLED | INTENTIONAL_FLAT | INTENTIONAL_TRANSPARENT | SHARED`. Every face closes; exceptions require explicit intent.
 Check `list_textures.optimization_opportunities.coverage.gate`: `incomplete|partial`/`FACE_ACCOUNTING_INCOMPLETE` → no completion; inspect returned candidates only. `ready` ≠ visual PASS.
 
 ### Reference-Grounded Palette / Atlas-Island Discipline
