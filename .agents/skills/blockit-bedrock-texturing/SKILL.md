@@ -8,7 +8,7 @@ Geometry/UV capabilities remain callable for bounded upstream correction; Textur
 ## Entry / Correction
 **No Geometry↔Texturing phase switch.** `HANDOFF_REQUIRED` + `switch_authoring_phase` only for AUTHORING↔Animation.
 Entry: **Geometry APPROVED + UV Layout PASS**, final Box UV locked with `autouv=0`, no invalid/out-of-bounds/partial-overlap.
-Unlocked/invalid UV → Geometry owner + bounded UV correction; no phase switch.
+unlocked/invalid UV → Geometry owner + bounded UV correction; no phase switch.
 
 ## Direct Routing
 Reuse fresh state.
@@ -29,17 +29,18 @@ evidence → capture_model_views
 Requested atlas size/density are constraints: never silently enlarge; test native/per-face/reuse first, then report tradeoff.
 
 ## Conditional Support — Not Default Routing
+Conditional on intent; not normal hot path.
 `gradient_tool | color_picker_tool | copy_brush_tool | paint_settings | create_brush_preset | load_brush_preset | texture_selection | texture_layer_management | add_texture_group | list_materials | get_material_info | import_texture_set`.
 `gradient_tool`: reference-supported continuous transition; no extra discovery/readback.
 
 ## First Call
 `blank create_texture → explicit width+height from project UV`; **not omit blank Atlas size**.
-`create_texture`: provisional **16×16 blank**; production **128×128 default, 256×256 opt-in**; reuse atlas UUID.
+`create_texture`: provisional **16×16 blank**; production **128×128 default, 256×256 opt-in**. Reuse existing atlas UUID.
 Known → invoke; unknown → `search_capabilities(limit=4)`; describe on schema uncertainty. No confirmation rereads.
 **Pin atlas UUID and pass `texture_id` when multiple textures are loaded.**
 
 ## Reference-Grounded Palette
-Approved image required. Define `BASE | SHADOW | HIGHLIGHT | ACCENT/IDENTITY` per cohort; one hue ramp/material; separate palette from lighting. `color_picker_tool` samples atlas, not reference.
+Approved image required. Define palette roles `BASE | SHADOW | HIGHLIGHT | ACCENT/IDENTITY` per cohort; one hue ramp/material; separate palette from lighting. `color_picker_tool` samples atlas, not reference.
 
 ### Atlas-Island Discipline
 Integer texels; marks follow orientation. **pixels per UV unit** owns detail scale. Omit immaterial detail; return to Geometry/UV if it cannot fit approved density. `alpha` is intentional.

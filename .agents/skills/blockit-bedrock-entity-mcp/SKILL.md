@@ -35,7 +35,7 @@ Existing/revision → inspect only affected target/dependencies; broaden only wh
 CORE / SHARED
 project unknown → get_project_info
 identity/hierarchy/detail → inspect_elements(mode=search|outline|detail)
-visible/reference comparison → capture_model_views
+visible/reference comparison  → capture_model_views
 envelope/scale/ground → inspect_model_bounds
 UV/atlas readiness → list_textures
 file deliverable → export_model
@@ -54,7 +54,7 @@ rig IK/mirror                  → bone_rigging
 `bone_rigging` only for IK/mirror.
 `validator://*` resources are Direct Runtime/Inspector only; a Gateway client must not search for or emulate them.
 Known coherent Cubes → one `manage_cubes(operation=create, elements=[...])`; uncertainty → no batch.
-Shared deterministic Cube TRANSLATE/RESIZE → derive absolute targets once from fresh state → `batch_update`; never inspect→modify per Cube. **Semantic cohort rule:** shared motion → Group; otherwise correct sibling cohort.
+Known Cubes sharing one deterministic TRANSLATE/RESIZE intent → derive absolute targets once from fresh state → `batch_update`; never inspect→modify per Cube. **Semantic cohort rule:** shared motion → Group; otherwise correct sibling cohort.
 
 ## First-Call Invariants
 `add_group` → pass name OR groups, never both.
@@ -66,7 +66,7 @@ Validation failure repairs arguments for the **same capability**.
 
 ## Capability Discovery / Recovery
 Capability discovery is deferred spec loading after routing.
-known exact capability → invoke directly.
+known exact capability   → invoke directly.
 unknown/stale capability → one precise `search_capabilities` query, `limit=4`.
 schema needed → `describe_capability` once before mutation.
 One precise search miss → reformulate once; second miss → `BLOCKED`. A known foreign-phase capability is never a discovery miss: AUTHORING↔Animation uses handoff.

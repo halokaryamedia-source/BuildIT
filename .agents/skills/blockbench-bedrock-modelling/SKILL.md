@@ -35,7 +35,7 @@ A semantic label never authorizes coordinates. **No orphan/filler Cube**. `PROVI
 
 Decide **transform ownership** before rotation. Shared orientation/attachment/articulation → **Group/Bone-owned**; local rigid orientation may be Cube-owned. Primary mass state: `AXIS_ALIGNED | ROTATED | UNRESOLVED`. Visible slope → explicit origin/pivot + `MASS_CENTER | ATTACHMENT | JOINT | PARENT_TRANSFORM`. Material `UNRESOLVED` → `BLOCKED`. Pivot role is attachment/joint pivot when it owns transform. AABB overlap, hierarchy, or numeric touching is not contact proof.
 
-When `Animation Required = YES`, Geometry leaves **motion-ready structure**: cohorts, parent/pivot, clearance, and attachment/contact invariants. Known rig/contact defects do not wait for Animation.
+When `Animation Required = YES`, Geometry leaves **motion-ready structure**: cohorts, parent/pivot, clearance, and attachment/contact invariants. A known rig/contact defect does not wait for Animation.
 
 ## Primary Mass / Proportion / Depth
 Coordinates follow one coherent 3D interpretation:
@@ -65,6 +65,7 @@ Material verdict requires approved reference + fresh current-revision model evid
 `claim | reference view | current view | observed difference | FAIL | UNVERIFIED | PASS`.
 
 `manage_cubes` is **Tool success** only. Tool success, coordinates, bounds, hierarchy, validators, or similarity scores cannot justify `PASS`. Internal Geometry `PASS` requires mass/proportion/depth, coverage, hierarchy/pivots, and no major defect.
+After primary `PASS`, add identity-weighted detail.
 
 Before `READY_FOR_USER_REVIEW`, **UV Readiness Preflight** checks thin/Box-UV collapse, aspect/representation, seam/unique-region blockers. Read-only: no production UV/`UV Layout PASS`. **User Geometry APPROVED is required** before production UV.
 
