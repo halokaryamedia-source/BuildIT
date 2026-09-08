@@ -19,7 +19,8 @@ unknown animation/controller          → inspect_animation
 all timeline/keyframe work            → manage_animation_timeline (operation: keyframes|graph|timeline|batch|copy_paste)
 clip/native property cohort           → manage_animation_timeline (operation: properties)
 existing animation effects            → manage_animation_effects
-controller state/composition/effects  → manage_animation_controller
+controller states/effects             → manage_animation_controller
+nested controller / blend curve       → manage_animation_controller(native_operations)
 pose/time visual evidence             → capture_model_views(animation_preview)
 ```
 
@@ -49,9 +50,9 @@ Use Molang for continuous/cyclic/reactive/parameterized motion; authored poses o
 
 ### Molang / math
 
-No separate math tool. Author Molang through transforms, properties, controller conditions/blends, and effects. Current official math surface is accepted: trig/inverse trig; clamp/min/max/sign/rounding/mod; lerp/inverse_lerp/lerprotate/hermite; pow/exp/ln/sqrt; random/die-roll; `math.pi`; and `math.ease_{in|out|in_out}_{back|bounce|circ|cubic|elastic|expo|quad|quart|quint|sine}`. Easing math is version-sensitive; trig uses degrees.
+No separate math tool. Author Molang through transforms, properties, controller conditions/blends, and effects. Accept current official trig/inverse trig, clamp/min/max/sign/rounding/mod, lerp/inverse_lerp/lerprotate/hermite, pow/exp/ln/sqrt, random/die-roll, `math.pi`, and `math.ease_{in|out|in_out}_{back|bounce|circ|cubic|elastic|expo|quad|quart|quint|sine}`. Easing math is version-sensitive; trig uses degrees.
 
-`diagnostics=true` reports math/dependencies, native properties, motion dynamics, and loaded client-entity wiring without evaluating gameplay truth.
+`diagnostics=true` reports math/dependencies, native properties, controller composition, motion dynamics, and loaded client-entity wiring without evaluating gameplay truth.
 
 ## Evidence Economy
 
@@ -71,4 +72,4 @@ Verify `DISCOVER → AUTHOR → VERIFY → CORRECT → VERIFY → DONE`; record 
 
 Internal `PASS` = `READY_FOR_USER_REVIEW`. User approval → checkpoint → Finalization.
 
-Controller blend-curve mutation and bone-binding expressions beyond native `relative_to.rotation=entity` remain protected; never use `risky_eval` or generic UI fallbacks.
+Controller blend-curve mutation is native via `native_operations`; bone-binding expressions beyond `relative_to.rotation=entity` remain protected. Never use `risky_eval` or generic UI fallbacks.

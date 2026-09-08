@@ -19,9 +19,23 @@ import {
   analyzeAnimationMotionDynamics,
   type AnimationMotionTrackInput,
 } from "@/lib/animationMotionDynamics";
+import {
+  normalizeControllerBlendCurve,
+  wouldCreateControllerCompositionCycle,
+} from "@/lib/animationControllerComposition";
 
 type JsonRecord = Record<string, unknown>;
 type RuntimeAnimationItem = _Animation | AnimationController;
+type RuntimeControllerLink = {
+  uuid: string;
+  key: string;
+  animation: string;
+  blend_value: string | number;
+};
+type RuntimeControllerState = AnimationControllerState & {
+  animations: RuntimeControllerLink[];
+  blend_transition_curve?: Record<string, number>;
+};
 
 const authoredMolangValueSchema = z.union([
   z.number().finite(),
@@ -33,12 +47,100 @@ const authoredMolangValueSchema = z.union([
   z.null(),
 ]);
 
+const controllerBlendValueSchema = z.union([
+  z.number().finite(),
+  z.string().refine((value) => value.trim().length > 0, {
+    message: "Controller blend value must contain non-whitespace authored Molang.",
+  }),
+  z.null(),
+]);
+
 const rotationSpaceSchema = z
   .object({
     bone_name: z.string().min(1).describe("Group UUID or unique Group name."),
     relative_to: z
       .enum(["parent", "entity"])
       .describe("Bedrock rotation space. entity exports relative_to.rotation=entity."),
+  })
+  .strict();
+
+const controllerBlendCurvePointSchema = z
+  .object({
+    time: z.number().finite().min(0).max(1),
+    value: z.number().finite(),
+  })
+  .strict();
+
+const controllerNativeOperationSchema = z.discriminatedUnion("op", [
+  z
+    .object({
+      op: z.literal("set_state_blend"),
+      state: z.string().min(1),
+      blend_transition: z.number().finite().min(0).max(10000).optional(),
+      blend_via_shortest_path: z.boolean().optional(),
+      blend_curve: z
+        .union([
+          z.array(controllerBlendCurvePointSchema).min(2).max(16),
+          z.null(),
+        ])
+        .optional()
+        .describe("Normalized 0..1 time/value curve points; null clears the curve."),
+    })
+    .strict()
+    .superRefine((value, ctx) => {
+      if (
+        value.blend_transition === undefined &&
+        value.blend_via_shortest_path === undefined &&
+        value.blend_curve === undefined
+      ) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "set_state_blend requires at least one authored blend field.",
+        });
+      }
+    }),
+  z
+    .object({
+      op: z.literal("add_animation_item"),
+      state: z.string().min(1),
+      item: z.string().min(1).describe("Animation or AnimationController UUID/name."),
+      blend_value: controllerBlendValueSchema.optional(),
+    })
+    .strict(),
+  z
+    .object({
+      op: z.literal("update_animation_item"),
+      state: z.string().min(1),
+      id: z.string().min(1).describe("Existing animation-link UUID."),
+      item: z.string().min(1).optional().describe("Animation or AnimationController UUID/name."),
+      blend_value: controllerBlendValueSchema.optional(),
+    })
+    .strict()
+    .superRefine((value, ctx) => {
+      if (value.item === undefined && value.blend_value === undefined) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "update_animation_item requires item and/or blend_value.",
+        });
+      }
+    }),
+  z
+    .object({
+      op: z.literal("remove_animation_item"),
+      state: z.string().min(1),
+      id: z.string().min(1).describe("Existing animation-link UUID."),
+    })
+    .strict(),
+]);
+
+export const animationControllerNativeParameters = z
+  .object({
+    controller_id: z.string().min(1),
+    native_operations: z
+      .array(controllerNativeOperationSchema)
+      .min(1)
+      .max(32)
+      .describe("Bounded native controller composition/blend mutations."),
   })
   .strict();
 
@@ -106,11 +208,120 @@ function isAnimationControllerRuntime(
   );
 }
 
-function normalizeMolangStorage(
+function animationItems(): RuntimeAnimationItem[] {
+  return ((AnimationItem.all ?? []) as unknown as RuntimeAnimationItem[]).slice();
+}
+
+function controllers(): AnimationController[] {
+  return animationItems().filter(isAnimationControllerRuntime);
+}
+
+function resolveUniqueByReference<T extends { uuid: string; name: string }>(
+  items: readonly T[],
+  reference: string,
+  kind: string
+): T {
+  const uuid = items.find((item) => item.uuid === reference);
+  if (uuid) return uuid;
+  const matches = items.filter((item) => item.name === reference);
+  if (matches.length === 1) return matches[0];
+  if (matches.length > 1) {
+    throw new Error(
+      `${kind} name "${reference}" is ambiguous. Use an exact UUID. Candidates: ${matches
+        .map((item) => `${item.name} (${item.uuid})`)
+        .join(", ")}`
+    );
+  }
+  throw new Error(`${kind} "${reference}" was not found.`);
+}
+
+function resolveControllerRuntime(reference: string): AnimationController {
+  return resolveUniqueByReference(controllers(), reference, "AnimationController");
+}
+
+function resolveControllerStateRuntime(
+  controller: AnimationController,
+  reference: string
+): RuntimeControllerState {
+  return resolveUniqueByReference(
+    controller.states as RuntimeControllerState[],
+    reference,
+    "AnimationController state"
+  );
+}
+
+function resolveAnimationItemRuntime(
+  reference: string,
+  ownerControllerUuid: string
+): RuntimeAnimationItem {
+  const item = resolveUniqueByReference(
+    animationItems(),
+    reference,
+    "Animation/AnimationController"
+  );
+  if (item.uuid === ownerControllerUuid) {
+    throw new Error("An AnimationController cannot link itself as a state animation item.");
+  }
+  return item;
+}
+
+function getAnimationItemShortName(item: RuntimeAnimationItem): string {
+  const name = (item as RuntimeAnimationItem & { getShortName?: () => string }).getShortName?.();
+  if (!name || !name.trim()) {
+    throw new Error(`Animation item "${item.name}" has no usable Bedrock short name.`);
+  }
+  return name;
+}
+
+function normalizeControllerBlendValue(
   value: string | number | null | undefined
 ): string {
-  if (value === null || value === undefined) return "";
-  return String(value).trim().replace(/\n/g, "");
+  if (value === undefined || value === null) return "";
+  return typeof value === "number" ? String(value) : value.trim().replace(/\n/g, "");
+}
+
+function controllerCompositionGraph(): Record<string, string[]> {
+  const allControllers = controllers();
+  const byUuid = new Map(allControllers.map((controller) => [controller.uuid, controller]));
+  const byShortName = new Map<string, string[]>();
+  for (const controller of allControllers) {
+    const shortName = getAnimationItemShortName(controller);
+    const bucket = byShortName.get(shortName) ?? [];
+    bucket.push(controller.uuid);
+    byShortName.set(shortName, bucket);
+  }
+  return Object.fromEntries(
+    allControllers.map((controller) => {
+      const nested = new Set<string>();
+      for (const state of controller.states as RuntimeControllerState[]) {
+        for (const link of state.animations) {
+          if (byUuid.has(link.animation)) nested.add(link.animation);
+          for (const match of byShortName.get(link.key) ?? []) {
+            if (match !== controller.uuid) nested.add(match);
+          }
+        }
+      }
+      return [controller.uuid, [...nested]];
+    })
+  );
+}
+
+function requireSafeControllerTarget(
+  owner: AnimationController,
+  item: RuntimeAnimationItem
+): void {
+  if (!isAnimationControllerRuntime(item)) return;
+  if (
+    wouldCreateControllerCompositionCycle(
+      controllerCompositionGraph(),
+      owner.uuid,
+      item.uuid
+    )
+  ) {
+    throw new Error(
+      `Linking controller "${owner.name}" to "${item.name}" would create a controller composition cycle.`
+    );
+  }
 }
 
 function resolveRotationSpaces(
@@ -280,6 +491,220 @@ async function executeNativeProperties(
   };
 }
 
+function cloneControllerLinks(
+  links: readonly RuntimeControllerLink[]
+): RuntimeControllerLink[] {
+  return links.map((link) => ({
+    uuid: link.uuid,
+    key: link.key,
+    animation: link.animation,
+    blend_value:
+      typeof link.blend_value === "number"
+        ? link.blend_value
+        : String(link.blend_value ?? ""),
+  }));
+}
+
+async function executeControllerNativeOperations(
+  request: z.infer<typeof animationControllerNativeParameters>
+) {
+  const controller = resolveControllerRuntime(request.controller_id);
+  const simulated = (controller.states as RuntimeControllerState[]).map((state) => ({
+    uuid: state.uuid,
+    name: state.name,
+    animations: cloneControllerLinks(state.animations),
+    blend_transition: state.blend_transition || 0,
+    blend_via_shortest_path: Boolean(state.blend_via_shortest_path),
+    blend_transition_curve: state.blend_transition_curve
+      ? { ...state.blend_transition_curve }
+      : undefined,
+  }));
+  const changedStates = new Set<string>();
+  const createdLinks: Array<{
+    uuid: string;
+    state_uuid: string;
+    key: string;
+    target_uuid: string;
+    target_kind: "animation" | "controller";
+  }> = [];
+  const removedLinks: string[] = [];
+
+  const findState = (reference: string) =>
+    resolveUniqueByReference(simulated, reference, "AnimationController state");
+
+  for (const operation of request.native_operations) {
+    const state = findState(operation.state);
+
+    if (operation.op === "set_state_blend") {
+      const nextTransition =
+        operation.blend_transition ?? state.blend_transition;
+      const nextShortest =
+        operation.blend_via_shortest_path ?? state.blend_via_shortest_path;
+      const nextCurve =
+        operation.blend_curve === undefined
+          ? state.blend_transition_curve
+          : operation.blend_curve === null
+            ? undefined
+            : normalizeControllerBlendCurve(operation.blend_curve);
+
+      if (nextTransition <= 0 && nextCurve && Object.keys(nextCurve).length) {
+        throw new Error(
+          `State "${state.name}" cannot retain a blend curve when blend_transition is 0; clear the curve in the same operation.`
+        );
+      }
+      if (nextTransition <= 0 && nextShortest) {
+        throw new Error(
+          `State "${state.name}" cannot enable blend_via_shortest_path when blend_transition is 0.`
+        );
+      }
+      if (
+        nextTransition === state.blend_transition &&
+        nextShortest === state.blend_via_shortest_path &&
+        JSON.stringify(nextCurve ?? null) ===
+          JSON.stringify(state.blend_transition_curve ?? null)
+      ) {
+        throw new Error(
+          `set_state_blend would not change state "${state.name}".`
+        );
+      }
+      state.blend_transition = nextTransition;
+      state.blend_via_shortest_path = nextShortest;
+      state.blend_transition_curve = nextCurve;
+      changedStates.add(state.uuid);
+      continue;
+    }
+
+    const findLink = (uuid: string) => {
+      const link = state.animations.find((candidate) => candidate.uuid === uuid);
+      if (!link) {
+        throw new Error(
+          `Animation item link "${uuid}" was not found in state "${state.name}".`
+        );
+      }
+      return link;
+    };
+
+    if (operation.op === "remove_animation_item") {
+      const link = findLink(operation.id);
+      state.animations = state.animations.filter(
+        (candidate) => candidate.uuid !== link.uuid
+      );
+      removedLinks.push(link.uuid);
+      changedStates.add(state.uuid);
+      continue;
+    }
+
+    if (operation.op === "add_animation_item") {
+      const item = resolveAnimationItemRuntime(operation.item, controller.uuid);
+      requireSafeControllerTarget(controller, item);
+      const key = getAnimationItemShortName(item);
+      if (
+        state.animations.some(
+          (candidate) =>
+            candidate.key === key || candidate.animation === item.uuid
+        )
+      ) {
+        throw new Error(
+          `State "${state.name}" already links animation item "${key}".`
+        );
+      }
+      const link: RuntimeControllerLink = {
+        uuid: guid(),
+        key,
+        animation: item.uuid,
+        blend_value: normalizeControllerBlendValue(operation.blend_value),
+      };
+      state.animations.push(link);
+      createdLinks.push({
+        uuid: link.uuid,
+        state_uuid: state.uuid,
+        key,
+        target_uuid: item.uuid,
+        target_kind: isAnimationControllerRuntime(item)
+          ? "controller"
+          : "animation",
+      });
+      changedStates.add(state.uuid);
+      continue;
+    }
+
+    const link = findLink(operation.id);
+    let nextKey = link.key;
+    let nextAnimation = link.animation;
+    if (operation.item !== undefined) {
+      const item = resolveAnimationItemRuntime(operation.item, controller.uuid);
+      requireSafeControllerTarget(controller, item);
+      nextKey = getAnimationItemShortName(item);
+      nextAnimation = item.uuid;
+    }
+    const nextBlend =
+      operation.blend_value === undefined
+        ? String(link.blend_value ?? "")
+        : normalizeControllerBlendValue(operation.blend_value);
+    if (
+      nextKey === link.key &&
+      nextAnimation === link.animation &&
+      nextBlend === String(link.blend_value ?? "")
+    ) {
+      throw new Error(
+        `update_animation_item would not change link "${link.uuid}".`
+      );
+    }
+    if (
+      state.animations.some(
+        (candidate) =>
+          candidate.uuid !== link.uuid &&
+          (candidate.key === nextKey || candidate.animation === nextAnimation)
+      )
+    ) {
+      throw new Error(
+        `State "${state.name}" already links animation item "${nextKey}".`
+      );
+    }
+    link.key = nextKey;
+    link.animation = nextAnimation;
+    link.blend_value = nextBlend;
+    changedStates.add(state.uuid);
+  }
+
+  Undo.initEdit({ animation_controllers: [controller] });
+  try {
+    for (const statePlan of simulated) {
+      const state = resolveControllerStateRuntime(controller, statePlan.uuid);
+      state.animations = cloneControllerLinks(statePlan.animations);
+      state.blend_transition = statePlan.blend_transition;
+      state.blend_via_shortest_path = statePlan.blend_via_shortest_path;
+      state.blend_transition_curve = statePlan.blend_transition_curve
+        ? { ...statePlan.blend_transition_curve }
+        : undefined;
+    }
+    Undo.finishEdit("Change native animation controller composition");
+  } catch (error) {
+    Undo.cancelEdit(true);
+    Animator.preview();
+    throw error;
+  }
+  Animator.preview();
+
+  return {
+    content: [
+      {
+        type: "text" as const,
+        text: `Applied ${request.native_operations.length} native controller operation(s) to "${controller.name}" across ${changedStates.size} state(s).`,
+      },
+    ],
+    structuredContent: {
+      execution: "applied" as const,
+      action: "native_operations" as const,
+      controller: { uuid: controller.uuid, name: controller.name },
+      operation_count: request.native_operations.length,
+      affected_state_uuids: [...changedStates],
+      created_links: createdLinks,
+      removed_links: removedLinks,
+    },
+  };
+}
+
 function pushExpression(
   target: AnimationMolangExpressionInput[],
   source: string,
@@ -391,11 +816,7 @@ function resolveRuntimeItem(
     objectRecord(structuredContent.controller);
   const uuid = typeof info?.uuid === "string" ? info.uuid : null;
   if (!uuid) return null;
-  return (
-    ((AnimationItem.all ?? []) as unknown as RuntimeAnimationItem[]).find(
-      (item) => item.uuid === uuid
-    ) ?? null
-  );
+  return animationItems().find((item) => item.uuid === uuid) ?? null;
 }
 
 function nativePropertySummary(item: RuntimeAnimationItem) {
@@ -444,6 +865,58 @@ function nativePropertySummary(item: RuntimeAnimationItem) {
     entity_relative_rotation_count: entityRelative.length,
     entity_relative_rotation_bones: entityRelative.slice(0, 8),
     entity_relative_rotation_bones_truncated: entityRelative.length > 8,
+  };
+}
+
+function controllerCompositionRuntime(item: RuntimeAnimationItem) {
+  if (!isAnimationControllerRuntime(item)) {
+    return {
+      state: "not_applicable" as const,
+      reason: "authored_animation" as const,
+    };
+  }
+  const controllerByUuid = new Map(controllers().map((entry) => [entry.uuid, entry]));
+  const controllerByShort = new Map<string, AnimationController[]>();
+  for (const controller of controllers()) {
+    const short = getAnimationItemShortName(controller);
+    const bucket = controllerByShort.get(short) ?? [];
+    bucket.push(controller);
+    controllerByShort.set(short, bucket);
+  }
+  const nested: Array<{
+    state: string;
+    key: string;
+    target_uuid: string | null;
+  }> = [];
+  let unresolved = 0;
+  let curveStates = 0;
+  for (const state of item.states as RuntimeControllerState[]) {
+    if (state.blend_transition_curve && Object.keys(state.blend_transition_curve).length) {
+      curveStates += 1;
+    }
+    for (const link of state.animations) {
+      const direct = controllerByUuid.get(link.animation);
+      const byKey = controllerByShort.get(link.key) ?? [];
+      const target = direct ?? (byKey.length === 1 ? byKey[0] : undefined);
+      if (target) {
+        nested.push({ state: state.name, key: link.key, target_uuid: target.uuid });
+      } else if (!animationItems().some((candidate) => candidate.uuid === link.animation)) {
+        unresolved += 1;
+      }
+    }
+  }
+  return {
+    state: "available" as const,
+    nested_controller_link_count: nested.length,
+    blend_curve_state_count: curveStates,
+    unresolved_link_count: unresolved,
+    cycle_from_current_controller: wouldCreateControllerCompositionCycle(
+      controllerCompositionGraph(),
+      item.uuid,
+      item.uuid
+    ),
+    nested_controller_examples: nested.slice(0, 8),
+    examples_truncated: nested.length > 8,
   };
 }
 
@@ -603,6 +1076,43 @@ function wireTimelineNativeProperties(): void {
   };
 }
 
+function wireControllerNativeOperations(): void {
+  const definition = runtimeDefinition("manage_animation_controller");
+  const originalSchema = definition.parameterSchema;
+  const originalExecute = definition.execute.bind(definition);
+  const originalOperations = definition.inputSchema.operations as
+    | z.ZodTypeAny
+    | undefined;
+  definition.parameterSchema = z.union([
+    originalSchema,
+    animationControllerNativeParameters,
+  ] as [z.ZodTypeAny, z.ZodTypeAny]);
+  definition.inputSchema = {
+    ...definition.inputSchema,
+    ...(originalOperations
+      ? { operations: originalOperations.optional() }
+      : {}),
+    native_operations: z
+      .array(controllerNativeOperationSchema)
+      .min(1)
+      .max(32)
+      .optional()
+      .describe(
+        "Optional native controller composition/blend branch; use instead of operations."
+      ),
+  };
+  definition.description =
+    "Creates/updates Bedrock AnimationControllers; also supports bounded native nested-controller links and blend-transition curves without adding another MCP tool.";
+  definition.execute = async (args, context) => {
+    if (args.native_operations !== undefined) {
+      return executeControllerNativeOperations(
+        animationControllerNativeParameters.parse(args)
+      );
+    }
+    return originalExecute(args, context);
+  };
+}
+
 function wireInspectDiagnostics(): void {
   const definition = runtimeDefinition("inspect_animation");
   const originalExecute = definition.execute.bind(definition);
@@ -625,6 +1135,7 @@ function wireInspectDiagnostics(): void {
       structuredContent: {
         ...structured,
         native_properties: nativePropertySummary(item),
+        controller_composition: controllerCompositionRuntime(item),
         molang_analysis: molang,
         motion_dynamics: motionDynamicsRuntime(item),
         client_entity_wiring: clientEntityWiringRuntime(
@@ -642,12 +1153,13 @@ function wireInspectDiagnostics(): void {
 
 /**
  * Extends the existing Animation surface without adding MCP tools.
- * Native property authoring is one batched Undo operation; rich analysis is
- * piggy-backed only on inspect_animation(diagnostics=true).
+ * Native properties/controller composition use bounded batched Undo operations;
+ * rich analysis is piggy-backed only on inspect_animation(diagnostics=true).
  */
 export function wireAnimationNativeIntelligence(): void {
   if (animationNativeIntelligenceWired) return;
   wireTimelineNativeProperties();
+  wireControllerNativeOperations();
   wireInspectDiagnostics();
   animationNativeIntelligenceWired = true;
   invalidateToolRegistrationRuntimeCaches();
