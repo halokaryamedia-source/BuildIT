@@ -100,7 +100,7 @@ Use `.agents/skills/development-brief/SKILL.md` only when architecture, cross-ow
 
 Image/reference generation belongs in **ChatGPT** using `.agents/skills/blockbench-reference-generator/SKILL.md`. Codex authoring consumes the actual user-approved reference image; it does not recreate the reference workflow.
 
-For `DIRECT`, an actual original source image handed to Codex is a valid Approved Reference unless the user marks it draft/not ready; do not force canonical-board generation when that source evidence is sufficient. `3D_ASSISTED` requires the canonical five-view board.
+For `DIRECT`, an actual source image is Approved Reference unless marked draft/not ready; do not force board generation when sufficient. `3D_ASSISTED` requires the canonical five-view board.
 
 ### Asset Authoring
 
