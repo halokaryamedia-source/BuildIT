@@ -41,7 +41,7 @@ describe("reference Minecraft-first coverage", () => {
     expect(guide).toContain("accept the user's actual image first");
     expect(product).toContain("do not require board generation");
     expect(flow).toContain("do not force board generation for direct");
-    expect(skill).toContain("optional preparation step for `direct`");
+    expect(skill).toContain("canonical board is optional for `direct`");
     expect(panel).toContain("use the original image directly");
     expect(panel).toContain("create a reference board");
     expect(panel).toContain("required for 3d_assisted");
