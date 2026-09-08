@@ -36,6 +36,7 @@
     "verify:texturing-live": "bun run ./scripts/verify-texturing-live.ts",
     "verify:prelocal-wiring-live": "bun run ./scripts/verify-prelocal-wiring-live.ts",
     "verify:animation-live": "bun run ./scripts/verify-animation-live.ts",
+    "verify:particle-live": "bun run ./scripts/verify-particle-live.ts",
     "verify:persistence-live": "bun run ./scripts/verify-persistence-live.ts",
     "verify:project-affinity-live": "bun run ./scripts/verify-project-affinity-live.ts",
     "verify:lift-quality-live": "bun run ./scripts/verify-lift-quality-live.ts",
