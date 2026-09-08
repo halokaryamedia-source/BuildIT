@@ -29,12 +29,15 @@ describe("reference Minecraft-first coverage", () => {
       read("ui/userGuide.ts"),
     ]);
 
-    for (const text of [agents, guide, product, flow]) {
+    expect(agents).toContain("actual source image");
+    for (const text of [guide, product, flow]) {
       expect(text).toContain("original source image");
+    }
+    for (const text of [agents, guide, product, flow]) {
       expect(text).toContain("direct");
       expect(text).toContain("3d_assisted");
     }
-    expect(agents).toContain("do not force canonical-board generation");
+    expect(agents).toContain("do not force board generation");
     expect(guide).toContain("accept the user's actual image first");
     expect(product).toContain("do not require board generation");
     expect(flow).toContain("do not force board generation for direct");
