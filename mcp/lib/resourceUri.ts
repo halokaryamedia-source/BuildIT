@@ -8,9 +8,12 @@
  *
  * The resolution side (`findByResourceId`) accepts any of:
  *   - raw UUID
- *   - raw name (exact match)
- *   - slug of the name (case-insensitive)
+ *   - raw name (exact unique match)
+ *   - slug of the name (case-insensitive unique match)
  *   - slug~uuid8 format emitted on collision
+ *
+ * Ambiguous name/slug targets fail closed; callers must use UUID or the
+ * collision-safe URI emitted by listing.
  */
 
 const SLUG_MAX_LENGTH = 40;
@@ -79,9 +82,20 @@ export function makeResourceUri(
   return `${scope}://${makeResourceId(item, siblings)}`;
 }
 
+function requireUniqueResourceMatch<T extends INamedItem>(
+  matches: readonly T[],
+  id: string,
+  kind: "name" | "slug" | "collision-safe id"
+): T | undefined {
+  if (matches.length <= 1) return matches[0];
+  throw new Error(
+    `Resource id "${id}" is ambiguous by ${kind}; use the raw UUID or a collision-safe listed URI.`
+  );
+}
+
 /**
  * Resolves an ID fragment (from a URI variable) against a list of items.
- * Returns the first match, or undefined if nothing matches.
+ * UUID wins first; name/slug fallbacks must resolve uniquely.
  */
 export function findByResourceId<T extends INamedItem>(
   items: readonly T[],
@@ -89,25 +103,35 @@ export function findByResourceId<T extends INamedItem>(
 ): T | undefined {
   if (!id) return undefined;
 
-  const directMatch = items.find(
-    (item) => item.uuid === id || item.name === id
+  const uuidMatch = items.find((item) => item.uuid === id);
+  if (uuidMatch) return uuidMatch;
+
+  const exactNameMatch = requireUniqueResourceMatch(
+    items.filter((item) => item.name === id),
+    id,
+    "name"
   );
-  if (directMatch) return directMatch;
+  if (exactNameMatch) return exactNameMatch;
 
   const tildeIndex = id.indexOf("~");
   if (tildeIndex > 0) {
     const slugPart = id.slice(0, tildeIndex).toLowerCase();
     const uuidPart = id.slice(tildeIndex + 1);
-    const match = items.find(
-      (item) =>
-        slugify(item.name) === slugPart &&
-        item.uuid.startsWith(uuidPart)
+    const collisionSafeMatch = requireUniqueResourceMatch(
+      items.filter(
+        (item) =>
+          slugify(item.name) === slugPart && item.uuid.startsWith(uuidPart)
+      ),
+      id,
+      "collision-safe id"
     );
-    if (match) return match;
+    if (collisionSafeMatch) return collisionSafeMatch;
   }
 
   const slugLower = id.toLowerCase();
-  return items.find(
-    (item) => item.name && slugify(item.name) === slugLower
+  return requireUniqueResourceMatch(
+    items.filter((item) => item.name && slugify(item.name) === slugLower),
+    id,
+    "slug"
   );
 }
