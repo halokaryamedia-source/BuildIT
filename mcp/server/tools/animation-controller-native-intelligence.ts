@@ -17,7 +17,7 @@ type RuntimeControllerLink = {
   animation: string;
   blend_value: string | number;
 };
-type RuntimeControllerState = AnimationControllerState & {
+type RuntimeControllerState = Omit<AnimationControllerState, "animations"> & {
   animations: RuntimeControllerLink[];
   blend_transition_curve?: Record<string, number>;
 };
