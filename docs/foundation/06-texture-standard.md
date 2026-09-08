@@ -1,8 +1,8 @@
 # BlockIT — UV Layout & Texture Standard
 
 **Status:** Active Policy  
-**Version:** 1.5
-**Updated:** 2026-09-05
+**Version:** 1.6
+**Updated:** 2026-09-09
 
 ## Purpose
 
@@ -269,6 +269,28 @@ For crisp Minecraft texture:
 
 Intermediate alpha is valid only when material behavior requires translucency/blending.
 
+## Render Material / Alpha Contract
+
+Alpha meaning is downstream-material dependent and must not be inferred from PNG pixels alone:
+
+- opaque/default entity rendering uses the normal `entity` material;
+- cutout transparency requires a compatible alpha-test consumer such as `entity_alphatest`;
+- true translucency requires a blending consumer such as `entity_alphablend`;
+- emissive material families may repurpose alpha for emissiveness.
+
+If the downstream client-entity/render material is unknown, alpha-dependent appearance is **UNVERIFIED**. Do not treat a transparent-looking atlas preview as Minecraft runtime proof.
+
+## Paint Safety / Atomic Authoring
+
+Use existing Blockbench Painter controls only when they protect declared intent:
+
+- `pixel_perfect` for crisp freehand pixel clusters;
+- `lock_alpha` for recolor that must preserve transparent regions;
+- `paint_side_restrict` when freehand work could bleed onto another face;
+- mirror painting only after left/right semantic symmetry is established.
+
+For a known non-layered target with a fresh texture revision, `paint_texture_transaction` is preferred for one bounded exact-pixel batch because it provides optimistic stale-state protection and one Undo unit. Layered artistic work stays with native Painter tools.
+
 ## Mirror / Reuse
 
 Shared/mirrored UV regions are intentional only when surfaces should share pixels.
@@ -280,6 +302,24 @@ Avoid shared regions for text/symbols, left/right-specific detail, directional m
 PBR is optional and evidence-driven.
 
 Normal/height/MER are support Texture Atlases. PBR does not replace Texture Styling quality and does not justify base-atlas fragmentation.
+
+For active variants/PBR, `list_textures.production_alignment.gate` is the technical consistency gate:
+
+- dependent bitmap dimensions and logical UV mapping must remain aligned with the single production base atlas;
+- one material owns at most one texture per semantic PBR channel;
+- `normal` and `height` are mutually exclusive depth sources;
+- PBR support textures must belong to a material TextureGroup;
+- detached superseded support textures are inventory, not an active production failure.
+
+PBR channel images are **data maps**, not ordinary color styling:
+
+- normal RGB encodes surface direction and is an alternative to height;
+- height is scalar displacement information and must not coexist with normal in one texture set;
+- MER RGB maps Red=Metalness, Green=Emissive, Blue=Roughness.
+
+Do not invent normal/MER data from palette intuition. Use material preview/reference evidence and keep unsupported or unverified PBR intent explicit.
+
+`production_alignment=ready` proves mapping/channel consistency only. It does not prove that normal/MER values are artistically good or that the Minecraft runtime consumer is configured correctly.
 
 # Texture Verify
 
@@ -326,6 +366,8 @@ Requested texture scope is complete when:
 - identity-critical markings are present;
 - detail density matches physical pixels-per-UV-unit;
 - no accidental soft/alpha artifacts remain for crisp pixel style;
+- active variants/PBR have `production_alignment.gate=ready`;
+- alpha-dependent appearance has a known downstream material contract or remains explicitly UNVERIFIED;
 - Texture Verify has no unresolved critical/major issue.
 
 ## Related

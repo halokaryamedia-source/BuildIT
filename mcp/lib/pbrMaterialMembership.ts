@@ -18,6 +18,12 @@ export type PbrMaterialMembershipPlan = {
   affected_group_uuids: string[];
 };
 
+export type PbrMaterialChannelRequest = {
+  channel: PbrMaterialChannel;
+  /** Texture UUID to assign, or null to clear this channel. */
+  texture_uuid: string | null;
+};
+
 function requireUniqueTextureStates(
   states: readonly PbrMaterialTextureState[],
   context: string
@@ -46,9 +52,115 @@ function channelsConflict(
 }
 
 /**
+ * Plans a coherent material membership update without mutating Texture state.
+ * One material owns at most one texture per channel; normal/height are mutually
+ * exclusive because Bedrock texture_set accepts only one depth source.
+ */
+export function planPbrMaterialConfiguration(
+  states: readonly PbrMaterialTextureState[],
+  targetGroupUuid: string,
+  requests: readonly PbrMaterialChannelRequest[],
+  context: string
+): PbrMaterialMembershipPlan {
+  if (!targetGroupUuid) {
+    throw new Error(`${context} requires a non-empty target material UUID.`);
+  }
+  requireUniqueTextureStates(states, context);
+
+  const requestByChannel = new Map<PbrMaterialChannel, PbrMaterialChannelRequest>();
+  const assignedChannelByTexture = new Map<string, PbrMaterialChannel>();
+  for (const request of requests) {
+    if (requestByChannel.has(request.channel)) {
+      throw new Error(`${context} requests ${request.channel} more than once.`);
+    }
+    requestByChannel.set(request.channel, request);
+    if (request.texture_uuid === null) continue;
+    if (!states.some((state) => state.uuid === request.texture_uuid)) {
+      throw new Error(
+        `${context} incoming texture ${request.texture_uuid} is not present in the supplied texture state.`
+      );
+    }
+    const previous = assignedChannelByTexture.get(request.texture_uuid);
+    if (previous && previous !== request.channel) {
+      throw new Error(
+        `${context} cannot assign texture ${request.texture_uuid} to both ${previous} and ${request.channel}.`
+      );
+    }
+    assignedChannelByTexture.set(request.texture_uuid, request.channel);
+  }
+
+  const normal = requestByChannel.get("normal");
+  const height = requestByChannel.get("height");
+  if (normal?.texture_uuid && height?.texture_uuid) {
+    throw new Error(`${context} cannot assign both normal and height textures.`);
+  }
+
+  const original = states.map((state) => ({ ...state }));
+  let virtual = states.map((state) => ({ ...state }));
+  const affectedGroups = new Set<string>([targetGroupUuid]);
+
+  for (const channel of PBR_MATERIAL_CHANNELS) {
+    const request = requestByChannel.get(channel);
+    if (!request) continue;
+
+    if (request.texture_uuid === null) {
+      virtual = virtual.map((state) =>
+        state.group === targetGroupUuid && state.pbr_channel === channel
+          ? { ...state, group: "" }
+          : state
+      );
+      continue;
+    }
+
+    const incoming = virtual.find(
+      (state) => state.uuid === request.texture_uuid
+    )!;
+    if (incoming.group && incoming.group !== targetGroupUuid) {
+      affectedGroups.add(incoming.group);
+    }
+
+    virtual = virtual.map((state) => {
+      if (state.uuid === request.texture_uuid) {
+        return {
+          ...state,
+          group: targetGroupUuid,
+          pbr_channel: channel,
+        };
+      }
+      if (
+        state.group === targetGroupUuid &&
+        channelsConflict(channel, state.pbr_channel)
+      ) {
+        return { ...state, group: "" };
+      }
+      return state;
+    });
+  }
+
+  const finalByUuid = new Map(virtual.map((state) => [state.uuid, state]));
+  const changes: PbrMaterialTextureChange[] = [];
+  for (const before of original) {
+    const after = finalByUuid.get(before.uuid)!;
+    if (
+      after.group !== before.group ||
+      after.pbr_channel !== before.pbr_channel
+    ) {
+      changes.push({
+        uuid: after.uuid,
+        group: after.group,
+        pbr_channel: after.pbr_channel,
+      });
+    }
+  }
+
+  return {
+    changes,
+    affected_group_uuids: [...affectedGroups].sort(),
+  };
+}
+
+/**
  * Plans one material-channel assignment without mutating runtime Texture state.
- * A material may own one texture per semantic channel, and normal/height are
- * mutually exclusive because Bedrock texture_set uses one depth source.
  */
 export function planExclusivePbrMaterialAssignment(
   states: readonly PbrMaterialTextureState[],
@@ -57,54 +169,12 @@ export function planExclusivePbrMaterialAssignment(
   channel: PbrMaterialChannel,
   context: string
 ): PbrMaterialMembershipPlan {
-  if (!targetGroupUuid) {
-    throw new Error(`${context} requires a non-empty target material UUID.`);
-  }
-  requireUniqueTextureStates(states, context);
-
-  const incoming = states.find((state) => state.uuid === incomingTextureUuid);
-  if (!incoming) {
-    throw new Error(
-      `${context} incoming texture ${incomingTextureUuid} is not present in the supplied texture state.`
-    );
-  }
-
-  const desiredByUuid = new Map<string, PbrMaterialTextureChange>();
-  const affectedGroups = new Set<string>([targetGroupUuid]);
-  if (incoming.group && incoming.group !== targetGroupUuid) {
-    affectedGroups.add(incoming.group);
-  }
-
-  for (const state of states) {
-    let desiredGroup = state.group;
-    let desiredChannel = state.pbr_channel;
-
-    if (state.uuid === incomingTextureUuid) {
-      desiredGroup = targetGroupUuid;
-      desiredChannel = channel;
-    } else if (
-      state.group === targetGroupUuid &&
-      channelsConflict(channel, state.pbr_channel)
-    ) {
-      desiredGroup = "";
-    }
-
-    if (
-      desiredGroup !== state.group ||
-      desiredChannel !== state.pbr_channel
-    ) {
-      desiredByUuid.set(state.uuid, {
-        uuid: state.uuid,
-        group: desiredGroup,
-        pbr_channel: desiredChannel,
-      });
-    }
-  }
-
-  return {
-    changes: [...desiredByUuid.values()],
-    affected_group_uuids: [...affectedGroups].sort(),
-  };
+  return planPbrMaterialConfiguration(
+    states,
+    targetGroupUuid,
+    [{ channel, texture_uuid: incomingTextureUuid }],
+    context
+  );
 }
 
 export function requireExclusivePbrMaterialState(

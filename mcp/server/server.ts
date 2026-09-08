@@ -10,6 +10,7 @@ import {
 } from "@/lib/authoringPhase";
 import { describeMcpSurfaceToolNames } from "@/server/tools";
 import { wireAuthoringQualityIntelligence } from "@/server/tools/quality-intelligence";
+import { wireTextureQualityRuntime } from "@/server/tools/texture-quality-runtime";
 import { wireAnimationNativeIntelligence } from "@/server/tools/animation-native-intelligence";
 import { wireAnimationControllerNativeIntelligence } from "@/server/tools/animation-controller-native-intelligence";
 import {
@@ -21,6 +22,7 @@ import {
 // catalog. server/tools has already registered the default catalog and canonical
 // Animation routing before this module body executes.
 wireAuthoringQualityIntelligence();
+wireTextureQualityRuntime();
 wireAnimationNativeIntelligence();
 wireAnimationControllerNativeIntelligence();
 
