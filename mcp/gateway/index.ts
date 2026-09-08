@@ -23,7 +23,7 @@ const server = new McpServer(
   },
   {
     instructions:
-      "Stable BlockIT client boundary. Use a known Runtime capability directly and search only when the capability is unknown or stale. This Gateway exposes tools only; Runtime resources and prompts are not proxied. Normal authoring is approved image + optional 3D Evidence, then Geometry → Texturing → optional Animation. Phase handoffs continue the same task; invoke_capability never auto-retries an interrupted backend call.",
+      "Stable BlockIT client boundary. Use a known Runtime capability directly and search only when the capability is unknown or stale. This Gateway exposes tools only; Runtime resources and prompts are not proxied. Normal authoring is approved image + optional 3D Evidence, then Geometry → Texturing → optional Animation. The Gateway binds to the active Blockbench project on first Runtime invocation; intentional target-tab changes use status(adopt_active_project=true) once. Phase handoffs continue the same task; invoke_capability never auto-retries an interrupted backend call.",
   }
 );
 
@@ -75,6 +75,15 @@ function gatewayErrorResult(error: unknown) {
   };
 }
 
+const statusInput = z.object({
+  adopt_active_project: z
+    .boolean()
+    .default(false)
+    .describe(
+      "Rare explicit rebind only: after intentionally selecting a different Blockbench project tab, set true once so this Gateway adopts that active project. Leave false for normal status checks."
+    ),
+});
+
 const searchInput = z.object({
   query: z.string().default(""),
   limit: z.number().int().min(1).max(50).default(4),
@@ -104,8 +113,8 @@ registerGatewayTool(
   {
     title: "BlockIT Status",
     description:
-      "Reports Gateway health and the current Blockbench Runtime state without requiring the Runtime to be online at Gateway startup.",
-    inputSchema: {},
+      "Reports Gateway health and current Blockbench Runtime state. Normal authoring does not poll status. Set adopt_active_project=true only after intentionally changing this Gateway to another open Blockbench project tab.",
+    inputSchema: statusInput.shape,
     annotations: {
       readOnlyHint: true,
       destructiveHint: false,
@@ -113,19 +122,28 @@ registerGatewayTool(
       openWorldHint: false,
     },
   },
-  async () => {
-    const status = await backend.getStatus();
-    return {
-      content: [
-        {
-          type: "text" as const,
-          text: status.runtime.online
-            ? "BlockIT Gateway is ready and the Blockbench Runtime is online."
-            : "BlockIT Gateway is ready; the Blockbench Runtime is currently offline.",
-        },
-      ],
-      structuredContent: status,
-    };
+  async (rawArgs) => {
+    try {
+      const { adopt_active_project } = statusInput.parse(rawArgs);
+      const status = adopt_active_project
+        ? await backend.adoptActiveProject()
+        : await backend.getStatus();
+      return {
+        content: [
+          {
+            type: "text" as const,
+            text: status.runtime.online
+              ? status.affinity.project_uuid
+                ? `BlockIT Gateway is ready; Runtime is online and this Gateway is bound to project ${status.affinity.project_uuid}.`
+                : "BlockIT Gateway is ready and the Blockbench Runtime is online; project affinity will bind on the first Runtime invocation."
+              : "BlockIT Gateway is ready; the Blockbench Runtime is currently offline.",
+          },
+        ],
+        structuredContent: status,
+      };
+    } catch (error) {
+      return gatewayErrorResult(error);
+    }
   }
 );
 
@@ -218,7 +236,7 @@ registerGatewayTool(
   {
     title: "Invoke BlockIT Capability",
     description:
-      "Invokes one exact capability on the current Blockbench Runtime. Calls are serialized and are never automatically retried after a transport interruption; uncertain mutations return OUTCOME_UNKNOWN. Successful phase switches keep the same Gateway task alive and refresh the Runtime catalog automatically.",
+      "Invokes one exact capability on this Gateway's bound Blockbench project. Calls are serialized and never automatically retried after a transport interruption; uncertain mutations return OUTCOME_UNKNOWN. Successful project creation adopts the new project automatically; successful phase switches keep the same Gateway task alive.",
     inputSchema: invokeInput.shape,
   },
   async (rawArgs) => {
