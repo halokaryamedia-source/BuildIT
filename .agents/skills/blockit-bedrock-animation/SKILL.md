@@ -30,7 +30,7 @@ pose/time visual evidence             → capture_model_views(animation_preview)
 
 Known → Gateway. Unknown/stale → `search_capabilities`; schema → `describe_capability` once. Reuse fresh UUID/state; known identity must not fall back to broad hierarchy discovery or confirmation reads.
 
-`batch` owns one coherent cohort, not loops per key. `properties` batches clip-native state; `native_operations` owns nested controller/blend curves. `resource_operations` owns client-entity runtime JSON + file-backed controller variables/remap curves. Controller/effect/graph/copy-paste are conditional.
+`operation="batch"` owns one coherent cohort, not loops per key. `properties` batches clip-native state; `native_operations` owns nested controller/blend curves. `resource_operations` owns client-entity runtime JSON + file-backed controller variables/remap curves. Controller/effect/graph/copy-paste are conditional.
 
 ## Motion Design Contract
 
