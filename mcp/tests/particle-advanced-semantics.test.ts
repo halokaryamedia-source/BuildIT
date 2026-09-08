@@ -2,14 +2,12 @@ import { describe, expect, test } from "bun:test";
 import {
   applyParticleOperations,
   createParticleDocument,
+  inspectParticleDocument,
 } from "../lib/bedrockParticleDocument";
-import {
-  analyzeBedrockParticleSemantics,
-  BEDROCK_PARTICLE_SPECIAL_MOLANG_VARIABLES,
-} from "../lib/bedrockParticleSemantics";
+import { BEDROCK_PARTICLE_SPECIAL_MOLANG_VARIABLES } from "../lib/bedrockParticleSemantics";
 
 describe("Bedrock particle advanced semantics", () => {
-  test("recognizes current math in parametric particle motion without evaluating it", () => {
+  test("treats Molang math and parametric motion as first-class particle semantics", () => {
     let document = createParticleDocument({
       identifier: "blockit:math_orbit",
       preset: "trail",
@@ -30,18 +28,30 @@ describe("Bedrock particle advanced semantics", () => {
       },
     ]);
 
-    const diagnostics = analyzeBedrockParticleSemantics(document);
-    expect(diagnostics.some((entry) => entry.code === "parametric_motion_molang")).toBe(true);
-    expect(diagnostics.some((entry) => entry.code === "unknown_particle_molang_math")).toBe(false);
-    expect(BEDROCK_PARTICLE_SPECIAL_MOLANG_VARIABLES).toContain("variable.particle_age");
+    const summary = inspectParticleDocument(document);
+    expect(
+      summary.diagnostics.some((entry) => entry.code === "parametric_motion_molang")
+    ).toBe(true);
+    expect(
+      summary.diagnostics.some(
+        (entry) => entry.code === "unknown_particle_molang_math"
+      )
+    ).toBe(false);
+    expect(BEDROCK_PARTICLE_SPECIAL_MOLANG_VARIABLES).toContain(
+      "variable.particle_age"
+    );
   });
 
-  test("warns on unknown math and obvious literal zero divisors", () => {
+  test("warns on unknown math and literal zero divisors without evaluating Molang", () => {
     let document = createParticleDocument({ identifier: "blockit:math_lint" });
     document = applyParticleOperations(document, [
       {
         op: "patch",
-        path: ["components", "minecraft:particle_appearance_billboard", "size"],
+        path: [
+          "components",
+          "minecraft:particle_appearance_billboard",
+          "size",
+        ],
         value: [
           "math.future_wave(variable.particle_age)",
           "variable.particle_age / 0",
@@ -49,12 +59,18 @@ describe("Bedrock particle advanced semantics", () => {
       },
     ]);
 
-    const diagnostics = analyzeBedrockParticleSemantics(document);
-    expect(diagnostics.some((entry) => entry.code === "unknown_particle_molang_math")).toBe(true);
-    expect(diagnostics.some((entry) => entry.code === "literal_zero_divisor")).toBe(true);
+    const summary = inspectParticleDocument(document);
+    expect(
+      summary.diagnostics.some(
+        (entry) => entry.code === "unknown_particle_molang_math"
+      )
+    ).toBe(true);
+    expect(
+      summary.diagnostics.some((entry) => entry.code === "literal_zero_divisor")
+    ).toBe(true);
   });
 
-  test("detects malformed Molang and costly per-render randomness", () => {
+  test("detects malformed Molang structure and expensive per-render randomness", () => {
     let malformed = createParticleDocument({ identifier: "blockit:bad_math" });
     malformed = applyParticleOperations(malformed, [
       {
@@ -64,7 +80,7 @@ describe("Bedrock particle advanced semantics", () => {
       },
     ]);
     expect(
-      analyzeBedrockParticleSemantics(malformed).some(
+      inspectParticleDocument(malformed).diagnostics.some(
         (entry) => entry.code === "invalid_particle_molang_syntax"
       )
     ).toBe(true);
@@ -80,9 +96,13 @@ describe("Bedrock particle advanced semantics", () => {
         },
       },
     ]);
-    const diagnostics = analyzeBedrockParticleSemantics(expensive);
-    expect(diagnostics.some((entry) => entry.code === "per_render_random_molang")).toBe(true);
-    expect(diagnostics.some((entry) => entry.code === "expensive_per_render_molang")).toBe(true);
+    const diagnostics = inspectParticleDocument(expensive).diagnostics;
+    expect(
+      diagnostics.some((entry) => entry.code === "per_render_random_molang")
+    ).toBe(true);
+    expect(
+      diagnostics.some((entry) => entry.code === "expensive_per_render_molang")
+    ).toBe(true);
   });
 
   test("validates literal flipbook bounds and detailed curve contracts", () => {
@@ -116,12 +136,16 @@ describe("Bedrock particle advanced semantics", () => {
       },
     ]);
 
-    const diagnostics = analyzeBedrockParticleSemantics(document);
-    expect(diagnostics.some((entry) => entry.code === "flipbook_frame_outside_texture")).toBe(true);
-    expect(diagnostics.some((entry) => entry.code === "invalid_bezier_curve_nodes")).toBe(true);
+    const diagnostics = inspectParticleDocument(document).diagnostics;
+    expect(
+      diagnostics.some((entry) => entry.code === "flipbook_frame_outside_texture")
+    ).toBe(true);
+    expect(
+      diagnostics.some((entry) => entry.code === "invalid_bezier_curve_nodes")
+    ).toBe(true);
   });
 
-  test("rejects invalid randomize weights and warns on high nested-effect fan-out", () => {
+  test("rejects invalid randomize weights and surfaces high event fan-out", () => {
     let document = createParticleDocument({ identifier: "blockit:event_quality" });
     document = applyParticleOperations(document, [
       {
@@ -145,8 +169,14 @@ describe("Bedrock particle advanced semantics", () => {
       },
     ]);
 
-    const diagnostics = analyzeBedrockParticleSemantics(document);
-    expect(diagnostics.some((entry) => entry.code === "invalid_particle_randomize_weight")).toBe(true);
-    expect(diagnostics.some((entry) => entry.code === "high_particle_event_fanout")).toBe(true);
+    const diagnostics = inspectParticleDocument(document).diagnostics;
+    expect(
+      diagnostics.some(
+        (entry) => entry.code === "invalid_particle_randomize_weight"
+      )
+    ).toBe(true);
+    expect(
+      diagnostics.some((entry) => entry.code === "high_particle_event_fanout")
+    ).toBe(true);
   });
 });
