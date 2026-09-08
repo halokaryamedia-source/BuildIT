@@ -445,12 +445,13 @@ export function registerMaterialInstanceTools() {
         }
 
         const plannedChanges = finalizeMaterialInstanceFaceChanges(
-          assignments.flatMap((assignment) =>
-            requestedMaterialNameChanges(
-              cubeCache[assignment.cube_id],
-              assignment.faces,
-              assignment.material_name
-            )
+          assignments.flatMap(
+            (assignment: z.infer<typeof materialInstanceAssignmentSchema>) =>
+              requestedMaterialNameChanges(
+                cubeCache[assignment.cube_id],
+                assignment.faces,
+                assignment.material_name
+              )
           )
         );
         if (!plannedChanges.length) {
