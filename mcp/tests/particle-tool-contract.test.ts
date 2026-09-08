@@ -18,7 +18,7 @@ describe("particle MCP contract", () => {
     ]);
   });
 
-  test("supports one-call create, save intent and native preview request", () => {
+  test("supports one-call create, client-entity binding, save intent and native preview request", () => {
     const parsed = manageParticleParameters.safeParse({
       create: {
         identifier: "blockit:engine_smoke",
@@ -34,6 +34,10 @@ describe("particle MCP contract", () => {
       ],
       output: {
         path: "C:\\packs\\example\\particles\\engine_smoke.particle.json",
+      },
+      client_entity_binding: {
+        source: { path: "C:\\packs\\example\\entity\\vehicle.entity.json" },
+        shortname: "engine_smoke",
       },
       preview: true,
     });
@@ -72,6 +76,20 @@ describe("particle MCP contract", () => {
       source: {
         path: "/tmp/example.particle.json",
         content: "{\"particle_effect\":{}}",
+      },
+    }).success).toBe(false);
+  });
+
+  test("keeps client-entity effect references shortname-based and rejects unsafe binding names", () => {
+    expect(manageParticleParameters.safeParse({
+      create: { identifier: "blockit:test" },
+      client_entity_binding: {
+        source: { content: JSON.stringify({
+          "minecraft:client_entity": {
+            description: { identifier: "blockit:test_entity" },
+          },
+        }) },
+        shortname: "engine smoke",
       },
     }).success).toBe(false);
   });

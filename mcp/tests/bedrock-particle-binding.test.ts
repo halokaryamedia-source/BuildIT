@@ -3,6 +3,7 @@ import {
   applyParticleBindingOperations,
   inspectParticleBindings,
   parseClientEntityDocument,
+  serializeClientEntityDocument,
   validateParticleEffectReferences,
 } from "../lib/bedrockParticleBinding";
 
@@ -36,6 +37,24 @@ describe("Bedrock client-entity particle binding", () => {
     expect(description.materials).toEqual({ default: "entity_alphatest" });
     expect(description.future_description).toEqual({ zero: 0 });
     expect((next.future_root as any).keep).toBe(false);
+  });
+
+  test("serializes a JSON-safe client entity without losing explicit authored values", () => {
+    const source = parseClientEntityDocument(JSON.stringify({
+      format_version: "1.10.0",
+      keep_zero: 0,
+      "minecraft:client_entity": {
+        description: {
+          identifier: "blockit:test_entity",
+          particle_effects: { smoke: "blockit:smoke" },
+          keep_false: false,
+        },
+      },
+    }));
+
+    const roundTrip = parseClientEntityDocument(serializeClientEntityDocument(source));
+    expect(roundTrip.keep_zero).toBe(0);
+    expect((roundTrip["minecraft:client_entity"] as any).description.keep_false).toBe(false);
   });
 
   test("validates animation/controller references against shortnames rather than full particle identifiers", () => {

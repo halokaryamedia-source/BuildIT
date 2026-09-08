@@ -102,6 +102,14 @@ export function parseClientEntityDocument(content: string): JsonObject {
   return document;
 }
 
+export function serializeClientEntityDocument(document: JsonObject): string {
+  // cloneJsonValue owns JSON-safe validation for this document family.
+  const safe = cloneJsonValue(document);
+  clientEntity(safe);
+  description(safe);
+  return `${JSON.stringify(safe, null, 2)}\n`;
+}
+
 export function inspectParticleBindings(document: JsonObject): ParticleBindingSummary {
   const diagnostics: ParticleBindingDiagnostic[] = [];
   const owner = description(document);
