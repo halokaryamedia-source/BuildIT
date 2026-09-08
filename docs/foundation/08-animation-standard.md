@@ -90,7 +90,7 @@ Interpolation is a means, not a quality target. Prefer the simplest interpolatio
 
 ## Procedural Math / Molang
 
-Molang may own transform values, animation timing, blend behavior, controller conditions, and effect scripts where the runtime cause is mathematical or reactive. BlockIT preserves authored text; it must not evaluate the expression as gameplay truth or invent unknown query values.
+Molang may own transform values, animation timing, blend behavior, controller conditions, and effect scripts where the runtime cause is mathematical or reactive. BlockIT preserves authored text; it must not evaluate the expression as gameplay truth or invent unknown query values. Authored poses keep identity-critical action/contact/silhouette ownership when procedural math is not the real motion cause.
 
 Molang trigonometric functions use degrees. Aliases such as `q.`, `v.`, `t.`, and `c.` are equivalent to query/variable/temp/context namespaces.
 
@@ -324,7 +324,7 @@ For cyclic/idle motion, static snapshots are not enough; repeated full-loop play
 
 ## Current Capability Boundary
 
-Retained strengths include numeric/Molang transform keys, rig/pivots, timeline settings, batch/copy operations, authored Animation inspection, new/existing animation effects, animation-level `anim_time_update` / `blend_weight`, bounded AnimationController state-machine/effects, native clip `start_delay` / `loop_delay` / `override_previous_animation`, hold mode, and native `relative_to.rotation=entity` authoring.
+Retained strengths include numeric/Molang transform keys, rig/pivots, timeline settings, batch/copy operations, authored Animation inspection, new-animation particle/sound effects, existing-animation particle/sound/timeline effect mutation, animation-level `anim_time_update` / `blend_weight`, bounded AnimationController state-machine/effects, native clip `start_delay` / `loop_delay` / `override_previous_animation`, hold mode, and native `relative_to.rotation=entity` authoring.
 
 Protected gaps remain:
 - controller blend-curve mutation;
