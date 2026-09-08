@@ -35,7 +35,7 @@ Existing/revision → baseline; inspect only affected target/dependencies; broad
 CORE / SHARED
 project unknown → get_project_info
 identity/hierarchy/detail → inspect_elements(mode=search|outline|detail)
-visible/reference comparison → capture_model_views
+visible/reference comparison  → capture_model_views
 envelope/scale/ground → inspect_model_bounds
 UV/atlas readiness → list_textures
 file deliverable → export_model
