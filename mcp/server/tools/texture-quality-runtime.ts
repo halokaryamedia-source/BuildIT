@@ -147,18 +147,21 @@ function configureChannelRequests(
     ["height", "height_texture"],
     ["mer", "mer_texture"],
   ] as const;
-  return fields.flatMap(([channel, field]) => {
+  const requests: PbrMaterialChannelRequest[] = [];
+  for (const [channel, field] of fields) {
     const reference = channelTextureReference(args, field);
-    if (reference === undefined) return [];
+    if (reference === undefined) continue;
     if (reference === null) {
-      return [{ channel, texture_uuid: null }];
+      requests.push({ channel, texture_uuid: null });
+      continue;
     }
     const texture = resolveCoreTexture(
       reference,
       `Use list_textures to resolve ${field} before configuring the material.`
     );
-    return [{ channel, texture_uuid: texture.uuid }];
-  });
+    requests.push({ channel, texture_uuid: texture.uuid });
+  }
+  return requests;
 }
 
 function requireUniformSourceSwitch(

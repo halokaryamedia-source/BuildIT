@@ -13,8 +13,8 @@ unlocked/invalid UV → Geometry owner + bounded UV correction; no phase switch.
 ## Direct Routing
 Reuse fresh state.
 ```text
-global UV/atlas readiness → list_textures
-face mapping → inspect_elements(mode=detail) only when needed
+UV/atlas readiness → list_textures
+face mapping → inspect_elements(mode=detail) when needed
 blank atlas resolution unknown → get_project_info once
 atlas → list_textures / activate_texture / create_texture / get_texture
 regions → draw_shape_tool / paint_fill_tool
@@ -31,24 +31,25 @@ Unknown → `search_capabilities(limit=4)`. No confirmation rereads.
 Requested atlas size/density are constraints: never silently enlarge.
 
 ## First Call
-**not omit blank Atlas size**. `create_texture`: provisional **16×16 blank**; **128×128 default, 256×256 opt-in** production. Reuse existing atlas UUID.
+`blank create_texture → explicit width+height from project UV`; **not omit blank Atlas size**.
+`create_texture`: provisional **16×16 blank**; **128×128 default, 256×256 opt-in** production. Reuse existing atlas UUID.
 
 ## Texture Workplan / Coverage
-Material cohorts: palette roles `BASE | SHADOW | HIGHLIGHT | ACCENT/IDENTITY`; form/contact/occlusion/edge/identity/detail; UV-share.
+material cohorts: palette roles `BASE | SHADOW | HIGHLIGHT | ACCENT/IDENTITY`; form/contact/occlusion/edge/identity/detail.
 Face Coverage Ledger: `UNPAINTED | BASE_ONLY | STYLED | INTENTIONAL_FLAT | INTENTIONAL_TRANSPARENT | SHARED`; close all.
-`list_textures.optimization_opportunities.coverage.gate`: `incomplete|partial`/`FACE_ACCOUNTING_INCOMPLETE` → no completion. One pass → one `list_textures`; inspect candidates. `ready` ≠ visual PASS.
+`list_textures.optimization_opportunities.coverage.gate`: `incomplete|partial`/`FACE_ACCOUNTING_INCOMPLETE` → no completion. one `list_textures` per pass; inspect candidates. `ready` ≠ visual PASS.
 Variants/PBR require `list_textures.production_alignment.gate=ready`.
 
 ### Reference-Grounded Palette / Atlas-Island Discipline
-Integer texels; **pixels per UV unit** owns scale. Hue/value ramps, hard clusters, no antialiasing; alpha 0/255 unless semantics require otherwise.
+Integer texels; **pixels per UV unit** owns scale. Hue/value ramps, hard clusters, no antialiasing; alpha 0/255 unless required.
 
 ## Texture Styling
-A generic palette, flat rectangles, or random high-contrast noise are not completion. Avoid pillow shading, banding, mixels, border-only detail; top/front > bottom/back when supported.
+A generic palette, copied unrelated texture, flat rectangles, or random high-contrast noise are not completion. Avoid pillow shading, banding, mixels, border-only detail.
 `BASE PASS → VALUE / FORM PASS → IDENTITY PASS → SECONDARY DETAIL PASS → VERIFY`.
 
 ### Alpha / PBR / Paint Safety
 Alpha: cutout→`entity_alphatest`; translucent→`entity_alphablend`; emissive may use alpha; unknown=`UNVERIFIED`.
-Variants preserve production base role + compatible dimensions/mapping; PBR aligns; one/channel; `normal XOR height`.
+Variants preserve production base role + compatible dimensions/mapping; PBR aligned; one/channel; `normal XOR height`.
 `paint_settings`: `pixel_perfect`, `lock_alpha`, `paint_side_restrict`; Mirror after semantic symmetry.
 
 ## Coherent Styling Window / Anti-Micro-Loop
@@ -58,7 +59,7 @@ Broad regions → `draw_shape_tool`/`paint_fill_tool`; disconnected same-color d
 
 ## Texture Verify
 Reference + fresh `get_texture` + fresh **mapped model-view evidence** from `capture_model_views` → `FAIL | UNVERIFIED | PASS`.
-Minimum views; final approval covers required hidden material surfaces.
+Minimum views; approval covers required hidden material surfaces.
 `FAIL` → difference/cause → **smallest bounded causal correction** → one fresh affected evidence bundle → `IMPROVED | UNCHANGED | REGRESSED`; same causal direction twice → `BLOCKED`.
 Never use stale exported PNG/bbmodel after live changes.
 
