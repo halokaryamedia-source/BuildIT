@@ -5,11 +5,11 @@ description: Minecraft Bedrock Entity animation specialist for authored motion, 
 
 # BlockIT Bedrock Animation
 
-Use at `ACTIVE PHASE: ANIMATION` after Texturing approval + checkpoint + Animation Readiness Preflight.
+Use at `ACTIVE PHASE: ANIMATION` after Texturing approval + checkpoint + Animation Readiness Preflight when participating hierarchy/pivots are suitable.
 
 ## Boundary
 
-Animation owns motion, not structural rig mutation. Structural blocker → `HANDOFF_REQUIRED` with `target_phase: geometry`, reason, readiness, resume target → `switch_authoring_phase` → resume same task. Before keys, representative extreme poses preserve attachment/contact/clearance. Do not search for `bone_rigging`; `create_project` is not Animation.
+Animation owns motion, not structural rig mutation. Structural blocker → `HANDOFF_REQUIRED` with `target_phase: geometry`, reason, readiness, resume target → `switch_authoring_phase` → resume same task. Before keys, representative extreme poses preserve attachment/contact/clearance; otherwise handoff Geometry first. Do not search for `bone_rigging`; `create_project` is not Animation.
 
 ## Direct Routing
 
@@ -28,7 +28,7 @@ pose/time visual evidence             → capture_model_views(animation_preview)
 
 Known → Gateway. Unknown/stale → `search_capabilities`; schema → `describe_capability` once. Reuse fresh UUID/state; known identity must not fall back to broad hierarchy discovery or confirmation reads.
 
-`batch` owns one coherent cohort, not loops per key; use `operation="batch"` + `batch_operation="offset|scale|reverse|mirror|smooth|bake"`. `operation="properties"` batches length/loop, `anim_time_update`, `blend_weight`, `start_delay`, `loop_delay`, `override_previous_animation`, and bone `relative_to.rotation=entity|parent` in one Undo.
+`batch` owns one coherent cohort, not loops per key; use `operation="batch"` + `batch_operation="offset|scale|reverse|mirror|smooth|bake"`. `operation="properties"` batches length/loop, `anim_time_update`, `blend_weight`, `start_delay`, `loop_delay`, `override_previous_animation`, and bone `relative_to.rotation=entity|parent` in one Undo. Controller/effect/graph/copy-paste are conditional.
 
 ## Motion Design Contract
 
