@@ -41,7 +41,7 @@ Face Coverage Ledger: `UNPAINTED | BASE_ONLY | STYLED | INTENTIONAL_FLAT | INTEN
 Variants/PBR require `list_textures.production_alignment.gate=ready`; `seam_continuity` advisory; `pbr_content`.
 
 ### Reference-Grounded Palette / Atlas-Island Discipline
-Integer texels; **pixels per UV unit** owns scale; hard clusters; no antialiasing.
+Integer texels; **pixels per UV unit** owns scale; ramp; hard clusters; no antialiasing.
 
 ## Texture Styling
 A generic palette, copied unrelated texture, flat rectangles, or random high-contrast noise are not completion. Avoid pillow shading, banding, mixels, border-only detail.
