@@ -132,8 +132,12 @@ describe("current developer-facing documentation sync", () => {
       text("ui/settings.ts"),
     ]);
 
-    for (const owner of [root, context, flow, implementation, router]) {
+    for (const owner of [root, context, flow, implementation]) {
       expect(owner).toContain("Geometry Strategy");
+    }
+    expect(router).toMatch(/Strategy:\s*user-selected\s*`DIRECT \| 3D_ASSISTED`/i);
+
+    for (const owner of [root, context, flow, implementation, router]) {
       expect(owner).toContain("DIRECT");
       expect(owner).toContain("3D_ASSISTED");
       expect(owner).toContain("AUTHORING");
