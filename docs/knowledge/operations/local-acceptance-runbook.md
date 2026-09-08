@@ -1,6 +1,6 @@
 # Local Acceptance Runbook
 
-Updated: 2026-09-06  
+Updated: 2026-09-08  
 Owner: `LIVE_BLOCKBENCH` formal acceptance procedure  
 Current state: DIRECT disposable tests only; GPU/3D_ASSISTED deferred.
 
@@ -92,16 +92,20 @@ Use the repository-owned disposable harness; do not redesign tests in Blockbench
 ```text
 shared AUTHORING
 → verify:geometry-live -- --confirm-disposable
+→ UV readiness preflight
 → user Geometry APPROVED
 → UV Layout PASS
 → verify:texturing-live -- --confirm-disposable
 → Texturing → Texture APPROVED
+→ Animation readiness preflight
 → one AUTHORING→Animation handoff
 → verify:animation-live -- --confirm-disposable
 → verify:persistence-live -- --prepare --confirm-disposable
 → one native close/reopen
 → verify:persistence-live -- --verify --confirm-disposable
 ```
+
+The readiness preflights are workflow checks, not new harness commands or approval states: reuse fresh state, inspect only affected UV-risk or participating motion cohorts when needed, and correct blockers before the next gate/handoff.
 
 Geometry↔Texturing stays on the shared AUTHORING surface; no phase bounce. The harness owns thin per-face UV, native 16x template/repack, semantic pixel preservation, Painter target/clip, A-vs-selected-B animation targeting, Undo/Redo and persistence assertions.
 
@@ -139,9 +143,11 @@ Approved Reference Board
 → Primitive Decomposition Gate
 → materialize_3d_assisted_scaffold
 → Semantic Geometry Cleanup
+→ UV readiness preflight
 → user Geometry APPROVED
 → UV Layout PASS
 → Texture APPROVED
+→ Animation readiness preflight when Animation Required=YES
 ```
 
 External output is intermediate evidence. Materialization requires current hashes, complete preflight, one atomic Undo transaction, and no accepted partial scaffold. `manage_geometry_reference` is comparison evidence only and must not survive production export.

@@ -121,6 +121,27 @@ describe("asset tool routing", () => {
     expect(animation).not.toContain("reload BlockIT MCP");
   });
 
+  test("readiness preflights and targeted existing-model intake prevent late stage bounce", async () => {
+    const [flow, router, modelling, texturing, animation] = await Promise.all([
+      source("../docs/knowledge/flow.md"),
+      source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md"),
+      source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
+      source("../.agents/skills/blockit-bedrock-texturing/SKILL.md"),
+      source("../.agents/skills/blockit-bedrock-animation/SKILL.md"),
+    ]);
+
+    expect(flow).toContain("UV READINESS PREFLIGHT");
+    expect(flow).toContain("ANIMATION READINESS PREFLIGHT");
+    expect(flow).toContain("minimum targeted baseline inspection");
+    expect(flow).toContain("not new user approvals or persisted stages");
+    expect(router).toContain("Animation Readiness Preflight");
+    expect(router).toContain("inspect only affected target/dependencies");
+    expect(modelling).toContain("UV Readiness Preflight");
+    expect(modelling).toContain("Read-only: no production UV");
+    expect(texturing).toContain("Animation Readiness Preflight");
+    expect(animation).toContain("Animation Readiness Preflight");
+  });
+
   test("internal extended identifier remains compatibility rather than a second authoring router", async () => {
     const [profile, settings] = await Promise.all([
       source("lib/registrationProfile.ts"),

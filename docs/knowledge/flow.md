@@ -1,6 +1,6 @@
 # BlockIT Flow
 
-Updated: 2026-09-07
+Updated: 2026-09-08
 
 This is the **single detailed current flow**. Root `AGENTS.md` owns deterministic task/Skill routing; `workspace/README.md` owns asset continuity; `next-action.md` owns implementation continuation.
 
@@ -99,14 +99,16 @@ Geometry and Texturing share Runtime capabilities, but semantic gates are ordere
 ```text
 GEOMETRY IN_PROGRESS
 → internal Geometry verify
-→ READY_FOR_USER_REVIEW
+→ UV READINESS PREFLIGHT
+   ├─ blocker → GEOMETRY IN_PROGRESS
+   └─ ready → READY_FOR_USER_REVIEW
 → user inspects live Blockbench
    ├─ revision → GEOMETRY IN_PROGRESS
    └─ explicit approve → Geometry APPROVED
 → checkpoint save
 
 Geometry APPROVED
-→ Geometry-owned UV Layout
+→ Geometry-owned production UV Layout
 → UV Layout PASS
 → checkpoint/update continuity
 
@@ -119,11 +121,13 @@ Geometry APPROVED + UV Layout PASS
 → checkpoint save
 
 Texturing APPROVED
-→ Animation when required
+→ when Animation Required=YES: ANIMATION READINESS PREFLIGHT
+   ├─ blocker → correct exact owner on shared AUTHORING
+   └─ ready → Animation handoff
 → otherwise Finalization
 ```
 
-**Geometry user approval is required before fresh/rebuilt production UV Layout. Texture/PBR mutation is forbidden before `Geometry APPROVED + UV Layout PASS`.**
+**Geometry user approval is required before fresh/rebuilt production UV Layout. Texture/PBR mutation is forbidden before `Geometry APPROVED + UV Layout PASS`.** Readiness preflights are bounded internal checks, not new user approvals or persisted stages; they do not create UV Layout PASS or Animation PASS.
 
 Codex uses current Blockbench state + `capture_model_views` for internal evidence; internal captures are not user approval. Do not send materially broken work to review. Same material causal correction failing twice without new evidence → `BLOCKED`.
 
@@ -135,9 +139,10 @@ Codex uses current Blockbench state + `capture_model_views` for internal evidenc
 Approved Reference + Dimensions + Requirements
 → semantic Geometry
 → internal verify
+→ UV READINESS PREFLIGHT
 → READY_FOR_USER_REVIEW
 → user Geometry APPROVED
-→ UV Layout
+→ production UV Layout
 ```
 
 `DIRECT` is a user-selected method, not an object classifier.
@@ -158,9 +163,10 @@ Approved Reference Board
 → Semantic Geometry Cleanup
 → remove live Shape GLB
 → final Geometry internal verify
+→ UV READINESS PREFLIGHT
 → READY_FOR_USER_REVIEW
 → user Geometry APPROVED
-→ UV Layout
+→ production UV Layout
 ```
 
 No GLB-only, PrimitiveAnything-only, user-supplied-GLB v1, provider selection, or automatic fallback path.
@@ -200,7 +206,7 @@ Surface-only detail defaults to texture. Detail-only geometry with smallest mate
 
 ### Geometry user gate
 
-Geometry internal PASS + fresh current-revision evidence → `READY_FOR_USER_REVIEW`. User approval locks the Geometry checkpoint before production UV rebuild.
+Geometry internal PASS + fresh current-revision evidence must also clear **UV READINESS PREFLIGHT** before `READY_FOR_USER_REVIEW`. Reuse fresh authored state and inspect only when needed to catch known thin/sub-unit or Box-UV collapse risk, face-aspect/representation blockers, seam/continuity risk, and surfaces that require unique asymmetric regions. This preflight is read-only: do not create/rebuild the production template, repack UV, paint, or claim UV Layout PASS. User approval locks the Geometry checkpoint before production UV rebuild.
 
 ### UV Layout
 
@@ -257,10 +263,11 @@ If Texturing reveals a Geometry/UV blocker, route judgement to Geometry in-sessi
 
 If `Animation Required = NO`, skip after Texturing approval.
 
-If YES:
+If YES, remain on shared AUTHORING until the handoff is actually ready. Reuse the current approved/checkpoint state; inspect only participating motion cohorts when needed. **ANIMATION READINESS PREFLIGHT** requires the intended moving hierarchy, pivots, attachments/contact, and clearance to be resolved, plus no known UV/texture blocker. A blocker returns to its exact AUTHORING owner before handoff.
 
 ```text
-Texturing APPROVED
+Texturing APPROVED + current .bbmodel checkpoint
+→ ANIMATION READINESS PREFLIGHT
 → HANDOFF_REQUIRED(target_phase=animation)
 → switch_authoring_phase through Gateway
 → load Animation specialist
@@ -315,7 +322,7 @@ Finalization cannot silently alter approved visual work or treat native-save/exp
 user supplies/identifies .bbmodel + change
 → recover/create Active Workspace
 → persist untracked supplied baseline before mutation
-→ inspect current model
+→ minimum targeted baseline inspection
 → determine affected owner/gate
 → load current router + matching specialist
 → update smallest owning stage/gate
@@ -324,7 +331,7 @@ user supplies/identifies .bbmodel + change
 → Finalization
 ```
 
-Use one editable `.bbmodel`; Git history owns prior versions. Reference is required only for visual/fidelity criteria. Only user changes strategy.
+Start with the requested target plus only direct dependencies/evidence needed to classify owner and impact. Broaden inspection only when identity, dependency impact, or a requested visual criterion remains unresolved; do not default to a whole-model hierarchy/bounds/UV/texture/animation scan. Use one editable `.bbmodel`; Git history owns prior versions. Reference is required only for visual/fidelity criteria. Only user changes strategy.
 
 ## 13. Evidence / Continuity
 

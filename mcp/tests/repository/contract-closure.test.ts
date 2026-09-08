@@ -70,20 +70,31 @@ describe("MCP dependency closure", () => {
     expect(rules).toContain("do not create a persisted checklist/roadmap file");
   });
 
-  test("semantic mirrors keep shared AUTHORING, approval ordering, and representative fixtures generic", async () => {
-    const [flow, runbook] = await Promise.all([
+  test("semantic mirrors keep shared AUTHORING, readiness ordering, and representative fixtures generic", async () => {
+    const [flow, runbook, phaseContract] = await Promise.all([
       text("../docs/knowledge/flow.md"),
       text("../docs/knowledge/operations/local-acceptance-runbook.md"),
+      text("lib/authoringPhase.ts"),
     ]);
 
     expect(flow).toContain("No Geometry↔Texturing `switch_authoring_phase` is required");
+    expect(flow).toMatch(
+      /UV READINESS PREFLIGHT[\s\S]*READY_FOR_USER_REVIEW[\s\S]*Geometry APPROVED[\s\S]*UV Layout PASS/
+    );
+    expect(flow).toContain("minimum targeted baseline inspection");
+    expect(flow).not.toContain("→ inspect current model");
     expect(runbook).toContain("Geometry↔Texturing stays on the shared AUTHORING surface");
     expect(runbook).toMatch(
-      /user Geometry APPROVED[\s\S]*UV Layout PASS[\s\S]*Texturing[\s\S]*Texture APPROVED/
+      /UV readiness preflight[\s\S]*user Geometry APPROVED[\s\S]*UV Layout PASS[\s\S]*Texturing[\s\S]*Texture APPROVED/
     );
     expect(runbook).toMatch(
-      /3D_ASSISTED[\s\S]*user Geometry APPROVED[\s\S]*UV Layout PASS[\s\S]*Texture APPROVED/
+      /Texture APPROVED[\s\S]*Animation readiness preflight[\s\S]*AUTHORING→Animation handoff/
     );
+    expect(runbook).toMatch(
+      /3D_ASSISTED[\s\S]*UV readiness preflight[\s\S]*user Geometry APPROVED[\s\S]*UV Layout PASS[\s\S]*Texture APPROVED/
+    );
+    expect(phaseContract).toContain("UV Readiness Preflight");
+    expect(phaseContract).toContain("Animation Readiness Preflight");
     expect(runbook).toContain("only a representative test fixture");
     expect(runbook).toContain("must not create LIFT-specific tool behavior");
     expect(runbook).not.toContain("Geometry              25");

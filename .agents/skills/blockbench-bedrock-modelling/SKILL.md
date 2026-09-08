@@ -67,13 +67,13 @@ Material verdict requires approved reference + **fresh current-revision model** 
 
 `manage_cubes` is **Tool success** only. After primary `PASS`, add identity-weighted detail. **Tool success, coordinates, bounds, hierarchy, validators, or similarity scores cannot justify `PASS`.**
 
-Internal Geometry `PASS` requires coherent mass/proportion/depth, coverage, purposeful detail, hierarchy/pivots, and no major defect → `READY_FOR_USER_REVIEW`. **User Geometry APPROVED is required** before fresh/rebuilt production UV Layout.
+Internal Geometry `PASS` requires mass/proportion/depth, coverage, hierarchy/pivots, no major defect. Before `READY_FOR_USER_REVIEW`, **UV Readiness Preflight** checks state: thin/Box-UV collapse, aspect/representation, seam/unique-region blockers. Read-only: no production UV/`UV Layout PASS`. **User Geometry APPROVED is required** before production UV.
 
 ## Native UV Layout / Texel Integrity
 Geometry-owned production UV:
 `Geometry APPROVED → create_texture(type=template), explicit pixel_density, rearrange_uv=true, power_of_two=true → native UV/template → audit → UV Layout PASS → Texturing`.
 
-No guessed/stretched islands. Rebuild only when justified: `create_texture(type=template, texture_id=<UUID>)`; revalidate affected texture evidence. Preflight sub-unit Box UV collapse; use per-face UV rather than thickening approved geometry.
+No guessed/stretched islands. Rebuild with `texture_id=<UUID>` only when justified; revalidate evidence. Prefer per-face UV to thickening approved geometry.
 
 Choose the minimum proven native power-of-two packing at approved density. Audit padding, aspect, orientation, overlap, semantic exact reuse, and unique asymmetric regions. Density `16x` = 1 texture pixel/model unit. Face aspect must match UV aspect (direct/90°); never squeeze an island. `uv_audit.production_gate=ready` is hygiene, not UV Layout PASS.
 

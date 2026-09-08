@@ -5,7 +5,7 @@ description: Minecraft Bedrock Entity animation specialist for authored motion, 
 
 # BlockIT Bedrock Animation
 
-Use at `ACTIVE PHASE: ANIMATION` after Texturing approval when participating hierarchy/pivots are suitable.
+Use at `ACTIVE PHASE: ANIMATION` only after Texturing approval + checkpoint + **Animation Readiness Preflight** confirmed participating hierarchy/pivots/attachments/clearance. The preflight belongs to shared AUTHORING before handoff.
 
 ## Boundary
 

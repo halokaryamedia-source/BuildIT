@@ -61,4 +61,4 @@ Use minimum affected views; final approval also covers required hidden material 
 `FAIL` → difference/cause → **smallest bounded causal correction** → one fresh affected evidence bundle → `IMPROVED | UNCHANGED | REGRESSED`; same causal direction twice → `BLOCKED`.
 After material live changes, never derive correction masks from stale exported PNG/bbmodel; refresh affected live authority once.
 
-Animation → user Texture APPROVED + checkpoint → `HANDOFF_REQUIRED(target_phase=animation, readiness=ready)` → Gateway `switch_authoring_phase`, same task. Internal PASS is not approval.
+Animation → user Texture APPROVED + checkpoint → **Animation Readiness Preflight** on participating hierarchy/pivots/attachments/clearance; unresolved → Geometry owner in shared AUTHORING; ready → `HANDOFF_REQUIRED(target_phase=animation, readiness=ready)` → Gateway `switch_authoring_phase`, same task. Internal PASS is not approval.

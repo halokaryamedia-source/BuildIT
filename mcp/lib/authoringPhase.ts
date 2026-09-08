@@ -61,9 +61,9 @@ const PHASE_OWNER_SUMMARY: Record<McpAuthoringPhase, string> = {
 
 const PHASE_READINESS_SUMMARY: Record<McpAuthoringPhase, string> = {
   geometry:
-    "Internal PASS means READY_FOR_USER_REVIEW, never user approval. Geometry APPROVED precedes UV Layout PASS; Texture APPROVED plus a saved .bbmodel checkpoint precedes Animation/finalization.",
+    "Internal PASS plus UV Readiness Preflight means READY_FOR_USER_REVIEW, never user approval. Geometry APPROVED precedes production UV Layout PASS; Texture APPROVED plus a saved .bbmodel checkpoint precedes Animation/finalization.",
   texturing:
-    "Animation handoff requires explicit user Geometry and Texture APPROVED, uv_layout=PASS, a saved .bbmodel checkpoint, and no unresolved Authoring blocker. Internal PASS is only READY_FOR_USER_REVIEW.",
+    "Animation handoff requires explicit user Geometry and Texture APPROVED, uv_layout=PASS, a saved .bbmodel checkpoint, and Animation Readiness Preflight confirming participating hierarchy/pivots/attachments/clearance with no unresolved Authoring blocker. Internal PASS is only READY_FOR_USER_REVIEW.",
   animation:
     "Animation completion readiness: requested motion is verified; structural/UV/texture defects return to AUTHORING.",
 };
