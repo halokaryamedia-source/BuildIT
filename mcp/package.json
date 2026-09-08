@@ -37,6 +37,7 @@
     "verify:prelocal-wiring-live": "bun run ./scripts/verify-prelocal-wiring-live.ts",
     "verify:animation-live": "bun run ./scripts/verify-animation-live.ts",
     "verify:persistence-live": "bun run ./scripts/verify-persistence-live.ts",
+    "verify:project-affinity-live": "bun run ./scripts/verify-project-affinity-live.ts",
     "verify:lift-quality-live": "bun run ./scripts/verify-lift-quality-live.ts",
     "deploy:local": "bun run build && bun run ./scripts/deploy-local.ts",
     "deploy:verified": "bun run ./scripts/verified-build-artifact.ts deploy",
