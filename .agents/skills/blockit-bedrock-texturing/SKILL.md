@@ -38,10 +38,10 @@ Requested atlas size/density are constraints: never silently enlarge.
 material cohorts: palette roles `BASE | SHADOW | HIGHLIGHT | ACCENT/IDENTITY`; form/contact/occlusion/edge/identity/detail.
 Face Coverage Ledger: `UNPAINTED | BASE_ONLY | STYLED | INTENTIONAL_FLAT | INTENTIONAL_TRANSPARENT | SHARED`; close all.
 `list_textures.optimization_opportunities.coverage.gate`: `incomplete|partial`/`FACE_ACCOUNTING_INCOMPLETE` → no completion. one `list_textures` per pass. `ready` ≠ visual PASS.
-Variants/PBR require `list_textures.production_alignment.gate=ready`; inspect `seam_continuity` advisories and `pbr_content`.
+Variants/PBR require `list_textures.production_alignment.gate=ready`; `seam_continuity` advisory; `pbr_content`.
 
-### Palette / Atlas
-Integer texels; **pixels per UV unit** owns scale. Hue/value ramps, hard clusters, no antialiasing; alpha deliberate.
+### Reference-Grounded Palette / Atlas-Island Discipline
+Integer texels; **pixels per UV unit** owns scale; hard clusters; no antialiasing.
 
 ## Texture Styling
 A generic palette, copied unrelated texture, flat rectangles, or random high-contrast noise are not completion. Avoid pillow shading, banding, mixels, border-only detail.
@@ -50,10 +50,10 @@ A generic palette, copied unrelated texture, flat rectangles, or random high-con
 ### Alpha / PBR / Paint Safety
 Alpha: cutout→`entity_alphatest`; translucent→`entity_alphablend`; emissive may use alpha; unknown=`UNVERIFIED`.
 Variants preserve production base role + compatible dimensions/mapping; PBR; one/channel; `normal XOR height`.
-Material: `authoring_status`; MER + `subsurface_value>0` = MERS (alpha=subsurface); save when path_ready.
+Material: `authoring_status`; MERS=MER+`subsurface_value>0` (alpha=subsurface).
 `paint_settings`: `pixel_perfect`, `lock_alpha`, `paint_side_restrict`; Mirror after semantic symmetry.
 
-## Coherent Styling / Anti-Micro-Loop
+## Coherent Styling Window / Anti-Micro-Loop
 Prove one representative patch/cohort; formula/gradient/color count is not quality evidence; then cohort-wide.
 Broad regions → `draw_shape_tool`/`paint_fill_tool`; disconnected detail → one `paint_with_brush` batch (`connect_strokes=false`).
 **No evidence-per-micro-mutation loop.**
@@ -69,4 +69,4 @@ Animation → user Texture APPROVED + checkpoint → Animation Readiness Preflig
 ## Conditional Support — Not Default Routing
 Conditional on user intent; not normal hot path.
 `gradient_tool | color_picker_tool | copy_brush_tool | paint_settings | create_brush_preset | load_brush_preset | texture_selection | texture_layer_management | add_texture_group | list_materials | get_material_info | import_texture_set`.
-`gradient_tool`: reference-supported continuous transition.
+`gradient_tool`: reference-supported continuous transition; no extra discovery/readback.
