@@ -27,8 +27,8 @@ Unknown → `search_capabilities(limit=4)`. No confirmation rereads.
 **Pin atlas UUID and pass `texture_id` when multiple textures are loaded.**
 
 ## UV Gate
-`uv_audit.production_gate`=ready is hygiene, **not UV Layout PASS**. Review face aspect ratio, texel density, orientation/seams, semantic UV reuse.
-Requested atlas size/density are constraints: never silently enlarge.
+`uv_audit.production_gate`=ready is hygiene, **not UV Layout PASS**. Review texel density, orientation/seams; return to Geometry/UV if detail cannot fit.
+Requested atlas size/density are constraints; never silently enlarge.
 
 ## First Call
 `blank create_texture → explicit width+height from project UV`; **not omit blank Atlas size**.
@@ -37,11 +37,11 @@ Requested atlas size/density are constraints: never silently enlarge.
 ## Workplan / Coverage
 material cohorts: palette roles `BASE | SHADOW | HIGHLIGHT | ACCENT/IDENTITY`; form/contact/occlusion/edge/identity/detail.
 Face Coverage Ledger: `UNPAINTED | BASE_ONLY | STYLED | INTENTIONAL_FLAT | INTENTIONAL_TRANSPARENT | SHARED`; close all.
-`list_textures.optimization_opportunities.coverage.gate`: `incomplete|partial`/`FACE_ACCOUNTING_INCOMPLETE` → no completion. one `list_textures` per pass. `ready` ≠ visual PASS.
+`list_textures.optimization_opportunities.coverage.gate`: `incomplete|partial`/`FACE_ACCOUNTING_INCOMPLETE` → no completion. one `list_textures`/pass. `ready` ≠ visual PASS.
 Variants/PBR require `list_textures.production_alignment.gate=ready`; `seam_continuity` advisory; `pbr_content`.
 
 ### Reference-Grounded Palette / Atlas-Island Discipline
-Integer texels; **pixels per UV unit** owns scale; ramp; hard clusters; no antialiasing.
+Integer texels; **pixels per UV unit** owns scale; hue ramp; hard clusters; no antialiasing.
 
 ## Texture Styling
 A generic palette, copied unrelated texture, flat rectangles, or random high-contrast noise are not completion. Avoid pillow shading, banding, mixels, border-only detail.
