@@ -56,7 +56,7 @@ When `Animation Required = YES`, leave **motion-ready structure**: cohorts, pivo
 `frame/envelope → primary masses → shared boundaries → cross-view proportions → depth/layering → silhouette/proportion gate → primary blockout`.
 
 Front/back constrain width+height; sides depth+height; top/bottom width+depth. **Front agreement does not certify depth.** Adjacent primary cohorts sharing a boundary use one partition.
-Depth: `OBSERVED` direct; `INFERRED` consistent; `UNRESOLVED` insufficient/conflicting. Minor drift → one interpretation. Do not average drift. Material unresolved conflict → `BLOCKED`.
+Depth: `OBSERVED` direct; `INFERRED` consistent; `UNRESOLVED` insufficient/conflicting. Minor drift → one interpretation. Do not average drift. Only unresolved material conflict becomes `BLOCKED`.
 
 ## Surface Coverage / Negative Space
 Every gap is intentional; enclosures need closed-shell reasoning, open forms preserve negative spaces. Build primary surfaces before trim.
