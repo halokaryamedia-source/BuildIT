@@ -11,6 +11,7 @@ Entry: **Geometry APPROVED + UV Layout PASS**, final Box UV locked with `autouv=
 unlocked/invalid UV → Geometry owner + bounded UV correction; no phase switch.
 
 ## Direct Routing
+Reuse fresh state.
 ```text
 global UV/atlas readiness → list_textures
 face mapping → inspect_elements(mode=detail) only when needed
