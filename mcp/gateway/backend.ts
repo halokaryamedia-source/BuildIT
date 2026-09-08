@@ -16,7 +16,8 @@ export type GatewayBackendErrorCode =
   | "BACKEND_UNAVAILABLE"
   | "CAPABILITY_NOT_FOUND"
   | "BACKEND_CALL_INTERRUPTED"
-  | "OUTCOME_UNKNOWN";
+  | "OUTCOME_UNKNOWN"
+  | "GATEWAY_BUSY";
 
 export class GatewayBackendError extends Error {
   constructor(
@@ -27,6 +28,16 @@ export class GatewayBackendError extends Error {
   ) {
     super(message);
     this.name = "GatewayBackendError";
+  }
+}
+
+class GatewayOperationTimeoutError extends Error {
+  constructor(
+    readonly operation: string,
+    readonly timeoutMs: number
+  ) {
+    super(`${operation} timed out after ${timeoutMs}ms.`);
+    this.name = "GatewayOperationTimeoutError";
   }
 }
 
@@ -46,6 +57,15 @@ export type GatewayRuntimeStatus = {
     catalog_count: number;
     health: JsonRecord | null;
   };
+  operations: {
+    active: number;
+    queued: number;
+    max_queue_depth: number;
+    completed: number;
+    failed: number;
+    timed_out: number;
+    rejected_busy: number;
+  };
   last_error: string | null;
 };
 
@@ -55,12 +75,31 @@ export type GatewayRuntimeCallResult = JsonRecord & {
   isError?: boolean;
 };
 
+export type BlockitRuntimeBackendOptions = {
+  connectTimeoutMs?: number;
+  callTimeoutMs?: number;
+  closeTimeoutMs?: number;
+  maxQueueDepth?: number;
+};
+
 function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
 
 function isRecord(value: unknown): value is JsonRecord {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+function normalizePositiveInteger(
+  value: number,
+  fallback: number,
+  minimum: number
+): number {
+  return Number.isFinite(value) && value >= minimum ? Math.trunc(value) : fallback;
+}
+
+function normalizeNonNegativeInteger(value: number, fallback: number): number {
+  return Number.isFinite(value) && value >= 0 ? Math.trunc(value) : fallback;
 }
 
 function normalizeRuntimeCallResult(result: unknown): GatewayRuntimeCallResult {
@@ -108,30 +147,129 @@ function normalizeGatewayManagedResult(
 export class BlockitRuntimeBackend {
   readonly runtimeUrl: string;
   private readonly healthTimeoutMs: number;
+  private readonly connectTimeoutMs: number;
+  private readonly callTimeoutMs: number;
+  private readonly closeTimeoutMs: number;
+  private readonly maxQueueDepth: number;
   private client: Client | null = null;
   private connectedSignature: string | null = null;
   private catalog = new Map<string, BackendTool>();
   private operationTail: Promise<void> = Promise.resolve();
+  private pendingOperations = 0;
+  private activeOperations = 0;
+  private completedOperations = 0;
+  private failedOperations = 0;
+  private timedOutOperations = 0;
+  private rejectedBusyOperations = 0;
   private lastError: string | null = null;
 
   constructor(
     runtimeUrl: string = process.env.BLOCKIT_RUNTIME_URL ?? DEFAULT_RUNTIME_URL,
-    healthTimeoutMs: number = Number(process.env.BLOCKIT_RUNTIME_TIMEOUT_MS ?? 1500)
+    healthTimeoutMs: number = Number(process.env.BLOCKIT_RUNTIME_TIMEOUT_MS ?? 1500),
+    options: BlockitRuntimeBackendOptions = {}
   ) {
     this.runtimeUrl = normalizeRuntimeUrl(runtimeUrl);
-    this.healthTimeoutMs =
-      Number.isFinite(healthTimeoutMs) && healthTimeoutMs >= 100
-        ? Math.trunc(healthTimeoutMs)
-        : 1500;
+    this.healthTimeoutMs = normalizePositiveInteger(healthTimeoutMs, 1500, 100);
+    this.connectTimeoutMs = normalizePositiveInteger(
+      options.connectTimeoutMs ??
+        Number(process.env.BLOCKIT_RUNTIME_CONNECT_TIMEOUT_MS ?? 5000),
+      5000,
+      250
+    );
+    this.callTimeoutMs = normalizePositiveInteger(
+      options.callTimeoutMs ??
+        Number(process.env.BLOCKIT_RUNTIME_CALL_TIMEOUT_MS ?? 120000),
+      120000,
+      1000
+    );
+    this.closeTimeoutMs = normalizePositiveInteger(
+      options.closeTimeoutMs ??
+        Number(process.env.BLOCKIT_RUNTIME_CLOSE_TIMEOUT_MS ?? 2000),
+      2000,
+      100
+    );
+    this.maxQueueDepth = normalizeNonNegativeInteger(
+      options.maxQueueDepth ??
+        Number(process.env.BLOCKIT_GATEWAY_MAX_QUEUE_DEPTH ?? 8),
+      8
+    );
+  }
+
+  private operationStatus(): GatewayRuntimeStatus["operations"] {
+    return {
+      active: this.activeOperations,
+      queued: Math.max(0, this.pendingOperations - this.activeOperations),
+      max_queue_depth: this.maxQueueDepth,
+      completed: this.completedOperations,
+      failed: this.failedOperations,
+      timed_out: this.timedOutOperations,
+      rejected_busy: this.rejectedBusyOperations,
+    };
   }
 
   private runExclusive<T>(operation: () => Promise<T>): Promise<T> {
-    const run = this.operationTail.then(operation, operation);
+    if (this.pendingOperations >= this.maxQueueDepth + 1) {
+      this.rejectedBusyOperations += 1;
+      return Promise.reject(
+        new GatewayBackendError(
+          "GATEWAY_BUSY",
+          `BlockIT Gateway queue is full (${this.maxQueueDepth} waiting operations maximum). Retry after the current authoring operation completes.`,
+          true,
+          { max_queue_depth: this.maxQueueDepth }
+        )
+      );
+    }
+
+    this.pendingOperations += 1;
+
+    const execute = async (): Promise<T> => {
+      this.activeOperations = 1;
+      try {
+        const result = await operation();
+        this.completedOperations += 1;
+        return result;
+      } catch (error) {
+        this.failedOperations += 1;
+        if (
+          error instanceof GatewayOperationTimeoutError ||
+          (error instanceof GatewayBackendError &&
+            typeof error.details.timeout_ms === "number")
+        ) {
+          this.timedOutOperations += 1;
+        }
+        throw error;
+      } finally {
+        this.activeOperations = 0;
+        this.pendingOperations = Math.max(0, this.pendingOperations - 1);
+      }
+    };
+
+    const run = this.operationTail.then(execute, execute);
     this.operationTail = run.then(
       () => undefined,
       () => undefined
     );
     return run;
+  }
+
+  private async withDeadline<T>(
+    operationName: string,
+    timeoutMs: number,
+    operation: () => Promise<T>
+  ): Promise<T> {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const timeout = new Promise<never>((_, reject) => {
+      timer = setTimeout(
+        () => reject(new GatewayOperationTimeoutError(operationName, timeoutMs)),
+        timeoutMs
+      );
+    });
+
+    try {
+      return await Promise.race([operation(), timeout]);
+    } finally {
+      if (timer !== undefined) clearTimeout(timer);
+    }
   }
 
   private async probeHealth(): Promise<HealthProbe> {
@@ -167,6 +305,18 @@ export class BlockitRuntimeBackend {
     }
   }
 
+  private async closeClientBestEffort(client: Client): Promise<void> {
+    try {
+      await this.withDeadline(
+        "Runtime MCP close",
+        this.closeTimeoutMs,
+        () => client.close()
+      );
+    } catch {
+      // Cleanup must never extend an already failed/stalled backend indefinitely.
+    }
+  }
+
   private async closeConnectionUnsafe(): Promise<void> {
     const client = this.client;
     this.client = null;
@@ -174,11 +324,7 @@ export class BlockitRuntimeBackend {
     this.catalog.clear();
 
     if (client) {
-      try {
-        await client.close();
-      } catch {
-        // A dead backend is already disconnected; cleanup remains best-effort.
-      }
+      await this.closeClientBestEffort(client);
     }
   }
 
@@ -210,24 +356,31 @@ export class BlockitRuntimeBackend {
     const transport = new StreamableHTTPClientTransport(new URL(this.runtimeUrl));
 
     try {
-      await client.connect(transport);
-      const tools = await this.listAllTools(client);
+      await this.withDeadline(
+        "Runtime MCP connect",
+        this.connectTimeoutMs,
+        () => client.connect(transport)
+      );
+      const tools = await this.withDeadline(
+        "Runtime tools/list",
+        this.connectTimeoutMs,
+        () => this.listAllTools(client)
+      );
       this.client = client;
       this.connectedSignature = signature;
       this.catalog = new Map(tools.map((tool) => [tool.name, tool]));
       this.lastError = null;
     } catch (error) {
-      try {
-        await client.close();
-      } catch {
-        // Preserve the original connection error.
-      }
+      await this.closeClientBestEffort(client);
       const message = errorMessage(error);
       this.lastError = message;
       throw new GatewayBackendError(
         "BACKEND_UNAVAILABLE",
         `BlockIT runtime MCP connection failed: ${message}`,
-        true
+        true,
+        error instanceof GatewayOperationTimeoutError
+          ? { timeout_ms: error.timeoutMs }
+          : {}
       );
     }
   }
@@ -270,6 +423,7 @@ export class BlockitRuntimeBackend {
           catalog_count: this.catalog.size,
           health: null,
         },
+        operations: this.operationStatus(),
         last_error: probe.error,
       };
     }
@@ -289,6 +443,7 @@ export class BlockitRuntimeBackend {
         catalog_count: this.catalog.size,
         health: probe.health,
       },
+      operations: this.operationStatus(),
       last_error: this.lastError,
     };
   }
@@ -336,10 +491,15 @@ export class BlockitRuntimeBackend {
       }
 
       try {
-        const result: unknown = await this.client!.callTool({
-          name: capability,
-          arguments: args,
-        });
+        const result: unknown = await this.withDeadline(
+          `Runtime capability "${capability}"`,
+          this.callTimeoutMs,
+          () =>
+            this.client!.callTool({
+              name: capability,
+              arguments: args,
+            })
+        );
         const normalized = normalizeRuntimeCallResult(result);
         if (capability === "switch_authoring_phase" && normalized.isError !== true) {
           await this.closeConnectionUnsafe();
@@ -356,7 +516,13 @@ export class BlockitRuntimeBackend {
             ? `BlockIT runtime connection was interrupted while invoking "${capability}". The mutation may already have executed; inspect current model state before retrying.`
             : `BlockIT runtime connection was interrupted while invoking read-only capability "${capability}".`,
           classification.safe_to_retry,
-          { capability, cause: message }
+          {
+            capability,
+            cause: message,
+            ...(error instanceof GatewayOperationTimeoutError
+              ? { timeout_ms: error.timeoutMs }
+              : {}),
+          }
         );
       }
     });

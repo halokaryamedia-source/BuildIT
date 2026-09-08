@@ -76,6 +76,8 @@ The Runtime remains the complete native/debug evidence owner. The Gateway may pr
 
 Normal authoring does not use `status`, search, describe, repository tests, or Runtime resources as confirmation ceremonies after a successful mutation.
 
+Reliability hardening is deliberately **failure-path only**. The Gateway does not add heartbeat chatter, background catalog polling, automatic confirmation reads, or mutation retries. Queue/timeout counters are passive and appear only when `status` is explicitly requested.
+
 ## Reliability Invariants
 
 - Gateway startup does not require Blockbench to be open.
@@ -83,11 +85,26 @@ Normal authoring does not use `status`, search, describe, repository tests, or R
 - Runtime health is checked before catalog-dependent operations.
 - Changed Runtime build/profile/stage invalidates cached backend catalog.
 - Backend calls are serialized to avoid concurrent editor mutations.
-- `tools/call` is never automatically retried after transport interruption.
-- Interrupted non-read-only operations return `OUTCOME_UNKNOWN`; inspect current model state before retrying.
+- The serialized queue is bounded so a stalled Runtime cannot grow Gateway memory without limit.
+- Runtime connect/catalog calls and capability calls have finite configurable deadlines; the normal hot path performs no extra network round trip for those guards.
+- `tools/call` is never automatically retried after transport interruption or timeout.
+- Interrupted or timed-out non-read-only operations return `OUTCOME_UNKNOWN`; inspect current model state before retrying.
+- Gateway cleanup has its own short deadline so a dead backend cannot pin shutdown indefinitely.
 - Gateway owns no Cube, Group, texture, animation, Undo, or project state.
 - Gateway connects only to localhost/loopback Runtime URLs.
 - Native Runtime MCP remains available for Inspector/conformance/debugging.
+
+Default reliability settings:
+
+```text
+BLOCKIT_RUNTIME_TIMEOUT_MS=1500          # /health only
+BLOCKIT_RUNTIME_CONNECT_TIMEOUT_MS=5000  # connect + tools/list
+BLOCKIT_RUNTIME_CALL_TIMEOUT_MS=120000   # one Runtime capability call
+BLOCKIT_RUNTIME_CLOSE_TIMEOUT_MS=2000    # best-effort backend cleanup
+BLOCKIT_GATEWAY_MAX_QUEUE_DEPTH=8        # waiting operations; active call is separate
+```
+
+These settings are intentionally conservative. Increase the call timeout only for a proven legitimate long-running capability; do not disable mutation uncertainty handling or add automatic retries to hide slow/stalled Runtime behavior.
 
 ## Run Locally
 
@@ -134,6 +151,6 @@ These are source-owned counts. Exact installed Runtime identity and lifecycle be
 
 ## Proof Boundary
 
-Source/static tests can prove the fixed Gateway surface, shared AUTHORING routing contract, loopback containment, capability priority, catalog invalidation, retry semantics, and result compaction contracts. They do not prove live client survival, native Blockbench behavior, visual fidelity, or reduced model usage.
+Source/static tests can prove the fixed Gateway surface, shared AUTHORING routing contract, loopback containment, capability priority, catalog invalidation, bounded queue/deadline semantics, retry semantics, and result compaction contracts. They do not prove live client survival, native Blockbench behavior, visual fidelity, or reduced model usage.
 
 The pending live gate should exercise one continuous task: Runtime offline→online, shared Geometry/Texturing AUTHORING behavior, one AUTHORING↔Animation handoff through Gateway, plugin lifecycle, native authoring/history, and persistence where applicable—without a manual AI-client reconnect or new chat.
