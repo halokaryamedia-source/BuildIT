@@ -1,5 +1,9 @@
 import { describe, expect, test } from "bun:test";
-import { captureModelViewsParameters } from "@/server/tools/camera";
+import {
+  buildModelViewReferenceComparison,
+  captureModelViewsParameters,
+  modelViewReferenceContract,
+} from "@/server/tools/camera";
 
 const baseInput = {
   views: ["front"],
@@ -14,6 +18,7 @@ describe("capture_model_views explicit framing contract", () => {
     expect(cameraSource).toContain("min[2] + size[2] / 2");
     expect(cameraSource).not.toContain("(min[0] + max[0]) / 2");
   });
+
   test("keeps model framing Cube-owned while explicit framing can use loaded 3D-Assisted evidence", async () => {
     const cameraSource = await Bun.file(
       new URL("../server/tools/camera.ts", import.meta.url)
@@ -48,5 +53,30 @@ describe("capture_model_views explicit framing contract", () => {
       const result = captureModelViewsParameters.safeParse({ ...baseInput, framing });
       expect(result.success).toBe(false);
     }
+  });
+
+  test("maps canonical captures to the approved five-preview board without scoring resemblance", () => {
+    const comparison = buildModelViewReferenceComparison([
+      "front",
+      "left",
+      "top",
+      "back",
+      "front_left_3q",
+    ]);
+
+    expect(comparison.board_layout).toBe(
+      "UPPER:LEFT|FRONT|BACK;LOWER:TOP|FRONT_LEFT_3Q"
+    );
+    expect(comparison.visual_verdict).toBe("not_evaluated");
+    expect(comparison.difference_first).toBe(true);
+    expect(comparison.views.map((entry) => entry.reference_slot)).toEqual([
+      "upper_front",
+      "upper_left",
+      "lower_top",
+      "upper_back",
+      "lower_front_left_3q",
+    ]);
+    expect(modelViewReferenceContract("left").primary_evidence).toContain("depth");
+    expect(modelViewReferenceContract("right").reference_slot).toBeNull();
   });
 });

@@ -25,6 +25,29 @@ describe("model creation effectiveness — semantic form, rotation, pivot and co
     expect(geometry).toContain("Every material Cuboid must have a modelling purpose in the **whole form**");
   });
 
+  test("DIRECT stays quality-first without per-Cube planning or five-view capture ceremony", async () => {
+    const modelling = await source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md");
+
+    for (const term of [
+      "DIRECT Hot Path",
+      "transient Primary Mass Contract",
+      "Core View Triad",
+      "`front + left + top`",
+      "No per-Cube plan.",
+      "one coherent `manage_cubes` batch",
+      "Never recapture all five routinely",
+    ]) expect(modelling).toContain(term);
+
+    expect(modelling).toContain("Add `back` only for rear topology/asymmetry");
+    expect(modelling).toContain(
+      "add `front_left_3q` only for attachment/layering/orientation ambiguity"
+    );
+    expect(modelling).toContain(
+      "correspondence metadata only maps captures to canonical board slots"
+    );
+    expect(modelling).toContain("it is not a scorer and never creates visual PASS");
+  });
+
   test("rotation is an explicit modelling decision instead of zero-rotation default bias", async () => {
     const [modelling, geometry] = await Promise.all([
       source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),

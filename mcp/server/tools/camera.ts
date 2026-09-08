@@ -23,7 +23,7 @@ const modelViewEnum = z.enum([
   "front_right_3q",
 ]);
 
-type ModelView = z.infer<typeof modelViewEnum>;
+export type ModelView = z.infer<typeof modelViewEnum>;
 type FrontDirection = "+z" | "-z";
 type FramingInput =
   | { mode: "model" }
@@ -37,6 +37,85 @@ interface CameraSpec {
   up: Vec3;
   zoom?: number;
   fov?: number;
+}
+
+export type ApprovedReferenceBoardSlot =
+  | "upper_left"
+  | "upper_front"
+  | "upper_back"
+  | "lower_top"
+  | "lower_front_left_3q";
+
+type ReferenceComparisonEntry = {
+  view: ModelView;
+  reference_slot: ApprovedReferenceBoardSlot | null;
+  primary_evidence: readonly string[];
+};
+
+export function modelViewReferenceContract(
+  view: ModelView
+): ReferenceComparisonEntry {
+  switch (view) {
+    case "front":
+      return {
+        view,
+        reference_slot: "upper_front",
+        primary_evidence: ["width", "height", "silhouette", "count"],
+      };
+    case "back":
+      return {
+        view,
+        reference_slot: "upper_back",
+        primary_evidence: ["width", "height", "rear_topology", "asymmetry"],
+      };
+    case "left":
+      return {
+        view,
+        reference_slot: "upper_left",
+        primary_evidence: ["length", "height", "depth", "attachment"],
+      };
+    case "top":
+      return {
+        view,
+        reference_slot: "lower_top",
+        primary_evidence: ["width", "length", "depth", "negative_space"],
+      };
+    case "front_left_3q":
+      return {
+        view,
+        reference_slot: "lower_front_left_3q",
+        primary_evidence: ["layering", "attachment", "orientation", "depth"],
+      };
+    case "right":
+      return {
+        view,
+        reference_slot: null,
+        primary_evidence: ["length", "height", "depth", "attachment"],
+      };
+    case "bottom":
+      return {
+        view,
+        reference_slot: null,
+        primary_evidence: ["width", "length", "underside", "negative_space"],
+      };
+    case "front_right_3q":
+      return {
+        view,
+        reference_slot: null,
+        primary_evidence: ["layering", "attachment", "orientation", "depth"],
+      };
+  }
+}
+
+export function buildModelViewReferenceComparison(
+  views: readonly ModelView[]
+) {
+  return {
+    board_layout: "UPPER:LEFT|FRONT|BACK;LOWER:TOP|FRONT_LEFT_3Q",
+    views: views.map(modelViewReferenceContract),
+    difference_first: true,
+    visual_verdict: "not_evaluated" as const,
+  };
 }
 
 export const captureScreenshotParameters = z.object({});
@@ -493,6 +572,9 @@ export function registerCameraTools() {
         front_direction,
         framing_mode: framingInput.mode,
         captures,
+        reference_comparison: buildModelViewReferenceComparison(
+          captures.map((capture) => capture.view)
+        ),
         offscreen_capture: true,
         active_editor_camera_untouched: true,
         warnings: observed.warnings.length,
@@ -501,7 +583,7 @@ export function registerCameraTools() {
       content.unshift({
         type: "text",
         text:
-          "Canonical model views captured for observation only. Compare each labeled image directly with the corresponding approved reference view; this tool does not judge resemblance.",
+          "Canonical model views captured for observation only. Use reference_comparison to map captures to the approved five-preview board, judge differences directly, and treat correspondence metadata as non-scoring evidence only; this tool does not judge resemblance.",
       });
 
       return { content, structuredContent };
