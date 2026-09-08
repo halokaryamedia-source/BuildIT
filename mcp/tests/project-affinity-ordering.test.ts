@@ -9,9 +9,19 @@ describe("Runtime project-affinity dispatch ordering", () => {
       queue
     );
     const dispatch = source.indexOf("return await dispatch()", liveness);
+    const abandonedCatch = source.indexOf(
+      "if (error instanceof RuntimeRequestAbandonedError) return",
+      dispatch
+    );
+    const projectErrorCatch = source.indexOf(
+      "if (error instanceof RuntimeProjectContextError",
+      abandonedCatch
+    );
 
     expect(queue).toBeGreaterThan(-1);
     expect(liveness).toBeGreaterThan(queue);
     expect(dispatch).toBeGreaterThan(liveness);
+    expect(abandonedCatch).toBeGreaterThan(dispatch);
+    expect(projectErrorCatch).toBeGreaterThan(abandonedCatch);
   });
 });

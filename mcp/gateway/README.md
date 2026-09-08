@@ -116,6 +116,7 @@ Reliability hardening is deliberately **failure-path only**. The Gateway does no
 - Changed Runtime build/profile/stage invalidates cached backend catalog.
 - Each Gateway binds to one project UUID on first Runtime invocation; active UI selection is not durable authority.
 - Cross-Gateway Runtime `tools/call` execution is serialized before project-tab switching.
+- A queued cross-Gateway tool call re-checks socket liveness immediately before native dispatch; an already-disconnected waiter is dropped before any Blockbench operation can execute late.
 - Bound project loss fails closed; `create_project` alone automatically advances affinity to its new project UUID.
 - Backend calls are serialized to avoid concurrent editor mutations.
 - The serialized Gateway queue is bounded so a stalled Runtime cannot grow Gateway memory without limit.
