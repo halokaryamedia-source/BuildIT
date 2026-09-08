@@ -15,7 +15,7 @@ BlockIT Runtime runs locally inside desktop Blockbench at:
 
 `http://127.0.0.1:3000/bb-mcp`
 
-Normal AI clients connect through the stable BlockIT Gateway. Geometry and Texturing share the same AUTHORING Runtime surface, while AUTHORING↔Animation handoff is handled through the Gateway without requiring a new task/chat or routine manual reconnect.
+Normal AI clients connect through the stable BlockIT Gateway. Geometry and Texturing use one shared AUTHORING Runtime surface, while AUTHORING↔Animation handoff is handled through the Gateway without requiring a new task/chat or routine manual reconnect.
 
 ### Visual approval
 
