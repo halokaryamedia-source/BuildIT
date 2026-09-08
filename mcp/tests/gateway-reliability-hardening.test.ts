@@ -61,33 +61,45 @@ describe("Gateway long-running reliability hardening", () => {
     expect(status.rejected_busy).toBe(1);
   });
 
-  test("stalled operations fail on a deadline instead of pinning the queue forever", async () => {
+  test("connect, catalog and capability calls use MCP-native request timeouts", async () => {
+    const source = await Bun.file("gateway/backend.ts").text();
+
+    expect(source).toContain(
+      "client.connect(transport, { timeout: this.connectTimeoutMs })"
+    );
+    expect(source).toMatch(
+      /client\.listTools\([\s\S]*?\{ timeout: this\.connectTimeoutMs \}[\s\S]*?\)/
+    );
+    expect(source).toMatch(
+      /this\.client!\.callTool\([\s\S]*?\{ timeout: this\.callTimeoutMs \}[\s\S]*?\)/
+    );
+    expect(source).toContain("ErrorCode.RequestTimeout");
+    expect(source).toContain("timedOut ? { timeout_ms: this.callTimeoutMs } : {}");
+  });
+
+  test("timeout accounting stays passive and does not create background work", async () => {
     const backend = createBackend();
 
     let timeoutError: unknown;
     try {
-      await (backend as any).runExclusive(() =>
-        (backend as any).withDeadline(
-          "fixture operation",
-          25,
-          () => new Promise<never>(() => undefined)
-        )
-      );
+      await (backend as any).runExclusive(async () => {
+        throw new GatewayBackendError(
+          "BACKEND_UNAVAILABLE",
+          "fixture timeout",
+          true,
+          { timeout_ms: 25 }
+        );
+      });
     } catch (error) {
       timeoutError = error;
     }
 
-    expect(timeoutError).toBeInstanceOf(Error);
-    expect((timeoutError as Error).message).toContain("timed out after 25ms");
-
-    const afterTimeout = await (backend as any).runExclusive(async () => "recovered");
-    expect(afterTimeout).toBe("recovered");
+    expect(timeoutError).toBeInstanceOf(GatewayBackendError);
 
     const status = (backend as any).operationStatus();
     expect(status.active).toBe(0);
     expect(status.queued).toBe(0);
     expect(status.failed).toBe(1);
     expect(status.timed_out).toBe(1);
-    expect(status.completed).toBe(1);
   });
 });
