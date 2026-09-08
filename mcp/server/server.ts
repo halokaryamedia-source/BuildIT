@@ -11,6 +11,7 @@ import {
 import { describeMcpSurfaceToolNames } from "@/server/tools";
 import { wireAuthoringQualityIntelligence } from "@/server/tools/quality-intelligence";
 import { wireTextureQualityRuntime } from "@/server/tools/texture-quality-runtime";
+import { wireTextureAuthoringRuntime } from "@/server/tools/texture-authoring-runtime";
 import { wireAnimationNativeIntelligence } from "@/server/tools/animation-native-intelligence";
 import { wireAnimationControllerNativeIntelligence } from "@/server/tools/animation-controller-native-intelligence";
 import {
@@ -23,6 +24,7 @@ import {
 // Animation routing before this module body executes.
 wireAuthoringQualityIntelligence();
 wireTextureQualityRuntime();
+wireTextureAuthoringRuntime();
 wireAnimationNativeIntelligence();
 wireAnimationControllerNativeIntelligence();
 

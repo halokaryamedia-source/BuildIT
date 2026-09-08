@@ -3,7 +3,7 @@ name: blockit-bedrock-texturing
 description: Mandatory BlockIT Bedrock Texture specialist.
 ---
 # BlockIT Bedrock Texturing
-Geometry/UV capabilities remain callable for bounded upstream correction; Texturing **must not borrow Cube mutation**.
+Texturing **must not borrow Cube mutation**; Geometry/UV only for correction.
 
 ## Entry / Correction
 **No Geometry↔Texturing phase switch.** `HANDOFF_REQUIRED` + `switch_authoring_phase` only for AUTHORING↔Animation.
@@ -21,7 +21,10 @@ regions → draw_shape_tool / paint_fill_tool
 detail → draw_shape_tool / paint_with_brush
 fresh-revision batch → paint_texture_transaction
 erase → eraser_tool
-PBR/material semantics → manage_material / manage_material_instances
+material overview → list_materials
+one material → get_material_info
+PBR mutate/save → manage_material
+face overrides → manage_material_instances
 ```
 Unknown → `search_capabilities(limit=4)`. No confirmation rereads.
 **Pin atlas UUID and pass `texture_id` when multiple textures are loaded.**
@@ -35,13 +38,20 @@ Requested atlas size/density are constraints: never silently enlarge.
 `create_texture`: provisional **16×16 blank**; **128×128 default, 256×256 opt-in**. Reuse existing atlas UUID.
 
 ## Texture Workplan / Coverage
-material cohorts: palette roles `BASE | SHADOW | HIGHLIGHT | ACCENT/IDENTITY`; form/contact/occlusion/edge/identity/detail.
+material cohorts: `BASE | SHADOW | HIGHLIGHT | ACCENT/IDENTITY`; form/contact/occlusion/edge/identity/detail.
 Face Coverage Ledger: `UNPAINTED | BASE_ONLY | STYLED | INTENTIONAL_FLAT | INTENTIONAL_TRANSPARENT | SHARED`; close all.
 `list_textures.optimization_opportunities.coverage.gate`: `incomplete|partial`/`FACE_ACCOUNTING_INCOMPLETE` → no completion. one `list_textures` per pass; inspect candidates. `ready` ≠ visual PASS.
-Variants/PBR require `list_textures.production_alignment.gate=ready`.
+`seam_continuity` is advisory; inspect ranked seams, never auto-fix.
+Variants/PBR require `list_textures.production_alignment.gate=ready`; review `pbr_content`.
+
+## Material
+Classic/default: base atlas only; do not invent PBR. PBR: inspect → mutate → validate → save.
+Channels: `color`; `normal XOR height`; MER RGB=`metalness/emissive/roughness`. MER + `subsurface_value>0` exports MERS; alpha carries subsurface.
+Use `authoring_status`; save only when `save.path_ready`. Material instances = face overrides.
 
 ### Reference-Grounded Palette / Atlas-Island Discipline
 Integer texels; **pixels per UV unit** owns scale. Hue/value ramps, hard clusters, no antialiasing; alpha 0/255 unless required.
+Reference identity must remain represented; `color_profile` is evidence, not score.
 
 ## Texture Styling
 A generic palette, copied unrelated texture, flat rectangles, or random high-contrast noise are not completion. Avoid pillow shading, banding, mixels, border-only detail.
@@ -49,7 +59,6 @@ A generic palette, copied unrelated texture, flat rectangles, or random high-con
 
 ### Alpha / PBR / Paint Safety
 Alpha: cutout→`entity_alphatest`; translucent→`entity_alphablend`; emissive may use alpha; unknown=`UNVERIFIED`.
-Variants preserve production base role + compatible dimensions/mapping; PBR; one/channel; `normal XOR height`.
 `paint_settings`: `pixel_perfect`, `lock_alpha`, `paint_side_restrict`; Mirror after semantic symmetry.
 
 ## Coherent Styling Window / Anti-Micro-Loop
@@ -67,5 +76,4 @@ Animation → user Texture APPROVED + checkpoint → Animation Readiness Preflig
 
 ## Conditional Support — Not Default Routing
 Conditional on user intent; not normal hot path.
-`gradient_tool | color_picker_tool | copy_brush_tool | paint_settings | create_brush_preset | load_brush_preset | texture_selection | texture_layer_management | add_texture_group | list_materials | get_material_info | import_texture_set`.
-`gradient_tool`: reference-supported continuous transition; no extra discovery/readback.
+`gradient_tool | color_picker_tool | copy_brush_tool | paint_settings | create_brush_preset | load_brush_preset | texture_selection | texture_layer_management | add_texture_group | import_texture_set`.
