@@ -9,10 +9,16 @@ import {
   type McpAuthoringPhase,
 } from "@/lib/authoringPhase";
 import { describeMcpSurfaceToolNames } from "@/server/tools";
+import { wireAuthoringQualityIntelligence } from "@/server/tools/quality-intelligence";
 import {
   DEFAULT_MCP_REGISTRATION_PROFILE,
   type McpRegistrationProfile,
 } from "@/lib/registrationProfile";
+
+// Existing read tools gain bounded domain intelligence without expanding the
+// MCP catalog or its discovery schemas. server/tools has already registered the
+// default catalog before this module body executes.
+wireAuthoringQualityIntelligence();
 
 /**
  * Phase-aware server instructions are part of the agent contract: Codex must
