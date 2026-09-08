@@ -93,6 +93,9 @@ describe("pre-local BlockIT plugin surface hardening", () => {
     expect(panel).toContain("required for 3D_ASSISTED");
     expect(panel).toContain("Copy Reference Prompt");
     expect(guideSource).toContain("reference_board");
+    expect(guideSource).toContain("source image(s)");
+    expect(guideSource).toContain("Use every useful image as evidence");
+    expect(guideSource).toContain("do not average conflicts or invent hidden structure");
     expect(guideSource).toContain("LEFT | FRONT | BACK");
     expect(guideSource).toContain("TOP | FRONT-LEFT 3/4");
     expect(guideSource).not.toContain("READY_FOR_USER_REVIEW");

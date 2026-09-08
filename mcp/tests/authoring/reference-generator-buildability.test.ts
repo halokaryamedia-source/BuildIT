@@ -62,6 +62,7 @@ describe("reference Minecraft-first coverage", () => {
     expect(guide).toContain("consume that evidence before asking for another image");
     expect(templates).toContain("source image(s)");
     expect(templates).toContain("use every useful image as evidence");
+    expect(templates).toContain("do not average conflicts or invent hidden structure");
   });
 
   test("default generated board has five fixed broad preview positions", async () => {
