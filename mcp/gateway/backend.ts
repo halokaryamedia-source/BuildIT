@@ -1,5 +1,6 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
+import { ErrorCode, McpError } from "@modelcontextprotocol/sdk/types.js";
 import {
   DEFAULT_RUNTIME_URL,
   GATEWAY_VERSION,
@@ -28,16 +29,6 @@ export class GatewayBackendError extends Error {
   ) {
     super(message);
     this.name = "GatewayBackendError";
-  }
-}
-
-class GatewayOperationTimeoutError extends Error {
-  constructor(
-    readonly operation: string,
-    readonly timeoutMs: number
-  ) {
-    super(`${operation} timed out after ${timeoutMs}ms.`);
-    this.name = "GatewayOperationTimeoutError";
   }
 }
 
@@ -88,6 +79,10 @@ function errorMessage(error: unknown): string {
 
 function isRecord(value: unknown): value is JsonRecord {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+function isRequestTimeoutError(error: unknown): boolean {
+  return error instanceof McpError && error.code === ErrorCode.RequestTimeout;
 }
 
 function normalizePositiveInteger(
@@ -231,9 +226,8 @@ export class BlockitRuntimeBackend {
       } catch (error) {
         this.failedOperations += 1;
         if (
-          error instanceof GatewayOperationTimeoutError ||
-          (error instanceof GatewayBackendError &&
-            typeof error.details.timeout_ms === "number")
+          error instanceof GatewayBackendError &&
+          typeof error.details.timeout_ms === "number"
         ) {
           this.timedOutOperations += 1;
         }
@@ -250,26 +244,6 @@ export class BlockitRuntimeBackend {
       () => undefined
     );
     return run;
-  }
-
-  private async withDeadline<T>(
-    operationName: string,
-    timeoutMs: number,
-    operation: () => Promise<T>
-  ): Promise<T> {
-    let timer: ReturnType<typeof setTimeout> | undefined;
-    const timeout = new Promise<never>((_, reject) => {
-      timer = setTimeout(
-        () => reject(new GatewayOperationTimeoutError(operationName, timeoutMs)),
-        timeoutMs
-      );
-    });
-
-    try {
-      return await Promise.race([operation(), timeout]);
-    } finally {
-      if (timer !== undefined) clearTimeout(timer);
-    }
   }
 
   private async probeHealth(): Promise<HealthProbe> {
@@ -306,14 +280,18 @@ export class BlockitRuntimeBackend {
   }
 
   private async closeClientBestEffort(client: Client): Promise<void> {
+    let timer: ReturnType<typeof setTimeout> | undefined;
     try {
-      await this.withDeadline(
-        "Runtime MCP close",
-        this.closeTimeoutMs,
-        () => client.close()
-      );
+      await Promise.race([
+        client.close(),
+        new Promise<void>((resolve) => {
+          timer = setTimeout(resolve, this.closeTimeoutMs);
+        }),
+      ]);
     } catch {
-      // Cleanup must never extend an already failed/stalled backend indefinitely.
+      // A dead backend is already disconnected; cleanup remains best-effort.
+    } finally {
+      if (timer !== undefined) clearTimeout(timer);
     }
   }
 
@@ -334,7 +312,10 @@ export class BlockitRuntimeBackend {
     let pages = 0;
 
     do {
-      const listed = await client.listTools(cursor ? { cursor } : undefined);
+      const listed = await client.listTools(
+        cursor ? { cursor } : undefined,
+        { timeout: this.connectTimeoutMs }
+      );
       tools.push(...(listed.tools as BackendTool[]));
       cursor = typeof listed.nextCursor === "string" ? listed.nextCursor : undefined;
       pages += 1;
@@ -356,16 +337,8 @@ export class BlockitRuntimeBackend {
     const transport = new StreamableHTTPClientTransport(new URL(this.runtimeUrl));
 
     try {
-      await this.withDeadline(
-        "Runtime MCP connect",
-        this.connectTimeoutMs,
-        () => client.connect(transport)
-      );
-      const tools = await this.withDeadline(
-        "Runtime tools/list",
-        this.connectTimeoutMs,
-        () => this.listAllTools(client)
-      );
+      await client.connect(transport, { timeout: this.connectTimeoutMs });
+      const tools = await this.listAllTools(client);
       this.client = client;
       this.connectedSignature = signature;
       this.catalog = new Map(tools.map((tool) => [tool.name, tool]));
@@ -373,14 +346,13 @@ export class BlockitRuntimeBackend {
     } catch (error) {
       await this.closeClientBestEffort(client);
       const message = errorMessage(error);
+      const timedOut = isRequestTimeoutError(error);
       this.lastError = message;
       throw new GatewayBackendError(
         "BACKEND_UNAVAILABLE",
         `BlockIT runtime MCP connection failed: ${message}`,
         true,
-        error instanceof GatewayOperationTimeoutError
-          ? { timeout_ms: error.timeoutMs }
-          : {}
+        timedOut ? { timeout_ms: this.connectTimeoutMs } : {}
       );
     }
   }
@@ -491,14 +463,13 @@ export class BlockitRuntimeBackend {
       }
 
       try {
-        const result: unknown = await this.withDeadline(
-          `Runtime capability "${capability}"`,
-          this.callTimeoutMs,
-          () =>
-            this.client!.callTool({
-              name: capability,
-              arguments: args,
-            })
+        const result: unknown = await this.client!.callTool(
+          {
+            name: capability,
+            arguments: args,
+          },
+          undefined,
+          { timeout: this.callTimeoutMs }
         );
         const normalized = normalizeRuntimeCallResult(result);
         if (capability === "switch_authoring_phase" && normalized.isError !== true) {
@@ -508,6 +479,7 @@ export class BlockitRuntimeBackend {
       } catch (error) {
         const classification = classifyInterruptedCall(tool);
         const message = errorMessage(error);
+        const timedOut = isRequestTimeoutError(error);
         await this.closeConnectionUnsafe();
         this.lastError = message;
         throw new GatewayBackendError(
@@ -519,9 +491,7 @@ export class BlockitRuntimeBackend {
           {
             capability,
             cause: message,
-            ...(error instanceof GatewayOperationTimeoutError
-              ? { timeout_ms: error.timeoutMs }
-              : {}),
+            ...(timedOut ? { timeout_ms: this.callTimeoutMs } : {}),
           }
         );
       }
