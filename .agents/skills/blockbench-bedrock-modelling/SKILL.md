@@ -29,7 +29,7 @@ transform owner/pivot + negative-space boundary + representation
 ```
 No per-Cube plan.
 
-First blockout: one `capture_model_views` with **Core View Triad** `front + left + top`: width×height, length×height, width×length. Add `back` only for rear topology/asymmetry; add `front_left_3q` only for attachment/layering/orientation ambiguity. Never recapture all five routinely.
+First blockout: `capture_model_views` once with **Core View Triad** `front + left + top`: width×height, length×height, width×length. Add `back` only for rear topology/asymmetry; add `front_left_3q` only for attachment/layering/orientation ambiguity. Never recapture all five routinely.
 
 Repeated/symmetric cohorts: derive absolute transforms once → one coherent `manage_cubes` batch; preserve supported asymmetry; no inspect→write loop per Cube.
 
@@ -92,7 +92,7 @@ No guessed/stretched islands. Rebuild with `texture_id=<UUID>` only when justifi
 ## Local Correction / Convergence
 `TRANSLATE placement | RESIZE extent | ROTATE orientation | REATTACH contact/parent | SPLIT distinct volume/orientation | MERGE/REMOVE compensatory geometry | ADD MASS genuinely missing volume`.
 
-Reuse fresh authored state; otherwise `inspect_elements(mode=detail)` once. State target UUID(s), cause, intended change, invariant, expected effect; returned `geometry_effect` must match intent.
+Reuse fresh exact authored state; otherwise `inspect_elements(mode=detail)` once. State target UUID(s), cause, intended change, invariant, expected effect; returned `geometry_effect` must match intent.
 
 `REMOVE`/`REATTACH` preserve the whole assembly boundary and intentional openings. For `RESIZE` on mapped/textured Geometry, preflight UV/pixel impact and choose `PRESERVE_MAPPING | PRESERVE_DENSITY | RELAYOUT`.
 
