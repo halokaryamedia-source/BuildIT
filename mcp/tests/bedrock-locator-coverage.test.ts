@@ -98,8 +98,8 @@ describe("Bedrock Locator / Null Object direct coverage", () => {
       source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md"),
       source("../docs/knowledge/implementation-map.md"),
     ]);
-    expect(orchestrator).toContain("identity/hierarchy/detail      → inspect_elements(mode=search|outline|detail)");
-    expect(orchestrator).toContain("Locator/Null                   → manage_locator / manage_null_object");
+    expect(orchestrator).toMatch(/identity\/hierarchy\/detail\s+→ inspect_elements\(mode=search\|outline\|detail\)/);
+    expect(orchestrator).toMatch(/Locator\/Null\s+→ manage_locator \/ manage_null_object/);
     expect(orchestrator).toContain("## State Reuse / Anti-Loop");
     expect(orchestrator).toContain("no confirmation readback");
     expect(orchestrator).toMatch(/Do not automatically re-read fresh .*targets with `inspect_elements\(mode=detail\)`/);
