@@ -5,12 +5,12 @@ async function source(path: string): Promise<string> {
 }
 
 describe("texture material workflow and diagnostics", () => {
-  test("texturing guidance keeps one comfortable material route with bounded quality reads", async () => {
+  test("texturing guidance keeps the established material facade and bounded diagnostics", async () => {
     const skill = await source("../.agents/skills/blockit-bedrock-texturing/SKILL.md");
 
-    expect(skill).toContain("material overview → list_materials");
-    expect(skill).toContain("one material → get_material_info");
-    expect(skill).toContain("PBR mutate/save → manage_material");
+    expect(skill).toContain("PBR/material semantics → manage_material / manage_material_instances");
+    expect(skill).toContain("list_materials");
+    expect(skill).toContain("get_material_info");
     expect(skill).toContain("normal XOR height");
     expect(skill).toContain("MERS");
     expect(skill).toContain("authoring_status");
