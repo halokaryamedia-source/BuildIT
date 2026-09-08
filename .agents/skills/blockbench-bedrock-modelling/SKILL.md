@@ -7,7 +7,7 @@ description: Mandatory BlockIT Bedrock Geometry and UV Layout specialist.
 ## Minimum Necessary Evidence
 - **No per-Cube inspection ceremony** without a diagnosed problem.
 - **No screenshot-per-mutation loop.** Build a judgeable form, then gate it.
-- Surface/contact question → `inspect_model_bounds` once; otherwise skip.
+- Surface/contact question → `inspect_model_bounds` once. Otherwise skip the bounds call.
 - `UNVERIFIED` is not a retry command; request only decision-changing evidence.
 
 ## Reference Grounding
@@ -29,7 +29,7 @@ transform owner/pivot + negative-space boundary + representation
 ```
 No per-Cube plan.
 
-First blockout: `capture_model_views` once with **Core View Triad** `front + left + top`. Add `back` only for rear topology/asymmetry; `front_left_3q` only for attachment/layering/orientation ambiguity. Never recapture all five routinely.
+First blockout: `capture_model_views` once with **Core View Triad** `front + left + top`. Add `back` only for rear topology/asymmetry; add `front_left_3q` only for attachment/layering/orientation ambiguity. Never recapture all five routinely.
 
 Repeated/symmetric cohorts: derive absolute transforms once → one coherent `manage_cubes` batch; preserve asymmetry; no inspect→write loop per Cube.
 
@@ -46,22 +46,22 @@ representation: geometry | texture | animation | omit
 transform ownership + required attachment / contact target/invariant
 material evidence state
 ```
-A semantic label never authorizes coordinates. **No orphan/filler Cube**. `PROVISIONAL` is a coarse hypothesis; placement does not verify it. Construction forms are **not presets**. Surface information without silhouette/volume/contact/motion stays texture.
+A semantic label never authorizes coordinates. **No orphan/filler Cube**. `PROVISIONAL` is a coarse hypothesis; placement never verifies it. Construction forms are **not presets**. Use texture for surface information that needs no silhouette/volume/contact/motion.
 
 Shared orientation/attachment/articulation → **Group/Bone-owned**; local rigid orientation may be Cube-owned. Primary mass state: `AXIS_ALIGNED | ROTATED | UNRESOLVED`. Visible slope → explicit origin/pivot + `MASS_CENTER | ATTACHMENT | JOINT | PARENT_TRANSFORM`. Material `UNRESOLVED` → `BLOCKED`. Pivot role is attachment/joint pivot when it owns transform. AABB overlap, hierarchy, or numeric touching is not contact proof.
 
-When `Animation Required = YES`, leave **motion-ready structure**: cohorts, pivots, clearance, contact invariants. Known rig/contact defects do not wait for Animation.
+When `Animation Required = YES`, leave **motion-ready structure**: cohorts, pivots, clearance, contact invariants. A known rig/contact defect does not wait for Animation.
 
 ## Primary Mass / Proportion / Depth
 `frame/envelope → primary masses → shared boundaries → cross-view proportions → depth/layering → silhouette/proportion gate → primary blockout`.
 
 Front/back constrain width+height; sides depth+height; top/bottom width+depth. **Front agreement does not certify depth.** Adjacent primary cohorts sharing a boundary use one partition.
-Depth: `OBSERVED` direct; `INFERRED` consistent; `UNRESOLVED` insufficient/conflicting. Minor drift → one interpretation; do not average. Material unresolved conflict → `BLOCKED`.
+Depth: `OBSERVED` direct; `INFERRED` consistent; `UNRESOLVED` insufficient/conflicting. Minor drift → one interpretation. Do not average drift. Material unresolved conflict → `BLOCKED`.
 
 ## Surface Coverage / Negative Space
 Every gap is intentional; enclosures need closed-shell reasoning, open forms preserve negative spaces. Build primary surfaces before trim.
 
-Review affected views for holes/seams/penetration/contact/offsets. Each required surface class—outer, opening, back, underside, material interior—needs current evidence once. Positive-volume overlap alone is not visual PASS.
+Review affected views for holes/seams/penetration/contact/offsets. Each required surface class—outer, opening, back, underside, material interior—needs current evidence once. No positive-volume overlap alone is not visual PASS.
 
 ## Geometry Detail Budget
 `GEOMETRY` → silhouette/volume/opening/contact/3D layering/motion.
@@ -99,4 +99,4 @@ Reuse fresh exact authored state; otherwise `inspect_elements(mode=detail)` once
 Reuse fresh affected pre-correction evidence; capture before mutation only when none exists. After mutation, recapture affected view(s); expand only for cross-view regression risk. Verdict: `IMPROVED | UNCHANGED | REGRESSED`; require `IMPROVED` without regression elsewhere. Same causal correction failing twice without new evidence → `BLOCKED`.
 
 ## Existing Assets / Shared Session
-Existing geometry is baseline, not fidelity proof. Geometry owns shape/rig/UV Layout; Texturing owns pixels/PBR. Geometry↔Texturing correction stays on shared AUTHORING. `HANDOFF_REQUIRED` + `switch_authoring_phase` only for AUTHORING↔Animation.
+Existing geometry is a baseline, not fidelity proof. Geometry owns shape/rig/UV Layout; Texturing owns pixels/PBR. Geometry↔Texturing correction stays on shared AUTHORING. `HANDOFF_REQUIRED` + `switch_authoring_phase` only for AUTHORING↔Animation.
