@@ -1,28 +1,24 @@
 ## BlockIT — Bedrock Entity MCP
 
-BlockIT connects AI-assisted Minecraft Bedrock Entity authoring to desktop Blockbench through the stable BlockIT Gateway.
+BlockIT brings AI-assisted Minecraft Bedrock Entity authoring into desktop Blockbench.
 
-### What it provides
+### Authoring
 
-- Geometry, rig, locator, and UV Layout authoring
-- Texture Atlas, Painter, PBR, and material workflows
-- Bedrock animation and controller workflows
-- Explicit stage approval with fail-closed proof boundaries
+- Geometry, rig, locator, and UV workflows
+- Texturing, Painter, PBR, and materials
+- Animation and controller workflows
+- Explicit stage approval for reference-based work
 
-### Runtime
+### Connection
 
 BlockIT Runtime runs locally inside desktop Blockbench at:
 
 `http://127.0.0.1:3000/bb-mcp`
 
-Normal AI clients connect through the BlockIT Gateway, whose client-facing surface remains `status`, `search_capabilities`, `describe_capability`, and `invoke_capability`.
+Normal AI clients connect through the stable BlockIT Gateway. Geometry and Texturing share the same AUTHORING Runtime surface, while AUTHORING↔Animation handoff is handled through the Gateway without requiring a new task/chat or routine manual reconnect.
 
-Geometry and Texturing use the same shared AUTHORING Runtime surface. Geometry↔Texturing correction stays in-session and does not require `switch_authoring_phase`.
+### Visual approval
 
-AUTHORING↔Animation uses `switch_authoring_phase` through the Gateway. The Gateway invalidates and refreshes its Runtime catalog automatically; normal AI-client use continues the same task/chat without a manual MCP reconnect.
-
-### Important
-
-Tool success, coordinates, validators, exports, or source/CI success do not prove visual fidelity. Reference-driven PASS requires the actual approved reference plus fresh comparable model evidence, and user stage approval remains explicit.
+Reference-based work uses the approved reference plus current comparable model views. Tool execution and technical validation are execution evidence, not visual acceptance.
 
 Source and issue tracker: https://github.com/halokaryamedia-source/BuildIT

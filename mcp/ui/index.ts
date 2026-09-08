@@ -2,15 +2,21 @@ import type { IMCPTool, IMCPPrompt, IMCPResource } from "@/types";
 import { VERSION } from "@/lib/constants";
 import type { McpRegistrationProfile } from "@/lib/registrationProfile";
 import type { McpAuthoringPhase } from "@/lib/authoringPhase";
+import { PRODUCT_REPOSITORY } from "@/lib/productIdentity";
 import {
-  PRODUCT_NAME,
-  PRODUCT_REPOSITORY,
-} from "@/lib/productIdentity";
-import { createSurfaceManifest } from "@/lib/surfaceManifest";
-import { statusBarSetup, statusBarTeardown } from "@/ui/statusBar";
+  BLOCKIT_RUNTIME_STATUS_CHANGED,
+  statusBarSetup,
+  statusBarTeardown,
+  type BlockItRuntimeStatusDetail,
+  type McpServerStatus,
+} from "@/ui/statusBar";
 import { openToolTestDialog, toolTestDialogTeardown } from "@/ui/toolTestDialog";
 import { openPromptPreviewDialog, promptPreviewDialogTeardown } from "@/ui/promptPreviewDialog";
-import { openPromptOverrideDialog, overrideDialogTeardown, PROMPT_OVERRIDE_CHANGED } from "@/ui/promptOverrideDialog";
+import {
+  openPromptOverrideDialog,
+  overrideDialogTeardown,
+  PROMPT_OVERRIDE_CHANGED,
+} from "@/ui/promptOverrideDialog";
 import { hasPromptOverride } from "@/lib/promptLoader";
 import { formatArgumentCount } from "@/ui/i18n";
 import panelCSS from "@/ui/panel.css";
@@ -18,14 +24,13 @@ import template from "@/ui/panel.html";
 
 let panel: Panel | undefined;
 let overrideListener: (() => void) | undefined;
+let runtimeStatusListener: (() => void) | undefined;
 let panelCssHandle: { delete(): void } | undefined;
 
 export function uiSetup({
   tools,
   resources,
   prompts,
-  profile,
-  phase,
 }: {
   tools: Record<string, IMCPTool>;
   resources: Record<string, IMCPResource>;
@@ -33,62 +38,68 @@ export function uiSetup({
   profile: McpRegistrationProfile;
   phase: McpAuthoringPhase;
 }) {
-  const surface = createSurfaceManifest({ profile, phase, tools, resources, prompts });
+  const port = Settings.get("mcp_port") || 3000;
+  const endpoint = Settings.get("mcp_endpoint") || "/bb-mcp";
+  const runtimeEndpoint = `127.0.0.1:${port}${endpoint}`;
+
   panelCssHandle?.delete();
   panelCssHandle = Blockbench.addCSS(panelCSS);
 
-  // Stateless HTTP has no durable MCP client session to display. The status bar
-  // represents the local server surface only, not a fabricated connection count.
+  // Stateless HTTP has no durable client session. The panel presents only
+  // actionable Runtime readiness by default; transport/catalog details stay
+  // behind Advanced details and add no background reads or polling.
   statusBarSetup();
 
   panel = new Panel("mcp_panel", {
     id: "mcp_panel",
     icon: "robot",
-    name: "MCP",
+    name: "BlockIT",
     default_side: "right",
     resizable: true,
     component: {
       mounted() {
-        // Listen for override changes to refresh badge state
         // @ts-ignore - Vue component context
         const vm = this;
-        const handler = () => vm.$forceUpdate();
-        document.addEventListener(PROMPT_OVERRIDE_CHANGED, handler);
-        overrideListener = () => document.removeEventListener(PROMPT_OVERRIDE_CHANGED, handler);
+
+        const overrideHandler = () => vm.$forceUpdate();
+        document.addEventListener(PROMPT_OVERRIDE_CHANGED, overrideHandler);
+        overrideListener?.();
+        overrideListener = () =>
+          document.removeEventListener(PROMPT_OVERRIDE_CHANGED, overrideHandler);
+
+        const statusHandler = (event: Event) => {
+          const detail = (event as CustomEvent<BlockItRuntimeStatusDetail>).detail;
+          if (!detail) return;
+          vm.runtime.state = detail.state;
+          vm.runtime.detail = detail.detail ?? "";
+        };
+        document.addEventListener(BLOCKIT_RUNTIME_STATUS_CHANGED, statusHandler);
+        runtimeStatusListener?.();
+        runtimeStatusListener = () =>
+          document.removeEventListener(BLOCKIT_RUNTIME_STATUS_CHANGED, statusHandler);
       },
       beforeDestroy() {
-        if (overrideListener) {
-          overrideListener();
-          overrideListener = undefined;
-        }
+        overrideListener?.();
+        overrideListener = undefined;
+        runtimeStatusListener?.();
+        runtimeStatusListener = undefined;
       },
       data: () => ({
         server: {
-          name: PRODUCT_NAME,
           version: VERSION,
           repositoryUrl: PRODUCT_REPOSITORY,
-          type: "Minecraft Bedrock Entity",
-          authoringPhase: phase,
+          endpoint: runtimeEndpoint,
         },
-        surface,
-        tools: Object.values(tools).map((tool) => ({
-          name: tool.name,
-          description: tool.description,
-          enabled: tool.enabled,
-          status: tool.status,
-        })),
-        resources: Object.values(resources).map((resource) => ({
-          name: resource.name,
-          description: resource.description,
-          uriTemplate: resource.uriTemplate,
-        })),
-        prompts: Object.values(prompts).map((prompt) => ({
-          name: prompt.name,
-          description: prompt.description,
-          enabled: prompt.enabled,
-          status: prompt.status,
-          argumentCount: Object.keys(prompt.arguments).length,
-        })),
+        runtime: {
+          state: "running" as McpServerStatus,
+          detail: "",
+        },
+        // Keep original registry object references instead of copying enabled
+        // flags. Vue observes those fields, so AUTHORING↔Animation surface changes
+        // stay current without polling or a second synchronization layer.
+        tools: Object.values(tools),
+        resources: Object.values(resources),
+        prompts: Object.values(prompts),
         toolsFilter: {
           search: "",
           showExperimental: true,
@@ -97,51 +108,62 @@ export function uiSetup({
         resourcesFilter: {
           search: "",
         },
-        promptsFilter: {
-          search: "",
-          showExperimental: true,
-          showDisabled: false,
-        },
       }),
       computed: {
-        filteredTools(): Array<{ name: string; description: string; enabled: boolean; status: string }> {
+        availableToolCount(): number {
+          // @ts-ignore - Vue component context
+          return this.tools.filter((tool: IMCPTool) => tool.enabled).length;
+        },
+        filteredTools(): IMCPTool[] {
           // @ts-ignore - Vue component context
           const { tools, toolsFilter } = this;
-          const searchLower = toolsFilter.search.toLowerCase();
-          return tools.filter((tool: { name: string; status: string; enabled: boolean }) => {
+          const searchLower = toolsFilter.search.trim().toLowerCase();
+          return tools.filter((tool: IMCPTool) => {
             if (!tool.enabled && !toolsFilter.showDisabled) return false;
             if (tool.status === "experimental" && !toolsFilter.showExperimental) return false;
-            if (searchLower && !tool.name.toLowerCase().includes(searchLower)) return false;
+            if (
+              searchLower &&
+              !`${tool.name} ${tool.description}`.toLowerCase().includes(searchLower)
+            ) {
+              return false;
+            }
             return true;
           });
         },
-        filteredResources(): Array<{ name: string; description: string; uriTemplate: string }> {
+        filteredResources(): IMCPResource[] {
           // @ts-ignore - Vue component context
           const { resources, resourcesFilter } = this;
-          const searchLower = resourcesFilter.search.toLowerCase();
+          const searchLower = resourcesFilter.search.trim().toLowerCase();
           if (!searchLower) return resources;
-          return resources.filter((resource: { name: string }) =>
-            resource.name.toLowerCase().includes(searchLower)
+          return resources.filter((resource: IMCPResource) =>
+            `${resource.name} ${resource.description}`
+              .toLowerCase()
+              .includes(searchLower)
           );
         },
-        filteredPrompts(): Array<{ name: string; description: string; enabled: boolean; status: string; argumentCount: number }> {
+        availablePrompts(): IMCPPrompt[] {
           // @ts-ignore - Vue component context
-          const { prompts, promptsFilter } = this;
-          const searchLower = promptsFilter.search.toLowerCase();
-          return prompts.filter((prompt: { name: string; status: string; enabled: boolean }) => {
-            if (!prompt.enabled && !promptsFilter.showDisabled) return false;
-            if (prompt.status === "experimental" && !promptsFilter.showExperimental) return false;
-            if (searchLower && !prompt.name.toLowerCase().includes(searchLower)) return false;
-            return true;
-          });
+          return this.prompts.filter((prompt: IMCPPrompt) => prompt.enabled);
+        },
+        availablePromptCount(): number {
+          // @ts-ignore - Vue component context
+          return this.prompts.filter((prompt: IMCPPrompt) => prompt.enabled).length;
         },
       },
       methods: {
         tl(key: string, variables?: string | number | (string | number)[]): string {
           return tl(key, variables);
         },
+        runtimeStatusLabel(state: McpServerStatus): string {
+          if (state === "starting") return "Starting";
+          if (state === "failed") return "Runtime Error";
+          return "Ready";
+        },
         getDisplayName(toolName: string): string {
           return toolName.replace("blockbench_", "");
+        },
+        promptArgumentCount(prompt: IMCPPrompt): number {
+          return Object.keys(prompt.arguments).length;
         },
         openToolTest(toolName: string): void {
           openToolTestDialog(toolName);
@@ -158,24 +180,17 @@ export function uiSetup({
         formatArgumentCount,
         onToolsToggle(event: Event): void {
           const details = event.target as HTMLDetailsElement;
-          if (!details.open) {
-            // @ts-ignore - Vue component context
-            this.toolsFilter.search = "";
-          }
+          // @ts-ignore - Vue component context
+          if (!details.open) this.toolsFilter.search = "";
+          // Event-driven refresh is enough to reconcile any external native
+          // surface mutation; there is deliberately no background polling.
+          // @ts-ignore - Vue component context
+          this.$forceUpdate();
         },
         onResourcesToggle(event: Event): void {
           const details = event.target as HTMLDetailsElement;
-          if (!details.open) {
-            // @ts-ignore - Vue component context
-            this.resourcesFilter.search = "";
-          }
-        },
-        onPromptsToggle(event: Event): void {
-          const details = event.target as HTMLDetailsElement;
-          if (!details.open) {
-            // @ts-ignore - Vue component context
-            this.promptsFilter.search = "";
-          }
+          // @ts-ignore - Vue component context
+          if (!details.open) this.resourcesFilter.search = "";
         },
       },
       name: "mcp_panel",
@@ -188,10 +203,10 @@ export function uiSetup({
 }
 
 export function uiTeardown(): void {
-  if (overrideListener) {
-    overrideListener();
-    overrideListener = undefined;
-  }
+  overrideListener?.();
+  overrideListener = undefined;
+  runtimeStatusListener?.();
+  runtimeStatusListener = undefined;
   overrideDialogTeardown();
   toolTestDialogTeardown();
   promptPreviewDialogTeardown();

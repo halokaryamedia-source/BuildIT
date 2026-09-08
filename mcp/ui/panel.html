@@ -1,36 +1,39 @@
 <div class="mcp-panel">
-    <details name="mcp_panel" open>
-        <summary>{{tl('mcp.panel.server')}}</summary>
-        <dl>
-            <dt>{{tl('mcp.server.name')}}</dt>
-            <dd>{{server.name}}</dd>
-            <dt>{{tl('mcp.server.version')}}</dt>
-            <dd><a :href="server.repositoryUrl" target="_blank"
-                    rel="noopener noreferrer">{{server.version}}</a>
-            </dd>
-            <dt>{{tl('mcp.server.type')}}</dt>
-            <dd>{{server.type}}</dd>
-            <dt>{{tl('mcp.server.phase')}}</dt>
-            <dd>{{server.authoringPhase}}</dd>
-        </dl>
-    </details>
-    <details name="mcp_panel" @toggle="onToolsToggle">
-        <summary>{{tl('mcp.panel.tools')}} ({{surface.tools.exposed_count}} exposed / {{surface.tools.catalog_count}} catalog)</summary>
+    <section class="blockit-overview" aria-label="BlockIT Runtime status">
+        <div class="runtime-summary">
+            <span class="runtime-dot" :class="runtime.state"></span>
+            <div class="runtime-copy">
+                <div class="runtime-title">{{runtimeStatusLabel(runtime.state)}}</div>
+                <div class="runtime-subtitle">Minecraft Bedrock Entity authoring</div>
+                <div v-if="runtime.state !== 'running' && runtime.detail" class="runtime-detail">
+                    {{runtime.detail}}
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <details name="blockit_panel_sections" @toggle="onToolsToggle">
+        <summary>
+            Tools
+            <span class="section-meta">{{availableToolCount}} available</span>
+        </summary>
 
         <div class="filter-bar">
             <input type="text" v-model="toolsFilter.search" :placeholder="tl('mcp.filter.tools_placeholder')"
                 :aria-label="tl('mcp.filter.tools_placeholder')"
                 class="filter-input" @input="toolsFilter.search = $event.target.value">
-            <label class="filter-switch">
-                <input type="checkbox" v-model="toolsFilter.showExperimental">
-                <span class="switch-slider"></span>
-                <span class="switch-label">{{tl('mcp.filter.show_experimental')}}</span>
-            </label>
-            <label class="filter-switch">
-                <input type="checkbox" v-model="toolsFilter.showDisabled">
-                <span class="switch-slider"></span>
-                <span class="switch-label">Show disabled</span>
-            </label>
+            <div class="filter-options">
+                <label class="filter-switch">
+                    <input type="checkbox" v-model="toolsFilter.showExperimental">
+                    <span class="switch-slider"></span>
+                    <span class="switch-label">{{tl('mcp.filter.show_experimental')}}</span>
+                </label>
+                <label class="filter-switch">
+                    <input type="checkbox" v-model="toolsFilter.showDisabled">
+                    <span class="switch-slider"></span>
+                    <span class="switch-label">Show disabled</span>
+                </label>
+            </div>
         </div>
 
         <div v-if="filteredTools.length > 0">
@@ -41,7 +44,8 @@
                 <div class="tool-info">
                     <div class="tool-name">
                         {{getDisplayName(tool.name)}}
-                        <span v-if="tool.status === 'experimental'" class="tool-status experimental" :title="tl('mcp.status.experimental_tooltip')"></span>
+                        <span v-if="tool.status === 'experimental'" class="tool-status experimental"
+                            :title="tl('mcp.status.experimental_tooltip')"></span>
                         <span v-if="!tool.enabled" class="surface-badge disabled">disabled</span>
                     </div>
                     <div class="tool-description" :title="tool.description">{{tool.description}}</div>
@@ -55,10 +59,14 @@
             <p>{{tl('mcp.tools.none_available')}}</p>
         </div>
     </details>
-    <details name="mcp_panel" @toggle="onResourcesToggle">
-        <summary>{{tl('mcp.panel.resources')}} ({{surface.resources.exposed_count}} exposed / {{surface.resources.catalog_count}} catalog)</summary>
 
-        <div class="filter-bar">
+    <details name="blockit_panel_sections" @toggle="onResourcesToggle">
+        <summary>
+            Resources
+            <span class="section-meta">{{resources.length}}</span>
+        </summary>
+
+        <div class="filter-bar compact-filter">
             <input type="text" v-model="resourcesFilter.search" :placeholder="tl('mcp.filter.resources_placeholder')"
                 :aria-label="tl('mcp.filter.resources_placeholder')"
                 class="filter-input" @input="resourcesFilter.search = $event.target.value">
@@ -69,8 +77,7 @@
                 <div class="tool-info">
                     <div class="tool-name">{{getDisplayName(resource.name)}}</div>
                     <div class="tool-description" :title="resource.description">{{resource.description}}</div>
-                    <div class="tool-description" style="font-style: italic; margin-top: 2px;"
-                        :title="resource.uriTemplate">{{resource.uriTemplate}}</div>
+                    <div class="tool-description resource-uri" :title="resource.uriTemplate">{{resource.uriTemplate}}</div>
                 </div>
             </div>
         </div>
@@ -81,64 +88,50 @@
             <p>{{tl('mcp.resources.none_available')}}</p>
         </div>
     </details>
-    <details name="mcp_panel" @toggle="onPromptsToggle">
-        <summary>{{tl('mcp.panel.prompts')}} ({{surface.prompts.exposed_count}} exposed / {{surface.prompts.catalog_count}} catalog)</summary>
 
-        <div class="filter-bar">
-            <input type="text" v-model="promptsFilter.search" :placeholder="tl('mcp.filter.prompts_placeholder')"
-                :aria-label="tl('mcp.filter.prompts_placeholder')"
-                class="filter-input" @input="promptsFilter.search = $event.target.value">
-            <label class="filter-switch">
-                <input type="checkbox" v-model="promptsFilter.showExperimental">
-                <span class="switch-slider"></span>
-                <span class="switch-label">{{tl('mcp.filter.show_experimental')}}</span>
-            </label>
-            <label class="filter-switch">
-                <input type="checkbox" v-model="promptsFilter.showDisabled">
-                <span class="switch-slider"></span>
-                <span class="switch-label">Show disabled</span>
-            </label>
-        </div>
+    <details name="blockit_panel_sections">
+        <summary>
+            Workflow
+            <span class="section-meta">{{availablePromptCount}} prompt{{availablePromptCount === 1 ? '' : 's'}}</span>
+        </summary>
 
-        <div v-if="filteredPrompts.length > 0">
-            <div v-for="prompt in filteredPrompts" :key="prompt.name" class="tool-toggle-row"
-                :class="{ clickable: prompt.enabled, disabled: !prompt.enabled }"
-                @click="prompt.enabled && openPromptPreview(prompt.name)"
-                :title="prompt.enabled ? tl('mcp.tooltip.click_to_preview', [getDisplayName(prompt.name)]) : 'Disabled prompts are not exposed through MCP.'">
-                <div class="tool-info" style="flex: 1;">
+        <div v-if="availablePrompts.length > 0">
+            <div v-for="prompt in availablePrompts" :key="prompt.name" class="tool-toggle-row clickable"
+                @click="openPromptPreview(prompt.name)"
+                :title="tl('mcp.tooltip.click_to_preview', [getDisplayName(prompt.name)])">
+                <div class="tool-info">
                     <div class="tool-name">
                         {{getDisplayName(prompt.name)}}
-                        <span v-if="prompt.status === 'experimental'" class="tool-status experimental" :title="tl('mcp.status.experimental_tooltip')"></span>
-                        <span v-if="!prompt.enabled" class="surface-badge disabled">disabled</span>
-                        <span v-if="prompt.enabled && isPromptOverridden(prompt.name)" style="
-                            background: var(--color-accent);
-                            color: var(--color-light);
-                            font-size: 10px;
-                            padding: 0 4px;
-                            border-radius: 3px;
-                            margin-left: 4px;
-                            font-weight: bold;
-                        ">{{tl('mcp.prompts.custom_badge')}}</span>
+                        <span v-if="prompt.status === 'experimental'" class="tool-status experimental"
+                            :title="tl('mcp.status.experimental_tooltip')"></span>
+                        <span v-if="isPromptOverridden(prompt.name)" class="surface-badge custom">custom</span>
                     </div>
                     <div class="tool-description" :title="prompt.description">{{prompt.description}}</div>
-                    <div v-if="prompt.argumentCount > 0" class="tool-description"
-                        style="font-style: italic; margin-top: 2px;">
-                        {{formatArgumentCount(prompt.argumentCount)}}
+                    <div v-if="promptArgumentCount(prompt) > 0" class="tool-description prompt-arguments">
+                        {{formatArgumentCount(promptArgumentCount(prompt))}}
                     </div>
                 </div>
-                <div v-if="prompt.enabled" @click.stop style="display: flex; align-items: center; padding-left: 4px;">
-                    <i class="material-icons" @click="openPromptOverride(prompt.name)"
-                        :title="tl('mcp.dialog.edit_override')"
-                        style="cursor: pointer; opacity: 0.5; font-size: 18px;"
-                        onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.5'">edit</i>
+                <div @click.stop class="prompt-actions">
+                    <i class="material-icons prompt-edit" @click="openPromptOverride(prompt.name)"
+                        :title="tl('mcp.dialog.edit_override')">edit</i>
                 </div>
             </div>
-        </div>
-        <div v-else-if="prompts.length > 0" class="no-results">
-            {{tl('mcp.prompts.no_match')}}
         </div>
         <div v-else>
             <p>{{tl('mcp.prompts.none_available')}}</p>
         </div>
+    </details>
+
+    <details name="blockit_panel_sections" class="advanced-details">
+        <summary>Advanced details</summary>
+        <dl>
+            <dt>Runtime endpoint</dt>
+            <dd class="diagnostic-value monospace">{{server.endpoint}}</dd>
+            <dt>Version</dt>
+            <dd><a :href="server.repositoryUrl" target="_blank" rel="noopener noreferrer">{{server.version}}</a></dd>
+            <dt>Tool catalog</dt>
+            <dd>{{tools.length}}</dd>
+        </dl>
+        <p class="advanced-note">Connection diagnostics for troubleshooting. Normal authoring does not require these values.</p>
     </details>
 </div>

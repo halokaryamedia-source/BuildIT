@@ -1,254 +1,324 @@
 .mcp-panel {
-    display: grid;
-    grid-template-rows: auto 1fr auto;
     max-block-size: 66vh;
     overflow: auto;
     padding: 10px;
+}
 
-    details {
-        overflow: auto;
-    }
+.mcp-panel .blockit-overview {
+    margin-block-end: 8px;
+    padding: 10px 12px;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    background: var(--color-back);
+}
 
-    summary {
-        cursor: pointer;
-    }
+.mcp-panel .runtime-summary {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+}
 
-    dl {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        grid-auto-flow: row;
-        margin: 0;
-        padding: 0;
+.mcp-panel .runtime-dot {
+    inline-size: 8px;
+    block-size: 8px;
+    flex: 0 0 8px;
+    margin-block-start: 5px;
+    border-radius: 50%;
+    background: var(--color-subtle_text);
+}
 
-        dt {
-            font-size: 0.825em;
-            font-weight: bold;
-            grid-column: 1;
-            margin: 0;
-            padding: 0;
-        }
+.mcp-panel .runtime-dot.running {
+    background: #4caf50;
+}
 
-        dd {
-            grid-column: 2;
-            margin: 0;
-            padding: 0;
-        }
-    }
+.mcp-panel .runtime-dot.starting {
+    background: #ff9800;
+}
 
-    .tool-toggle-row {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 8px 0;
-        border-bottom: 1px solid var(--color-border);
-    }
+.mcp-panel .runtime-dot.failed {
+    background: #f44336;
+}
 
-    .tool-toggle-row:last-child {
-        border-bottom: none;
-    }
+.mcp-panel .runtime-copy {
+    min-inline-size: 0;
+}
 
-    .tool-toggle-row.clickable {
-        cursor: pointer;
-        padding: 8px;
-        margin: 0 -8px;
-        border-radius: 4px;
-        transition: background-color 0.15s ease;
-    }
+.mcp-panel .runtime-title {
+    font-weight: 600;
+    line-height: 1.3;
+}
 
-    .tool-toggle-row.clickable:hover {
-        background-color: var(--color-button);
-    }
+.mcp-panel .runtime-subtitle,
+.mcp-panel .runtime-detail,
+.mcp-panel .advanced-note {
+    color: var(--color-subtle_text);
+    font-size: 0.8em;
+    line-height: 1.4;
+}
 
-    .tool-toggle-row.clickable:active {
-        background-color: var(--color-accent);
-    }
+.mcp-panel .runtime-detail {
+    margin-block-start: 5px;
+    color: var(--color-text);
+    overflow-wrap: anywhere;
+}
 
-    .tool-toggle-row.disabled {
-        opacity: 0.58;
-    }
+.mcp-panel details {
+    border-block-end: 1px solid var(--color-border);
+}
 
-    .surface-badge {
-        display: inline-block;
-        margin-left: 6px;
-        padding: 1px 4px;
-        border: 1px solid var(--color-border);
-        border-radius: 3px;
-        color: var(--color-subtle_text);
-        font-size: 9px;
-        font-weight: normal;
-        line-height: 1.2;
-        vertical-align: middle;
-    }
+.mcp-panel details:last-child {
+    border-block-end: none;
+}
 
-    .tool-toggle-row.clickable .tool-name::after {
-        content: "chevron_right";
-        font-family: "Material Icons";
-        font-size: 16px;
-        margin-left: 4px;
-        opacity: 0.5;
-        vertical-align: middle;
-    }
+.mcp-panel summary {
+    cursor: pointer;
+    padding: 9px 2px;
+    font-weight: 600;
+    user-select: none;
+}
 
-    .tool-info {
-        flex: 1;
-        min-width: 0;
-    }
+.mcp-panel .section-meta {
+    float: right;
+    margin-inline-end: 4px;
+    color: var(--color-subtle_text);
+    font-size: 0.82em;
+    font-weight: 400;
+}
 
-    .tool-name {
-        font-weight: bold;
-        font-size: 0.9em;
-        margin-bottom: 2px;
-    }
+.mcp-panel .filter-bar {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    padding: 2px 0 8px;
+    margin-block-end: 2px;
+}
 
-    .tool-description {
-        font-size: 0.8em;
-        color: var(--color-subtle_text);
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
+.mcp-panel .compact-filter {
+    padding-block-start: 0;
+}
 
-    .tool-description + .tool-description {
-        margin-top: 4px;
-    }
+.mcp-panel .filter-options {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
 
-    .tool-toggle {
-        margin-left: 12px;
-        flex-shrink: 0;
+.mcp-panel .filter-input {
+    inline-size: 100%;
+    min-inline-size: 0;
+    padding: 6px 8px;
+    box-sizing: border-box;
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    background: var(--color-back);
+    color: var(--color-text);
+    font-size: 0.85em;
+}
 
-        label {
-        font-size: 0.9em;
-        }
-    }
+.mcp-panel .filter-input:focus {
+    outline: none;
+    border-color: var(--color-accent);
+}
 
-    .tool-status.experimental {
-        font-family: "Material Icons";
-        font-size: 14px;
-        margin-left: 6px;
-        vertical-align: middle;
-        line-height: 1;
-    }
+.mcp-panel .filter-input::placeholder {
+    color: var(--color-subtle_text);
+}
 
-    .tool-status.experimental::before {
-        content: "science";
-    }
+.mcp-panel .filter-switch {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--color-subtle_text);
+    font-size: 0.75em;
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+}
 
-    .session-item {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 6px 0;
-        border-bottom: 1px solid var(--color-border);
-        font-size: 0.85em;
-    }
+.mcp-panel .filter-switch input[type="checkbox"] {
+    display: none;
+}
 
-    .session-item:last-child {
-        border-bottom: none;
-    }
+.mcp-panel .switch-slider {
+    position: relative;
+    inline-size: 28px;
+    block-size: 16px;
+    border-radius: 8px;
+    background: var(--color-button);
+    transition: background-color 0.15s ease;
+}
 
-    .session-id {
-        font-family: monospace;
-        color: var(--color-text);
-    }
+.mcp-panel .switch-slider::before {
+    content: "";
+    position: absolute;
+    inset-block-start: 2px;
+    inset-inline-start: 2px;
+    inline-size: 12px;
+    block-size: 12px;
+    border-radius: 50%;
+    background: var(--color-text);
+    transition: transform 0.15s ease;
+}
 
-    .session-time {
-        color: var(--color-subtle_text);
-        font-size: 0.9em;
-    }
+.mcp-panel .filter-switch input:checked + .switch-slider {
+    background: var(--color-accent);
+}
 
-    .no-sessions {
-        color: var(--color-subtle_text);
-        font-style: italic;
-        padding: 8px 0;
-    }
+.mcp-panel .filter-switch input:checked + .switch-slider::before {
+    transform: translateX(12px);
+}
 
-    .no-results {
-        color: var(--color-subtle_text);
-        font-style: italic;
-        padding: 12px 0;
-        text-align: center;
-    }
+.mcp-panel .filter-switch input:checked ~ .switch-label {
+    color: var(--color-text);
+}
 
-    .filter-bar {
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        gap: 10px;
-        padding: 8px 0;
-        margin-bottom: 4px;
-        border-bottom: 1px solid var(--color-border);
-    }
+.mcp-panel .tool-toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 8px 0;
+    border-block-end: 1px solid var(--color-border);
+}
 
-    .filter-input {
-        flex: 1;
-        min-width: 0;
-        padding: 6px 8px;
-        border: 1px solid var(--color-border);
-        border-radius: 4px;
-        background: var(--color-back);
-        color: var(--color-text);
-        font-size: 0.85em;
-        box-sizing: border-box;
-    }
+.mcp-panel .tool-toggle-row:last-child {
+    border-block-end: none;
+}
 
-    .filter-input:focus {
-        outline: none;
-        border-color: var(--color-accent);
-    }
+.mcp-panel .tool-toggle-row.clickable {
+    margin-inline: -6px;
+    padding-inline: 6px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.12s ease;
+}
 
-    .filter-input::placeholder {
-        color: var(--color-subtle_text);
-    }
+.mcp-panel .tool-toggle-row.clickable:hover {
+    background: var(--color-button);
+}
 
-    .filter-switch {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        font-size: 0.75em;
-        color: var(--color-subtle_text);
-        cursor: pointer;
-        user-select: none;
-        white-space: nowrap;
-    }
+.mcp-panel .tool-toggle-row.disabled {
+    opacity: 0.58;
+}
 
-    .filter-switch input[type="checkbox"] {
-        display: none;
-    }
+.mcp-panel .tool-info {
+    flex: 1;
+    min-inline-size: 0;
+}
 
-    .switch-slider {
-        position: relative;
-        width: 28px;
-        height: 16px;
-        background: var(--color-button);
-        border-radius: 8px;
-        transition: background-color 0.2s ease;
-    }
+.mcp-panel .tool-name {
+    margin-block-end: 2px;
+    font-size: 0.9em;
+    font-weight: 600;
+}
 
-    .switch-slider::before {
-        content: "";
-        position: absolute;
-        top: 2px;
-        left: 2px;
-        width: 12px;
-        height: 12px;
-        background: var(--color-text);
-        border-radius: 50%;
-        transition: transform 0.2s ease;
-    }
+.mcp-panel .tool-toggle-row.clickable .tool-name::after {
+    content: "chevron_right";
+    margin-inline-start: 4px;
+    font-family: "Material Icons";
+    font-size: 16px;
+    font-weight: normal;
+    opacity: 0.45;
+    vertical-align: middle;
+}
 
-    .filter-switch input:checked + .switch-slider {
-        background: var(--color-accent);
-    }
+.mcp-panel .tool-description {
+    overflow: hidden;
+    color: var(--color-subtle_text);
+    font-size: 0.8em;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
 
-    .filter-switch input:checked + .switch-slider::before {
-        transform: translateX(12px);
-    }
+.mcp-panel .resource-uri,
+.mcp-panel .prompt-arguments {
+    margin-block-start: 3px;
+    font-style: italic;
+}
 
-    .switch-label {
-        color: var(--color-subtle_text);
-    }
+.mcp-panel .surface-badge {
+    display: inline-block;
+    margin-inline-start: 6px;
+    padding: 1px 4px;
+    border: 1px solid var(--color-border);
+    border-radius: 3px;
+    color: var(--color-subtle_text);
+    font-size: 9px;
+    font-weight: 400;
+    line-height: 1.2;
+    vertical-align: middle;
+}
 
-    .filter-switch input:checked ~ .switch-label {
-        color: var(--color-text);
-    }
+.mcp-panel .surface-badge.custom {
+    border-color: var(--color-accent);
+    color: var(--color-accent_text, var(--color-text));
+}
+
+.mcp-panel .tool-status.experimental {
+    margin-inline-start: 6px;
+    font-family: "Material Icons";
+    font-size: 14px;
+    font-weight: normal;
+    line-height: 1;
+    vertical-align: middle;
+}
+
+.mcp-panel .tool-status.experimental::before {
+    content: "science";
+}
+
+.mcp-panel .prompt-actions {
+    display: flex;
+    align-items: center;
+    flex: 0 0 auto;
+}
+
+.mcp-panel .prompt-edit {
+    padding: 4px;
+    font-size: 18px;
+    cursor: pointer;
+    opacity: 0.5;
+    transition: opacity 0.12s ease;
+}
+
+.mcp-panel .prompt-edit:hover {
+    opacity: 1;
+}
+
+.mcp-panel .no-results,
+.mcp-panel details > p {
+    padding: 10px 0;
+    color: var(--color-subtle_text);
+    font-size: 0.82em;
+    font-style: italic;
+    text-align: center;
+}
+
+.mcp-panel .advanced-details dl {
+    display: grid;
+    grid-template-columns: minmax(90px, auto) minmax(0, 1fr);
+    gap: 6px 10px;
+    margin: 2px 0 8px;
+    padding: 2px 0;
+}
+
+.mcp-panel .advanced-details dt {
+    color: var(--color-subtle_text);
+    font-size: 0.8em;
+}
+
+.mcp-panel .advanced-details dd {
+    min-inline-size: 0;
+    margin: 0;
+    font-size: 0.8em;
+    overflow-wrap: anywhere;
+}
+
+.mcp-panel .monospace {
+    font-family: var(--font-custom, monospace);
+}
+
+.mcp-panel .advanced-note {
+    margin: 0 0 10px;
 }

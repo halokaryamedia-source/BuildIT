@@ -56,26 +56,51 @@ describe("pre-local BlockIT plugin surface hardening", () => {
     expect(buildSource).not.toContain("GITHUB_SHA");
   });
 
-  test("panel exposes active phase and synchronized MCP surface counts", async () => {
+  test("panel keeps readiness and available capability counts primary while diagnostics stay progressive", async () => {
     const [panel, uiSource, identitySource] = await Promise.all([
       source("ui/panel.html"),
       source("ui/index.ts"),
       source("lib/productIdentity.ts"),
     ]);
-    expect(panel).toContain("{{tl('mcp.server.phase')}}");
-    expect(panel).toContain("server.authoringPhase");
-    expect(panel).toContain("surface.tools.exposed_count");
-    expect(panel).toContain("surface.tools.catalog_count");
-    expect(panel).toContain("surface.resources.exposed_count");
-    expect(panel).toContain("surface.resources.catalog_count");
-    expect(panel).toContain("surface.prompts.exposed_count");
-    expect(panel).toContain("surface.prompts.catalog_count");
-    expect(panel).not.toContain("surface.resources.available_count");
-    expect(uiSource).toContain("phase: McpAuthoringPhase");
-    expect(uiSource).toContain("authoringPhase: phase");
+
+    expect(panel).toContain("runtimeStatusLabel(runtime.state)");
+    expect(panel).toContain("availableToolCount");
+    expect(panel).toContain("resources.length");
+    expect(panel).toContain("availablePromptCount");
+    expect(panel).toContain("Advanced details");
+    expect(panel).toContain("Runtime endpoint");
+    expect(panel).toContain("tools.length");
+    expect(panel).not.toContain("exposed /");
+    expect(panel).not.toContain("mcp.server.phase");
+    expect(panel).not.toContain("server.authoringPhase");
+
+    expect(uiSource).toContain('name: "BlockIT"');
+    expect(uiSource).toContain("tools: Object.values(tools)");
+    expect(uiSource).toContain("availableToolCount(): number");
     expect(uiSource).toContain("showDisabled: false");
-    expect(uiSource).toContain("createSurfaceManifest");
+    expect(uiSource).not.toContain("createSurfaceManifest");
     expect(identitySource).toContain("authoring_phase: authoringPhase");
+  });
+
+  test("status bar and plugin summary use user-facing BlockIT readiness language", async () => {
+    const [statusSource, statusCss, identitySource] = await Promise.all([
+      source("ui/statusBar.ts"),
+      source("ui/statusBar.css"),
+      source("lib/productIdentity.ts"),
+    ]);
+
+    expect(statusSource).toContain('return "BlockIT Ready"');
+    expect(statusSource).toContain("BLOCKIT_RUNTIME_STATUS_CHANGED");
+    expect(statusSource).toContain("127.0.0.1:${port}${endpoint}");
+    expect(statusSource).not.toContain("serverInfo");
+    expect(statusCss).not.toContain("mcp-server-info");
+    expect(statusCss).not.toContain("animation: pulse");
+
+    expect(identitySource).toContain(
+      '"AI-assisted Minecraft Bedrock Entity authoring for Blockbench."'
+    );
+    expect(identitySource).toContain("Geometry & UV · Texturing & Materials · Animation & Controllers");
+    expect(identitySource).not.toContain("Only the active authoring phase is exposed at a time");
   });
 
   test("Blockbench Tool Test cannot bypass disabled registration or full schema validation", async () => {
