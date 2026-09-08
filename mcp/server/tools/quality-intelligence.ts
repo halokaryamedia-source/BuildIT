@@ -14,11 +14,23 @@ import {
   summarizeSurfaceQualityWarnings,
 } from "@/lib/modelQuality";
 import {
+  analyzeTextureOptimizationOpportunities,
+  type TextureFacePatchInput,
+  type TextureScanOmission,
+} from "@/lib/textureOptimization";
+import {
+  analyzeAnimationQuality,
+  type AnimationQualityChannel,
+  type AnimationQualityTrackInput,
+} from "@/lib/animationQuality";
+import {
   listBlockItThreeDAssistedReferences,
   readThreeDAssistedReferenceEvidence,
 } from "./project";
 
 const wiredTools = new Set<string>();
+const CUBE_FACE_KEYS = ["north", "south", "east", "west", "up", "down"] as const;
+const TEXTURE_OPTIMIZATION_PIXEL_BUDGET = 32_768;
 
 function objectRecord(value: unknown): Record<string, unknown> | null {
   return value && typeof value === "object" && !Array.isArray(value)
@@ -193,6 +205,130 @@ function textureColorProfileRuntime(
   }
 }
 
+function textureOptimizationRuntime() {
+  if (typeof Cube === "undefined" || typeof Texture === "undefined") {
+    return {
+      state: "unavailable" as const,
+      reason: "blockbench_texture_runtime_unavailable" as const,
+    };
+  }
+
+  const patches: TextureFacePatchInput[] = [];
+  const omissions: TextureScanOmission[] = [];
+  let pixelBudgetUsed = 0;
+
+  const omit = (
+    kind: TextureScanOmission["kind"],
+    cube: Cube,
+    face: string
+  ) => omissions.push({ kind, cube_uuid: cube.uuid, cube_name: cube.name, face });
+
+  for (const cube of Cube.all ?? []) {
+    for (const faceKey of CUBE_FACE_KEYS) {
+      const face = cube.faces[faceKey];
+      if (!face || face.enabled === false) continue;
+
+      const texture = face.getTexture();
+      if (!texture) {
+        omit(face.texture === null ? "blank" : "unresolved_texture", cube, faceKey);
+        continue;
+      }
+
+      const uv = [...face.uv];
+      if (uv.length !== 4 || uv.some((value) => !Number.isFinite(value))) {
+        omit("invalid_uv", cube, faceKey);
+        continue;
+      }
+      if (uv.some((value) => !Number.isInteger(value))) {
+        omit("fractional_uv", cube, faceKey);
+        continue;
+      }
+
+      const ctx = texture.ctx;
+      const pixelWidth = ctx?.canvas?.width;
+      const pixelHeight = ctx?.canvas?.height;
+      const uvWidth = texture.getUVWidth();
+      const uvHeight = texture.getUVHeight();
+      if (
+        !ctx ||
+        !Number.isInteger(pixelWidth) ||
+        !Number.isInteger(pixelHeight) ||
+        pixelWidth <= 0 ||
+        pixelHeight <= 0 ||
+        !Number.isFinite(uvWidth) ||
+        !Number.isFinite(uvHeight) ||
+        uvWidth <= 0 ||
+        uvHeight <= 0
+      ) {
+        omit("non_integral_pixel_mapping", cube, faceKey);
+        continue;
+      }
+
+      const ratioX = pixelWidth / uvWidth;
+      const ratioY = pixelHeight / uvHeight;
+      const mapped = [
+        uv[0] * ratioX,
+        uv[1] * ratioY,
+        uv[2] * ratioX,
+        uv[3] * ratioY,
+      ];
+      if (mapped.some((value) => !Number.isInteger(value))) {
+        omit("non_integral_pixel_mapping", cube, faceKey);
+        continue;
+      }
+
+      const left = Math.min(mapped[0], mapped[2]);
+      const top = Math.min(mapped[1], mapped[3]);
+      const right = Math.max(mapped[0], mapped[2]);
+      const bottom = Math.max(mapped[1], mapped[3]);
+      const width = right - left;
+      const height = bottom - top;
+      if (width <= 0 || height <= 0) {
+        omit("degenerate_uv", cube, faceKey);
+        continue;
+      }
+      if (
+        left < 0 ||
+        top < 0 ||
+        right > pixelWidth ||
+        bottom > pixelHeight
+      ) {
+        omit("non_integral_pixel_mapping", cube, faceKey);
+        continue;
+      }
+
+      const pixelCount = width * height;
+      if (pixelBudgetUsed + pixelCount > TEXTURE_OPTIMIZATION_PIXEL_BUDGET) {
+        omit("budget", cube, faceKey);
+        continue;
+      }
+
+      try {
+        const pixels = ctx.getImageData(left, top, width, height).data;
+        patches.push({
+          cube_uuid: cube.uuid,
+          cube_name: cube.name,
+          face: faceKey,
+          texture_uuid: texture.uuid,
+          texture_name: texture.name,
+          uv,
+          width,
+          height,
+          pixels,
+        });
+        pixelBudgetUsed += pixelCount;
+      } catch {
+        omit("non_integral_pixel_mapping", cube, faceKey);
+      }
+    }
+  }
+
+  return {
+    ...analyzeTextureOptimizationOpportunities(patches, omissions),
+    pixel_budget: TEXTURE_OPTIMIZATION_PIXEL_BUDGET,
+  };
+}
+
 function isAnimationControllerRuntime(item: unknown): boolean {
   return (
     typeof AnimationController !== "undefined" &&
@@ -200,10 +336,28 @@ function isAnimationControllerRuntime(item: unknown): boolean {
   );
 }
 
-function rootMotionRuntime(structuredContent: Record<string, unknown>) {
+function resolveAuthoredAnimationRuntime(
+  structuredContent: Record<string, unknown>
+): _Animation | null {
   if (
     structuredContent.authored_space !== "blockbench_animation" ||
-    typeof AnimationItem === "undefined" ||
+    typeof AnimationItem === "undefined"
+  ) {
+    return null;
+  }
+  const animationInfo = objectRecord(structuredContent.animation);
+  const animationUuid =
+    typeof animationInfo?.uuid === "string" ? animationInfo.uuid : null;
+  if (!animationUuid) return null;
+  const item = (AnimationItem.all as unknown[]).find(
+    (candidate) => objectRecord(candidate)?.uuid === animationUuid
+  );
+  if (!item || isAnimationControllerRuntime(item)) return null;
+  return item as _Animation;
+}
+
+function rootMotionRuntime(structuredContent: Record<string, unknown>) {
+  if (
     typeof Group === "undefined" ||
     typeof BoneAnimator === "undefined"
   ) {
@@ -213,25 +367,13 @@ function rootMotionRuntime(structuredContent: Record<string, unknown>) {
     };
   }
 
-  const animationInfo = objectRecord(structuredContent.animation);
-  const animationUuid =
-    typeof animationInfo?.uuid === "string" ? animationInfo.uuid : null;
-  if (!animationUuid) {
-    return {
-      state: "unavailable" as const,
-      reason: "animation_identity_unavailable" as const,
-    };
-  }
-  const item = (AnimationItem.all as unknown[]).find(
-    (candidate) => objectRecord(candidate)?.uuid === animationUuid
-  );
-  if (!item || isAnimationControllerRuntime(item)) {
+  const animation = resolveAuthoredAnimationRuntime(structuredContent);
+  if (!animation) {
     return {
       state: "unavailable" as const,
       reason: "authored_animation_not_resolved" as const,
     };
   }
-  const animation = item as _Animation;
 
   const rootGroups = Group.all.filter((group: Group) => {
     const parent = group.parent as unknown;
@@ -253,6 +395,55 @@ function rootMotionRuntime(structuredContent: Record<string, unknown>) {
   }
 
   return analyzeRootMotionTracks(tracks);
+}
+
+function animationQualityRuntime(structuredContent: Record<string, unknown>) {
+  if (typeof Group === "undefined" || typeof BoneAnimator === "undefined") {
+    return {
+      state: "unavailable" as const,
+      reason: "authored_animation_runtime_unavailable" as const,
+    };
+  }
+  const animation = resolveAuthoredAnimationRuntime(structuredContent);
+  if (!animation) {
+    return {
+      state: "unavailable" as const,
+      reason: "authored_animation_not_resolved" as const,
+    };
+  }
+
+  const tracks: AnimationQualityTrackInput[] = [];
+  for (const animator of Object.values(animation.animators)) {
+    if (!(animator instanceof BoneAnimator)) continue;
+    const group = Group.all.find((candidate: Group) => candidate.uuid === animator.uuid);
+    const isRoot = Boolean(
+      group &&
+        (group.parent === "root" || group.parent === null || group.parent === undefined)
+    );
+
+    for (const channel of ["position", "rotation", "scale"] as const satisfies readonly AnimationQualityChannel[]) {
+      const keyframes = ((animator[channel] as _Keyframe[] | undefined) ?? []).map(
+        (keyframe) => ({
+          time: keyframe.time,
+          value: keyframe.getArray(0) as unknown[],
+        })
+      );
+      if (keyframes.length === 0) continue;
+      tracks.push({
+        group_uuid: animator.uuid,
+        group_name: group?.name ?? animator.name,
+        is_root: isRoot,
+        channel,
+        keyframes,
+      });
+    }
+  }
+
+  return analyzeAnimationQuality({
+    loop_mode: String(animation.loop),
+    length: animation.length,
+    tracks,
+  });
 }
 
 type ToolAugmentation = {
@@ -304,10 +495,14 @@ export function wireAuthoringQualityIntelligence(): void {
       read: referenceEnvelopeFidelityRuntime,
     },
   ]);
+  wireTool("list_textures", [
+    { field: "optimization_opportunities", read: () => textureOptimizationRuntime() },
+  ]);
   wireTool("get_texture", [
     { field: "color_profile", read: textureColorProfileRuntime },
   ]);
   wireTool("inspect_animation", [
     { field: "root_motion", read: rootMotionRuntime },
+    { field: "animation_quality", read: animationQualityRuntime },
   ]);
 }
