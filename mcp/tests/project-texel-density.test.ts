@@ -90,7 +90,7 @@ describe("model-wide texel density diagnostics", () => {
     expect(skill).toMatch(/^## UV(?: Layout Quality)? Gate$/m);
     expect(skill).toContain("texel density");
     expect(skill).toContain("pixels per UV unit");
-    expect(skill).toMatch(/return to Geometry\/UV (?:if|when) detail cannot fit/i);
+    expect(skill).toMatch(/return to Geometry\/UV (?:if|when) (?:detail|it) cannot fit/i);
     expect(skill).toContain(
       "Pin atlas UUID and pass `texture_id` when multiple textures are loaded"
     );
