@@ -1,6 +1,7 @@
 export const BLOCKIT_USER_GUIDE_TEMPLATES = {
-  reference_board: `Create a BlockIT reference board from the source image I attached.
+  reference_board: `Create one BlockIT reference board from the source image(s) I attached.
 
+Use every useful image as evidence for the same subject, but do not average conflicts or invent hidden structure.
 Keep the subject recognizable and Minecraft / Blockbench-buildable.
 Return one clean five-view board:
 Upper: LEFT | FRONT | BACK

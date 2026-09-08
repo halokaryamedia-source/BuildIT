@@ -1,6 +1,6 @@
 ---
 name: blockbench-reference-generator
-description: Generate one canonical Minecraft / Blockbench reference image in ChatGPT.
+description: Generate one canonical Minecraft / Blockbench reference image in ChatGPT from one or more source images.
 ---
 
 # Blockbench Reference Generator
@@ -9,13 +9,15 @@ This skill is the reference-generation specification. Operational generation bel
 
 Create **one Minecraft / Blockbench reference image** whose primary goal is a recognizable, Blockbench-buildable Minecraft interpretation, not exact real-world reconstruction.
 
-A canonical board is an optional preparation step for `DIRECT` and required preparation for `3D_ASSISTED`. Do not generate one merely because an original source image exists; generation still requires a fresh explicit user instruction.
+A canonical board is an optional preparation step for `DIRECT` and required preparation for `3D_ASSISTED`. Do not generate one merely because source imagery exists; generation still requires a fresh explicit user instruction.
 
 ## User Contract
 
-A source image is enough; extra facts are optional. Do not ask for Cube counts, pivots, UVs, animation, MCP details, or modelling method. Never infer numeric scale from pixels. Prefer zero clarification.
+One or more source images are enough; extra facts are optional. Do not ask for Cube counts, pivots, UVs, animation, MCP details, or modelling method. Never infer numeric scale from pixels. Prefer zero clarification.
 
-Resolve: explicit user fact → visible fact → leave optional unknowns unset → one clarification round only for material ambiguity, at most three material items. Never invent identity-changing hidden structure. Remaining material ambiguity → **NEEDS REVIEW**.
+When multiple source images are supplied, use each only for evidence it visibly supports: identity, front/rear/side depth, attachment, asymmetry, material, or detail. Do not average conflicting views into invented structure, and do not ask for another view when the current set already resolves the next material decision.
+
+Resolve: explicit user fact → visible source evidence → leave optional unknowns unset → one clarification round only for material ambiguity, at most three material items. Never invent identity-changing hidden structure. Remaining material ambiguity → **NEEDS REVIEW**.
 
 ## Execution Consent Gate
 
@@ -23,16 +25,15 @@ Resolve: explicit user fact → visible fact → leave optional unknowns unset �
 
 ## Pre-Generation Readiness
 
-**Generation is output, not discovery.** Lock an Internal Generation Brief with:
+**Generation is output, not discovery.** Lock only the material generation brief:
 
-- identity, identity-bearing silhouette, major masses/features, attachments/asymmetry;
-- one **source-nearest orthographic anchor**;
-- stable pose + limb/appendage state when articulated;
+- identity + identity-bearing silhouette;
+- primary masses / required parts / attachments / asymmetry / pose;
+- source-backed view evidence, including one **source-nearest orthographic anchor** when available;
 - simplest recognizable Blockbench-buildable geometry target;
-- Minecraft-readable palette/material regions/identity-critical markings;
-- nonvisual constraints kept outside image pixels.
+- Minecraft-readable palette/material regions/identity-critical markings.
 
-The original **Source Image remains** visual authority regardless of camera angle. Generated previews normalize camera projection instead of copying lens distortion.
+Keep dimensions and other nonvisual constraints outside image pixels. Original **Source Image(s)** remain visual authority regardless of camera angle. Generated previews normalize projection instead of copying lens distortion.
 
 `READY` means no ambiguity remains that could materially change identity, primary geometry, required attachment/topology, Minecraft buildability, or identity-critical texture information.
 
@@ -96,17 +97,30 @@ A discrepancy is material only when it changes identity, primary mass/required p
 
 ## Targeted Correction
 
-Correction is for a material board-level defect, not minor drift. Source Image + locked Brief remain authority; failed Draft is defect evidence, not geometry authority.
+Correction is for a material defect, not minor drift. Source Image(s) + locked brief remain authority; the current board is an editable draft, not new geometry authority.
 
-- name only failed material invariant(s);
-- regenerate the whole five-preview board, never patch one panel independently;
-- preserve relationships that already work.
+Use **delta-first correction**: state only the defect/change plus the relationships that must remain unchanged. Do not repeat the full generation specification unless source authority or the target materially changed.
+
+Choose the smallest coherent edit:
+
+```text
+local presentation/detail defect
+→ edit only the affected area while preserving the rest of the board
+
+structural defect affecting multiple views
+→ edit every materially affected view together and preserve unaffected views
+
+global identity / pose / layout / cross-view coherence failure
+→ regenerate the full board
+```
+
+Never export a corrected panel as a separate deliverable; the result remains one complete five-preview board. Escalate to full-board regeneration only when a bounded edit cannot reliably preserve cross-view consistency.
 
 Material conflict after correction → **NEEDS REVIEW**.
 
 ## Budget / Output
 
-For one unchanged Internal Generation Brief / automatic review cycle:
+For one unchanged material brief / automatic review cycle:
 
 ```text
 first draft          = maximum 1
@@ -114,7 +128,9 @@ targeted correction  = maximum 1
 automatic variants   = 0
 ```
 
-A fresh explicit **user-directed correction** after review authorizes one new revised board even if the prior automatic targeted-correction budget was used. Treat it as a new user-led review cycle, not an automatic retry: apply the requested change once, preserve still-valid relationships, return one image, then stop for review again.
+The automatic correction may be a bounded edit or a full-board regeneration according to the defect class above; do not do both automatically.
+
+A fresh explicit **user-directed correction** after review authorizes one new revised board even if the prior automatic targeted-correction budget was used. Treat it as a new user-led review cycle, not an automatic retry: apply the requested delta once, preserve still-valid relationships, return one image, then stop for review again.
 
 A materially new user-approved source, pose, target, or requirement also starts a new cycle. Do not start a new cycle automatically to bypass a failed correction.
 

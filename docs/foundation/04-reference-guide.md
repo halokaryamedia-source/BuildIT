@@ -1,7 +1,7 @@
 # BlockIT — Reference Guide
 
 **Status:** Active Policy  
-**Version:** 3.1  
+**Version:** 3.2  
 **Updated:** 2026-09-09
 
 ## Purpose
@@ -16,13 +16,15 @@ A canonical five-view board is **preferred for stronger coverage**, not mandator
 
 ```text
 user brief / approved target        → identity + requested function
-original Source Image               → source-visible evidence regardless of camera angle
+original Source Image(s)            → source-visible evidence regardless of camera angle
 actual Approved Reference Image     → visual modelling authority; source image or canonical board
 approved numeric dimensions         → whole-model scale/envelope
 user technical constraints          → downstream facts outside the image
 ```
 
 The **actual Approved Reference Image** must be available as multimodal input when used for reference-driven visual reasoning. A path itself is not visual evidence. A manifest, prose summary, filename, or memory is context only.
+
+When multiple source images are available during reference preparation, treat them as a small evidence set for the same intended subject. Use each only for what it visibly proves—such as identity, depth, rear structure, asymmetry, material, or detail. Do not average conflicting evidence into invented geometry.
 
 When the original Source Image is used directly for `DIRECT`, it serves as both source-visible evidence and the Approved Reference Image. Do not invent a second authority layer merely because no generated board exists.
 
@@ -67,6 +69,8 @@ current supplied image
 → canonical five-view board when stronger normalized coverage is needed
 ```
 
+If the user already supplied multiple useful source images, consume that evidence before asking for another image or recommending board generation.
+
 Do not automatically regenerate a board, open a new strategy, add a reference mode, or ask for extra views that cannot change the next decision.
 
 ## Minecraft-First Fidelity
@@ -79,7 +83,7 @@ Preserve recognizable silhouette, major masses, defining part count, attachments
 
 ### Texture
 
-Preserve base palette, major color/material regions, part separation, and identity-critical markings. Texture supports geometry; it must not fake required silhouette or missing structure. Minor shade/noise/marking drift is acceptable when identity/material reading remains clear.
+Preserve base palette, major color/material regions, part separation, and identity-critical markings. Texture supports geometry; it must not fake required silhouette or missing structure. Minor shade/noise/marking drift is acceptable when identity/material reading remain clear.
 
 ## Pose / Articulation
 
@@ -164,7 +168,26 @@ Ambiguous/mirrored pairing remains `UNVERIFIED`; do not silently compare the clo
 
 A generated Draft is acceptable only when it is recognizable, geometry-buildable, texture-useful, free of material cross-view contradiction, crop-safe, and approved by the user.
 
-For one unchanged Internal Generation Brief / automatic review cycle:
+## Correction Strategy
+
+Use the current board as the edit target when possible. Correction should be **delta-first**: describe the defect/change and what must stay unchanged instead of restating the whole generation prompt.
+
+Choose the smallest coherent correction:
+
+```text
+local presentation/detail defect
+→ edit only the affected area; preserve the rest
+
+structural defect affecting multiple views
+→ edit all materially affected views together; preserve unaffected views
+
+global identity / pose / layout / cross-view coherence failure
+→ regenerate the full board
+```
+
+Do not create a separate corrected-panel deliverable. The result remains one complete canonical board. Full-board regeneration is a fallback for global/cross-view failure or when a bounded edit cannot preserve consistency—not the default correction path.
+
+For one unchanged material brief / automatic review cycle:
 
 ```text
 first draft            = maximum 1
@@ -172,7 +195,9 @@ targeted correction    = maximum 1
 automatic alternatives = 0
 ```
 
-A fresh explicit **user-directed correction** after review starts a new user-led review cycle and permits one revised board even when the previous automatic correction budget was used. This is not an automatic retry: apply the requested change once, preserve still-valid relationships, then stop for user review again.
+The one automatic correction may be a bounded edit or a full-board regeneration, not both.
+
+A fresh explicit **user-directed correction** after review starts a new user-led review cycle and permits one revised board even when the previous automatic correction budget was used. Apply the requested delta once, preserve still-valid relationships, then stop for user review again.
 
 A materially new user-approved source, pose, target, or requirement also begins a new review cycle. Do not open a new cycle automatically to bypass a failed correction.
 

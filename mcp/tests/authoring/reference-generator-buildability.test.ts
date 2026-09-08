@@ -48,6 +48,22 @@ describe("reference Minecraft-first coverage", () => {
     expect(templates).toContain("reference_board");
   });
 
+  test("multiple source images are first-class evidence without adding mandatory intake", async () => {
+    const [skill, guide, templates] = await Promise.all([
+      read("../.agents/skills/blockbench-reference-generator/SKILL.md"),
+      read("../docs/foundation/04-reference-guide.md"),
+      read("ui/userGuide.ts"),
+    ]);
+
+    expect(skill).toContain("one or more source images are enough");
+    expect(skill).toContain("use each only for evidence it visibly supports");
+    expect(skill).toContain("do not average conflicting views into invented structure");
+    expect(guide).toContain("multiple source images");
+    expect(guide).toContain("consume that evidence before asking for another image");
+    expect(templates).toContain("source image(s)");
+    expect(templates).toContain("use every useful image as evidence");
+  });
+
   test("default generated board has five fixed broad preview positions", async () => {
     const [skill, guide, flow] = await Promise.all([
       read("../.agents/skills/blockbench-reference-generator/SKILL.md"),
@@ -97,6 +113,23 @@ describe("reference Minecraft-first coverage", () => {
     expect(modelling).toContain("simplest recognizable blockbench-buildable interpretation");
     expect(texturing).toContain("improved | unchanged | regressed");
     expect(texturing).toContain("blocked");
+  });
+
+  test("correction uses the smallest coherent edit and reserves full regeneration for global failure", async () => {
+    const [skill, guide] = await Promise.all([
+      read("../.agents/skills/blockbench-reference-generator/SKILL.md"),
+      read("../docs/foundation/04-reference-guide.md"),
+    ]);
+
+    for (const text of [skill, guide]) {
+      expect(text).toContain("delta-first");
+      expect(text).toContain("smallest coherent");
+      expect(text).toContain("structural defect affecting multiple views");
+      expect(text).toContain("global identity / pose / layout / cross-view coherence failure");
+      expect(text).toContain("regenerate the full board");
+    }
+    expect(skill).toContain("do not repeat the full generation specification");
+    expect(guide).toContain("full-board regeneration is a fallback");
   });
 
   test("pose, presentation and automatic budget stay bounded while user-directed corrections remain possible", async () => {
