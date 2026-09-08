@@ -1,4 +1,10 @@
 import "@/server/tools";
+import { promptDocs, resourceDocs } from "@/build/docs-manifest";
+import {
+  MCP_AUTHORING_PHASES,
+  type McpAuthoringPhase,
+} from "@/lib/authoringPhase";
+import { selectMcpPhaseWorkflowBody } from "@/server/prompts";
 import { createServer as createTcpServer, type AddressInfo } from "node:net";
 import createNetServer from "@/server/net";
 
@@ -14,6 +20,8 @@ const PROTOCOL_VERSION = "2025-06-18";
 // count and aggregate input-schema ceiling move by the measured capability delta.
 // 2026-09-08: exact texture mutation gained one public revision-protected
 // transaction tool; legacy paint operations remain available for interactive strokes.
+// 2026-09-08: Prompt/Resource count and compact metadata join the same surface
+// guard so coverage growth must be justified instead of hidden behind tool-only metrics.
 const SURFACE_BUDGET = {
   tool_count: 53,
   initialize_instructions_chars: 700,
@@ -21,6 +29,18 @@ const SURFACE_BUDGET = {
   input_schema_chars: 58_700,
   description_chars: 11_500,
   max_tool_payload_chars: 3_200,
+  prompt_spec_count: 1,
+  resource_spec_count: 8,
+  canonical_prompt_source_chars: 10_000,
+  phase_prompt_body_chars: {
+    geometry: 8_500,
+    texturing: 8_500,
+    animation: 3_000,
+  } satisfies Record<McpAuthoringPhase, number>,
+  prompt_catalog_chars: 380,
+  resource_catalog_chars: 2_500,
+  prompt_description_chars: 220,
+  resource_description_chars: 1_500,
 } as const;
 
 type ListedTool = {
@@ -56,6 +76,16 @@ type SurfaceMetrics = {
   tools_array_chars: number;
   input_schema_chars: number;
   description_chars: number;
+  prompt_spec_count: number;
+  prompt_names: string[];
+  prompt_catalog_chars: number;
+  prompt_description_chars: number;
+  canonical_prompt_source_chars: number;
+  phase_prompt_body_chars: Record<McpAuthoringPhase, number>;
+  resource_spec_count: number;
+  resource_names: string[];
+  resource_catalog_chars: number;
+  resource_description_chars: number;
   per_tool_payload_chars: {
     p50: number;
     p90: number;
@@ -69,6 +99,7 @@ type SurfaceMetrics = {
     input_schema_chars: number;
     description_chars: number;
   }>;
+  proof_note: string;
 };
 
 function percentile(values: number[], fraction: number): number {
@@ -121,7 +152,10 @@ function assertAdvertisedBranchGuidance(
   }
 }
 
-function assertWithinSurfaceBudget(metrics: SurfaceMetrics, rows: SurfaceMetrics["largest_tools"]): void {
+function assertWithinSurfaceBudget(
+  metrics: SurfaceMetrics,
+  rows: SurfaceMetrics["largest_tools"]
+): void {
   const failures: string[] = [];
 
   if (metrics.tool_count !== SURFACE_BUDGET.tool_count) {
@@ -153,6 +187,59 @@ function assertWithinSurfaceBudget(metrics: SurfaceMetrics, rows: SurfaceMetrics
   if (metrics.description_chars > SURFACE_BUDGET.description_chars) {
     failures.push(
       `description_chars=${metrics.description_chars} exceeds ${SURFACE_BUDGET.description_chars}`
+    );
+  }
+  if (metrics.prompt_spec_count !== SURFACE_BUDGET.prompt_spec_count) {
+    failures.push(
+      `prompt_spec_count=${metrics.prompt_spec_count} expected exactly ${SURFACE_BUDGET.prompt_spec_count}`
+    );
+  }
+  if (metrics.resource_spec_count !== SURFACE_BUDGET.resource_spec_count) {
+    failures.push(
+      `resource_spec_count=${metrics.resource_spec_count} expected exactly ${SURFACE_BUDGET.resource_spec_count}`
+    );
+  }
+  if (
+    metrics.canonical_prompt_source_chars >
+    SURFACE_BUDGET.canonical_prompt_source_chars
+  ) {
+    failures.push(
+      `canonical_prompt_source_chars=${metrics.canonical_prompt_source_chars} exceeds ${SURFACE_BUDGET.canonical_prompt_source_chars}`
+    );
+  }
+  for (const phase of MCP_AUTHORING_PHASES) {
+    const actual = metrics.phase_prompt_body_chars[phase];
+    const limit = SURFACE_BUDGET.phase_prompt_body_chars[phase];
+    if (actual > limit) {
+      failures.push(
+        `${phase}_prompt_body_chars=${actual} exceeds ${limit}`
+      );
+    }
+  }
+  if (metrics.prompt_catalog_chars > SURFACE_BUDGET.prompt_catalog_chars) {
+    failures.push(
+      `prompt_catalog_chars=${metrics.prompt_catalog_chars} exceeds ${SURFACE_BUDGET.prompt_catalog_chars}`
+    );
+  }
+  if (metrics.resource_catalog_chars > SURFACE_BUDGET.resource_catalog_chars) {
+    failures.push(
+      `resource_catalog_chars=${metrics.resource_catalog_chars} exceeds ${SURFACE_BUDGET.resource_catalog_chars}`
+    );
+  }
+  if (
+    metrics.prompt_description_chars >
+    SURFACE_BUDGET.prompt_description_chars
+  ) {
+    failures.push(
+      `prompt_description_chars=${metrics.prompt_description_chars} exceeds ${SURFACE_BUDGET.prompt_description_chars}`
+    );
+  }
+  if (
+    metrics.resource_description_chars >
+    SURFACE_BUDGET.resource_description_chars
+  ) {
+    failures.push(
+      `resource_description_chars=${metrics.resource_description_chars} exceeds ${SURFACE_BUDGET.resource_description_chars}`
     );
   }
   for (const row of rows) {
@@ -276,6 +363,29 @@ async function main(): Promise<void> {
       };
     });
 
+    const promptRows = promptDocs.map((prompt) => ({
+      name: prompt.name,
+      title: prompt.title ?? null,
+      description: prompt.description,
+      status: prompt.status,
+      argument_names: Object.keys(prompt.argsSchema?.shape ?? {}).sort(),
+    }));
+    const resourceRows = resourceDocs.map((resource) => ({
+      name: resource.name,
+      title: resource.title ?? null,
+      description: resource.description,
+      uri_template: resource.uriTemplate,
+    }));
+    const canonicalPrompt = await Bun.file(
+      "prompts/bedrock_entity_workflow.md"
+    ).text();
+    const phasePromptBodyChars = Object.fromEntries(
+      MCP_AUTHORING_PHASES.map((phase) => [
+        phase,
+        selectMcpPhaseWorkflowBody(canonicalPrompt, phase).length,
+      ])
+    ) as Record<McpAuthoringPhase, number>;
+
     const payloadSizes = rows.map((row) => row.payload_chars);
     const branchSchemaAudit = Object.fromEntries(
       ["manage_locator", "manage_null_object"].map((toolName) => [
@@ -298,6 +408,22 @@ async function main(): Promise<void> {
         (total, row) => total + row.description_chars,
         0
       ),
+      prompt_spec_count: promptRows.length,
+      prompt_names: promptRows.map((row) => row.name).sort(),
+      prompt_catalog_chars: JSON.stringify(promptRows).length,
+      prompt_description_chars: promptRows.reduce(
+        (total, row) => total + row.description.length,
+        0
+      ),
+      canonical_prompt_source_chars: canonicalPrompt.length,
+      phase_prompt_body_chars: phasePromptBodyChars,
+      resource_spec_count: resourceRows.length,
+      resource_names: resourceRows.map((row) => row.name).sort(),
+      resource_catalog_chars: JSON.stringify(resourceRows).length,
+      resource_description_chars: resourceRows.reduce(
+        (total, row) => total + row.description.length,
+        0
+      ),
       per_tool_payload_chars: {
         p50: percentile(payloadSizes, 0.5),
         p90: percentile(payloadSizes, 0.9),
@@ -308,6 +434,8 @@ async function main(): Promise<void> {
       largest_tools: [...rows]
         .sort((a, b) => b.payload_chars - a.payload_chars || a.name.localeCompare(b.name))
         .slice(0, 10),
+      proof_note:
+        "Tool metrics use the real loopback MCP surface. Prompt/Resource metrics guard source-owned documented coverage and phase-projected prompt character footprint; none of these values are installed-client token usage or live Cost to Accepted Result proof.",
     };
 
     console.log(JSON.stringify(metrics, null, 2));
