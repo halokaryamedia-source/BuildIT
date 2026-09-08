@@ -82,6 +82,23 @@ describe("pre-local BlockIT plugin surface hardening", () => {
     expect(identitySource).toContain("authoring_phase: authoringPhase");
   });
 
+  test("plugin guide accepts direct source images and exposes optional reference-board help", async () => {
+    const [panel, guideSource] = await Promise.all([
+      source("ui/panel.html"),
+      source("ui/userGuide.ts"),
+    ]);
+
+    expect(panel).toContain("Use the original image directly");
+    expect(panel).toContain("Create a reference board");
+    expect(panel).toContain("required for 3D_ASSISTED");
+    expect(panel).toContain("Copy Reference Prompt");
+    expect(guideSource).toContain("reference_board");
+    expect(guideSource).toContain("LEFT | FRONT | BACK");
+    expect(guideSource).toContain("TOP | FRONT-LEFT 3/4");
+    expect(guideSource).not.toContain("READY_FOR_USER_REVIEW");
+    expect(guideSource).not.toContain("invoke_capability");
+  });
+
   test("status bar and plugin summary use user-facing BlockIT readiness language", async () => {
     const [statusSource, statusCss, identitySource] = await Promise.all([
       source("ui/statusBar.ts"),
