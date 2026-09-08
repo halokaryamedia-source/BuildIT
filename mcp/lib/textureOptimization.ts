@@ -89,25 +89,127 @@ function normalizedUvKey(uv: readonly number[]): string | null {
   ].join(",");
 }
 
-function patchAlphaAndColor(input: TextureFacePatchInput) {
-  let transparent = true;
+function ratio(value: number, total: number): number {
+  return total === 0 ? 0 : Number((value / total).toFixed(4));
+}
+
+function rgbaKey(r: number, g: number, b: number, a: number): string {
+  return `${r},${g},${b},${a}`;
+}
+
+type TextureFacePixelAnalysis = {
+  fully_transparent: boolean;
+  solid_rgba: [number, number, number, number] | null;
+  state: "transparent" | "solid_color" | "low_variation" | "styled";
+  detail_capacity: "micro" | "limited" | "detail_capable";
+  visible_ratio: number;
+  translucent_ratio: number;
+  distinct_visible_rgba: number;
+  dominant_visible_ratio: number;
+  luma_span: number;
+  border_only_variation: boolean;
+};
+
+function analyzeFacePixels(input: TextureFacePatchInput): TextureFacePixelAnalysis {
+  const totalPixels = input.width * input.height;
+  let translucentPixels = 0;
+  let visiblePixels = 0;
   let sameColor = true;
-  const first = [input.pixels[0], input.pixels[1], input.pixels[2], input.pixels[3]];
+  let lumaMin = Number.POSITIVE_INFINITY;
+  let lumaMax = Number.NEGATIVE_INFINITY;
+  const visibleColors = new Map<string, number>();
+  const first = [
+    input.pixels[0],
+    input.pixels[1],
+    input.pixels[2],
+    input.pixels[3],
+  ] as [number, number, number, number];
+
   for (let offset = 0; offset < input.pixels.length; offset += 4) {
-    if (input.pixels[offset + 3] !== 0) transparent = false;
-    if (
-      input.pixels[offset] !== first[0] ||
-      input.pixels[offset + 1] !== first[1] ||
-      input.pixels[offset + 2] !== first[2] ||
-      input.pixels[offset + 3] !== first[3]
-    ) {
+    const r = input.pixels[offset];
+    const g = input.pixels[offset + 1];
+    const b = input.pixels[offset + 2];
+    const a = input.pixels[offset + 3];
+    if (r !== first[0] || g !== first[1] || b !== first[2] || a !== first[3]) {
       sameColor = false;
     }
-    if (!transparent && !sameColor) break;
+    if (a === 0) continue;
+    visiblePixels += 1;
+    if (a < 255) translucentPixels += 1;
+    const key = rgbaKey(r, g, b, a);
+    visibleColors.set(key, (visibleColors.get(key) ?? 0) + 1);
+    const luma = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+    lumaMin = Math.min(lumaMin, luma);
+    lumaMax = Math.max(lumaMax, luma);
   }
+
+  let dominantKey = "";
+  let dominantCount = 0;
+  for (const [key, count] of visibleColors) {
+    if (count > dominantCount) {
+      dominantKey = key;
+      dominantCount = count;
+    }
+  }
+
+  let borderOnlyVariation = visibleColors.size > 1;
+  if (borderOnlyVariation) {
+    for (let y = 0; y < input.height && borderOnlyVariation; y += 1) {
+      for (let x = 0; x < input.width; x += 1) {
+        const offset = (y * input.width + x) * 4;
+        const a = input.pixels[offset + 3];
+        if (a === 0) continue;
+        const key = rgbaKey(
+          input.pixels[offset],
+          input.pixels[offset + 1],
+          input.pixels[offset + 2],
+          a
+        );
+        if (key === dominantKey) continue;
+        if (x !== 0 && y !== 0 && x !== input.width - 1 && y !== input.height - 1) {
+          borderOnlyVariation = false;
+          break;
+        }
+      }
+    }
+  }
+
+  const pixelArea = totalPixels;
+  const detailCapacity =
+    pixelArea <= 4 || input.width === 1 || input.height === 1
+      ? ("micro" as const)
+      : pixelArea < 16
+        ? ("limited" as const)
+        : ("detail_capable" as const);
+  const fullyTransparent = visiblePixels === 0;
+  const lumaSpan = visiblePixels === 0 ? 0 : Number((lumaMax - lumaMin).toFixed(4));
+  const dominantVisibleRatio = ratio(dominantCount, visiblePixels);
+  const lowVariation =
+    detailCapacity === "detail_capable" &&
+    visiblePixels > 0 &&
+    !sameColor &&
+    (
+      (visibleColors.size <= 2 && borderOnlyVariation) ||
+      (visibleColors.size <= 3 && dominantVisibleRatio >= 0.985 && lumaSpan <= 0.08)
+    );
+
   return {
-    fully_transparent: transparent,
-    solid_rgba: sameColor ? first as [number, number, number, number] : null,
+    fully_transparent: fullyTransparent,
+    solid_rgba: sameColor ? first : null,
+    state: fullyTransparent
+      ? "transparent"
+      : sameColor
+        ? "solid_color"
+        : lowVariation
+          ? "low_variation"
+          : "styled",
+    detail_capacity: detailCapacity,
+    visible_ratio: ratio(visiblePixels, totalPixels),
+    translucent_ratio: ratio(translucentPixels, totalPixels),
+    distinct_visible_rgba: visibleColors.size,
+    dominant_visible_ratio: dominantVisibleRatio,
+    luma_span: lumaSpan,
+    border_only_variation: lowVariation && borderOnlyVariation,
   };
 }
 
@@ -123,17 +225,154 @@ function faceSummary(input: TextureFacePatchInput) {
   };
 }
 
+function faceCoverageSummary(
+  patch: TextureFacePatchInput,
+  analysis: TextureFacePixelAnalysis
+) {
+  return {
+    ...faceSummary(patch),
+    state: analysis.state,
+    detail_capacity: analysis.detail_capacity,
+    visible_ratio: analysis.visible_ratio,
+    translucent_ratio: analysis.translucent_ratio,
+    distinct_visible_rgba: analysis.distinct_visible_rgba,
+    dominant_visible_ratio: analysis.dominant_visible_ratio,
+    luma_span: analysis.luma_span,
+    border_only_variation: analysis.border_only_variation,
+  };
+}
+
+function omissionCounts(omissions: readonly TextureScanOmission[]) {
+  const counts: Record<TextureScanOmission["kind"], number> = {
+    blank: 0,
+    unresolved_texture: 0,
+    invalid_uv: 0,
+    fractional_uv: 0,
+    non_integral_pixel_mapping: 0,
+    degenerate_uv: 0,
+    budget: 0,
+  };
+  omissions.forEach((omission) => { counts[omission.kind] += 1; });
+  return counts;
+}
+
+function buildTextureCoverage(
+  analyzed: readonly { patch: TextureFacePatchInput; analysis: TextureFacePixelAnalysis }[],
+  omissions: readonly TextureScanOmission[],
+  exampleLimit: number
+) {
+  const transparent = analyzed.filter(({ analysis }) => analysis.state === "transparent");
+  const solid = analyzed.filter(({ analysis }) => analysis.state === "solid_color");
+  const lowVariation = analyzed.filter(({ analysis }) => analysis.state === "low_variation");
+  const styled = analyzed.filter(({ analysis }) => analysis.state === "styled");
+  const detailCapableFlat = [...solid, ...lowVariation].filter(
+    ({ analysis }) => analysis.detail_capacity === "detail_capable"
+  );
+  const intermediateAlpha = analyzed.filter(
+    ({ analysis }) => analysis.translucent_ratio > 0
+  );
+  const blockingOmissions = omissions.filter(({ kind }) => kind !== "budget");
+  const budgetOmissions = omissions.filter(({ kind }) => kind === "budget");
+  const counts = omissionCounts(omissions);
+
+  const reviewKeys = new Set<string>();
+  for (const { patch } of [...transparent, ...detailCapableFlat, ...intermediateAlpha]) {
+    reviewKeys.add(`${patch.cube_uuid}:${patch.face}`);
+  }
+
+  const reasons: string[] = [];
+  if (blockingOmissions.length > 0) reasons.push("FACE_ACCOUNTING_INCOMPLETE");
+  if (budgetOmissions.length > 0) reasons.push("SCAN_BUDGET_EXHAUSTED");
+  if (transparent.length > 0) reasons.push("TRANSPARENT_FACE_REVIEW");
+  if (detailCapableFlat.length > 0) reasons.push("FLAT_FACE_REVIEW");
+  if (intermediateAlpha.length > 0) reasons.push("INTERMEDIATE_ALPHA_REVIEW");
+
+  const gateState =
+    blockingOmissions.length > 0
+      ? ("incomplete" as const)
+      : budgetOmissions.length > 0
+        ? ("partial" as const)
+        : reviewKeys.size > 0
+          ? ("review_required" as const)
+          : ("ready" as const);
+
+  const byLargestPatch = (
+    entries: readonly { patch: TextureFacePatchInput; analysis: TextureFacePixelAnalysis }[]
+  ) => [...entries]
+    .sort((a, b) => b.patch.width * b.patch.height - a.patch.width * a.patch.height)
+    .slice(0, exampleLimit)
+    .map(({ patch, analysis }) => faceCoverageSummary(patch, analysis));
+
+  return {
+    required_faces: analyzed.length + omissions.length,
+    scanned_faces: analyzed.length,
+    accounted_ratio: ratio(analyzed.length, analyzed.length + omissions.length),
+    states: {
+      styled: styled.length,
+      transparent: transparent.length,
+      solid_color: solid.length,
+      low_variation: lowVariation.length,
+    },
+    review: {
+      candidate_face_count: reviewKeys.size,
+      transparent_face_count: transparent.length,
+      detail_capable_solid_face_count: solid.filter(
+        ({ analysis }) => analysis.detail_capacity === "detail_capable"
+      ).length,
+      low_variation_faces: {
+        count: lowVariation.length,
+        examples: byLargestPatch(lowVariation),
+        examples_truncated: lowVariation.length > exampleLimit,
+      },
+      intermediate_alpha_faces: {
+        count: intermediateAlpha.length,
+        examples: byLargestPatch(intermediateAlpha),
+        examples_truncated: intermediateAlpha.length > exampleLimit,
+      },
+    },
+    omissions: {
+      count: omissions.length,
+      blocking_count: blockingOmissions.length,
+      budget_count: budgetOmissions.length,
+      counts,
+      examples: omissions.slice(0, exampleLimit),
+      examples_truncated: omissions.length > exampleLimit,
+    },
+    gate: {
+      state: gateState,
+      reasons,
+    },
+    note: "Coverage is a deterministic review gate, not a style score. Transparent/flat/alpha candidates may be intentional only after the texture workplan accounts for them; incomplete/partial scans cannot prove completion.",
+  };
+}
+
+export function analyzeTextureCoverage(
+  patches: readonly TextureFacePatchInput[],
+  omissions: readonly TextureScanOmission[] = [],
+  exampleLimit = TEXTURE_OPTIMIZATION_EXAMPLE_LIMIT
+) {
+  for (const patch of patches) requirePatch(patch);
+  const analyzed = patches.map((patch) => ({
+    patch,
+    analysis: analyzeFacePixels(patch),
+  }));
+  return buildTextureCoverage(analyzed, omissions, exampleLimit);
+}
+
 export function analyzeTextureOptimizationOpportunities(
   patches: readonly TextureFacePatchInput[],
   omissions: readonly TextureScanOmission[] = [],
   exampleLimit = TEXTURE_OPTIMIZATION_EXAMPLE_LIMIT
 ) {
   for (const patch of patches) requirePatch(patch);
-
-  const transparent = patches.filter((patch) => patchAlphaAndColor(patch).fully_transparent);
-  const solid = patches
-    .map((patch) => ({ patch, quality: patchAlphaAndColor(patch) }))
-    .filter(({ quality }) => quality.solid_rgba !== null && !quality.fully_transparent);
+  const analyzed = patches.map((patch) => ({
+    patch,
+    analysis: analyzeFacePixels(patch),
+  }));
+  const transparent = analyzed.filter(({ analysis }) => analysis.fully_transparent);
+  const solid = analyzed.filter(
+    ({ analysis }) => analysis.solid_rgba !== null && !analysis.fully_transparent
+  );
 
   const signatureGroups = new Map<string, TextureFacePatchInput[]>();
   for (const patch of patches) {
@@ -160,17 +399,7 @@ export function analyzeTextureOptimizationOpportunities(
     .filter((group): group is NonNullable<typeof group> => group !== null)
     .sort((a, b) => b.duplicate_patch_area - a.duplicate_patch_area || b.face_count - a.face_count);
 
-  const omissionCounts: Record<TextureScanOmission["kind"], number> = {
-    blank: 0,
-    unresolved_texture: 0,
-    invalid_uv: 0,
-    fractional_uv: 0,
-    non_integral_pixel_mapping: 0,
-    degenerate_uv: 0,
-    budget: 0,
-  };
-  omissions.forEach((omission) => { omissionCounts[omission.kind] += 1; });
-
+  const counts = omissionCounts(omissions);
   const scannedPixels = patches.reduce((sum, patch) => sum + patch.width * patch.height, 0);
   const stackFaceCount = new Set(stackGroups.flatMap((group) => group.faces.map((face) => `${face.cube_uuid}:${face.face}`))).size;
 
@@ -180,8 +409,9 @@ export function analyzeTextureOptimizationOpportunities(
       complete_face_patches: patches.length,
       scanned_pixels: scannedPixels,
       omitted_faces: omissions.length,
-      omission_counts: omissionCounts,
+      omission_counts: counts,
     },
+    coverage: buildTextureCoverage(analyzed, omissions, exampleLimit),
     uv_stack_opportunities: {
       group_count: stackGroups.length,
       represented_face_count: stackFaceCount,
@@ -192,17 +422,20 @@ export function analyzeTextureOptimizationOpportunities(
     },
     transparent_faces: {
       count: transparent.length,
-      examples: transparent.slice(0, exampleLimit).map(faceSummary),
+      examples: transparent.slice(0, exampleLimit).map(({ patch }) => faceSummary(patch)),
       examples_truncated: transparent.length > exampleLimit,
     },
     solid_color_faces: {
       count: solid.length,
-      examples: solid.slice(0, exampleLimit).map(({ patch, quality }) => ({
+      examples: solid.slice(0, exampleLimit).map(({ patch, analysis }) => ({
         ...faceSummary(patch),
-        rgba: quality.solid_rgba,
+        rgba: analysis.solid_rgba,
       })),
       examples_truncated: solid.length > exampleLimit,
     },
-    efficiency: { bounded: true },
+    efficiency: {
+      bounded: true,
+      pixel_scan_reused_for_coverage: true,
+    },
   };
 }

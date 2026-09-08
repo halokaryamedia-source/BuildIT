@@ -8,57 +8,66 @@ Geometry/UV capabilities remain callable for bounded upstream correction; Textur
 ## Entry / Correction
 **No Geometry↔Texturing phase switch.** `HANDOFF_REQUIRED` + `switch_authoring_phase` only for AUTHORING↔Animation.
 Entry: **Geometry APPROVED + UV Layout PASS**, final Box UV locked with `autouv=0`, no invalid/out-of-bounds/partial-overlap.
-unlocked/invalid UV → Geometry owner + bounded UV correction; no phase switch.
+Bad UV → Geometry.
 
 ## Direct Routing
-Reuse fresh state.
 ```text
 global UV/atlas readiness → list_textures
 face mapping → inspect_elements(mode=detail) only when needed
-blank atlas resolution unknown → get_project_info once
+unknown blank size → get_project_info once
 atlas → list_textures / activate_texture / create_texture / get_texture
 regions → draw_shape_tool / paint_fill_tool
 detail → draw_shape_tool / paint_with_brush
 erase → eraser_tool
-PBR/material semantics → manage_material / manage_material_instances
+PBR → manage_material / manage_material_instances
 evidence → capture_model_views
 ```
+Pin atlas UUID; pass `texture_id` if multiple.Unknown capability → `search_capabilities(limit=4)`; no reassurance rereads.
 
 ## UV Gate
-`uv_audit.production_gate`=ready is hygiene, **not UV Layout PASS**. Review face aspect ratio, texel density, orientation, padding/seams, semantic UV reuse. Reuse needs compatible semantics/orientation; zero reuse is valid.
-Requested atlas size/density are constraints: never silently enlarge; test native/per-face/reuse first, then report tradeoff.
+`uv_audit.production_gate=ready` is hygiene, **not UV Layout PASS**. Review density, orientation, seams and semantic reuse. Reuse needs compatible semantics/orientation.
+Never enlarge size/density silently.
+
+## First Call
+`blank create_texture → explicit width+height from project UV`.
+`create_texture`: provisional **16×16 blank**; production **128×128 default, 256×256 opt-in**. Reuse existing atlas UUID.
+
+## Texture Workplan
+Before paint, partition **every enabled material surface** into material cohorts. Decide palette, light/value direction, form/contact/occlusion, edge, identity, detail scale and UV-share intent.
+
+Maintain a **Face Coverage Ledger**:
+```text
+UNPAINTED | BASE_ONLY | STYLED
+INTENTIONAL_FLAT | INTENTIONAL_TRANSPARENT | SHARED
+```
+Every face closes. `SHARED` needs compatible reuse; flat/transparent explicit intent.
+
+Check: `list_textures.optimization_opportunities.coverage.gate`.
+- `FACE_ACCOUNTING_INCOMPLETE` or `incomplete|partial` → no completion claim.
+- transparent/flat/intermediate-alpha candidates → inspect returned examples only; style or justify.
+- `ready` = coverage clear, **not visual PASS**.
+
+## Texture Styling
+Reference-Grounded Palette + Atlas-Island Discipline.
+Define `BASE | SHADOW | HIGHLIGHT | ACCENT/IDENTITY` per material cohort; use hue/value ramps. Integer texels, hard clusters, no antialiasing; alpha defaults 0/255 unless material requires translucency.
+Top/front may read lighter and underside/back/contact darker when form/reference supports it. Avoid pillow shading, banding, mixels, random high-contrast noise and border-only detail.
+A generic palette, copied unrelated texture, flat rectangles, or noise-first painting are not completion.
+Cues: wood=grain; metal=edge/seam; stone=clusters; cloth=folds; glass=edge/reflection+intentional alpha.
+
+## Coherent Styling Window / Anti-Micro-Loop
+Plan material/palette/form/identity; prove one representative patch, then execute cohort-wide:
+`BASE PASS → VALUE / FORM PASS → IDENTITY PASS → SECONDARY DETAIL PASS → VERIFY`.
+Broad work → region tools; disconnected same-color detail → one `paint_with_brush` batch (`connect_strokes=false`).
+**No evidence-per-micro-mutation loop.** After a coherent pass, run one `list_textures` coverage read; no unchanged rescan/capture.
+
+## Texture Verify
+Coverage closes first. Fresh `get_texture` + minimum fresh **mapped model-view evidence** from `capture_model_views` → `FAIL | UNVERIFIED | PASS`.
+Review material/form/contact/edge, seams, identity, detail; final approval covers hidden required surfaces.
+`FAIL` → cause → smallest bounded correction → one affected evidence bundle → `IMPROVED | UNCHANGED | REGRESSED`; same direction twice → `BLOCKED`. Never use stale exported PNG/bbmodel after live changes.
+
+Animation → user Texture APPROVED + checkpoint → Animation Readiness Preflight → `HANDOFF_REQUIRED(target_phase=animation, readiness=ready)` → Gateway `switch_authoring_phase`. Internal PASS is not approval.
 
 ## Conditional Support — Not Default Routing
 Conditional on user intent; not normal hot path.
 `gradient_tool | color_picker_tool | copy_brush_tool | paint_settings | create_brush_preset | load_brush_preset | texture_selection | texture_layer_management | add_texture_group | list_materials | get_material_info | import_texture_set`.
 `gradient_tool`: reference-supported continuous transition; no extra discovery/readback.
-
-## First Call
-`blank create_texture → explicit width+height from project UV`; **not omit blank Atlas size**.
-`create_texture`: provisional **16×16 blank**; production **128×128 default, 256×256 opt-in**. Reuse existing atlas UUID.
-Known → invoke; unknown → `search_capabilities(limit=4)`; describe on schema uncertainty. No confirmation rereads.
-**Pin atlas UUID and pass `texture_id` when multiple textures are loaded.**
-
-## Reference-Grounded Palette
-Approved image required. Define palette roles `BASE | SHADOW | HIGHLIGHT | ACCENT/IDENTITY` per cohort; one hue ramp/material; separate palette from lighting. `color_picker_tool` samples atlas, not reference.
-
-### Atlas-Island Discipline
-Integer texels; marks follow orientation. **pixels per UV unit** owns detail scale. Omit immaterial detail; return to Geometry/UV if it cannot fit approved density. `alpha` is intentional.
-
-## Coherent Styling Window / Anti-Micro-Loop
-Plan material/palette/form/identity first. Prove one representative patch/cohort has material identity, form/contact and detail scale; formula/gradient/color count is not quality evidence.
-Broad regions → `draw_shape_tool`/`paint_fill_tool`; same-color disconnected detail → one `paint_with_brush` batch (`connect_strokes=false`).
-**No evidence-per-micro-mutation loop.** Finish one cohort pass, then one evidence bundle; do not `get_texture`/capture after every edit.
-Variants preserve production base role + compatible dimensions/mapping; never demote/re-group base to pass preflight.
-
-## Texture Styling
-Build palette **ramp**, material zones, form/contact/occlusion, edge, identity/detail. A generic palette, copied unrelated texture, flat rectangles, or random high-contrast noise are not completion.
-`BASE PASS → VALUE / FORM PASS → IDENTITY PASS → SECONDARY DETAIL PASS → VERIFY`. No noise-first pass.
-
-## Texture Verify
-Reference + fresh `get_texture` + fresh **mapped model-view evidence** from `capture_model_views` → `FAIL | UNVERIFIED | PASS`.
-Use minimum affected views; final approval covers required hidden material surfaces.
-`FAIL` → difference/cause → **smallest bounded causal correction** → one fresh affected evidence bundle → `IMPROVED | UNCHANGED | REGRESSED`; same causal direction twice → `BLOCKED`.
-After material live changes, never derive correction masks from stale exported PNG/bbmodel; refresh affected live authority once.
-
-Animation → user Texture APPROVED + checkpoint → Animation Readiness Preflight → `HANDOFF_REQUIRED(target_phase=animation, readiness=ready)` → Gateway `switch_authoring_phase`, same task. Internal PASS is not approval.

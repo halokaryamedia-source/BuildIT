@@ -54,6 +54,24 @@ describe("texture design reasoning", () => {
     expect(texturing).toContain("VERIFY");
   });
 
+  test("texturing specialist closes a face coverage ledger before visual approval", async () => {
+    const texturing = await source("../.agents/skills/blockit-bedrock-texturing/SKILL.md");
+
+    expect(texturing).toContain("Face Coverage Ledger");
+    for (const state of [
+      "UNPAINTED",
+      "BASE_ONLY",
+      "STYLED",
+      "INTENTIONAL_FLAT",
+      "INTENTIONAL_TRANSPARENT",
+      "SHARED",
+    ]) expect(texturing).toContain(state);
+    expect(texturing).toContain("optimization_opportunities.coverage.gate");
+    expect(texturing).toContain("FACE_ACCOUNTING_INCOMPLETE");
+    expect(texturing).toContain("one `list_textures`");
+    expect(texturing).toContain("material cohorts");
+  });
+
   test("workflow prompt contains texture material and form stages", async () => {
     const [workflow, contract] = await Promise.all([
       source("prompts/bedrock_entity_workflow.md"),
