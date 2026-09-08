@@ -21,10 +21,12 @@ describe("pre-local usage optimization contract", () => {
     expect(router).toContain("uncertainty → no batch");
   });
 
-  test("local correction verifies affected views before broader capture", async () => {
+  test("local correction reuses fresh affected evidence before broader recapture", async () => {
     const modelling = await source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md");
-    expect(modelling).toContain("affected view(s) first");
-    expect(modelling).toMatch(/expand.*cross-view risk/);
+    expect(modelling).toContain("Reuse fresh affected pre-correction evidence");
+    expect(modelling).toContain("capture before mutation only when none exists");
+    expect(modelling).toContain("After mutation, recapture affected view(s)");
+    expect(modelling).toMatch(/expand.*cross-view regression risk/);
     expect(modelling).toMatch(/without regression elsewhere/);
   });
 

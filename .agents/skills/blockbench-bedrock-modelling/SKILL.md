@@ -7,8 +7,8 @@ description: Mandatory BlockIT Bedrock Geometry and UV Layout specialist.
 ## Minimum Necessary Evidence
 - **No per-Cube inspection ceremony** without a diagnosed problem.
 - **No screenshot-per-mutation loop.** Build a judgeable form, then gate it.
-- Surface/contact question → `inspect_model_bounds` once. Otherwise skip the bounds call.
-- `UNVERIFIED` is not a retry command; request only evidence that can change the decision.
+- Surface/contact question → `inspect_model_bounds` once; otherwise skip.
+- `UNVERIFIED` is not a retry command; request only decision-changing evidence.
 
 ## Reference Grounding
 Reference-driven work requires the **actual approved reference image** in **active multimodal context**. Path/manifest/prose/memory is context, not visual evidence. Unavailable → `BLOCKED`.
@@ -19,21 +19,9 @@ Evidence: `SUPPORTED | PROVISIONAL | CONFLICTING | UNAVAILABLE`. Use a View Pair
 `DIRECT` uses Groups/Cubes. `3D_ASSISTED` keeps its existing pipeline; no auto-switch; scaffold never replaces the approved image.
 
 ## DIRECT Hot Path
+`semantic form → primary batch → Core View Triad → causal correction → Geometry PASS → UV preflight → user review`.
 
-```text
-approved reference + dimensions + requirements
-→ semantic form / transient Primary Mass Contract when nontrivial
-→ coherent primary Cube/Group batch
-→ Core View Triad once
-→ difference-first verdict
-   ├─ material defect → smallest causal correction → recapture affected view(s)
-   └─ primary PASS → identity-weighted secondary geometry
-→ internal Geometry PASS
-→ UV Readiness Preflight
-→ READY_FOR_USER_REVIEW
-```
-
-Nontrivial form: make a **transient Primary Mass Contract** before coordinates; reasoning-only, not persisted or an MCP field:
+Nontrivial form: make a **transient Primary Mass Contract** before coordinates; reasoning-only, not persisted:
 ```text
 mass / evidence views / must-exist reason
 parent/contact + symmetry/asymmetry
@@ -41,9 +29,9 @@ transform owner/pivot + negative-space boundary + representation
 ```
 No per-Cube plan.
 
-First blockout: `capture_model_views` once with **Core View Triad** `front + left + top`: width×height, length×height, width×length. Add `back` only for rear topology/asymmetry; add `front_left_3q` only for attachment/layering/orientation ambiguity. Never recapture all five routinely.
+First blockout: `capture_model_views` once with **Core View Triad** `front + left + top`. Add `back` only for rear topology/asymmetry; `front_left_3q` only for attachment/layering/orientation ambiguity. Never recapture all five routinely.
 
-Repeated/symmetric cohorts: derive absolute transforms once → one coherent `manage_cubes` batch; preserve supported asymmetry; no inspect→write loop per Cube.
+Repeated/symmetric cohorts: derive absolute transforms once → one coherent `manage_cubes` batch; preserve asymmetry; no inspect→write loop per Cube.
 
 ## Semantic Form / Construction / Transform Gate
 Before exact coordinates determine:
@@ -58,22 +46,22 @@ representation: geometry | texture | animation | omit
 transform ownership + required attachment / contact target/invariant
 material evidence state
 ```
-A semantic label never authorizes coordinates. **No orphan/filler Cube**. `PROVISIONAL` is a coarse hypothesis; placement never verifies it. Construction forms are **not presets**. Use texture for surface information that needs no silhouette/volume/contact/motion.
+A semantic label never authorizes coordinates. **No orphan/filler Cube**. `PROVISIONAL` is a coarse hypothesis; placement does not verify it. Construction forms are **not presets**. Surface information without silhouette/volume/contact/motion stays texture.
 
 Shared orientation/attachment/articulation → **Group/Bone-owned**; local rigid orientation may be Cube-owned. Primary mass state: `AXIS_ALIGNED | ROTATED | UNRESOLVED`. Visible slope → explicit origin/pivot + `MASS_CENTER | ATTACHMENT | JOINT | PARENT_TRANSFORM`. Material `UNRESOLVED` → `BLOCKED`. Pivot role is attachment/joint pivot when it owns transform. AABB overlap, hierarchy, or numeric touching is not contact proof.
 
-When `Animation Required = YES`, Geometry leaves **motion-ready structure**: cohorts, pivots, clearance, and contact invariants. A known rig/contact defect does not wait for Animation.
+When `Animation Required = YES`, leave **motion-ready structure**: cohorts, pivots, clearance, contact invariants. Known rig/contact defects do not wait for Animation.
 
 ## Primary Mass / Proportion / Depth
 `frame/envelope → primary masses → shared boundaries → cross-view proportions → depth/layering → silhouette/proportion gate → primary blockout`.
 
 Front/back constrain width+height; sides depth+height; top/bottom width+depth. **Front agreement does not certify depth.** Adjacent primary cohorts sharing a boundary use one partition.
-Depth: `OBSERVED` direct; `INFERRED` consistent evidence; `UNRESOLVED` insufficient/conflicting. minor drift uses one interpretation. Do not average drift. Only unresolved material conflict becomes `BLOCKED`.
+Depth: `OBSERVED` direct; `INFERRED` consistent; `UNRESOLVED` insufficient/conflicting. Minor drift → one interpretation; do not average. Material unresolved conflict → `BLOCKED`.
 
 ## Surface Coverage / Negative Space
-Every gap is intentional; enclosures need closed-shell reasoning and open forms preserve negative spaces. Build primary surfaces before trim.
+Every gap is intentional; enclosures need closed-shell reasoning, open forms preserve negative spaces. Build primary surfaces before trim.
 
-Review affected views for holes, seams, penetration, contact, and offsets. Each required surface class—outer, opening, back, underside, interior when material—needs current evidence once. No positive-volume overlap alone is not visual PASS.
+Review affected views for holes/seams/penetration/contact/offsets. Each required surface class—outer, opening, back, underside, material interior—needs current evidence once. Positive-volume overlap alone is not visual PASS.
 
 ## Geometry Detail Budget
 `GEOMETRY` → silhouette/volume/opening/contact/3D layering/motion.
@@ -99,7 +87,7 @@ After primary `PASS`, add identity-weighted detail.
 ## Native UV Layout / Texel Integrity
 `Geometry APPROVED → create_texture(type=template), explicit pixel_density, rearrange_uv=true, power_of_two=true → native UV/template → audit → UV Layout PASS → Texturing`.
 
-No guessed/stretched islands. Rebuild with `texture_id=<UUID>` only when justified; prefer per-face UV to thickening approved geometry. Choose the minimum proven native power-of-two packing. Audit padding, aspect, orientation, overlap, reuse, and unique asymmetric regions. Density `16x` = 1 texture pixel/model unit. `uv_audit.production_gate=ready` is hygiene, not UV Layout PASS. Requested atlas size and density are constraints. Do not silently enlarge the atlas.
+No guessed/stretched islands. Rebuild `texture_id=<UUID>` only when justified; prefer per-face UV over thickening. Choose the minimum proven native power-of-two packing. Audit padding, aspect, orientation, overlap, reuse, and unique asymmetric regions. Density `16x` = 1 texture pixel/model unit. `uv_audit.production_gate=ready` is hygiene, not UV Layout PASS. Requested atlas size and density are constraints. Do not silently enlarge the atlas.
 
 ## Local Correction / Convergence
 `TRANSLATE placement | RESIZE extent | ROTATE orientation | REATTACH contact/parent | SPLIT distinct volume/orientation | MERGE/REMOVE compensatory geometry | ADD MASS genuinely missing volume`.
@@ -108,7 +96,7 @@ Reuse fresh exact authored state; otherwise `inspect_elements(mode=detail)` once
 
 `REMOVE`/`REATTACH` preserve the whole assembly boundary and intentional openings. For `RESIZE` on mapped/textured Geometry, preflight UV/pixel impact and choose `PRESERVE_MAPPING | PRESERVE_DENSITY | RELAYOUT`.
 
-Pre-correction evidence: reuse a fresh affected capture already used to diagnose the defect; capture before mutation only when no fresh relevant evidence exists. After mutation, recapture affected view(s); expand only for cross-view regression risk. Verdict: `IMPROVED | UNCHANGED | REGRESSED`; require `IMPROVED` without regression elsewhere. Same causal correction failing twice without new evidence → `BLOCKED`.
+Reuse fresh affected pre-correction evidence; capture before mutation only when none exists. After mutation, recapture affected view(s); expand only for cross-view regression risk. Verdict: `IMPROVED | UNCHANGED | REGRESSED`; require `IMPROVED` without regression elsewhere. Same causal correction failing twice without new evidence → `BLOCKED`.
 
 ## Existing Assets / Shared Session
-Existing geometry is a baseline, not fidelity proof. Geometry owns shape/rig/UV Layout; Texturing owns pixels/PBR. Geometry↔Texturing correction stays on shared AUTHORING. `HANDOFF_REQUIRED` + `switch_authoring_phase` is only AUTHORING↔Animation.
+Existing geometry is baseline, not fidelity proof. Geometry owns shape/rig/UV Layout; Texturing owns pixels/PBR. Geometry↔Texturing correction stays on shared AUTHORING. `HANDOFF_REQUIRED` + `switch_authoring_phase` only for AUTHORING↔Animation.

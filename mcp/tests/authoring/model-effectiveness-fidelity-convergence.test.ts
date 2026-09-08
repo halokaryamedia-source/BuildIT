@@ -33,8 +33,8 @@ describe("model creation effectiveness — fidelity convergence and evaluation i
     const modellingText = normalized(modelling);
     const flowText = normalized(flow);
 
-    expect(modellingText).toContain("reuse a fresh affected capture already used to diagnose the defect");
-    expect(modellingText).toContain("capture before mutation only when no fresh relevant evidence exists");
+    expect(modellingText).toContain("reuse fresh affected pre-correction evidence");
+    expect(modellingText).toContain("capture before mutation only when none exists");
     expect(modellingText).toContain("after mutation, recapture affected view(s)");
     expect(flowText).toContain("direct — canonical hot path");
     expect(flowText).toContain("reuse fresh affected pre-correction evidence when available");
