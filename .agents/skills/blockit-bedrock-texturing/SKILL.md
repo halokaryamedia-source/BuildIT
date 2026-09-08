@@ -27,7 +27,7 @@ Unknown → `search_capabilities(limit=4)`. No confirmation rereads.
 **Pin atlas UUID and pass `texture_id` when multiple textures are loaded.**
 
 ## UV Gate
-`uv_audit.production_gate`=ready is hygiene, **not UV Layout PASS**. Review texel density, orientation/seams; return to Geometry/UV if detail cannot fit.
+`uv_audit.production_gate`=ready is hygiene, **not UV Layout PASS**. Review face aspect ratio, texel density, orientation/seams, semantic UV reuse; return to Geometry/UV if detail cannot fit.
 Requested atlas size/density are constraints; never silently enlarge.
 
 ## First Call
