@@ -32,6 +32,21 @@ export const particleReferenceResourceDocs: ResourceSpec[] = [
 const PARTICLE_MOLANG_REFERENCE = {
   principle:
     "Particle numeric/vector fields may use Molang. BlockIT preserves authored expressions, lints known structural/math risks, and delegates actual evaluation to Minecraft/Blockbench rather than implementing a second Molang runtime.",
+  variables: {
+    "variable.emitter_age": "Age since the current emitter loop started.",
+    "variable.emitter_lifetime": "Duration of the current emitter loop.",
+    "variable.emitter_random_1": "Stable 0..1 random for the current emitter loop.",
+    "variable.emitter_random_2": "Stable 0..1 random for the current emitter loop.",
+    "variable.emitter_random_3": "Stable 0..1 random for the current emitter loop.",
+    "variable.emitter_random_4": "Stable 0..1 random for the current emitter loop.",
+    "variable.entity_scale": "Entity scale when the effect is attached to an entity.",
+    "variable.particle_age": "Current particle age.",
+    "variable.particle_lifetime": "Particle lifetime.",
+    "variable.particle_random_1": "Stable 0..1 random for this particle lifetime.",
+    "variable.particle_random_2": "Stable 0..1 random for this particle lifetime.",
+    "variable.particle_random_3": "Stable 0..1 random for this particle lifetime.",
+    "variable.particle_random_4": "Stable 0..1 random for this particle lifetime.",
+  },
   special_variables: BEDROCK_PARTICLE_SPECIAL_MOLANG_VARIABLES,
   official_math_symbols: MOLANG_ANIMATION_MATH_SYMBOLS,
   execution_notes: {
