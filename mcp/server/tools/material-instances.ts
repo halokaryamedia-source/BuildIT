@@ -111,6 +111,11 @@ function findCubeOrThrow(id: string): Cube {
 type MaterialFace = z.infer<typeof faceEnum>;
 type MaterialInstanceMutationOperation = "set" | "bulk_set" | "clear";
 type MaterialInstanceCubeIdentity = { uuid: string; name: string };
+type MaterialInstanceFaceChange = {
+  cube: Cube;
+  face: MaterialFace;
+  material_name: string;
+};
 
 function resolveExplicitOrSelectedCubes(
   cubeId: string | undefined,
@@ -123,20 +128,61 @@ function resolveExplicitOrSelectedCubes(
   return Cube.selected;
 }
 
-function setMaterialNameOnFaces(
+export function isMaterialInstanceNameChange(
+  currentMaterialName: string | undefined,
+  nextMaterialName: string
+): boolean {
+  return (currentMaterialName ?? "") !== nextMaterialName;
+}
+
+function requestedMaterialNameChanges(
   cube: Cube,
   faces: readonly MaterialFace[],
-  materialName: string,
-  onlyWhenAssigned: boolean = false
-): number {
-  let modified = 0;
-  for (const faceDir of faces) {
-    const face = cube.faces[faceDir];
-    if (!face || (onlyWhenAssigned && !face.material_name)) continue;
-    face.extend({ material_name: materialName });
-    modified += 1;
+  materialName: string
+): MaterialInstanceFaceChange[] {
+  return faces.flatMap((faceDir) =>
+    cube.faces[faceDir]
+      ? [{ cube, face: faceDir, material_name: materialName }]
+      : []
+  );
+}
+
+function finalizeMaterialInstanceFaceChanges(
+  requested: readonly MaterialInstanceFaceChange[]
+): MaterialInstanceFaceChange[] {
+  const finalByFace = new Map<string, MaterialInstanceFaceChange>();
+  for (const change of requested) {
+    finalByFace.set(`${change.cube.uuid}:${change.face}`, change);
   }
-  return modified;
+
+  return [...finalByFace.values()].filter((change) => {
+    const face = change.cube.faces[change.face];
+    return Boolean(face) &&
+      isMaterialInstanceNameChange(face.material_name, change.material_name);
+  });
+}
+
+function cubesFromMaterialInstanceChanges(
+  changes: readonly MaterialInstanceFaceChange[]
+): Cube[] {
+  const cubes = new Map<string, Cube>();
+  for (const change of changes) cubes.set(change.cube.uuid, change.cube);
+  return [...cubes.values()];
+}
+
+function applyMaterialInstanceFaceChanges(
+  changes: readonly MaterialInstanceFaceChange[]
+): number {
+  for (const change of changes) {
+    const face = change.cube.faces[change.face];
+    if (!face) {
+      throw new Error(
+        `Material-instance target face ${change.face} disappeared after preflight on Cube "${change.cube.name}" (${change.cube.uuid}).`
+      );
+    }
+    face.extend({ material_name: change.material_name });
+  }
+  return changes.length;
 }
 
 export function buildMaterialInstanceMutationSummary(
@@ -285,29 +331,37 @@ export function registerMaterialInstanceTools() {
           cube_id,
           "No cube specified and no cubes selected. Provide a cube_id or select cubes."
         );
+        const plannedChanges = finalizeMaterialInstanceFaceChanges(
+          cubes.flatMap((cube) =>
+            requestedMaterialNameChanges(cube, faces, material_name)
+          )
+        );
+        if (!plannedChanges.length) {
+          throw new Error(
+            "Set material instances would be a no-op; every requested face already has the requested material instance."
+          );
+        }
+        const cubesToEdit = cubesFromMaterialInstanceChanges(plannedChanges);
 
         Undo.initEdit({
-          elements: cubes,
+          elements: cubesToEdit,
           uv_only: true,
         });
 
-        let modifiedCount = 0;
-        for (const cube of cubes) {
-          modifiedCount += setMaterialNameOnFaces(cube, faces, material_name);
-        }
+        const modifiedCount = applyMaterialInstanceFaceChanges(plannedChanges);
 
         Undo.finishEdit("Set material instances");
         Canvas.updateAll();
 
         const result = buildMaterialInstanceMutationSummary(
           "set",
-          cubes,
+          cubesToEdit,
           modifiedCount,
           { material_name, faces: [...faces] }
         );
         return materialInstanceMutationResult(
           result,
-          `Set material instance "${material_name}" on ${modifiedCount} face(s) across ${cubes.length} cube(s).`
+          `Set material instance "${material_name}" on ${modifiedCount} face(s) across ${cubesToEdit.length} cube(s).`
         );
       },
     },
@@ -382,31 +436,36 @@ export function registerMaterialInstanceTools() {
       ...materialInstanceToolDocs[3],
       async execute({ assignments }) {
         const cubeCache: Record<string, Cube> = {};
-        const cubesToEdit: Cube[] = [];
 
-        // Validate and cache cubes
+        // Resolve every explicit target before planning or opening Undo.
         for (const assignment of assignments) {
           if (!cubeCache[assignment.cube_id]) {
-            const cube = findCubeOrThrow(assignment.cube_id);
-            cubeCache[assignment.cube_id] = cube;
-            cubesToEdit.push(cube);
+            cubeCache[assignment.cube_id] = findCubeOrThrow(assignment.cube_id);
           }
         }
+
+        const plannedChanges = finalizeMaterialInstanceFaceChanges(
+          assignments.flatMap((assignment) =>
+            requestedMaterialNameChanges(
+              cubeCache[assignment.cube_id],
+              assignment.faces,
+              assignment.material_name
+            )
+          )
+        );
+        if (!plannedChanges.length) {
+          throw new Error(
+            "Bulk material-instance update would be a no-op after resolving the final requested value for every face."
+          );
+        }
+        const cubesToEdit = cubesFromMaterialInstanceChanges(plannedChanges);
 
         Undo.initEdit({
           elements: cubesToEdit,
           uv_only: true,
         });
 
-        let totalModified = 0;
-        for (const assignment of assignments) {
-          const cube = cubeCache[assignment.cube_id];
-          totalModified += setMaterialNameOnFaces(
-            cube,
-            assignment.faces,
-            assignment.material_name
-          );
-        }
+        const totalModified = applyMaterialInstanceFaceChanges(plannedChanges);
 
         Undo.finishEdit("Bulk set material instances");
         Canvas.updateAll();
@@ -438,47 +497,37 @@ export function registerMaterialInstanceTools() {
               "No cube specified and no cubes selected. Provide a cube_id, select cubes, or set all_cubes=true."
             );
         const facesToClear = faces || faceEnum.options;
-
-        if (cubes.length === 0) {
-          const result = buildMaterialInstanceMutationSummary(
-            "clear",
-            cubes,
-            0,
-            { faces: [...facesToClear], all_cubes }
-          );
-          return materialInstanceMutationResult(
-            result,
-            "No cubes to process; no material instances changed."
+        const plannedChanges = finalizeMaterialInstanceFaceChanges(
+          cubes.flatMap((cube) =>
+            requestedMaterialNameChanges(cube, facesToClear, "")
+          )
+        );
+        if (!plannedChanges.length) {
+          throw new Error(
+            "Clear material instances would be a no-op; none of the requested faces has a material instance to clear."
           );
         }
+        const cubesToEdit = cubesFromMaterialInstanceChanges(plannedChanges);
 
         Undo.initEdit({
-          elements: cubes,
+          elements: cubesToEdit,
           uv_only: true,
         });
 
-        let clearedCount = 0;
-        for (const cube of cubes) {
-          clearedCount += setMaterialNameOnFaces(
-            cube,
-            facesToClear,
-            "",
-            true
-          );
-        }
+        const clearedCount = applyMaterialInstanceFaceChanges(plannedChanges);
 
         Undo.finishEdit("Clear material instances");
         Canvas.updateAll();
 
         const result = buildMaterialInstanceMutationSummary(
           "clear",
-          cubes,
+          cubesToEdit,
           clearedCount,
           { faces: [...facesToClear], all_cubes }
         );
         return materialInstanceMutationResult(
           result,
-          `Cleared material instances from ${clearedCount} face(s) across ${cubes.length} cube(s).`
+          `Cleared material instances from ${clearedCount} face(s) across ${cubesToEdit.length} cube(s).`
         );
       },
     },

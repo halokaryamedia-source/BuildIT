@@ -14,6 +14,96 @@ type CapabilityProjection = Record<string, Record<string, readonly string[]>>;
  * every branch of a consolidated capability when it already knows the branch.
  */
 const CAPABILITY_BRANCH_FIELDS: Record<string, CapabilityProjection> = {
+  inspect_elements: {
+    mode: {
+      outline: ["mode", "include_cubes", "max_depth", "max_nodes"],
+      search: [
+        "mode",
+        "name_pattern",
+        "name_contains",
+        "type",
+        "parent_group",
+        "min_size",
+        "max_size",
+        "selected_only",
+        "limit",
+      ],
+      detail: ["mode", "id", "detail"],
+    },
+  },
+  create_texture: {
+    type: {
+      blank: [
+        "type",
+        "name",
+        "width",
+        "height",
+        "data",
+        "group",
+        "fill_color",
+        "layer_name",
+        "pbr_channel",
+        "render_mode",
+        "render_sides",
+      ],
+      template: [
+        "type",
+        "name",
+        "texture_id",
+        "width",
+        "height",
+        "pixel_density",
+        "rearrange_uv",
+        "power_of_two",
+        "keep_multi_texture_occupancy",
+        "padding",
+        "group",
+        "fill_color",
+        "layer_name",
+        "pbr_channel",
+        "render_mode",
+        "render_sides",
+      ],
+      variant: ["type", "name", "source_texture_id", "group"],
+    },
+  },
+  manage_material: {
+    operation: {
+      create: [
+        "operation",
+        "name",
+        "color_texture",
+        "normal_texture",
+        "height_texture",
+        "mer_texture",
+        "color_value",
+        "mer_value",
+        "subsurface_value",
+      ],
+      configure: [
+        "operation",
+        "material",
+        "color_texture",
+        "normal_texture",
+        "height_texture",
+        "mer_texture",
+        "color_value",
+        "mer_value",
+        "subsurface_value",
+      ],
+      assign_channel: ["operation", "material", "texture", "channel"],
+      save: ["operation", "material"],
+    },
+  },
+  manage_material_instances: {
+    operation: {
+      list: ["operation", "include_usages", "usage_limit_per_instance"],
+      get: ["operation", "cube_id", "faces"],
+      set: ["operation", "cube_id", "material_name", "faces"],
+      bulk_set: ["operation", "assignments"],
+      clear: ["operation", "cube_id", "faces", "all_cubes"],
+    },
+  },
   manage_animation_timeline: {
     operation: {
       keyframes: [

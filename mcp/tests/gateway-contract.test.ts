@@ -138,6 +138,117 @@ describe("BlockIT Gateway contract", () => {
     ).toThrow(/does not expose a describe projection/);
   });
 
+  test("branch projection slims high-frequency authoring capability descriptions", () => {
+    const allFields = [
+      "mode",
+      "include_cubes",
+      "max_depth",
+      "max_nodes",
+      "name_pattern",
+      "name_contains",
+      "type",
+      "parent_group",
+      "min_size",
+      "max_size",
+      "selected_only",
+      "limit",
+      "id",
+      "detail",
+      "operation",
+      "name",
+      "material",
+      "texture",
+      "channel",
+      "color_texture",
+      "normal_texture",
+      "height_texture",
+      "mer_texture",
+      "color_value",
+      "mer_value",
+      "subsurface_value",
+      "cube_id",
+      "faces",
+      "material_name",
+      "assignments",
+      "all_cubes",
+      "include_usages",
+      "usage_limit_per_instance",
+      "source_texture_id",
+      "group",
+      "width",
+      "height",
+      "data",
+      "fill_color",
+      "layer_name",
+      "pbr_channel",
+      "render_mode",
+      "render_sides",
+      "texture_id",
+      "pixel_density",
+      "rearrange_uv",
+      "power_of_two",
+      "keep_multi_texture_occupancy",
+      "padding",
+    ];
+    const inputSchema = {
+      type: "object",
+      properties: Object.fromEntries(
+        allFields.map((field) => [field, { type: "string" }])
+      ),
+      required: ["mode", "operation", "type"],
+    };
+
+    const detail = projectCapabilityInputSchema("inspect_elements", inputSchema, {
+      field: "mode",
+      value: "detail",
+    });
+    expect(Object.keys((detail.inputSchema as any).properties).sort()).toEqual([
+      "detail",
+      "id",
+      "mode",
+    ]);
+
+    const assignChannel = projectCapabilityInputSchema(
+      "manage_material",
+      inputSchema,
+      { field: "operation", value: "assign_channel" }
+    );
+    expect(Object.keys((assignChannel.inputSchema as any).properties).sort()).toEqual([
+      "channel",
+      "material",
+      "operation",
+      "texture",
+    ]);
+
+    const materialList = projectCapabilityInputSchema(
+      "manage_material_instances",
+      inputSchema,
+      { field: "operation", value: "list" }
+    );
+    expect(Object.keys((materialList.inputSchema as any).properties).sort()).toEqual([
+      "include_usages",
+      "operation",
+      "usage_limit_per_instance",
+    ]);
+
+    const variant = projectCapabilityInputSchema("create_texture", inputSchema, {
+      field: "type",
+      value: "variant",
+    });
+    expect(Object.keys((variant.inputSchema as any).properties).sort()).toEqual([
+      "group",
+      "name",
+      "source_texture_id",
+      "type",
+    ]);
+
+    for (const projection of [detail, assignChannel, materialList, variant]) {
+      expect(
+        Object.keys((projection.inputSchema as any).properties).length
+      ).toBeLessThan(allFields.length / 4);
+    }
+  });
+
   test("runtime signature ignores changing health timestamps but detects surface identity changes", () => {
     const base = {
       timestamp: "2026-09-04T09:00:00Z",
