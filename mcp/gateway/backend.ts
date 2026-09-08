@@ -1,6 +1,13 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
-import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
+import {
+  StreamableHTTPClientTransport,
+  StreamableHTTPError,
+} from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 import { ErrorCode, McpError } from "@modelcontextprotocol/sdk/types.js";
+import {
+  BLOCKIT_PROJECT_AFFINITY_HEADER,
+  readRuntimeProjectHealth,
+} from "./projectAffinity";
 import {
   DEFAULT_RUNTIME_URL,
   GATEWAY_VERSION,
@@ -18,6 +25,7 @@ export type GatewayBackendErrorCode =
   | "CAPABILITY_NOT_FOUND"
   | "BACKEND_CALL_INTERRUPTED"
   | "OUTCOME_UNKNOWN"
+  | "PROJECT_CONTEXT_LOST"
   | "GATEWAY_BUSY";
 
 export class GatewayBackendError extends Error {
@@ -38,6 +46,9 @@ type HealthProbe =
 
 export type GatewayRuntimeStatus = {
   gateway: "ready";
+  affinity: {
+    project_uuid: string | null;
+  };
   runtime: {
     online: boolean;
     endpoint: string;
@@ -83,6 +94,10 @@ function isRecord(value: unknown): value is JsonRecord {
 
 function isRequestTimeoutError(error: unknown): boolean {
   return error instanceof McpError && error.code === ErrorCode.RequestTimeout;
+}
+
+function isRuntimeProjectContextError(error: unknown): boolean {
+  return error instanceof StreamableHTTPError && error.code === 409;
 }
 
 function normalizePositiveInteger(
@@ -149,6 +164,7 @@ export class BlockitRuntimeBackend {
   private client: Client | null = null;
   private connectedSignature: string | null = null;
   private catalog = new Map<string, BackendTool>();
+  private projectUuid: string | null = null;
   private operationTail: Promise<void> = Promise.resolve();
   private pendingOperations = 0;
   private activeOperations = 0;
@@ -246,6 +262,14 @@ export class BlockitRuntimeBackend {
     return run;
   }
 
+  private runtimeRequestHeaders(): Headers {
+    const headers = new Headers();
+    if (this.projectUuid) {
+      headers.set(BLOCKIT_PROJECT_AFFINITY_HEADER, this.projectUuid);
+    }
+    return headers;
+  }
+
   private async probeHealth(): Promise<HealthProbe> {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), this.healthTimeoutMs);
@@ -253,6 +277,7 @@ export class BlockitRuntimeBackend {
     try {
       const response = await fetch(`${this.runtimeUrl}/health`, {
         method: "GET",
+        headers: this.runtimeRequestHeaders(),
         signal: controller.signal,
       });
       if (response.status !== 200) {
@@ -277,6 +302,54 @@ export class BlockitRuntimeBackend {
     } finally {
       clearTimeout(timer);
     }
+  }
+
+  private syncProjectAffinityFromHealth(
+    health: JsonRecord,
+    bindIfUnset: boolean,
+    allowMissingBoundProject: boolean = false
+  ): boolean {
+    const projectHealth = readRuntimeProjectHealth(health);
+    if (!projectHealth) {
+      if (bindIfUnset || this.projectUuid) {
+        throw new GatewayBackendError(
+          "PROJECT_CONTEXT_LOST",
+          "The connected BlockIT Runtime does not expose project-affinity health. Deploy/reload the matching BlockIT build before authoring mutations.",
+          false
+        );
+      }
+      return false;
+    }
+
+    if (this.projectUuid) {
+      if (
+        projectHealth.requested_project_uuid !== this.projectUuid ||
+        projectHealth.requested_project_available !== true
+      ) {
+        if (allowMissingBoundProject) {
+          this.projectUuid = null;
+          return true;
+        }
+        throw new GatewayBackendError(
+          "PROJECT_CONTEXT_LOST",
+          `Gateway-bound Blockbench project ${this.projectUuid} is no longer available. Select the intended open tab and explicitly rebind this Gateway before continuing.`,
+          false,
+          {
+            project_uuid: this.projectUuid,
+            active_project_uuid: projectHealth.active_project_uuid,
+            action: "select intended Blockbench tab, then call status with adopt_active_project=true",
+          }
+        );
+      }
+      return false;
+    }
+
+    if (bindIfUnset && projectHealth.active_project_uuid) {
+      this.projectUuid = projectHealth.active_project_uuid;
+      return true;
+    }
+
+    return false;
   }
 
   private async closeClientBestEffort(client: Client): Promise<void> {
@@ -334,7 +407,9 @@ export class BlockitRuntimeBackend {
       { name: "blockit-gateway-runtime-client", version: GATEWAY_VERSION },
       { capabilities: {} }
     );
-    const transport = new StreamableHTTPClientTransport(new URL(this.runtimeUrl));
+    const transport = new StreamableHTTPClientTransport(new URL(this.runtimeUrl), {
+      requestInit: { headers: this.runtimeRequestHeaders() },
+    });
 
     try {
       await client.connect(transport, { timeout: this.connectTimeoutMs });
@@ -357,7 +432,10 @@ export class BlockitRuntimeBackend {
     }
   }
 
-  private async ensureCatalogUnsafe(): Promise<void> {
+  private async ensureCatalogUnsafe(
+    bindProject: boolean = false,
+    allowMissingBoundProject: boolean = false
+  ): Promise<void> {
     const probe = await this.probeHealth();
     if (!probe.online) {
       await this.closeConnectionUnsafe();
@@ -367,6 +445,23 @@ export class BlockitRuntimeBackend {
         `BlockIT runtime is unavailable: ${probe.error}`,
         true
       );
+    }
+
+    let affinityChanged = false;
+    try {
+      affinityChanged = this.syncProjectAffinityFromHealth(
+        probe.health,
+        bindProject,
+        allowMissingBoundProject
+      );
+    } catch (error) {
+      await this.closeConnectionUnsafe();
+      this.lastError = errorMessage(error);
+      throw error;
+    }
+
+    if (affinityChanged && this.client) {
+      await this.closeConnectionUnsafe();
     }
 
     if (
@@ -380,11 +475,11 @@ export class BlockitRuntimeBackend {
     await this.connectFreshUnsafe(probe.signature);
   }
 
-  async getStatus(): Promise<GatewayRuntimeStatus> {
-    const probe = await this.probeHealth();
+  private buildStatus(probe: HealthProbe): GatewayRuntimeStatus {
     if (!probe.online) {
       return {
         gateway: "ready",
+        affinity: { project_uuid: this.projectUuid },
         runtime: {
           online: false,
           endpoint: this.runtimeUrl,
@@ -404,6 +499,7 @@ export class BlockitRuntimeBackend {
       Boolean(this.client) && this.connectedSignature === probe.signature;
     return {
       gateway: "ready",
+      affinity: { project_uuid: this.projectUuid },
       runtime: {
         online: true,
         endpoint: this.runtimeUrl,
@@ -418,6 +514,43 @@ export class BlockitRuntimeBackend {
       operations: this.operationStatus(),
       last_error: this.lastError,
     };
+  }
+
+  async getStatus(): Promise<GatewayRuntimeStatus> {
+    return this.buildStatus(await this.probeHealth());
+  }
+
+  async adoptActiveProject(): Promise<GatewayRuntimeStatus> {
+    return this.runExclusive(async () => {
+      const initial = await this.probeHealth();
+      if (!initial.online) {
+        this.lastError = initial.error;
+        return this.buildStatus(initial);
+      }
+
+      const projectHealth = readRuntimeProjectHealth(initial.health);
+      if (!projectHealth) {
+        throw new GatewayBackendError(
+          "PROJECT_CONTEXT_LOST",
+          "The connected BlockIT Runtime does not expose project-affinity health. Deploy/reload the matching BlockIT build before rebinding.",
+          false
+        );
+      }
+      if (!projectHealth.active_project_uuid) {
+        throw new GatewayBackendError(
+          "PROJECT_CONTEXT_LOST",
+          "No Blockbench project tab is active, so this Gateway cannot rebind project affinity.",
+          false
+        );
+      }
+
+      if (this.projectUuid !== projectHealth.active_project_uuid) {
+        this.projectUuid = projectHealth.active_project_uuid;
+        await this.closeConnectionUnsafe();
+      }
+      this.lastError = null;
+      return this.buildStatus(await this.probeHealth());
+    });
   }
 
   async searchCapabilities(
@@ -451,7 +584,8 @@ export class BlockitRuntimeBackend {
     args: JsonRecord = {}
   ): Promise<GatewayRuntimeCallResult> {
     return this.runExclusive(async () => {
-      await this.ensureCatalogUnsafe();
+      const projectTransition = capability === "create_project";
+      await this.ensureCatalogUnsafe(!projectTransition, projectTransition);
       const tool = this.catalog.get(capability);
       if (!tool) {
         throw new GatewayBackendError(
@@ -472,13 +606,48 @@ export class BlockitRuntimeBackend {
           { timeout: this.callTimeoutMs }
         );
         const normalized = normalizeRuntimeCallResult(result);
-        if (capability === "switch_authoring_phase" && normalized.isError !== true) {
+
+        if (capability === "create_project" && normalized.isError !== true) {
+          const structured = isRecord(normalized.structuredContent)
+            ? normalized.structuredContent
+            : null;
+          const project = structured && isRecord(structured.project)
+            ? structured.project
+            : null;
+          const createdUuid = project && typeof project.uuid === "string"
+            ? project.uuid.trim()
+            : "";
+          if (createdUuid) {
+            this.projectUuid = createdUuid;
+            await this.closeConnectionUnsafe();
+          }
+        } else if (
+          capability === "switch_authoring_phase" &&
+          normalized.isError !== true
+        ) {
           await this.closeConnectionUnsafe();
         }
+
         return normalizeGatewayManagedResult(capability, normalized);
       } catch (error) {
-        const classification = classifyInterruptedCall(tool);
         const message = errorMessage(error);
+        if (isRuntimeProjectContextError(error)) {
+          await this.closeConnectionUnsafe();
+          this.lastError = message;
+          throw new GatewayBackendError(
+            "PROJECT_CONTEXT_LOST",
+            `BlockIT refused "${capability}" because this Gateway's bound project tab is no longer safely available. Select the intended open tab and explicitly rebind before continuing.`,
+            false,
+            {
+              capability,
+              project_uuid: this.projectUuid,
+              cause: message,
+              action: "select intended Blockbench tab, then call status with adopt_active_project=true",
+            }
+          );
+        }
+
+        const classification = classifyInterruptedCall(tool);
         const timedOut = isRequestTimeoutError(error);
         await this.closeConnectionUnsafe();
         this.lastError = message;
