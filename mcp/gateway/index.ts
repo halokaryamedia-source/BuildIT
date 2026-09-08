@@ -10,11 +10,20 @@ import {
   GATEWAY_TOOLS,
   GATEWAY_VERSION,
   compactGatewayCapabilityStructuredContent,
+  summarizeCapability,
   type JsonRecord,
 } from "./contract";
 import { projectCapabilityInputSchema } from "./schemaProjection";
+import {
+  VANILLA_ENTITY_REFERENCE_CAPABILITY,
+  VANILLA_ENTITY_REFERENCE_TOOL,
+  VanillaEntityReferenceError,
+  VanillaEntityReferenceProvider,
+  shouldProbeVanillaEntityReference,
+} from "./vanillaEntityReference";
 
 const backend = new BlockitRuntimeBackend();
+const vanillaReferenceProvider = new VanillaEntityReferenceProvider();
 
 const server = new McpServer(
   {
@@ -51,6 +60,19 @@ const registerGatewayTool = server.registerTool.bind(server) as unknown as (
 
 function gatewayErrorResult(error: unknown) {
   if (error instanceof GatewayBackendError) {
+    return {
+      isError: true,
+      content: [{ type: "text" as const, text: `${error.code}: ${error.message}` }],
+      structuredContent: {
+        code: error.code,
+        message: error.message,
+        safe_to_retry: error.safeToRetry,
+        ...error.details,
+      },
+    };
+  }
+
+  if (error instanceof VanillaEntityReferenceError) {
     return {
       isError: true,
       content: [{ type: "text" as const, text: `${error.code}: ${error.message}` }],
@@ -152,7 +174,7 @@ registerGatewayTool(
   {
     title: "Search BlockIT Capabilities",
     description:
-      "Searches the live phase-filtered Runtime catalog. Primary authoring capabilities rank ahead of support, experimental, and maintenance fallbacks when relevance is comparable; exact matching intent can still discover any exposed capability.",
+      "Searches the live BlockIT capability catalog. Primary authoring capabilities rank ahead of support, experimental, and maintenance fallbacks when relevance is comparable.",
     inputSchema: searchInput.shape,
     annotations: {
       readOnlyHint: true,
@@ -164,12 +186,24 @@ registerGatewayTool(
   async (rawArgs) => {
     try {
       const { query, limit } = searchInput.parse(rawArgs);
-      const capabilities = await backend.searchCapabilities(query, limit);
+      const runtimeCapabilities = await backend.searchCapabilities(query, limit);
+      const includeVanillaReference =
+        shouldProbeVanillaEntityReference(query) &&
+        (await vanillaReferenceProvider.isAvailable());
+      const capabilities = includeVanillaReference
+        ? [
+            summarizeCapability(VANILLA_ENTITY_REFERENCE_TOOL),
+            ...runtimeCapabilities.filter(
+              (candidate) =>
+                candidate.capability_id !== VANILLA_ENTITY_REFERENCE_CAPABILITY
+            ),
+          ].slice(0, limit)
+        : runtimeCapabilities;
       return {
         content: [
           {
             type: "text" as const,
-            text: `Found ${capabilities.length} BlockIT Runtime capabilities.`,
+            text: `Found ${capabilities.length} BlockIT capabilities.`,
           },
         ],
         structuredContent: { query, count: capabilities.length, capabilities },
@@ -185,7 +219,7 @@ registerGatewayTool(
   {
     title: "Describe BlockIT Capability",
     description:
-      "Returns the current Runtime description, annotations, and input schema for one exact capability. When a consolidated branch is already known, branch projection returns only continuation-relevant fields instead of the full multi-branch schema.",
+      "Returns description, annotations, and input schema for one exact BlockIT capability. Known consolidated branches can be projected to continuation-relevant fields.",
     inputSchema: describeInput.shape,
     annotations: {
       readOnlyHint: true,
@@ -197,7 +231,11 @@ registerGatewayTool(
   async (rawArgs) => {
     try {
       const { capability, branch } = describeInput.parse(rawArgs);
-      const tool = await backend.describeCapability(capability);
+      const tool =
+        capability === VANILLA_ENTITY_REFERENCE_CAPABILITY &&
+        (await vanillaReferenceProvider.isAvailable())
+          ? VANILLA_ENTITY_REFERENCE_TOOL
+          : await backend.describeCapability(capability);
       const projection = projectCapabilityInputSchema(
         capability,
         tool.inputSchema ?? {},
@@ -208,8 +246,8 @@ registerGatewayTool(
           {
             type: "text" as const,
             text: projection.projected
-              ? `Capability ${capability} branch ${branch!.field}=${branch!.value} is available on the current BlockIT Runtime surface.`
-              : `Capability ${capability} is available on the current BlockIT Runtime surface.`,
+              ? `Capability ${capability} branch ${branch!.field}=${branch!.value} is available on the current BlockIT surface.`
+              : `Capability ${capability} is available on the current BlockIT surface.`,
           },
         ],
         structuredContent: {
@@ -236,13 +274,16 @@ registerGatewayTool(
   {
     title: "Invoke BlockIT Capability",
     description:
-      "Invokes one exact capability on this Gateway's bound Blockbench project. Calls are serialized and never automatically retried after a transport interruption; uncertain mutations return OUTCOME_UNKNOWN. Successful project creation adopts the new project automatically; successful phase switches keep the same Gateway task alive.",
+      "Invokes one exact BlockIT capability. Runtime calls use this Gateway's bound Blockbench project; rare read-only local support references do not mutate project state. Runtime calls are serialized and never automatically retried after interruption.",
     inputSchema: invokeInput.shape,
   },
   async (rawArgs) => {
     try {
       const { capability, arguments: args } = invokeInput.parse(rawArgs);
-      const result = await backend.invokeCapability(capability, args);
+      const result =
+        capability === VANILLA_ENTITY_REFERENCE_CAPABILITY
+          ? await vanillaReferenceProvider.invoke(args)
+          : await backend.invokeCapability(capability, args);
       if (result.structuredContent === undefined) return result;
       return {
         ...result,
