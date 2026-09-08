@@ -25,6 +25,23 @@ describe("model creation effectiveness — fidelity convergence and evaluation i
     expect(normalized(modelling)).toMatch(/require.*`improved`/);
   });
 
+  test("DIRECT correction reuses fresh pre-correction evidence instead of recapturing ceremonially", async () => {
+    const [modelling, flow] = await Promise.all([
+      source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
+      source("../docs/knowledge/flow.md"),
+    ]);
+    const modellingText = normalized(modelling);
+    const flowText = normalized(flow);
+
+    expect(modellingText).toContain("reuse a fresh affected capture already used to diagnose the defect");
+    expect(modellingText).toContain("capture before mutation only when no fresh relevant evidence exists");
+    expect(modellingText).toContain("after mutation, recapture affected view(s)");
+    expect(flowText).toContain("direct — canonical hot path");
+    expect(flowText).toContain("reuse fresh affected pre-correction evidence when available");
+    expect(flowText).toContain("recapture affected view(s)");
+    expect(flowText).toContain("do not recapture all five views routinely");
+  });
+
   test("model-facing evaluation remains evidence-bound and non-circular", async () => {
     const [reference, validation] = await Promise.all([
       source("../docs/foundation/04-reference-guide.md"),

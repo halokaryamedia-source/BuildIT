@@ -19,7 +19,19 @@ Evidence: `SUPPORTED | PROVISIONAL | CONFLICTING | UNAVAILABLE`. Use a View Pair
 `DIRECT` uses Groups/Cubes. `3D_ASSISTED` keeps its existing pipeline; no auto-switch; scaffold never replaces the approved image.
 
 ## DIRECT Hot Path
-`semantic form → coherent primary batch → one evidence bundle → smallest causal correction`.
+
+```text
+approved reference + dimensions + requirements
+→ semantic form / transient Primary Mass Contract when nontrivial
+→ coherent primary Cube/Group batch
+→ Core View Triad once
+→ difference-first verdict
+   ├─ material defect → smallest causal correction → recapture affected view(s)
+   └─ primary PASS → identity-weighted secondary geometry
+→ internal Geometry PASS
+→ UV Readiness Preflight
+→ READY_FOR_USER_REVIEW
+```
 
 Nontrivial form: make a **transient Primary Mass Contract** before coordinates; reasoning-only, not persisted or an MCP field:
 ```text
@@ -96,7 +108,7 @@ Reuse fresh exact authored state; otherwise `inspect_elements(mode=detail)` once
 
 `REMOVE`/`REATTACH` preserve the whole assembly boundary and intentional openings. For `RESIZE` on mapped/textured Geometry, preflight UV/pixel impact and choose `PRESERVE_MAPPING | PRESERVE_DENSITY | RELAYOUT`.
 
-Capture affected view(s) first; expand only for cross-view risk. Verdict: `IMPROVED | UNCHANGED | REGRESSED`; require `IMPROVED` without regression elsewhere. Same causal correction failing twice without new evidence → `BLOCKED`.
+Pre-correction evidence: reuse a fresh affected capture already used to diagnose the defect; capture before mutation only when no fresh relevant evidence exists. After mutation, recapture affected view(s); expand only for cross-view regression risk. Verdict: `IMPROVED | UNCHANGED | REGRESSED`; require `IMPROVED` without regression elsewhere. Same causal correction failing twice without new evidence → `BLOCKED`.
 
 ## Existing Assets / Shared Session
 Existing geometry is a baseline, not fidelity proof. Geometry owns shape/rig/UV Layout; Texturing owns pixels/PBR. Geometry↔Texturing correction stays on shared AUTHORING. `HANDOFF_REQUIRED` + `switch_authoring_phase` is only AUTHORING↔Animation.

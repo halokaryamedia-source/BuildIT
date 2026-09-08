@@ -27,6 +27,26 @@ PERSISTENCE        → workspace/active/<asset>/
 USER STAGE REVIEW  → live Blockbench
 ```
 
+### Normal asset authoring at a glance
+
+```text
+Approved Reference
+→ Requirement Gate
+→ Geometry
+→ internal Geometry verify
+→ UV Readiness Preflight
+→ user Geometry review/approval
+→ production UV Layout
+→ Texturing
+→ user Texture review/approval
+→ Animation Readiness Preflight when required
+→ Animation when required
+→ Finalization
+→ COMPLETE
+```
+
+This summary does not remove any gate below. Strategy only changes how Geometry is produced; the downstream approval/UV/Texturing sequence remains the same.
+
 Gateway remains exactly `status`, `search_capabilities`, `describe_capability`, `invoke_capability`.
 
 Before **any authoring mutation**, current-worktree routing is mandatory:
@@ -133,19 +153,48 @@ Codex uses current Blockbench state + `capture_model_views` for internal evidenc
 
 ## 6. Geometry Strategies
 
-### DIRECT
+### DIRECT — canonical hot path
+
+`DIRECT` is a user-selected method, not an object classifier. It uses normal semantic Groups/Cubes and does not invoke Shape Reconstruction or PrimitiveAnything.
 
 ```text
 Approved Reference + Dimensions + Requirements
-→ semantic Geometry
-→ internal verify
+→ semantic form
+→ transient Primary Mass Contract only when form is nontrivial
+→ coherent primary Cube/Group batch
+→ one Core View Triad evidence bundle
+   front + left + top
+→ difference-first verdict
+   ├─ material defect
+   │  → reuse fresh affected pre-correction evidence when available
+   │  → smallest causal correction
+   │  → recapture affected view(s)
+   │  → expand only for cross-view regression risk
+   │  → IMPROVED: continue
+   │  → UNCHANGED/REGRESSED: re-diagnose
+   │  → same causal correction fails twice without new evidence: BLOCKED
+   └─ primary PASS
+      → identity-weighted secondary Geometry only when needed
+→ internal Geometry PASS
 → UV READINESS PREFLIGHT
-→ READY_FOR_USER_REVIEW
-→ user Geometry APPROVED
+   ├─ blocker → correct exact Geometry owner
+   └─ ready → READY_FOR_USER_REVIEW
+→ user inspects live Blockbench
+   ├─ revision → return to smallest owning Geometry cause
+   └─ explicit approve → Geometry APPROVED
+→ checkpoint save
 → production UV Layout
 ```
 
-`DIRECT` is a user-selected method, not an object classifier.
+DIRECT evidence rules:
+
+- First blockout uses one `capture_model_views` call for `front + left + top`.
+- Add `back` only for rear topology/asymmetry.
+- Add `front_left_3q` only for attachment/layering/orientation ambiguity.
+- Do not recapture all five views routinely.
+- A fresh capture already used to diagnose a defect is valid pre-correction evidence; do not capture it again before mutation merely for ceremony.
+- Every mutation makes affected prior captures stale for the post-mutation verdict, so recapture affected view(s) after the correction.
+- Tool success, coordinates, bounds, hierarchy, validators, or correspondence metadata never create visual PASS.
 
 ### 3D_ASSISTED
 
