@@ -29,7 +29,7 @@ evidence → capture_model_views
 Requested atlas size/density are constraints: never silently enlarge; test native/per-face/reuse first, then report tradeoff.
 
 ## Conditional Support — Not Default Routing
-Conditional on intent; not normal hot path.
+Conditional on user intent; not normal hot path.
 `gradient_tool | color_picker_tool | copy_brush_tool | paint_settings | create_brush_preset | load_brush_preset | texture_selection | texture_layer_management | add_texture_group | list_materials | get_material_info | import_texture_set`.
 `gradient_tool`: reference-supported continuous transition; no extra discovery/readback.
 
