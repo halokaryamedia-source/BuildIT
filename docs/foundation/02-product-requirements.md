@@ -1,15 +1,15 @@
 # BlockIT — Product Requirements
 
 **Status:** Active Policy  
-**Version:** 2.0  
-**Updated:** 2026-09-05  
+**Version:** 2.1  
+**Updated:** 2026-09-09  
 **Primary Output:** editable Minecraft Bedrock Entity `.bbmodel`
 
 ## 1. Product Objective
 
-A user can create an approved Minecraft/Blockbench reference in ChatGPT, hand it to Codex with a normal message, choose the modelling strategy, and have BlockIT create or revise a clean Bedrock model through explicit stage approval without requiring the user to specify MCP/tool details.
+A user can hand an original source image directly to Codex for `DIRECT`, or create an approved Minecraft/Blockbench reference board in ChatGPT for stronger coverage and `3D_ASSISTED`, then choose the modelling strategy and have BlockIT create or revise a clean Bedrock model through explicit stage approval without requiring the user to specify MCP/tool details.
 
-The system must prefer evidence-backed modelling decisions over assumptions and must not silently change user-selected modelling strategy.
+The system must prefer evidence-backed modelling decisions over assumptions, must not force unnecessary reference conversion, and must not silently change user-selected modelling strategy.
 
 ## 2. New-Model Required Input
 
@@ -23,26 +23,32 @@ Geometry Strategy: DIRECT | 3D_ASSISTED
 Animation Required: YES | NO
 ```
 
+`Approved Reference Image` may be the original source image itself for `DIRECT`, or a canonical five-view board. `3D_ASSISTED` requires the canonical five-view board.
+
 The user owns `Geometry Strategy`. Codex must not infer/default/auto-switch it.
 
 If mandatory values are missing, ask for all missing values in one batch. Ask additional questions only when a material ambiguity would change the asset. Complete, non-conflicting intake authorizes Blockbench project creation without another confirmation step.
 
 ## 3. Reference Handoff
 
-Reference-image creation belongs in ChatGPT. Canonical board:
+Reference-board creation belongs in ChatGPT. Canonical generated board:
 
 ```text
 UPPER: LEFT | FRONT | BACK
 LOWER: TOP  | FRONT-LEFT 3/4
 ```
 
+For `DIRECT`, do not require board generation when the actual original image provides enough evidence for the next material modelling decisions. If evidence is insufficient, request only the smallest decision-changing extra source image/detail first; recommend the canonical board only when stronger normalized coverage is still needed.
+
+For `3D_ASSISTED`, the canonical board is required because deterministic extraction depends on fixed normalized view regions.
+
 Normal handoff is only:
 
 ```text
-actual approved reference image + user message
+actual Approved Reference Image + user message
 ```
 
-No sidecar JSON, ZIP, manifest, coordinate sheet, or modelling blueprint is required. An image explicitly handed to Codex for modelling is approved unless the user marks it draft/not ready.
+No sidecar JSON, ZIP, manifest, coordinate sheet, or modelling blueprint is required. An actual image explicitly handed to Codex for modelling is approved unless the user marks it draft/not ready.
 
 ## 4. Canonical New-Model Flow
 
@@ -84,14 +90,14 @@ A completed asset remains active until the user explicitly archives it.
 
 ### DIRECT
 
-Normal reference-guided semantic Geometry using native Blockbench Groups/Cubes.
+Normal reference-guided semantic Geometry using native Blockbench Groups/Cubes. The Approved Reference may be an original source image or canonical board; only material evidence gaps justify requesting more reference coverage.
 
 ### 3D_ASSISTED
 
 One indivisible package:
 
 ```text
-Approved Reference
+Approved Reference Board
 → deterministic LEFT/FRONT/BACK extraction
 → Shape Reconstruction
 → Shape GLB Gate
@@ -110,11 +116,11 @@ Architecture term: `Shape Reconstruction`. Hunyuan3D is the single v1 implementa
 ### 3D-Assisted authority
 
 ```text
-Approved Reference  → visual authority
-Requested Dimensions → numeric authority
-Shape GLB            → intermediate reconstructed shape
-PrimitiveAnything    → intermediate decomposition
-Cuboid Scaffold      → editable starting hypothesis
+Approved Reference Board → visual authority
+Requested Dimensions      → numeric authority
+Shape GLB                 → intermediate reconstructed shape
+PrimitiveAnything         → intermediate decomposition
+Cuboid Scaffold           → editable starting hypothesis
 ```
 
 Neither GLB nor scaffold is final model authority.
@@ -199,6 +205,8 @@ Target Blockbench materializer is one dedicated Geometry capability behind the e
 
 ## 14. Efficiency / Anti-Overdevelopment
 
+- accept the actual original image first for `DIRECT` when evidence is sufficient;
+- escalate reference coverage only when it can change a material decision;
 - one Gateway;
 - two Geometry strategies only;
 - no automatic strategy classifier;

@@ -1,6 +1,6 @@
 # BlockIT Flow
 
-Updated: 2026-09-08
+Updated: 2026-09-09
 
 This is the **single detailed current flow**. Root `AGENTS.md` owns deterministic task/Skill routing; `workspace/README.md` owns asset continuity; `next-action.md` owns implementation continuation.
 
@@ -67,7 +67,28 @@ Persist current project state only at **meaningful handoff/resume/park/completio
 
 ## 3. Reference Preparation
 
-ChatGPT generates one canonical five-preview board:
+Reference generation is **optional for DIRECT when the actual original source image already provides sufficient visual evidence**. It remains the preferred normalized coverage path for complex/asymmetric assets and is required for `3D_ASSISTED`.
+
+```text
+actual image supplied to Codex
+→ user selects DIRECT
+   ├─ material evidence sufficient
+   │  → use original source image directly as Approved Reference
+   └─ material evidence missing/conflicting
+      → request only the smallest decision-changing extra source image/detail
+      → if still materially insufficient, recommend canonical board or BLOCKED
+
+actual image supplied to Codex
+→ user selects 3D_ASSISTED
+   ├─ canonical five-view board present + crop-safe
+   │  → continue
+   └─ otherwise
+      → prepare/approve board in ChatGPT first
+```
+
+Do not force board generation for DIRECT as intake ceremony, do not auto-generate it in Codex, and do not add a third reference/Geometry strategy. An actual image explicitly sent for modelling is approved unless the user marks it draft/not ready.
+
+When a canonical board is requested, ChatGPT generates one fixed five-preview board:
 
 ```text
 UPPER: LEFT | FRONT | BACK
@@ -83,7 +104,9 @@ source image + user intent
 → actual approved image handed to Codex
 ```
 
-Handoff is the actual image + normal user message. No sidecar/manifest/ZIP. An image explicitly sent for modelling is approved unless marked draft/not ready.
+Handoff is always the actual image + normal user message. No sidecar/manifest/ZIP.
+
+A fresh explicit user-directed board correction starts a new user-led review cycle; automatic draft/correction retries remain bounded and never continue without user instruction.
 
 ## 4. New Model Intake
 
@@ -102,6 +125,8 @@ Dimensions: width × height × length in Minecraft blocks
 Geometry Strategy: DIRECT | 3D_ASSISTED
 Animation Required: YES | NO
 ```
+
+For `DIRECT`, Approved Reference may be the original source image itself. For `3D_ASSISTED`, Approved Reference must be the canonical five-view board.
 
 Only the user selects Geometry Strategy. Missing fields are asked once as a batch. Before the gate passes: no `.bbmodel`, Cubes/Groups, Shape Reconstruction, or PrimitiveAnything execution.
 
@@ -157,6 +182,8 @@ Codex uses current Blockbench state + `capture_model_views` for internal evidenc
 
 `DIRECT` is a user-selected method, not an object classifier. It uses normal semantic Groups/Cubes and does not invoke Shape Reconstruction or PrimitiveAnything.
 
+The visual reference may be an original source image or canonical board. Use only the views/evidence actually supported by the supplied image; do not fabricate canonical view correspondence when no board exists.
+
 ```text
 Approved Reference + Dimensions + Requirements
 → semantic form
@@ -197,6 +224,8 @@ DIRECT evidence rules:
 - Tool success, coordinates, bounds, hierarchy, validators, or correspondence metadata never create visual PASS.
 
 ### 3D_ASSISTED
+
+`3D_ASSISTED` requires the canonical five-view Approved Reference Board because extraction is deterministic by fixed normalized regions.
 
 One indivisible package:
 

@@ -9,6 +9,8 @@ This skill is the reference-generation specification. Operational generation bel
 
 Create **one Minecraft / Blockbench reference image** whose primary goal is a recognizable, Blockbench-buildable Minecraft interpretation, not exact real-world reconstruction.
 
+A canonical board is an optional preparation step for `DIRECT` and required preparation for `3D_ASSISTED`. Do not generate one merely because an original source image exists; generation still requires a fresh explicit user instruction.
+
 ## User Contract
 
 A source image is enough; extra facts are optional. Do not ask for Cube counts, pivots, UVs, animation, MCP details, or modelling method. Never infer numeric scale from pixels. Prefer zero clarification.
@@ -104,7 +106,7 @@ Material conflict after correction → **NEEDS REVIEW**.
 
 ## Budget / Output
 
-For one unchanged Internal Generation Brief / review cycle:
+For one unchanged Internal Generation Brief / automatic review cycle:
 
 ```text
 first draft          = maximum 1
@@ -112,6 +114,8 @@ targeted correction  = maximum 1
 automatic variants   = 0
 ```
 
-A materially new user-approved source, pose, target, or requirement starts a new cycle. Do not start a new cycle automatically to bypass a failed correction.
+A fresh explicit **user-directed correction** after review authorizes one new revised board even if the prior automatic targeted-correction budget was used. Treat it as a new user-led review cycle, not an automatic retry: apply the requested change once, preserve still-valid relationships, return one image, then stop for review again.
+
+A materially new user-approved source, pose, target, or requirement also starts a new cycle. Do not start a new cycle automatically to bypass a failed correction.
 
 Return **one image only** and stop for user review. After approval, the user may send the actual approved reference image directly to Codex with a normal message. Do not generate ZIPs, JSON sidecars, manifests, coordinate sheets, or modelling blueprints.

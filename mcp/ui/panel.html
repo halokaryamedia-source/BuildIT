@@ -27,8 +27,23 @@
             <div class="guide-step">
                 <div class="guide-step-number">1</div>
                 <div class="guide-step-body">
-                    <div class="guide-step-title">Prepare the reference</div>
-                    <p>Attach the approved reference image directly in Codex. For visual matching, an image attachment is required; a file path or text description alone is not enough.</p>
+                    <div class="guide-step-title">Choose the quickest useful reference</div>
+                    <p>You do not have to convert every source image into a Minecraft reference board before starting.</p>
+                    <div class="guide-method-grid">
+                        <div class="guide-method-card">
+                            <div class="guide-method-name">Use the original image directly</div>
+                            <p>Fastest for DIRECT. Attach the original image in Codex. If it clearly shows the form, Codex can use it as the visual reference and ask only for evidence that is actually missing.</p>
+                        </div>
+                        <div class="guide-method-card">
+                            <div class="guide-method-name">Create a reference board</div>
+                            <p>Best when the subject is complex, asymmetric, or needs stronger multi-view coverage. The canonical five-view board is required for 3D_ASSISTED.</p>
+                        </div>
+                    </div>
+                    <p class="guide-note">Want the board? Copy this prompt into ChatGPT, attach your source image, and review the result before sending it to Codex.</p>
+                    <div class="guide-template compact">
+                        <pre>{{guideTemplate('reference_board')}}</pre>
+                        <button type="button" class="guide-copy-button" @click="copyGuideTemplate('reference_board')">Copy Reference Prompt</button>
+                    </div>
                 </div>
             </div>
 
@@ -36,7 +51,7 @@
                 <div class="guide-step-number">2</div>
                 <div class="guide-step-body">
                     <div class="guide-step-title">Start a new model</div>
-                    <p>Copy this template, fill in the blanks, attach the reference image, and send it to Codex.</p>
+                    <p>Copy this template, fill in the blanks, attach your original image or approved reference board, and send it to Codex.</p>
                     <div class="guide-template">
                         <pre>{{guideTemplate('new_model')}}</pre>
                         <button type="button" class="guide-copy-button" @click="copyGuideTemplate('new_model')">Copy Prompt</button>
@@ -52,11 +67,11 @@
                     <div class="guide-method-grid">
                         <div class="guide-method-card">
                             <div class="guide-method-name">DIRECT</div>
-                            <p>Best starting point for most Minecraft-style props and hard-surface models. Codex builds editable Groups and Cubes directly in Blockbench.</p>
+                            <p>Best starting point for most Minecraft-style props and hard-surface models. Codex builds editable Groups and Cubes directly in Blockbench. An original source image is accepted when it provides enough visual evidence.</p>
                         </div>
                         <div class="guide-method-card">
                             <div class="guide-method-name">3D_ASSISTED</div>
-                            <p>Useful for more complex or organic forms. A 3D reconstruction helps create the starting geometry before Blockbench cleanup.</p>
+                            <p>Useful for more complex or organic forms. A 3D reconstruction helps create the starting geometry before Blockbench cleanup. This method requires the canonical five-view reference board.</p>
                         </div>
                     </div>
                     <p class="guide-note">Not sure which one to use? Ask Codex for a recommendation, then choose the method you want.</p>
