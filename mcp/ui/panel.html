@@ -12,6 +12,120 @@
         </div>
     </section>
 
+    <details name="blockit_panel_sections" class="guide-details">
+        <summary>
+            Guide
+            <span class="section-meta">Start here</span>
+        </summary>
+
+        <div class="guide-content">
+            <div class="guide-intro">
+                <div class="guide-heading">Build with Codex. Review in Blockbench.</div>
+                <p>BlockIT handles the internal tools and workflow. You only need to provide the reference, target size, geometry method, and whether animation is needed.</p>
+            </div>
+
+            <div class="guide-step">
+                <div class="guide-step-number">1</div>
+                <div class="guide-step-body">
+                    <div class="guide-step-title">Prepare the reference</div>
+                    <p>Attach the approved reference image directly in Codex. For visual matching, an image attachment is required; a file path or text description alone is not enough.</p>
+                </div>
+            </div>
+
+            <div class="guide-step">
+                <div class="guide-step-number">2</div>
+                <div class="guide-step-body">
+                    <div class="guide-step-title">Start a new model</div>
+                    <p>Copy this template, fill in the blanks, attach the reference image, and send it to Codex.</p>
+                    <div class="guide-template">
+                        <pre>{{guideTemplate('new_model')}}</pre>
+                        <button type="button" class="guide-copy-button" @click="copyGuideTemplate('new_model')">Copy Prompt</button>
+                    </div>
+                    <p class="guide-note">Dimensions use <strong>Width × Height × Length</strong> in Minecraft blocks.</p>
+                </div>
+            </div>
+
+            <div class="guide-step">
+                <div class="guide-step-number">3</div>
+                <div class="guide-step-body">
+                    <div class="guide-step-title">Choose the geometry method</div>
+                    <div class="guide-method-grid">
+                        <div class="guide-method-card">
+                            <div class="guide-method-name">DIRECT</div>
+                            <p>Best starting point for most Minecraft-style props and hard-surface models. Codex builds editable Groups and Cubes directly in Blockbench.</p>
+                        </div>
+                        <div class="guide-method-card">
+                            <div class="guide-method-name">3D_ASSISTED</div>
+                            <p>Useful for more complex or organic forms. A 3D reconstruction helps create the starting geometry before Blockbench cleanup.</p>
+                        </div>
+                    </div>
+                    <p class="guide-note">Not sure which one to use? Ask Codex for a recommendation, then choose the method you want.</p>
+                </div>
+            </div>
+
+            <div class="guide-step">
+                <div class="guide-step-number">4</div>
+                <div class="guide-step-body">
+                    <div class="guide-step-title">Review the result in Blockbench</div>
+                    <p>When Codex asks for review, inspect the model here. If it looks correct, reply <strong>Continue</strong>. If something is wrong, describe the change in normal language.</p>
+                    <div class="guide-example-row">
+                        <span class="guide-example-label">Approve</span>
+                        <code>Continue</code>
+                    </div>
+                    <div class="guide-example-row">
+                        <span class="guide-example-label">Revise</span>
+                        <code>The top is too wide. Make it narrower.</code>
+                    </div>
+                </div>
+            </div>
+
+            <div class="guide-step">
+                <div class="guide-step-number">5</div>
+                <div class="guide-step-body">
+                    <div class="guide-step-title">Follow the simple review flow</div>
+                    <div class="guide-flow" aria-label="BlockIT authoring flow">
+                        <span>Geometry</span>
+                        <i class="material-icons">chevron_right</i>
+                        <span>UV</span>
+                        <i class="material-icons">chevron_right</i>
+                        <span>Texture</span>
+                        <i class="material-icons">chevron_right</i>
+                        <span>Animation*</span>
+                        <i class="material-icons">chevron_right</i>
+                        <span>Final</span>
+                    </div>
+                    <p>Geometry, Texture, and Animation require your visual review. UV is handled between Geometry and Texture and does not need a separate user review. Animation is skipped when it is not required.</p>
+                </div>
+            </div>
+
+            <div class="guide-divider"></div>
+
+            <div class="guide-secondary-template">
+                <div>
+                    <div class="guide-step-title">Continue a saved project</div>
+                    <p>Use this when you want Codex to resume from the last saved stage.</p>
+                </div>
+                <div class="guide-template compact">
+                    <pre>{{guideTemplate('continue_project')}}</pre>
+                    <button type="button" class="guide-copy-button" @click="copyGuideTemplate('continue_project')">Copy Prompt</button>
+                </div>
+            </div>
+
+            <div class="guide-secondary-template">
+                <div>
+                    <div class="guide-step-title">Improve an existing model</div>
+                    <p>Open the model in Blockbench first, then tell Codex exactly what you want changed.</p>
+                </div>
+                <div class="guide-template compact">
+                    <pre>{{guideTemplate('improve_model')}}</pre>
+                    <button type="button" class="guide-copy-button" @click="copyGuideTemplate('improve_model')">Copy Prompt</button>
+                </div>
+            </div>
+
+            <p class="guide-footer-note">You do not need to manage internal tool names, workflow states, or technical routing yourself.</p>
+        </div>
+    </details>
+
     <details name="blockit_panel_sections" @toggle="onToolsToggle">
         <summary>
             Tools

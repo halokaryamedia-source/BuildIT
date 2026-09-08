@@ -19,6 +19,10 @@ import {
 } from "@/ui/promptOverrideDialog";
 import { hasPromptOverride } from "@/lib/promptLoader";
 import { formatArgumentCount } from "@/ui/i18n";
+import {
+  BLOCKIT_USER_GUIDE_TEMPLATES,
+  type BlockItGuideTemplateKey,
+} from "@/ui/userGuide";
 import panelCSS from "@/ui/panel.css";
 import template from "@/ui/panel.html";
 
@@ -176,6 +180,20 @@ export function uiSetup({
         },
         isPromptOverridden(promptName: string): boolean {
           return hasPromptOverride(promptName);
+        },
+        guideTemplate(key: BlockItGuideTemplateKey): string {
+          return BLOCKIT_USER_GUIDE_TEMPLATES[key];
+        },
+        copyGuideTemplate(key: BlockItGuideTemplateKey): void {
+          const content = BLOCKIT_USER_GUIDE_TEMPLATES[key];
+          navigator.clipboard.writeText(content).then(() => {
+            Blockbench.showQuickMessage("Prompt copied", 1500);
+          }).catch(() => {
+            Blockbench.showQuickMessage(
+              "Copy failed. Select the template text manually.",
+              2500
+            );
+          });
         },
         formatArgumentCount,
         onToolsToggle(event: Event): void {
