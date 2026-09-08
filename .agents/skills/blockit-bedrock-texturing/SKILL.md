@@ -14,7 +14,7 @@ unlocked/invalid UV → Geometry owner + bounded UV correction; no phase switch.
 Reuse fresh state.
 ```text
 global UV/atlas readiness → list_textures
-face mapping → inspect_elements(mode=detail) when needed
+face mapping → inspect_elements(mode=detail) only when needed
 blank atlas resolution unknown → get_project_info once
 atlas → list_textures / activate_texture / create_texture / get_texture
 regions → draw_shape_tool / paint_fill_tool
@@ -49,7 +49,7 @@ A generic palette, copied unrelated texture, flat rectangles, or random high-con
 
 ### Alpha / PBR / Paint Safety
 Alpha: cutout→`entity_alphatest`; translucent→`entity_alphablend`; emissive may use alpha; unknown=`UNVERIFIED`.
-Variants preserve production base role + compatible dimensions/mapping; PBR aligned; one/channel; `normal XOR height`.
+Variants preserve production base role + compatible dimensions/mapping; PBR; one/channel; `normal XOR height`.
 `paint_settings`: `pixel_perfect`, `lock_alpha`, `paint_side_restrict`; Mirror after semantic symmetry.
 
 ## Coherent Styling Window / Anti-Micro-Loop
