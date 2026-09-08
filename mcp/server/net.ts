@@ -20,6 +20,11 @@ import {
   getActiveMcpRegistrationProfile,
   getMcpSurfaceToolNames
 } from '@/server/tools'
+import {
+  BLOCKIT_PROJECT_AFFINITY_HEADER,
+  normalizeProjectAffinityUuid,
+  type RuntimeProjectHealth
+} from '@/gateway/projectAffinity'
 
 const INSTANCE_ID = crypto.randomUUID()
 const STARTUP_TIME = new Date().toISOString()
@@ -37,6 +42,16 @@ const BUILD_IDENTITY = normalizeBuildIdentity(
 export interface NetServer extends NodeNetServer {
   closeActiveSockets(): void
   closeAndWait(): Promise<void>
+}
+
+export class RuntimeProjectContextError extends Error {
+  constructor (
+    message: string,
+    readonly outcomeUnknown: boolean = false
+  ) {
+    super(message)
+    this.name = 'RuntimeProjectContextError'
+  }
 }
 
 function getStatusText (status: number): string {
@@ -63,6 +78,7 @@ function getStatusText (status: number): string {
 // local client cannot grow the parser buffer without bound.
 const MAX_REQUEST_HEADER_BYTES = 32 * 1024
 const MAX_REQUEST_BODY_BYTES = 10 * 1024 * 1024
+const SOCKET_IDLE_TIMEOUT_MS = 30_000
 
 function isAllowedLocalOrigin (origin: string): boolean {
   try {
@@ -95,6 +111,166 @@ function isAllowedLocalHost (hostHeader: string): boolean {
   } catch {
     return false
   }
+}
+
+function runtimeProjects (): ModelProject[] {
+  return typeof ModelProject !== 'undefined' && Array.isArray(ModelProject.all)
+    ? ModelProject.all
+    : []
+}
+
+function currentRuntimeProject (): ModelProject | null {
+  return typeof Project !== 'undefined' && Project ? Project : null
+}
+
+let runtimeProjectAffinityLease: {
+  previousProject: ModelProject | null
+} | null = null
+
+export function getRuntimeProjectHealth (
+  requestedProjectUuid: string | null
+): RuntimeProjectHealth {
+  const projects = runtimeProjects()
+  const currentProject = currentRuntimeProject()
+  const leasedPreviousProject = runtimeProjectAffinityLease?.previousProject ?? null
+  const activeProject = runtimeProjectAffinityLease
+    ? leasedPreviousProject && projects.includes(leasedPreviousProject)
+      ? leasedPreviousProject
+      : null
+    : currentProject
+  const requestedProject = requestedProjectUuid
+    ? projects.find(project => project.uuid === requestedProjectUuid) ?? null
+    : null
+
+  return {
+    active_project_uuid: activeProject?.uuid ?? null,
+    requested_project_uuid: requestedProjectUuid,
+    requested_project_available: requestedProjectUuid
+      ? requestedProject !== null
+      : null,
+    open_project_count: projects.length
+  }
+}
+
+/**
+ * Execute one project-sensitive MCP request against its Gateway-bound tab.
+ *
+ * Blockbench exposes project data through globals (`Project`, `Cube.all`, etc.),
+ * so targeting an inactive tab requires a native project select. The runtime
+ * serializes MCP requests across sockets before entering this helper. The target
+ * tab is temporarily locked against tab switching/close, then the user's prior
+ * active tab is restored. Project-creating calls intentionally keep the newly
+ * created tab active so the Gateway can adopt its returned UUID.
+ */
+export async function runWithRuntimeProjectAffinity<T> (
+  requestedProjectUuid: string | null,
+  allowProjectTransition: boolean,
+  operation: () => Promise<T>
+): Promise<T> {
+  if (!requestedProjectUuid) return await operation()
+
+  const projects = runtimeProjects()
+  const target = projects.find(project => project.uuid === requestedProjectUuid)
+  if (!target) {
+    throw new RuntimeProjectContextError(
+      `Gateway-bound Blockbench project ${requestedProjectUuid} is no longer open.`
+    )
+  }
+
+  const previousProject = currentRuntimeProject()
+  let switched = false
+
+  if (previousProject !== target) {
+    if (previousProject?.locked || target.locked) {
+      throw new RuntimeProjectContextError(
+        `Blockbench cannot activate Gateway-bound project ${requestedProjectUuid} because the current or target project tab is locked.`
+      )
+    }
+    const selected = target.select()
+    if (selected !== true || currentRuntimeProject() !== target) {
+      throw new RuntimeProjectContextError(
+        `Blockbench could not activate Gateway-bound project ${requestedProjectUuid}.`
+      )
+    }
+    switched = true
+  }
+
+  const originalTargetLocked = target.locked === true
+  const lease = { previousProject }
+  runtimeProjectAffinityLease = lease
+  if (!allowProjectTransition) target.locked = true
+
+  try {
+    const result = await operation()
+    if (!allowProjectTransition && currentRuntimeProject() !== target) {
+      throw new RuntimeProjectContextError(
+        `Blockbench project context changed while Gateway-bound project ${requestedProjectUuid} was executing.`,
+        true
+      )
+    }
+    return result
+  } finally {
+    const stillOpen = runtimeProjects().includes(target)
+    if (!allowProjectTransition && stillOpen) {
+      target.locked = originalTargetLocked
+    }
+
+    if (runtimeProjectAffinityLease === lease) {
+      runtimeProjectAffinityLease = null
+    }
+
+    if (
+      !allowProjectTransition &&
+      switched &&
+      previousProject &&
+      runtimeProjects().includes(previousProject) &&
+      currentRuntimeProject() !== previousProject
+    ) {
+      previousProject.select()
+    }
+  }
+}
+
+function readRequestEnvelope (body: string): {
+  method: string | null
+  capability: string | null
+  id: string | number | null
+} {
+  try {
+    const parsed = JSON.parse(body) as unknown
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+      return { method: null, capability: null, id: null }
+    }
+    const record = parsed as {
+      method?: unknown
+      id?: unknown
+      params?: { name?: unknown }
+    }
+    return {
+      method: typeof record.method === 'string' ? record.method : null,
+      capability:
+        record.method === 'tools/call' && typeof record.params?.name === 'string'
+          ? record.params.name
+          : null,
+      id:
+        typeof record.id === 'string' || typeof record.id === 'number'
+          ? record.id
+          : null
+    }
+  } catch {
+    return { method: null, capability: null, id: null }
+  }
+}
+
+function projectContextErrorBody (
+  id: string | number | null,
+  message: string
+): string {
+  return JSON.stringify({
+    jsonrpc: '2.0',
+    error: { code: -32002, message },
+    id
+  })
 }
 
 interface SerializedWebResponse {
@@ -178,12 +354,28 @@ export default function createNetServer (
   }
 ): NetServer {
   const activeSockets = new Set<Socket>()
+  let runtimeRequestTail: Promise<void> = Promise.resolve()
+
+  function runRuntimeRequestExclusive<T> (operation: () => Promise<T>): Promise<T> {
+    const execute = async (): Promise<T> => await operation()
+    const run = runtimeRequestTail.then(execute, execute)
+    runtimeRequestTail = run.then(
+      () => undefined,
+      () => undefined
+    )
+    return run
+  }
+
   const httpServer = createServer((socket: Socket) => {
     activeSockets.add(socket)
     let buffer = Buffer.alloc(0)
     let socketEnded = false
     let processing = false
     let awaitingDrain = false
+
+    socket.setTimeout(SOCKET_IDLE_TIMEOUT_MS, () => {
+      if (!socketEnded) socket.destroy()
+    })
 
     socket.on('data', (chunk: Buffer) => {
       if (socketEnded) return
@@ -397,6 +589,25 @@ export default function createNetServer (
             continue
           }
 
+          let requestedProjectUuid: string | null
+          try {
+            requestedProjectUuid = normalizeProjectAffinityUuid(
+              headers[BLOCKIT_PROJECT_AFFINITY_HEADER]
+            )
+          } catch (error) {
+            sendResponse(
+              socket,
+              400,
+              { 'content-type': 'application/json' },
+              projectContextErrorBody(
+                readRequestEnvelope(body).id,
+                error instanceof Error ? error.message : String(error)
+              ),
+              'close'
+            )
+            continue
+          }
+
           const pathWithoutQuery = path.split('?')[0]
 
           if (
@@ -421,6 +632,7 @@ export default function createNetServer (
                   getActiveMcpRegistrationProfile(),
                   getActiveMcpAuthoringPhase()
                 ).length,
+                project_context: getRuntimeProjectHealth(requestedProjectUuid),
                 transport: {
                   mode: 'stateless',
                   response_mode: 'json'
@@ -499,13 +711,31 @@ export default function createNetServer (
             requestInit.body = body
           }
           const webRequest = new Request(url, requestInit)
+          const envelope = readRequestEnvelope(body)
+          const needsProjectContext =
+            envelope.method === 'tools/call' && requestedProjectUuid !== null
+          const allowProjectTransition = envelope.capability === 'create_project'
 
           try {
-            const response = await handleStatelessMcpRequest(
+            // The input idle timeout protects incomplete local HTTP requests only.
+            // Once a complete MCP request is parsed, the SDK/Gateway call deadline
+            // owns execution time so legitimate long authoring calls are not cut off.
+            socket.setTimeout(0)
+            const execute = async () => await handleStatelessMcpRequest(
               webRequest,
               getActiveMcpAuthoringPhase(),
               getActiveMcpRegistrationProfile()
             )
+            const dispatch = async () => needsProjectContext
+              ? await runWithRuntimeProjectAffinity(
+                  requestedProjectUuid,
+                  allowProjectTransition,
+                  execute
+                )
+              : await execute()
+            const response = envelope.method === 'tools/call'
+              ? await runRuntimeRequestExclusive(dispatch)
+              : await dispatch()
             // Stateless MCP has no session state to preserve across requests.
             // Close each MCP response so a client-side keep-alive socket cannot
             // remain poisoned when a previous Blockbench operation stalls.
@@ -521,6 +751,16 @@ export default function createNetServer (
               return
             }
           } catch (error) {
+            if (error instanceof RuntimeProjectContextError && !error.outcomeUnknown) {
+              sendResponse(
+                socket,
+                409,
+                { 'content-type': 'application/json' },
+                projectContextErrorBody(envelope.id, error.message),
+                'close'
+              )
+              continue
+            }
             console.error('[MCP] Request handler error:', error)
             sendResponse(
               socket,
