@@ -140,6 +140,7 @@ describe("usage-efficient authoring intelligence", () => {
     });
 
     expect(result.state).toBe("available");
+    if (result.state !== "available") throw new Error("expected animation quality");
     expect(result.loop_seam.review_track_count).toBe(1);
     expect(result.loop_seam.examples).toEqual(
       expect.arrayContaining([
@@ -168,6 +169,8 @@ describe("usage-efficient authoring intelligence", () => {
       ],
     });
 
+    expect(result.state).toBe("available");
+    if (result.state !== "available") throw new Error("expected animation quality");
     expect(result.loop_seam.applicable).toBe(false);
     expect(result.loop_seam.review_track_count).toBe(0);
     expect(result.cadence.high_variability_track_count).toBe(1);
