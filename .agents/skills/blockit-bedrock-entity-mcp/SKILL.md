@@ -17,15 +17,15 @@ Texture → Geometry APPROVED + UV Layout PASS
 Animation → Texturing APPROVED + checkpoint + Animation Readiness Preflight → HANDOFF_REQUIRED
 `HANDOFF_REQUIRED`: `target_phase`, `reason`, `readiness`, `resume_from`; Gateway `switch_authoring_phase` → same task/chat.
 
-approved image = visual authority. Strategy: user-selected `DIRECT | 3D_ASSISTED`; never auto-switch.
+Approved image = visual authority. Strategy: user-selected `DIRECT | 3D_ASSISTED`; never auto-switch.
 `3D_ASSISTED` → Shape Reconstruction → PrimitiveAnything → cleanup; unavailable → `BLOCKED`; no fallback.
 1 Minecraft block = 16 Blockbench units. Reuse `front_direction`.
 
 ## Fast Routing Contract
 Normal asset work **must not begin by searching repository files**.
 **Authoring Context Firewall:** Authoring Codex uses `workspace/active/<asset>/` as cwd, not `mcp/`; deeper MCP development rules are not authoring plan. Do **not** inspect tests/CI/source or run Bun/build/verifiers/deploy.
-Existing/revision → baseline; inspect only affected target/dependencies; broaden if unclear.
-`ACTIVE STAGE + intent + known state/UUIDs → exact known Runtime capability → Gateway execution → reuse state`
+Existing/revision → inspect only affected target/dependencies; broaden only when identity/state is unclear.
+`ACTIVE STAGE + intent + known state/UUIDs → exact known Runtime capability → Gateway execution → reuse result`
 
 ## Authoring Stage Lock
 `DISCOVER → AUTHOR → VERIFY → CORRECT → VERIFY → DONE`.
@@ -35,7 +35,7 @@ Existing/revision → baseline; inspect only affected target/dependencies; broad
 CORE / SHARED
 project unknown → get_project_info
 identity/hierarchy/detail → inspect_elements(mode=search|outline|detail)
-visible/reference comparison  → capture_model_views
+visible/reference comparison → capture_model_views
 envelope/scale/ground → inspect_model_bounds
 UV/atlas readiness → list_textures
 file deliverable → export_model
@@ -47,38 +47,31 @@ create normal bone/Group       → add_group
 create/update Cubes            → manage_cubes(operation=create|update|batch_update)
 Group/bone parent move         → reparent_element
 Group pivot/rotation/visible   → modify_group
-delete/rename → remove_element / rename_element
-Locator/Null → manage_locator / manage_null_object
+delete/rename                  → remove_element / rename_element
+Locator/Null                   → manage_locator / manage_null_object
 rig IK/mirror                  → bone_rigging
 ```
 `bone_rigging` only for IK/mirror.
 `validator://*` resources are Direct Runtime/Inspector only; a Gateway client must not search for or emulate them.
-Known coherent Cubes → `manage_cubes(operation=create, elements=[...])`; uncertainty → no batch.
-Known Cubes sharing one deterministic TRANSLATE/RESIZE intent → derive absolute targets once from fresh state → `manage_cubes(operation=batch_update)`. Never loop inspect→modify per Cube; relative intent stays reasoning-layer arithmetic; writes stay absolute/fail-closed.
-**Semantic cohort rule:** shared motion → Group; else correct sibling cohort.
+Known coherent Cubes → one `manage_cubes(operation=create, elements=[...])`; uncertainty → no batch.
+Shared deterministic Cube TRANSLATE/RESIZE → derive absolute targets once from fresh state → `batch_update`; never inspect→modify per Cube. **Semantic cohort rule:** shared motion → Group; otherwise correct sibling cohort.
 
 ## First-Call Invariants
 `add_group` → pass name OR groups, never both.
 `manage_cubes update       → id + at least one authored field change`
 `manage_cubes rotated create → origin required`
-`manage_locator create       → name+parent; update → id+authored change`
-`manage_null_object create   → name+parent; update → id+parent/position`
+`manage_locator create → name+parent; update → id+authored change`
+`manage_null_object create → name+parent; update → id+parent/position`
 Validation failure repairs arguments for the **same capability**.
 
 ## Capability Discovery / Recovery
 Capability discovery is deferred spec loading after routing.
-known exact capability   → invoke directly; do not describe for reassurance.
+known exact capability → invoke directly.
 unknown/stale capability → one precise `search_capabilities` query, `limit=4`.
 schema needed → `describe_capability` once before mutation.
 One precise search miss → reformulate once; second miss → `BLOCKED`. A known foreign-phase capability is never a discovery miss: AUTHORING↔Animation uses handoff.
 
-`INVALID_INPUT` → repair args; same capability.
-`TARGET_AMBIGUOUS` → resolve UUID once.
-`TARGET_NOT_FOUND` → focused identity lookup.
-`STALE_STATE` → one focused refresh.
-`NO_EFFECT` → change diagnosis/payload.
-`CAPABILITY_MISMATCH` → handoff once or BLOCKED.
-`OUTCOME_UNKNOWN` → inspect state before retry.
+`INVALID_INPUT` → repair args; same capability. `TARGET_AMBIGUOUS` → resolve UUID once; `TARGET_NOT_FOUND` → focused identity lookup; `STALE_STATE` → one focused refresh; `NO_EFFECT` change diagnosis/payload; `CAPABILITY_MISMATCH` handoff once or BLOCKED; `OUTCOME_UNKNOWN` inspect state before retry.
 Same routed failure twice without new evidence → `BLOCKED`.
 
 ## State Reuse / Anti-Loop
