@@ -115,6 +115,8 @@ describe("P1.4 stateless Streamable HTTP ownership", () => {
     expect(templateSource).not.toContain("connected_clients");
     expect(templateSource).not.toContain("exposed /");
     expect(templateSource).toContain("availableToolCount");
+    expect(templateSource).toContain("Advanced details");
+    expect(templateSource).toContain("Runtime endpoint");
   });
 
   test("Origin rejection still precedes stateless MCP server construction", async () => {
