@@ -54,6 +54,13 @@ export class RuntimeProjectContextError extends Error {
   }
 }
 
+class RuntimeRequestAbandonedError extends Error {
+  constructor () {
+    super('Queued Runtime tool request was abandoned before execution.')
+    this.name = 'RuntimeRequestAbandonedError'
+  }
+}
+
 function getStatusText (status: number): string {
   const texts: Record<number, string> = {
     200: 'OK',
@@ -734,7 +741,12 @@ export default function createNetServer (
                 )
               : await execute()
             const response = envelope.method === 'tools/call'
-              ? await runRuntimeRequestExclusive(dispatch)
+              ? await runRuntimeRequestExclusive(async () => {
+                  if (socket.destroyed || !socket.writable) {
+                    throw new RuntimeRequestAbandonedError()
+                  }
+                  return await dispatch()
+                })
               : await dispatch()
             // Stateless MCP has no session state to preserve across requests.
             // Close each MCP response so a client-side keep-alive socket cannot
@@ -751,6 +763,7 @@ export default function createNetServer (
               return
             }
           } catch (error) {
+            if (error instanceof RuntimeRequestAbandonedError) return
             if (error instanceof RuntimeProjectContextError && !error.outcomeUnknown) {
               sendResponse(
                 socket,
