@@ -17,6 +17,7 @@ describe("capture_model_views explicit framing contract", () => {
     expect(cameraSource).toContain("min[1] + size[1] / 2");
     expect(cameraSource).toContain("min[2] + size[2] / 2");
     expect(cameraSource).not.toContain("(min[0] + max[0]) / 2");
+    expect(cameraSource).toContain("this tool does not judge resemblance");
   });
 
   test("keeps model framing Cube-owned while explicit framing can use loaded 3D-Assisted evidence", async () => {

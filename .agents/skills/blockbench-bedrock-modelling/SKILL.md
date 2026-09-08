@@ -61,7 +61,7 @@ Depth: `OBSERVED` direct; `INFERRED` consistent evidence; `UNRESOLVED` insuffici
 ## Surface Coverage / Negative Space
 Every gap is intentional; enclosures need closed-shell reasoning and open forms preserve negative spaces. Build primary surfaces before trim.
 
-Review affected views for holes, seams, penetration, contact, and offsets. Each required surface class—outer, opening, back, underside, interior when material—needs current evidence once. Bounds/hierarchy/Cube success are not coverage proof.
+Review affected views for holes, seams, penetration, contact, and offsets. Each required surface class—outer, opening, back, underside, interior when material—needs current evidence once. No positive-volume overlap alone is not visual PASS.
 
 ## Geometry Detail Budget
 `GEOMETRY` → silhouette/volume/opening/contact/3D layering/motion.
@@ -72,7 +72,7 @@ Detail-only span/thickness `<= 4 Blockbench units` defaults to `TEXTURE`/`OMIT` 
 
 ## Primary Build / Difference-First Reference Fidelity Verdict
 **Stay in the geometry lane unless a current decision requires another branch.**
-`requirement → source evidence → simplest supported interpretation → PRIMARY BLOCKOUT + required hierarchy/pivots → primary PASS → identity-weighted secondary geometry`.
+`requirement → source evidence → simplest recognizable Blockbench-buildable interpretation → PRIMARY BLOCKOUT + required hierarchy/pivots → primary PASS → identity-weighted secondary geometry`.
 
 Verdict requires approved reference + fresh current-revision model evidence. Mutation makes affected captures stale:
 `claim | matching reference view | current view | observed difference | FAIL | UNVERIFIED | PASS`.
