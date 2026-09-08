@@ -1,15 +1,15 @@
 ---
 name: blockit-bedrock-animation
-description: Bedrock Entity animation specialist for motion, Molang, controllers, effects, and bounded correction.
+description: Minecraft Bedrock Entity animation specialist.
 ---
 
 # BlockIT Bedrock Animation
 
-Use at `ACTIVE PHASE: ANIMATION` after Texturing approval + checkpoint when hierarchy/pivots are suitable.
+Use at `ACTIVE PHASE: ANIMATION` after Texturing approval + checkpoint + Animation Readiness Preflight when participating hierarchy/pivots are suitable.
 
 ## Boundary
 
-Animation owns motion, not structural rig mutation. Structural blocker → `HANDOFF_REQUIRED(target_phase=geometry)` → `switch_authoring_phase` → resume same task. Before keys, representative extreme poses preserve attachment/contact/clearance; otherwise handoff Geometry first. Do not search for `bone_rigging`.
+Animation owns motion, not structural rig mutation. Structural blocker → `HANDOFF_REQUIRED` with `target_phase: geometry` + readiness → `switch_authoring_phase` → resume same task through Gateway. Before keys, representative extreme poses preserve contact/clearance; otherwise handoff Geometry first. Do not search for `bone_rigging`.
 
 ## Direct Routing
 
@@ -28,9 +28,9 @@ pose/time visual evidence             → capture_model_views(animation_preview)
 `new known clip → create_animation → reuse returned UUID/state; timeline if needed`
 `existing/unknown detail → inspect_animation`
 
-Known → Gateway. Unknown/stale → `search_capabilities`; schema → `describe_capability` once. Resource schema → project by `resource_kind`. Reuse fresh UUID/state; no confirmation reads.
+Known → Gateway. Unknown/stale → `search_capabilities`; schema → `describe_capability` once. Reuse fresh UUID/state; known identity must not fall back to broad hierarchy discovery or confirmation reads.
 
-`batch` owns one coherent cohort, not loops per key. `properties` batches clip-native state; `native_operations` owns nested controller/blend curves. `resource_operations` owns explicit `.json` client-entity aliases/`scripts.animate`/`pre_animation` variables/sounds and file-backed controller variables/remap curves. Controller/effect/graph/copy-paste are conditional.
+`batch` owns one coherent cohort, not loops per key. `properties` batches clip-native state; `native_operations` owns nested controller/blend curves. `resource_operations` owns client-entity runtime JSON + file-backed controller variables/remap curves. Controller/effect/graph/copy-paste are conditional.
 
 ## Motion Design Contract
 
@@ -47,7 +47,7 @@ loop seam or neutral/controller handoff
 
 Archetypes are not presets. No universal FPS, duration, amplitude, phase, keyframe count, or Bezier target. Do not use an animation quality score.
 
-Use Molang for continuous/cyclic/reactive motion; authored poses own identity-critical action/contact/silhouette. `q.anim_time` is time-driven; `q.modified_distance_moved` can own travel phase. Never invent caller values. Chains use `driver → delayed followers`. Actions preserve `anticipation → action/impact → follow-through → recovery`.
+Use Molang for continuous/cyclic/reactive motion; authored poses own identity-critical action/contact/silhouette. `q.anim_time` is time-driven; `q.modified_distance_moved` can own travel phase. Never invent caller values or signed reverse semantics. Chains use `driver → delayed followers`. Actions preserve `anticipation → action/impact → follow-through → recovery`.
 
 ### Molang / math
 
@@ -69,7 +69,7 @@ AUTHOR coherent keys/batch
 → recapture affected cohort
 ```
 
-Verify `DISCOVER → AUTHOR → VERIFY → CORRECT → VERIFY → DONE`; record `IMPROVED | UNCHANGED | REGRESSED`. Cyclic/idle verification requires repeated full-loop playback; snapshots do not prove timing/phase/contact/seam.
+Verify `DISCOVER → AUTHOR → VERIFY → CORRECT → VERIFY → DONE`; record `IMPROVED | UNCHANGED | REGRESSED`. Cyclic/idle verification requires repeated full-loop playback; three static snapshots do not prove timing/phase/contact/seam.
 
 ## Completion
 
