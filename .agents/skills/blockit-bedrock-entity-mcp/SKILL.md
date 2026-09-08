@@ -54,7 +54,7 @@ rig IK/mirror                  → bone_rigging
 `bone_rigging` only for IK/mirror.
 `validator://*` resources are Direct Runtime/Inspector only; a Gateway client must not search for or emulate them.
 Known coherent Cubes → one `manage_cubes(operation=create, elements=[...])`; uncertainty → no batch.
-Known Cubes sharing one deterministic TRANSLATE/RESIZE intent → derive absolute targets once from fresh state → `manage_cubes(operation=batch_update)`; never loop inspect→modify per Cube. **Semantic cohort rule:** shared motion → Group; otherwise correct sibling cohort.
+Known Cubes sharing one deterministic TRANSLATE/RESIZE intent → derive absolute targets once from fresh state → `manage_cubes(operation=batch_update)`; never loop inspect→modify per Cube. Relative intent stays reasoning-layer arithmetic; writes stay absolute/fail-closed. **Semantic cohort rule:** shared motion → Group; otherwise correct sibling cohort.
 
 ## First-Call Invariants
 `add_group` → pass name OR groups, never both.
