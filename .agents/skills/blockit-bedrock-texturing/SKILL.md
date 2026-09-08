@@ -49,7 +49,7 @@ Top/front lighter; underside/back/contact darker when supported. Avoid pillow sh
 ## Coherent Styling Window / Anti-Micro-Loop
 Plan material/palette/form/identity first. Prove one representative patch/cohort; formula/gradient/color count is not quality evidence. Then execute cohort-wide.
 Broad regions → `draw_shape_tool`/`paint_fill_tool`; disconnected same-color detail → one `paint_with_brush` batch (`connect_strokes=false`).
-**No evidence-per-micro-mutation loop.** One coherent pass → one coverage read; no unchanged rescan/capture.
+**No evidence-per-micro-mutation loop.** One pass → one `list_textures` coverage read; no unchanged rescan/capture.
 Variants preserve production base role + compatible dimensions/mapping.
 
 ## Texture Verify
