@@ -86,7 +86,7 @@ describe("P1.4 stateless Streamable HTTP ownership", () => {
     expect(indexSource).not.toContain("sessionTransports");
     expect(indexSource).not.toContain("mcp_session_timeout");
     expect(indexSource).not.toContain("mcp_sse_heartbeat");
-    expect(indexSource).toContain("const candidate = createNetServer(nativeNet, config)");
+    expect(indexSource).toContain("const candidate = createNetServer(nativeNet, { ...config, generation })");
     expect(indexSource).toContain("await waitForServerListening(candidate)");
 
     expect(settingsSource).not.toContain("mcp_session_timeout");

@@ -871,14 +871,14 @@ export default function createNetServer (
     if (closePromise) return closePromise
     shuttingDown = true
 
-    if (!httpServer.listening) {
-      httpServer.closeActiveSockets()
-      return Promise.resolve()
-    }
-
+    // `listen()` is asynchronous. Calling close immediately after listen can
+    // report ERR_SERVER_NOT_RUNNING while still cancelling the pending bind.
+    // Treat that specific callback result as successful shutdown so plugin
+    // reload cannot leave a ghost listener between generations.
     closePromise = new Promise<void>((resolve, reject) => {
       httpServer.close((error?: Error) => {
-        if (error) reject(error)
+        const code = (error as (Error & { code?: string }) | undefined)?.code
+        if (error && code !== 'ERR_SERVER_NOT_RUNNING') reject(error)
         else resolve()
       })
     })

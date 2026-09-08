@@ -22,6 +22,8 @@ describe("pre-local plugin runtime cleanup", () => {
     const index = await source("index.ts");
     const tools = await source("server/tools.ts");
 
+    const candidateCreated = index.indexOf("const candidate = createNetServer(nativeNet");
+    const candidateOwned = index.indexOf("httpServer = candidate;", candidateCreated);
     const listeningHook = index.indexOf('server.once("listening"');
     const errorHook = index.indexOf('server.once("error"');
     const bindCleanup = index.indexOf("candidate.closeActiveSockets()", errorHook);
@@ -30,6 +32,8 @@ describe("pre-local plugin runtime cleanup", () => {
     const readyUi = index.indexOf("uiSetup({");
 
     expect(index).toContain('BBPlugin.register("blockit_mcp"');
+    expect(candidateCreated).toBeGreaterThan(-1);
+    expect(candidateOwned).toBeGreaterThan(candidateCreated);
     expect(listeningHook).toBeGreaterThan(-1);
     expect(errorHook).toBeGreaterThan(-1);
     expect(bindCleanup).toBeGreaterThan(errorHook);
@@ -65,6 +69,7 @@ describe("pre-local plugin runtime cleanup", () => {
     expect(index).not.toContain("async onunload() {");
     expect(index).toContain("claimRuntimeGeneration(currentBuildIdentity())");
     expect(index).toContain("beginBlockItRuntimeTeardown();");
+    expect(index).toContain("initializationInProgress = null;");
     expect(lifecycle).toContain("priorTeardown");
     expect(lifecycle).toContain("beginRuntimeGenerationTeardown");
   });
@@ -85,6 +90,7 @@ describe("pre-local plugin runtime cleanup", () => {
     expect(net).toContain("activeSockets");
     expect(net).toContain("closeActiveSockets");
     expect(net).toContain("waitForRuntimeOperationDrain()");
+    expect(net).toContain("ERR_SERVER_NOT_RUNNING");
     expect(ui).toContain("toolTestDialogTeardown()");
     expect(ui).toContain("promptPreviewDialogTeardown()");
     expect(ui).toContain("panelCssHandle?.delete()");

@@ -37,7 +37,7 @@ describe("P1.2 MCP family gates", () => {
 
     const settingsSetup = indexSource.indexOf("settingsSetup();");
     const gatedRegistration = indexSource.indexOf("registerMcpProfile(");
-    const serverStartup = indexSource.indexOf("if (!(await startMcpServer())) return;");
+    const serverStartup = indexSource.indexOf("if (!(await startMcpServer(generation))) return;");
     expect(settingsSetup).toBeGreaterThan(-1);
     expect(gatedRegistration).toBeGreaterThan(settingsSetup);
     expect(serverStartup).toBeGreaterThan(gatedRegistration);

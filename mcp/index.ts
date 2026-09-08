@@ -123,6 +123,7 @@ async function waitForServerListening(server: NetServer): Promise<void> {
     const cleanup = () => {
       server.off("listening", onListening);
       server.off("error", onError);
+      server.off("close", onClose);
       if (timer) clearTimeout(timer);
       timer = null;
     };
@@ -134,8 +135,13 @@ async function waitForServerListening(server: NetServer): Promise<void> {
       cleanup();
       reject(error);
     };
+    const onClose = () => {
+      cleanup();
+      reject(new Error("BlockIT MCP listener closed before binding completed."));
+    };
     server.once("listening", onListening);
     server.once("error", onError);
+    server.once("close", onClose);
     timer = setTimeout(() => {
       cleanup();
       reject(
@@ -160,6 +166,9 @@ async function startMcpServer(generation: number): Promise<boolean> {
   const config = serverConfig;
   setStatusBarState("starting", `binding ${config.port}`);
   const candidate = createNetServer(nativeNet, { ...config, generation });
+  // Keep the pending listener owned so unload/restart can quiesce it even before
+  // Node emits `listening`. UI readiness is still published only after bind.
+  httpServer = candidate;
 
   try {
     await waitForServerListening(candidate);
@@ -167,6 +176,7 @@ async function startMcpServer(generation: number): Promise<boolean> {
     const reason = error instanceof Error ? error.message : String(error);
     candidate.closeActiveSockets();
     await candidate.closeAndWait();
+    if (httpServer === candidate) httpServer = null;
     if (isRuntimeGenerationCurrent(generation)) {
       markRuntimeGenerationState(generation, "failed");
       setStatusBarState("failed", reason);
@@ -179,11 +189,11 @@ async function startMcpServer(generation: number): Promise<boolean> {
   }
 
   if (!isRuntimeGenerationCurrent(generation)) {
+    if (httpServer === candidate) httpServer = null;
     await candidate.closeAndWait();
     return false;
   }
 
-  httpServer = candidate;
   markRuntimeGenerationState(generation, "running");
   setStatusBarState("running", `${config.port}${config.endpoint}`);
   return true;
@@ -230,6 +240,7 @@ function beginBlockItRuntimeTeardown(
   if (generation !== null && runtimeGeneration === generation) {
     runtimeGeneration = null;
   }
+  initializationInProgress = null;
 
   // Blockbench does not await plugin onunload(). Detach user-facing and callback
   // ownership synchronously, then let the global lifecycle barrier finish native
