@@ -14,6 +14,7 @@ import { wireTextureQualityRuntime } from "@/server/tools/texture-quality-runtim
 import { wireTextureAuthoringRuntime } from "@/server/tools/texture-authoring-runtime";
 import { wireAnimationNativeIntelligence } from "@/server/tools/animation-native-intelligence";
 import { wireAnimationControllerNativeIntelligence } from "@/server/tools/animation-controller-native-intelligence";
+import { wireAnimationRuntimeResourceIntelligence } from "@/server/tools/animation-runtime-resource-intelligence";
 import {
   DEFAULT_MCP_REGISTRATION_PROFILE,
   type McpRegistrationProfile,
@@ -27,6 +28,7 @@ wireTextureQualityRuntime();
 wireTextureAuthoringRuntime();
 wireAnimationNativeIntelligence();
 wireAnimationControllerNativeIntelligence();
+wireAnimationRuntimeResourceIntelligence();
 
 /**
  * Phase-aware server instructions are part of the agent contract: Codex must

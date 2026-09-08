@@ -1,7 +1,7 @@
 # BlockIT — Animation Standard
 
 **Status:** Active Policy  
-**Version:** 1.2  
+**Version:** 1.3  
 **Updated:** 2026-09-09
 
 ## Purpose
@@ -199,6 +199,35 @@ Controller states may link an Animation or another AnimationController. Nested-c
 
 `blend_transition`, `blend_via_shortest_path`, and normalized `blend_transition_curve` are native state properties. **controller blend-curve mutation** is supported through `native_operations`; curve time is normalized 0..1 and requires a positive effective blend duration. Controller randomness should normally select intentional alternatives rather than randomize arbitrary bone transforms every frame.
 
+## Runtime Resource Wiring
+
+A valid clip/controller is not Minecraft-active until the resource definition connects it. `manage_animation_controller(resource_operations=[...])` owns bounded file-backed runtime resource edits without creating another MCP tool.
+
+For `resource_kind="client_entity"`, the supported cohort is:
+
+```text
+description.animations shortname → animation.* / controller.animation.*
+scripts.animate shortname + optional Molang condition
+scripts.pre_animation variable assignments
+description.sound_effects shortname → sound identifier
+existing description.particle_effects mappings are preserved and validated
+```
+
+Resource mutation requires an explicit `.json` source path or inline content. A supplied source path may be updated in place; another existing output requires `overwrite=true`. Candidate JSON is validated before a verified atomic write. Unknown sibling fields are preserved.
+
+`set_animate` requires its shortname to resolve through `description.animations` in the same final candidate. `pre_animation` authoring is variable-oriented: upsert/remove one named `variable.*` assignment rather than replacing unrelated scripts.
+
+## Controller State Variables / Remap Curves
+
+Bedrock controller states may define `variables` whose `input` is Molang and whose optional `remap_curve` linearly maps input to output. Use file-backed `resource_kind="animation_controller"` operations:
+
+```text
+set_state_variable(state, name, input, remap_curve?)
+remove_state_variable(state, name)
+```
+
+Remap inputs must be finite and unique; BlockIT sorts them deterministically and bounds one authored curve to 2–32 points. This path is intentionally file-backed because the current Blockbench native `AnimationControllerState` model does not preserve `variables/remap_curve` on round-trip. Do not claim native Blockbench state ownership for these fields; the authored JSON resource is the authority until Blockbench exposes a lossless native owner.
+
 ## Perspective
 
 First-person and third-person presentations may share action intent without sharing identical motion. When both are required, evaluate framing, visible bones, weapon/readability path, camera proximity, clipping, and recovery silhouette. Reuse only motion that remains valid for both perspectives.
@@ -214,10 +243,15 @@ used / unknown Molang math symbols
 query / variable / temp / context dependencies
 version-sensitive and nondeterministic math
 loaded client-entity mapping / pre_animation evidence
+runtime dependency graph: roots → controller aliases → clips
+unbound sound / particle shortnames
+unreachable loaded animation aliases
 numeric motion path / speed / acceleration / jerk
 loop boundary velocity evidence
 root-motion and loop-seam/cadence evidence
 ```
+
+Runtime dependency diagnostics are graph evidence, not gameplay truth. Missing mappings/effect bindings are actionable errors; an unresolved variable producer is only a candidate because a controller state variable, game runtime, or other intentional producer may own it. Unreachable loaded aliases are warnings because external triggering paths can exist.
 
 These are review candidates, not an animation quality score. Numeric motion dynamics use Blockbench units for position, degrees for rotation, and unitless scale. They cannot prove weight, contact quality, gameplay velocity, or visual appeal without visual/runtime evidence.
 
@@ -241,11 +275,9 @@ For cyclic/idle motion, repeated full-loop playback is required; static snapshot
 
 ## Current Capability Boundary
 
-Retained strengths include numeric/Molang transform keys, rig/pivots, timeline settings, batch/copy operations, authored Animation inspection, new-animation particle/sound effects, existing-animation particle/sound/timeline effect mutation, `anim_time_update` / `blend_weight`, native `start_delay` / `loop_delay` / `override_previous_animation`, hold mode, `relative_to.rotation=entity`, bounded AnimationController state/effects, nested AnimationController composition with cycle guard, and native controller blend curves.
+Retained strengths include numeric/Molang transform keys, rig/pivots, timeline settings, batch/copy operations, authored Animation inspection, new-animation particle/sound effects, existing-animation particle/sound/timeline effect mutation, `anim_time_update` / `blend_weight`, native `start_delay` / `loop_delay` / `override_previous_animation`, hold mode, `relative_to.rotation=entity`, bounded AnimationController state/effects, nested AnimationController composition with cycle guard, native controller blend curves, client-entity animation/sound/pre-animation runtime wiring, file-backed controller state variables/remap curves, and end-to-end loaded runtime dependency diagnostics.
 
-Protected gaps remain:
-- bone-binding expressions beyond native `relative_to.rotation=entity`;
-- authoring client-entity `description.animations`, `scripts.animate`, and `scripts.pre_animation`;
-- controller variable/remap-curve authoring where the current Blockbench controller model does not expose a safe bounded mutation owner.
+Protected gap remains:
+- bone-binding expressions beyond native `relative_to.rotation=entity`.
 
-Do not route protected gaps through `risky_eval`, generic UI actions, or direct JSON surgery as a normal authoring workflow.
+File-backed controller variables/remap curves are Bedrock resource authoring, not native Blockbench controller-state round-trip. Source/static proof does not establish installed Blockbench behavior or Minecraft playback. Do not route protected gaps through `risky_eval` or generic UI actions.
