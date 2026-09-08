@@ -25,6 +25,11 @@ import {
   normalizeProjectAffinityUuid,
   type RuntimeProjectHealth
 } from '@/gateway/projectAffinity'
+import {
+  RuntimeGenerationRetiredError,
+  runRuntimeOperationExclusive,
+  waitForRuntimeOperationDrain
+} from '@/lib/runtimeLifecycle'
 
 const INSTANCE_ID = crypto.randomUUID()
 const STARTUP_TIME = new Date().toISOString()
@@ -351,29 +356,27 @@ export default function createNetServer (
     endpoint,
     host = '127.0.0.1',
     profile = DEFAULT_MCP_REGISTRATION_PROFILE,
-    phase = DEFAULT_MCP_AUTHORING_PHASE
+    phase = DEFAULT_MCP_AUTHORING_PHASE,
+    generation = null
   }: {
     endpoint: string
     port: number
     host?: string
     profile?: McpRegistrationProfile
     phase?: McpAuthoringPhase
+    generation?: number | null
   }
 ): NetServer {
   const activeSockets = new Set<Socket>()
-  let runtimeRequestTail: Promise<void> = Promise.resolve()
-
-  function runRuntimeRequestExclusive<T> (operation: () => Promise<T>): Promise<T> {
-    const execute = async (): Promise<T> => await operation()
-    const run = runtimeRequestTail.then(execute, execute)
-    runtimeRequestTail = run.then(
-      () => undefined,
-      () => undefined
-    )
-    return run
-  }
+  let shuttingDown = false
+  let closePromise: Promise<void> | null = null
 
   const httpServer = createServer((socket: Socket) => {
+    if (shuttingDown) {
+      socket.destroy()
+      return
+    }
+
     activeSockets.add(socket)
     let buffer = Buffer.alloc(0)
     let socketEnded = false
@@ -385,7 +388,7 @@ export default function createNetServer (
     })
 
     socket.on('data', (chunk: Buffer) => {
-      if (socketEnded) return
+      if (socketEnded || shuttingDown) return
       buffer = Buffer.concat([buffer, chunk])
       void processBufferedRequests()
     })
@@ -408,12 +411,12 @@ export default function createNetServer (
     })
 
     async function processBufferedRequests (): Promise<void> {
-      if (processing || awaitingDrain) return
+      if (processing || awaitingDrain || shuttingDown) return
       processing = true
 
       try {
         while (true) {
-          if (socketEnded || socket.destroyed || !socket.writable) return
+          if (shuttingDown || socketEnded || socket.destroyed || !socket.writable) return
 
           const headerEnd = buffer.indexOf('\r\n\r\n')
           if (headerEnd === -1) {
@@ -741,8 +744,8 @@ export default function createNetServer (
                 )
               : await execute()
             const response = envelope.method === 'tools/call'
-              ? await runRuntimeRequestExclusive(async () => {
-                  if (socket.destroyed || !socket.writable) {
+              ? await runRuntimeOperationExclusive(generation, async () => {
+                  if (socket.destroyed || !socket.writable || shuttingDown) {
                     throw new RuntimeRequestAbandonedError()
                   }
                   return await dispatch()
@@ -763,7 +766,10 @@ export default function createNetServer (
               return
             }
           } catch (error) {
-            if (error instanceof RuntimeRequestAbandonedError) return
+            if (
+              error instanceof RuntimeRequestAbandonedError ||
+              error instanceof RuntimeGenerationRetiredError
+            ) return
             if (error instanceof RuntimeProjectContextError && !error.outcomeUnknown) {
               sendResponse(
                 socket,
@@ -862,14 +868,29 @@ export default function createNetServer (
   }
 
   httpServer.closeAndWait = () => {
-    httpServer.closeActiveSockets()
-    if (!httpServer.listening) return Promise.resolve()
-    return new Promise<void>((resolve, reject) => {
+    if (closePromise) return closePromise
+    shuttingDown = true
+
+    if (!httpServer.listening) {
+      httpServer.closeActiveSockets()
+      return Promise.resolve()
+    }
+
+    closePromise = new Promise<void>((resolve, reject) => {
       httpServer.close((error?: Error) => {
         if (error) reject(error)
         else resolve()
       })
     })
+
+    // Stop accepting immediately, but let the one already-running native tool
+    // finish before destroying its socket. This keeps reload/restart deterministic
+    // without letting stale keep-alive connections delay listener replacement.
+    void waitForRuntimeOperationDrain().finally(() => {
+      httpServer.closeActiveSockets()
+    })
+
+    return closePromise
   }
 
   httpServer.listen(port, host, () => {

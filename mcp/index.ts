@@ -45,11 +45,21 @@ import { setupI18n } from "@/ui/i18n";
 import { initPromptLoader } from "@/lib/promptLoader";
 import type { NetServer } from "@/server/net";
 import createNetServer from "@/server/net";
+import {
+  beginRuntimeGenerationTeardown,
+  claimRuntimeGeneration,
+  isRuntimeGenerationCurrent,
+  markRuntimeGenerationState,
+  type RuntimeGenerationClaim,
+} from "@/lib/runtimeLifecycle";
 import { getIcon } from "@/macros/getIcon" with { type: "macro" };
 
 type LocalDevFileWatcher = { close(): void };
 type LocalDevFilesystem = {
-  watch(path: string, listener: () => void): LocalDevFileWatcher;
+  watch(
+    path: string,
+    listener: (eventType?: string, filename?: string | Buffer) => void
+  ): LocalDevFileWatcher;
   readFileSync(path: string, encoding: "utf8"): string;
 };
 type ReloadableBlockItPlugin = {
@@ -60,6 +70,8 @@ type ReloadableBlockItPlugin = {
   isReloadable?: () => boolean;
 };
 
+const SERVER_BIND_TIMEOUT_MS = 3_000;
+
 let httpServer: NetServer | null = null;
 let profileActions: Action[] = [];
 let nativeNet: Parameters<typeof createNetServer>[0] | null = null;
@@ -69,6 +81,8 @@ let serverConfig: {
   profile: ReturnType<typeof resolveMcpRegistrationProfile>;
   phase: McpAuthoringPhase;
 } | null = null;
+let runtimeGeneration: number | null = null;
+let initializationInProgress: Promise<void> | null = null;
 let restartInProgress: Promise<void> | null = null;
 let localDevFileWatcher: LocalDevFileWatcher | null = null;
 let localDevReloadTimer: ReturnType<typeof setTimeout> | null = null;
@@ -105,9 +119,12 @@ async function waitForServerListening(server: NetServer): Promise<void> {
   if (server.listening) return;
 
   await new Promise<void>((resolve, reject) => {
+    let timer: ReturnType<typeof setTimeout> | null = null;
     const cleanup = () => {
       server.off("listening", onListening);
       server.off("error", onError);
+      if (timer) clearTimeout(timer);
+      timer = null;
     };
     const onListening = () => {
       cleanup();
@@ -119,15 +136,30 @@ async function waitForServerListening(server: NetServer): Promise<void> {
     };
     server.once("listening", onListening);
     server.once("error", onError);
+    timer = setTimeout(() => {
+      cleanup();
+      reject(
+        new Error(
+          `BlockIT MCP listener did not bind within ${SERVER_BIND_TIMEOUT_MS}ms.`
+        )
+      );
+    }, SERVER_BIND_TIMEOUT_MS);
   });
 }
 
-async function startMcpServer(): Promise<boolean> {
-  if (!nativeNet || !serverConfig || httpServer) return false;
+async function startMcpServer(generation: number): Promise<boolean> {
+  if (
+    !isRuntimeGenerationCurrent(generation) ||
+    !nativeNet ||
+    !serverConfig ||
+    httpServer
+  ) {
+    return false;
+  }
 
   const config = serverConfig;
   setStatusBarState("starting", `binding ${config.port}`);
-  const candidate = createNetServer(nativeNet, config);
+  const candidate = createNetServer(nativeNet, { ...config, generation });
 
   try {
     await waitForServerListening(candidate);
@@ -135,30 +167,51 @@ async function startMcpServer(): Promise<boolean> {
     const reason = error instanceof Error ? error.message : String(error);
     candidate.closeActiveSockets();
     await candidate.closeAndWait();
-    setStatusBarState("failed", reason);
-    Blockbench.showQuickMessage(
-      `BlockIT MCP failed to start: ${reason}. Close the old MCP instance or free port ${config.port}.`,
-      6000
-    );
+    if (isRuntimeGenerationCurrent(generation)) {
+      markRuntimeGenerationState(generation, "failed");
+      setStatusBarState("failed", reason);
+      Blockbench.showQuickMessage(
+        `BlockIT MCP failed to start: ${reason}. Close the old MCP instance or free port ${config.port}.`,
+        6000
+      );
+    }
+    return false;
+  }
+
+  if (!isRuntimeGenerationCurrent(generation)) {
+    await candidate.closeAndWait();
     return false;
   }
 
   httpServer = candidate;
+  markRuntimeGenerationState(generation, "running");
   setStatusBarState("running", `${config.port}${config.endpoint}`);
   return true;
 }
 
 async function restartMcpServer(): Promise<void> {
-  if (restartInProgress || !nativeNet || !serverConfig) return;
+  const generation = runtimeGeneration;
+  if (
+    restartInProgress ||
+    generation === null ||
+    !isRuntimeGenerationCurrent(generation) ||
+    !nativeNet ||
+    !serverConfig
+  ) {
+    return;
+  }
 
   restartInProgress = (async () => {
+    markRuntimeGenerationState(generation, "starting");
     setStatusBarState("starting", "restarting");
     const current = httpServer;
     httpServer = null;
     if (current) await current.closeAndWait();
 
-    const started = await startMcpServer();
-    if (started) {
+    if (!isRuntimeGenerationCurrent(generation)) return;
+
+    const started = await startMcpServer(generation);
+    if (started && isRuntimeGenerationCurrent(generation)) {
       Blockbench.showQuickMessage(
         "BlockIT MCP server restarted. Gateway-backed clients recover automatically; direct native MCP clients may need to refresh.",
         4000
@@ -171,32 +224,52 @@ async function restartMcpServer(): Promise<void> {
   await restartInProgress;
 }
 
-async function teardownBlockItRuntime(): Promise<void> {
+function beginBlockItRuntimeTeardown(
+  generation: number | null = runtimeGeneration
+): void {
+  if (generation !== null && runtimeGeneration === generation) {
+    runtimeGeneration = null;
+  }
+
+  // Blockbench does not await plugin onunload(). Detach user-facing and callback
+  // ownership synchronously, then let the global lifecycle barrier finish native
+  // operation drain and listener shutdown before a new generation binds.
   stopLocalDevAutoReload();
   setMcpPhaseSwitchHandler(() => undefined);
   setMcpProfileSwitchHandler(() => undefined);
   clearExtendedMcpProfileHandler();
+  uiTeardown();
+  teardownProfileActions();
+  settingsTeardown();
 
   const pendingRestart = restartInProgress;
-  if (pendingRestart) {
-    try {
-      await pendingRestart;
-    } catch {
-      // The restart path already reports its own failure; teardown continues.
-    }
-  }
   restartInProgress = null;
-
   const current = httpServer;
   httpServer = null;
-  if (current) await current.closeAndWait();
+  const closePromise = current?.closeAndWait() ?? Promise.resolve();
 
   nativeNet = null;
   serverConfig = null;
 
-  uiTeardown();
-  teardownProfileActions();
-  settingsTeardown();
+  if (generation === null) {
+    void closePromise.catch((error) => {
+      console.error("[MCP] BlockIT listener cleanup failed", error);
+    });
+    return;
+  }
+
+  void beginRuntimeGenerationTeardown(generation, async () => {
+    if (pendingRestart) {
+      try {
+        await pendingRestart;
+      } catch {
+        // Restart reports its own failure; teardown still owns final listener close.
+      }
+    }
+    await closePromise;
+  }).catch((error) => {
+    console.error("[MCP] BlockIT runtime teardown failed", error);
+  });
 }
 
 function getReloadableBlockItPlugin(): ReloadableBlockItPlugin | null {
@@ -211,8 +284,22 @@ function getReloadableBlockItPlugin(): ReloadableBlockItPlugin | null {
   );
 }
 
-function setupLocalDevAutoReload(): void {
-  if (process.env.NODE_ENV !== "development" || localDevFileWatcher) return;
+function splitPluginPath(path: string): { directory: string; filename: string } {
+  const slash = Math.max(path.lastIndexOf("/"), path.lastIndexOf("\\"));
+  return {
+    directory: slash >= 0 ? path.slice(0, slash) || "." : ".",
+    filename: slash >= 0 ? path.slice(slash + 1) : path,
+  };
+}
+
+function setupLocalDevAutoReload(generation: number): void {
+  if (
+    process.env.NODE_ENV !== "development" ||
+    localDevFileWatcher ||
+    !isRuntimeGenerationCurrent(generation)
+  ) {
+    return;
+  }
 
   const plugin = getReloadableBlockItPlugin();
   if (
@@ -236,7 +323,7 @@ function setupLocalDevAutoReload(): void {
 
   // @ts-ignore - requireNativeModule is a Blockbench desktop global.
   const devFs = requireNativeModule("fs", {
-    message: "BlockIT development sync watches its local plugin file for successful rebuilds.",
+    message: "BlockIT development sync watches its local plugin directory for successful atomic rebuilds.",
     detail: "This is used only by development builds to reload the file-based BlockIT plugin automatically.",
     optional: true,
   }) as LocalDevFilesystem | null;
@@ -245,11 +332,21 @@ function setupLocalDevAutoReload(): void {
     return;
   }
 
+  const { directory: watchDirectory, filename: pluginFilename } = splitPluginPath(
+    plugin.path
+  );
+
   const scheduleReload = () => {
+    if (!isRuntimeGenerationCurrent(generation)) return;
     if (localDevReloadTimer) clearTimeout(localDevReloadTimer);
     localDevReloadTimer = setTimeout(() => {
       localDevReloadTimer = null;
-      if (localDevReloadInProgress) return;
+      if (
+        localDevReloadInProgress ||
+        !isRuntimeGenerationCurrent(generation)
+      ) {
+        return;
+      }
 
       let nextContent: string;
       try {
@@ -262,13 +359,14 @@ function setupLocalDevAutoReload(): void {
       const nextBuildIdentity = embeddedBuildIdentity(nextContent);
       if (!nextBuildIdentity || nextBuildIdentity === runningBuildIdentity) return;
 
-      localDevReloadInProgress = (async () => {
-        console.log(
-          `[MCP] Development bundle changed ${runningBuildIdentity} → ${nextBuildIdentity}; safely reloading BlockIT.`
-        );
-        await teardownBlockItRuntime();
-        plugin.reload?.();
-      })()
+      localDevReloadInProgress = Promise.resolve()
+        .then(() => {
+          if (!isRuntimeGenerationCurrent(generation)) return;
+          console.log(
+            `[MCP] Development bundle changed ${runningBuildIdentity} → ${nextBuildIdentity}; reloading BlockIT through native plugin lifecycle.`
+          );
+          plugin.reload?.();
+        })
         .catch((error) => {
           console.error("[MCP] Automatic development plugin reload failed", error);
           Blockbench.showQuickMessage(
@@ -283,8 +381,20 @@ function setupLocalDevAutoReload(): void {
   };
 
   try {
-    localDevFileWatcher = devFs.watch(plugin.path, scheduleReload);
-    console.log(`[MCP] dev:sync auto-reload watching ${plugin.path}`);
+    localDevFileWatcher = devFs.watch(
+      watchDirectory,
+      (_eventType, changedFilename) => {
+        if (changedFilename !== undefined) {
+          const changed = String(changedFilename).replace(/\\/g, "/").split("/").pop();
+          if (changed && changed !== pluginFilename) return;
+        }
+        scheduleReload();
+      }
+    );
+    console.log(`[MCP] dev:sync auto-reload watching ${watchDirectory}`);
+    // One cheap startup reconciliation closes the missed-event window created by
+    // atomic file replacement; production builds never execute this path.
+    scheduleReload();
   } catch (error) {
     console.warn("[MCP] dev:sync auto-reload watcher could not start", error);
   }
@@ -294,7 +404,7 @@ function setupProfileActions(): void {
   profileActions = [
     new Action("blockit_restart_mcp_server", {
       name: "Restart BlockIT MCP Server",
-      description: "Safely close MCP sockets and bind the local server again.",
+      description: "Safely drain native work, close MCP sockets and bind the local server again.",
       icon: "refresh",
       plugin: "blockit_mcp",
       click: () => void restartMcpServer(),
@@ -322,6 +432,122 @@ function teardownProfileActions(): void {
   profileActions = [];
 }
 
+async function initializeBlockItRuntime(
+  claim: RuntimeGenerationClaim
+): Promise<void> {
+  const { generation, priorTeardown } = claim;
+  await priorTeardown;
+  if (!isRuntimeGenerationCurrent(generation)) return;
+
+  // Get network module with Blockbench permission handling.
+  const net = requireNativeModule("net", {
+    message: "Network access is required for the MCP server to accept connections.",
+    detail: "The MCP plugin needs to create a local server that AI assistants can connect to.",
+    optional: false,
+  });
+
+  if (!net) {
+    markRuntimeGenerationState(generation, "failed");
+    console.error("[MCP] Failed to get net module - server will not start");
+    Blockbench.showQuickMessage("MCP Server requires network permission", 3000);
+    return;
+  }
+  nativeNet = net;
+
+  setupI18n();
+  settingsSetup();
+  setupProfileActions();
+  setMcpProfileSwitchHandler((profile) => {
+    if (!isRuntimeGenerationCurrent(generation)) return;
+    if (serverConfig) serverConfig.profile = profile;
+    Blockbench.showQuickMessage(
+      `BlockIT compatibility surface switched to ${profile}. Gateway clients refresh automatically.`,
+      2000
+    );
+  });
+
+  const rawPort = Number(Settings.get("mcp_port") || 3000);
+  if (!Number.isInteger(rawPort) || rawPort < 1 || rawPort > 65535) {
+    markRuntimeGenerationState(generation, "failed");
+    console.error(
+      `[MCP] Invalid mcp_port value "${Settings.get("mcp_port")}" - server will not start. Set a port between 1 and 65535 in plugin settings.`
+    );
+    Blockbench.showQuickMessage("MCP Server: invalid port in settings", 3000);
+    return;
+  }
+
+  // Bedrock Entity remains the catalog truth. The optional extended setting
+  // adds Legacy UI Fallback families for debug/maintenance compatibility.
+  // Geometry and Texturing still share AUTHORING; Animation remains separate.
+  const registrationProfile = resolveMcpRegistrationProfile(
+    isExtendedMcpFamiliesEnabled()
+  );
+  registerMcpProfile(registrationProfile);
+  setExtendedMcpProfileHandler((enabled) => {
+    if (!isRuntimeGenerationCurrent(generation)) return;
+    applyMcpRegistrationProfile(resolveMcpRegistrationProfile(enabled));
+  });
+
+  let authoringPhase: McpAuthoringPhase;
+  try {
+    authoringPhase = resolveMcpAuthoringPhase(
+      Settings.get(MCP_AUTHORING_PHASE_SETTING_ID)
+    );
+  } catch (error) {
+    markRuntimeGenerationState(generation, "failed");
+    console.error("[MCP] Invalid authoring phase setting - server will not start", error);
+    Blockbench.showQuickMessage(
+      "MCP Server: invalid Authoring Phase setting",
+      3000
+    );
+    return;
+  }
+  applyMcpToolSurface(registrationProfile, authoringPhase);
+  setMcpPhaseSwitchHandler((targetPhase) => {
+    if (!isRuntimeGenerationCurrent(generation)) return;
+    const activeProfile = getActiveMcpRegistrationProfile();
+    applyMcpToolSurface(activeProfile, targetPhase);
+    if (serverConfig) {
+      serverConfig.profile = activeProfile;
+      serverConfig.phase = targetPhase;
+    }
+    Blockbench.showQuickMessage(
+      `BlockIT MCP phase switched to ${targetPhase}. Gateway clients refresh automatically.`,
+      2000
+    );
+  });
+
+  // Runtime-conditional resource (depends on the reference_models plugin).
+  registerReferenceModelsResource();
+
+  // Local prompt content is bundled into this BlockIT build. Compatible user
+  // overrides remain local; stale pre-phase overrides are discarded safely.
+  await initPromptLoader();
+  if (!isRuntimeGenerationCurrent(generation)) return;
+
+  // P1.4 default transport is request-owned/stateless Streamable HTTP on
+  // loopback. No session timeout, ping, heartbeat, or Mcp-Session-Id state is
+  // configured at plugin lifecycle level.
+  serverConfig = {
+    port: rawPort,
+    endpoint: String(Settings.get("mcp_endpoint") || "/bb-mcp"),
+    profile: registrationProfile,
+    phase: authoringPhase,
+  };
+
+  if (!(await startMcpServer(generation))) return;
+  if (!isRuntimeGenerationCurrent(generation)) return;
+
+  uiSetup({
+    tools,
+    resources,
+    prompts,
+    profile: registrationProfile,
+    phase: authoringPhase,
+  });
+  setupLocalDevAutoReload(generation);
+}
+
 BBPlugin.register("blockit_mcp", {
   version: VERSION,
   title: PRODUCT_NAME,
@@ -333,117 +559,41 @@ BBPlugin.register("blockit_mcp", {
   bug_tracker: PRODUCT_BUG_TRACKER,
   icon: getIcon(),
   variant: "desktop",
-  async onload() {
-    // Guard against double onload without onunload: re-creating the server
-    // would leak the previous listener and keep the port occupied.
-    if (httpServer) {
-      console.error("[MCP] Plugin onload called while the server is already running.");
+  onload() {
+    // Blockbench does not await plugin lifecycle callbacks. Keep this callback
+    // synchronous and let the coordinator-owned generation serialize async boot.
+    if (
+      initializationInProgress ||
+      (runtimeGeneration !== null &&
+        isRuntimeGenerationCurrent(runtimeGeneration))
+    ) {
+      console.error("[MCP] Plugin onload called while this generation is already active.");
       return;
     }
 
-    // Get network module with Blockbench permission handling.
-    const net = requireNativeModule("net", {
-      message: "Network access is required for the MCP server to accept connections.",
-      detail: "The MCP plugin needs to create a local server that AI assistants can connect to.",
-      optional: false,
-    });
-
-    if (!net) {
-      console.error("[MCP] Failed to get net module - server will not start");
-      Blockbench.showQuickMessage("MCP Server requires network permission", 3000);
-      return;
-    }
-    nativeNet = net;
-
-    setupI18n();
-    settingsSetup();
-    setupProfileActions();
-    setMcpProfileSwitchHandler((profile) => {
-      if (serverConfig) serverConfig.profile = profile;
-      Blockbench.showQuickMessage(
-        `BlockIT compatibility surface switched to ${profile}. Gateway clients refresh automatically.`,
-        2000
-      );
-    });
-
-    const rawPort = Number(Settings.get("mcp_port") || 3000);
-    if (!Number.isInteger(rawPort) || rawPort < 1 || rawPort > 65535) {
-      console.error(
-        `[MCP] Invalid mcp_port value "${Settings.get("mcp_port")}" - server will not start. Set a port between 1 and 65535 in plugin settings.`
-      );
-      Blockbench.showQuickMessage("MCP Server: invalid port in settings", 3000);
-      return;
-    }
-
-    // Bedrock Entity remains the catalog truth. The optional extended setting
-    // adds Legacy UI Fallback families for debug/maintenance compatibility.
-    // Geometry and Texturing still share AUTHORING; Animation remains separate.
-    const registrationProfile = resolveMcpRegistrationProfile(
-      isExtendedMcpFamiliesEnabled()
-    );
-    registerMcpProfile(registrationProfile);
-    setExtendedMcpProfileHandler((enabled) => {
-      applyMcpRegistrationProfile(resolveMcpRegistrationProfile(enabled));
-    });
-
-    let authoringPhase: McpAuthoringPhase;
-    try {
-      authoringPhase = resolveMcpAuthoringPhase(
-        Settings.get(MCP_AUTHORING_PHASE_SETTING_ID)
-      );
-    } catch (error) {
-      console.error("[MCP] Invalid authoring phase setting - server will not start", error);
-      Blockbench.showQuickMessage(
-        "MCP Server: invalid Authoring Phase setting",
-        3000
-      );
-      return;
-    }
-    applyMcpToolSurface(registrationProfile, authoringPhase);
-    setMcpPhaseSwitchHandler((targetPhase) => {
-      const activeProfile = getActiveMcpRegistrationProfile();
-      applyMcpToolSurface(activeProfile, targetPhase);
-      if (serverConfig) {
-        serverConfig.profile = activeProfile;
-        serverConfig.phase = targetPhase;
-      }
-      Blockbench.showQuickMessage(
-        `BlockIT MCP phase switched to ${targetPhase}. Gateway clients refresh automatically.`,
-        2000
-      );
-    });
-
-    // Runtime-conditional resource (depends on the reference_models plugin).
-    registerReferenceModelsResource();
-
-    // Local prompt content is bundled into this BlockIT build. Compatible user
-    // overrides remain local; stale pre-phase overrides are discarded safely.
-    await initPromptLoader();
-
-    // P1.4 default transport is request-owned/stateless Streamable HTTP on
-    // loopback. No session timeout, ping, heartbeat, or Mcp-Session-Id state is
-    // configured at plugin lifecycle level.
-    serverConfig = {
-      port: rawPort,
-      endpoint: String(Settings.get("mcp_endpoint") || "/bb-mcp"),
-      profile: registrationProfile,
-      phase: authoringPhase,
-    };
-
-    if (!(await startMcpServer())) return;
-
-    uiSetup({
-      tools,
-      resources,
-      prompts,
-      profile: registrationProfile,
-      phase: authoringPhase,
-    });
-    setupLocalDevAutoReload();
+    const claim = claimRuntimeGeneration(currentBuildIdentity());
+    runtimeGeneration = claim.generation;
+    const initialization = initializeBlockItRuntime(claim);
+    initializationInProgress = initialization;
+    void initialization
+      .catch((error) => {
+        if (!isRuntimeGenerationCurrent(claim.generation)) return;
+        markRuntimeGenerationState(claim.generation, "failed");
+        console.error("[MCP] BlockIT runtime initialization failed", error);
+        Blockbench.showQuickMessage(
+          `BlockIT MCP initialization failed: ${error instanceof Error ? error.message : String(error)}`,
+          6000
+        );
+      })
+      .finally(() => {
+        if (initializationInProgress === initialization) {
+          initializationInProgress = null;
+        }
+      });
   },
 
-  async onunload() {
-    await teardownBlockItRuntime();
+  onunload() {
+    beginBlockItRuntimeTeardown();
   },
 
   oninstall() {

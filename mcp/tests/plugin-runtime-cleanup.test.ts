@@ -26,7 +26,7 @@ describe("pre-local plugin runtime cleanup", () => {
     const errorHook = index.indexOf('server.once("error"');
     const bindCleanup = index.indexOf("candidate.closeActiveSockets()", errorHook);
     const resetServer = index.indexOf("return false;", bindCleanup);
-    const failClosedReturn = index.indexOf("if (!(await startMcpServer())) return;");
+    const failClosedReturn = index.indexOf("if (!(await startMcpServer(generation))) return;");
     const readyUi = index.indexOf("uiSetup({");
 
     expect(index).toContain('BBPlugin.register("blockit_mcp"');
@@ -55,16 +55,36 @@ describe("pre-local plugin runtime cleanup", () => {
     expect(index).toContain("Gateway clients refresh automatically");
   });
 
-  test("plugin unload owns sockets, CSS, dialogs and settings references", async () => {
+  test("Blockbench lifecycle callbacks stay synchronous while async teardown is coordinator-owned", async () => {
+    const index = await source("index.ts");
+    const lifecycle = await source("lib/runtimeLifecycle.ts");
+
+    expect(index).toContain("onload() {");
+    expect(index).toContain("onunload() {");
+    expect(index).not.toContain("async onload() {");
+    expect(index).not.toContain("async onunload() {");
+    expect(index).toContain("claimRuntimeGeneration(currentBuildIdentity())");
+    expect(index).toContain("beginBlockItRuntimeTeardown();");
+    expect(lifecycle).toContain("priorTeardown");
+    expect(lifecycle).toContain("beginRuntimeGenerationTeardown");
+  });
+
+  test("plugin unload detaches UI synchronously and drains listener ownership asynchronously", async () => {
     const index = await source("index.ts");
     const net = await source("server/net.ts");
     const ui = await source("ui/index.ts");
     const status = await source("ui/statusBar.ts");
     const settings = await source("ui/settings.ts");
 
-    expect(index).toContain("if (current) await current.closeAndWait();");
+    const teardownStart = index.indexOf("function beginBlockItRuntimeTeardown");
+    const uiTeardown = index.indexOf("uiTeardown();", teardownStart);
+    const closeCapture = index.indexOf("const closePromise = current?.closeAndWait()", teardownStart);
+    expect(teardownStart).toBeGreaterThan(-1);
+    expect(uiTeardown).toBeGreaterThan(teardownStart);
+    expect(closeCapture).toBeGreaterThan(uiTeardown);
     expect(net).toContain("activeSockets");
     expect(net).toContain("closeActiveSockets");
+    expect(net).toContain("waitForRuntimeOperationDrain()");
     expect(ui).toContain("toolTestDialogTeardown()");
     expect(ui).toContain("promptPreviewDialogTeardown()");
     expect(ui).toContain("panelCssHandle?.delete()");
@@ -72,26 +92,24 @@ describe("pre-local plugin runtime cleanup", () => {
     expect(settings).toContain("settings.splice(0)");
   });
 
-  test("plugin unload waits for the MCP listener to close before clearing ownership", async () => {
-    const index = await source("index.ts");
+  test("native tool serialization survives listener replacement through the global coordinator", async () => {
     const net = await source("server/net.ts");
+    const lifecycle = await source("lib/runtimeLifecycle.ts");
 
-    expect(net).toContain("closeAndWait(): Promise<void>");
-    expect(index).toContain("const current = httpServer;");
-    expect(index).toContain("httpServer = null;");
-    expect(index).toContain("if (current) await current.closeAndWait();");
-    expect(index).toContain("async onunload() {\n    await teardownBlockItRuntime();");
-    expect(index).not.toContain("httpServer.close();");
+    expect(net).toContain("runRuntimeOperationExclusive(generation");
+    expect(net).not.toContain("let runtimeRequestTail: Promise<void>");
+    expect(lifecycle).toContain("operationTail: Promise<void>");
+    expect(lifecycle).toContain("RuntimeGenerationRetiredError");
   });
 
-  test("manual MCP restart closes the old listener before rebinding", async () => {
+  test("manual MCP restart drains the old listener before rebinding the same generation", async () => {
     const index = await source("index.ts");
 
     expect(index).toContain('blockit_restart_mcp_server');
     expect(index).toContain('setStatusBarState("starting", "restarting")');
     expect(index).toContain("const current = httpServer;");
     expect(index).toContain("if (current) await current.closeAndWait();");
-    expect(index).toContain("const started = await startMcpServer();");
+    expect(index).toContain("const started = await startMcpServer(generation);");
     expect(index).not.toContain("Reconnect the Codex MCP client");
   });
 

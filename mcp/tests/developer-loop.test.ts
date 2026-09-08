@@ -68,11 +68,12 @@ describe("developer loop", () => {
     expect(classifyWatchPath("prompts/manifest.json")).toBe("ignore");
   });
 
-  test("dev sync owns build, exact deploy, safe file-plugin reload, and live freshness", async () => {
-    const [packageJson, buildSource, pluginSource, readme] = await Promise.all([
+  test("dev sync owns build, atomic deploy, native reload, and live freshness", async () => {
+    const [packageJson, buildSource, pluginSource, deploySource, readme] = await Promise.all([
       Bun.file("package.json").json(),
       Bun.file("build/index.ts").text(),
       Bun.file("index.ts").text(),
+      Bun.file("scripts/deploy-local.ts").text(),
       Bun.file("README.md").text(),
     ]);
 
@@ -90,9 +91,14 @@ describe("developer loop", () => {
     expect(pluginSource).toContain('process.env.NODE_ENV !== "development"');
     expect(pluginSource).toContain('plugin.source !== "file"');
     expect(pluginSource).toContain('requireNativeModule("fs"');
-    expect(pluginSource).toContain("await teardownBlockItRuntime()");
+    expect(pluginSource).toContain("claimRuntimeGeneration");
+    expect(pluginSource).toContain("beginBlockItRuntimeTeardown");
+    expect(pluginSource).toContain("watchDirectory");
     expect(pluginSource).toContain("plugin.reload?.()");
-    expect(pluginSource).toContain("await current.closeAndWait()");
+    expect(pluginSource).not.toContain("await teardownBlockItRuntime()");
+    expect(deploySource).toContain("await copyFile(source, stagedTarget)");
+    expect(deploySource).toContain("await rename(stagedTarget, target)");
+    expect(deploySource).not.toContain("await copyFile(source, target)");
     expect(readme).toContain("bun run dev:sync");
     expect(readme).toContain("LIVE_SYNCED");
   });
@@ -122,7 +128,7 @@ describe("developer loop", () => {
     }
   });
 
-  test("local deploy copies exact built bytes and preserves build identity", async () => {
+  test("local deploy atomically replaces exact built bytes and preserves build identity", async () => {
     const root = mkdtempSync(join(tmpdir(), "blockit-deploy-copy-"));
     try {
       const sourceDir = join(root, "source");
@@ -132,14 +138,17 @@ describe("developer loop", () => {
 
       const source = join(sourceDir, "blockit_mcp.js");
       const target = join(installDir, "blockit_mcp.js");
+      const stagedTarget = `${target}.next-${process.pid}`;
       const identity = `sha256:${"a".repeat(64)}`;
       const content = `globalThis.__BLOCKIT_BUILD_ID__ = ${JSON.stringify(identity)};\nconsole.log("fixture");\n`;
       await Bun.write(source, content);
+      await Bun.write(target, "old complete plugin\n");
 
       expect(extractBuildIdentity(content)).toBe(identity);
       const receipt = await deployArtifact(source, target);
       expect(receipt).toEqual({ target, build_identity: identity });
       expect(await Bun.file(target).text()).toBe(content);
+      expect(await Bun.file(stagedTarget).exists()).toBe(false);
     } finally {
       rmSync(root, { recursive: true, force: true });
     }

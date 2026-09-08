@@ -1,4 +1,4 @@
-import { copyFile, stat } from "node:fs/promises";
+import { copyFile, rename, rm, stat } from "node:fs/promises";
 import { basename, dirname, isAbsolute, resolve } from "node:path";
 
 const EXPECTED_PLUGIN_FILENAME = "blockit_mcp.js";
@@ -72,14 +72,38 @@ export async function deployArtifact(
     throw new Error(`Local deploy destination parent is not a directory: ${dirname(target)}`);
   }
 
-  await copyFile(source, target);
+  // Never stream new bytes directly into the file Blockbench is watching.
+  // Stage and verify exact bytes first, then perform one filesystem rename so
+  // dev:sync can only observe the previous complete bundle or the next one.
+  const stagedTarget = `${target}.next-${process.pid}`;
+  await rm(stagedTarget, { force: true });
+
+  try {
+    await copyFile(source, stagedTarget);
+    const stagedContent = await Bun.file(stagedTarget).text();
+    if (stagedContent !== sourceContent) {
+      throw new Error(
+        "Local deploy staging verification failed: staged plugin bytes differ from the built artifact."
+      );
+    }
+    if (extractBuildIdentity(stagedContent) !== buildIdentity) {
+      throw new Error(
+        "Local deploy staging verification failed: build_identity changed during staging."
+      );
+    }
+
+    await rename(stagedTarget, target);
+  } catch (error) {
+    await rm(stagedTarget, { force: true });
+    throw error;
+  }
 
   const deployedContent = await Bun.file(target).text();
   if (deployedContent !== sourceContent) {
     throw new Error("Local deploy verification failed: installed plugin bytes differ from the built artifact.");
   }
   if (extractBuildIdentity(deployedContent) !== buildIdentity) {
-    throw new Error("Local deploy verification failed: installed build_identity changed during copy.");
+    throw new Error("Local deploy verification failed: installed build_identity changed during atomic replacement.");
   }
 
   return { target, build_identity: buildIdentity };
