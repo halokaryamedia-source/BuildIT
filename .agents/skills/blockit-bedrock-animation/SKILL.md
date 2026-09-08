@@ -5,11 +5,11 @@ description: Minecraft Bedrock Entity animation specialist for authored motion, 
 
 # BlockIT Bedrock Animation
 
-Use at `ACTIVE PHASE: ANIMATION` after Texturing approval + checkpoint + Animation Readiness Preflight when hierarchy/pivots are suitable.
+Use at `ACTIVE PHASE: ANIMATION` after Texturing approval + checkpoint + Animation Readiness Preflight.
 
 ## Boundary
 
-Animation owns motion, not structural rig mutation. Bone/pivot/IK/parenting defect → `HANDOFF_REQUIRED` to Geometry with reason/readiness/resume target → `switch_authoring_phase` → continue same task. Do not search for `bone_rigging` in Animation. `create_project` is not an Animation capability.
+Animation owns motion, not structural rig mutation. Structural blocker → `HANDOFF_REQUIRED` with `target_phase: geometry`, reason, readiness, resume target → `switch_authoring_phase` → resume same task. Before keys, representative extreme poses preserve attachment/contact/clearance. Do not search for `bone_rigging`; `create_project` is not Animation.
 
 ## Direct Routing
 
@@ -26,9 +26,9 @@ pose/time visual evidence             → capture_model_views(animation_preview)
 `new known clip → create_animation → reuse returned UUID/state; timeline if needed`
 `existing/unknown detail → inspect_animation`
 
-Known capability → Gateway directly. Unknown/stale → one `search_capabilities`; uncertain schema → `describe_capability` once. Reuse fresh UUID/state; no confirmation read after a successful mutation.
+Known → Gateway. Unknown/stale → `search_capabilities`; schema → `describe_capability` once. Reuse fresh UUID/state; known identity must not fall back to broad hierarchy discovery or confirmation reads.
 
-`batch` owns coherent key cohorts, never loops per key; use `batch_operation="offset|scale|reverse|mirror|smooth|bake"`. `operation="properties"` sets any applicable cohort of length/snapping/loop, `anim_time_update`, `blend_weight`, `start_delay`, `loop_delay`, `override_previous_animation`, and bone `relative_to.rotation=entity|parent` in one Undo unit.
+`batch` owns one coherent cohort, not loops per key; use `operation="batch"` + `batch_operation="offset|scale|reverse|mirror|smooth|bake"`. `operation="properties"` batches length/loop, `anim_time_update`, `blend_weight`, `start_delay`, `loop_delay`, `override_previous_animation`, and bone `relative_to.rotation=entity|parent` in one Undo.
 
 ## Motion Design Contract
 
@@ -43,19 +43,19 @@ causal event for sound/particle
 loop seam or neutral/controller handoff
 ```
 
-Archetypes are categories, not presets. No universal FPS, duration, amplitude, phase, keyframe count, or Bezier target. Do not use an animation quality score.
+Archetypes are not presets. No universal FPS, duration, amplitude, phase, keyframe count, or Bezier target. Do not use an animation quality score.
 
-Use Molang for continuous/cyclic/reactive/parameterized motion; authored poses own identity-critical action/contact/silhouette. `q.anim_time` is time-driven; `q.modified_distance_moved` can own travel phase. Chains use `driver → delayed followers`. Material actions preserve `anticipation → action/impact → follow-through → recovery`.
+Use Molang for continuous/cyclic/reactive/parameterized motion; authored poses own identity-critical action/contact/silhouette. `q.anim_time` is time-driven; `q.modified_distance_moved` can own travel phase. Never invent unknown caller values or signed reverse semantics. Chains use `driver → delayed followers`. Material actions preserve `anticipation → action/impact → follow-through → recovery`.
 
 ### Molang / math
 
-No separate math tool. Author Molang directly through transforms, animation properties, controller conditions/blends, and effect scripts. Current official math surface is supported as authored text: trig/inverse trig; clamp/min/max/sign/rounding/mod; lerp/inverse_lerp/lerprotate/hermite; pow/exp/ln/sqrt; random/die-roll; `math.pi`; and `math.ease_{in|out|in_out}_{back|bounce|circ|cubic|elastic|expo|quad|quart|quint|sine}`. Easing math is version-sensitive. Trig uses degrees.
+No separate math tool. Author Molang through transforms, properties, controller conditions/blends, and effects. Current official math surface is accepted: trig/inverse trig; clamp/min/max/sign/rounding/mod; lerp/inverse_lerp/lerprotate/hermite; pow/exp/ln/sqrt; random/die-roll; `math.pi`; and `math.ease_{in|out|in_out}_{back|bounce|circ|cubic|elastic|expo|quad|quart|quint|sine}`. Easing math is version-sensitive; trig uses degrees.
 
-`diagnostics=true` reports used/unknown math, dependencies, version-sensitive/nondeterministic math, native properties, motion dynamics, and loaded client-entity mapping evidence. It never evaluates gameplay truth.
+`diagnostics=true` reports math/dependencies, native properties, motion dynamics, and loaded client-entity wiring without evaluating gameplay truth.
 
 ## Evidence Economy
 
-Do not `set_time` repeatedly for screenshots. Use one `capture_model_views` with `animation_preview.animation_id` and explicit `times`; require `views × times <= 8`.
+Do not `set_time` repeatedly. One `capture_model_views` with `animation_preview.animation_id` + explicit times; `views × times <= 8`.
 
 ```text
 AUTHOR coherent keys/batch
@@ -65,10 +65,10 @@ AUTHOR coherent keys/batch
 → recapture affected cohort
 ```
 
-Verify `DISCOVER → AUTHOR → VERIFY → CORRECT → VERIFY → DONE`; record `IMPROVED | UNCHANGED | REGRESSED`. Cyclic/idle verification requires repeated full-loop playback; snapshots do not prove timing or seam.
+Verify `DISCOVER → AUTHOR → VERIFY → CORRECT → VERIFY → DONE`; record `IMPROVED | UNCHANGED | REGRESSED`. Cyclic/idle verification requires repeated full-loop playback; three static snapshots do not prove timing, phase, contact, or seam.
 
 ## Completion
 
-Internal `PASS` means `READY_FOR_USER_REVIEW`. User approval → checkpoint → Finalization. Structural blocker → Geometry and re-approve affected stages only.
+Internal `PASS` = `READY_FOR_USER_REVIEW`. User approval → checkpoint → Finalization.
 
 Controller blend-curve mutation and bone-binding expressions beyond native `relative_to.rotation=entity` remain protected; never use `risky_eval` or generic UI fallbacks.
