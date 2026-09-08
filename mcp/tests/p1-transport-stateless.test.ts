@@ -25,6 +25,8 @@ describe("P1.4 stateless Streamable HTTP ownership", () => {
     expect(source).toContain("socket.setTimeout(SOCKET_IDLE_TIMEOUT_MS");
     expect(source).toContain("socket.setTimeout(0)");
     expect(source).toContain("const response = envelope.method === 'tools/call'");
+    expect(source).toContain("RuntimeRequestAbandonedError");
+    expect(source).toContain("socket.destroyed || !socket.writable");
     expect(source).toContain("Close each MCP response so a client-side keep-alive socket cannot");
     expect(source).toContain("response.body,\n              'close'");
   });
