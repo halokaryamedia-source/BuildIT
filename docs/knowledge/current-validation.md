@@ -6,7 +6,9 @@ This file owns **current proof interpretation**. Continuation belongs in `docs/k
 
 ## Current Source Proof
 
-### Refresh quality/efficiency delivery — verified candidate, installation pending
+### Refresh quality/efficiency delivery — verified package STAGED, not active
+
+Managed package source `409843cd4384975581f7f34cf46d1d460223d249`; ZIP SHA256 `013713148edcd390712c7eec9459a5642df74d9ff1ddf729c0dd6a324b620bd4`. Compiled installer/platform, repeated isolated installation and compiled Gateway initialization passed in the package builder. Production install returned STAGED because Blockbench/current MCP sessions are active. Read-only pending manifest confirms candidate SHA/build identity; installed.json still names `0a36d05e`. Activation and connected-runtime/installed-skill verification remain pending. Do not claim installation complete or run authoring fixtures. Close applications normally after saving, activate through managed update, then verify identity/connection only.
 
 2026-09-10: user authorized source cleanup and managed installation, explicitly without new visual fixtures. Candidate based on `bf1b7454`: `verify:closure` and final `verify:full` PASS, **818 tests (35 repository + 628 runtime + 155 authoring)**, both typechecks, generated freshness, surface checks and build. Bun 1.3.14 / frozen lockfile unchanged. Logs: `mcp/.cache/refresh-closure.log`, `mcp/.cache/refresh-full.log`. Build identity: `sha256:083fc223dd77dd4039751deee0d07b8d587c5f788d2d49f5780a32c16d50c311`.
 

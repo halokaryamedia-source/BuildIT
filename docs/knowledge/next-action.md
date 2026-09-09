@@ -13,7 +13,7 @@ Branch: **`Local` only**. Proof: `current-validation.md`; ownership: `implementa
 - User rejected the face/neck texture and stopped repeated visual tests. Both assets are frozen; no replacement fixture, limb-cycle test or visual-approval request is authorized.
 - Refresh cleanup is SOURCE_READY: `verify:closure` and `verify:full` passed, 818 tests. Shared-region reads reduced 3 to 1 on the measured input; source proof does not demonstrate improved artwork.
 - Candidate fixes: empty coverage readiness, actionable flat-face examples, `states.styled` renamed `states.varied`, explicit unevaluated Animation tracks, and conflicting runtime guidance. Preserve user assets and existing four Gateway tools.
-- User authorized managed installation of this candidate. Commit locally, package from clean Local, install via manager; STAGED is not active. Installed package is still `0a36d05e` until verified. Do not publish Stable, push, delete old data or start a background polling/service.
+- Package `409843cd` is built and STAGED by managed installer; installed package remains `0a36d05e`. After user saves/closes Blockbench and restarts Codex, activate pending managed update and check SHA/build identity/installed skills/Gateway read-only. No new model tests. Do not publish Stable, push or delete old data.
 - Current source proof is recorded in current-validation. No background polling/service or new authoring tests.
 
 **AUTHORING TAXONOMY**: user-selected `DIRECT | 3D_ASSISTED`, shared AUTHORING; GPU work deferred.
