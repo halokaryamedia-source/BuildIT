@@ -31,6 +31,7 @@ import {
 } from "@/lib/textureVariantPlan";
 import { textureIdSchema } from "@/lib/zodObjects";
 import { createTextureParameters } from "./texture";
+import { registerRenderProfileTools } from "./render-profile";
 
 /**
  * Runtime closure for source-prepared texture contracts. Keeping this adapter
@@ -399,6 +400,8 @@ export function registerPaintTextureTransactionTool(): void {
  */
 export function wireTextureRuntimeContracts(): void {
   if (textureRuntimeContractsWired) return;
+
+  registerRenderProfileTools();
 
   const createDefinition = requireRuntimeToolDefinition("create_texture");
   const originalCreate = createDefinition.execute.bind(createDefinition);
