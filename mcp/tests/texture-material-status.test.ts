@@ -29,6 +29,7 @@ describe("texture material authoring status", () => {
       file_path: "/pack/textures/entity/asset.texture_set.json",
     });
 
+    expect(result.domain).toBe("pbr_texture_set");
     expect(result.sources.surface).toMatchObject({
       mode: "mers_texture",
       alpha_carries_subsurface: true,
