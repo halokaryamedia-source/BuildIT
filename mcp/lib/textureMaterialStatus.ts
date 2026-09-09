@@ -106,6 +106,7 @@ export function analyzeTextureMaterialStatus(input: TextureMaterialStatusInput) 
   if (saveReady && !input.saved) nextActions.push("save_material_config");
 
   return {
+    domain: "pbr_texture_set" as const,
     identity: { uuid: input.uuid, name: input.name },
     sources: {
       color: {
@@ -148,6 +149,6 @@ export function analyzeTextureMaterialStatus(input: TextureMaterialStatusInput) 
     },
     next_actions: nextActions,
     note:
-      "Material status separates preview validity from save-target readiness. MER texture + subsurface_value>0 is MERS: RGB stays metalness/emissive/roughness and alpha carries subsurface.",
+      "PBR Texture Set status is separate from Minecraft entity render_profile and geometry_material_instance. Preview validity and save-target readiness are distinct. MER texture + subsurface_value>0 is MERS: RGB stays metalness/emissive/roughness and alpha carries subsurface.",
   };
 }
