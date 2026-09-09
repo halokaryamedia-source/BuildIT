@@ -9,6 +9,8 @@ This file owns **current proof interpretation**. Continuation belongs in `docs/k
 Repository: `halokaryamedia-source/BuildIT`  
 Branch: **`Local` only**.
 
+Per `GITHUB_RULES.md`, exact-SHA source/CI proof below is reusable only within its stated proof ceiling and does not establish `LOCAL_CODE` or `LIVE_BLOCKBENCH` claims.
+
 ### Final Pre-Local REMOTE_GITHUB hardening — ACCEPTED
 
 The current executable/source closure is accepted at exact `Local` SHA `ab82d8116d9b021f6546239f974256f8423f9c3b`.
