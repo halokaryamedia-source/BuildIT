@@ -276,7 +276,8 @@ async function main(): Promise<void> {
           opacity: 255,
           softness: 0,
           shape: "square",
-          color: "#33669980",
+          // End-point RGB channels avoid Canvas premultiplied-alpha rounding.
+          color: "#0000ff80",
           blend_mode: "default",
         },
         connect_strokes: false,
@@ -296,7 +297,7 @@ async function main(): Promise<void> {
     semanticPixelBefore.y
   );
   expect(
-    semanticColorBefore.color === "#336699" && semanticColorBefore.opacity === 128,
+    semanticColorBefore.color === "#0000ff" && semanticColorBefore.opacity === 128,
     `Exact RGBA pixel mismatch before rebuild: ${JSON.stringify(semanticColorBefore)}.`
   );
 
@@ -352,7 +353,7 @@ async function main(): Promise<void> {
     semanticPixelAfter.y
   );
   expect(
-    semanticColorAfter.color === "#336699" && semanticColorAfter.opacity === 128,
+    semanticColorAfter.color === "#0000ff" && semanticColorAfter.opacity === 128,
     `Native repack did not preserve the semantic face pixel: ${JSON.stringify(semanticColorAfter)}.`
   );
   const afterRebuildHash = imageDigest(await atlasImage(client, baseTextureUuid));
@@ -461,6 +462,13 @@ async function main(): Promise<void> {
   const shapeStart = { x: 2, y: 2 };
   const shapeEnd = { x: 4, y: 4 };
   const outsidePoint = { x: 1, y: 1 };
+  // Use an opaque sentinel: the native picker retains its active RGB on alpha 0.
+  await client.callTool("paint_with_brush", {
+    texture_id: baseTextureUuid,
+    coordinates: [outsidePoint],
+    brush_settings: { size: 1, opacity: 255, softness: 0, shape: "square", color: "#aa5500", blend_mode: "default" },
+    connect_strokes: false,
+  }, "mutation");
   const outsideBefore = await pickPixel(
     client,
     baseTextureUuid,

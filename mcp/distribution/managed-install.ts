@@ -1,8 +1,12 @@
 import { createHash, randomUUID } from "node:crypto";
+import { realpathSync } from "node:fs";
 import { lstat, mkdir, readFile, readdir, rename, rm, writeFile } from "node:fs/promises";
 import { basename, dirname, isAbsolute, join, resolve } from "node:path";
 
 export const REPOSITORY = "halokaryamedia-source/BuildIT";
+// MSIX can expose one installation through logical and physical Windows paths.
+export const sameInstalledPath = (a: string, b: string): boolean =>
+  realpathSync.native(a).toLowerCase() === realpathSync.native(b).toLowerCase();
 export const SKILLS = ["blockit-bedrock-entity-mcp", "blockbench-bedrock-modelling", "blockit-bedrock-texturing", "blockit-bedrock-animation"];
 export const sha256 = (bytes: Uint8Array | string): string => createHash("sha256").update(bytes).digest("hex");
 export type Manifest = { schema: 1; repository: string; source_sha: string; build_identity: string; platform: "windows-x64"; files: Array<{ path: string; size: number; sha256: string }> };
@@ -252,7 +256,7 @@ export async function installedState(root: string): Promise<Installed | null> {
   const raw = await readOptional(join(root, "installed.json"));
   if (!raw) return null;
   const state: Installed = JSON.parse(raw.toString());
-  if (state.schema !== 1 || !/^[a-f0-9]{40}$/.test(state.source_sha) || !state.owned || !state.options || resolve(state.options.root) !== resolve(root)) throw new Error("Invalid installation state.");
+  if (state.schema !== 1 || !/^[a-f0-9]{40}$/.test(state.source_sha) || !state.owned || !state.options || !sameInstalledPath(state.options.root, root)) throw new Error("Invalid installation state.");
   return state;
 }
 

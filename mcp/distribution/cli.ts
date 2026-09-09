@@ -6,7 +6,7 @@ import { spawn } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { normalizeRuntimeUrl } from "../gateway/contract";
 import { probeLoopbackPort } from "./runtime-probe";
-import { atomicWrite, activeGateways, installedState, installPackage, readOptional, recoverInstallation, REPOSITORY, requirePlainPath, sha256, verifyPackage, withInstallLock, type InstallOptions } from "./managed-install";
+import { atomicWrite, activeGateways, installedState, installPackage, readOptional, recoverInstallation, REPOSITORY, requirePlainPath, sameInstalledPath, sha256, verifyPackage, withInstallLock, type InstallOptions } from "./managed-install";
 
 const RELEASE_ASSET = "blockit-windows-x64.zip";
 const raw = process.argv.slice(2).filter(a => a !== "--");
@@ -36,7 +36,7 @@ async function activatePending(): Promise<unknown> {
   const rawPending = await readOptional(pendingPath);
   if (!rawPending) return { status: "NO_PENDING_UPDATE" };
   const pending = JSON.parse(rawPending.toString()) as { directory: string; options: InstallOptions; adopt: boolean };
-  if (resolve(pending.options.root) !== root || dirname(dirname(resolve(pending.directory))) !== join(root, "downloads") || !/^[0-9a-f-]{36}$/.test(basename(dirname(pending.directory))) || basename(pending.directory) !== "package") throw new Error("Pending update is outside its installation.");
+  if (!sameInstalledPath(pending.options.root, root) || !sameInstalledPath(dirname(dirname(resolve(pending.directory))), join(root, "downloads")) || !/^[0-9a-f-]{36}$/.test(basename(dirname(pending.directory))) || basename(pending.directory) !== "package") throw new Error("Pending update is outside its installation.");
   if (await activeGateways(root) || await runtimeOnline(pending.options.config)) return { status: "STAGED", reason: "Close Blockbench and finish existing Codex MCP sessions; then run update again. Files are replaced automatically, not manually." };
   const result = await installPackage(pending.directory, pending.options, parseToml, pending.adopt);
   await rm(pendingPath);
@@ -141,13 +141,13 @@ async function main(): Promise<void> {
       const state = await installedState(root);
       if (!state) throw new Error("Run BlockIT install once before connecting Codex.");
       executable = join(root, "versions", state.source_sha, "blockit.exe");
-      if (resolve(executable).toLowerCase() !== resolve(process.execPath).toLowerCase()) return;
+      if (!sameInstalledPath(executable, process.execPath)) return;
       await mkdir(join(root, "leases"), { recursive: true });
       const lease = join(root, "leases", `${process.pid}.json`);
       await writeFile(lease, JSON.stringify({ source_sha: state.source_sha }), { flag: "wx" });
       process.once("exit", () => { try { unlinkSync(lease); } catch {} });
     });
-    if (resolve(executable).toLowerCase() !== resolve(process.execPath).toLowerCase()) process.exit(await child(executable, ["mcp", "--root", root]));
+    if (!sameInstalledPath(executable, process.execPath)) process.exit(await child(executable, ["mcp", "--root", root]));
     await import("../gateway/index"); // The existing four-tool Gateway, not a second server.
     return;
   }

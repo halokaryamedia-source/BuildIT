@@ -19,7 +19,9 @@ Source surface: 56 callable / 49 AUTHORING / 20 Animation; four Gateway tools; 6
 SDK-boundary regression proves 33 valid keyframes, strict invalid-input rejection, selected-branch required/nested structure and Animation/Particle ToolSpec parity.
 Managed package at `477061c570b787eee3734100af12f1b57c0b526d` built and installed on the host. Compiled four-tool Gateway, repeated install, active-Gateway staging, activation, recovery and initial-install rollback passed in disposable paths; unrelated host Codex configuration and user assets were preserved.
 The user removed the old plugin. Native Geometry passed on installed identity `sha256:c33d05a07ed1fadb2cd763d4de0d7c942b8eb32778803f01a61e5aa9f9c15880`, including Undo/Redo and thin per-face UV. Texturing exposed alpha blending in the exact-pixel path. The fix clears only each target pixel before writing RGBA; 15 focused tests and `verify:mcp` passed. Updated package/native retest remains pending.
-Source/package proof does not establish fresh Codex skill pickup, visual quality, persistence, or two-version native update/rollback.
+RGBA fix package `76a572d93ffd11a33bfa7dca793af38ccbd0b41a` installed after active Runtime correctly staged it. Restart verified identity `sha256:dff7fc084d883922754d1d7470feac31c339176641d37cdd131d0c50384bbb01`; Geometry and Texturing PASS. The native harness now uses exactly representable transparent blue and an opaque outside-clip sentinel, retaining exact alpha/repack/Undo/Redo assertions.
+Installed Gateway exposed MSIX path virtualization: logical LocalAppData and physical Codex LocalCache paths identify the same installation. String comparison caused invalid-state errors and recursive executable handoff; test processes were stopped. Native realpath comparison fixes state/pending/executable identity; 15 managed tests and 35 repository tests PASS. Package/native Gateway retest is pending.
+Source/package proof does not establish fresh Codex skill pickup, visual quality, persistence, or completed two-version native rollback.
 
 ### Prior REMOTE_GITHUB hardening — historical accepted baseline
 

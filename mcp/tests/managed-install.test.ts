@@ -1,10 +1,24 @@
 import { test } from "bun:test";
 import assert from "node:assert/strict";
+import { realpathSync } from "node:fs";
 import { mkdtemp, mkdir, readFile, readdir, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
-import { applyTransaction, configureCodex, installPackage, installedState, parseManifest, readOptional, recoverInstallation, REPOSITORY, requirePlainPath, sha256, SKILLS, verifyPackage, withInstallLock, type InstallOptions, type Manifest } from "../distribution/managed-install";
+import { applyTransaction, configureCodex, installPackage, installedState, parseManifest, readOptional, recoverInstallation, REPOSITORY, requirePlainPath, sameInstalledPath, sha256, SKILLS, verifyPackage, withInstallLock, type InstallOptions, type Manifest } from "../distribution/managed-install";
 const parse = (s: string): any => Bun.TOML.parse(s);
+
+test("installation identity survives native Windows path virtualization", async () => {
+  await sandbox(async (directory, options) => {
+    const source = join(directory, "package");
+    await fixture(source);
+    await installPackage(source, options, parse);
+    const physicalRoot = realpathSync.native(options.root);
+    assert.equal((await installedState(physicalRoot))?.source_sha, "a".repeat(40));
+    const executable = join(options.root, "versions", "a".repeat(40), "blockit.exe");
+    assert.equal(sameInstalledPath(executable, realpathSync.native(executable)), true);
+    assert.equal(sameInstalledPath(executable, join(source, "blockit.exe")), false);
+  });
+});
 
 async function fixture(directory: string, digit = "a"): Promise<Manifest> {
   const paths = ["blockit.exe", "blockit_mcp.js", "AGENTS.md", "workspace/README.md", "LICENSE", "THIRD_PARTY_NOTICES.txt", "docs/foundation/09-finalization-standard.md", ...SKILLS.map(s => `.agents/skills/${s}/SKILL.md`)];
