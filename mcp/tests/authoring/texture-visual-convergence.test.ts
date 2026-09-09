@@ -45,9 +45,9 @@ describe("texture visual convergence contract", () => {
     ]);
 
     for (const text of [skill, workflow]) {
-      expect(text.toLowerCase()).toContain("smallest");
+      expect(text.toLowerCase()).toContain("causal correction");
       expect(text).toContain("IMPROVED | UNCHANGED | REGRESSED");
-      expect(text.toLowerCase()).toContain("same causal");
+      expect(text.toLowerCase()).toMatch(/same (?:causal|cause)/);
       expect(text).toContain("BLOCKED");
     }
     expect(skill).toContain("smallest bounded causal correction");

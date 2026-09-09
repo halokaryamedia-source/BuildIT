@@ -21,7 +21,7 @@ Proof Required
 STOP Condition
 ```
 
-Source/CI never proves native/visual quality. Static Footprint is a guardrail; Authoring Efficiency measures Cost to Accepted Result only after the quality gate passes.
+Source/CI is not visual proof. Static Footprint is a guardrail; Authoring Efficiency measures Cost to Accepted Result after the quality gate passes. User-stopped tests stay stopped.
 
 ## 2. Pin Local State
 

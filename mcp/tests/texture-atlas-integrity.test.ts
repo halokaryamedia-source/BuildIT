@@ -11,6 +11,70 @@ async function source(path: string): Promise<string> {
 }
 
 describe("texture atlas integrity", () => {
+  test("shared pixel regions are read once per invocation while every face stays accounted", () => {
+    const globals = globalThis as unknown as Record<string, unknown>;
+    const previous = { Cube: globals.Cube, Texture: globals.Texture };
+    let reads = 0, alpha = 255;
+    const texture = { uuid: "atlas", name: "atlas", getUVWidth: () => 256, getUVHeight: () => 256,
+      ctx: { canvas: { width: 256, height: 256 }, getImageData: (_x: number, _y: number, w: number, h: number) => {
+        reads++; const data = new Uint8ClampedArray(w * h * 4);
+        for (let i = 3; i < data.length; i += 4) data[i] = alpha;
+        return { data };
+      } } };
+    globals.Texture = {};
+    globals.Cube = { all: [0, 1, 2].map(i => ({ uuid: `cube-${i}`, name: `cube-${i}`, faces: {
+      north: { uv: i === 1 ? [16, 16, 0, 0] : [0, 0, 16, 16], getTexture: () => texture },
+    } })) };
+    try {
+      const first = textureOptimizationRuntime();
+      if (!("coverage" in first)) throw new Error("coverage unavailable");
+      expect(reads).toBe(1);
+      expect(first.pixel_budget_used).toBe(256);
+      expect(first.pixel_budget_basis).toBe("unique_texture_regions");
+      expect(first.coverage.scanned_faces).toBe(3);
+      expect(first.coverage.review.solid_color_faces.examples.map(f => f.cube_uuid).sort()).toEqual(["cube-0", "cube-1", "cube-2"]);
+      alpha = 0;
+      const second = textureOptimizationRuntime();
+      if (!("coverage" in second)) throw new Error("coverage unavailable");
+      expect(reads).toBe(2);
+      expect(second.coverage.states.transparent).toBe(3);
+    } finally {
+      for (const [key, value] of Object.entries(previous)) {
+        if (value === undefined) delete globals[key]; else globals[key] = value;
+      }
+    }
+  });
+
+  test("unique-region budget isolates atlases and rejects invalid mappings before cache lookup", () => {
+    const globals = globalThis as unknown as Record<string, unknown>;
+    const previous = { Cube: globals.Cube, Texture: globals.Texture };
+    const reads: string[] = [];
+    const textures = ["a", "b"].map(uuid => ({ uuid, name: uuid, getUVWidth: () => 128, getUVHeight: () => 128,
+      ctx: { canvas: { width: 256, height: 256 }, getImageData: (_x: number, _y: number, w: number, h: number) => {
+        reads.push(uuid); return { data: new Uint8ClampedArray(w * h * 4).fill(255) };
+      } } }));
+    const mappings = [
+      [0, [0, 0, 64, 64]], [0, [0, 0, 64, 64]], [1, [0, 0, 64, 64]],
+      [0, [64, 0, 64.5, 0.5]], [0, [0.25, 0, 1, 1]], [0, [127, 0, 129, 1]],
+    ] as const;
+    globals.Texture = {};
+    globals.Cube = { all: mappings.map(([index, uv], i) => ({ uuid: `cube-${i}`, name: `cube-${i}`,
+      faces: { north: { uv, getTexture: () => textures[index] } } })) };
+    try {
+      const result = textureOptimizationRuntime();
+      if (!("coverage" in result)) throw new Error("coverage unavailable");
+      expect(reads).toEqual(["a", "b"]);
+      expect(result.pixel_budget_used).toBe(32768);
+      expect(result.coverage.scanned_faces).toBe(3);
+      expect(result.coverage.omissions.counts.budget).toBe(1);
+      expect(result.coverage.omissions.counts.non_integral_pixel_mapping).toBe(2);
+      expect(result.coverage.gate.state).toBe("incomplete");
+    } finally {
+      for (const [key, value] of Object.entries(previous)) {
+        if (value === undefined) delete globals[key]; else globals[key] = value;
+      }
+    }
+  });
   test("coverage scans fractional logical UV only when it maps to whole physical pixels", () => {
     const globals = globalThis as unknown as Record<string, unknown>;
     const previous = { Cube: globals.Cube, Texture: globals.Texture };

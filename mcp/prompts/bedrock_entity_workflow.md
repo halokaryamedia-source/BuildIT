@@ -1,6 +1,6 @@
 # Minecraft Bedrock Entity Workflow
 
-Create/revise Bedrock **Entity**. Cubes are geometry; Groups are bones.
+Bedrock **Entity**: Cubes = geometry; Groups = bones.
 
 ## Canonical Authoring Stages
 
@@ -20,7 +20,7 @@ TEXTURE VERIFY  = fresh atlas + mapped-model visual validation
 
 Internal PASS means READY_FOR_USER_REVIEW. Explicit user Geometry APPROVED precedes UV Layout PASS; user Texture APPROVED and a saved .bbmodel checkpoint precede Animation/finalization. Geometry and Texturing share AUTHORING; only AUTHORING/Animation transitions use Gateway handoff in the same task.
 
-Reuse fresh tool state. Do not inspect every Cube, capture after every mutation, or call `get_project_info` after known create/export state. `inspect_model_bounds` is only for envelope/scale/ground/displacement. `UNVERIFIED` is not a retry command.
+Reuse fresh tool state. Do not inspect every Cube, capture after every mutation, or call `get_project_info` after known create/export state. `inspect_model_bounds` is for envelope/scale/ground/displacement or bounded surface/contact review. `UNVERIFIED` is not a retry command.
 
 Reference-driven work requires the actual approved image in active multimodal context. Path/memory is not image evidence. Missing material reference evidence → `BLOCKED`.
 
@@ -41,15 +41,13 @@ identity + envelope + primary masses
 → correct only observed mismatch
 ```
 
-Construction examples are **not presets**. Local rigid slopes may be **Cube-owned**; shared orientation/contact/articulation is **Group/Bone**-owned. Keep primary blockout hierarchy only when it owns real transform/contact/articulation. Do not build nested Groups for apparent sophistication. After primary `PASS`, add only identity-weighted detail.
+Construction examples are **not presets**. Rigid slopes may be **Cube-owned**; shared transforms/contact/articulation are **Group/Bone**-owned. After primary `PASS`, add identity-weighted detail.
 
 Use evidence maps only for material ambiguity in identity, count, topology, depth, attachment, negative space or orientation; skip them for clear rigid references.
 
 ## Geometry / Visual Gate
 
-The planning/compiler experiment is retired. No `evidence_map`, `reference_grounded_v1`, role namespaces or compiler strategies for ordinary Geometry.
-
-For ordinary Geometry, decide masses, counts, parent/contact, negative spaces and transforms; create necessary Groups/Cubes in a coherent batch. No automatic coordinate inference.
+No `evidence_map`, `reference_grounded_v1`, role namespaces or compiler strategies for ordinary Geometry. Decide masses, counts, contacts, negative spaces and transforms before a coherent batch; no automatic coordinate inference.
 
 Reuse returned UUID/from/to/origin/rotation/`box_uv_region`; do not immediately re-inspect fresh Cubes. Tool success is execution evidence only.
 
@@ -63,11 +61,13 @@ PASS       = no critical/major supported mismatch
 
 **Front PASS is not full 3D PASS** when depth evidence is missing or fails. Coordinates, bounds, hierarchy, export success, or similarity scores cannot create visual `PASS`.
 
+Known major mismatch stays FAIL despite earlier approval; never submit as READY_FOR_USER_REVIEW. Use side/bottom views for concealed contacts; distinguish dark paint from missing geometry.
+
 Correction: reuse fresh target state; otherwise `inspect_elements(mode=detail)` once. Diagnose `TRANSLATE | RESIZE | ROTATE | REATTACH | SPLIT | MERGE/REMOVE | ADD MASS`, mutate, verify `geometry_effect`, then compare `IMPROVED | UNCHANGED | REGRESSED`. Capture affected view(s) first. Same causal correction failing twice without new evidence → `BLOCKED`.
 
 ## UV Layout
 
-UV Layout answers: **which atlas region does each surface read?**
+UV Layout: **which atlas region does each surface read?**
 
 Reuse `manage_cubes` returned `box_uv_region`. Keep auto UV active during Geometry correction. After explicit user Geometry APPROVED, use `create_texture(type=template)` and its `uv_audit`; rebuilding the single atlas requires `texture_id` and invalidates affected texture evidence. Lock final Box UV with `autouv=0`; `list_textures` audits existing UV.
 
@@ -78,9 +78,7 @@ Review/park: reconcile README/report with artifact revision; separate operation,
 ## Texture Atlas
 Check sub-unit Box UV collapse; prefer per-face UV over thickening. Keep density; verify minimum native packing, padding, pixel preservation and Undo.
 
-Texture Atlas is the bitmap canvas; it is not UV Layout or styling.
-
-Use **one base-color atlas PNG** for the whole model, never one base color per body part/Cube/material zone. New AI production uses logical UV 128×128 and explicit 128-based `create_texture` width/height; do not rely on the provisional 16×16 default. Reuse atlas UUID and pass `texture_id` when multiple textures exist. PBR support textures are additional atlas channels, not UV Layout.
+Use **one base-color atlas PNG** for the whole model, never one base color per body part/Cube/material zone. Blank atlases require explicit dimensions; 128×128 is the default only without an approved size. Approved bitmap size/density takes precedence, and native template logical UV may differ from physical pixels. Do not rely on the provisional 16×16 default. Reuse atlas UUID and pass `texture_id` when multiple textures exist. PBR support textures are additional atlas channels, not UV Layout.
 
 Atlas creation/fill does **not** complete Texture Styling.
 
@@ -91,7 +89,9 @@ Verify an adjoining surface pair first. Separate palette from lighting; keep sha
 
 Flat fill is a **BASE PASS only**, never production completion when material/form/detail is visible. Prefer controlled Minecraft pixel clusters and stepped ramps; random noise is rejected. Smooth gradient is optional only when the reference/style supports it.
 
-For reference-grounded assets, the approved image is a required Texture Styling input. Author material zones, panel seams, highlights, identity marks, and surface detail from that image; a generic palette, unrelated copied texture, or five flat rectangles is an invalid production result.
+Corrective batches preserve unaffected shading/identity; coordinate masks encode observed landmarks, not generic bands. Inspect adjoining surfaces. Coverage `varied` is pixel variation, not style/fidelity.
+
+The approved image owns material zones, seams, highlights and identity. A generic palette, unrelated copied texture, or five flat rectangles is an invalid production result.
 
 ```text
 BASE PASS             → draw_shape_tool; paint_fill_tool only for intentional contiguous base fill
@@ -105,7 +105,7 @@ Use `gradient_tool` only for supported continuous transitions. Repeated same-col
 
 ## Texture Verify
 
-Texture Verify uses fresh visual evidence after a coherent styling pass:
+After a coherent styling pass:
 
 ```text
 fresh get_texture atlas
@@ -121,7 +121,7 @@ fresh get_texture atlas
 
 `paint tool succeeded`, `atlas exists`, or `BASE PASS` alone cannot advance the stage. Styling remains `FAIL`/`UNVERIFIED` until the fresh atlas visibly contains authored reference-derived detail and the mapped model views show it on the intended surfaces.
 
-Texture mutation makes evidence stale. `FAIL` → smallest causal correction → fresh affected evidence → `IMPROVED | UNCHANGED | REGRESSED`; same causal direction failing twice → `BLOCKED`.
+Painting stales evidence. `FAIL` → causal correction → affected evidence → `IMPROVED | UNCHANGED | REGRESSED`; same cause failing twice → `BLOCKED`.
 
 ## Stage Routing
 

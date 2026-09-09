@@ -380,6 +380,10 @@ Before keys, specify support/flight/impact events, weight path, plant/release ti
 
 ## 10. Downstream Invalidation
 
+Artist decisions precede batch coordinates: shared volume boundaries and landmark proportions for Geometry; observed stepped shading, contact shadows, highlights and surface continuity for Texture; contact/weight/timing for Animation. Batch known intent and reuse returned state. Texture scan budgets count unique physical regions per invocation while retaining every face; this reduces read work, not the visual evidence required.
+
+Diagnostic readiness is not acceptance: Texture `states.varied` means pixel variation only, and Animation numeric seam counts exclude unevaluated expressions/insufficient keys. Known major visual defects stay FAIL even after earlier approval. Corrective painting preserves unaffected shading/identity; side/bottom evidence is required when other views conceal material contacts. Do not replace a user-stopped test with another fixture.
+
 Invalidate minimum dependency:
 
 ```text

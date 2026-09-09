@@ -23,6 +23,41 @@ function borderedPatch(size: number): Uint8ClampedArray {
 }
 
 describe("usage-efficient authoring intelligence", () => {
+  test("an empty texture scan cannot advertise readiness", () => {
+    const result = analyzeTextureCoverage([]);
+    expect(result.gate.state).toBe("incomplete");
+    expect(result.gate.reasons).toContain("NO_MAPPED_FACES");
+    expect(result.visual_verdict).toBe("not_evaluated");
+  });
+
+  test("flat-face review identifies the largest affected surfaces without a style verdict", () => {
+    const patches = [4, 8].map((size) => ({
+      cube_uuid: `cube-${size}`, cube_name: `panel-${size}`, face: "north",
+      texture_uuid: "atlas", texture_name: "atlas", uv: [0, 0, size, size],
+      width: size, height: size, pixels: rgba(Array(size * size).fill(100)),
+    }));
+    const result = analyzeTextureCoverage(patches, [], 1);
+    expect(result.review.solid_color_faces.count).toBe(2);
+    expect(result.review.solid_color_faces.examples[0].cube_uuid).toBe("cube-8");
+    expect(result.review.solid_color_faces.examples_truncated).toBe(true);
+    expect(result.gate.state).toBe("review_required");
+    expect(result.visual_verdict).toBe("not_evaluated");
+  });
+
+  test("loop diagnostics distinguish unevaluated expression and single-key tracks", () => {
+    const result = analyzeAnimationQuality({ loop_mode: "loop", length: 1, tracks: [
+      { group_uuid: "a", group_name: "a", is_root: false, channel: "rotation",
+        keyframes: [{ time: 0, value: [0, 0, 0] }] },
+      { group_uuid: "b", group_name: "b", is_root: false, channel: "rotation",
+        keyframes: [{ time: 0, value: ["math.sin(query.anim_time)", 0, 0] },
+          { time: 1, value: ["math.sin(query.anim_time)", 0, 0] }] },
+    ] });
+    if (result.state !== "available") throw new Error("expected diagnostics");
+    expect(result.loop_seam.numeric_evaluated_track_count).toBe(0);
+    expect(result.loop_seam.insufficient_key_track_count).toBe(1);
+    expect(result.loop_seam.non_numeric_boundary_track_count).toBe(1);
+    expect(result.visual_verdict).toBe("not_evaluated");
+  });
   test("detects pixel-identical UV regions across rotation without requiring pairwise tool calls", () => {
     const result = analyzeTextureOptimizationOpportunities([
       {
@@ -190,7 +225,8 @@ describe("usage-efficient authoring intelligence", () => {
     ]);
 
     expect(coverage.gate.state).toBe("ready");
-    expect(coverage.states.styled).toBe(1);
+    expect(coverage.states.varied).toBe(1);
+    expect(coverage.visual_verdict).toBe("not_evaluated");
     expect(coverage.review.candidate_face_count).toBe(0);
     expect(coverage.accounted_ratio).toBe(1);
   });

@@ -80,5 +80,6 @@ Observe at least three consecutive cycles for cyclic review. Check plant/release
 ## Completion
 
 Internal `PASS` = `READY_FOR_USER_REVIEW`. User approval → checkpoint → Finalization.
+Endpoint counts are not playback proof; Molang must serve motion, never a math-presence quota.
 
 Protected gap: bone-binding expressions beyond `relative_to.rotation=entity`. Source/CI does not prove live Blockbench/Minecraft playback.

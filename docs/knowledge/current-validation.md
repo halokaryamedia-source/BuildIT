@@ -6,7 +6,32 @@ This file owns **current proof interpretation**. Continuation belongs in `docs/k
 
 ## Current Source Proof
 
-### Quality workflow repair — local source proof, native acceptance pending
+### Refresh quality/efficiency delivery — verified candidate, installation pending
+
+2026-09-10: user authorized source cleanup and managed installation, explicitly without new visual fixtures. Candidate based on `bf1b7454`: `verify:closure` and final `verify:full` PASS, **818 tests (35 repository + 628 runtime + 155 authoring)**, both typechecks, generated freshness, surface checks and build. Bun 1.3.14 / frozen lockfile unchanged. Logs: `mcp/.cache/refresh-closure.log`, `mcp/.cache/refresh-full.log`. Build identity: `sha256:083fc223dd77dd4039751deee0d07b8d587c5f788d2d49f5780a32c16d50c311`.
+
+Restored coherent volume-before-coordinates, shared mass boundaries and landmark proportions; Texture now explicitly directs stepped value/hue ramps, contact shadows, highlights and surface continuity. Coordinate formulas execute observed design. Existing instruction ceilings were retained by removing redundant phrasing; artist decisions remain with specialists, not new runtime gates.
+
+Runtime pixel caching is invocation-local and keyed by texture UUID plus physical rectangle. Deterministic shared-region regression: three 16x16 face mappings previously read 3 times/768 pixels, now 1 read/256 pixels, with all 3 face identities retained. This is 66.7% fewer pixel reads for that input, not token or whole-authoring savings. A later invocation rereads changed pixels. Separate atlases consume separate budget; flipped identical regions reuse data; invalid/out-of-bounds mappings remain omissions. The 32,768-pixel cap counts unique successfully read regions; `pixel_budget_basis=unique_texture_regions` and `pixel_budget_used` expose its meaning. Regressions were red before the cache and green after it (`region-cache-red.log`, `region-cache-green.log`).
+
+The diagnostic result-key migration `coverage.states.styled` → `varied`, empty-scan rejection, flat-face examples and Animation evaluated/skipped counts from the prior candidate are included. No input authoring API or Gateway tool added. No asset changed; native installation/connection remains a separate status below, never inferred from this build. Visual quality and token savings remain unproven.
+
+### MCP diagnostic/workflow repair — source accepted, visual testing stopped
+
+2026-09-10 user scope supersedes prior fixture acceptance: no more asset tests or replacement fixtures. Face/neck output is USER_REJECTED; historical Geometry approval does not accept its Texture. Models remain frozen.
+
+Candidate based on `bf1b7454c4d0183dc6955329d0f758960ffbe7d5`: `verify:closure` and `verify:full` PASS with Bun 1.3.14, frozen lockfile unchanged. **816 tests: 35 repository + 626 runtime + 155 authoring**, generated freshness, both typechecks, Gateway/surface checks and build. Logs: `mcp/.cache/quality-mcp-closure.log`, `mcp/.cache/quality-mcp-full.log`. Runtime build identity: `sha256:d46dd650100342c7739c2337243251f7a170cca27a59d56e5a74f10830ac926d`. New targeted tests failed before implementation and passed after it.
+
+Audit and changes:
+- Texture: empty coverage incorrectly returned ready; now incomplete/NO_MAPPED_FACES. Solid-face review now returns bounded named examples and pixel measurements, using the existing scan. `coverage.states.styled` is renamed `varied`: this is a client-visible result-key migration, not an artistic classifier. Visual verdict is explicitly not_evaluated even for varied pixels.
+- Animation: numeric endpoint evaluation now reports evaluated and insufficient-key counts separately from non-numeric boundaries; zero seam flags cannot masquerade as evaluated expressions/playback. No math-expression evaluator or contact score added.
+- Geometry/UV/visual feedback: existing bounded-risk summaries already report omitted/incomplete diagnostics and no visual verdict; bottom/side capture exists. No renderer or geometry mutation bug was reproduced. Corrected contradictory runtime restrictions on surface inspection and approved atlas dimensions instead of inventing new tools.
+- Workflow: preserved shading during corrective painting, diagnosis of paint versus missing surface, and refusal to submit known major defects despite prior approval. Runtime prompt, specialist/router, flow and runbook agree; generated metadata rebuilt. Brittle prose assertions adjusted without weakening runtime tests or increasing footprint ceilings.
+- Gateway, identities, transport, history, exports and managed installation: retained implementations covered by the full regression suite, not a claim that every live operation was manually audited or exercised.
+
+No native authoring, visual acceptance, efficiency gain or deployment is claimed. Installed package remains `0a36d05e`; the new bundle is built under `mcp/dist/`. This source result satisfies the revised code-validation scope; do not reactivate visual fixtures automatically.
+
+### Prior quality workflow repair — historical technical proof
 
 Native continuation (2026-09-10): managed package `0a36d05ee031ab9a3e61ea27bae22dc0f2714f0f` activated; no pending update. Gateway observed the matching `e3cadd6a...` runtime identity below, geometry phase and 49 capabilities. `verify-uv-density-live.ts --confirm-disposable` and `--verify-reopen` both PASS on an independent project: physical 256x256/logical 128x128, four fractional-logical faces, native template, exact Undo/Redo mapping and native app close/open retention. Receipt: ignored `mcp/.cache/uv-density-live/receipt.json`. Direct MCP cost: 16 calls/43,663 ms, then 2 read calls/290 ms; UI/startup/wait cost and tokens are not included. These are technical fixture results, not accepted visual quality. Independent `quality-face-contact` is saved in the installed workspace with Geometry user review pending; no Texture/limb-cycle acceptance yet.
 

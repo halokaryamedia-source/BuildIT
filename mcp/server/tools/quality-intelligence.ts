@@ -215,6 +215,8 @@ export function textureOptimizationRuntime() {
 
   const patches: TextureFacePatchInput[] = [];
   const omissions: TextureScanOmission[] = [];
+  // Invocation-local: never reuse pixels across edits or texture identities.
+  const regions = new Map<string, Uint8ClampedArray>();
   let pixelBudgetUsed = 0;
 
   const omit = (
@@ -293,13 +295,19 @@ export function textureOptimizationRuntime() {
       }
 
       const pixelCount = width * height;
-      if (pixelBudgetUsed + pixelCount > TEXTURE_OPTIMIZATION_PIXEL_BUDGET) {
+      const regionKey = JSON.stringify([texture.uuid, left, top, width, height]);
+      const cached = regions.get(regionKey);
+      if (!cached && pixelBudgetUsed + pixelCount > TEXTURE_OPTIMIZATION_PIXEL_BUDGET) {
         omit("budget", cube, faceKey);
         continue;
       }
 
       try {
-        const pixels = ctx.getImageData(left, top, width, height).data;
+        const pixels = cached ?? ctx.getImageData(left, top, width, height).data;
+        if (!cached) {
+          regions.set(regionKey, pixels);
+          pixelBudgetUsed += pixelCount;
+        }
         patches.push({
           cube_uuid: cube.uuid,
           cube_name: cube.name,
@@ -311,7 +319,6 @@ export function textureOptimizationRuntime() {
           height,
           pixels,
         });
-        pixelBudgetUsed += pixelCount;
       } catch {
         omit("non_integral_pixel_mapping", cube, faceKey);
       }
@@ -321,6 +328,8 @@ export function textureOptimizationRuntime() {
   return {
     ...analyzeTextureOptimizationOpportunities(patches, omissions),
     pixel_budget: TEXTURE_OPTIMIZATION_PIXEL_BUDGET,
+    pixel_budget_basis: "unique_texture_regions" as const,
+    pixel_budget_used: pixelBudgetUsed,
   };
 }
 

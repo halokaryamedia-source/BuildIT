@@ -9,10 +9,11 @@ Branch: **`Local` only**. Proof: `current-validation.md`; ownership: `implementa
 - Tiger authoring is STOPPED / USER_REJECTED 2/10. Its README/report are reconciled; model unchanged. Earlier 809-test and native acceptance are historical technical proof, not acceptance of this repair or visual quality.
 - Package `0a36d05ee031ab9a3e61ea27bae22dc0f2714f0f` is installed and its runtime identity verified. Native UV template, Undo/Redo and close/reopen PASS. No manual plugin/config/skill copying.
 
-## Remaining acceptance
-1. Get user Geometry review for `C:/Users/Administrator/BlockIT-Workspace/workspace/active/quality-face-contact`; README owns saved neutral/25-degree jaw evidence, remaining differences and diagnostic interpretation.
-2. After approval continue native UV/Texture on the face and adjoining-surface example, then the independent limb-cycle example and three-loop playback under current specialist gates. No whole-tiger production.
-3. Reuse completed source and native UV proof; do not rerun them for reassurance. Keep rejected tiger frozen. No automatic GitHub push or Stable release.
-4. Reconcile evidence and measured cost; unknown historical usage remains UNKNOWN. Native/visual work is not completed by source tests or packaging.
+## Current request supersedes visual acceptance
+- User rejected the face/neck texture and stopped repeated visual tests. Both assets are frozen; no replacement fixture, limb-cycle test or visual-approval request is authorized.
+- Refresh cleanup is SOURCE_READY: `verify:closure` and `verify:full` passed, 818 tests. Shared-region reads reduced 3 to 1 on the measured input; source proof does not demonstrate improved artwork.
+- Candidate fixes: empty coverage readiness, actionable flat-face examples, `states.styled` renamed `states.varied`, explicit unevaluated Animation tracks, and conflicting runtime guidance. Preserve user assets and existing four Gateway tools.
+- User authorized managed installation of this candidate. Commit locally, package from clean Local, install via manager; STAGED is not active. Installed package is still `0a36d05e` until verified. Do not publish Stable, push, delete old data or start a background polling/service.
+- Current source proof is recorded in current-validation. No background polling/service or new authoring tests.
 
-STOP after requested visual acceptance and evidence. Do not delete the old checkout or infer usage savings from tests. **AUTHORING TAXONOMY**: user-selected `DIRECT | 3D_ASSISTED`, shared AUTHORING; GPU work deferred.
+**AUTHORING TAXONOMY**: user-selected `DIRECT | 3D_ASSISTED`, shared AUTHORING; GPU work deferred.

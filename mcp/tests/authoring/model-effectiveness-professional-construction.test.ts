@@ -20,7 +20,7 @@ describe("model creation effectiveness — professional construction without pre
     for (const text of [modelling, workflow, geometry, flow]) {
       expect(lower(text)).toContain("not presets");
       expect(lower(text)).toContain("transform ownership");
-      expect(lower(text)).toContain("primary blockout");
+      expect(lower(text)).toMatch(/primary (?:blockout|cube batch)/);
       expect(lower(text)).toContain("identity-weighted");
     }
 

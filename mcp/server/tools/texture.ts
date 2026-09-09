@@ -427,7 +427,7 @@ export const textureToolDocs: ToolSpec[] = [
   {
     name: "list_textures",
     description:
-      "Lists texture identity, metadata and UV hygiene. Fractional logical UV is diagnostic; NON_INTEGRAL_PIXEL_MAPPING blocks non-integral physical texels. Hygiene readiness is not visual layout approval.",
+      "Lists texture identity, UV hygiene and bounded face-pixel diagnostics. Coverage states.varied means pixel variation, not styling acceptance; solid_color_faces identifies flat surfaces for review. Empty scans are incomplete. Pixel-read budget counts unique texture regions per invocation; every face remains accounted. Fractional logical UV is diagnostic; NON_INTEGRAL_PIXEL_MAPPING blocks non-integral physical texels. Readiness is not visual layout approval.",
     annotations: {
       title: "List Textures",
       readOnlyHint: true,

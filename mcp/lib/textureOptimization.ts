@@ -100,7 +100,7 @@ function rgbaKey(r: number, g: number, b: number, a: number): string {
 type TextureFacePixelAnalysis = {
   fully_transparent: boolean;
   solid_rgba: [number, number, number, number] | null;
-  state: "transparent" | "solid_color" | "low_variation" | "styled";
+  state: "transparent" | "solid_color" | "low_variation" | "varied";
   detail_capacity: "micro" | "limited" | "detail_capable";
   visible_ratio: number;
   translucent_ratio: number;
@@ -202,7 +202,7 @@ function analyzeFacePixels(input: TextureFacePatchInput): TextureFacePixelAnalys
         ? "solid_color"
         : lowVariation
           ? "low_variation"
-          : "styled",
+          : "varied",
     detail_capacity: detailCapacity,
     visible_ratio: ratio(visiblePixels, totalPixels),
     translucent_ratio: ratio(translucentPixels, totalPixels),
@@ -264,7 +264,7 @@ function buildTextureCoverage(
   const transparent = analyzed.filter(({ analysis }) => analysis.state === "transparent");
   const solid = analyzed.filter(({ analysis }) => analysis.state === "solid_color");
   const lowVariation = analyzed.filter(({ analysis }) => analysis.state === "low_variation");
-  const styled = analyzed.filter(({ analysis }) => analysis.state === "styled");
+  const varied = analyzed.filter(({ analysis }) => analysis.state === "varied");
   const detailCapableFlat = [...solid, ...lowVariation].filter(
     ({ analysis }) => analysis.detail_capacity === "detail_capable"
   );
@@ -281,6 +281,8 @@ function buildTextureCoverage(
   }
 
   const reasons: string[] = [];
+  const empty = analyzed.length + omissions.length === 0;
+  if (empty) reasons.push("NO_MAPPED_FACES");
   if (blockingOmissions.length > 0) reasons.push("FACE_ACCOUNTING_INCOMPLETE");
   if (budgetOmissions.length > 0) reasons.push("SCAN_BUDGET_EXHAUSTED");
   if (transparent.length > 0) reasons.push("TRANSPARENT_FACE_REVIEW");
@@ -288,7 +290,7 @@ function buildTextureCoverage(
   if (intermediateAlpha.length > 0) reasons.push("INTERMEDIATE_ALPHA_REVIEW");
 
   const gateState =
-    blockingOmissions.length > 0
+    empty || blockingOmissions.length > 0
       ? ("incomplete" as const)
       : budgetOmissions.length > 0
         ? ("partial" as const)
@@ -304,11 +306,12 @@ function buildTextureCoverage(
     .map(({ patch, analysis }) => faceCoverageSummary(patch, analysis));
 
   return {
+    visual_verdict: "not_evaluated" as const,
     required_faces: analyzed.length + omissions.length,
     scanned_faces: analyzed.length,
     accounted_ratio: ratio(analyzed.length, analyzed.length + omissions.length),
     states: {
-      styled: styled.length,
+      varied: varied.length,
       transparent: transparent.length,
       solid_color: solid.length,
       low_variation: lowVariation.length,
@@ -319,6 +322,11 @@ function buildTextureCoverage(
       detail_capable_solid_face_count: solid.filter(
         ({ analysis }) => analysis.detail_capacity === "detail_capable"
       ).length,
+      solid_color_faces: {
+        count: solid.length,
+        examples: byLargestPatch(solid),
+        examples_truncated: solid.length > exampleLimit,
+      },
       low_variation_faces: {
         count: lowVariation.length,
         examples: byLargestPatch(lowVariation),
@@ -342,7 +350,7 @@ function buildTextureCoverage(
       state: gateState,
       reasons,
     },
-    note: "Coverage is a deterministic review gate, not a style score. Transparent/flat/alpha candidates may be intentional only after the texture workplan accounts for them; incomplete/partial scans cannot prove completion.",
+    note: "Coverage measures pixels only: varied means non-flat pixels, not authored styling, shading or reference fidelity. Ready is scan readiness, never visual acceptance. Transparent/flat/alpha candidates may be intentional; incomplete/partial scans cannot prove completion.",
   };
 }
 

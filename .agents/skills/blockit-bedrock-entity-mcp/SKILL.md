@@ -26,6 +26,7 @@ Existing → inspect only affected target/dependencies.
 `DISCOVER → AUTHOR → VERIFY → CORRECT → VERIFY → DONE`.
 At each review/park boundary update the existing asset README/report with the current artifact revision, stage, unresolved differences, and next action. Separate operation evidence, technical validation, internal visual verdict, and explicit user acceptance. Preserve historical approvals without presenting them as current acceptance after rejection. A stopped test stays stopped; missing measurements are `UNKNOWN`, never zero.
 ## Tool Lane Discipline
+Major defects stay `FAIL` despite approval; never submit as approval-ready. Do not replace stopped tests.
 ```text
 CORE / SHARED
 project unknown → get_project_info

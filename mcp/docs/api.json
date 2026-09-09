@@ -1,6 +1,6 @@
 {
   "version": "0.1.0",
-  "generatedAt": "2026-09-09T18:07:58.963Z",
+  "generatedAt": "2026-09-09T19:30:19.774Z",
   "tools": [
     {
       "name": "manage_cubes",
@@ -7485,7 +7485,7 @@
     {
       "name": "list_textures",
       "title": "List Textures",
-      "description": "Lists texture identity, metadata and UV hygiene. Fractional logical UV is diagnostic; NON_INTEGRAL_PIXEL_MAPPING blocks non-integral physical texels. Hygiene readiness is not visual layout approval.",
+      "description": "Lists texture identity, UV hygiene and bounded face-pixel diagnostics. Coverage states.varied means pixel variation, not styling acceptance; solid_color_faces identifies flat surfaces for review. Empty scans are incomplete. Pixel-read budget counts unique texture regions per invocation; every face remains accounted. Fractional logical UV is diagnostic; NON_INTEGRAL_PIXEL_MAPPING blocks non-integral physical texels. Readiness is not visual layout approval.",
       "status": "stable",
       "category": "Textures",
       "annotations": {

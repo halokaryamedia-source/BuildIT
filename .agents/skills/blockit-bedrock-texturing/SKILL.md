@@ -34,9 +34,10 @@ Requested atlas size/density are constraints; never silently enlarge; return to 
 material cohorts; palette roles `BASE | SHADOW | HIGHLIGHT | ACCENT/IDENTITY`; form/contact/occlusion/edge/identity/detail.
 Face Coverage Ledger: `UNPAINTED | BASE_ONLY | STYLED | INTENTIONAL_FLAT | INTENTIONAL_TRANSPARENT | SHARED`.
 `list_textures.optimization_opportunities.coverage.gate`: `incomplete|partial` / `FACE_ACCOUNTING_INCOMPLETE` → no completion; one `list_textures`/pass; `ready` ≠ visual PASS.
+`states.varied` ≠ `STYLED`; `review.solid_color_faces` locates flat candidates, not failures.
 Variants: `list_textures.production_alignment.gate=ready`; `seam_continuity`; `pbr_content`.
 ### Reference-Grounded Palette / Atlas-Island Discipline
-Integer texels; **pixels per UV unit** scale; hue ramp; clusters.
+Integer texels; **pixels per UV unit** owns detail scale. Build stepped hue/value ramps, contact shadows and highlights from observed form. Surface coordinates keep shading continuous across Cubes; UV edges do not invent seams.
 ## Texture Styling
 generic palette; copied unrelated texture; flat rectangles/random high-contrast noise ≠ completion.
 `BASE PASS → VALUE / FORM PASS → SURFACE PATTERN PASS → IDENTITY PASS → SECONDARY DETAIL PASS → RENDER / ALPHA VERIFY → VERIFY`.
@@ -48,19 +49,20 @@ Variants preserve production base role + compatible dimensions/mapping; `normal 
 `paint_settings`: `pixel_perfect`, `lock_alpha`, `paint_side_restrict`; Mirror after semantic symmetry.
 ## Coherent Styling Window / Anti-Micro-Loop
 representative patch/cohort → cohort-wide; formula/gradient/color count is not quality evidence.
-For reference-led entities, finish an identity-critical patch (face when present) and a representative adjoining body surface pair before propagation. Compare landmark placement, palette/value clusters, pattern rhythm and seam continuity against the actual reference at comparable scale. A base-colored patch or generic repeated bands cannot pass when the reference contains those distinctions. This is internal verification, not another user approval gate.
+Finish an identity-critical patch and adjoining body surface pair before propagation. Compare landmarks, value clusters, pattern direction/scale and seams against the actual reference at matching scale. Generic bands cannot replace observed detail. This is internal verification, not a user gate.
 **No evidence-per-micro-mutation loop.**
+Preserve unaffected shading/identity during correction. Coordinate formulas execute observed designs, not invent them. Dark patches may be paint, occlusion or missing surfaces: diagnose the owner before repainting.
 ## Texture Verify
 Reference + fresh `get_texture` + fresh **mapped model-view evidence** from `capture_model_views` → `FAIL | UNVERIFIED | PASS`.
 Verify required hidden material surfaces.
 `FAIL` → **smallest bounded causal correction** → one fresh affected evidence bundle → `IMPROVED | UNCHANGED | REGRESSED`; same causal direction twice → `BLOCKED`.
 Never use stale exported PNG/bbmodel.
 Animation → user Texture APPROVED + checkpoint → Animation Readiness Preflight → `HANDOFF_REQUIRED` → Gateway `switch_authoring_phase`, same task.
-Pass `target_phase="animation"`, `reason`, `resume_from`, and the recorded approval/checkpoint object, never a readiness string:
+Handoff: `target_phase="animation"`, `reason`, `resume_from`, and object `readiness`:
 ```json
 {"geometry_approved":true,"uv_layout":"PASS","texture_approved":true,"checkpoint":"<saved .bbmodel path>","no_blockers":true}
 ```
-The object above is `readiness`; never infer approval.
+Never infer approval.
 ## Conditional Support — Not Default Routing
 Conditional on user intent; not normal hot path.
 `gradient_tool | color_picker_tool | copy_brush_tool | paint_settings | create_brush_preset | load_brush_preset | texture_selection | texture_layer_management | add_texture_group | list_materials | get_material_info | import_texture_set`.

@@ -2172,7 +2172,7 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">List Textures</p>
-      <p class="card-desc">Lists texture identity, metadata and UV hygiene. Fractional logical UV is diagnostic; NON_INTEGRAL_PIXEL_MAPPING blocks non-integral physical texels. Hygiene readiness is not visual layout approval.</p>
+      <p class="card-desc">Lists texture identity, UV hygiene and bounded face-pixel diagnostics. Coverage states.varied means pixel variation, not styling acceptance; solid_color_faces identifies flat surfaces for review. Empty scans are incomplete. Pixel-read budget counts unique texture regions per invocation; every face remains accounted. Fractional logical UV is diagnostic; NON_INTEGRAL_PIXEL_MAPPING blocks non-integral physical texels. Readiness is not visual layout approval.</p>
       <div class="overflow-x">
         <p class="empty-params">No parameters</p>
       </div>
@@ -2567,7 +2567,7 @@ bun run docs:check
       </section>
 
       <footer class="page-footer">
-        Generated 2026-09-09T18:07:58.963Z from Zod schemas
+        Generated 2026-09-09T19:30:19.774Z from Zod schemas
       </footer>
     </main>
   </div>

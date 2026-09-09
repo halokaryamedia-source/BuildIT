@@ -89,6 +89,8 @@ export function analyzeAnimationQuality(input: {
   let boundaryMissingCount = 0;
   let nonNumericBoundaryCount = 0;
   let reviewSeamCount = 0;
+  let numericEvaluatedCount = 0;
+  let insufficientKeyCount = 0;
 
   for (const track of input.tracks) {
     const keyframes = track.keyframes
@@ -105,7 +107,11 @@ export function analyzeAnimationQuality(input: {
       });
     }
 
-    if (input.loop_mode !== "loop" || keyframes.length < 2 || input.length <= 0) continue;
+    if (input.loop_mode !== "loop" || input.length <= 0) continue;
+    if (keyframes.length < 2) {
+      insufficientKeyCount += 1;
+      continue;
+    }
     const first = keyframes[0];
     const last = keyframes[keyframes.length - 1];
     const hasStart = Math.abs(first.time) <= TIME_EPSILON;
@@ -123,6 +129,7 @@ export function analyzeAnimationQuality(input: {
     }
 
     const delta = vectorDelta(track.channel, start, end);
+    numericEvaluatedCount += 1;
     const deltaMagnitude = magnitude(delta);
     const rootLocomotionPosition = track.is_root && track.channel === "position";
     const requiresReview = !rootLocomotionPosition && deltaMagnitude > seamThreshold(track.channel);
@@ -148,17 +155,20 @@ export function analyzeAnimationQuality(input: {
 
   return {
     state: "available" as const,
+    visual_verdict: "not_evaluated" as const,
     loop_mode: input.loop_mode,
     length_seconds: input.length,
     evaluated_tracks: input.tracks.length,
     loop_seam: {
       applicable: input.loop_mode === "loop",
+      numeric_evaluated_track_count: numericEvaluatedCount,
+      insufficient_key_track_count: insufficientKeyCount,
       review_track_count: reviewSeamCount,
       boundary_missing_track_count: boundaryMissingCount,
       non_numeric_boundary_track_count: nonNumericBoundaryCount,
       examples: loopTrackDiagnostics.slice(0, exampleLimit),
       examples_truncated: loopTrackDiagnostics.length > exampleLimit,
-      note: "Root position displacement is reported as locomotion evidence, not a seam defect. Other seam flags are numeric review hints, never a visual PASS/FAIL.",
+      note: "Numeric endpoint comparison only, not interpolation, playback, contact, foot sliding or weight evaluation. Expressions and insufficient keys remain unevaluated, not passing. Root position displacement is locomotion evidence, not a seam defect.",
     },
     cadence: {
       high_variability_track_count: cadenceDiagnostics.length,

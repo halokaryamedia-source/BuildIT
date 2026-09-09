@@ -51,6 +51,7 @@ When `Animation Required = YES`, leave **motion-ready structure**: cohorts, pivo
 Large counts, rotated Cubes, per-face UV and Locators can be valid. Locator = lightweight attachment/effect anchor. Visible Bounds = native culling/export metadata; check animation extremes.
 
 ## Primary Mass / Proportion / Depth
+Coordinates follow one coherent volume interpretation. Derive adjoining masses from shared boundaries; judge landmark size/spacing against the whole form before secondary detail.
 `frame/envelope → primary masses → shared boundaries → cross-view proportions → depth/layering → silhouette/proportion gate → primary blockout`.
 Front/back constrain width+height; sides depth+height; top width+depth. **Front agreement does not certify depth.** Depth: `OBSERVED | INFERRED | UNRESOLVED`. Minor drift → one interpretation. Do not average drift. Only unresolved material conflict becomes `BLOCKED`.
 
@@ -79,6 +80,7 @@ Tool success, coordinates, bounds, hierarchy, validators, or similarity scores c
 Before user review, state the largest remaining reference differences at comparable angle/scale, including depth and identity landmarks. Neutral contact alone cannot certify an articulated assembly: inspect required closed boundaries in representative extremes, especially jaw/cheek/chest and limb attachments when present. Correct the owning structure before detail or production keys; do not hide unresolved gaps behind texture or filler Cubes.
 
 **UV Readiness Preflight** checks thin/Box-UV collapse, aspect/representation, seam/unique-region blockers. Read-only: no production UV/`UV Layout PASS`. **User Geometry APPROVED is required** before production UV.
+Layered contacts and exposed undersides need an affected side/bottom view when front/three-quarter views conceal the boundary. Distinguish dark material from actual missing surface; a prior approval does not clear a newly observed major defect.
 
 ## Native UV Layout / Texel Integrity
 `Geometry APPROVED → create_texture(type=template), explicit pixel_density, rearrange_uv=true, power_of_two=true → native UV/template → audit → UV Layout PASS → Texturing`.

@@ -5,6 +5,14 @@ async function source(path: string): Promise<string> {
 }
 
 describe("quality-first generic authoring contract", () => {
+  test("runtime guidance preserves explicit atlas constraints and distinguishes concealed contact evidence", async () => {
+    const prompt = await source("prompts/bedrock_entity_workflow.md");
+    expect(prompt).toContain("Approved bitmap size/density takes precedence");
+    expect(prompt).toContain("bounded surface/contact review");
+    expect(prompt).toContain("side/bottom views");
+    expect(prompt).toContain("Known major mismatch stays FAIL");
+    expect(prompt).not.toContain("New AI production uses logical UV 128×128");
+  });
   test("review boundaries preserve rejection and require current differences and playable motion", async () => {
     const [router, geometry, texture, animation, flow] = await Promise.all([
       source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md"),

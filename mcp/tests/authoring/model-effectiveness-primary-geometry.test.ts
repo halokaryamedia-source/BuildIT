@@ -26,7 +26,7 @@ describe("model creation effectiveness — primary geometry", () => {
     }
     expect(modelling).toMatch(/primary PASS[^\n]*identity-weighted secondary geometry/);
     expect(modelling).toMatch(/Tool success.*cannot justify `PASS`/);
-    expect(workflow).toContain("After primary `PASS`, add only identity-weighted detail");
+    expect(workflow).toMatch(/After primary `PASS`, add (?:only )?identity-weighted detail/);
   });
 
   test("under-constrained geometry remains provisional rather than success-by-placement", async () => {
