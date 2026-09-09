@@ -22,15 +22,19 @@ const PROTOCOL_VERSION = "2025-06-18";
 // transaction tool; legacy paint operations remain available for interactive strokes.
 // 2026-09-08: Prompt/Resource count and compact metadata join the same surface
 // guard so coverage growth must be justified instead of hidden behind tool-only metrics.
+// 2026-09-09: Texture authoring adds one explicit `manage_render_profile`
+// boundary plus one on-demand texture-authoring knowledge Resource. Existing
+// aggregate tool ceilings remain unchanged; only the measured catalog counts
+// and Resource metadata ceilings move by that justified capability delta.
 const SURFACE_BUDGET = {
-  tool_count: 53,
+  tool_count: 54,
   initialize_instructions_chars: 700,
   tools_list_response_chars: 82_000,
   input_schema_chars: 58_700,
   description_chars: 11_500,
   max_tool_payload_chars: 3_200,
   prompt_spec_count: 1,
-  resource_spec_count: 8,
+  resource_spec_count: 9,
   canonical_prompt_source_chars: 10_000,
   phase_prompt_body_chars: {
     geometry: 8_500,
@@ -38,9 +42,9 @@ const SURFACE_BUDGET = {
     animation: 3_000,
   } satisfies Record<McpAuthoringPhase, number>,
   prompt_catalog_chars: 380,
-  resource_catalog_chars: 2_500,
+  resource_catalog_chars: 3_000,
   prompt_description_chars: 220,
-  resource_description_chars: 1_500,
+  resource_description_chars: 1_700,
 } as const;
 
 type ListedTool = {
