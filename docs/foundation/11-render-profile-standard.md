@@ -38,6 +38,31 @@ These domains must never be inferred from one another.
 
 Do not use `transparent` as a canonical profile. It is ambiguous between cutout and translucency.
 
+## Canonical runtime route
+
+`manage_render_profile` is the entity-render mutation boundary for Texturing. It is intentionally separate from `manage_material` (PBR) and `manage_material_instances` (geometry metadata).
+
+```text
+inspect client_entity material slots + render-controller assignments
+→ decide render_profile per semantic bone/region cohort
+→ manage_render_profile(operation=bind)
+→ validate Material.<slot> references and ordered assignment result
+→ verify texture/alpha treatment against that profile
+→ runtime-specific claim remains UNVERIFIED until Minecraft runtime proof
+```
+
+The normal `bind` operation writes both halves of the relationship:
+
+```text
+client_entity.description.materials
+  slot → minecraft_material_code
+
+render_controller.materials
+  bone pattern → Material.slot
+```
+
+Exact selector updates stay in their existing array position. A new selector is appended, which is appropriate for the common Bedrock pattern of a broad `*` default followed by narrower overrides. Complex/dynamic Molang material expressions are preserved and reported rather than rewritten into guessed static bindings.
+
 ## Render Contract Ledger
 
 Before alpha-dependent styling is treated as complete, record the downstream render contract for each relevant slot/bone cohort:
@@ -66,13 +91,15 @@ One base-color atlas may contain regions consumed by different render profiles. 
 
 Alpha must never be interpreted from PNG/TGA pixels without a known downstream profile.
 
+`analyzeRenderAwareAlpha` is the pure diagnostic owner. It reports alpha distribution through the resolved render contract; it never treats intermediate alpha as an error merely because the byte is between 0 and 255.
+
 ### Opaque
 
-`entity` and `entity_nocull` do not give alpha a special BuildIT texture-authoring meaning.
+`entity` and `entity_nocull` do not give alpha a special BuildIT texture-authoring meaning. Non-opaque alpha is therefore a review candidate rather than an assumed transparency feature.
 
 ### Cutout
 
-`entity_alphatest` uses alpha for transparency through alpha testing. For crisp Minecraft pixel art, intentional 0/255 alpha is preferred unless the target/reference requires otherwise.
+`entity_alphatest` uses alpha for transparency through alpha testing. For crisp Minecraft pixel art, intentional 0/255 alpha is preferred unless the target/reference requires otherwise. Intermediate alpha is a cutout-specific review candidate.
 
 ### Translucent
 
@@ -96,7 +123,7 @@ Alpha must never be interpreted from PNG/TGA pixels without a known downstream p
 
 ## Material slots and assignments
 
-Minecraft client entities define material shortnames, while render controllers apply `Material.<slot>` to bone patterns. BuildIT should reason in two layers:
+Minecraft client entities define material shortnames, while render controllers apply `Material.<slot>` to bone patterns. BuildIT reasons in two layers:
 
 ```text
 render_material_slots
@@ -110,7 +137,7 @@ render_material_assignments
   lamp*   → lamp
 ```
 
-Later assignments may intentionally override earlier broad assignments. Keep slot identity and bone scope explicit.
+Assignments are ordered. Later matching entries may intentionally override earlier broad assignments. Repeated exact patterns are therefore reported as ordered override evidence, not silently deduplicated.
 
 ## Custom materials
 
@@ -132,7 +159,7 @@ Preview can support visual inspection; runtime material semantics still require 
 
 ## PBR boundary
 
-`manage_material`, `list_materials`, and `get_material_info` currently operate on Blockbench PBR TextureGroups / Bedrock `texture_set.json` data. Their semantic domain is `pbr_texture_set`.
+`manage_material`, `list_materials`, and `get_material_info` operate on Blockbench PBR TextureGroups / Bedrock `texture_set.json` data. Their semantic domain is `pbr_texture_set`.
 
 PBR channels do not select Minecraft entity render materials:
 
@@ -154,5 +181,6 @@ It does not configure client-entity material shortnames or render-controller ent
 - never infer `render_profile` from PBR channels;
 - never infer Minecraft material code from Blockbench `render_mode`;
 - never interpret intermediate alpha without the render contract;
+- one atlas may contain multiple alpha semantics through different bone/render assignments;
 - unknown/custom material behavior remains UNVERIFIED;
 - visual PASS still requires current mapped model evidence and, for runtime-specific claims, Minecraft runtime proof.
