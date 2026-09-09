@@ -38,7 +38,7 @@ describe("model creation effectiveness — actual reference grounding", () => {
       expect(reference).toContain(state);
       expect(modelling).toContain(state);
     }
-    expect(modelling).toContain("Use a View Pair Map only to resolve materially ambiguous");
+    expect(normalized(modelling)).toMatch(/view pair map only .{0,40} material .{0,40} front\/back/);
     expect(normalized(modelling)).toContain("semantic label never authorizes coordinates");
   });
 
@@ -50,7 +50,7 @@ describe("model creation effectiveness — actual reference grounding", () => {
     ]);
     expect(reference).toContain("View Pair Map");
     expect(modelling).toContain("View Pair Map");
-    expect(normalized(modelling)).toContain("only to resolve materially ambiguous front/back");
+    expect(normalized(modelling)).toMatch(/view pair map only .{0,40} material .{0,40} front\/back/);
     expect(normalized(validation)).toContain("do not silently compare the closest-looking view");
   });
 

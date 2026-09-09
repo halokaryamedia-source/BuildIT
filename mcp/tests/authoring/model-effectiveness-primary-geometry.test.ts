@@ -24,7 +24,7 @@ describe("model creation effectiveness — primary geometry", () => {
       expect(text).toContain("PASS");
       expect(text.toLowerCase()).toContain("secondary");
     }
-    expect(modelling).toMatch(/After primary `PASS`, add identity-weighted/);
+    expect(modelling).toMatch(/primary PASS[^\n]*identity-weighted secondary geometry/);
     expect(modelling).toMatch(/Tool success.*cannot justify `PASS`/);
     expect(workflow).toContain("After primary `PASS`, add only identity-weighted detail");
   });

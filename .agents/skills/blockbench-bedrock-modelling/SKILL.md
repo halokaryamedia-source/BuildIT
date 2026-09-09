@@ -68,7 +68,7 @@ Review affected views for holes/seams/penetration/contact/offsets. Each required
 `TEXTURE` → surface pattern/color/seam/panel line/marking.
 `OMIT` → unsupported/immaterial.
 
-Detail-only span/thickness `<= 4 Blockbench units` → `TEXTURE`/`OMIT`; keep Geometry for silhouette/volume/contact/negative-space/motion. Carrier thickness is not detail size. `PLANAR_CUTOUT_CARRIER`: alpha replaces micro-Cubes with 1 plane or 2 crossed planes (~90°) in one batch; Texture owns silhouette. Secondary geometry waits for primary proportion + coverage `PASS`.
+Detail-only span/thickness `<= 4 Blockbench units` → `TEXTURE`/`OMIT` unless silhouette/volume/contact/negative-space/motion needs Geometry. Carrier thickness ≠ detail size. `PLANAR_CUTOUT_CARRIER`: 1 plane or 2 crossed planes (~90°) in one batch carries alpha silhouette instead of micro-Cubes.
 
 ## Primary Build / Difference-First Reference Fidelity Verdict
 **Stay in the geometry lane unless a current decision requires another branch.**
