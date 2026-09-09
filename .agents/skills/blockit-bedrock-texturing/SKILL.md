@@ -3,9 +3,9 @@ name: blockit-bedrock-texturing
 description: Mandatory BlockIT Bedrock Texture specialist.
 ---
 # BlockIT Bedrock Texturing
-Geometry/UV capabilities remain callable for bounded upstream correction; Texturing **must not borrow Cube mutation**.
+Geometry/UV callable for bounded correction; Texturing **must not borrow Cube mutation**.
 ## Asset-Only Visual Runtime Boundary
-No RP dev: opaque/cutout/blend/emissive = visual intent; Texture variants asset-only.
+No RP dev: opaque/cutout/blend/emissive=visual intent; Texture variants asset-only.
 ## Entry / Correction
 **No Geometry↔Texturing phase switch.** AUTHORING↔Animation only: `HANDOFF_REQUIRED` + `switch_authoring_phase`.
 Entry: **Geometry APPROVED + UV Layout PASS**; final Box UV locked with `autouv=0`, no invalid/out-of-bounds/partial-overlap.
@@ -56,6 +56,6 @@ Verify required hidden material surfaces.
 Never use stale exported PNG/bbmodel.
 Animation → user Texture APPROVED + checkpoint → Animation Readiness Preflight → `HANDOFF_REQUIRED(target_phase=animation, readiness=ready)` → Gateway `switch_authoring_phase`, same task.
 ## Conditional Support — Not Default Routing
-Conditional on user intent; not normal hot path.
+User-intent only; not normal hot path.
 `gradient_tool | color_picker_tool | copy_brush_tool | paint_settings | create_brush_preset | load_brush_preset | texture_selection | texture_layer_management | add_texture_group | list_materials | get_material_info | import_texture_set`.
 `gradient_tool`: reference-supported continuous transition; no extra discovery/readback.

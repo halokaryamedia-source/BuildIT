@@ -48,6 +48,32 @@ describe("Gateway project affinity", () => {
     expect(bound.get(BLOCKIT_AUTHORING_PHASE_AFFINITY_HEADER)).toBe("animation");
   });
 
+  test("five Gateway instances keep independent project and phase affinity", () => {
+    const phases = [
+      "geometry",
+      "texturing",
+      "animation",
+      "geometry",
+      "texturing",
+    ] as const;
+    const backends = phases.map((phase, index) => {
+      const backend = new BlockitRuntimeBackend(RUNTIME_URL);
+      (backend as any).projectUuid = `project-${index + 1}`;
+      (backend as any).authoringPhase = phase;
+      return backend;
+    });
+
+    backends.forEach((backend, index) => {
+      const headers = (backend as any).runtimeRequestHeaders() as Headers;
+      expect(headers.get(BLOCKIT_PROJECT_AFFINITY_HEADER)).toBe(
+        `project-${index + 1}`
+      );
+      expect(headers.get(BLOCKIT_AUTHORING_PHASE_AFFINITY_HEADER)).toBe(
+        phases[index]
+      );
+    });
+  });
+
   test("first invocation can bind automatically when exactly one project is open", () => {
     const backend = new BlockitRuntimeBackend(RUNTIME_URL);
 

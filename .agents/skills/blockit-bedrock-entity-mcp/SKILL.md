@@ -3,12 +3,12 @@ name: blockit-bedrock-entity-mcp
 description: Mandatory router for BlockIT Bedrock Entity asset authoring.
 ---
 # BlockIT Bedrock Entity MCP
-Own AUTHORING/Animation routing.
+Own AUTHORING/Animation tool routing.
 `geometry/rig/UV judgement` → `blockbench-bedrock-modelling`; texture/PBR → `blockit-bedrock-texturing`; animation/motion → `blockit-bedrock-animation`.
 ## Product Scope Firewall
 Asset-only: BP/gameplay/pack OUT; RP visual/export; Animation Controller composition/preview; `resource_operations` **not a normal model-authoring route**.
 ## Mandatory Authoring Latch
-Load router + matching specialist before mutation:
+Load router + matching current worktree specialist before mutation:
 `router_loaded=YES | active_owner=GEOMETRY|TEXTURING|ANIMATION | specialist_loaded=YES | gate_satisfied=YES`.
 Any `NO` → **DO NOT MUTATE**.
 Geometry → approved image + Dimensions + user-selected strategy + Animation Required
@@ -57,10 +57,10 @@ Known Cubes sharing one deterministic TRANSLATE/RESIZE intent → derive absolut
 `manage_null_object create → name+parent; update → id+parent/position`
 Validation failure repairs arguments for the **same capability**.
 ## Capability Discovery / Recovery
-Capability discovery is deferred spec loading after routing.
+Discovery = deferred spec loading after routing.
 known exact capability   → invoke directly
 unknown/stale → one precise `search_capabilities` query, `limit=4`; `describe_capability` once before mutation.
-One precise search miss → reformulate once; second miss → `BLOCKED`. A known foreign-phase capability is never a discovery miss: AUTHORING↔Animation uses handoff.
+Search miss → reformulate once; second → `BLOCKED`. Known foreign-phase capability → AUTHORING↔Animation handoff.
 `INVALID_INPUT` → repair args; same capability. `TARGET_AMBIGUOUS` → resolve UUID once; `TARGET_NOT_FOUND` → focused identity lookup; `STALE_STATE` → one focused refresh; `NO_EFFECT` → diagnose payload; `CAPABILITY_MISMATCH` → handoff/BLOCKED; `OUTCOME_UNKNOWN` → inspect before retry.
 Same routed failure twice without new evidence → `BLOCKED`.
 ## State Reuse / Anti-Loop
