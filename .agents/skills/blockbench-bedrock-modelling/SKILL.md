@@ -11,9 +11,9 @@ description: Mandatory BlockIT Bedrock Geometry and UV Layout specialist.
 - `UNVERIFIED` is not a retry command; request only decision-changing evidence.
 
 ## Reference Grounding
-Reference-driven work requires the **actual approved reference image** in **active multimodal context**. Path/manifest/prose/memory is context, not visual evidence. Unavailable → `BLOCKED`.
+The **actual approved reference image** must be in **active multimodal context**; path/prose/memory is context, not visual evidence. Unavailable → `BLOCKED`.
 approved image owns visuals; dimensions own numeric scale; strategy is user-selected `DIRECT | 3D_ASSISTED`.
-Evidence: `SUPPORTED | PROVISIONAL | CONFLICTING | UNAVAILABLE`. Use a View Pair Map only for material front/back, depth, attachment, or 3/4 ambiguity.
+Evidence: `SUPPORTED | PROVISIONAL | CONFLICTING | UNAVAILABLE`. View Pair Map only for material front/back, depth, attachment, or 3/4 ambiguity.
 `DIRECT` uses Groups/Cubes; `3D_ASSISTED` keeps its pipeline; no auto-switch.
 
 ## DIRECT Hot Path
@@ -41,21 +41,21 @@ evidence state
 ```
 `SOLID_CUBOID | PLANE_LIKE | PLANAR_CUTOUT_CARRIER | LAYERED_SURFACE | SEGMENTED_FORM | TEXTURE | OMIT`.
 
-A semantic label never authorizes coordinates. **No orphan/filler Cube**. `PROVISIONAL` placement never verifies it. Construction forms are **not presets**; use texture for surface-only information.
+A semantic label never authorizes coordinates. **No orphan/filler Cube**; `PROVISIONAL` placement never verifies it. Construction forms are **not presets**. Use texture for surface information.
 Shared orientation/attachment/articulation → **Group/Bone-owned**; local rigid orientation may be Cube-owned. Primary mass: `AXIS_ALIGNED | ROTATED | UNRESOLVED`. Visible slope → pivot role `MASS_CENTER | ATTACHMENT | JOINT | PARENT_TRANSFORM`; attachment/joint pivot owns shared transform. Material `UNRESOLVED` → `BLOCKED`. AABB overlap, hierarchy, or numeric touching is not contact proof.
 When `Animation Required = YES`, leave **motion-ready structure**: cohorts, pivots, clearance, contact invariants. A known rig/contact defect does not wait for Animation.
 
 ## Production-Scale Entity Construction
-Large Cube/bone counts, rotated Cubes, per-face UV and Locators can be valid; complexity alone does not require Mesh/new tools. Locator = lightweight attachment/effect anchor. Visible Bounds is native export/culling metadata; check animation extremes when relevant.
+Large counts, rotated Cubes, per-face UV and Locators can be valid. Locator = lightweight attachment/effect anchor. Visible Bounds = native culling/export metadata; check animation extremes.
 
 ## Primary Mass / Proportion / Depth
 `frame/envelope → primary masses → shared boundaries → cross-view proportions → depth/layering → silhouette/proportion gate → primary blockout`.
-Front/back constrain width+height; sides depth+height; top/bottom width+depth. **Front agreement does not certify depth.** Depth: `OBSERVED | INFERRED | UNRESOLVED`. Minor drift → one interpretation. Do not average drift. Only unresolved material conflict becomes `BLOCKED`.
+Front/back constrain width+height; sides depth+height; top width+depth. **Front agreement does not certify depth.** Depth: `OBSERVED | INFERRED | UNRESOLVED`. Minor drift → one interpretation; do not average. Unresolved material conflict → `BLOCKED`.
 
 ## Surface Coverage / Negative Space
-Every surface relationship is intentional; **do not force universal watertight geometry**. Designed openings remain open.
+**Do not force universal watertight geometry**; designed openings remain open.
 Relations: `CLOSED_BOUNDARY | INTENTIONAL_OPENING | LAYERED_OFFSET | INTENTIONAL_INTERSECTION | CUTOUT_CARRIER`.
-For material adjacency/layer/contact, use fresh views + one bounded `inspect_model_bounds`. Each required surface class needs current evidence once. `z_fighting | micro_gap | coplanar_edge_gap | shallow_penetration` are review hints. Resolve/justify material risks before PASS; overlap alone never proves correctness.
+For adjacency/layer/contact use fresh views + one bounded `inspect_model_bounds`. Each required surface class needs current evidence once. Review `z_fighting | micro_gap | coplanar_edge_gap | shallow_penetration`; overlap alone never proves correctness.
 
 ## Geometry Detail Budget
 Decide representation **before** counting Cubes.
@@ -68,11 +68,11 @@ Detail-only span/thickness `<= 4 Blockbench units` is an **anti-overcube guardra
 ## Primary Build / Difference-First Reference Fidelity Verdict
 `requirement → source evidence → simplest recognizable Blockbench-buildable interpretation → PRIMARY BLOCKOUT + required hierarchy/pivots → primary PASS → identity-weighted secondary geometry`.
 
-For `3D_ASSISTED`, PrimitiveAnything is scaffold, not final Cube authority. Cleanup removes/merges primitives/Groups without remaining 3D or transform/motion purpose.
+`3D_ASSISTED`: PrimitiveAnything is scaffold, not final Cube authority; cleanup removes parts without 3D/transform/motion purpose.
 
 Verdict requires approved reference + fresh current-revision model evidence:
 `claim | matching reference view | current view | observed difference | FAIL | UNVERIFIED | PASS`.
-Mutation stales affected captures. Correct first cause, then recapture affected views. `capture_model_views` correspondence metadata only maps captures to canonical board slots; it is not a scorer and never creates visual PASS.
+Mutation stales affected captures. Correct first cause, then recapture affected views. `capture_model_views` correspondence only maps board slots; it is not a scorer and never creates visual PASS.
 Tool success, coordinates, bounds, hierarchy, validators, or similarity scores cannot justify `PASS`. Internal Geometry `PASS` requires form/depth, surface integrity, hierarchy/pivots, and no major defect.
 
 **UV Readiness Preflight** checks thin/Box-UV collapse, aspect/representation, seam/unique-region blockers. Read-only: no production UV/`UV Layout PASS`. **User Geometry APPROVED is required** before production UV.

@@ -4,10 +4,8 @@ description: Mandatory BlockIT Bedrock Texture specialist.
 ---
 # BlockIT Bedrock Texturing
 Geometry/UV capabilities remain callable for bounded upstream correction; Texturing **must not borrow Cube mutation**.
-
 ## Asset-Only Visual Runtime Boundary
-No RP development: render intent = opaque/cutout/blend/emissive; Texture variants are asset-only, gameplay selection downstream.
-
+No RP development: opaque/cutout/blend/emissive = visual intent; Texture variants = asset-only.
 ## Entry / Correction
 **No Geometry↔Texturing phase switch.** AUTHORING↔Animation only: `HANDOFF_REQUIRED` + `switch_authoring_phase`.
 Entry: **Geometry APPROVED + UV Layout PASS**; final Box UV locked with `autouv=0`, no invalid/out-of-bounds/partial-overlap.
@@ -20,14 +18,14 @@ face mapping → inspect_elements(mode=detail) only when needed
 blank atlas resolution unknown → get_project_info once
 atlas → list_textures / activate_texture / create_texture / get_texture
 paint → draw_shape_tool / paint_fill_tool / paint_with_brush / eraser_tool
-fresh-revision batch → paint_texture_transaction
+batch → paint_texture_transaction
 PBR/material semantics → manage_material / manage_material_instances
-visual render intent/preview → manage_render_profile
+render intent/preview → manage_render_profile
 ```
 Unknown → `search_capabilities(limit=4)`. No confirmation rereads.
-**Pin atlas UUID; pass `texture_id` when multiple textures are loaded.**
+**Pin atlas UUID and pass `texture_id` when multiple textures are loaded.**
 ## UV Gate
-`uv_audit.production_gate`=ready is hygiene, **not UV Layout PASS**. Review face aspect ratio, texel density, semantic UV reuse; return to Geometry/UV if detail cannot fit.
+`uv_audit.production_gate`=ready is hygiene, **not UV Layout PASS**; review face aspect ratio, texel density, semantic UV reuse.
 Requested atlas size/density are constraints; never silently enlarge.
 ## First Call
 `blank create_texture → explicit width+height from project UV`; **not omit blank Atlas size**.
@@ -35,12 +33,12 @@ Requested atlas size/density are constraints; never silently enlarge.
 ## Workplan / Coverage
 material cohorts; palette roles `BASE | SHADOW | HIGHLIGHT | ACCENT/IDENTITY`; form/contact/occlusion/edge/identity/detail.
 Face Coverage Ledger: `UNPAINTED | BASE_ONLY | STYLED | INTENTIONAL_FLAT | INTENTIONAL_TRANSPARENT | SHARED`.
-`list_textures.optimization_opportunities.coverage.gate`: `incomplete|partial`/`FACE_ACCOUNTING_INCOMPLETE` → no completion. one `list_textures`/pass. `ready` ≠ visual PASS.
-Variants/PBR: `list_textures.production_alignment.gate=ready`; `seam_continuity` advisory; `pbr_content`.
+`list_textures.optimization_opportunities.coverage.gate`: `incomplete|partial` / `FACE_ACCOUNTING_INCOMPLETE` → no completion; one `list_textures`/pass; `ready` ≠ visual PASS.
+Variants/PBR: `list_textures.production_alignment.gate=ready`; `seam_continuity`; `pbr_content`.
 ### Reference-Grounded Palette / Atlas-Island Discipline
-Integer texels; **pixels per UV unit** owns scale; hue ramp; hard clusters; no antialiasing.
+Integer texels; **pixels per UV unit** owns scale; hue; hard clusters.
 ## Texture Styling
-generic palette/copied unrelated texture/flat rectangles/random high-contrast noise ≠ completion. Avoid pillow shading, banding, mixels, border-only detail.
+generic palette; copied unrelated texture; flat rectangles; random high-contrast noise ≠ completion.
 `BASE PASS → VALUE / FORM PASS → SURFACE PATTERN PASS → IDENTITY PASS → SECONDARY DETAIL PASS → RENDER / ALPHA VERIFY → VERIFY`.
 ### Render / PBR / Paint Safety
 Namespaces: `render_profile`+`minecraft_material_code` | `pbr_texture_set` | `geometry_material_instance` | `surface_pattern`; `render_mode` preview-only.

@@ -7,7 +7,7 @@ Own AUTHORING/Animation tool routing.
 `geometry/rig/UV judgement` → `blockbench-bedrock-modelling`; texture/PBR → `blockit-bedrock-texturing`; animation/motion → `blockit-bedrock-animation`.
 
 ## Product Scope Firewall
-Asset-only: no BP/gameplay/Script API/pack assembly. RP only visual/export; Animation Controller only composition/preview; `resource_operations` is **not a normal model-authoring route**.
+Asset-only: no BP/gameplay/pack assembly; RP visual/export; Animation Controller composition/preview; `resource_operations` is **not a normal model-authoring route**.
 
 ## Mandatory Authoring Latch
 Load router + matching current worktree specialist before mutation:
@@ -20,7 +20,7 @@ Texture → Geometry APPROVED + UV Layout PASS
 Animation → Texturing APPROVED + checkpoint + Animation Readiness Preflight → HANDOFF_REQUIRED
 `HANDOFF_REQUIRED`: `target_phase`, `reason`, `readiness`, `resume_from`; Gateway `switch_authoring_phase` → same task/chat.
 
-`approved image` = visual authority; strategy = user-selected `DIRECT | 3D_ASSISTED`, no auto-switch/fallback. `3D_ASSISTED` → Shape Reconstruction → PrimitiveAnything → cleanup. 1 block=16 units; reuse `front_direction`.
+`approved image` = visual authority; strategy is user-selected `DIRECT | 3D_ASSISTED`. `3D_ASSISTED` → Shape Reconstruction → PrimitiveAnything → cleanup. 1 Minecraft block = 16 Blockbench units; reuse `front_direction`.
 
 ## Fast Routing Contract
 Normal asset work **must not begin by searching repository files**.
@@ -55,7 +55,7 @@ rig IK/mirror                  → bone_rigging
 `bone_rigging` only for IK/mirror.
 `validator://*` resources are Direct Runtime/Inspector only; a Gateway client must not search for or emulate them.
 Known coherent Cubes → one `manage_cubes(operation=create, elements=[...])`; uncertainty → no batch.
-Known Cubes sharing one deterministic TRANSLATE/RESIZE intent → derive absolute targets once from fresh state → `manage_cubes(operation=batch_update)`; never loop inspect→modify per Cube; relative intent stays reasoning-layer arithmetic; writes stay absolute/fail-closed. **Semantic cohort rule:** shared motion → Group; else sibling cohort.
+Known Cubes sharing one deterministic TRANSLATE/RESIZE intent → derive absolute targets once from fresh state → `manage_cubes(operation=batch_update)`; never loop inspect→modify per Cube; use reasoning-layer arithmetic; writes absolute/fail-closed. **Semantic cohort rule:** shared motion → Group; else siblings.
 
 ## First-Call Invariants
 `add_group` → pass name OR groups, never both.
@@ -66,14 +66,14 @@ Known Cubes sharing one deterministic TRANSLATE/RESIZE intent → derive absolut
 Validation failure repairs arguments for the **same capability**.
 
 ## Capability Discovery / Recovery
-Known exact capability → invoke directly; unknown/stale → one precise `search_capabilities` query, `limit=4`; schema needed → `describe_capability` once.
+Capability discovery is deferred spec loading after routing. Known exact capability → invoke; unknown/stale → one precise `search_capabilities` query, `limit=4`; schema → `describe_capability` once before mutation.
 One precise search miss → reformulate once; second miss → `BLOCKED`. A known foreign-phase capability is never a discovery miss: AUTHORING↔Animation uses handoff.
 
-`INVALID_INPUT` → repair args; same capability. `TARGET_AMBIGUOUS` → resolve UUID once; `TARGET_NOT_FOUND` → focused identity lookup; `STALE_STATE` → one focused refresh; `NO_EFFECT` change diagnosis/payload; `CAPABILITY_MISMATCH` handoff once or BLOCKED; `OUTCOME_UNKNOWN` inspect state before retry.
+`INVALID_INPUT` → repair args; same capability. `TARGET_AMBIGUOUS` → resolve UUID once; `TARGET_NOT_FOUND` → focused identity lookup; `STALE_STATE` → one focused refresh; `NO_EFFECT` → diagnose payload; `CAPABILITY_MISMATCH` → handoff/BLOCKED; `OUTCOME_UNKNOWN` → inspect before retry.
 Same routed failure twice without new evidence → `BLOCKED`.
 
 ## State Reuse / Anti-Loop
-Fresh mutation → reuse state/`geometry_effect`; no confirmation/detail readback or status/search/describe/project/bounds/capture progress checks.
+Fresh mutation → reuse state/`geometry_effect`. Do not automatically re-read fresh mutation targets with `inspect_elements(mode=detail)`; no status/discovery/bounds/capture progress checks.
 `inspect_model_bounds` only for envelope/scale/ground/displacement or a diagnosed bounded surface/contact integrity question.
-Skip `get_project_info` after create/export unless lifecycle state is unknown/stale.
+Skip `get_project_info` after known create/export.
 `export_model`: `bedrock` JSON or `project` `.bbmodel`.
