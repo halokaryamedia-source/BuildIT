@@ -25,25 +25,60 @@ export type {
 import {
   inspectParticleDocument as inspectParticleDocumentCore,
   type JsonObject,
+  type ParticleDiagnostic,
   type ParticleDocumentSummary,
 } from "./bedrockParticleDocumentCore";
 import { analyzeBedrockParticleSemantics } from "./bedrockParticleSemantics";
+import { analyzeBedrockParticleSchemaCoverage } from "./bedrockParticleSchemaCoverage";
+
+function dedupeDiagnostics(
+  diagnostics: readonly ParticleDiagnostic[]
+): ParticleDiagnostic[] {
+  const seen = new Set<string>();
+  const unique: ParticleDiagnostic[] = [];
+  for (const diagnostic of diagnostics) {
+    const key = [
+      diagnostic.severity,
+      diagnostic.code,
+      diagnostic.path ?? "",
+      diagnostic.message,
+    ].join("|");
+    if (seen.has(key)) continue;
+    seen.add(key);
+    unique.push(diagnostic);
+  }
+  return unique;
+}
 
 /**
  * Canonical compact particle inspection. The lossless document core owns
- * structural/Bedrock component validation; advanced semantics adds bounded
- * Molang, parametric-motion, curve, flipbook, event-fanout and cost diagnostics.
- * Neither layer evaluates gameplay truth or rewrites authored expressions.
+ * structural/component invariants, schema coverage validates every known
+ * stable Bedrock component field shape, and advanced semantics adds bounded
+ * Molang/math, parametric-motion, curve, flipbook, event-fanout and cost
+ * diagnostics. None of these layers evaluate gameplay truth or rewrite
+ * authored expressions; unknown future fields remain preserved.
  */
 export function inspectParticleDocument(
   document: JsonObject
 ): ParticleDocumentSummary {
   const summary = inspectParticleDocumentCore(document);
+  const schema = analyzeBedrockParticleSchemaCoverage(document);
   const advanced = analyzeBedrockParticleSemantics(document);
-  if (advanced.length === 0) return summary;
+  const diagnostics = dedupeDiagnostics([
+    ...summary.diagnostics,
+    ...schema,
+    ...advanced,
+  ]);
+  if (
+    diagnostics.length === summary.diagnostics.length &&
+    schema.length === 0 &&
+    advanced.length === 0
+  ) {
+    return summary;
+  }
   return {
     ...summary,
-    diagnostics: [...summary.diagnostics, ...advanced],
+    diagnostics,
   };
 }
 
