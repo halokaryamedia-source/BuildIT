@@ -1,4 +1,5 @@
 import { PRODUCT_ID } from "@/lib/productIdentity";
+import { BLOCKIT_AUTHORING_PHASE_AFFINITY_HEADER } from "../gateway/projectAffinity";
 
 export const DEFAULT_MCP_URL = "http://127.0.0.1:3000/bb-mcp";
 export const DEFAULT_BUNDLE_PATH = "dist/blockit_mcp.js";
@@ -163,6 +164,7 @@ export class LiveMcpClient {
       accept: "application/json, text/event-stream",
       "content-type": "application/json",
       connection: "close",
+      [BLOCKIT_AUTHORING_PHASE_AFFINITY_HEADER]: this.expectedPhase,
     });
     if (protocolHeader) headers.set("mcp-protocol-version", PROTOCOL_VERSION);
 
@@ -206,7 +208,7 @@ export class LiveMcpClient {
   private async healthJson(): Promise<JsonObject> {
     this.metrics.http_calls += 1;
     const response = await fetch(`${this.targetUrl}/health`, {
-      headers: { connection: "close" },
+      headers: { connection: "close", [BLOCKIT_AUTHORING_PHASE_AFFINITY_HEADER]: this.expectedPhase },
     });
     const text = await response.text();
     this.metrics.response_bytes += new TextEncoder().encode(text).length;
