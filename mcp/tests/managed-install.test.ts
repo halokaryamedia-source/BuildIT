@@ -1,0 +1,114 @@
+import { test } from "bun:test";
+import assert from "node:assert/strict";
+import { mkdtemp, mkdir, readFile, readdir, rm, symlink, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { dirname, join } from "node:path";
+import { applyTransaction, configureCodex, installPackage, installedState, parseManifest, readOptional, recoverInstallation, REPOSITORY, requirePlainPath, sha256, SKILLS, verifyPackage, withInstallLock, type InstallOptions, type Manifest } from "../distribution/managed-install";
+const parse = (s: string): any => Bun.TOML.parse(s);
+
+async function fixture(directory: string, digit = "a"): Promise<Manifest> {
+  const paths = ["blockit.exe", "blockit_mcp.js", "AGENTS.md", "workspace/README.md", "LICENSE", "THIRD_PARTY_NOTICES.txt", "docs/foundation/09-finalization-standard.md", ...SKILLS.map(s => `.agents/skills/${s}/SKILL.md`)];
+  const manifest: Manifest = { schema: 1, repository: REPOSITORY, source_sha: digit.repeat(40), build_identity: "sha256:" + digit.repeat(64), platform: "windows-x64", files: [] };
+  for (const path of paths) {
+    const bytes = Buffer.from(path === "blockit_mcp.js" ? `globalThis.__BLOCKIT_BUILD_ID__="${manifest.build_identity}";` : `Fixture ${path} ${digit}\n`);
+    await mkdir(dirname(join(directory, path)), { recursive: true }); await writeFile(join(directory, path), bytes);
+    manifest.files.push({ path, size: bytes.length, sha256: sha256(bytes) });
+  }
+  await writeFile(join(directory, "blockit-package.json"), JSON.stringify(manifest)); return manifest;
+}
+async function sandbox(work: (directory: string, options: InstallOptions) => Promise<void>): Promise<void> {
+  const d = await mkdtemp(join(tmpdir(), "blockit-install-"));
+  try { await work(d, { root: join(d, "installed"), workspace: join(d, "assets"), plugin: join(d, "plugins/blockit_mcp.js"), config: join(d, "codex/config.toml") }); }
+  finally { await rm(d, { recursive: true, force: true }); }
+}
+
+test("package paths and complete required files are fail-closed", async () => sandbox(async d => {
+  const manifest = await fixture(join(d, "pkg")); assert.equal(parseManifest(manifest).files.length, 11);
+  for (const path of ["../config.toml", "C:/evil.exe", ".agents/skills/other/SKILL.md", "workspace/active/model.bbmodel"]) {
+    assert.throws(() => parseManifest({ ...manifest, files: [...manifest.files, { path, size: 1, sha256: "a".repeat(64) }] }));
+  }
+  assert.throws(() => parseManifest({ ...manifest, files: manifest.files.slice(1) }));
+  assert.throws(() => parseManifest({ ...manifest, files: [...manifest.files, manifest.files[0]] }));
+}));
+
+test("corrupt payload cannot change active installation", async () => sandbox(async (d, o) => {
+  const pkg = join(d, "pkg"); await fixture(pkg); await writeFile(join(pkg, "blockit_mcp.js"), "wrong");
+  await assert.rejects(installPackage(pkg, o, parse), /integrity/);
+  assert.equal(await installedState(o.root), null); assert.equal(await readOptional(o.config), null);
+}));
+
+test("Codex configuration preserves other servers, settings and BlockIT timeouts", () => {
+  const before = '# user comment\nmodel="chosen"\n[mcp_servers.other]\ncommand="other.exe"\n[mcp_servers.blockit]\ncommand="bun"\nargs=["old.ts"]\ntool_timeout_sec=120\n[mcp_servers.blockit.env]\nBLOCKIT_RUNTIME_URL="http://127.0.0.1:3100/bb-mcp"\n';
+  assert.throws(() => configureCodex(before, "C:\\BlockIT\\blockit.exe", parse), /adopt/);
+  const after = configureCodex(before, "C:\\BlockIT\\blockit.exe", parse, true);
+  assert.ok(after.includes('# user comment')); const data = parse(after);
+  assert.equal(data.model, "chosen"); assert.deepEqual(data.mcp_servers.other, parse(before).mcp_servers.other);
+  assert.equal(data.mcp_servers.blockit.tool_timeout_sec, 120);
+  assert.equal(data.mcp_servers.blockit.env.BLOCKIT_RUNTIME_URL, "http://127.0.0.1:3100/bb-mcp");
+  assert.equal(configureCodex(after, "C:\\BlockIT\\blockit.exe", parse), after);
+  assert.throws(() => configureCodex('[mcp_servers.blockit]\nenabled=false\n', "x.exe", parse, true), /disabled/);
+  assert.throws(() => configureCodex('[mcp_servers.blockit]\nurl="https://remote.invalid"\n', "x.exe", parse, true), /remote/);
+  assert.throws(() => configureCodex('not valid TOML', "x.exe", parse));
+});
+
+test("install is idempotent and keeps user assets and root instructions", async () => sandbox(async (d, o) => {
+  const pkg = join(d, "pkg"); await fixture(pkg); await mkdir(o.workspace, { recursive: true });
+  await writeFile(join(o.workspace, "AGENTS.md"), "User-owned instructions\n");
+  await writeFile(join(o.workspace, "model.bbmodel"), "USER MODEL");
+  const first = await withInstallLock(o.root, () => installPackage(pkg, o, parse)); assert.ok(first.changed_files > 0);
+  const second = await withInstallLock(o.root, () => installPackage(pkg, o, parse)); assert.equal(second.changed_files, 0);
+  assert.equal((await readFile(join(o.workspace, "model.bbmodel"))).toString(), "USER MODEL");
+  assert.ok((await readFile(join(o.workspace, "AGENTS.md"))).toString().startsWith("User-owned instructions\n"));
+  assert.equal((await readdir(join(o.root, "transactions"))).length, 1);
+  assert.equal(parse((await readFile(o.config)).toString()).mcp_servers.blockit.command, join(o.root, "versions", "a".repeat(40), "blockit.exe"));
+}));
+
+test("update and rollback switch the complete managed package, never user assets", async () => sandbox(async (d, o) => {
+  const a = join(d, "a"), b = join(d, "b"); await fixture(a); await fixture(b, "b");
+  await withInstallLock(o.root, () => installPackage(a, o, parse));
+  const config = await readFile(o.config), plugin = await readFile(o.plugin);
+  await writeFile(join(o.workspace, "art.png"), "USER ART");
+  await withInstallLock(o.root, () => installPackage(b, o, parse)); assert.equal((await installedState(o.root))?.source_sha, "b".repeat(40));
+  await withInstallLock(o.root, () => recoverInstallation(o.root, true));
+  assert.equal((await installedState(o.root))?.source_sha, "a".repeat(40));
+  assert.deepEqual(await readFile(o.config), config); assert.deepEqual(await readFile(o.plugin), plugin);
+  assert.equal((await readFile(join(o.workspace, "art.png"))).toString(), "USER ART");
+}));
+
+test("user-modified managed skills block overwrite unless explicitly adopted", async () => sandbox(async (d, o) => {
+  const a = join(d, "a"), b = join(d, "b"); await fixture(a); await fixture(b, "b");
+  await installPackage(a, o, parse); const skill = join(o.workspace, `.agents/skills/${SKILLS[0]}/SKILL.md`);
+  await writeFile(skill, "CUSTOM EDIT");
+  await assert.rejects(installPackage(b, o, parse), /Local file/); assert.equal((await installedState(o.root))?.source_sha, "a".repeat(40));
+  await installPackage(b, o, parse, true); await recoverInstallation(o.root, true);
+  assert.equal((await readFile(skill)).toString(), "CUSTOM EDIT");
+}));
+
+test("failure after a partial write restores the complete before-state", async () => sandbox(async (d, o) => {
+  const old = join(d, "old"), fresh = join(d, "new"); await writeFile(old, "before");
+  await assert.rejects(applyTransaction(o.root, [{ path: old, bytes: Buffer.from("after"), expected: sha256("before") }, { path: fresh, bytes: Buffer.from("new"), expected: null }], n => { if (n === 2) throw new Error("injected failure"); }));
+  assert.equal((await readFile(old)).toString(), "before"); assert.equal(await readOptional(fresh), null);
+}));
+
+test("persistent prepared journal is recoverable after simulated process interruption", async () => sandbox(async (d, o) => {
+  const path = join(d, "managed"); await writeFile(path, "old");
+  const id = await applyTransaction(o.root, [{ path, bytes: Buffer.from("new"), expected: sha256("old") }]);
+  const journalPath = join(o.root, "transactions", id, "journal.json"), journal = JSON.parse((await readFile(journalPath)).toString());
+  journal.status = "prepared"; await writeFile(journalPath, JSON.stringify(journal));
+  await recoverInstallation(o.root); assert.equal((await readFile(path)).toString(), "old");
+}));
+
+test("rollback refuses to overwrite a post-install user edit", async () => sandbox(async (d, o) => {
+  const path = join(d, "managed"); await writeFile(path, "old");
+  await applyTransaction(o.root, [{ path, bytes: Buffer.from("new"), expected: sha256("old") }]);
+  await writeFile(path, "USER EDIT"); await assert.rejects(recoverInstallation(o.root, true), /Local modification/);
+  assert.equal((await readFile(path)).toString(), "USER EDIT");
+}));
+
+test("concurrent writers and symlink/junction destinations are refused", async () => sandbox(async (d, o) => {
+  await withInstallLock(o.root, async () => { await assert.rejects(withInstallLock(o.root, async () => {}), /active/); });
+  const real = join(d, "real"), link = join(d, "link"); await mkdir(real); await symlink(real, link, process.platform === "win32" ? "junction" : "dir");
+  await assert.rejects(requirePlainPath(join(link, "blockit_mcp.js")), /linked/);
+  const file = join(d, "changed"); await writeFile(file, "now");
+  await assert.rejects(applyTransaction(o.root, [{ path: file, bytes: Buffer.from("bad"), expected: sha256("stale") }]), /Concurrent/);
+}));
