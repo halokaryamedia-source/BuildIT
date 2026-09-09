@@ -27,7 +27,7 @@ Unknown → `search_capabilities(limit=4)`. No confirmation rereads.
 Requested atlas size/density are constraints; never silently enlarge.
 ## First Call
 `blank create_texture → explicit width+height from project UV`; **not omit blank Atlas size**.
-`create_texture`: provisional **16×16 blank**; **128×128 default, 256×256 opt-in**. Reuse atlas UUID.
+`create_texture`: provisional **16×16 blank**; **128×128 default, 256×256 opt-in**. Reuse existing atlas UUID.
 ## Workplan / Coverage
 material cohorts; palette roles `BASE | SHADOW | HIGHLIGHT | ACCENT/IDENTITY`; form/contact/occlusion/edge/identity/detail.
 Face Coverage Ledger: `UNPAINTED | BASE_ONLY | STYLED | INTENTIONAL_FLAT | INTENTIONAL_TRANSPARENT | SHARED`.
