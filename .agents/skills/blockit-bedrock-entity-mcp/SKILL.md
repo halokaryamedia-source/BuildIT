@@ -6,6 +6,11 @@ description: Mandatory router for BlockIT Bedrock Entity asset authoring.
 Own AUTHORING/Animation tool routing.
 `geometry/rig/UV judgement` → `blockbench-bedrock-modelling`; texture/PBR → `blockit-bedrock-texturing`; animation/motion → `blockit-bedrock-animation`.
 
+## Product Scope Firewall
+Normal BlockIT authoring stops at the **Blockbench visual asset**. Do not route into Behavior Pack components/events/AI/spawn rules, Script API gameplay logic, manifest/pack assembly, addon packaging, server-side behavior controllers, or property-driven gameplay integration.
+
+Resource-Pack knowledge is allowed only when it changes asset appearance/export compatibility. `manage_render_profile` is visual material intent/support, not a reason to build an RP file graph. Animation Controller is artist-facing composition/preview; file-backed `client_entity`/controller `resource_operations` are **not a normal model-authoring route**. Existing compatibility/inspection capability does not expand product scope.
+
 ## Mandatory Authoring Latch
 Load router + matching current worktree specialist before mutation:
 `router_loaded=YES | active_owner=GEOMETRY|TEXTURING|ANIMATION | specialist_loaded=YES | gate_satisfied=YES`.

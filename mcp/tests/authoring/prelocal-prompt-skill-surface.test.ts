@@ -86,6 +86,38 @@ describe("Bedrock prompt and skill surface", () => {
     expect(animation).toMatch(/`batch`.*coherent cohort/);
   });
 
+  test("normal authoring stays asset-only while retaining visual and controller intelligence", async () => {
+    const [root, context, orchestrator, modelling, texturing, animation] = await Promise.all([
+      source("../AGENTS.md"),
+      source("../CONTEXT.md"),
+      source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md"),
+      source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
+      source("../.agents/skills/blockit-bedrock-texturing/SKILL.md"),
+      source("../.agents/skills/blockit-bedrock-animation/SKILL.md"),
+    ]);
+
+    expect(root).toContain("not Minecraft add-on development");
+    expect(context).toContain("Asset-only product scope");
+    expect(context).toContain("Behavior Pack");
+    expect(orchestrator).toContain("Product Scope Firewall");
+    expect(orchestrator).toContain("not a normal model-authoring route");
+
+    expect(modelling).toContain("Production-Scale Entity Construction");
+    expect(modelling).toContain("rotated Cubes");
+    expect(modelling).toContain("per-face UV");
+    expect(modelling).toContain("Locator = lightweight attachment/effect anchor");
+    expect(modelling).toContain("Visible Bounds");
+
+    expect(texturing).toContain("Asset-Only Visual Runtime Boundary");
+    expect(texturing).toContain("Texture variants");
+    expect(texturing).toContain("opaque/cutout/blend/emissive");
+
+    expect(animation).toContain("Artist-Facing Controller Boundary");
+    expect(animation).toContain("resource_operations");
+    expect(animation).toContain("not a normal asset-authoring route");
+    expect(animation).toContain("transition/blend continuity");
+  });
+
   test("reference-driven modelling keeps a difference-first three-state visual verdict", async () => {
     const [workflow, modelling, orchestrator, validation] = await Promise.all([
       source("prompts/bedrock_entity_workflow.md"),

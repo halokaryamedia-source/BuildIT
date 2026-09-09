@@ -47,6 +47,20 @@ A semantic label never authorizes coordinates. **No orphan/filler Cube**. `PROVI
 Shared orientation/attachment/articulation → **Group/Bone-owned**; local rigid orientation may be Cube-owned. Primary mass: `AXIS_ALIGNED | ROTATED | UNRESOLVED`. Visible slope → pivot role `MASS_CENTER | ATTACHMENT | JOINT | PARENT_TRANSFORM`; attachment/joint pivot owns shared transform. Material `UNRESOLVED` → `BLOCKED`. AABB overlap, hierarchy, or numeric touching is not contact proof.
 When `Animation Required = YES`, leave **motion-ready structure**: cohorts, pivots, clearance, contact invariants. A known rig/contact defect does not wait for Animation.
 
+## Production-Scale Entity Construction
+Production Bedrock entities may legitimately use large Cube/bone counts, many rotated Cubes, dense per-face UV, and many Locator anchors. Complexity alone is **not** evidence that a Mesh, a new tool, or a different Geometry strategy is required.
+
+- Local rigid slope/detail → Cube rotation is valid; shared orientation/contact/articulation → Group/Bone transform.
+- Repeated mechanical panels/segments → derive one cohort and batch author; do not inspect/write one Cube at a time.
+- Thin, rotated, directional, or face-specific surfaces → prefer explicit per-face UV when Box UV would collapse, distort, or waste atlas space. Never thicken approved Geometry only to simplify UV.
+- Locator = lightweight attachment/effect anchor, not visible Geometry. Create only for a real animation/effect/attachment target; parent it to the motion owner so downstream cues follow the intended part.
+- High Cube count is a performance/review consideration, not an automatic quality failure. Preserve semantic hierarchy and editability before micro-optimizing count.
+
+### Visible Bounds
+Bedrock `visible_bounds_*` describes the exported entity visibility/culling envelope; it is not shape Geometry and is not a reason to create extra Cubes. Blockbench's native Bedrock exporter owns this metadata. BuildIT does not hand-author BP/RP files merely to set it.
+
+Use actual rendered envelope evidence plus representative animation extremes when clipping/culling risk is material. Geometry inspection can identify envelope changes, but final native export/runtime culling remains a separate live/export proof. Do not claim visibility safety from a static front pose alone when an animation materially extends limbs, weapons, wings, or effects.
+
 ## Primary Mass / Proportion / Depth
 `frame/envelope → primary masses → shared boundaries → cross-view proportions → depth/layering → silhouette/proportion gate → primary blockout`.
 Front/back constrain width+height; sides depth+height; top/bottom width+depth. **Front agreement does not certify depth.** Depth: `OBSERVED | INFERRED | UNRESOLVED`. Minor drift → one interpretation. Do not average drift. Only unresolved material conflict becomes `BLOCKED`.

@@ -4,6 +4,12 @@ description: Mandatory BlockIT Bedrock Texture specialist.
 ---
 # BlockIT Bedrock Texturing
 Geometry/UV capabilities remain callable for bounded upstream correction; Texturing **must not borrow Cube mutation**.
+
+## Asset-Only Visual Runtime Boundary
+Texturing owns the authored asset's pixels/material appearance, not Resource Pack development. `render_profile` knowledge is used only to resolve visual behavior such as opaque/cutout/blend/emissive and to validate the loaded asset's preview/export intent. Do not build manifests, RP directory graphs, `client_entity` deliverables, or gameplay/property selection logic.
+
+Texture variants are valid **asset variants** when they reuse compatible final Geometry + UV Layout and preserve intended bitmap dimensions/mapping. BuildIT may author and visually validate those atlases; choosing a variant from gameplay state/property logic is downstream integration and out of scope.
+
 ## Entry / Correction
 **No Geometry↔Texturing phase switch.** AUTHORING↔Animation only: `HANDOFF_REQUIRED` + `switch_authoring_phase`.
 Entry: **Geometry APPROVED + UV Layout PASS**; final Box UV locked with `autouv=0`, no invalid/out-of-bounds/partial-overlap.
@@ -18,7 +24,7 @@ atlas → list_textures / activate_texture / create_texture / get_texture
 paint → draw_shape_tool / paint_fill_tool / paint_with_brush / eraser_tool
 fresh-revision batch → paint_texture_transaction
 PBR/material semantics → manage_material / manage_material_instances
-render runtime → manage_render_profile
+visual render intent/preview → manage_render_profile
 ```
 Unknown → `search_capabilities(limit=4)`. No confirmation rereads.
 **Pin atlas UUID and pass `texture_id` when multiple textures are loaded.**

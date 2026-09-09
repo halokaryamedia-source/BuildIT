@@ -11,6 +11,16 @@ BlockIT is a local MCP workflow for AI-assisted **Minecraft Bedrock Entity** aut
 
 Primary editable output is `.bbmodel`. Tool/file/coordinate success is not proof of visual resemblance.
 
+### Asset-only product scope
+
+BlockIT is an **asset authoring system**, not an add-on development system.
+
+Normal scope includes Geometry, rig/bones/pivots/locators, UV Layout, Texture Atlas/Styling/PBR, texture variants, visual material/render intent, Animation clips, artist-facing Animation Controller composition, effect cues, preview/validation, and native visual-asset export.
+
+Normal scope excludes Behavior Pack components/component groups/events/AI/spawn rules, Script API gameplay logic, server-side behavior animation/controller logic, manifest/pack assembly, addon packaging, and `client_entity`/render-controller file construction as a deliverable.
+
+Resource-Pack semantics are retained only where they affect the Blockbench-authored asset's appearance or export compatibility. Opaque/cutout/blend/emissive knowledge is therefore in scope; building an RP file graph is not. Animation Controller support means clip composition, transition/blend continuity, and artist-facing effect preview. External gameplay state/property integration stays outside the normal authoring boundary.
+
 ## Reference-Grounded Authoring
 
 Reference image creation belongs in ChatGPT. Canonical approved board:
