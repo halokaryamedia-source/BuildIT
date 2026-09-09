@@ -13,6 +13,7 @@ description: Mandatory BlockIT Bedrock Geometry and UV Layout specialist.
 ## Reference Grounding
 The **actual approved reference image** must be in **active multimodal context**; path/prose/memory is context, not visual evidence. Unavailable → `BLOCKED`.
 approved image owns visuals; dimensions own numeric scale; strategy is user-selected `DIRECT | 3D_ASSISTED`.
+Do not silently change agreed dimensions to improve resemblance. Resolve a material proportion/scale conflict with the user before dependent construction.
 Evidence: `SUPPORTED | PROVISIONAL | CONFLICTING | UNAVAILABLE`. View Pair Map only for material front/back, depth, attachment, or 3/4 ambiguity.
 `DIRECT` uses Groups/Cubes; `3D_ASSISTED` keeps its pipeline; no auto-switch.
 
@@ -22,6 +23,7 @@ Evidence: `SUPPORTED | PROVISIONAL | CONFLICTING | UNAVAILABLE`. View Pair Map o
 Nontrivial form: **transient Primary Mass Contract**:
 ```text
 mass / evidence views / must-exist reason
+cross-view proportions / identity landmarks / surface-only detail reserved for Texture
 parent/contact + symmetry/asymmetry
 transform owner/pivot + negative-space boundary + representation
 ```
@@ -74,6 +76,7 @@ Verdict requires approved reference + fresh current-revision model evidence:
 `claim | matching reference view | current view | observed difference | FAIL | UNVERIFIED | PASS`.
 Mutation stales affected captures. Correct first cause, then recapture affected views. `capture_model_views` correspondence metadata only maps captures to canonical board slots; it is not a scorer and never creates visual PASS.
 Tool success, coordinates, bounds, hierarchy, validators, or similarity scores cannot justify `PASS`. Internal Geometry `PASS` requires form/depth, surface integrity, hierarchy/pivots, and no major defect.
+Before user review, state the largest remaining reference differences at comparable angle/scale, including depth and identity landmarks. Neutral contact alone cannot certify an articulated assembly: inspect required closed boundaries in representative extremes, especially jaw/cheek/chest and limb attachments when present. Correct the owning structure before detail or production keys; do not hide unresolved gaps behind texture or filler Cubes.
 
 **UV Readiness Preflight** checks thin/Box-UV collapse, aspect/representation, seam/unique-region blockers. Read-only: no production UV/`UV Layout PASS`. **User Geometry APPROVED is required** before production UV.
 
@@ -81,6 +84,7 @@ Tool success, coordinates, bounds, hierarchy, validators, or similarity scores c
 `Geometry APPROVED → create_texture(type=template), explicit pixel_density, rearrange_uv=true, power_of_two=true → native UV/template → audit → UV Layout PASS → Texturing`.
 
 No guessed/stretched islands. Prefer per-face UV; use minimum proven native power-of-two packing. Audit padding/aspect/orientation/overlap/reuse/asymmetry. `uv_audit.production_gate=ready` is hygiene, not UV Layout PASS. Requested atlas size and density are constraints. Do not silently enlarge the atlas.
+Review the actual atlas and mapped adjoining surfaces together: group islands by editable semantic cohorts, allocate detail to identity-critical regions, and explain intentional mirroring or seams. Record technical validity separately from this layout verdict. Fractional logical UV can be valid when physical pixel mapping is integral; never resize approved Geometry solely to obtain integer logical coordinates.
 
 ## Local Correction / Convergence
 `TRANSLATE placement | RESIZE extent | ROTATE orientation | REATTACH contact/parent | LAYER OFFSET surface separation/inset | SPLIT distinct volume/orientation | MERGE/REMOVE compensatory geometry | ADD MASS missing volume`.

@@ -14,7 +14,7 @@ TEXTURE STYLING = color, material, shading, highlights, detail
 TEXTURE VERIFY  = fresh atlas + mapped-model visual validation
 ```
 
-`create_texture(type=blank)` creates a **Texture Atlas** only. `create_texture(type=template)` invokes native UV generation and creates/rebuilds the atlas under Geometry-owned UV Layout; neither mode completes Texture Styling. `uv_offset`, `autouv`, `mirror_uv`, per-face UV, and `box_uv_region` belong to **UV Layout**. Painter tools belong to **Texture Styling**.
+`create_texture`: blank = Texture Atlas; template = native Geometry-owned UV Layout + atlas. Neither completes Texture Styling. UV fields belong to Geometry; Painter pixels to Texture Styling.
 
 ## Minimum Necessary Evidence
 
@@ -43,7 +43,7 @@ identity + envelope + primary masses
 
 Construction examples are **not presets**. Local rigid slopes may be **Cube-owned**; shared orientation/contact/articulation is **Group/Bone**-owned. Keep primary blockout hierarchy only when it owns real transform/contact/articulation. Do not build nested Groups for apparent sophistication. After primary `PASS`, add only identity-weighted detail.
 
-Use structured evidence maps only when ambiguity/conflict can materially change identity, count, topology, depth, attachment, negative space, or orientation. Do not perform analysis ceremony for an already clear rigid reference.
+Use evidence maps only for material ambiguity in identity, count, topology, depth, attachment, negative space or orientation; skip them for clear rigid references.
 
 ## Geometry / Visual Gate
 
@@ -69,9 +69,11 @@ Correction: reuse fresh target state; otherwise `inspect_elements(mode=detail)` 
 
 UV Layout answers: **which atlas region does each surface read?**
 
-For fresh Box UV, reuse `manage_cubes(operation=create)` returned `box_uv_region`; do not rediscover it by ritual. Keep auto UV active during geometry correction. After explicit user Geometry APPROVED, generate final mapping with `create_texture(type=template)` and inspect its returned `uv_audit`. To rebuild the single existing atlas, pass its `texture_id`; remapping invalidates affected texture evidence. For already authored UV, lock final Box-UV Cubes with `autouv=0` and use `list_textures` for the audit.
+Reuse `manage_cubes` returned `box_uv_region`. Keep auto UV active during Geometry correction. After explicit user Geometry APPROVED, use `create_texture(type=template)` and its `uv_audit`; rebuilding the single atlas requires `texture_id` and invalidates affected texture evidence. Lock final Box UV with `autouv=0`; `list_textures` audits existing UV.
 
-Require integer logical UV unless justified, no invalid/out-of-bounds UV, no accidental partial overlap, deliberate exact reuse/mirror, and stable seam/orientation. Use `inspect_elements(mode=detail)` only when face-specific mapping/orientation is actually needed; one Cube inspection returns all faces.
+Require integral physical pixel mapping, no invalid/out-of-bounds UV, no accidental partial overlap, deliberate exact reuse/mirror, and stable seam/orientation. Fractional logical UV is diagnostic, not failure when the bitmap scale maps it to whole pixels. Use `inspect_elements(mode=detail)` only when face-specific mapping/orientation is actually needed; one Cube inspection returns all faces.
+
+Review/park: reconcile README/report with artifact revision; separate operation, technical, visual and user verdicts. Preserve rejection history; missing usage is UNKNOWN. Never silently replace dimensions. Check neutral/extreme contacts, semantic UV grouping and identity patches using current specialist procedures.
 
 ## Texture Atlas
 Check sub-unit Box UV collapse; prefer per-face UV over thickening. Keep density; verify minimum native packing, padding, pixel preservation and Undo.

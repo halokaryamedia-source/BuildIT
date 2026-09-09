@@ -1,6 +1,6 @@
 {
   "version": "0.1.0",
-  "generatedAt": "2026-09-09T15:40:10.893Z",
+  "generatedAt": "2026-09-09T18:07:58.963Z",
   "tools": [
     {
       "name": "manage_cubes",
@@ -7485,7 +7485,7 @@
     {
       "name": "list_textures",
       "title": "List Textures",
-      "description": "Lists texture identity, group metadata, and render settings.",
+      "description": "Lists texture identity, metadata and UV hygiene. Fractional logical UV is diagnostic; NON_INTEGRAL_PIXEL_MAPPING blocks non-integral physical texels. Hygiene readiness is not visual layout approval.",
       "status": "stable",
       "category": "Textures",
       "annotations": {

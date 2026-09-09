@@ -5,6 +5,22 @@ async function source(path: string): Promise<string> {
 }
 
 describe("quality-first generic authoring contract", () => {
+  test("review boundaries preserve rejection and require current differences and playable motion", async () => {
+    const [router, geometry, texture, animation, flow] = await Promise.all([
+      source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md"),
+      source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
+      source("../.agents/skills/blockit-bedrock-texturing/SKILL.md"),
+      source("../.agents/skills/blockit-bedrock-animation/SKILL.md"),
+      source("../docs/knowledge/flow.md"),
+    ]);
+    expect(router).toMatch(/historical approvals[\s\S]*rejection/);
+    expect(router).toContain("UNKNOWN");
+    expect(geometry).toMatch(/dimensions[\s\S]*user before dependent construction/);
+    expect(geometry).toMatch(/remaining reference differences[\s\S]*representative extremes/);
+    expect(texture).toMatch(/identity-critical patch[\s\S]*before propagation/);
+    expect(animation).toMatch(/three consecutive cycles[\s\S]*playable evidence[\s\S]*UNVERIFIED/);
+    expect(flow).toMatch(/operation evidence, technical checks, internal visual verdict and user acceptance/);
+  });
   test("Geometry protects assembly, mapped resize, motion readiness, and requested atlas constraints", async () => {
     const skill = await source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md");
 

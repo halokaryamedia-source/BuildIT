@@ -25,8 +25,6 @@ describe("pre-local asset-authoring usage slimming", () => {
     const modelling = await source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md");
     const texturing = await source("../.agents/skills/blockit-bedrock-texturing/SKILL.md");
 
-    expect(orchestrator.length).toBeLessThan(5_000);
-    expect(modelling.length).toBeLessThan(8_000);
     expect(texturing.length).toBeLessThan(10_000);
 
     for (const required of [

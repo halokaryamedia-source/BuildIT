@@ -44,6 +44,7 @@ Before keys define:
 archetype + intent + duration/snapping
 primary driver + counter-motion + followers
 phase + contact/attachment invariants
+support/flight/impact events + center-of-mass path + foot plant/release times
 authored-key vs Molang ownership
 external query/variable caller semantics + units/default/reset/direction
 causal event for sound/particle
@@ -51,6 +52,7 @@ loop seam or neutral/controller handoff
 ```
 
 Archetypes are not presets. No universal FPS, duration, amplitude, phase, keyframe count, or Bezier target. Do not use an animation quality score.
+Author the smallest judgeable motion cohort first. Validate its contact and curves before propagating followers. Dense baked samples need a specific interpolation/export reason; mathematical offline generation or many keys does not prove advanced motion. Record what visible behavior each Molang expression owns, not merely that math exists.
 
 Use Molang for continuous/cyclic/reactive **visual motion**; authored poses own identity-critical action/contact/silhouette. `q.anim_time` is time-driven; `q.modified_distance_moved` can own travel phase. External gameplay callers remain integration contracts; never invent caller values or signed reverse semantics. Chains use `driver → delayed followers`. Actions preserve `anticipation → action/impact → follow-through → recovery`.
 
@@ -73,6 +75,7 @@ AUTHOR coherent keys/batch
 ```
 
 Verify `DISCOVER → AUTHOR → VERIFY → CORRECT → VERIFY → DONE`; record `IMPROVED | UNCHANGED | REGRESSED`. Cyclic/idle verification requires repeated full-loop playback; three static snapshots do not prove timing/phase/contact/seam.
+Observe at least three consecutive cycles for cyclic review. Check plant/release, foot sliding, floor penetration, weight transfer, follow-through and loop velocity continuity; action clips also require landing/recovery and any intended preview transition. Retain a playable evidence clip with revision, duration and view at review boundaries. Playback unavailable or interrupted means `UNVERIFIED`, not a replacement static PASS.
 
 ## Completion
 

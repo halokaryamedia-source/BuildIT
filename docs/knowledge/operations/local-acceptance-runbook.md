@@ -6,7 +6,7 @@ Current state: DIRECT disposable tests only; GPU/3D_ASSISTED deferred.
 
 This procedure activates only when `docs/knowledge/next-action.md` explicitly reactivates local testing. `LIVE_BLOCKBENCH` is an execution capability; it does not activate this procedure by itself. Targeted live debugging may use that capability without formal Local Acceptance.
 
-Use this runbook only for residue repository CI cannot prove. GitHub completes source/static/CI work and prepares deterministic harness/provenance first. Do not edit source locally until a reproducible local failure identifies the first wrong owner.
+Use only for native residue; prepare source proof and deterministic fixtures first.
 
 ## 1. Acceptance Contract
 
@@ -21,7 +21,7 @@ Proof Required
 STOP Condition
 ```
 
-Static source/CI never proves installed Blockbench behavior or visual quality. Static Footprint is a guardrail. Authoring Efficiency is evaluated only after the relevant quality gate passes and means Cost to Accepted Result.
+Source/CI never proves native/visual quality. Static Footprint is a guardrail; Authoring Efficiency measures Cost to Accepted Result only after the quality gate passes.
 
 ## 2. Pin Local State
 
@@ -164,6 +164,8 @@ IMPROVED | UNCHANGED | REGRESSED
 Quality must stay accepted while Cost to Accepted Result decreases. Do not invent token/latency numbers.
 
 ## 11. Failure / Completion
+
+Targeted quality work uses disposable face/contact, adjoining texture and limb-cycle fixtures under the current specialist gates. Keep rejected assets frozen. UV density reproduction: `mcp/scripts/verify-uv-density-live.ts`. Native and user visual proof remain separate from source tests.
 
 Classify the first wrong owner before correction. If a live verifier exposes a source defect, return only that defect to the appropriate development context; do not restart the entire GitHub audit.
 

@@ -205,7 +205,7 @@ function textureColorProfileRuntime(
   }
 }
 
-function textureOptimizationRuntime() {
+export function textureOptimizationRuntime() {
   if (typeof Cube === "undefined" || typeof Texture === "undefined") {
     return {
       state: "unavailable" as const,
@@ -239,11 +239,6 @@ function textureOptimizationRuntime() {
         omit("invalid_uv", cube, faceKey);
         continue;
       }
-      if (uv.some((value) => !Number.isInteger(value))) {
-        omit("fractional_uv", cube, faceKey);
-        continue;
-      }
-
       const ctx = texture.ctx;
       const pixelWidth = ctx?.canvas?.width;
       const pixelHeight = ctx?.canvas?.height;

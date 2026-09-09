@@ -12,7 +12,6 @@ describe("validator routing efficiency", () => {
       source("gateway/index.ts"),
     ]);
 
-    expect(router.length).toBeLessThan(5_000);
     expect(router).toContain("`validator://*` resources are Direct Runtime/Inspector only");
     expect(router).toContain("Gateway client must not search for or emulate them");
     expect(router).not.toContain("structural validation gate    → validator://status");

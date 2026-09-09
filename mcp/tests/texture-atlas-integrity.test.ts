@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+import { textureOptimizationRuntime } from "@/server/tools/quality-intelligence";
 import {
   buildUvAtlasAudit,
   classifyTextureProductionRole,
@@ -10,6 +11,47 @@ async function source(path: string): Promise<string> {
 }
 
 describe("texture atlas integrity", () => {
+  test("coverage scans fractional logical UV only when it maps to whole physical pixels", () => {
+    const globals = globalThis as unknown as Record<string, unknown>;
+    const previous = { Cube: globals.Cube, Texture: globals.Texture };
+    const reads: number[][] = [];
+    const texture = { uuid: "atlas", name: "atlas", getUVWidth: () => 128, getUVHeight: () => 128,
+      ctx: { canvas: { width: 256, height: 256 }, getImageData: (...rect: number[]) => {
+        reads.push(rect); return { data: new Uint8ClampedArray(rect[2] * rect[3] * 4).fill(255) };
+      } } };
+    globals.Texture = {};
+    globals.Cube = { all: [{ uuid: "mixed", name: "mixed", faces: {
+      north: { uv: [0.5, 0, 1, 2], getTexture: () => texture },
+      south: { uv: [2.25, 0, 3, 2], getTexture: () => texture },
+    } }] };
+    try {
+      const result = textureOptimizationRuntime();
+      expect(reads).toEqual([[1, 0, 1, 4]]);
+      if (!("coverage" in result)) throw new Error("coverage unavailable");
+      expect(result.coverage.omissions.counts.non_integral_pixel_mapping).toBe(1);
+      expect(result.coverage.omissions.counts.fractional_uv).toBe(0);
+    } finally {
+      for (const [key, value] of Object.entries(previous)) {
+        if (value === undefined) delete globals[key]; else globals[key] = value;
+      }
+    }
+  });
+  test("256px atlas / 128 UV accepts physical texels for mixed Box and per-face mappings", () => {
+    const faces = [true, false].map((box_uv, index) => ({
+      cube_uuid: String(index), cube_name: "density_fixture", face: "north",
+      uv: [index * 4 + 0.5, 0, index * 4 + 1, 2], box_uv, autouv: 0,
+      mirror_uv: false, face_rotation: 0, pixel_scale: [2, 2] as [number, number],
+    }));
+    const audit = buildUvAtlasAudit(faces, 128, 128);
+    if (audit.state !== "available") throw new Error("audit unavailable");
+    expect(audit.fractional_uv.count).toBe(2);
+    expect(audit.production_gate.state).toBe("ready");
+    for (const uv of [[0.25, 0, 1, 2], [0, 0, 129, 2], [1, 0, 1, 2], [NaN, 0, 1, 2]]) {
+      const invalid = buildUvAtlasAudit([{ ...faces[0], uv }], 128, 128);
+      if (invalid.state !== "available") throw new Error("audit unavailable");
+      expect(invalid.production_gate.state).toBe("review_required");
+    }
+  });
   test("AI color canvas standard is square and 128-based", () => {
     for (const size of [128, 256, 384, 512, 1024]) {
       expect(isAiProductionColorCanvas(size, size)).toBe(true);
@@ -151,7 +193,7 @@ describe("texture atlas integrity", () => {
     expect(review.production_gate.state).toBe("review_required");
     for (const reason of [
       "OUT_OF_BOUNDS",
-      "FRACTIONAL_UV",
+      "NON_INTEGRAL_PIXEL_MAPPING",
       "BOX_UV_AUTOUV_UNLOCKED",
       "PARTIAL_OVERLAP",
     ]) {

@@ -48,6 +48,7 @@ Variants preserve production base role + compatible dimensions/mapping; `normal 
 `paint_settings`: `pixel_perfect`, `lock_alpha`, `paint_side_restrict`; Mirror after semantic symmetry.
 ## Coherent Styling Window / Anti-Micro-Loop
 representative patch/cohort → cohort-wide; formula/gradient/color count is not quality evidence.
+For reference-led entities, finish an identity-critical patch (face when present) and a representative adjoining body surface pair before propagation. Compare landmark placement, palette/value clusters, pattern rhythm and seam continuity against the actual reference at comparable scale. A base-colored patch or generic repeated bands cannot pass when the reference contains those distinctions. This is internal verification, not another user approval gate.
 **No evidence-per-micro-mutation loop.**
 ## Texture Verify
 Reference + fresh `get_texture` + fresh **mapped model-view evidence** from `capture_model_views` → `FAIL | UNVERIFIED | PASS`.

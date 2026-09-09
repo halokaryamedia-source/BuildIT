@@ -1,10 +1,20 @@
 # Current Validation
 
-Updated: 2026-09-09
+Updated: 2026-09-10
 
 This file owns **current proof interpretation**. Continuation belongs in `docs/knowledge/next-action.md`; stable facts in `CONTEXT.md`; source ownership in `docs/knowledge/implementation-map.md`; active asset continuity in `workspace/active/<project>/README.md`.
 
 ## Current Source Proof
+
+### Quality workflow repair — local source proof, native acceptance pending
+
+User stopped and rejected `tiger-direct-tools-test` (2/10). Its installed-workspace README/report now preserve rejection, historical approvals, the actual three saved animations and the partial 77-call boundary. The .bbmodel remains unchanged (SHA256 `20cb00616e375daa5c99acab9457a63d935ff656c13140595b6a66ea81796210`). No visual acceptance or efficiency gain is claimed.
+
+The new executable UV regression failed before the fix: 256 physical pixels / 128 logical UV with half-unit coordinates was incorrectly blocked. Audit and coverage now check physical texels; fractional logical UV remains diagnostic. Invalid/out-of-bounds/collapsed UV and genuinely non-integral physical mapping remain blocked. Template errors now retain failed gate reasons and the existing rollback boundary. This proves the validator defect, not the sole cause of the historical native generator failures.
+
+Local `bun run verify:full` passed on the candidate built from `871e44f91a7d1a911c07174318af7c41c818eb95` with this repair: **812 tests (35 repository + 623 runtime + 154 authoring)**, docs/prompt freshness, typechecks, surface checks and build under pinned Bun 1.3.14; frozen-lockfile install changed no dependencies. Evidence: ignored `mcp/.cache/quality-workflow-verify.log`. Built runtime identity: `sha256:e3cadd6a7cdd36c68d0a701dbb7ffe89f825a1f1f462753fe3e96d2ae297294c`. This is local working-change proof, not a GitHub CI run or installed runtime acceptance.
+
+Closure: four authoring skills + flow + runtime prompt updated; generated prompt manifest/API docs regenerated. Gateway phase/approval payloads, foundation rules and CI routing verified unchanged. Static footprint caps were adjusted for explicit review procedures; duplicate size assertions removed, behavioral/semantic checks retained. `verify-uv-density-live.ts` prepares native template/Undo/Redo/save/reopen evidence in a separate disposable project. It has not run on the new installed build. Face/contact, mapped texture and three-loop limb review remain **LOCAL PROOF REQUIRED**, followed by user visual acceptance. Managed activation must precede these checks; do not resume the rejected tiger.
 
 Repository: `halokaryamedia-source/BuildIT`  
 Branch: **`Local` only**.

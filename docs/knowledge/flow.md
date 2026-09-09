@@ -64,6 +64,7 @@ Animation / motion                   → blockit-bedrock-animation
 No mutation until router + matching specialist are loaded and its prerequisite gate is satisfied. When Geometry↔Texturing ownership changes, load the new specialist before its first mutation; both remain on the shared AUTHORING Runtime surface. **No Geometry↔Texturing `switch_authoring_phase` is required.** AUTHORING↔Animation alone uses `switch_authoring_phase`, and the same task/chat continues.
 
 Persist current project state only at **meaningful handoff/resume/park/completion boundaries**.
+At those boundaries, reconcile the existing asset README/report with the current revision: operation evidence, technical checks, internal visual verdict and user acceptance are separate. A final user rejection overrides current acceptance without erasing historical approvals. Stopped production does not resume automatically for coverage.
 
 ## 3. Reference Preparation
 
@@ -129,6 +130,7 @@ Animation Required: YES | NO
 For `DIRECT`, Approved Reference may be the original source image itself. For `3D_ASSISTED`, Approved Reference must be the canonical five-view board.
 
 Only the user selects Geometry Strategy. Missing fields are asked once as a batch. Before the gate passes: no `.bbmodel`, Cubes/Groups, Shape Reconstruction, or PrimitiveAnything execution.
+Agreed dimensions remain numeric authority. A material conflict with reference proportions requires the user's decision; visual priority is not implicit permission to replace numeric requirements.
 
 After it passes:
 
@@ -175,6 +177,7 @@ Texturing APPROVED
 **Geometry user approval is required before fresh/rebuilt production UV Layout. Texture/PBR mutation is forbidden before `Geometry APPROVED + UV Layout PASS`.** Readiness preflights are bounded internal checks, not new user approvals or persisted stages; they do not create UV Layout PASS or Animation PASS.
 
 Codex uses current Blockbench state + `capture_model_views` for internal evidence; internal captures are not user approval. Do not send materially broken work to review. Same material causal correction failing twice without new evidence → `BLOCKED`.
+Review evidence names the largest remaining differences against the actual reference at comparable angle/scale. Identify required shape/identity landmarks, continuous contacts and surface-only details before construction. For moving assemblies, verify representative extremes as well as neutral contact before production keys. A clean warning count cannot certify these visual claims.
 
 ## 6. Geometry Strategies
 
@@ -317,6 +320,7 @@ unique regions for asymmetric identity detail
 ```
 
 Do not guess rectangles, stretch islands/source images, or distort aspect to fit an atlas. `uv_audit.production_gate=ready` is necessary hygiene, not UV Layout PASS. Persist `UV Layout: PASS` before Texturing.
+Use the actual atlas plus mapped adjoining surfaces to judge editable semantic grouping and allocation to identity-critical detail. Fractional logical coordinates are not themselves defective when their physical pixel mapping is integral. Preserve the requested atlas and Geometry while diagnosing density mismatches.
 
 ## 8. Texturing
 
@@ -346,6 +350,7 @@ Pixels are authored against the final UV atlas/islands. No arbitrary procedural 
 Strict visual reference agreement is the gate: compare proportions, counts, material boundaries, palette, shading and identity at comparable views/scale. User acceptance does not certify an unresolved reference difference. Better/HD requests do not change the approved resolution, density or style.
 
 Complete one representative adjoining surface pair before propagating a material design. Judge atlas palette separately from viewport lighting. Coordinate continuity follows the surface across Cubes; Cube/UV edges do not invent seams. Replace a wrong cohort design from its base rather than layering patches; retain bounded causal correction for local defects.
+Also finish the identity-critical patch (face when present); compare landmarks, clustered shading and pattern rhythm with the reference before cohort-wide painting. These are internal checks within the existing Texture gate.
 
 Preflight sub-unit Box UV surfaces before templates; use per-face UV when necessary without thickening approved geometry merely to silence warnings. Choose the smallest proven feasible native power-of-two atlas at approved density with safe island padding. Occupancy/bounds are diagnostics, not quality or packing-feasibility proof. Repacking painted pixels requires correspondence and Undo checks.
 
@@ -371,6 +376,7 @@ Texturing APPROVED + current .bbmodel checkpoint
 ```
 
 Animation owns motion, not upstream structural mutation. Material rig/UV/texture blockers return through Gateway to AUTHORING.
+Before keys, specify support/flight/impact events, weight path, plant/release times, driver/followers and authored-key versus Molang ownership. Validate one judgeable cohort before propagation. Dense baking needs an interpolation/export reason. Review cyclic motion over at least three full loops and actions through landing/recovery, with playable revision-linked evidence; static poses, key counts and math presence are not motion-quality proof.
 
 ## 10. Downstream Invalidation
 
@@ -439,3 +445,4 @@ historical rationale       → Git history
 ```
 
 Do not create duplicate route/profile/provider/approval/workspace-state systems.
+For measured authoring, use the existing report to separate production, correction, discovery/schema, additional tests and review waiting. Record actual calls/errors/retries and available active time; unknown counts/time/tokens are `UNKNOWN`. Pass images as native image content or file artifacts, never stringify image/base64 payloads into text. Optimize cost only against comparably accepted quality.

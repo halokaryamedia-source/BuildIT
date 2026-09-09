@@ -427,7 +427,7 @@ export const textureToolDocs: ToolSpec[] = [
   {
     name: "list_textures",
     description:
-      "Lists texture identity, group metadata, and render settings.",
+      "Lists texture identity, metadata and UV hygiene. Fractional logical UV is diagnostic; NON_INTEGRAL_PIXEL_MAPPING blocks non-integral physical texels. Hygiene readiness is not visual layout approval.",
     annotations: {
       title: "List Textures",
       readOnlyHint: true,
@@ -718,6 +718,7 @@ export type UvAtlasUsage = {
   mirror_uv: boolean;
   face_rotation: number;
   surface_area?: number;
+  pixel_scale?: readonly [number, number];
 };
 
 type NormalizedUvUsage = UvAtlasUsage & {
@@ -826,6 +827,10 @@ export function buildUvAtlasAudit(
   const fractionalUv = valid.filter(({ uv }) =>
     uv.some((value) => !Number.isInteger(value))
   );
+  const nonIntegralPixels = valid.filter(({ uv, pixel_scale = [1, 1] }) =>
+    pixel_scale.some(value => !Number.isFinite(value) || value <= 0) ||
+    uv.some((value, axis) => !Number.isInteger(value * pixel_scale[axis % 2]))
+  );
   const degenerateUv = valid.filter(({ rect }) => uvRectArea(rect) === 0);
   const collapsedSurfaceUv = degenerateUv.filter(({ surface_area }) => surface_area === undefined || surface_area > 0);
 
@@ -892,7 +897,7 @@ export function buildUvAtlasAudit(
   const reasons: string[] = [];
   if (invalidUv.length > 0) reasons.push("INVALID_UV");
   if (outOfBounds.length > 0) reasons.push("OUT_OF_BOUNDS");
-  if (fractionalUv.length > 0) reasons.push("FRACTIONAL_UV");
+  if (nonIntegralPixels.length > 0) reasons.push("NON_INTEGRAL_PIXEL_MAPPING");
   if (unlocked.length > 0) reasons.push("BOX_UV_AUTOUV_UNLOCKED");
   if (partialOverlapPairCount > 0) reasons.push("PARTIAL_OVERLAP");
   if (collapsedSurfaceUv.length > 0) reasons.push("COLLAPSED_SURFACE_UV");
@@ -971,6 +976,10 @@ export function buildUvAtlasAudit(
       count: fractionalUv.length,
       ...fractionalBounded,
     },
+    non_integral_pixel_mapping: {
+      count: nonIntegralPixels.length,
+      ...boundedExamples(nonIntegralPixels.map(uvUsageExample), exampleLimit),
+    },
     degenerate_uv: {
       count: degenerateUv.length,
       ...degenerateBounded,
@@ -1017,6 +1026,7 @@ function collectUvAtlasUsages(): UvAtlasUsage[] {
       const face = cube.faces[faceKey];
       if (!face || face.enabled === false || face.texture === null) continue;
       const size = cube.size();
+      const texture = face.getTexture();
       const axes = faceKey === "up" || faceKey === "down" ? [0, 2] : faceKey === "east" || faceKey === "west" ? [2, 1] : [0, 1];
       usages.push({
         cube_uuid: cube.uuid,
@@ -1028,6 +1038,10 @@ function collectUvAtlasUsages(): UvAtlasUsage[] {
         mirror_uv: cube.mirror_uv === true,
         face_rotation: face.rotation,
         surface_area: Math.abs(size[axes[0]] * size[axes[1]]),
+        pixel_scale: texture ? [
+          texture.width / texture.getUVWidth(),
+          texture.height / texture.getUVHeight(),
+        ] : undefined,
       });
     }
   }
@@ -1398,7 +1412,7 @@ export function registerTextureTools() {
           templateUvAudit.production_gate.state !== "ready"
         ) {
           throw new Error(
-            "Native template generation finished without a valid UV atlas. The edit was rolled back; inspect the affected geometry/UV before retrying."
+            `Native template generation finished without a valid UV atlas. The edit was rolled back; inspect the affected geometry/UV before retrying. Reasons: ${templateUvAudit.state === "available" ? templateUvAudit.production_gate.reasons.join(", ") : templateUvAudit.reason}`
           );
         }
         templateTexture.render_mode = render_mode;
