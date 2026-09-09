@@ -1,6 +1,9 @@
 import { z } from "zod";
 import type { IMCPTool, IMCPPrompt, IMCPResource, StatusType } from "@/types";
 import { ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
+import { zodToJsonSchema } from "zod-to-json-schema";
 import type {
   GetPromptResult,
   PromptArgument,
@@ -221,7 +224,7 @@ function getToolInvocation(name: string, toolDef: ToolDefinition) {
  * Extracts the SDK-compatible object shape used for MCP registration/listing.
  * The original complete schema is retained separately for runtime validation.
  */
-function extractShape(schema: z.ZodType): Record<string, z.ZodType> {
+export function extractShape(schema: z.ZodType): Record<string, z.ZodType> {
   const def = schema._def as {
     typeName?: string;
     schema?: z.ZodType;
@@ -280,6 +283,22 @@ function extractShape(schema: z.ZodType): Record<string, z.ZodType> {
   }
 
   return {};
+}
+
+/** Keep the public discriminator and the primitive's validation in one schema. */
+export function withToolBranch<T extends z.ZodType, K extends string, V extends string>(
+  schema: T, field: K, value: V
+) {
+  return z.object({ ...extractShape(schema), [field]: z.literal(value) })
+    .transform((input, ctx): z.infer<T> & Record<K, V> => {
+      const { [field]: _branch, ...payload } = input;
+      const parsed = schema.safeParse(payload);
+      if (!parsed.success) {
+        for (const issue of parsed.error.issues) ctx.addIssue(issue);
+        return z.NEVER;
+      }
+      return { ...parsed.data, [field]: value };
+    });
 }
 
 /**
@@ -435,6 +454,7 @@ export function registerToolsOnServer(
   allowedToolNames?: readonly string[]
 ) {
   const typedServer = server as {
+    server?: McpServer["server"];
     registerTool: (
       toolName: string,
       definition: {
@@ -461,6 +481,21 @@ export function registerToolsOnServer(
       getToolInvocation(name, toolDef)
     );
   }
+  // The SDK's object-shape listing loses union-level required fields. Publish
+  // the canonical validation schema through the public protocol handler.
+  typedServer.server?.setRequestHandler(ListToolsRequestSchema, () => ({
+    tools: getToolRegistrationEntries(allowedToolNames).map(({ name, definition }) => ({
+      name,
+      title: definition.title,
+      description: definition.description,
+      annotations: definition.annotations,
+      inputSchema: {
+        // @ts-ignore Zod recursive type instantiation
+        ...zodToJsonSchema(definition.parameterSchema, { $refStrategy: "none" }),
+        type: "object" as const,
+      },
+    })),
+  }));
 }
 
 interface ResourceDefinition {

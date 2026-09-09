@@ -3,6 +3,8 @@
 import { z } from "zod";
 import {
   getAllToolDefinitions,
+  extractShape,
+  withToolBranch,
   invalidateToolRegistrationRuntimeCaches,
 } from "@/lib/factories";
 import { resolveCoreAnimation } from "@/lib/coreIdentity";
@@ -126,44 +128,28 @@ function withTimelineBranch<T extends z.ZodType>(
   schema: T,
   operation: "keyframes" | "graph" | "timeline" | "copy_paste"
 ) {
-  return z.intersection(
-    z.object({ operation: z.literal(operation) }),
-    z.preprocess((value) => {
-      if (!value || typeof value !== "object" || Array.isArray(value)) return value;
-      const { operation: _operation, ...payload } = value as Record<string, unknown>;
-      return payload;
-    }, schema)
-  );
+  return withToolBranch(schema, "operation", operation);
 }
 
-const batchTimelinePayload = z
-  .preprocess((value) => {
-    if (!value || typeof value !== "object" || Array.isArray(value)) return value;
-    const {
-      operation: _outerOperation,
-      batch_operation: batchOperation,
-      animation_id: _animationId,
-      ...payload
-    } = value as Record<string, unknown>;
-    return {
-      ...payload,
-      operation: batchOperation,
-    };
-  }, batchKeyframeOperationsParameters)
-  .transform(({ operation, ...payload }) => ({
-    ...payload,
-    batch_operation: operation,
-  }));
-
-const batchTimelineBranch = z.intersection(
-  z.object({
-    operation: z.literal("batch"),
-    animation_id: animationIdOptionalSchema.describe(
-      "Optional explicit authored Animation target. Omit only when the intended clip is already selected."
-    ),
-  }),
-  batchTimelinePayload
-);
+const { operation: batchOperationSchema, ...batchPayloadShape } =
+  extractShape(batchKeyframeOperationsParameters);
+const batchTimelineBranch = z.object({
+  ...batchPayloadShape,
+  operation: z.literal("batch"),
+  batch_operation: batchOperationSchema,
+  animation_id: animationIdOptionalSchema,
+}).transform((value, ctx) => {
+  const { operation: _operation, batch_operation, animation_id, ...payload } = value;
+  const parsed = batchKeyframeOperationsParameters.safeParse({ ...payload, operation: batch_operation });
+  if (!parsed.success) {
+    for (const issue of parsed.error.issues) {
+      ctx.addIssue({ ...issue, path: issue.path.map((part) => part === "operation" ? "batch_operation" : part) });
+    }
+    return z.NEVER;
+  }
+  const { operation, ...result } = parsed.data;
+  return { ...result, operation: "batch" as const, batch_operation: operation, animation_id };
+});
 
 /**
  * Corrected consolidated timeline contract. The public branch discriminator is

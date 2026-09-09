@@ -73,21 +73,8 @@ describe("REMOTE_GITHUB authoring handoff contracts", () => {
     const continuation = await Bun.file("../docs/knowledge/next-action.md").text();
     expect(continuation.length).toBeLessThan(2_500);
     for (const marker of [
-      "SOURCE_READY / LOCAL_CODE REQUIRED",
-      "Particle Production Exposure",
-      "inspect_particle",
-      "manage_particle",
-      "particle-reference",
-      "create/patch/save/preview",
-      "docs:build",
-      "docs:check",
-      "verify:full",
-      "AUTHORING TAXONOMY",
-      "DIRECT | 3D_ASSISTED",
-      "@modelcontextprotocol/sdk",
-      "v1.x",
-      "not a v2 protocol migration",
-      "bun.lock",
+      "SOURCE_READY", "verify:full", "AUTHORING TAXONOMY", "DIRECT | 3D_ASSISTED",
+      "managed installation", "user assets", "Do not publish Stable",
     ]) {
       expect(continuation).toContain(marker);
     }
@@ -102,9 +89,7 @@ describe("REMOTE_GITHUB authoring handoff contracts", () => {
     ]) {
       expect(continuation).not.toContain(retired);
     }
-    expect(continuation).toContain(
-      "No Particle specialist and no fifth Gateway tool"
-    );
-    expect(continuation).toContain("Do not add a routing framework");
+    expect(continuation).toContain("four Gateway tools");
+    expect(continuation).toContain("No background polling/service");
   });
 });

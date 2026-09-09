@@ -2,6 +2,7 @@
 /// <reference types="blockbench-types" />
 
 import { z } from "zod";
+import { optimizedAnimationTimelineParameters } from "./animation-runtime-wiring";
 import {
   getAllToolDefinitions,
   invalidateToolRegistrationRuntimeCaches,
@@ -80,6 +81,8 @@ export const animationNativePropertiesParameters = z
       });
     }
   });
+
+export const completeAnimationTimelineParameters = z.union([optimizedAnimationTimelineParameters, animationNativePropertiesParameters]);
 
 let animationNativeIntelligenceWired = false;
 
@@ -566,12 +569,8 @@ function clientEntityWiringRuntime(
 
 function wireTimelineNativeProperties(): void {
   const definition = runtimeDefinition("manage_animation_timeline");
-  const originalSchema = definition.parameterSchema;
   const originalExecute = definition.execute.bind(definition);
-  definition.parameterSchema = z.union([
-    originalSchema,
-    animationNativePropertiesParameters,
-  ] as [z.ZodTypeAny, z.ZodTypeAny]);
+  definition.parameterSchema = completeAnimationTimelineParameters;
   definition.inputSchema = {
     ...definition.inputSchema,
     operation: z

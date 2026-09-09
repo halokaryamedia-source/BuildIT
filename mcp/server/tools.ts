@@ -1,7 +1,7 @@
 /// <reference types="three" />
 /// <reference types="blockbench-types" />
 
-import { createTool, tools, prompts, getAllToolDefinitions } from "@/lib/factories";
+import { createTool, tools, prompts, getAllToolDefinitions, withToolBranch } from "@/lib/factories";
 import { z } from "zod";
 import {
   DEFAULT_MCP_REGISTRATION_PROFILE,
@@ -24,6 +24,8 @@ import { registerAnimationTools } from "./tools/animation";
 import { registerAnimationEffectTools } from "./tools/animation-effects";
 import { registerAnimationControllerTools } from "./tools/animation-controller";
 import { registerAnimationInspectionTools } from "./tools/animation-inspection";
+import { registerParticleTools } from "./tools/particle";
+import { registerParticleResources } from "./resources/particle";
 import { wireAnimationRuntimeContracts } from "./tools/animation-runtime-wiring";
 import { registerCubesTools } from "./tools/cubes";
 import { registerElementTools } from "./tools/element";
@@ -53,9 +55,9 @@ import { registerValidatorResources } from "./resources/validator";
 type RegistrationFunction = () => void;
 
 const consolidatedInspectionParameters = z.union([
-  listOutlineParameters.and(z.object({ mode: z.literal("outline") })),
-  findElementsByCriteriaParameters.and(z.object({ mode: z.literal("search") })),
-  inspectElementParameters.and(z.object({ mode: z.literal("detail") })),
+  withToolBranch(listOutlineParameters, "mode", "outline"),
+  withToolBranch(findElementsByCriteriaParameters, "mode", "search"),
+  withToolBranch(inspectElementParameters, "mode", "detail"),
 ]);
 
 export const consolidatedInspectionToolDocs = {
@@ -68,10 +70,10 @@ export const consolidatedInspectionToolDocs = {
 };
 
 const consolidatedMaterialParameters = z.union([
-  createPbrMaterialParameters.and(z.object({ operation: z.literal("create") })),
-  configureMaterialParameters.and(z.object({ operation: z.literal("configure") })),
-  assignTextureChannelParameters.and(z.object({ operation: z.literal("assign_channel") })),
-  saveMaterialConfigParameters.and(z.object({ operation: z.literal("save") })),
+  withToolBranch(createPbrMaterialParameters, "operation", "create"),
+  withToolBranch(configureMaterialParameters, "operation", "configure"),
+  withToolBranch(assignTextureChannelParameters, "operation", "assign_channel"),
+  withToolBranch(saveMaterialConfigParameters, "operation", "save"),
 ]);
 
 export const consolidatedMaterialToolDocs = {
@@ -99,11 +101,11 @@ export const consolidatedAnimationTimelineToolDocs = {
 };
 
 const consolidatedMaterialInstancesParameters = z.union([
-  listMaterialInstancesParametersSchema.and(z.object({ operation: z.literal("list") })),
-  getFaceMaterialInstancesParametersSchema.and(z.object({ operation: z.literal("get") })),
-  setFaceMaterialInstanceParametersSchema.and(z.object({ operation: z.literal("set") })),
-  bulkSetMaterialInstancesParametersSchema.and(z.object({ operation: z.literal("bulk_set") })),
-  clearMaterialInstancesParametersSchema.and(z.object({ operation: z.literal("clear") })),
+  withToolBranch(listMaterialInstancesParametersSchema, "operation", "list"),
+  withToolBranch(getFaceMaterialInstancesParametersSchema, "operation", "get"),
+  withToolBranch(setFaceMaterialInstanceParametersSchema, "operation", "set"),
+  withToolBranch(bulkSetMaterialInstancesParametersSchema, "operation", "bulk_set"),
+  withToolBranch(clearMaterialInstancesParametersSchema, "operation", "clear"),
 ]);
 
 export const consolidatedMaterialInstancesToolDocs = {
@@ -219,6 +221,8 @@ function registerAnimationFamilyTools(): void {
   registerAnimationTools();
   registerAnimationEffectTools();
   registerAnimationControllerTools();
+  registerParticleTools();
+  registerParticleResources();
 }
 
 function registerElementFamilyTools(): void {

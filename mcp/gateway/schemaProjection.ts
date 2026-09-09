@@ -134,6 +134,22 @@ function projectObjectSchema(
   };
 }
 
+/** Select declared canonical union branches; required fields stay source-owned. */
+function selectBranchSchemas(schema: JsonRecord, branch: CapabilitySchemaBranch): JsonRecord[] {
+  for (const keyword of ["anyOf", "oneOf"] as const) {
+    if (Array.isArray(schema[keyword])) {
+      return schema[keyword].flatMap((variant) =>
+        isRecord(variant) ? selectBranchSchemas(variant, branch) : []
+      );
+    }
+  }
+  if (isRecord(schema.properties)) {
+    const discriminator = schema.properties[branch.field];
+    if (isRecord(discriminator) && !excludesBranchValue(discriminator, branch.value)) return [schema];
+  }
+  return [];
+}
+
 export function projectCapabilityInputSchema(
   capability: string,
   inputSchema: unknown,
@@ -156,8 +172,17 @@ export function projectCapabilityInputSchema(
       `Capability "${capability}" returned a non-object input schema; branch projection is unavailable.`
     );
   }
+  const selected = selectBranchSchemas(inputSchema, branch);
+  if (selected.length === 0) {
+    throw new Error(`Runtime schema does not advertise ${branch.field}=${branch.value}; describe the full capability instead.`);
+  }
+  const projected = selected.map((schema) => projectObjectSchema(schema, branch,
+    // Canonical branches own their field set, including future nested inputs.
+    Array.isArray(inputSchema.anyOf) || Array.isArray(inputSchema.oneOf)
+      ? Object.keys(schema.properties as JsonRecord)
+      : branchProjection));
   return {
-    inputSchema: projectObjectSchema(inputSchema, branch, branchProjection),
+    inputSchema: projected.length === 1 ? projected[0] : { type: "object", anyOf: projected },
     projected: true,
     branch,
   };

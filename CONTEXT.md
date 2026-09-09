@@ -138,7 +138,7 @@ describe_capability
 invoke_capability
 ```
 
-Current source retains **54 callable Bedrock tools**. Geometry and Texturing startup stages expose the same shared AUTHORING surface; Animation remains a separate runtime surface. Installed evidence is tracked separately in `current-validation.md`. Direct Runtime MCP remains for Inspector/conformance/debugging, not normal AI-client authoring.
+Current source retains **56 callable Bedrock tools**. Geometry and Texturing startup stages expose the same shared AUTHORING surface; Animation remains a separate runtime surface. Installed evidence is tracked separately in `current-validation.md`. Direct Runtime MCP remains for Inspector/conformance/debugging, not normal AI-client authoring.
 
 Gateway handoff keeps the same task/chat alive and refreshes backend catalog only when crossing AUTHORING↔Animation.
 

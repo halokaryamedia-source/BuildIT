@@ -1,6 +1,6 @@
 {
   "version": "0.1.0",
-  "generatedAt": "2026-09-09T05:12:26.812Z",
+  "generatedAt": "2026-09-09T15:40:10.893Z",
   "tools": [
     {
       "name": "manage_cubes",
@@ -821,6 +821,36 @@
                 "default": {
                   "mode": "model"
                 }
+              },
+              "animation_preview": {
+                "type": "object",
+                "properties": {
+                  "animation_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Exact authored Animation UUID or unique exact name.",
+                    "markdownDescription": "Exact authored Animation UUID or unique exact name."
+                  },
+                  "times": {
+                    "type": "array",
+                    "items": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 10000
+                    },
+                    "minItems": 1,
+                    "maxItems": 5,
+                    "description": "One to five explicit animation sample times in seconds.",
+                    "markdownDescription": "One to five explicit animation sample times in seconds."
+                  }
+                },
+                "required": [
+                  "animation_id",
+                  "times"
+                ],
+                "additionalProperties": false,
+                "description": "Optional bounded authored-Animation pose sampling. Capture cost is views × times and must not exceed 8 images.",
+                "markdownDescription": "Optional bounded authored-Animation pose sampling. Capture cost is views × times and must not exceed 8 images."
               }
             },
             "required": [
@@ -848,7 +878,7 @@
           "manage_animation_timeline": {
             "anyOf": [
               {
-                "allOf": [
+                "anyOf": [
                   {
                     "type": "object",
                     "properties": {
@@ -991,31 +1021,21 @@
                         "minItems": 1,
                         "description": "One or more keyframes.",
                         "markdownDescription": "One or more keyframes."
-                      }
-                    },
-                    "required": [
-                      "action",
-                      "bone_name",
-                      "channel",
-                      "keyframes"
-                    ]
-                  },
-                  {
-                    "type": "object",
-                    "properties": {
+                      },
                       "operation": {
                         "type": "string",
                         "const": "keyframes"
                       }
                     },
                     "required": [
+                      "action",
+                      "bone_name",
+                      "channel",
+                      "keyframes",
                       "operation"
-                    ]
-                  }
-                ]
-              },
-              {
-                "allOf": [
+                    ],
+                    "additionalProperties": false
+                  },
                   {
                     "type": "object",
                     "properties": {
@@ -1127,30 +1147,20 @@
                         "additionalProperties": false,
                         "description": "Bezier left/right handle offsets for the axis or all axes ('custom' action only).",
                         "markdownDescription": "Bezier left/right handle offsets for the axis or all axes ('custom' action only)."
-                      }
-                    },
-                    "required": [
-                      "bone_name",
-                      "channel",
-                      "action"
-                    ]
-                  },
-                  {
-                    "type": "object",
-                    "properties": {
+                      },
                       "operation": {
                         "type": "string",
                         "const": "graph"
                       }
                     },
                     "required": [
+                      "bone_name",
+                      "channel",
+                      "action",
                       "operation"
-                    ]
-                  }
-                ]
-              },
-              {
-                "allOf": [
+                    ],
+                    "additionalProperties": false
+                  },
                   {
                     "type": "object",
                     "properties": {
@@ -1244,28 +1254,18 @@
                         ],
                         "description": "Authored Molang for set_anim_time_update/set_blend_weight; null clears to native default. Text normalizes to one line, never evaluated.",
                         "markdownDescription": "Authored Molang for set_anim_time_update/set_blend_weight; null clears to native default. Text normalizes to one line, never evaluated."
-                      }
-                    },
-                    "required": [
-                      "action"
-                    ]
-                  },
-                  {
-                    "type": "object",
-                    "properties": {
+                      },
                       "operation": {
                         "type": "string",
                         "const": "timeline"
                       }
                     },
                     "required": [
+                      "action",
                       "operation"
-                    ]
-                  }
-                ]
-              },
-              {
-                "allOf": [
+                    ],
+                    "additionalProperties": false
+                  },
                   {
                     "type": "object",
                     "properties": {
@@ -1326,19 +1326,6 @@
                         "description": "Pattern-based selection.",
                         "markdownDescription": "Pattern-based selection."
                       },
-                      "operation": {
-                        "type": "string",
-                        "enum": [
-                          "offset",
-                          "scale",
-                          "reverse",
-                          "mirror",
-                          "smooth",
-                          "bake"
-                        ],
-                        "description": "Operation to perform on keyframes. Bake samples each selected animator's full channel range, even with selection=range/pattern subsets.",
-                        "markdownDescription": "Operation to perform on keyframes. Bake samples each selected animator's full channel range, even with selection=range/pattern subsets."
-                      },
                       "parameters": {
                         "type": "object",
                         "properties": {
@@ -1387,28 +1374,37 @@
                         "additionalProperties": false,
                         "description": "Operation-specific parameters.",
                         "markdownDescription": "Operation-specific parameters."
-                      }
-                    },
-                    "required": [
-                      "operation"
-                    ]
-                  },
-                  {
-                    "type": "object",
-                    "properties": {
+                      },
                       "operation": {
                         "type": "string",
                         "const": "batch"
+                      },
+                      "batch_operation": {
+                        "type": "string",
+                        "enum": [
+                          "offset",
+                          "scale",
+                          "reverse",
+                          "mirror",
+                          "smooth",
+                          "bake"
+                        ],
+                        "description": "Operation to perform on keyframes. Bake samples each selected animator's full channel range, even with selection=range/pattern subsets.",
+                        "markdownDescription": "Operation to perform on keyframes. Bake samples each selected animator's full channel range, even with selection=range/pattern subsets."
+                      },
+                      "animation_id": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Animation UUID/name; omit for current animation when supported.",
+                        "markdownDescription": "Animation UUID/name; omit for current animation when supported."
                       }
                     },
                     "required": [
-                      "operation"
-                    ]
-                  }
-                ]
-              },
-              {
-                "allOf": [
+                      "operation",
+                      "batch_operation"
+                    ],
+                    "additionalProperties": false
+                  },
                   {
                     "type": "object",
                     "properties": {
@@ -1520,25 +1516,143 @@
                         "additionalProperties": false,
                         "description": "Target data for paste operation.",
                         "markdownDescription": "Target data for paste operation."
-                      }
-                    },
-                    "required": [
-                      "action"
-                    ]
-                  },
-                  {
-                    "type": "object",
-                    "properties": {
+                      },
                       "operation": {
                         "type": "string",
                         "const": "copy_paste"
                       }
                     },
                     "required": [
+                      "action",
                       "operation"
-                    ]
+                    ],
+                    "additionalProperties": false
                   }
                 ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "operation": {
+                    "type": "string",
+                    "const": "properties"
+                  },
+                  "animation_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Animation UUID/name; omit for current animation when supported.",
+                    "markdownDescription": "Animation UUID/name; omit for current animation when supported."
+                  },
+                  "length": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 10000
+                  },
+                  "fps": {
+                    "type": "number",
+                    "minimum": 10,
+                    "maximum": 500
+                  },
+                  "loop_mode": {
+                    "type": "string",
+                    "enum": [
+                      "once",
+                      "loop",
+                      "hold"
+                    ]
+                  },
+                  "anim_time_update": {
+                    "anyOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "blend_weight": {
+                    "anyOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "start_delay": {
+                    "anyOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "loop_delay": {
+                    "anyOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "override_previous_animation": {
+                    "type": "boolean"
+                  },
+                  "rotation_spaces": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "bone_name": {
+                          "type": "string",
+                          "minLength": 1,
+                          "description": "Group UUID or unique Group name.",
+                          "markdownDescription": "Group UUID or unique Group name."
+                        },
+                        "relative_to": {
+                          "type": "string",
+                          "enum": [
+                            "parent",
+                            "entity"
+                          ],
+                          "description": "Bedrock rotation space. entity exports relative_to.rotation=entity.",
+                          "markdownDescription": "Bedrock rotation space. entity exports relative_to.rotation=entity."
+                        }
+                      },
+                      "required": [
+                        "bone_name",
+                        "relative_to"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "minItems": 1,
+                    "maxItems": 32,
+                    "description": "Bounded per-bone Bedrock rotation-space updates.",
+                    "markdownDescription": "Bounded per-bone Bedrock rotation-space updates."
+                  }
+                },
+                "required": [
+                  "operation"
+                ],
+                "additionalProperties": false
               }
             ]
           }
@@ -2022,170 +2136,1282 @@
         "$ref": "#/definitions/manage_animation_controller",
         "definitions": {
           "manage_animation_controller": {
+            "anyOf": [
+              {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "controller_id": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Existing controller UUID or unique name.",
+                        "markdownDescription": "Existing controller UUID or unique name."
+                      },
+                      "create_name": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "New controller name.",
+                        "markdownDescription": "New controller name."
+                      },
+                      "operations": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "op": {
+                              "type": "string",
+                              "enum": [
+                                "rename_controller",
+                                "add_state",
+                                "update_state",
+                                "remove_state",
+                                "set_initial_state",
+                                "add_transition",
+                                "update_transition",
+                                "remove_transition",
+                                "add_animation",
+                                "update_animation",
+                                "remove_animation",
+                                "add_sound",
+                                "update_sound",
+                                "remove_sound",
+                                "add_particle",
+                                "update_particle",
+                                "remove_particle"
+                              ],
+                              "description": "Controller mutation to apply.",
+                              "markdownDescription": "Controller mutation to apply."
+                            },
+                            "state": {
+                              "type": "string",
+                              "minLength": 1,
+                              "description": "Exact state UUID or unique exact state name.",
+                              "markdownDescription": "Exact state UUID or unique exact state name."
+                            },
+                            "id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "description": "Exact transition, animation-link, sound, or particle UUID.",
+                              "markdownDescription": "Exact transition, animation-link, sound, or particle UUID."
+                            },
+                            "name": {
+                              "type": "string",
+                              "minLength": 1,
+                              "description": "Controller/state name for rename or add_state.",
+                              "markdownDescription": "Controller/state name for rename or add_state."
+                            },
+                            "target": {
+                              "type": "string",
+                              "minLength": 1,
+                              "description": "Exact transition target state UUID/name.",
+                              "markdownDescription": "Exact transition target state UUID/name."
+                            },
+                            "animation": {
+                              "type": "string",
+                              "minLength": 1,
+                              "description": "Exact authored Animation UUID/name.",
+                              "markdownDescription": "Exact authored Animation UUID/name."
+                            },
+                            "condition": {
+                              "type": "string",
+                              "description": "Non-empty authored transition Molang condition.",
+                              "markdownDescription": "Non-empty authored transition Molang condition."
+                            },
+                            "blend_value": {
+                              "anyOf": [
+                                {
+                                  "type": "number"
+                                },
+                                {
+                                  "type": "string"
+                                }
+                              ],
+                              "description": "Finite number or authored Molang blend value.",
+                              "markdownDescription": "Finite number or authored Molang blend value."
+                            },
+                            "effect": {
+                              "type": "string",
+                              "description": "Bedrock sound/particle effect identifier.",
+                              "markdownDescription": "Bedrock sound/particle effect identifier."
+                            },
+                            "locator": {
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ],
+                              "description": "Particle Locator name; null clears to entity space.",
+                              "markdownDescription": "Particle Locator name; null clears to entity space."
+                            },
+                            "bind_to_actor": {
+                              "type": [
+                                "boolean",
+                                "null"
+                              ],
+                              "description": "Particle actor binding; null resets to native default true.",
+                              "markdownDescription": "Particle actor binding; null resets to native default true."
+                            },
+                            "pre_effect_script": {
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ],
+                              "description": "Particle pre-effect Molang; null clears.",
+                              "markdownDescription": "Particle pre-effect Molang; null clears."
+                            },
+                            "on_entry": {
+                              "type": "string",
+                              "description": "State on_entry script; empty clears.",
+                              "markdownDescription": "State on_entry script; empty clears."
+                            },
+                            "on_exit": {
+                              "type": "string",
+                              "description": "State on_exit script; empty clears.",
+                              "markdownDescription": "State on_exit script; empty clears."
+                            },
+                            "blend_transition": {
+                              "type": "number",
+                              "minimum": 0,
+                              "maximum": 10000,
+                              "description": "State blend duration in seconds.",
+                              "markdownDescription": "State blend duration in seconds."
+                            },
+                            "blend_via_shortest_path": {
+                              "type": "boolean",
+                              "description": "State shortest-path blend flag.",
+                              "markdownDescription": "State shortest-path blend flag."
+                            }
+                          },
+                          "required": [
+                            "op"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "minItems": 1,
+                        "maxItems": 32,
+                        "description": "Ordered controller/state mutations (1-32).",
+                        "markdownDescription": "Ordered controller/state mutations (1-32)."
+                      }
+                    },
+                    "required": [
+                      "operations"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "controller_id": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "native_operations": {
+                        "type": "array",
+                        "items": {
+                          "anyOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "op": {
+                                  "type": "string",
+                                  "const": "set_state_blend"
+                                },
+                                "state": {
+                                  "type": "string",
+                                  "minLength": 1
+                                },
+                                "blend_transition": {
+                                  "type": "number",
+                                  "minimum": 0,
+                                  "maximum": 10000
+                                },
+                                "blend_via_shortest_path": {
+                                  "type": "boolean"
+                                },
+                                "blend_curve": {
+                                  "anyOf": [
+                                    {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "properties": {
+                                          "time": {
+                                            "type": "number",
+                                            "minimum": 0,
+                                            "maximum": 1
+                                          },
+                                          "value": {
+                                            "type": "number"
+                                          }
+                                        },
+                                        "required": [
+                                          "time",
+                                          "value"
+                                        ],
+                                        "additionalProperties": false
+                                      },
+                                      "minItems": 2,
+                                      "maxItems": 16
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "op",
+                                "state"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "op": {
+                                  "type": "string",
+                                  "const": "add_animation_item"
+                                },
+                                "state": {
+                                  "type": "string",
+                                  "minLength": 1
+                                },
+                                "item": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "description": "Animation or AnimationController UUID/name.",
+                                  "markdownDescription": "Animation or AnimationController UUID/name."
+                                },
+                                "blend_value": {
+                                  "anyOf": [
+                                    {
+                                      "type": "number"
+                                    },
+                                    {
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "op",
+                                "state",
+                                "item"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "op": {
+                                  "type": "string",
+                                  "const": "update_animation_item"
+                                },
+                                "state": {
+                                  "type": "string",
+                                  "minLength": 1
+                                },
+                                "id": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "description": "Existing state animation-link UUID.",
+                                  "markdownDescription": "Existing state animation-link UUID."
+                                },
+                                "item": {
+                                  "type": "string",
+                                  "minLength": 1
+                                },
+                                "blend_value": {
+                                  "anyOf": [
+                                    {
+                                      "type": "number"
+                                    },
+                                    {
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "op",
+                                "state",
+                                "id"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "op": {
+                                  "type": "string",
+                                  "const": "remove_animation_item"
+                                },
+                                "state": {
+                                  "type": "string",
+                                  "minLength": 1
+                                },
+                                "id": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "description": "Existing state animation-link UUID.",
+                                  "markdownDescription": "Existing state animation-link UUID."
+                                }
+                              },
+                              "required": [
+                                "op",
+                                "state",
+                                "id"
+                              ],
+                              "additionalProperties": false
+                            }
+                          ]
+                        },
+                        "minItems": 1,
+                        "maxItems": 32,
+                        "description": "Bounded native nested-controller/blend-curve mutations.",
+                        "markdownDescription": "Bounded native nested-controller/blend-curve mutations."
+                      }
+                    },
+                    "required": [
+                      "controller_id",
+                      "native_operations"
+                    ],
+                    "additionalProperties": false
+                  }
+                ]
+              },
+              {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "resource_kind": {
+                        "type": "string",
+                        "const": "client_entity"
+                      },
+                      "resource_source": {
+                        "type": "object",
+                        "properties": {
+                          "path": {
+                            "type": "string"
+                          },
+                          "content": {
+                            "type": "string",
+                            "minLength": 2
+                          }
+                        },
+                        "additionalProperties": false
+                      },
+                      "resource_output": {
+                        "type": "object",
+                        "properties": {
+                          "path": {
+                            "type": "string"
+                          },
+                          "overwrite": {
+                            "type": "boolean",
+                            "default": false
+                          }
+                        },
+                        "required": [
+                          "path"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "max_content_length": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 2000000
+                      },
+                      "resource_operations": {
+                        "type": "array",
+                        "items": {
+                          "anyOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "op": {
+                                  "type": "string",
+                                  "const": "set_animation_mapping"
+                                },
+                                "shortname": {
+                                  "type": "string"
+                                },
+                                "target": {
+                                  "type": "string",
+                                  "minLength": 1
+                                }
+                              },
+                              "required": [
+                                "op",
+                                "shortname",
+                                "target"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "op": {
+                                  "type": "string",
+                                  "const": "remove_animation_mapping"
+                                },
+                                "shortname": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "op",
+                                "shortname"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "op": {
+                                  "type": "string",
+                                  "const": "set_animate"
+                                },
+                                "shortname": {
+                                  "type": "string"
+                                },
+                                "condition": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "op",
+                                "shortname"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "op": {
+                                  "type": "string",
+                                  "const": "remove_animate"
+                                },
+                                "shortname": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "op",
+                                "shortname"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "op": {
+                                  "type": "string",
+                                  "const": "set_pre_animation_variable"
+                                },
+                                "name": {
+                                  "type": "string",
+                                  "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+                                },
+                                "expression": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "op",
+                                "name",
+                                "expression"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "op": {
+                                  "type": "string",
+                                  "const": "remove_pre_animation_variable"
+                                },
+                                "name": {
+                                  "type": "string",
+                                  "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+                                }
+                              },
+                              "required": [
+                                "op",
+                                "name"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "op": {
+                                  "type": "string",
+                                  "const": "set_initialize_variable"
+                                },
+                                "name": {
+                                  "type": "string",
+                                  "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+                                },
+                                "expression": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "op",
+                                "name",
+                                "expression"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "op": {
+                                  "type": "string",
+                                  "const": "remove_initialize_variable"
+                                },
+                                "name": {
+                                  "type": "string",
+                                  "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+                                }
+                              },
+                              "required": [
+                                "op",
+                                "name"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "op": {
+                                  "type": "string",
+                                  "const": "set_public_variable"
+                                },
+                                "name": {
+                                  "type": "string",
+                                  "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+                                }
+                              },
+                              "required": [
+                                "op",
+                                "name"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "op": {
+                                  "type": "string",
+                                  "const": "remove_public_variable"
+                                },
+                                "name": {
+                                  "type": "string",
+                                  "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+                                }
+                              },
+                              "required": [
+                                "op",
+                                "name"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "op": {
+                                  "type": "string",
+                                  "const": "set_scale"
+                                },
+                                "expression": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "op",
+                                "expression"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "op": {
+                                  "type": "string",
+                                  "const": "remove_scale"
+                                }
+                              },
+                              "required": [
+                                "op"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "op": {
+                                  "type": "string",
+                                  "const": "set_sound_binding"
+                                },
+                                "shortname": {
+                                  "type": "string"
+                                },
+                                "sound": {
+                                  "type": "string",
+                                  "minLength": 1
+                                }
+                              },
+                              "required": [
+                                "op",
+                                "shortname",
+                                "sound"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "op": {
+                                  "type": "string",
+                                  "const": "remove_sound_binding"
+                                },
+                                "shortname": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "op",
+                                "shortname"
+                              ],
+                              "additionalProperties": false
+                            }
+                          ]
+                        },
+                        "minItems": 1,
+                        "maxItems": 32
+                      }
+                    },
+                    "required": [
+                      "resource_kind",
+                      "resource_source",
+                      "resource_operations"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "resource_kind": {
+                        "type": "string",
+                        "const": "animation_controller"
+                      },
+                      "resource_source": {
+                        "type": "object",
+                        "properties": {
+                          "path": {
+                            "type": "string"
+                          },
+                          "content": {
+                            "type": "string",
+                            "minLength": 2
+                          }
+                        },
+                        "additionalProperties": false
+                      },
+                      "resource_output": {
+                        "type": "object",
+                        "properties": {
+                          "path": {
+                            "type": "string"
+                          },
+                          "overwrite": {
+                            "type": "boolean",
+                            "default": false
+                          }
+                        },
+                        "required": [
+                          "path"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "max_content_length": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 2000000
+                      },
+                      "resource_controller": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "resource_operations": {
+                        "type": "array",
+                        "items": {
+                          "anyOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "op": {
+                                  "type": "string",
+                                  "const": "set_state_variable"
+                                },
+                                "state": {
+                                  "type": "string",
+                                  "minLength": 1
+                                },
+                                "name": {
+                                  "type": "string",
+                                  "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+                                },
+                                "input": {
+                                  "type": "string"
+                                },
+                                "remap_curve": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "input": {
+                                        "type": "number"
+                                      },
+                                      "output": {
+                                        "type": "number"
+                                      }
+                                    },
+                                    "required": [
+                                      "input",
+                                      "output"
+                                    ],
+                                    "additionalProperties": false
+                                  },
+                                  "minItems": 2,
+                                  "maxItems": 32
+                                }
+                              },
+                              "required": [
+                                "op",
+                                "state",
+                                "name",
+                                "input"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "op": {
+                                  "type": "string",
+                                  "const": "remove_state_variable"
+                                },
+                                "state": {
+                                  "type": "string",
+                                  "minLength": 1
+                                },
+                                "name": {
+                                  "type": "string",
+                                  "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+                                }
+                              },
+                              "required": [
+                                "op",
+                                "state",
+                                "name"
+                              ],
+                              "additionalProperties": false
+                            }
+                          ]
+                        },
+                        "minItems": 1,
+                        "maxItems": 32
+                      }
+                    },
+                    "required": [
+                      "resource_kind",
+                      "resource_source",
+                      "resource_controller",
+                      "resource_operations"
+                    ],
+                    "additionalProperties": false
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      }
+    },
+    {
+      "name": "inspect_particle",
+      "title": "Inspect Bedrock Particle",
+      "description": "Inspects a Bedrock .particle.json document from an absolute path or inline content. Defaults to compact summary diagnostics; component and full modes are explicit to keep context usage bounded.",
+      "status": "experimental",
+      "category": "Animation",
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": true
+      },
+      "parameters": {
+        "$ref": "#/definitions/inspect_particle",
+        "definitions": {
+          "inspect_particle": {
             "type": "object",
             "properties": {
-              "controller_id": {
-                "type": "string",
-                "minLength": 1,
-                "description": "Existing controller UUID or unique name.",
-                "markdownDescription": "Existing controller UUID or unique name."
+              "source": {
+                "type": "object",
+                "properties": {
+                  "path": {
+                    "type": "string"
+                  },
+                  "content": {
+                    "type": "string",
+                    "minLength": 2
+                  }
+                },
+                "additionalProperties": false
               },
-              "create_name": {
+              "mode": {
                 "type": "string",
-                "minLength": 1,
-                "description": "New controller name.",
-                "markdownDescription": "New controller name."
+                "enum": [
+                  "summary",
+                  "components",
+                  "full"
+                ],
+                "default": "summary"
+              },
+              "max_content_length": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 2000000,
+                "default": 100000
+              }
+            },
+            "required": [
+              "source"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      }
+    },
+    {
+      "name": "manage_particle",
+      "title": "Manage Bedrock Particle",
+      "description": "Creates or losslessly patches a Bedrock .particle.json document, preserves unknown JSON fields, validates final particle semantics, optionally performs a verified transactional file write, and can load the particle into Blockbench's native preview. Animation/controller timing and downstream runtime binding remain owned by existing animation/controller tools.",
+      "status": "experimental",
+      "category": "Animation",
+      "annotations": {
+        "destructiveHint": true,
+        "openWorldHint": true
+      },
+      "parameters": {
+        "$ref": "#/definitions/manage_particle",
+        "definitions": {
+          "manage_particle": {
+            "type": "object",
+            "properties": {
+              "source": {
+                "type": "object",
+                "properties": {
+                  "path": {
+                    "type": "string"
+                  },
+                  "content": {
+                    "type": "string",
+                    "minLength": 2
+                  }
+                },
+                "additionalProperties": false
+              },
+              "create": {
+                "type": "object",
+                "properties": {
+                  "identifier": {
+                    "type": "string"
+                  },
+                  "preset": {
+                    "type": "string",
+                    "enum": [
+                      "steady",
+                      "burst",
+                      "trail",
+                      "ambient",
+                      "collision_splash"
+                    ],
+                    "default": "steady"
+                  },
+                  "material": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "texture": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "identifier"
+                ],
+                "additionalProperties": false
               },
               "operations": {
                 "type": "array",
                 "items": {
-                  "type": "object",
-                  "properties": {
-                    "op": {
-                      "type": "string",
-                      "enum": [
-                        "rename_controller",
-                        "add_state",
-                        "update_state",
-                        "remove_state",
-                        "set_initial_state",
-                        "add_transition",
-                        "update_transition",
-                        "remove_transition",
-                        "add_animation",
-                        "update_animation",
-                        "remove_animation",
-                        "add_sound",
-                        "update_sound",
-                        "remove_sound",
-                        "add_particle",
-                        "update_particle",
-                        "remove_particle"
-                      ],
-                      "description": "Controller mutation to apply.",
-                      "markdownDescription": "Controller mutation to apply."
-                    },
-                    "state": {
-                      "type": "string",
-                      "minLength": 1,
-                      "description": "Exact state UUID or unique exact state name.",
-                      "markdownDescription": "Exact state UUID or unique exact state name."
-                    },
-                    "id": {
-                      "type": "string",
-                      "minLength": 1,
-                      "description": "Exact transition, animation-link, sound, or particle UUID.",
-                      "markdownDescription": "Exact transition, animation-link, sound, or particle UUID."
-                    },
-                    "name": {
-                      "type": "string",
-                      "minLength": 1,
-                      "description": "Controller/state name for rename or add_state.",
-                      "markdownDescription": "Controller/state name for rename or add_state."
-                    },
-                    "target": {
-                      "type": "string",
-                      "minLength": 1,
-                      "description": "Exact transition target state UUID/name.",
-                      "markdownDescription": "Exact transition target state UUID/name."
-                    },
-                    "animation": {
-                      "type": "string",
-                      "minLength": 1,
-                      "description": "Exact authored Animation UUID/name.",
-                      "markdownDescription": "Exact authored Animation UUID/name."
-                    },
-                    "condition": {
-                      "type": "string",
-                      "description": "Non-empty authored transition Molang condition.",
-                      "markdownDescription": "Non-empty authored transition Molang condition."
-                    },
-                    "blend_value": {
-                      "anyOf": [
-                        {
-                          "type": "number"
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "op": {
+                          "type": "string",
+                          "const": "set_identifier"
                         },
-                        {
+                        "identifier": {
                           "type": "string"
                         }
+                      },
+                      "required": [
+                        "op",
+                        "identifier"
                       ],
-                      "description": "Finite number or authored Molang blend value.",
-                      "markdownDescription": "Finite number or authored Molang blend value."
+                      "additionalProperties": false
                     },
-                    "effect": {
-                      "type": "string",
-                      "description": "Bedrock sound/particle effect identifier.",
-                      "markdownDescription": "Bedrock sound/particle effect identifier."
-                    },
-                    "locator": {
-                      "anyOf": [
-                        {
-                          "type": "string"
+                    {
+                      "type": "object",
+                      "properties": {
+                        "op": {
+                          "type": "string",
+                          "const": "set_render"
                         },
-                        {
-                          "type": "null"
-                        }
-                      ],
-                      "description": "Particle Locator name; null clears to entity space.",
-                      "markdownDescription": "Particle Locator name; null clears to entity space."
-                    },
-                    "bind_to_actor": {
-                      "type": [
-                        "boolean",
-                        "null"
-                      ],
-                      "description": "Particle actor binding; null resets to native default true.",
-                      "markdownDescription": "Particle actor binding; null resets to native default true."
-                    },
-                    "pre_effect_script": {
-                      "anyOf": [
-                        {
-                          "type": "string"
+                        "material": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
                         },
-                        {
-                          "type": "null"
+                        "texture": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
                         }
+                      },
+                      "required": [
+                        "op"
                       ],
-                      "description": "Particle pre-effect Molang; null clears.",
-                      "markdownDescription": "Particle pre-effect Molang; null clears."
+                      "additionalProperties": false
                     },
-                    "on_entry": {
-                      "type": "string",
-                      "description": "State on_entry script; empty clears.",
-                      "markdownDescription": "State on_entry script; empty clears."
+                    {
+                      "type": "object",
+                      "properties": {
+                        "op": {
+                          "type": "string",
+                          "const": "set_component"
+                        },
+                        "component": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "value": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "number"
+                            },
+                            {
+                              "type": "boolean"
+                            },
+                            {
+                              "type": "null"
+                            },
+                            {
+                              "type": "array",
+                              "items": {}
+                            },
+                            {
+                              "type": "object",
+                              "additionalProperties": {}
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "op",
+                        "component",
+                        "value"
+                      ],
+                      "additionalProperties": false
                     },
-                    "on_exit": {
-                      "type": "string",
-                      "description": "State on_exit script; empty clears.",
-                      "markdownDescription": "State on_exit script; empty clears."
+                    {
+                      "type": "object",
+                      "properties": {
+                        "op": {
+                          "type": "string",
+                          "const": "remove_component"
+                        },
+                        "component": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "required": [
+                        "op",
+                        "component"
+                      ],
+                      "additionalProperties": false
                     },
-                    "blend_transition": {
-                      "type": "number",
-                      "minimum": 0,
-                      "maximum": 10000,
-                      "description": "State blend duration in seconds.",
-                      "markdownDescription": "State blend duration in seconds."
+                    {
+                      "type": "object",
+                      "properties": {
+                        "op": {
+                          "type": "string",
+                          "const": "set_curve"
+                        },
+                        "name": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "value": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "number"
+                            },
+                            {
+                              "type": "boolean"
+                            },
+                            {
+                              "type": "null"
+                            },
+                            {
+                              "type": "array",
+                              "items": {}
+                            },
+                            {
+                              "type": "object",
+                              "additionalProperties": {}
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "op",
+                        "name",
+                        "value"
+                      ],
+                      "additionalProperties": false
                     },
-                    "blend_via_shortest_path": {
-                      "type": "boolean",
-                      "description": "State shortest-path blend flag.",
-                      "markdownDescription": "State shortest-path blend flag."
+                    {
+                      "type": "object",
+                      "properties": {
+                        "op": {
+                          "type": "string",
+                          "const": "remove_curve"
+                        },
+                        "name": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "required": [
+                        "op",
+                        "name"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "op": {
+                          "type": "string",
+                          "const": "set_event"
+                        },
+                        "name": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "value": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "number"
+                            },
+                            {
+                              "type": "boolean"
+                            },
+                            {
+                              "type": "null"
+                            },
+                            {
+                              "type": "array",
+                              "items": {}
+                            },
+                            {
+                              "type": "object",
+                              "additionalProperties": {}
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "op",
+                        "name",
+                        "value"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "op": {
+                          "type": "string",
+                          "const": "remove_event"
+                        },
+                        "name": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "required": [
+                        "op",
+                        "name"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "op": {
+                          "type": "string",
+                          "const": "patch"
+                        },
+                        "path": {
+                          "type": "array",
+                          "items": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              {
+                                "type": "integer",
+                                "minimum": 0
+                              }
+                            ]
+                          },
+                          "minItems": 1,
+                          "maxItems": 16,
+                          "description": "Path relative to particle_effect, for targeted lossless edits.",
+                          "markdownDescription": "Path relative to particle_effect, for targeted lossless edits."
+                        },
+                        "value": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "number"
+                            },
+                            {
+                              "type": "boolean"
+                            },
+                            {
+                              "type": "null"
+                            },
+                            {
+                              "type": "array",
+                              "items": {}
+                            },
+                            {
+                              "type": "object",
+                              "additionalProperties": {}
+                            }
+                          ]
+                        },
+                        "remove": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "op",
+                        "path"
+                      ],
+                      "additionalProperties": false
                     }
-                  },
-                  "required": [
-                    "op"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
-                "minItems": 1,
-                "maxItems": 32,
-                "description": "Ordered controller/state mutations (1-32).",
-                "markdownDescription": "Ordered controller/state mutations (1-32)."
+                "maxItems": 64,
+                "default": [],
+                "description": "Ordered targeted particle mutations. Use patch for deep edits without replacing unknown sibling fields.",
+                "markdownDescription": "Ordered targeted particle mutations. Use patch for deep edits without replacing unknown sibling fields."
+              },
+              "output": {
+                "type": "object",
+                "properties": {
+                  "path": {
+                    "type": "string"
+                  },
+                  "overwrite": {
+                    "type": "boolean",
+                    "default": false
+                  }
+                },
+                "required": [
+                  "path"
+                ],
+                "additionalProperties": false
+              },
+              "preview": {
+                "type": "boolean",
+                "default": false,
+                "description": "Load the resulting document through Blockbench Animator.loadParticleEmitter using an existing source path or verified output path.",
+                "markdownDescription": "Load the resulting document through Blockbench Animator.loadParticleEmitter using an existing source path or verified output path."
+              },
+              "max_content_length": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 2000000
               }
             },
-            "required": [
-              "operations"
-            ],
             "additionalProperties": false
           }
         },
@@ -2230,6 +3456,42 @@
                 "default": false,
                 "description": "Include full particle/sound/timeline effect keyframes; keep false for summary.",
                 "markdownDescription": "Include full particle/sound/timeline effect keyframes; keep false for summary."
+              },
+              "channel": {
+                "type": "string",
+                "enum": [
+                  "rotation",
+                  "position",
+                  "scale"
+                ],
+                "description": "Optional transform channel filter for focused bone inspection. Requires bone.",
+                "markdownDescription": "Optional transform channel filter for focused bone inspection. Requires bone."
+              },
+              "time_range": {
+                "type": "object",
+                "properties": {
+                  "start": {
+                    "type": "number",
+                    "minimum": 0
+                  },
+                  "end": {
+                    "type": "number",
+                    "minimum": 0
+                  }
+                },
+                "required": [
+                  "start",
+                  "end"
+                ],
+                "additionalProperties": false,
+                "description": "Optional inclusive keyframe time range for focused bone inspection. Requires bone.",
+                "markdownDescription": "Optional inclusive keyframe time range for focused bone inspection. Requires bone."
+              },
+              "diagnostics": {
+                "type": "boolean",
+                "default": false,
+                "description": "Include compact authored-Animation technical diagnostics. No visual quality score is produced.",
+                "markdownDescription": "Include compact authored-Animation technical diagnostics. No visual quality score is produced."
               }
             },
             "additionalProperties": false
@@ -2253,187 +3515,161 @@
           "inspect_elements": {
             "anyOf": [
               {
-                "allOf": [
-                  {
-                    "type": "object",
-                    "properties": {
-                      "include_cubes": {
-                        "type": "boolean",
-                        "default": true,
-                        "description": "If true, include cubes as leaves. If false, return groups only.",
-                        "markdownDescription": "If true, include cubes as leaves. If false, return groups only."
-                      },
-                      "max_depth": {
-                        "type": "integer",
-                        "minimum": 1,
-                        "maximum": 32,
-                        "default": 8,
-                        "description": "Maximum tree depth. Default 8; increase only for deeper structure.",
-                        "markdownDescription": "Maximum tree depth. Default 8; increase only for deeper structure."
-                      },
-                      "max_nodes": {
-                        "type": "integer",
-                        "minimum": 1,
-                        "maximum": 5000,
-                        "default": 120,
-                        "description": "Maximum Cube/Group nodes returned. Default 120; raise explicitly when truncation matters.",
-                        "markdownDescription": "Maximum Cube/Group nodes returned. Default 120; raise explicitly when truncation matters."
-                      }
-                    }
+                "type": "object",
+                "properties": {
+                  "include_cubes": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "If true, include cubes as leaves. If false, return groups only.",
+                    "markdownDescription": "If true, include cubes as leaves. If false, return groups only."
                   },
-                  {
-                    "type": "object",
-                    "properties": {
-                      "mode": {
-                        "type": "string",
-                        "const": "outline"
-                      }
-                    },
-                    "required": [
-                      "mode"
-                    ]
+                  "max_depth": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 32,
+                    "default": 8,
+                    "description": "Maximum tree depth. Default 8; increase only for deeper structure.",
+                    "markdownDescription": "Maximum tree depth. Default 8; increase only for deeper structure."
+                  },
+                  "max_nodes": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 5000,
+                    "default": 120,
+                    "description": "Maximum Cube/Group nodes returned. Default 120; raise explicitly when truncation matters.",
+                    "markdownDescription": "Maximum Cube/Group nodes returned. Default 120; raise explicitly when truncation matters."
+                  },
+                  "mode": {
+                    "type": "string",
+                    "const": "outline"
                   }
-                ]
+                },
+                "required": [
+                  "mode"
+                ],
+                "additionalProperties": false
               },
               {
-                "allOf": [
-                  {
-                    "type": "object",
-                    "properties": {
-                      "name_pattern": {
-                        "type": "string",
-                        "minLength": 1,
-                        "description": "Optional non-empty case-sensitive name regex; invalid/oversized/unsafe patterns are rejected.",
-                        "markdownDescription": "Optional non-empty case-sensitive name regex; invalid/oversized/unsafe patterns are rejected."
-                      },
-                      "name_contains": {
-                        "type": "string",
-                        "minLength": 1,
-                        "description": "Optional non-empty substring to match element names. Case-insensitive.",
-                        "markdownDescription": "Optional non-empty substring to match element names. Case-insensitive."
-                      },
-                      "type": {
-                        "type": "string",
-                        "enum": [
-                          "cube",
-                          "group",
-                          "any"
-                        ],
-                        "default": "any",
-                        "description": "Restrict to Cube or Group results.",
-                        "markdownDescription": "Restrict to Cube or Group results."
-                      },
-                      "parent_group": {
-                        "type": "string",
-                        "minLength": 1,
-                        "description": "Optional Group UUID or unique exact name whose descendant subtree scopes results.",
-                        "markdownDescription": "Optional Group UUID or unique exact name whose descendant subtree scopes results."
-                      },
-                      "min_size": {
-                        "type": "array",
-                        "minItems": 3,
-                        "maxItems": 3,
-                        "items": [
-                          {
-                            "type": "number"
-                          },
-                          {
-                            "type": "number"
-                          },
-                          {
-                            "type": "number"
-                          }
-                        ],
-                        "description": "Optional finite minimum Cube size [x,y,z].",
-                        "markdownDescription": "Optional finite minimum Cube size [x,y,z]."
-                      },
-                      "max_size": {
-                        "type": "array",
-                        "minItems": 3,
-                        "maxItems": 3,
-                        "items": [
-                          {
-                            "type": "number"
-                          },
-                          {
-                            "type": "number"
-                          },
-                          {
-                            "type": "number"
-                          }
-                        ],
-                        "description": "Optional finite maximum Cube size [x,y,z].",
-                        "markdownDescription": "Optional finite maximum Cube size [x,y,z]."
-                      },
-                      "selected_only": {
-                        "type": "boolean",
-                        "default": false,
-                        "description": "Only consider currently selected Cubes/Groups.",
-                        "markdownDescription": "Only consider currently selected Cubes/Groups."
-                      },
-                      "limit": {
-                        "type": "integer",
-                        "minimum": 1,
-                        "maximum": 1000,
-                        "default": 50,
-                        "description": "Maximum results. Default 50; increase only when the search genuinely needs more.",
-                        "markdownDescription": "Maximum results. Default 50; increase only when the search genuinely needs more."
-                      }
-                    }
+                "type": "object",
+                "properties": {
+                  "name_pattern": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Optional non-empty case-sensitive name regex; invalid/oversized/unsafe patterns are rejected.",
+                    "markdownDescription": "Optional non-empty case-sensitive name regex; invalid/oversized/unsafe patterns are rejected."
                   },
-                  {
-                    "type": "object",
-                    "properties": {
-                      "mode": {
-                        "type": "string",
-                        "const": "search"
+                  "name_contains": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Optional non-empty substring to match element names. Case-insensitive.",
+                    "markdownDescription": "Optional non-empty substring to match element names. Case-insensitive."
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "cube",
+                      "group",
+                      "any"
+                    ],
+                    "default": "any",
+                    "description": "Restrict to Cube or Group results.",
+                    "markdownDescription": "Restrict to Cube or Group results."
+                  },
+                  "parent_group": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Optional Group UUID or unique exact name whose descendant subtree scopes results.",
+                    "markdownDescription": "Optional Group UUID or unique exact name whose descendant subtree scopes results."
+                  },
+                  "min_size": {
+                    "type": "array",
+                    "minItems": 3,
+                    "maxItems": 3,
+                    "items": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "number"
                       }
-                    },
-                    "required": [
-                      "mode"
-                    ]
+                    ],
+                    "description": "Optional finite minimum Cube size [x,y,z].",
+                    "markdownDescription": "Optional finite minimum Cube size [x,y,z]."
+                  },
+                  "max_size": {
+                    "type": "array",
+                    "minItems": 3,
+                    "maxItems": 3,
+                    "items": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "number"
+                      }
+                    ],
+                    "description": "Optional finite maximum Cube size [x,y,z].",
+                    "markdownDescription": "Optional finite maximum Cube size [x,y,z]."
+                  },
+                  "selected_only": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Only consider currently selected Cubes/Groups.",
+                    "markdownDescription": "Only consider currently selected Cubes/Groups."
+                  },
+                  "limit": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 1000,
+                    "default": 50,
+                    "description": "Maximum results. Default 50; increase only when the search genuinely needs more.",
+                    "markdownDescription": "Maximum results. Default 50; increase only when the search genuinely needs more."
+                  },
+                  "mode": {
+                    "type": "string",
+                    "const": "search"
                   }
-                ]
+                },
+                "required": [
+                  "mode"
+                ],
+                "additionalProperties": false
               },
               {
-                "allOf": [
-                  {
-                    "type": "object",
-                    "properties": {
-                      "id": {
-                        "type": "string",
-                        "minLength": 1,
-                        "description": "Exact Cube, Group, Locator, or Null Object UUID, or exact unique name; prefer UUID after discovery.",
-                        "markdownDescription": "Exact Cube, Group, Locator, or Null Object UUID, or exact unique name; prefer UUID after discovery."
-                      },
-                      "detail": {
-                        "type": "string",
-                        "enum": [
-                          "geometry",
-                          "uv"
-                        ],
-                        "default": "geometry",
-                        "description": "Geometry transform by default; request `uv` only when UV mapping needs inspection.",
-                        "markdownDescription": "Geometry transform by default; request `uv` only when UV mapping needs inspection."
-                      }
-                    },
-                    "required": [
-                      "id"
-                    ]
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Exact Cube, Group, Locator, or Null Object UUID, or exact unique name; prefer UUID after discovery.",
+                    "markdownDescription": "Exact Cube, Group, Locator, or Null Object UUID, or exact unique name; prefer UUID after discovery."
                   },
-                  {
-                    "type": "object",
-                    "properties": {
-                      "mode": {
-                        "type": "string",
-                        "const": "detail"
-                      }
-                    },
-                    "required": [
-                      "mode"
-                    ]
+                  "detail": {
+                    "type": "string",
+                    "enum": [
+                      "geometry",
+                      "uv"
+                    ],
+                    "default": "geometry",
+                    "description": "Geometry transform by default; request `uv` only when UV mapping needs inspection.",
+                    "markdownDescription": "Geometry transform by default; request `uv` only when UV mapping needs inspection."
+                  },
+                  "mode": {
+                    "type": "string",
+                    "const": "detail"
                   }
-                ]
+                },
+                "required": [
+                  "id",
+                  "mode"
+                ],
+                "additionalProperties": false
               }
             ]
           }
@@ -3517,262 +4753,218 @@
           "manage_material_instances": {
             "anyOf": [
               {
-                "allOf": [
-                  {
-                    "type": "object",
-                    "properties": {
-                      "include_usages": {
-                        "type": "boolean",
-                        "default": false,
-                        "description": "Include Cube/face usage locations. Keep false for summary-only discovery.",
-                        "markdownDescription": "Include Cube/face usage locations. Keep false for summary-only discovery."
-                      },
-                      "usage_limit_per_instance": {
-                        "type": "integer",
-                        "minimum": 1,
-                        "maximum": 1000,
-                        "default": 100,
-                        "description": "Maximum usage locations returned per material instance when include_usages=true.",
-                        "markdownDescription": "Maximum usage locations returned per material instance when include_usages=true."
-                      }
-                    }
+                "type": "object",
+                "properties": {
+                  "include_usages": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Include Cube/face usage locations. Keep false for summary-only discovery.",
+                    "markdownDescription": "Include Cube/face usage locations. Keep false for summary-only discovery."
                   },
-                  {
-                    "type": "object",
-                    "properties": {
-                      "operation": {
-                        "type": "string",
-                        "const": "list"
-                      }
-                    },
-                    "required": [
-                      "operation"
-                    ]
+                  "usage_limit_per_instance": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 1000,
+                    "default": 100,
+                    "description": "Maximum usage locations returned per material instance when include_usages=true.",
+                    "markdownDescription": "Maximum usage locations returned per material instance when include_usages=true."
+                  },
+                  "operation": {
+                    "type": "string",
+                    "const": "list"
                   }
-                ]
+                },
+                "required": [
+                  "operation"
+                ],
+                "additionalProperties": false
               },
               {
-                "allOf": [
-                  {
-                    "type": "object",
-                    "properties": {
-                      "cube_id": {
-                        "type": "string",
-                        "minLength": 1,
-                        "description": "Exact Cube UUID or exact unique Cube name. If omitted, uses the first selected Cube.",
-                        "markdownDescription": "Exact Cube UUID or exact unique Cube name. If omitted, uses the first selected Cube."
-                      },
-                      "faces": {
-                        "type": "array",
-                        "items": {
+                "type": "object",
+                "properties": {
+                  "cube_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Exact Cube UUID or exact unique Cube name. If omitted, uses the first selected Cube.",
+                    "markdownDescription": "Exact Cube UUID or exact unique Cube name. If omitted, uses the first selected Cube."
+                  },
+                  "faces": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "north",
+                        "south",
+                        "east",
+                        "west",
+                        "up",
+                        "down"
+                      ]
+                    },
+                    "minItems": 1,
+                    "description": "Specific non-empty face set to get/clear. If omitted, uses all faces.",
+                    "markdownDescription": "Specific non-empty face set to get/clear. If omitted, uses all faces."
+                  },
+                  "operation": {
+                    "type": "string",
+                    "const": "get"
+                  }
+                },
+                "required": [
+                  "operation"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "cube_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Exact Cube UUID or exact unique Cube name. If omitted, applies to all selected Cubes.",
+                    "markdownDescription": "Exact Cube UUID or exact unique Cube name. If omitted, applies to all selected Cubes."
+                  },
+                  "material_name": {
+                    "type": "string",
+                    "description": "The material instance name to assign. Use empty string to clear the material instance.",
+                    "markdownDescription": "The material instance name to assign. Use empty string to clear the material instance."
+                  },
+                  "faces": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "north",
+                        "south",
+                        "east",
+                        "west",
+                        "up",
+                        "down"
+                      ]
+                    },
+                    "minItems": 1,
+                    "default": [
+                      "north",
+                      "south",
+                      "east",
+                      "west",
+                      "up",
+                      "down"
+                    ],
+                    "description": "Faces to set the material instance on. Defaults to all faces.",
+                    "markdownDescription": "Faces to set the material instance on. Defaults to all faces."
+                  },
+                  "operation": {
+                    "type": "string",
+                    "const": "set"
+                  }
+                },
+                "required": [
+                  "material_name",
+                  "operation"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "assignments": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "cube_id": {
                           "type": "string",
-                          "enum": [
-                            "north",
-                            "south",
-                            "east",
-                            "west",
-                            "up",
-                            "down"
-                          ]
+                          "minLength": 1,
+                          "description": "Cube UUID or name.",
+                          "markdownDescription": "Cube UUID or name."
                         },
-                        "minItems": 1,
-                        "description": "Specific non-empty face set to get/clear. If omitted, uses all faces.",
-                        "markdownDescription": "Specific non-empty face set to get/clear. If omitted, uses all faces."
-                      }
-                    }
-                  },
-                  {
-                    "type": "object",
-                    "properties": {
-                      "operation": {
-                        "type": "string",
-                        "const": "get"
-                      }
-                    },
-                    "required": [
-                      "operation"
-                    ]
-                  }
-                ]
-              },
-              {
-                "allOf": [
-                  {
-                    "type": "object",
-                    "properties": {
-                      "cube_id": {
-                        "type": "string",
-                        "minLength": 1,
-                        "description": "Exact Cube UUID or exact unique Cube name. If omitted, applies to all selected Cubes.",
-                        "markdownDescription": "Exact Cube UUID or exact unique Cube name. If omitted, applies to all selected Cubes."
-                      },
-                      "material_name": {
-                        "type": "string",
-                        "description": "The material instance name to assign. Use empty string to clear the material instance.",
-                        "markdownDescription": "The material instance name to assign. Use empty string to clear the material instance."
-                      },
-                      "faces": {
-                        "type": "array",
-                        "items": {
-                          "type": "string",
-                          "enum": [
-                            "north",
-                            "south",
-                            "east",
-                            "west",
-                            "up",
-                            "down"
-                          ]
-                        },
-                        "minItems": 1,
-                        "default": [
-                          "north",
-                          "south",
-                          "east",
-                          "west",
-                          "up",
-                          "down"
-                        ],
-                        "description": "Faces to set the material instance on. Defaults to all faces.",
-                        "markdownDescription": "Faces to set the material instance on. Defaults to all faces."
-                      }
-                    },
-                    "required": [
-                      "material_name"
-                    ]
-                  },
-                  {
-                    "type": "object",
-                    "properties": {
-                      "operation": {
-                        "type": "string",
-                        "const": "set"
-                      }
-                    },
-                    "required": [
-                      "operation"
-                    ]
-                  }
-                ]
-              },
-              {
-                "allOf": [
-                  {
-                    "type": "object",
-                    "properties": {
-                      "assignments": {
-                        "type": "array",
-                        "items": {
-                          "type": "object",
-                          "properties": {
-                            "cube_id": {
-                              "type": "string",
-                              "minLength": 1,
-                              "description": "Cube UUID or name.",
-                              "markdownDescription": "Cube UUID or name."
-                            },
-                            "faces": {
-                              "type": "array",
-                              "items": {
-                                "type": "string",
-                                "enum": [
-                                  "north",
-                                  "south",
-                                  "east",
-                                  "west",
-                                  "up",
-                                  "down"
-                                ]
-                              },
-                              "minItems": 1,
-                              "description": "Non-empty faces to set the material instance on.",
-                              "markdownDescription": "Non-empty faces to set the material instance on."
-                            },
-                            "material_name": {
-                              "type": "string",
-                              "description": "Material instance name to assign.",
-                              "markdownDescription": "Material instance name to assign."
-                            }
+                        "faces": {
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "enum": [
+                              "north",
+                              "south",
+                              "east",
+                              "west",
+                              "up",
+                              "down"
+                            ]
                           },
-                          "required": [
-                            "cube_id",
-                            "faces",
-                            "material_name"
-                          ],
-                          "additionalProperties": false
+                          "minItems": 1,
+                          "description": "Non-empty faces to set the material instance on.",
+                          "markdownDescription": "Non-empty faces to set the material instance on."
                         },
-                        "minItems": 1,
-                        "description": "Array of material instance assignments.",
-                        "markdownDescription": "Array of material instance assignments."
-                      }
+                        "material_name": {
+                          "type": "string",
+                          "description": "Material instance name to assign.",
+                          "markdownDescription": "Material instance name to assign."
+                        }
+                      },
+                      "required": [
+                        "cube_id",
+                        "faces",
+                        "material_name"
+                      ],
+                      "additionalProperties": false
                     },
-                    "required": [
-                      "assignments"
-                    ]
+                    "minItems": 1,
+                    "description": "Array of material instance assignments.",
+                    "markdownDescription": "Array of material instance assignments."
                   },
-                  {
-                    "type": "object",
-                    "properties": {
-                      "operation": {
-                        "type": "string",
-                        "const": "bulk_set"
-                      }
-                    },
-                    "required": [
-                      "operation"
-                    ]
+                  "operation": {
+                    "type": "string",
+                    "const": "bulk_set"
                   }
-                ]
+                },
+                "required": [
+                  "assignments",
+                  "operation"
+                ],
+                "additionalProperties": false
               },
               {
-                "allOf": [
-                  {
-                    "type": "object",
-                    "properties": {
-                      "cube_id": {
-                        "type": "string",
-                        "minLength": 1,
-                        "description": "Exact Cube UUID or exact unique Cube name. If omitted, clears from all selected Cubes.",
-                        "markdownDescription": "Exact Cube UUID or exact unique Cube name. If omitted, clears from all selected Cubes."
-                      },
-                      "faces": {
-                        "type": "array",
-                        "items": {
-                          "type": "string",
-                          "enum": [
-                            "north",
-                            "south",
-                            "east",
-                            "west",
-                            "up",
-                            "down"
-                          ]
-                        },
-                        "minItems": 1,
-                        "description": "Specific faces to clear. If not provided, clears all faces.",
-                        "markdownDescription": "Specific faces to clear. If not provided, clears all faces."
-                      },
-                      "all_cubes": {
-                        "type": "boolean",
-                        "default": false,
-                        "description": "If true, clears material instances from all cubes in the project.",
-                        "markdownDescription": "If true, clears material instances from all cubes in the project."
-                      }
-                    }
+                "type": "object",
+                "properties": {
+                  "cube_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Exact Cube UUID or exact unique Cube name. If omitted, clears from all selected Cubes.",
+                    "markdownDescription": "Exact Cube UUID or exact unique Cube name. If omitted, clears from all selected Cubes."
                   },
-                  {
-                    "type": "object",
-                    "properties": {
-                      "operation": {
-                        "type": "string",
-                        "const": "clear"
-                      }
+                  "faces": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "north",
+                        "south",
+                        "east",
+                        "west",
+                        "up",
+                        "down"
+                      ]
                     },
-                    "required": [
-                      "operation"
-                    ]
+                    "minItems": 1,
+                    "description": "Specific faces to clear. If not provided, clears all faces.",
+                    "markdownDescription": "Specific faces to clear. If not provided, clears all faces."
+                  },
+                  "all_cubes": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "If true, clears material instances from all cubes in the project.",
+                    "markdownDescription": "If true, clears material instances from all cubes in the project."
+                  },
+                  "operation": {
+                    "type": "string",
+                    "const": "clear"
                   }
-                ]
+                },
+                "required": [
+                  "operation"
+                ],
+                "additionalProperties": false
               }
             ]
           }
@@ -4906,6 +6098,187 @@
       }
     },
     {
+      "name": "paint_texture_transaction",
+      "title": "Paint Texture Transaction",
+      "description": "Applies one bounded exact-pixel transaction to a non-layered texture with optimistic revision protection and one native Undo unit.",
+      "status": "stable",
+      "category": "Paint Tools",
+      "annotations": {
+        "destructiveHint": true
+      },
+      "parameters": {
+        "$ref": "#/definitions/paint_texture_transaction",
+        "definitions": {
+          "paint_texture_transaction": {
+            "type": "object",
+            "properties": {
+              "texture_id": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Texture UUID/ID/name; omit for selected/default.",
+                "markdownDescription": "Texture UUID/ID/name; omit for selected/default."
+              },
+              "expected_revision": {
+                "type": "string",
+                "pattern": "^sha256:\\d+x\\d+:[0-9a-f]{64}$",
+                "description": "Full decoded-RGBA texture revision returned by BlockIT.",
+                "markdownDescription": "Full decoded-RGBA texture revision returned by BlockIT."
+              },
+              "operations": {
+                "type": "array",
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "operation": {
+                          "type": "string",
+                          "const": "set_pixels"
+                        },
+                        "color": {
+                          "type": "string",
+                          "pattern": "^#[A-Fa-f0-9]{6}(?:[A-Fa-f0-9]{2})?$",
+                          "errorMessage": {
+                            "pattern": "Hex color in #RRGGBB or #RRGGBBAA form."
+                          },
+                          "description": "Color as hex string (#RRGGBB or #RRGGBBAA, e.g., #FF0000).",
+                          "markdownDescription": "Color as hex string (#RRGGBB or #RRGGBBAA, e.g., #FF0000)."
+                        },
+                        "coordinates": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "x": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "y": {
+                                "type": "integer",
+                                "minimum": 0
+                              }
+                            },
+                            "required": [
+                              "x",
+                              "y"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "minItems": 1
+                        }
+                      },
+                      "required": [
+                        "operation",
+                        "color",
+                        "coordinates"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "operation": {
+                          "type": "string",
+                          "const": "fill_rect"
+                        },
+                        "color": {
+                          "type": "string",
+                          "pattern": "^#[A-Fa-f0-9]{6}(?:[A-Fa-f0-9]{2})?$",
+                          "errorMessage": {
+                            "pattern": "Hex color in #RRGGBB or #RRGGBBAA form."
+                          },
+                          "description": "Color as hex string (#RRGGBB or #RRGGBBAA, e.g., #FF0000).",
+                          "markdownDescription": "Color as hex string (#RRGGBB or #RRGGBBAA, e.g., #FF0000)."
+                        },
+                        "rect": {
+                          "type": "object",
+                          "properties": {
+                            "x": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "y": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "width": {
+                              "type": "integer",
+                              "exclusiveMinimum": 0
+                            },
+                            "height": {
+                              "type": "integer",
+                              "exclusiveMinimum": 0
+                            }
+                          },
+                          "required": [
+                            "x",
+                            "y",
+                            "width",
+                            "height"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "required": [
+                        "operation",
+                        "color",
+                        "rect"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "operation": {
+                          "type": "string",
+                          "const": "erase_pixels"
+                        },
+                        "coordinates": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "x": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "y": {
+                                "type": "integer",
+                                "minimum": 0
+                              }
+                            },
+                            "required": [
+                              "x",
+                              "y"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "minItems": 1
+                        }
+                      },
+                      "required": [
+                        "operation",
+                        "coordinates"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
+                },
+                "minItems": 1,
+                "maxItems": 64
+              }
+            },
+            "required": [
+              "expected_revision",
+              "operations"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      }
+    },
+    {
       "name": "create_project",
       "title": "Create Project",
       "description": "Creates a new Minecraft Bedrock Entity project in Blockbench's native `bedrock` format; refuses unsaved work without `discard_unsaved`.",
@@ -5580,253 +6953,213 @@
           "manage_material": {
             "anyOf": [
               {
-                "allOf": [
-                  {
-                    "type": "object",
-                    "properties": {
-                      "name": {
-                        "type": "string",
-                        "minLength": 1,
-                        "description": "Non-empty material name.",
-                        "markdownDescription": "Non-empty material name."
-                      },
-                      "color_texture": {
-                        "type": "string",
-                        "minLength": 1,
-                        "description": "Optional color Texture UUID, exact ID, or unique exact name.",
-                        "markdownDescription": "Optional color Texture UUID, exact ID, or unique exact name."
-                      },
-                      "normal_texture": {
-                        "type": "string",
-                        "minLength": 1,
-                        "description": "Optional normal Texture UUID, exact ID, or unique exact name.",
-                        "markdownDescription": "Optional normal Texture UUID, exact ID, or unique exact name."
-                      },
-                      "height_texture": {
-                        "type": "string",
-                        "minLength": 1,
-                        "description": "Optional height Texture UUID, exact ID, or unique exact name.",
-                        "markdownDescription": "Optional height Texture UUID, exact ID, or unique exact name."
-                      },
-                      "mer_texture": {
-                        "type": "string",
-                        "minLength": 1,
-                        "description": "Optional MER Texture UUID, exact ID, or unique exact name.",
-                        "markdownDescription": "Optional MER Texture UUID, exact ID, or unique exact name."
-                      },
-                      "color_value": {
-                        "type": "array",
-                        "items": {
-                          "type": "number",
-                          "minimum": 0,
-                          "maximum": 255
-                        },
-                        "minItems": 4,
-                        "maxItems": 4,
-                        "description": "Uniform RGBA color [R,G,B,A] when no color texture is provided.",
-                        "markdownDescription": "Uniform RGBA color [R,G,B,A] when no color texture is provided."
-                      },
-                      "mer_value": {
-                        "type": "array",
-                        "items": {
-                          "type": "number",
-                          "minimum": 0,
-                          "maximum": 255
-                        },
-                        "minItems": 3,
-                        "maxItems": 3,
-                        "description": "Uniform MER values [Metalness, Emissive, Roughness] (0-255) when no MER texture is provided.",
-                        "markdownDescription": "Uniform MER values [Metalness, Emissive, Roughness] (0-255) when no MER texture is provided."
-                      },
-                      "subsurface_value": {
-                        "type": "number",
-                        "minimum": 0,
-                        "maximum": 255,
-                        "description": "Subsurface scattering value (0-255) for Bedrock 1.21.30+ materials.",
-                        "markdownDescription": "Subsurface scattering value (0-255) for Bedrock 1.21.30+ materials."
-                      }
-                    },
-                    "required": [
-                      "name"
-                    ]
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Non-empty material name.",
+                    "markdownDescription": "Non-empty material name."
                   },
-                  {
-                    "type": "object",
-                    "properties": {
-                      "operation": {
-                        "type": "string",
-                        "const": "create"
-                      }
+                  "color_texture": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Optional color Texture UUID, exact ID, or unique exact name.",
+                    "markdownDescription": "Optional color Texture UUID, exact ID, or unique exact name."
+                  },
+                  "normal_texture": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Optional normal Texture UUID, exact ID, or unique exact name.",
+                    "markdownDescription": "Optional normal Texture UUID, exact ID, or unique exact name."
+                  },
+                  "height_texture": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Optional height Texture UUID, exact ID, or unique exact name.",
+                    "markdownDescription": "Optional height Texture UUID, exact ID, or unique exact name."
+                  },
+                  "mer_texture": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Optional MER Texture UUID, exact ID, or unique exact name.",
+                    "markdownDescription": "Optional MER Texture UUID, exact ID, or unique exact name."
+                  },
+                  "color_value": {
+                    "type": "array",
+                    "items": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 255
                     },
-                    "required": [
-                      "operation"
-                    ]
+                    "minItems": 4,
+                    "maxItems": 4,
+                    "description": "Uniform RGBA color [R,G,B,A] when no color texture is provided.",
+                    "markdownDescription": "Uniform RGBA color [R,G,B,A] when no color texture is provided."
+                  },
+                  "mer_value": {
+                    "type": "array",
+                    "items": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 255
+                    },
+                    "minItems": 3,
+                    "maxItems": 3,
+                    "description": "Uniform MER values [Metalness, Emissive, Roughness] (0-255) when no MER texture is provided.",
+                    "markdownDescription": "Uniform MER values [Metalness, Emissive, Roughness] (0-255) when no MER texture is provided."
+                  },
+                  "subsurface_value": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 255,
+                    "description": "Subsurface scattering value (0-255) for Bedrock 1.21.30+ materials.",
+                    "markdownDescription": "Subsurface scattering value (0-255) for Bedrock 1.21.30+ materials."
+                  },
+                  "operation": {
+                    "type": "string",
+                    "const": "create"
                   }
-                ]
+                },
+                "required": [
+                  "name",
+                  "operation"
+                ],
+                "additionalProperties": false
               },
               {
-                "allOf": [
-                  {
-                    "type": "object",
-                    "properties": {
-                      "material": {
-                        "type": "string",
-                        "minLength": 1,
-                        "description": "Required material/TextureGroup UUID or unique exact name.",
-                        "markdownDescription": "Required material/TextureGroup UUID or unique exact name."
-                      },
-                      "color_texture": {
-                        "type": "string",
-                        "minLength": 1,
-                        "description": "Color Texture UUID/ID/unique name, or `none` for uniform color.",
-                        "markdownDescription": "Color Texture UUID/ID/unique name, or `none` for uniform color."
-                      },
-                      "normal_texture": {
-                        "type": "string",
-                        "minLength": 1,
-                        "description": "Normal Texture UUID/ID/unique name, or `none` to remove.",
-                        "markdownDescription": "Normal Texture UUID/ID/unique name, or `none` to remove."
-                      },
-                      "height_texture": {
-                        "type": "string",
-                        "minLength": 1,
-                        "description": "Height Texture UUID/ID/unique name, or `none` to remove.",
-                        "markdownDescription": "Height Texture UUID/ID/unique name, or `none` to remove."
-                      },
-                      "mer_texture": {
-                        "type": "string",
-                        "minLength": 1,
-                        "description": "MER Texture UUID/ID/unique name, or `none` for uniform values.",
-                        "markdownDescription": "MER Texture UUID/ID/unique name, or `none` for uniform values."
-                      },
-                      "color_value": {
-                        "type": "array",
-                        "items": {
-                          "type": "number",
-                          "minimum": 0,
-                          "maximum": 255
-                        },
-                        "minItems": 4,
-                        "maxItems": 4,
-                        "description": "Uniform RGBA color [R,G,B,A] when no color texture.",
-                        "markdownDescription": "Uniform RGBA color [R,G,B,A] when no color texture."
-                      },
-                      "mer_value": {
-                        "type": "array",
-                        "items": {
-                          "type": "number",
-                          "minimum": 0,
-                          "maximum": 255
-                        },
-                        "minItems": 3,
-                        "maxItems": 3,
-                        "description": "Uniform MER values [Metalness, Emissive, Roughness] (0-255).",
-                        "markdownDescription": "Uniform MER values [Metalness, Emissive, Roughness] (0-255)."
-                      },
-                      "subsurface_value": {
-                        "type": "number",
-                        "minimum": 0,
-                        "maximum": 255,
-                        "description": "Subsurface scattering value (0-255).",
-                        "markdownDescription": "Subsurface scattering value (0-255)."
-                      }
-                    },
-                    "required": [
-                      "material"
-                    ]
+                "type": "object",
+                "properties": {
+                  "material": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Required material/TextureGroup UUID or unique exact name.",
+                    "markdownDescription": "Required material/TextureGroup UUID or unique exact name."
                   },
-                  {
-                    "type": "object",
-                    "properties": {
-                      "operation": {
-                        "type": "string",
-                        "const": "configure"
-                      }
+                  "color_texture": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Color Texture UUID/ID/unique name, or `none` for uniform color.",
+                    "markdownDescription": "Color Texture UUID/ID/unique name, or `none` for uniform color."
+                  },
+                  "normal_texture": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Normal Texture UUID/ID/unique name, or `none` to remove.",
+                    "markdownDescription": "Normal Texture UUID/ID/unique name, or `none` to remove."
+                  },
+                  "height_texture": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Height Texture UUID/ID/unique name, or `none` to remove.",
+                    "markdownDescription": "Height Texture UUID/ID/unique name, or `none` to remove."
+                  },
+                  "mer_texture": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "MER Texture UUID/ID/unique name, or `none` for uniform values.",
+                    "markdownDescription": "MER Texture UUID/ID/unique name, or `none` for uniform values."
+                  },
+                  "color_value": {
+                    "type": "array",
+                    "items": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 255
                     },
-                    "required": [
-                      "operation"
-                    ]
+                    "minItems": 4,
+                    "maxItems": 4,
+                    "description": "Uniform RGBA color [R,G,B,A] when no color texture.",
+                    "markdownDescription": "Uniform RGBA color [R,G,B,A] when no color texture."
+                  },
+                  "mer_value": {
+                    "type": "array",
+                    "items": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 255
+                    },
+                    "minItems": 3,
+                    "maxItems": 3,
+                    "description": "Uniform MER values [Metalness, Emissive, Roughness] (0-255).",
+                    "markdownDescription": "Uniform MER values [Metalness, Emissive, Roughness] (0-255)."
+                  },
+                  "subsurface_value": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 255,
+                    "description": "Subsurface scattering value (0-255).",
+                    "markdownDescription": "Subsurface scattering value (0-255)."
+                  },
+                  "operation": {
+                    "type": "string",
+                    "const": "configure"
                   }
-                ]
+                },
+                "required": [
+                  "material",
+                  "operation"
+                ],
+                "additionalProperties": false
               },
               {
-                "allOf": [
-                  {
-                    "type": "object",
-                    "properties": {
-                      "material": {
-                        "type": "string",
-                        "minLength": 1,
-                        "description": "Material/texture group target for channel assignment; UUID preferred, exact name only when unique.",
-                        "markdownDescription": "Material/texture group target for channel assignment; UUID preferred, exact name only when unique."
-                      },
-                      "texture": {
-                        "type": "string",
-                        "minLength": 1,
-                        "description": "Explicit texture target; UUID preferred, then texture ID, then unique name.",
-                        "markdownDescription": "Explicit texture target; UUID preferred, then texture ID, then unique name."
-                      },
-                      "channel": {
-                        "type": "string",
-                        "enum": [
-                          "color",
-                          "normal",
-                          "height",
-                          "mer"
-                        ],
-                        "description": "PBR channel to assign the texture to.",
-                        "markdownDescription": "PBR channel to assign the texture to."
-                      }
-                    },
-                    "required": [
-                      "material",
-                      "texture",
-                      "channel"
-                    ]
+                "type": "object",
+                "properties": {
+                  "material": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Material/texture group target for channel assignment; UUID preferred, exact name only when unique.",
+                    "markdownDescription": "Material/texture group target for channel assignment; UUID preferred, exact name only when unique."
                   },
-                  {
-                    "type": "object",
-                    "properties": {
-                      "operation": {
-                        "type": "string",
-                        "const": "assign_channel"
-                      }
-                    },
-                    "required": [
-                      "operation"
-                    ]
+                  "texture": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Explicit texture target; UUID preferred, then texture ID, then unique name.",
+                    "markdownDescription": "Explicit texture target; UUID preferred, then texture ID, then unique name."
+                  },
+                  "channel": {
+                    "type": "string",
+                    "enum": [
+                      "color",
+                      "normal",
+                      "height",
+                      "mer"
+                    ],
+                    "description": "PBR channel to assign the texture to.",
+                    "markdownDescription": "PBR channel to assign the texture to."
+                  },
+                  "operation": {
+                    "type": "string",
+                    "const": "assign_channel"
                   }
-                ]
+                },
+                "required": [
+                  "material",
+                  "texture",
+                  "channel",
+                  "operation"
+                ],
+                "additionalProperties": false
               },
               {
-                "allOf": [
-                  {
-                    "type": "object",
-                    "properties": {
-                      "material": {
-                        "type": "string",
-                        "minLength": 1,
-                        "description": "Material/texture group target to save; UUID preferred, exact name only when unique.",
-                        "markdownDescription": "Material/texture group target to save; UUID preferred, exact name only when unique."
-                      }
-                    },
-                    "required": [
-                      "material"
-                    ]
+                "type": "object",
+                "properties": {
+                  "material": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Material/texture group target to save; UUID preferred, exact name only when unique.",
+                    "markdownDescription": "Material/texture group target to save; UUID preferred, exact name only when unique."
                   },
-                  {
-                    "type": "object",
-                    "properties": {
-                      "operation": {
-                        "type": "string",
-                        "const": "save"
-                      }
-                    },
-                    "required": [
-                      "operation"
-                    ]
+                  "operation": {
+                    "type": "string",
+                    "const": "save"
                   }
-                ]
+                },
+                "required": [
+                  "material",
+                  "operation"
+                ],
+                "additionalProperties": false
               }
             ]
           }
@@ -5848,168 +7181,206 @@
         "$ref": "#/definitions/create_texture",
         "definitions": {
           "create_texture": {
-            "type": "object",
-            "properties": {
-              "name": {
-                "type": "string",
-                "minLength": 1,
-                "description": "Non-empty texture name.",
-                "markdownDescription": "Non-empty texture name."
-              },
-              "texture_id": {
-                "type": "string",
-                "minLength": 1,
-                "description": "Template rebuild only: UUID of the existing single base atlas to repack in place, preserving its identity and mapped pixels.",
-                "markdownDescription": "Template rebuild only: UUID of the existing single base atlas to repack in place, preserving its identity and mapped pixels."
-              },
-              "type": {
-                "type": "string",
-                "enum": [
-                  "blank",
-                  "template"
-                ],
-                "default": "blank",
-                "description": "Texture creation mode. Template builds UV layout from model geometry before any pixel painting.",
-                "markdownDescription": "Texture creation mode. Template builds UV layout from model geometry before any pixel painting."
-              },
-              "width": {
-                "type": "integer",
-                "minimum": 16,
-                "maximum": 4096,
-                "default": 16
-              },
-              "height": {
-                "type": "integer",
-                "minimum": 16,
-                "maximum": 4096,
-                "default": 16
-              },
-              "pixel_density": {
-                "type": "number",
-                "enum": [
-                  16,
-                  32,
-                  64,
-                  128,
-                  256,
-                  512
-                ],
-                "default": 16,
-                "description": "Template density in pixels per 16 model units. At 16x, one model unit maps to one texture pixel.",
-                "markdownDescription": "Template density in pixels per 16 model units. At 16x, one model unit maps to one texture pixel."
-              },
-              "rearrange_uv": {
-                "type": "boolean",
-                "default": true,
-                "description": "Generate and assign a fresh UV arrangement for template mode.",
-                "markdownDescription": "Generate and assign a fresh UV arrangement for template mode."
-              },
-              "power_of_two": {
-                "type": "boolean",
-                "default": true,
-                "description": "Round the generated template atlas to a power-of-two square.",
-                "markdownDescription": "Round the generated template atlas to a power-of-two square."
-              },
-              "keep_multi_texture_occupancy": {
-                "type": "boolean",
-                "default": true,
-                "description": "Reuse identical existing UV occupancy when generating a template.",
-                "markdownDescription": "Reuse identical existing UV occupancy when generating a template."
-              },
-              "padding": {
-                "type": "boolean",
-                "default": false,
-                "description": "Reserve a one-pixel padding border around template islands.",
-                "markdownDescription": "Reserve a one-pixel padding border around template islands."
-              },
-              "data": {
-                "type": "string",
-                "description": "Image data URL or deterministic absolute image file path.",
-                "markdownDescription": "Image data URL or deterministic absolute image file path."
-              },
-              "group": {
-                "type": "string",
-                "minLength": 1,
-                "description": "Optional TextureGroup UUID or unique exact name.",
-                "markdownDescription": "Optional TextureGroup UUID or unique exact name."
-              },
-              "fill_color": {
-                "anyOf": [
-                  {
-                    "type": "array",
-                    "items": {
-                      "type": "number",
-                      "minimum": 0,
-                      "maximum": 255
-                    },
-                    "minItems": 4,
-                    "maxItems": 4,
-                    "description": "RGBA [R, G, B, A]",
-                    "markdownDescription": "RGBA [R, G, B, A]"
-                  },
-                  {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "name": {
                     "type": "string",
-                    "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$",
-                    "errorMessage": {
-                      "pattern": "Hex color #RRGGBB or #RRGGBBAA"
-                    }
+                    "minLength": 1,
+                    "description": "Non-empty texture name.",
+                    "markdownDescription": "Non-empty texture name."
                   },
-                  {
+                  "texture_id": {
                     "type": "string",
-                    "pattern": "^[a-z]{3,20}$",
-                    "errorMessage": {
-                      "pattern": "Named color (lowercase)"
-                    }
+                    "minLength": 1,
+                    "description": "Template rebuild only: UUID of the existing single base atlas to repack in place, preserving its identity and mapped pixels.",
+                    "markdownDescription": "Template rebuild only: UUID of the existing single base atlas to repack in place, preserving its identity and mapped pixels."
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "blank",
+                      "template"
+                    ],
+                    "default": "blank",
+                    "description": "Texture creation mode. Template builds UV layout from model geometry before any pixel painting.",
+                    "markdownDescription": "Texture creation mode. Template builds UV layout from model geometry before any pixel painting."
+                  },
+                  "width": {
+                    "type": "integer",
+                    "minimum": 16,
+                    "maximum": 4096,
+                    "default": 16
+                  },
+                  "height": {
+                    "type": "integer",
+                    "minimum": 16,
+                    "maximum": 4096,
+                    "default": 16
+                  },
+                  "pixel_density": {
+                    "type": "number",
+                    "enum": [
+                      16,
+                      32,
+                      64,
+                      128,
+                      256,
+                      512
+                    ],
+                    "default": 16,
+                    "description": "Template density in pixels per 16 model units. At 16x, one model unit maps to one texture pixel.",
+                    "markdownDescription": "Template density in pixels per 16 model units. At 16x, one model unit maps to one texture pixel."
+                  },
+                  "rearrange_uv": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Generate and assign a fresh UV arrangement for template mode.",
+                    "markdownDescription": "Generate and assign a fresh UV arrangement for template mode."
+                  },
+                  "power_of_two": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Round the generated template atlas to a power-of-two square.",
+                    "markdownDescription": "Round the generated template atlas to a power-of-two square."
+                  },
+                  "keep_multi_texture_occupancy": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Reuse identical existing UV occupancy when generating a template.",
+                    "markdownDescription": "Reuse identical existing UV occupancy when generating a template."
+                  },
+                  "padding": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Reserve a one-pixel padding border around template islands.",
+                    "markdownDescription": "Reserve a one-pixel padding border around template islands."
+                  },
+                  "data": {
+                    "type": "string",
+                    "description": "Image data URL or deterministic absolute image file path.",
+                    "markdownDescription": "Image data URL or deterministic absolute image file path."
+                  },
+                  "group": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Optional TextureGroup UUID or unique exact name.",
+                    "markdownDescription": "Optional TextureGroup UUID or unique exact name."
+                  },
+                  "fill_color": {
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 255
+                        },
+                        "minItems": 4,
+                        "maxItems": 4,
+                        "description": "RGBA [R, G, B, A]",
+                        "markdownDescription": "RGBA [R, G, B, A]"
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$",
+                        "errorMessage": {
+                          "pattern": "Hex color #RRGGBB or #RRGGBBAA"
+                        }
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^[a-z]{3,20}$",
+                        "errorMessage": {
+                          "pattern": "Named color (lowercase)"
+                        }
+                      }
+                    ],
+                    "description": "RGBA color to fill the texture, as tuple or HEX string.",
+                    "markdownDescription": "RGBA color to fill the texture, as tuple or HEX string."
+                  },
+                  "layer_name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Non-empty texture layer name. Required if fill_color is set.",
+                    "markdownDescription": "Non-empty texture layer name. Required if fill_color is set."
+                  },
+                  "pbr_channel": {
+                    "type": "string",
+                    "enum": [
+                      "color",
+                      "normal",
+                      "height",
+                      "mer"
+                    ],
+                    "description": "PBR channel: color, normal, height, or MER.",
+                    "markdownDescription": "PBR channel: color, normal, height, or MER."
+                  },
+                  "render_mode": {
+                    "type": "string",
+                    "enum": [
+                      "default",
+                      "emissive",
+                      "additive",
+                      "layered"
+                    ],
+                    "default": "default",
+                    "description": "Texture render mode.",
+                    "markdownDescription": "Texture render mode."
+                  },
+                  "render_sides": {
+                    "type": "string",
+                    "enum": [
+                      "auto",
+                      "front",
+                      "double"
+                    ],
+                    "default": "auto",
+                    "description": "Render sides for the texture. Auto, front, or double.",
+                    "markdownDescription": "Render sides for the texture. Auto, front, or double."
                   }
+                },
+                "required": [
+                  "name"
                 ],
-                "description": "RGBA color to fill the texture, as tuple or HEX string.",
-                "markdownDescription": "RGBA color to fill the texture, as tuple or HEX string."
+                "additionalProperties": false
               },
-              "layer_name": {
-                "type": "string",
-                "minLength": 1,
-                "description": "Non-empty texture layer name. Required if fill_color is set.",
-                "markdownDescription": "Non-empty texture layer name. Required if fill_color is set."
-              },
-              "pbr_channel": {
-                "type": "string",
-                "enum": [
-                  "color",
-                  "normal",
-                  "height",
-                  "mer"
+              {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "const": "variant"
+                  },
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Non-empty variant texture name.",
+                    "markdownDescription": "Non-empty variant texture name."
+                  },
+                  "source_texture_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Established base-color atlas UUID/ID/unique exact name to duplicate.",
+                    "markdownDescription": "Established base-color atlas UUID/ID/unique exact name to duplicate."
+                  },
+                  "group": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Explicit non-material TextureGroup UUID or unique exact name for the variant.",
+                    "markdownDescription": "Explicit non-material TextureGroup UUID or unique exact name for the variant."
+                  }
+                },
+                "required": [
+                  "type",
+                  "name",
+                  "source_texture_id",
+                  "group"
                 ],
-                "description": "PBR channel: color, normal, height, or MER.",
-                "markdownDescription": "PBR channel: color, normal, height, or MER."
-              },
-              "render_mode": {
-                "type": "string",
-                "enum": [
-                  "default",
-                  "emissive",
-                  "additive",
-                  "layered"
-                ],
-                "default": "default",
-                "description": "Texture render mode.",
-                "markdownDescription": "Texture render mode."
-              },
-              "render_sides": {
-                "type": "string",
-                "enum": [
-                  "auto",
-                  "front",
-                  "double"
-                ],
-                "default": "auto",
-                "description": "Render sides for the texture. Auto, front, or double.",
-                "markdownDescription": "Render sides for the texture. Auto, front, or double."
+                "additionalProperties": false
               }
-            },
-            "required": [
-              "name"
-            ],
-            "additionalProperties": false
+            ]
           }
         },
         "$schema": "http://json-schema.org/draft-07/schema#"
@@ -6152,6 +7523,67 @@
                 "minLength": 1,
                 "description": "Texture UUID/ID/name; omit for selected/default.",
                 "markdownDescription": "Texture UUID/ID/name; omit for selected/default."
+              },
+              "region": {
+                "type": "object",
+                "properties": {
+                  "x": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "y": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "width": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                  },
+                  "height": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                  }
+                },
+                "required": [
+                  "x",
+                  "y",
+                  "width",
+                  "height"
+                ],
+                "additionalProperties": false,
+                "description": "Bounded bitmap-pixel region [x,y,width,height].",
+                "markdownDescription": "Bounded bitmap-pixel region [x,y,width,height]."
+              },
+              "expected_revision": {
+                "type": "string",
+                "pattern": "^sha256:\\d+x\\d+:[0-9a-f]{64}$",
+                "description": "Full decoded-RGBA texture revision returned by BlockIT.",
+                "markdownDescription": "Full decoded-RGBA texture revision returned by BlockIT."
+              },
+              "render_profile": {
+                "type": "string",
+                "enum": [
+                  "opaque",
+                  "opaque_nocull",
+                  "cutout",
+                  "translucent",
+                  "color_mask",
+                  "emissive_mask",
+                  "emissive_translucent",
+                  "emissive_translucent_one_sided",
+                  "emissive_layer",
+                  "glint",
+                  "cutout_glint",
+                  "custom"
+                ],
+                "description": "Optional Vanilla render intent for interpreting alpha in this evidence region. Use minecraft_material_code instead for custom materials.",
+                "markdownDescription": "Optional Vanilla render intent for interpreting alpha in this evidence region. Use minecraft_material_code instead for custom materials."
+              },
+              "minecraft_material_code": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Optional literal Minecraft entity material code for render-aware alpha interpretation.",
+                "markdownDescription": "Optional literal Minecraft entity material code for render-aware alpha interpretation."
               }
             },
             "additionalProperties": false
@@ -6494,6 +7926,12 @@
     }
   ],
   "resources": [
+    {
+      "name": "particle-reference",
+      "title": "Bedrock Particle Reference",
+      "description": "Lazy reference for Bedrock particle component families, render materials, compact starting presets, particle Molang/math, and authoring workflow. Read only the section needed for the current particle decision.",
+      "uriTemplate": "particle_reference://{id}"
+    },
     {
       "name": "projects",
       "title": "Blockbench Projects",

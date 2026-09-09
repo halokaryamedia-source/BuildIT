@@ -1,4 +1,11 @@
 import { z } from "zod";
+import { particleToolDocs } from "../server/tools/particle";
+import { particleReferenceResourceDocs } from "../server/resources/particle";
+import { paintTextureTransactionToolDocs, wiredCreateTextureParameters } from "../server/tools/prelocal-wiring";
+import { focusedGetTextureParameters } from "../lib/textureEvidence";
+import { animationAwareCaptureModelViewsParameters, focusedInspectAnimationParameters } from "../server/tools/animation-runtime-wiring";
+import { completeAnimationTimelineParameters } from "../server/tools/animation-native-intelligence";
+import { completeAnimationControllerParameters } from "../server/tools/animation-runtime-resource-intelligence";
 import type { ToolSpec, PromptSpec, ResourceSpec } from "../lib/factories";
 
 // Tool docs imports — each file exports schemas at module level with zero Blockbench deps
@@ -30,15 +37,16 @@ export interface CategoryGroup {
 
 export const toolManifest: CategoryGroup[] = [
   { category: "Cubes", tools: cubeToolDocs },
-  { category: "Camera & Screenshots", tools: cameraToolDocs },
+  { category: "Camera & Screenshots", tools: cameraToolDocs.map((tool) => tool.name === "capture_model_views" ? { ...tool, parameters: animationAwareCaptureModelViewsParameters } : tool) },
   {
     category: "Animation",
     tools: [
-      consolidatedAnimationTimelineToolDocs,
+      { ...consolidatedAnimationTimelineToolDocs, parameters: completeAnimationTimelineParameters },
       ...animationToolDocs.filter((tool) => !["manage_keyframes", "animation_graph_editor", "animation_timeline", "batch_keyframe_operations", "animation_copy_paste"].includes(tool.name)),
       ...animationEffectToolDocs,
-      ...animationControllerToolDocs,
-      ...animationInspectionToolDocs,
+      ...animationControllerToolDocs.map((tool) => ({ ...tool, parameters: completeAnimationControllerParameters })),
+      ...particleToolDocs,
+      ...animationInspectionToolDocs.map((tool) => tool.name === "inspect_animation" ? { ...tool, parameters: focusedInspectAnimationParameters } : tool),
     ],
   },
   { category: "Elements", tools: [consolidatedInspectionToolDocs, ...elementToolDocs.filter((tool) => !["list_outline", "find_elements_by_criteria"].includes(tool.name)), ...elementInspectionToolDocs.filter((tool) => tool.name !== "inspect_element"), ...locatorToolDocs] },
@@ -46,9 +54,9 @@ export const toolManifest: CategoryGroup[] = [
   { category: "History", tools: historyToolDocs },
   { category: "Import/Export", tools: importToolDocs },
   { category: "Material Instances", tools: [consolidatedMaterialInstancesToolDocs, ...materialInstanceToolDocs.filter((tool) => !["get_face_material_instances", "set_face_material_instance", "list_material_instances", "bulk_set_material_instances", "clear_material_instances"].includes(tool.name))] },
-  { category: "Paint Tools", tools: paintToolDocs },
+  { category: "Paint Tools", tools: [...paintToolDocs, paintTextureTransactionToolDocs] },
   { category: "Project", tools: [...projectToolDocs, phaseControlToolDocs] },
-  { category: "Textures", tools: [renderProfileToolDocs, consolidatedMaterialToolDocs, ...textureToolDocs.filter((tool) => !["create_pbr_material", "configure_material", "assign_texture_channel", "save_material_config"].includes(tool.name))] },
+  { category: "Textures", tools: [renderProfileToolDocs, consolidatedMaterialToolDocs, ...textureToolDocs.map((tool) => tool.name === "create_texture" ? { ...tool, parameters: wiredCreateTextureParameters } : tool.name === "get_texture" ? { ...tool, parameters: focusedGetTextureParameters } : tool).filter((tool) => !["create_pbr_material", "configure_material", "assign_texture_channel", "save_material_config"].includes(tool.name))] },
   { category: "UI Interaction", tools: uiToolDocs },
 ];
 
@@ -67,6 +75,7 @@ export const promptDocs: PromptSpec[] = [
 
 // Resource specs defined inline or imported from resource owners that are free of Blockbench-global execution.
 export const resourceDocs: ResourceSpec[] = [
+  ...particleReferenceResourceDocs,
   {
     name: "projects",
     uriTemplate: "projects://{id}",

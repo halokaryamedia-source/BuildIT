@@ -96,7 +96,7 @@ describe("tool discovery eval", () => {
       )
     );
 
-    expect(raw.enabled_tool_count).toBe(54);
+    expect(raw.enabled_tool_count).toBe(56);
     expect(raw.expected_tool_count).toBe(39);
     expect(raw.case_count).toBe(108);
     expect(raw.missing_expected_tools).toEqual([]);
@@ -126,7 +126,7 @@ describe("tool discovery eval", () => {
     // query must resolve first on the current static proxy. This locks the
     // create_animation/create_project and inspect_animation/inspect_elements
     // collisions that motivated the Animation efficiency pass.
-    expect(routed.phase_reports.animation.surface_tool_count).toBe(18);
+    expect(routed.phase_reports.animation.surface_tool_count).toBe(20);
     expect(routed.phase_reports.animation.metrics.top_1_accuracy).toBe(1);
     expect(routed.phase_reports.animation.metrics.top_3_recall).toBe(1);
     expect(routed.phase_reports.animation.metrics.top_8_recall).toBe(1);

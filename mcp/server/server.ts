@@ -16,7 +16,6 @@ import { wireTextureAlphaRuntime } from "@/server/tools/texture-alpha-runtime";
 import { wireAnimationNativeIntelligence } from "@/server/tools/animation-native-intelligence";
 import { wireAnimationControllerNativeIntelligence } from "@/server/tools/animation-controller-native-intelligence";
 import { wireAnimationRuntimeResourceIntelligence } from "@/server/tools/animation-runtime-resource-intelligence";
-import { wireAnimationSchemaBudget } from "@/server/tools/animation-schema-budget";
 import {
   DEFAULT_MCP_REGISTRATION_PROFILE,
   type McpRegistrationProfile,
@@ -32,7 +31,6 @@ wireTextureAlphaRuntime();
 wireAnimationNativeIntelligence();
 wireAnimationControllerNativeIntelligence();
 wireAnimationRuntimeResourceIntelligence();
-wireAnimationSchemaBudget();
 
 /**
  * Phase-aware server instructions are part of the agent contract: Codex must

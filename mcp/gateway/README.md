@@ -199,9 +199,9 @@ A project-scoped client configuration may carry the same command when the reposi
 
 ```text
 Gateway client tools     4
-Runtime callable union  54
+Runtime callable union  56
 AUTHORING surface       49
-Animation surface       18
+Animation surface       20
 ```
 
 These are source-owned counts. Exact installed Runtime identity and lifecycle behavior remain verification results in `../docs/knowledge/current-validation.md`.

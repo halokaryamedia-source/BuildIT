@@ -1,6 +1,7 @@
 /// <reference types="blockbench-types" />
 
 import { z } from "zod";
+import { manageAnimationControllerParameters } from "./animation-controller";
 import {
   getAllToolDefinitions,
   invalidateToolRegistrationRuntimeCaches,
@@ -113,6 +114,8 @@ export const animationControllerNativeParameters = z
       .describe("Bounded native nested-controller/blend-curve mutations."),
   })
   .strict();
+
+export const nativeAnimationControllerParameters = z.union([manageAnimationControllerParameters, animationControllerNativeParameters]);
 
 let wired = false;
 
@@ -461,14 +464,10 @@ async function executeNative(
 export function wireAnimationControllerNativeIntelligence(): void {
   if (wired) return;
   const tool = definition();
-  const originalSchema = tool.parameterSchema;
   const originalExecute = tool.execute.bind(tool);
   const operations = tool.inputSchema.operations as z.ZodTypeAny | undefined;
 
-  tool.parameterSchema = z.union([
-    originalSchema,
-    animationControllerNativeParameters,
-  ] as [z.ZodTypeAny, z.ZodTypeAny]);
+  tool.parameterSchema = nativeAnimationControllerParameters;
   tool.inputSchema = {
     ...tool.inputSchema,
     ...(operations ? { operations: operations.optional() } : {}),

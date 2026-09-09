@@ -18,10 +18,6 @@ import { toolManifest, resourceDocs } from "@/build/docs-manifest";
 import { particleToolDocs } from "@/server/tools/particle";
 import { particleReferenceResourceDocs } from "@/server/resources/particle";
 
-const KNOWN_GENERATOR_COUPLED_TOOL_DOC_RESIDUE = new Set([
-  "paint_texture_transaction",
-]);
-
 function enabledCatalogNames(): string[] {
   return Object.keys(tools)
     .filter((name) => isCatalogToolEnabled(name))
@@ -82,21 +78,12 @@ describe("pre-local MCP surface closure", () => {
     expect(definitions.manage_render_profile).toBeDefined();
   });
 
-  test("generated ToolSpec coverage has no hidden callable orphan beyond the named local residue", () => {
+  test("every callable capability has canonical ToolSpec coverage", () => {
     const documented = documentedToolNames();
     const undocumentedEnabled = enabledCatalogNames().filter(
       (name) => !documented.has(name)
     );
-    const unexpected = undocumentedEnabled.filter(
-      (name) => !KNOWN_GENERATOR_COUPLED_TOOL_DOC_RESIDUE.has(name)
-    );
-
-    expect(unexpected).toEqual([]);
-    for (const name of KNOWN_GENERATOR_COUPLED_TOOL_DOC_RESIDUE) {
-      if (undocumentedEnabled.includes(name)) {
-        expect(getAllToolDefinitions()[name]).toBeDefined();
-      }
-    }
+    expect(undocumentedEnabled).toEqual([]);
   });
 
   test("Particle production exposure is all-or-nothing across runtime, phase, docs and resource wiring", () => {
@@ -106,7 +93,7 @@ describe("pre-local MCP surface closure", () => {
     const registeredParticleNames = particleNames.filter((name) =>
       Object.hasOwn(tools, name)
     );
-    expect([0, particleNames.length]).toContain(registeredParticleNames.length);
+    expect(registeredParticleNames).toEqual(particleNames);
 
     const documented = documentedToolNames();
     const documentedParticleNames = particleNames.filter((name) =>
@@ -121,13 +108,6 @@ describe("pre-local MCP surface closure", () => {
     const resourceRegistered = Boolean(
       particleResourceName && resources[particleResourceName]
     );
-
-    if (registeredParticleNames.length === 0) {
-      expect(documentedParticleNames).toEqual([]);
-      expect(resourceDeclared).toBe(false);
-      expect(resourceRegistered).toBe(false);
-      return;
-    }
 
     expect(documentedParticleNames).toEqual(particleNames);
     expect(resourceDeclared).toBe(true);

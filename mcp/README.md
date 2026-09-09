@@ -111,9 +111,9 @@ Generated API docs must never be hand-edited.
 
 ```text
 Gateway client surface        4 fixed tools
-Source callable union        54 tools
+Source callable union        56 tools
 AUTHORING surface            49 tools
-Animation surface            18 tools
+Animation surface            20 tools
 ```
 
 Geometry and Texturing startup focus values resolve to the same AUTHORING tool set. AUTHORING↔Animation crossing is Gateway-managed and continues the same task/chat without a normal AI-client reconnect or new chat.
@@ -212,12 +212,12 @@ These do not prove visual fidelity or accepted asset quality.
 
 ```text
 Gateway client surface                 4 tools
-retained Bedrock source catalog       54 tools
+retained Bedrock source catalog       56 tools
 initialize instructions                <= 700 characters
-catalog tools/list budget              <= 82,000 characters
-catalog input schemas                  <= 58,700 characters
+catalog tools/list budget              <= 105,000 characters
+catalog input schemas                  <= 88,000 characters
 catalog descriptions                   <= 11,500 characters
-max per-tool payload                   <= 3,200 characters
+max per-tool payload                   <= 3,200 characters; measured canonical-schema exceptions in measure-default-surface.ts
 runtime workflow prompt             < 9,000 characters
 Texturing specialist guidance       < 4,500 characters
 ```

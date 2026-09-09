@@ -11,15 +11,23 @@ Branch: **`Local` only**.
 
 Per `GITHUB_RULES.md`, device-independent composite acceptance requires Repository Verify + MCP Verify on the same exact `Local` SHA. Exact-SHA source/CI proof below is reusable only within its stated proof ceiling and does not establish `LOCAL_CODE` or `LIVE_BLOCKBENCH` claims. Documentation-only commits after the accepted SHA do not upgrade or invalidate that executable proof.
 
-### Final Pre-Local REMOTE_GITHUB hardening — ACCEPTED
+### Current LOCAL_CODE candidate
 
-The current executable/source closure is accepted at exact `Local` SHA `9be8d7e00a78ea7383d70c3988902fff62bdd360`.
+Working checkout: `D:/Work/AI Stuff/BuildIT-refresh`, based on `adcb0d64f8450810cb24ffa425a8f9713ee6564f`.
+Bun 1.3.14; SDK 1.30.0. `verify:closure` and `verify:full` PASS locally: 35 repository, 620 runtime, 153 authoring tests; generated freshness, both typechecks, loopback surface checks, and build PASS.
+Source surface: 56 callable / 49 AUTHORING / 20 Animation; four Gateway tools; 68 documented source ToolSpecs and 10 resources.
+SDK-boundary regression proves 33 valid keyframes, strict invalid-input rejection, selected-branch required/nested structure and Animation/Particle ToolSpec parity.
+Managed package and native host acceptance are pending. Source proof does not establish native trust, skill pickup, visual quality, persistence, or live update/rollback.
+
+### Prior REMOTE_GITHUB hardening — historical accepted baseline
+
+The earlier executable/source closure was accepted at exact `Local` SHA `9be8d7e00a78ea7383d70c3988902fff62bdd360`.
 
 GitHub **Repository Verify** run `34346382752` completed successfully for that SHA.
 
 GitHub **MCP Verify** run `34346382820` completed successfully for the same SHA and executed the canonical MCP gate: generated docs/prompt freshness, TypeScript + Gateway typecheck, Runtime tests, authoring tests, source/phase surface measurements, build/provenance generation, and verified bundle upload.
 
-Current source surface remains:
+That remote baseline had:
 
 ```text
 Gateway client surface   4 fixed tools

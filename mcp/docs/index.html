@@ -18,22 +18,22 @@
 
       <div class="nav-group">
         <p class="nav-heading">Overview</p>
-        <a href="#tools" class="nav-link">Tools <span class="count">(65)</span></a>
+        <a href="#tools" class="nav-link">Tools <span class="count">(68)</span></a>
         <a href="#prompts" class="nav-link">Prompts <span class="count">(1)</span></a>
-        <a href="#resources" class="nav-link">Resources <span class="count">(9)</span></a>
+        <a href="#resources" class="nav-link">Resources <span class="count">(10)</span></a>
       </div>
 
       <div class="nav-group">
         <p class="nav-heading">Categories</p>
         <a href="#cat-cubes" class="nav-link">Cubes <span class="count">(1)</span></a>
         <a href="#cat-camera-screenshots" class="nav-link">Camera &amp; Screenshots <span class="count">(4)</span></a>
-        <a href="#cat-animation" class="nav-link">Animation <span class="count">(6)</span></a>
+        <a href="#cat-animation" class="nav-link">Animation <span class="count">(8)</span></a>
         <a href="#cat-elements" class="nav-link">Elements <span class="count">(14)</span></a>
         <a href="#cat-export" class="nav-link">Export <span class="count">(2)</span></a>
         <a href="#cat-history" class="nav-link">History <span class="count">(4)</span></a>
         <a href="#cat-import-export" class="nav-link">Import/Export <span class="count">(1)</span></a>
         <a href="#cat-material-instances" class="nav-link">Material Instances <span class="count">(1)</span></a>
-        <a href="#cat-paint-tools" class="nav-link">Paint Tools <span class="count">(12)</span></a>
+        <a href="#cat-paint-tools" class="nav-link">Paint Tools <span class="count">(13)</span></a>
         <a href="#cat-project" class="nav-link">Project <span class="count">(5)</span></a>
         <a href="#cat-textures" class="nav-link">Textures <span class="count">(11)</span></a>
         <a href="#cat-ui-interaction" class="nav-link">UI Interaction <span class="count">(4)</span></a>
@@ -45,9 +45,9 @@
         <h1>BlockIT — Bedrock Entity MCP</h1>
         <p class="subtitle">API Reference — v0.1.0</p>
         <nav class="stats">
-          <a href="#tools"><strong>65</strong> tools (29 stable, 36 experimental)</a>
+          <a href="#tools"><strong>68</strong> tools (30 stable, 38 experimental)</a>
           <a href="#prompts"><strong>1</strong> prompts</a>
-          <a href="#resources"><strong>9</strong> resources</a>
+          <a href="#resources"><strong>10</strong> resources</a>
         </nav>
       </header>
 
@@ -205,6 +205,11 @@ bun run docs:check
       <td class="col-type">object | object</td>
       <td><span class="param-optional">optional</span></td>
       <td class="col-desc"> <span class="param-meta">(default: <code>{&quot;mode&quot;:&quot;model&quot;}</code>)</span></td>
+    </tr><tr>
+      <td class="col-name">animation_preview</td>
+      <td class="col-type">object</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Optional bounded authored-Animation pose sampling. Capture cost is views × times and must not exceed 8 images.</td>
     </tr></tbody>
     </table>
       </div>
@@ -359,6 +364,20 @@ bun run docs:check
       <p class="card-title">Manage Animation Controller</p>
       <p class="card-desc">Creates or updates one Bedrock AnimationController in one Undo unit. Supports states, transitions, animation links, effects, scripts, and blend settings.</p>
       <div class="overflow-x">
+        <p class="empty-params">No parameters</p>
+      </div>
+    </div>
+<div id="tool-inspect_particle" class="card tool-card">
+      <div class="card-header">
+        <h3 class="card-name">inspect_particle</h3>
+        <div class="card-badges">
+          <span class="badge badge-experimental">experimental</span>
+          <span class="badge badge-readonly">read-only</span><span class="badge badge-openworld">open-world</span>
+        </div>
+      </div>
+      <p class="card-title">Inspect Bedrock Particle</p>
+      <p class="card-desc">Inspects a Bedrock .particle.json document from an absolute path or inline content. Defaults to compact summary diagnostics; component and full modes are explicit to keep context usage bounded.</p>
+      <div class="overflow-x">
         <table class="param-table">
       <thead>
         <tr>
@@ -369,20 +388,74 @@ bun run docs:check
         </tr>
       </thead>
       <tbody><tr>
-      <td class="col-name">controller_id</td>
-      <td class="col-type">string</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Existing controller UUID or unique name. <span class="param-meta">[minLength: 1]</span></td>
+      <td class="col-name">source</td>
+      <td class="col-type">object</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc"></td>
     </tr><tr>
-      <td class="col-name">create_name</td>
-      <td class="col-type">string</td>
+      <td class="col-name">mode</td>
+      <td class="col-type">&quot;summary&quot; | &quot;components&quot; | &quot;full&quot;</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">New controller name. <span class="param-meta">[minLength: 1]</span></td>
+      <td class="col-desc"> <span class="param-meta">(default: <code>&quot;summary&quot;</code>)</span></td>
+    </tr><tr>
+      <td class="col-name">max_content_length</td>
+      <td class="col-type">integer</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc"> <span class="param-meta">(default: <code>100000</code>) [min: 0, max: 2000000]</span></td>
+    </tr></tbody>
+    </table>
+      </div>
+    </div>
+<div id="tool-manage_particle" class="card tool-card">
+      <div class="card-header">
+        <h3 class="card-name">manage_particle</h3>
+        <div class="card-badges">
+          <span class="badge badge-experimental">experimental</span>
+          <span class="badge badge-destructive">destructive</span><span class="badge badge-openworld">open-world</span>
+        </div>
+      </div>
+      <p class="card-title">Manage Bedrock Particle</p>
+      <p class="card-desc">Creates or losslessly patches a Bedrock .particle.json document, preserves unknown JSON fields, validates final particle semantics, optionally performs a verified transactional file write, and can load the particle into Blockbench's native preview. Animation/controller timing and downstream runtime binding remain owned by existing animation/controller tools.</p>
+      <div class="overflow-x">
+        <table class="param-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Required</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody><tr>
+      <td class="col-name">source</td>
+      <td class="col-type">object</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc"></td>
+    </tr><tr>
+      <td class="col-name">create</td>
+      <td class="col-type">object</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc"></td>
     </tr><tr>
       <td class="col-name">operations</td>
-      <td class="col-type">object[]</td>
-      <td><span class="param-required">required</span></td>
-      <td class="col-desc">Ordered controller/state mutations (1-32). <span class="param-meta">[minItems: 1, maxItems: 32]</span></td>
+      <td class="col-type">object | object | object | object | object | object | object | object | object[]</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Ordered targeted particle mutations. Use patch for deep edits without replacing unknown sibling fields. <span class="param-meta">(default: <code>[]</code>) [maxItems: 64]</span></td>
+    </tr><tr>
+      <td class="col-name">output</td>
+      <td class="col-type">object</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc"></td>
+    </tr><tr>
+      <td class="col-name">preview</td>
+      <td class="col-type">boolean</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Load the resulting document through Blockbench Animator.loadParticleEmitter using an existing source path or verified output path. <span class="param-meta">(default: <code>false</code>)</span></td>
+    </tr><tr>
+      <td class="col-name">max_content_length</td>
+      <td class="col-type">integer</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc"> <span class="param-meta">[min: 0, max: 2000000]</span></td>
     </tr></tbody>
     </table>
       </div>
@@ -427,6 +500,21 @@ bun run docs:check
       <td class="col-type">boolean</td>
       <td><span class="param-optional">optional</span></td>
       <td class="col-desc">Include full particle/sound/timeline effect keyframes; keep false for summary. <span class="param-meta">(default: <code>false</code>)</span></td>
+    </tr><tr>
+      <td class="col-name">channel</td>
+      <td class="col-type">&quot;rotation&quot; | &quot;position&quot; | &quot;scale&quot;</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Optional transform channel filter for focused bone inspection. Requires bone.</td>
+    </tr><tr>
+      <td class="col-name">time_range</td>
+      <td class="col-type">object</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Optional inclusive keyframe time range for focused bone inspection. Requires bone.</td>
+    </tr><tr>
+      <td class="col-name">diagnostics</td>
+      <td class="col-type">boolean</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Include compact authored-Animation technical diagnostics. No visual quality score is produced. <span class="param-meta">(default: <code>false</code>)</span></td>
     </tr></tbody>
     </table>
       </div>
@@ -1735,6 +1823,45 @@ bun run docs:check
     </table>
       </div>
     </div>
+<div id="tool-paint_texture_transaction" class="card tool-card">
+      <div class="card-header">
+        <h3 class="card-name">paint_texture_transaction</h3>
+        <div class="card-badges">
+          <span class="badge badge-stable">stable</span>
+          <span class="badge badge-destructive">destructive</span>
+        </div>
+      </div>
+      <p class="card-title">Paint Texture Transaction</p>
+      <p class="card-desc">Applies one bounded exact-pixel transaction to a non-layered texture with optimistic revision protection and one native Undo unit.</p>
+      <div class="overflow-x">
+        <table class="param-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Required</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody><tr>
+      <td class="col-name">texture_id</td>
+      <td class="col-type">string</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Texture UUID/ID/name; omit for selected/default. <span class="param-meta">[minLength: 1]</span></td>
+    </tr><tr>
+      <td class="col-name">expected_revision</td>
+      <td class="col-type">string</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc">Full decoded-RGBA texture revision returned by BlockIT.</td>
+    </tr><tr>
+      <td class="col-name">operations</td>
+      <td class="col-type">object | object | object[]</td>
+      <td><span class="param-required">required</span></td>
+      <td class="col-desc"> <span class="param-meta">[minItems: 1, maxItems: 64]</span></td>
+    </tr></tbody>
+    </table>
+      </div>
+    </div>
         </section>
 <section id="cat-project" class="category-section">
           <h3 class="category-title">Project</h3>
@@ -1955,102 +2082,7 @@ bun run docs:check
       <p class="card-title">Create Texture</p>
       <p class="card-desc">Creates a texture and returns compact metadata. Use get_texture only when image data is needed.</p>
       <div class="overflow-x">
-        <table class="param-table">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Required</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody><tr>
-      <td class="col-name">name</td>
-      <td class="col-type">string</td>
-      <td><span class="param-required">required</span></td>
-      <td class="col-desc">Non-empty texture name. <span class="param-meta">[minLength: 1]</span></td>
-    </tr><tr>
-      <td class="col-name">texture_id</td>
-      <td class="col-type">string</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Template rebuild only: UUID of the existing single base atlas to repack in place, preserving its identity and mapped pixels. <span class="param-meta">[minLength: 1]</span></td>
-    </tr><tr>
-      <td class="col-name">type</td>
-      <td class="col-type">&quot;blank&quot; | &quot;template&quot;</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Texture creation mode. Template builds UV layout from model geometry before any pixel painting. <span class="param-meta">(default: <code>&quot;blank&quot;</code>)</span></td>
-    </tr><tr>
-      <td class="col-name">width</td>
-      <td class="col-type">integer</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc"> <span class="param-meta">(default: <code>16</code>) [min: 16, max: 4096]</span></td>
-    </tr><tr>
-      <td class="col-name">height</td>
-      <td class="col-type">integer</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc"> <span class="param-meta">(default: <code>16</code>) [min: 16, max: 4096]</span></td>
-    </tr><tr>
-      <td class="col-name">pixel_density</td>
-      <td class="col-type">&quot;16&quot; | &quot;32&quot; | &quot;64&quot; | &quot;128&quot; | &quot;256&quot; | &quot;512&quot;</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Template density in pixels per 16 model units. At 16x, one model unit maps to one texture pixel. <span class="param-meta">(default: <code>16</code>)</span></td>
-    </tr><tr>
-      <td class="col-name">rearrange_uv</td>
-      <td class="col-type">boolean</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Generate and assign a fresh UV arrangement for template mode. <span class="param-meta">(default: <code>true</code>)</span></td>
-    </tr><tr>
-      <td class="col-name">power_of_two</td>
-      <td class="col-type">boolean</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Round the generated template atlas to a power-of-two square. <span class="param-meta">(default: <code>true</code>)</span></td>
-    </tr><tr>
-      <td class="col-name">keep_multi_texture_occupancy</td>
-      <td class="col-type">boolean</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Reuse identical existing UV occupancy when generating a template. <span class="param-meta">(default: <code>true</code>)</span></td>
-    </tr><tr>
-      <td class="col-name">padding</td>
-      <td class="col-type">boolean</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Reserve a one-pixel padding border around template islands. <span class="param-meta">(default: <code>false</code>)</span></td>
-    </tr><tr>
-      <td class="col-name">data</td>
-      <td class="col-type">string</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Image data URL or deterministic absolute image file path.</td>
-    </tr><tr>
-      <td class="col-name">group</td>
-      <td class="col-type">string</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Optional TextureGroup UUID or unique exact name. <span class="param-meta">[minLength: 1]</span></td>
-    </tr><tr>
-      <td class="col-name">fill_color</td>
-      <td class="col-type">number[] | string | string</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">RGBA color to fill the texture, as tuple or HEX string.</td>
-    </tr><tr>
-      <td class="col-name">layer_name</td>
-      <td class="col-type">string</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Non-empty texture layer name. Required if fill_color is set. <span class="param-meta">[minLength: 1]</span></td>
-    </tr><tr>
-      <td class="col-name">pbr_channel</td>
-      <td class="col-type">&quot;color&quot; | &quot;normal&quot; | &quot;height&quot; | &quot;mer&quot;</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">PBR channel: color, normal, height, or MER.</td>
-    </tr><tr>
-      <td class="col-name">render_mode</td>
-      <td class="col-type">&quot;default&quot; | &quot;emissive&quot; | &quot;additive&quot; | &quot;layered&quot;</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Texture render mode. <span class="param-meta">(default: <code>&quot;default&quot;</code>)</span></td>
-    </tr><tr>
-      <td class="col-name">render_sides</td>
-      <td class="col-type">&quot;auto&quot; | &quot;front&quot; | &quot;double&quot;</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Render sides for the texture. Auto, front, or double. <span class="param-meta">(default: <code>&quot;auto&quot;</code>)</span></td>
-    </tr></tbody>
-    </table>
+        <p class="empty-params">No parameters</p>
       </div>
     </div>
 <div id="tool-apply_texture" class="card tool-card">
@@ -2170,6 +2202,26 @@ bun run docs:check
       <td class="col-type">string</td>
       <td><span class="param-optional">optional</span></td>
       <td class="col-desc">Texture UUID/ID/name; omit for selected/default. <span class="param-meta">[minLength: 1]</span></td>
+    </tr><tr>
+      <td class="col-name">region</td>
+      <td class="col-type">object</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Bounded bitmap-pixel region [x,y,width,height].</td>
+    </tr><tr>
+      <td class="col-name">expected_revision</td>
+      <td class="col-type">string</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Full decoded-RGBA texture revision returned by BlockIT.</td>
+    </tr><tr>
+      <td class="col-name">render_profile</td>
+      <td class="col-type">&quot;opaque&quot; | &quot;opaque_nocull&quot; | &quot;cutout&quot; | &quot;translucent&quot; | &quot;color_mask&quot; | &quot;emissive_mask&quot; | &quot;emissive_translucent&quot; | &quot;emissive_translucent_one_sided&quot; | &quot;emissive_layer&quot; | &quot;glint&quot; | &quot;cutout_glint&quot; | &quot;custom&quot;</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Optional Vanilla render intent for interpreting alpha in this evidence region. Use minecraft_material_code instead for custom materials.</td>
+    </tr><tr>
+      <td class="col-name">minecraft_material_code</td>
+      <td class="col-type">string</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Optional literal Minecraft entity material code for render-aware alpha interpretation. <span class="param-meta">[minLength: 1]</span></td>
     </tr></tbody>
     </table>
       </div>
@@ -2434,6 +2486,14 @@ bun run docs:check
         <h2 class="section-title">Resources</h2>
         <div class="card">
       <div class="card-header">
+        <h3 class="card-name">particle-reference</h3>
+      </div>
+      <p class="card-title">Bedrock Particle Reference</p>
+      <p class="uri-template">particle_reference://{id}</p>
+      <p class="card-desc">Lazy reference for Bedrock particle component families, render materials, compact starting presets, particle Molang/math, and authoring workflow. Read only the section needed for the current particle decision.</p>
+    </div>
+<div class="card">
+      <div class="card-header">
         <h3 class="card-name">projects</h3>
       </div>
       <p class="card-title">Blockbench Projects</p>
@@ -2507,7 +2567,7 @@ bun run docs:check
       </section>
 
       <footer class="page-footer">
-        Generated 2026-09-09T05:12:26.812Z from Zod schemas
+        Generated 2026-09-09T15:40:10.893Z from Zod schemas
       </footer>
     </main>
   </div>

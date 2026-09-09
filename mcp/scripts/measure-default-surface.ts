@@ -26,15 +26,17 @@ const PROTOCOL_VERSION = "2025-06-18";
 // boundary plus one on-demand texture-authoring knowledge Resource. Existing
 // aggregate tool ceilings remain unchanged; only the measured catalog counts
 // and Resource metadata ceilings move by that justified capability delta.
+// 2026-09-09: canonical union/nested schemas + two Particle capabilities.
+// Loopback measurement: 101429 response / 85402 schema / 10814 largest tool chars.
 const SURFACE_BUDGET = {
-  tool_count: 54,
+  tool_count: 56,
   initialize_instructions_chars: 700,
-  tools_list_response_chars: 82_000,
-  input_schema_chars: 58_700,
+  tools_list_response_chars: 105_000,
+  input_schema_chars: 88_000,
   description_chars: 11_500,
   max_tool_payload_chars: 3_200,
   prompt_spec_count: 1,
-  resource_spec_count: 9,
+  resource_spec_count: 10,
   canonical_prompt_source_chars: 10_000,
   phase_prompt_body_chars: {
     geometry: 8_500,
@@ -44,7 +46,7 @@ const SURFACE_BUDGET = {
   prompt_catalog_chars: 380,
   resource_catalog_chars: 3_000,
   prompt_description_chars: 220,
-  resource_description_chars: 1_700,
+  resource_description_chars: 1_850,
 } as const;
 
 type ListedTool = {
@@ -122,14 +124,20 @@ function summarizeBranchSchema(
     throw new Error(`Expected ${toolName} on the default MCP surface.`);
   }
 
-  const schema = (tool.inputSchema ?? {}) as {
+  type ObjectSchema = {
     required?: string[];
     properties?: Record<string, { description?: string }>;
+    anyOf?: ObjectSchema[];
   };
-  const properties = schema.properties ?? {};
+  const schema = (tool.inputSchema ?? {}) as ObjectSchema;
+  const branches = schema.anyOf ?? [schema];
+  const properties = Object.assign({}, ...branches.map((branch) => branch.properties ?? {}));
+  const required = (branches[0]?.required ?? []).filter((field) =>
+    branches.every((branch) => branch.required?.includes(field))
+  );
 
   return {
-    required: [...(schema.required ?? [])].sort(),
+    required: [...required].sort(),
     properties: Object.keys(properties).sort(),
     name_description: properties.name?.description ?? null,
     id_description: properties.id?.description ?? null,
@@ -247,10 +255,14 @@ function assertWithinSurfaceBudget(
     );
   }
   for (const row of rows) {
-    // 2026-09-06: restored source-derived discovery measured 7697/3581 chars.
-    // Keep the original cap for every other tool and all aggregate ceilings.
-    const limit = row.name === "manage_animation_timeline" ? 8_000
-      : row.name === "manage_material" ? 3_700 : SURFACE_BUDGET.max_tool_payload_chars;
+    // Measured canonical-schema growth; unrelated tools retain the original cap.
+    const expandedSchemaLimits: Record<string, number> = {
+      manage_animation_timeline: 11_000, manage_animation_controller: 10_000,
+      manage_cubes: 7_700, manage_render_profile: 5_200, manage_particle: 4_400,
+      manage_material: 3_800, create_animation: 3_450, create_texture: 3_450,
+      manage_material_instances: 3_400,
+    };
+    const limit = expandedSchemaLimits[row.name] ?? SURFACE_BUDGET.max_tool_payload_chars;
     if (row.payload_chars > limit) failures.push(`${row.name} payload=${row.payload_chars} exceeds ${limit}`);
   }
 

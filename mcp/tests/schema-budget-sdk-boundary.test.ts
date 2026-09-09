@@ -6,6 +6,9 @@ import { projectCapabilityInputSchema } from "@/gateway/schemaProjection";
 const sdkBoundaryProbe = String.raw`
 import assert from "node:assert/strict";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
+import { projectCapabilityInputSchema } from "./gateway/schemaProjection.ts";
+import { toolManifest } from "./build/docs-manifest.ts";
+import { zodToJsonSchema } from "zod-to-json-schema";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import { createServer } from "./server/server.ts";
 import {
@@ -29,12 +32,33 @@ for (const definition of [timeline, controller]) {
 }
 invalidateToolRegistrationRuntimeCaches();
 const server = createServer("animation");
-registerToolsOnServer(server, ["manage_animation_timeline", "manage_animation_controller"]);
+registerToolsOnServer(server, ["manage_animation_timeline", "manage_animation_controller", "inspect_elements", "inspect_particle", "manage_particle"]);
 const client = new Client({ name: "schema-budget-boundary", version: "1.0.0" });
 const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
 try {
   await server.connect(serverTransport);
   await client.connect(clientTransport);
+  const listed = (await client.listTools()).tools;
+  const schemaFor = (name) => listed.find((tool) => tool.name === name).inputSchema;
+  const project = (name, field, value) => projectCapabilityInputSchema(name, schemaFor(name), { field, value }).inputSchema;
+  const detail = project("inspect_elements", "mode", "detail");
+  assert.ok(detail.required.includes("id"));
+  assert.ok(detail.required.includes("mode"));
+  assert.equal(detail.properties.id.type, "string");
+  const keyframeBranch = project("manage_animation_timeline", "operation", "keyframes");
+  assert.ok(keyframeBranch.properties.keyframes.items.properties.time);
+  assert.ok(keyframeBranch.properties.keyframes.items.properties.values);
+  const batch = project("manage_animation_timeline", "operation", "batch");
+  assert.ok(batch.required.includes("batch_operation"));
+  assert.ok(batch.properties.batch_operation.enum.includes("offset"));
+  const resource = project("manage_animation_controller", "resource_kind", "client_entity");
+  assert.ok(resource.required.includes("resource_source"));
+  assert.ok(resource.required.includes("resource_operations"));
+  assert.ok(resource.properties.resource_operations.items.anyOf.length > 1);
+  for (const name of ["manage_animation_timeline", "manage_animation_controller", "inspect_elements", "inspect_particle", "manage_particle"]) {
+    const spec = toolManifest.flatMap((group) => group.tools).find((tool) => tool.name === name);
+    assert.deepEqual(schemaFor(name), { ...zodToJsonSchema(spec.parameters, { $refStrategy: "none" }), type: "object" });
+  }
   const keyframes = Array.from({ length: 33 }, (_, i) => ({ time: i / 20, values: [i, 0, 0] }));
   const request = {
     operation: "keyframes", animation_id: "animation.audit", action: "create",
@@ -94,7 +118,7 @@ describe("schema budget is not an authoring limit", () => {
   test("documented handoff readiness matches the canonical tool schema", async () => {
     const { phaseControlToolDocs } = await import("@/server/tools");
     const skill = await Bun.file("../.agents/skills/blockit-bedrock-texturing/SKILL.md").text();
-    const example = skill.match(/```json\n([\s\S]*?)\n```/);
+    const example = skill.match(/```json\r?\n([\s\S]*?)\r?\n```/);
     expect(example).not.toBeNull();
     const readiness = JSON.parse(example![1]!);
     const handoff = {

@@ -33,7 +33,7 @@ describe("advertised surface and fail-closed integrity guards", () => {
         !name.includes("fixture") &&
         !extendedToolNames.has(name)
     );
-    expect(enabledDefinitions.length).toBe(54);
+    expect(enabledDefinitions.length).toBe(56);
     expect(enabledDefinitions.some(([name]) => name === "manage_render_profile")).toBe(true);
 
     for (const [, toolDef] of enabledDefinitions) {

@@ -14,6 +14,8 @@ Animation owns motion, not structural rig mutation. Blocker → `HANDOFF_REQUIRE
 ## Artist-Facing Controller Boundary
 Animation Controller is artist-facing composition/preview for transition/blend continuity and effects; BP/gameplay integration is out. `resource_operations` is **not a normal asset-authoring route**.
 
+Particle is asset-only. `particle-reference`: Direct Runtime/Inspector only; no client-entity wiring.
+
 ## Direct Routing
 
 ```text
@@ -22,6 +24,7 @@ unknown animation/controller          → inspect_animation
 all timeline/keyframe work            → manage_animation_timeline (operation: keyframes|graph|timeline|batch|copy_paste)
 clip/native property cohort           → manage_animation_timeline (operation: properties)
 existing animation effects            → manage_animation_effects
+particle inspect/create/patch/save/preview → inspect_particle / manage_particle
 controller state/composition/effects  → manage_animation_controller
 nested controller/blend curve         → same tool (native_operations)
 pose/time visual evidence             → capture_model_views(animation_preview)

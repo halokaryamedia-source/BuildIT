@@ -13,14 +13,14 @@ import {
 const HOST = "127.0.0.1";
 const ENDPOINT = "/bb-mcp";
 const PROTOCOL_VERSION = "2025-06-18";
-const CATALOG_TOOL_COUNT = 54;
+const CATALOG_TOOL_COUNT = 56;
 
 const EXPECTED_PHASE_TOOL_COUNTS: Record<McpAuthoringPhase, number> = {
   geometry: 49,
   texturing: 49,
   // Animation intentionally excludes create_project; project lifecycle belongs
   // to AUTHORING before the approved handoff into the Animation surface.
-  animation: 18,
+  animation: 20,
 };
 
 type ListedTool = {

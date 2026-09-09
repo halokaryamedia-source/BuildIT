@@ -31,7 +31,7 @@ describe("P1.4 stateless Streamable HTTP ownership", () => {
     expect(source).toContain("RuntimeRequestAbandonedError");
     expect(source).toContain("socket.destroyed || !socket.writable");
     expect(source).toContain("Close each MCP response so a client-side keep-alive socket cannot");
-    expect(source).toContain("response.body,\n              'close'");
+    expect(source).toMatch(/response\.body,\s*'close'/);
   });
 
   test("request-owned reconstruction reuses registration caches until a surface mutation", async () => {

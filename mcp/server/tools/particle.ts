@@ -603,8 +603,7 @@ export function registerParticleTools(): void {
         };
       },
     },
-    particleToolDocs[0].status,
-    false
+    particleToolDocs[0].status
   );
 
   createTool(
