@@ -1,37 +1,46 @@
 # Next Action
 
-Updated: 2026-09-07 — REMOTE_GITHUB design closure locked.
-Branch: **`Local` only**. Proof → `current-validation.md`; history → `Experimental/authoring-usage-audit-2026-09-07.md`.
+Updated: 2026-09-09
+Branch: **`Local` only**. Proof → `current-validation.md`; source ownership → `implementation-map.md`.
 
-## Status
+## Current State
 
-- Generic quality-first Skills/Finalization: **REMOTE_GITHUB COMPLETE**.
-- Public-contract helpers: **SOURCE_READY / PREWIRED**:
-  - revision/crop → `mcp/lib/textureEvidence.ts`;
-  - compact PNG metadata → `mcp/lib/textureEvidenceDelivery.ts`;
-  - atomic paint → `mcp/lib/paintTransaction.ts` + `paintTransactionPolicy.ts`;
-  - variant → `mcp/lib/textureVariantPlan.ts`;
-  - project identifier → `mcp/lib/bedrockProjectIdentity.ts`;
-  - export → `mcp/lib/bedrockExportIntegrity.ts` + `bedrockExportWritePolicy.ts`.
-- Historical assets are evidence, not repair targets.
-- **AUTHORING TAXONOMY** remains user-selected `DIRECT | 3D_ASSISTED`.
-- LIVE_BLOCKBENCH/native visual behavior and Astra allowance reduction: **UNVERIFIED**.
+- Gateway remains **4 fixed tools**; known authoring capabilities are direct-invoke first.
+- Current source surface is **54 callable / 49 AUTHORING / 18 Animation**. Repository docs now derive their expected counts from `mcp/scripts/measure-phase-surfaces.ts` instead of maintaining a second numeric authority.
+- Gateway fallback discovery now prioritizes current hot paths such as exact-pixel transactions, render/alpha profiles, native Animation properties/Molang, controller blend composition, and Animation effects. Exact-SHA MCP Verify passed for commit `5acb0c3b57a807677ff37dc8655ff15a8a694d13`.
+- Current developer-facing surface synchronization passed Repository Verify on `d222835aa54e89322de8be58908bbb6adf1e626a`.
+- Animation native properties, Molang diagnostics, motion intelligence, nested controllers and blend-transition curves are already wired through existing canonical capabilities; do not add parallel tools.
 
-## Locked local wiring
+## Only Remaining MCP Wiring Residue
 
-Do not redesign these contracts.
+### Particle production exposure — `LOCAL_CODE`
 
-1. `get_texture`: full-composite revision, optional bounded region, encode only requested crop as PNG `content.image`; structured result stays metadata-only (no raw RGBA).
-2. `paint_texture_transaction`: one domain-specific exact-pixel capability; non-layered base editable bitmap only. Layered texture → fail closed/use native Painter. One complete preflight = one native Undo unit.
-3. Variant stays a `create_texture` branch: clone explicit base UUID, preserve dimensions/UV/base role, explicit non-material target group; selection is not authority.
-4. `create_project`: explicit `model_identifier` wins; otherwise `geometry.<project_slug>`; assign native `Project.model_identifier` immediately, never repair compiled JSON as authority.
-5. `manage_cubes`: remove vague manual advertised shape and derive discovery from canonical detailed ToolSpec.
-6. `export_model`: direct Bedrock write v1 only `CREATE_NEW | REPLACE_SINGLE`; multi-geometry = `NATIVE_MERGE_REQUIRED` fail-closed, no custom JSON splice.
+Particle implementation is already source-ready (`inspect_particle`, `manage_particle`, schema/semantics, transactional writes, client-entity binding, native preview, reference resource, tests and live harness), but it is not yet part of the normal production Runtime surface.
 
-## Local order
+Complete it as one generator-coupled delivery:
 
-Runtime wiring → `bun run docs:build` → `bun run docs:check` → `bun run verify:mcp` → SDK upgrade/`bun.lock` regenerate with pinned Bun → `bun run verify:full` → exact build/deploy → live disposable harnesses. Do not mix SDK migration into initial wiring diagnosis.
+```text
+register Particle family/tools
+→ expose both tools on Animation surface
+→ enable inspect_particle
+→ register particle-reference resource
+→ add Tool/Resource docs manifest ownership
+→ update Animation/router routing only after capability is actually exposed
+→ bun run docs:build
+→ bun run docs:check
+→ bun run verify:full
+```
+
+Do not add a Particle specialist or a fifth Gateway tool. Particle stays a conditional Animation/effects lane. Prefer one `manage_particle` call for create/patch/save/bind/preview; use `inspect_particle` only when inspection can change the next decision.
+
+### SDK security closure — separate `LOCAL_CODE` task
+
+Current lockfile still resolves `@modelcontextprotocol/sdk` 1.25.3. Upgrade/regenerate `bun.lock` with the pinned Bun toolchain and run the owning full verifier **after** Particle wiring; do not mix dependency migration into Particle diagnosis.
+
+## Later Live Proof
+
+After exact build/deploy, run only the already-prepared relevant live harnesses. Live Blockbench/native/visual behavior and actual Astra/Codex usage reduction remain unverified until they are measured; source/static footprint alone is not Authoring Efficiency proof.
 
 ## STOP
 
-Local should be limited to canonical generation, native wiring impossible remotely, dependency lockfile work, and live proof. No object-specific repair queue or another design phase.
+No new routing framework, profile, Gateway tool, object-specific repair queue, or capability redesign is justified before the two residues above are closed.
