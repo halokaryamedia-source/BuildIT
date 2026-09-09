@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { textureIdOptionalSchema } from "@/lib/zodObjects";
+import { ENTITY_RENDER_PROFILE_NAMES } from "@/lib/textureRenderProfile";
 import {
   computeTextureRevision,
   requireTextureRevisionDimensions,
@@ -31,15 +32,47 @@ export const textureEvidenceOptionsSchema = z
 /**
  * Public focused-evidence contract used by the runtime get_texture adapter.
  * It supports bounded PNG evidence plus optional optimistic revision checking
- * without placing raw RGBA in structuredContent.
+ * without placing raw RGBA in structuredContent. Render semantics are opt-in:
+ * normal texture reads do not perform a second alpha-analysis scan.
  */
 export const focusedGetTextureParameters = z
   .object({
     texture: textureIdOptionalSchema,
     region: textureEvidenceRegionSchema.optional(),
     expected_revision: textureRevisionSchema.optional(),
+    render_profile: z
+      .enum(ENTITY_RENDER_PROFILE_NAMES)
+      .optional()
+      .describe(
+        "Optional Vanilla render intent for interpreting alpha in this evidence region. Use minecraft_material_code instead for custom materials."
+      ),
+    minecraft_material_code: z
+      .string()
+      .min(1)
+      .optional()
+      .describe(
+        "Optional literal Minecraft entity material code for render-aware alpha interpretation."
+      ),
   })
-  .strict();
+  .strict()
+  .superRefine((value, ctx) => {
+    if (value.render_profile && value.minecraft_material_code) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["minecraft_material_code"],
+        message:
+          "Pass render_profile or minecraft_material_code for evidence interpretation, not both.",
+      });
+    }
+    if (value.render_profile === "custom") {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["render_profile"],
+        message:
+          "Custom render evidence requires the literal minecraft_material_code so semantics remain explicitly unverified.",
+      });
+    }
+  });
 
 export type TextureEvidenceRegion = z.infer<typeof textureEvidenceRegionSchema>;
 export type TextureEvidenceOptions = z.infer<typeof textureEvidenceOptionsSchema>;
