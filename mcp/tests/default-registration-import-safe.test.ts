@@ -25,12 +25,13 @@ describe("default MCP registration is runtime-lazy", () => {
       0
     );
 
-    expect(catalog.length).toBe(77);
-    expect(descriptionCharacters).toBeLessThan(11_500);
+    expect(catalog.length).toBe(78);
+    expect(descriptionCharacters).toBeLessThan(11_800);
     expect(catalog.some((tool) => tool.name === "manage_cubes")).toBe(true);
     expect(catalog.some((tool) => tool.name === "paint_with_brush")).toBe(true);
     expect(catalog.some((tool) => tool.name === "paint_texture_transaction")).toBe(true);
     expect(catalog.some((tool) => tool.name === "activate_texture")).toBe(true);
+    expect(catalog.some((tool) => tool.name === "manage_render_profile")).toBe(true);
     expect(catalog.some((tool) => tool.name === "manage_animation_controller")).toBe(true);
     expect(catalog.some((tool) => tool.name === "manage_geometry_reference")).toBe(true);
     expect(catalog.some((tool) => tool.name === "materialize_3d_assisted_scaffold")).toBe(true);
