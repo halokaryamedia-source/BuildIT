@@ -429,7 +429,7 @@ Start with the requested target plus only direct dependencies/evidence needed to
 
 ```text
 repository continuation    → docs/knowledge/next-action.md
-active asset continuity    → workspace/active/<project>/README.md
+active asset continuity    → workspace/active/<asset>/README.md
 asset workspace rules      → workspace/README.md
 stable facts               → CONTEXT.md
 current proof state        → docs/knowledge/current-validation.md
