@@ -56,6 +56,30 @@ describe("bounded authoring quality intelligence", () => {
     expect(result.duplicate_bone_names.examples[0].count).toBe(2);
   });
 
+  test("an intentional plane-like Cube is clean when it has no other hygiene issue", () => {
+    const result = analyzeGeometryHygiene(
+      [
+        {
+          uuid: "carrier",
+          name: "cutout_carrier",
+          from: [0, 0, 0],
+          to: [0, 8, 8],
+          origin: [0, 4, 4],
+          rotation: [0, 0, 0],
+        },
+      ],
+      []
+    );
+
+    expect(result.state).toBe("clean");
+    expect(result.plane_like_cubes.count).toBe(1);
+    expect(result.plane_like_cubes.examples[0]).toMatchObject({
+      cube_uuid: "carrier",
+      zero_axis: "x",
+    });
+    expect(result.degenerate_cubes.count).toBe(0);
+  });
+
   test("plane-like Cubes stay valid while line/point or reversed spans remain degenerate", () => {
     const result = analyzeGeometryHygiene(
       [
