@@ -21,6 +21,7 @@ describe("pre-local plugin runtime cleanup", () => {
   test("plugin uses unique install identity and does not report ready before TCP bind", async () => {
     const index = await source("index.ts");
     const tools = await source("server/tools.ts");
+    const net = await source("server/net.ts");
 
     const candidateCreated = index.indexOf("const candidate = createNetServer(nativeNet");
     const candidateOwned = index.indexOf("httpServer = candidate;", candidateCreated);
@@ -43,7 +44,10 @@ describe("pre-local plugin runtime cleanup", () => {
     expect(listeningHook).toBeLessThan(readyUi);
 
     expect(tools).toMatch(/if \(!phaseSwitchHandler\).*throw/);
-    expect(tools).toContain("phaseSwitchHandler(target_phase)");
+    expect(tools).toContain("requestMcpPhaseSwitch");
+    expect(tools).not.toContain("phaseSwitchHandler(target_phase)");
+    expect(net).toContain("requestedAuthoringPhase === null");
+    expect(net).toContain("requestMcpPhaseSwitch(envelope.targetAuthoringPhase)");
     expect(tools).not.toContain("surface_changed: true");
     expect(tools).toContain("reload_required: false");
   });

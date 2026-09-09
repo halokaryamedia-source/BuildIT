@@ -16,7 +16,7 @@ UV → user Geometry APPROVED
 Texture → Geometry APPROVED + UV Layout PASS
 Animation → Texturing APPROVED + checkpoint + Animation Readiness Preflight → HANDOFF_REQUIRED
 `HANDOFF_REQUIRED`: `target_phase`, `reason`, `readiness`, `resume_from`; Gateway `switch_authoring_phase` → same task/chat.
-`approved image`=visual authority; strategy=user-selected `DIRECT | 3D_ASSISTED`. `3D_ASSISTED` → Shape Reconstruction → PrimitiveAnything → cleanup. 1 Minecraft block = 16 Blockbench units; reuse `front_direction`.
+`approved image`=visual authority; Strategy: user-selected `DIRECT | 3D_ASSISTED`. `3D_ASSISTED` → Shape Reconstruction → PrimitiveAnything → cleanup. 1 Minecraft block = 16 Blockbench units; reuse `front_direction`.
 ## Fast Routing Contract
 Normal asset work **must not begin by searching repository files**.
 **Authoring Context Firewall:** Authoring Codex uses `workspace/active/<asset>/` as cwd, not `mcp/`; deeper MCP development rules are not authoring plan. Do **not** inspect tests/CI/source or run Bun/build/verifiers/deploy.
@@ -64,7 +64,7 @@ One precise search miss → reformulate once; second miss → `BLOCKED`. A known
 `INVALID_INPUT` → repair args; same capability. `TARGET_AMBIGUOUS` → resolve UUID once; `TARGET_NOT_FOUND` → focused identity lookup; `STALE_STATE` → one focused refresh; `NO_EFFECT` → diagnose payload; `CAPABILITY_MISMATCH` → handoff/BLOCKED; `OUTCOME_UNKNOWN` → inspect before retry.
 Same routed failure twice without new evidence → `BLOCKED`.
 ## State Reuse / Anti-Loop
-Fresh mutation → reuse state/`geometry_effect`. Do not automatically re-read fresh mutation targets with `inspect_elements(mode=detail)`; no status/discovery/bounds/capture progress checks.
+Fresh mutation → reuse state/`geometry_effect`; no confirmation readback. Do not automatically re-read fresh mutation targets with `inspect_elements(mode=detail)`; no status/discovery/bounds/capture progress checks.
 `inspect_model_bounds` only for envelope/scale/ground/displacement or a diagnosed bounded surface/contact integrity question.
 Skip `get_project_info` after create/export unless lifecycle state is unknown/stale.
 `export_model`: `bedrock` JSON or `project` `.bbmodel`.

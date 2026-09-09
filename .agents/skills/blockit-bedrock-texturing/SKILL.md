@@ -26,7 +26,7 @@ Unknown → `search_capabilities(limit=4)`. No confirmation rereads.
 **Pin atlas UUID and pass `texture_id` when multiple textures are loaded.**
 ## UV Gate
 `uv_audit.production_gate`=ready is hygiene, **not UV Layout PASS**; review face aspect ratio, texel density, semantic UV reuse.
-Requested atlas size/density are constraints; never silently enlarge.
+Requested atlas size/density are constraints; never silently enlarge; return to Geometry/UV if detail cannot fit.
 ## First Call
 `blank create_texture → explicit width+height from project UV`; **not omit blank Atlas size**.
 `create_texture`: provisional **16×16 blank**; **128×128 default, 256×256 opt-in**. Reuse existing atlas UUID.
