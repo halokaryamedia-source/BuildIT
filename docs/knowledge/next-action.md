@@ -9,11 +9,11 @@ Branch: **`Local` only**. Proof: `current-validation.md`; ownership: `implementa
 - Managed package `f1dcb77e8db800b4307feedba199fe8fff37b720` installed. Old plugin removed. Exact-pixel alpha replacement and Windows MSIX path identity defects fixed.
 - Native Geometry, Texturing, installed Gateway handoff, Animation/playback, Particle create/patch/save/preview and .bbmodel close/reopen persistence PASS on disposable fixtures.
 - Active-host update deferral, activation, host rollback and restoration of the latest package PASS. Checkpoint hash unchanged. Wrapper status works.
-- Prepared direct live verifiers now send explicit phase affinity; they do not claim fresh Codex skill pickup or visual approval.
+- Prepared direct live verifiers send explicit phase affinity. Fresh installed-workspace Codex CLI 0.153.4 sessions additionally PASS automatic AGENTS/skill discovery, router + Geometry specialist reads, and configured MCP catalog connection (49 capabilities, matching build identity).
 
-## Remaining Action
+## Completion / Future Work
 1. Reuse completed `verify:full` (809 tests plus freshness/typechecks/build) and native proof in `current-validation.md`; do not redo accepted tests for documentation-only edits.
-2. User opens `C:/Users/Administrator/BlockIT-Workspace` in a fresh Codex task/session. Verify installed workspace instructions and matching current specialist are picked up, and the configured four-tool BlockIT Gateway connects. This cannot be inferred from the existing development task's cached skills.
+2. Requested technical acceptance is complete. Fresh CLI-session proof is recorded in `current-validation.md`; no additional user action is required for this test scope. For future asset work use `C:/Users/Administrator/BlockIT-Workspace`.
 3. Follow managed installation in `mcp/distribution/README.md` for future updates; no manual plugin/config/skill copying. Preserve user assets and keep the latest package after rollback testing. No background polling/service.
 
-Stop after the remaining fresh-session check. Do not publish Stable, push automatically, delete the old checkout, or infer visual quality/usage savings from technical tests. **AUTHORING TAXONOMY**: GPU work deferred; user-selected `DIRECT | 3D_ASSISTED` and shared AUTHORING unchanged.
+STOP: acceptance complete. Do not publish Stable, push automatically, delete the old checkout, or infer visual quality/usage savings from technical tests. **AUTHORING TAXONOMY**: GPU work deferred; user-selected `DIRECT | 3D_ASSISTED` and shared AUTHORING unchanged.
