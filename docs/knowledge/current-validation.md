@@ -9,7 +9,7 @@ This file owns **current proof interpretation**. Continuation belongs in `docs/k
 Repository: `halokaryamedia-source/BuildIT`  
 Branch: **`Local` only**.
 
-Per `GITHUB_RULES.md`, exact-SHA source/CI proof below is reusable only within its stated proof ceiling and does not establish `LOCAL_CODE` or `LIVE_BLOCKBENCH` claims.
+Per `GITHUB_RULES.md`, device-independent composite acceptance requires Repository Verify + MCP Verify on the same exact `Local` SHA. Exact-SHA source/CI proof below is reusable only within its stated proof ceiling and does not establish `LOCAL_CODE` or `LIVE_BLOCKBENCH` claims.
 
 ### Final Pre-Local REMOTE_GITHUB hardening — ACCEPTED
 
