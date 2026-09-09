@@ -62,7 +62,9 @@ async function main(): Promise<void> {
   const repeated = JSON.parse(await run([executable, ...smokeArgs]));
   if (repeated.status !== "INSTALLED" || repeated.changed_files !== 0) throw new Error("Compiled install is not idempotent.");
   // No Blockbench is running here: this proves only the compiled stdio boundary.
-  const gateway = Bun.spawn([executable, "mcp", "--root", join(smokeRoot, "installed")], { stdin: "pipe", stdout: "pipe", stderr: "inherit" });
+  // Start the installed executable exactly as Codex does, not a forwarding parent.
+  const gatewayExecutable = join(smokeRoot, "installed", "versions", sourceSha, "blockit.exe");
+  const gateway = Bun.spawn([gatewayExecutable, "mcp", "--root", join(smokeRoot, "installed")], { stdin: "pipe", stdout: "pipe", stderr: "inherit" });
   gateway.stdin.write(JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: { protocolVersion: "2025-06-18", capabilities: {}, clientInfo: { name: "managed-package-smoke", version: "1" } } }) + "\n");
   const reader = gateway.stdout.getReader(); let buffer = ""; let timer: ReturnType<typeof setTimeout> | undefined;
   try {
@@ -72,7 +74,12 @@ async function main(): Promise<void> {
     ]);
     const initialized = JSON.parse(buffer.split("\n")[0]!);
     if (initialized.id !== 1 || !initialized.result?.serverInfo) throw new Error("Compiled Gateway protocol smoke failed.");
-  } finally { if (timer) clearTimeout(timer); reader.releaseLock(); gateway.stdin.end(); gateway.kill(); await gateway.exited; }
+  } finally {
+    if (timer) clearTimeout(timer);
+    reader.releaseLock(); gateway.stdin.end();
+    const shutdown = setTimeout(() => gateway.kill(), 5000);
+    try { await gateway.exited; } finally { clearTimeout(shutdown); }
+  }
   await rm(smokeRoot, { recursive: true, force: true });
   const zip = join(output, "blockit-windows-x64.zip");
   const zipCommand = "Add-Type -AssemblyName System.IO.Compression.FileSystem; [IO.Compression.ZipFile]::CreateFromDirectory($env:BLOCKIT_PACKAGE, $env:BLOCKIT_ZIP)";

@@ -5,6 +5,7 @@ import { homedir } from "node:os";
 import { spawn } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { normalizeRuntimeUrl } from "../gateway/contract";
+import { probeLoopbackPort } from "./runtime-probe";
 import { atomicWrite, activeGateways, installedState, installPackage, readOptional, recoverInstallation, REPOSITORY, requirePlainPath, sha256, verifyPackage, withInstallLock, type InstallOptions } from "./managed-install";
 
 const RELEASE_ASSET = "blockit-windows-x64.zip";
@@ -27,13 +28,8 @@ const receipt = (value: unknown) => console.log(JSON.stringify(value, null, 2));
 async function runtimeOnline(config?: string): Promise<boolean> {
   const parsed = config ? parseToml((await readOptional(config))?.toString() ?? "") as any : {};
   const endpoint = normalizeRuntimeUrl(parsed.mcp_servers?.blockit?.env?.BLOCKIT_RUNTIME_URL ?? process.env.BLOCKIT_RUNTIME_URL ?? "http://127.0.0.1:3000/bb-mcp");
-  try {
-    await fetch(new URL("/health", endpoint), { signal: AbortSignal.timeout(1500), redirect: "error" });
-    return true; // Any HTTP responder is occupied, including unknown/failed servers.
-  } catch (error: any) {
-    if ([error?.code, error?.cause?.code].includes("ECONNREFUSED")) return false;
-    throw new Error("Runtime availability is uncertain; no active files will be replaced.");
-  }
+  const url = new URL(endpoint);
+  return probeLoopbackPort(url.hostname.replace(/^\[|\]$/g, ""), Number(url.port || (url.protocol === "https:" ? 443 : 80)));
 }
 
 async function activatePending(): Promise<unknown> {

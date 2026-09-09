@@ -128,3 +128,25 @@ test("TOML preflight preserves quoted comments and multiline configuration", () 
   assert.deepEqual(parse(after).mcp_servers.other, parse(original).mcp_servers.other);
   assert.equal(parse(after).note, parse(original).note);
 });
+
+
+test("native availability probe distinguishes an open listener from a closed port", async () => {
+  const { createServer } = await import("node:net");
+  const { probeLoopbackPort } = await import("../distribution/runtime-probe");
+  const listener = createServer(socket => socket.destroy());
+  await new Promise<void>((resolve, reject) => { listener.once("error", reject); listener.listen(0, "127.0.0.1", resolve); });
+  const address = listener.address();
+  assert.ok(address && typeof address !== "string");
+  try { assert.equal(await probeLoopbackPort("127.0.0.1", address.port), true); }
+  finally { await new Promise<void>((resolve, reject) => listener.close(error => error ? reject(error) : resolve())); }
+  assert.equal(await probeLoopbackPort("127.0.0.1", address.port), false);
+});
+
+test("availability probe rejects non-local targets and invalid deadlines", async () => {
+  const { probeLoopbackPort } = await import("../distribution/runtime-probe");
+  for (const host of ["example.com", "192.168.1.2", "127.bad", "0.0.0.0"]) {
+    await assert.rejects(probeLoopbackPort(host, 3000), /Invalid loopback/);
+  }
+  await assert.rejects(probeLoopbackPort("127.0.0.1", 0));
+  await assert.rejects(probeLoopbackPort("127.0.0.1", 3000, 0));
+});
