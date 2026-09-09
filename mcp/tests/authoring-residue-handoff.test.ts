@@ -74,9 +74,9 @@ describe("REMOTE_GITHUB authoring handoff contracts", () => {
     expect(continuation.length).toBeLessThan(2_500);
     for (const marker of [
       "SOURCE_READY", "verify:full", "AUTHORING TAXONOMY", "DIRECT | 3D_ASSISTED",
-      "managed installation", "user assets", "Do not publish Stable",
+      "user assets", "Do not publish Stable",
     ]) {
-      expect(continuation).toContain(marker);
+      expect(continuation.toLowerCase()).toContain(marker.toLowerCase());
     }
     for (const retired of [
       "SOURCE_READY / PREWIRED",
@@ -90,6 +90,7 @@ describe("REMOTE_GITHUB authoring handoff contracts", () => {
       expect(continuation).not.toContain(retired);
     }
     // Gateway tool cardinality is tested against registration, not continuation prose.
+    expect(continuation).toMatch(/managed (?:installation|package)/i);
     expect(continuation).toMatch(/(?:no|not)[^\n]*background polling/i);
   });
 });

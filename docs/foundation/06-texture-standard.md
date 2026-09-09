@@ -97,6 +97,7 @@ Important visible surfaces must have usable finite UVs. For new AI production:
 - seam-critical relationships are known before Texture Styling.
 
 Do not optimize atlas occupancy as a quality score.
+Native packing alone is not a production layout verdict. Organize exact native islands into named semantic zones (body, head, appendages) with stable order and gutters; translate islands without changing their native aspect or density. A scattered atlas that is hard to identify/edit fails this gate even when all UVs are valid.
 
 ## Box UV / UV Lock
 
@@ -199,6 +200,7 @@ Normal/height/MER are PBR support atlas channels. They do not change UV Layout o
 Retain the base atlas UUID as continuation state and pass `texture_id` explicitly whenever multiple textures are present. Do not rely on whichever texture happens to be selected/default.
 
 Creating an atlas, clearing it, or filling it with one color is **not Texture Styling completion**.
+Pixels outside mapped islands stay transparent, apart from deliberate bounded edge padding. Opaque render intent applies to mapped surfaces; it does not require filling unused atlas space. Full-atlas alpha statistics must not trigger an opaque background fill.
 
 # Texture Styling
 
@@ -271,6 +273,7 @@ value / hue ramp
 ```
 
 Prefer stepped pixel ramps for Minecraft/pixel-art styling. Continuous smooth gradients are optional only when the requested style/reference needs them.
+Require visible, intentional pixel clusters at normal mapped-model scale with Shading ON: distinct value masses, form-following folds and readable identity accents. Barely visible noise or low-contrast formula variation remains BASE_ONLY; coverage/variation counts cannot upgrade it to STYLED.
 
 Texture may reinforce real contact/recess/overlap/underside/joint depth but must not invent missing large volume.
 

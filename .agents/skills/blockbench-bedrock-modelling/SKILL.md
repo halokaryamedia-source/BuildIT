@@ -87,6 +87,7 @@ Layered contacts and exposed undersides need an affected side/bottom view when f
 
 No guessed/stretched islands. Prefer per-face UV; use minimum proven native power-of-two packing. Audit padding/aspect/orientation/overlap/reuse/asymmetry. `uv_audit.production_gate=ready` is hygiene, not UV Layout PASS. Requested atlas size and density are constraints. Do not silently enlarge the atlas.
 Review the actual atlas and mapped adjoining surfaces together: group islands by editable semantic cohorts, allocate detail to identity-critical regions, and explain intentional mirroring or seams. Record technical validity separately from this layout verdict. Fractional logical UV can be valid when physical pixel mapping is integral; never resize approved Geometry solely to obtain integer logical coordinates.
+Native packing is a starting layout. Keep named body/head/appendage cohorts in readable zones with coherent order and gutters. Reposition exact native islands via UV offsets without stretching; verify bounds/overlap. Scattered placement fails editability even if the audit is ready. Unused atlas stays transparent.
 
 ## Local Correction / Convergence
 `TRANSLATE placement | RESIZE extent | ROTATE orientation | REATTACH contact/parent | LAYER OFFSET surface separation/inset | SPLIT distinct volume/orientation | MERGE/REMOVE compensatory geometry | ADD MASS missing volume`.

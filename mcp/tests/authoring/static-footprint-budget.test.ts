@@ -45,12 +45,12 @@ describe("static footprint budget", () => {
     // These ceilings bound accidental growth, not visual acceptance or efficiency.
     // Later explicit authorization must not be blocked by a historical test stop.
     expect(orchestrator.length).toBeLessThan(5_700);
-    expect(modelling.length).toBeLessThan(9_800);
+    expect(modelling.length).toBeLessThan(10_200);
     // Preserve the actual handoff payload and atlas precedence rather than
     // compressing operational meaning to satisfy an incidental character cap.
     // Optional diagnostic routing and the intra-Cube seam boundary are required
     // operational guidance; do not erase them to preserve the old byte ceiling.
-    expect(texturing.length).toBeLessThan(5_700);
+    expect(texturing.length).toBeLessThan(6_300);
     expect(animation.length).toBeLessThan(5_700);
     expect(workflow.length).toBeLessThan(9_200);
   });

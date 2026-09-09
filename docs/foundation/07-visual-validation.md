@@ -11,6 +11,7 @@ model visually matches the requested scope.
 
 Reference preparation belongs to [04-reference-guide.md](04-reference-guide.md).
 This note validates the Blockbench result.
+Comparison captures require Shading ON. Record shading, view/front direction, and artifact revision with the image; unknown/off shading is not final comparison evidence. Use the same lighting context for before/after judgements. Blockbench preview shading supports review but does not prove actual Minecraft in-game lighting.
 
 ## Core Principle
 

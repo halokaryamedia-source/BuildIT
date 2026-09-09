@@ -445,12 +445,28 @@ function applyCamera(preview: Preview, spec: CameraSpec): void {
   preview.controls.update();
 }
 
+export function withShadedCapture<T>(capture: () => T): T {
+  const shading = typeof settings === "undefined" ? undefined : settings.shading;
+  if (typeof shading?.value !== "boolean") {
+    throw new Error("Blockbench shading state is unavailable; comparison capture requires Shading ON.");
+  }
+  const previous = shading.value;
+  try {
+    shading.value = true;
+    Canvas.updateShading();
+    return capture();
+  } finally {
+    shading.value = previous;
+    Canvas.updateShading();
+  }
+}
+
 function captureOffscreenPng(preview: Preview): string {
   let dataUrl: string | undefined;
-  Canvas.withoutGizmos(() => {
+  withShadedCapture(() => Canvas.withoutGizmos(() => {
     preview.render();
     dataUrl = preview.canvas.toDataURL("image/png");
-  });
+  }));
   if (!dataUrl) {
     throw new Error("Blockbench returned no image data for canonical model view capture.");
   }
@@ -576,6 +592,13 @@ export function registerCameraTools() {
           captures.map((capture) => capture.view)
         ),
         offscreen_capture: true,
+        render_evidence: {
+          shading: true,
+          brightness: Settings.get("brightness"),
+          view_mode: Project.view_mode,
+          source: "blockbench_preview",
+          in_game_verified: false,
+        },
         active_editor_camera_untouched: true,
         warnings: observed.warnings.length,
       };

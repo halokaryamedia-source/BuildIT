@@ -1,18 +1,11 @@
 # Next Action
-
 Updated: 2026-09-10
-Branch: **`Local` only**. Proof: `current-validation.md`; ownership: `implementation-map.md`.
+Branch: Local only. Working checkout: D:/Work/AI Stuff/BuildIT-refresh. Preserve user assets; no push/main changes.
 
-## Current source-first request
-- Working checkout: `D:/Work/AI Stuff/BuildIT-refresh`, candidate based on `66bf0c54`. Preserve old BuildIT and all user assets.
-- SOURCE_READY: `verify:full` PASS, 826 tests, both typechecks, generated freshness, surface checks and build under Bun 1.3.14. All 56 enabled Runtime capabilities and all rule owners audited; conflicts repaired. Native residue and measurement limits are in current-validation.
-- Repairs: optional Animation diagnostics, lightweight Texture inventory, explicit intra-Cube seam scope, canonical Animation metadata, empty Group batch rejection, current locator inspection guidance, executable registration/diagnostic regressions.
-- Latest user direction: source first; subsequent visual validation uses a NEW MODEL with new intake. Do not resume Tiger, copy it for evaluation, or reactivate earlier visual fixtures. Tiger remains STOPPED / USER_REJECTED failure evidence.
-- Quality and whole-task token savings remain unproven. Future evaluation records total input/cached-input/output tokens including boot, discovery, correction and recovery; missing telemetry is UNKNOWN.
+SOURCE_READY: verify:full PASS 829 tests, both typechecks, freshness and build; evidence current-validation.md. Capture now forces Shading ON transiently, restores state and records render evidence. Rules require semantic UV zones, unused transparent pixels and visible pixel-art clusters. Candidate runtime d303b2c0...; package activation/native proof pending. Previous installed source 1e842557 is working under .blockit, not AppData. Old AppData deletion was policy-blocked; no retry.
 
-## Installation boundary
-- The managed installation still runs package `0a36d05e` / Runtime `e3cadd6a...`. Earlier package `409843cd` remains STAGED; it does not include this source audit repair. No candidate activation or live authoring was performed here.
-- Before future model evaluation, package and verify this completed source through managed installation, then verify matching Runtime/skills/Gateway identity. Preserve open projects; no manual plugin/config/skill copying.
-- Do not publish Stable, push, change main, delete old data, or start background polling.
+Managed installation: .blockit; plugin .blockit/plugin/blockit_mcp.js; authoring workspace .blockit/authoring. Use existing installer, no manual trust bypass/hot swap. Do not publish Stable or start background polling.
 
-**AUTHORING TAXONOMY**: user-selected `DIRECT | 3D_ASSISTED`, shared AUTHORING; GPU work deferred. New reference/dimensions/strategy/Animation intake remains the next user-driven authoring decision after source closure.
+Elephant DIRECT: Geometry user APPROVED. Texture v1 USER_REJECTED for raw/faint styling, scattered UV, unused opaque background. Corrected UV/pixel candidate saved in .blockit/authoring/workspace/active/elephant-direct/elephant-direct.bbmodel. New layout grouped by body/head/legs/ears/trunk; empty pixels transparent. Source-angle capture v2 exists; old capture runtime does not attest shading, user's UI screenshot does. Do not claim new-runtime or in-game proof. Next: activate verified capture/rules package then user Texture review. Animation walk/idle/trunk remains NOT_STARTED, requires approved Texture/checkpoint. Never resume Tiger or old visual fixtures. Whole-task tokens UNKNOWN.
+
+AUTHORING TAXONOMY: user-selected DIRECT | 3D_ASSISTED; Geometry/UV and Texturing share AUTHORING, Animation uses same-task handoff.
