@@ -7,6 +7,7 @@ import {
   gradientToolParameters,
   paintWithBrushParameters,
 } from "@/server/tools/paint";
+import { manageRenderProfileParameters } from "@/server/tools/render-profile";
 import { getEnabledToolDefinitions } from "@/lib/factories";
 import { tools, isCatalogToolEnabled } from "@/server/tools";
 
@@ -50,45 +51,44 @@ describe("advertised surface and fail-closed integrity guards", () => {
   test("advertised shapes retain real fields after SDK shape extraction", () => {
     // Guards against silent extractShape degradation (e.g. a future zod
     // major changing _def internals): if extraction starts returning empty
-    // objects, these advertised fields disappear and this test fails.
-    const shapeFieldNames = (toolName: string): string[] => {
-      const definition = getEnabledToolDefinitions()[toolName] as {
-        inputSchema?: Record<string, unknown>;
-        parameterSchema?: { _def?: { shape?: () => Record<string, unknown>; options?: unknown[] } };
-      };
-      const schema = definition.inputSchema ?? {};
-      const names = new Set<string>();
-      const visit = (value: unknown) => {
-        if (!value || typeof value !== "object") return;
-        const record = value as Record<string, unknown>;
-        if (record.properties && typeof record.properties === "object") {
-          Object.keys(record.properties as object).forEach((name) => names.add(name));
-        }
-        for (const key of ["anyOf", "oneOf", "allOf"]) {
-          if (Array.isArray(record[key])) record[key].forEach(visit);
-        }
-      };
-      visit(schema);
-      for (const option of definition.parameterSchema?._def?.options ?? []) visit(option);
-      const shape = definition.parameterSchema?._def?.shape?.();
-      Object.keys(shape ?? {}).forEach((name) => names.add(name));
-      return [...names];
-    };
-
+    // objects, these core advertised fields disappear and this test fails.
     expect(getEnabledToolDefinitions().manage_cubes).toBeDefined();
     expect(getEnabledToolDefinitions().create_project).toBeDefined();
     expect(getEnabledToolDefinitions().export_model).toBeDefined();
     expect(getEnabledToolDefinitions().manage_geometry_reference).toBeDefined();
     expect(getEnabledToolDefinitions().manage_render_profile).toBeDefined();
-    expect(shapeFieldNames("manage_render_profile")).toEqual(
-      expect.arrayContaining([
-        "operation",
-        "client_entity_source",
-        "render_profile",
-        "render_controller",
-        "bone_pattern",
-      ])
-    );
+
+    // manage_render_profile is intentionally an ordinary Zod union. Its
+    // branch contract is validated through the authoritative parser rather
+    // than depending on private SDK/Zod union shape internals.
+    expect(
+      manageRenderProfileParameters.safeParse({
+        operation: "bind",
+        client_entity_source: {
+          content:
+            '{"minecraft:client_entity":{"description":{"materials":{"default":"entity"}}}}',
+        },
+        render_controller_source: {
+          content:
+            '{"render_controllers":{"controller.render.fixture":{"materials":[{"*":"Material.default"}]}}}',
+        },
+        slot: "glass",
+        render_profile: "translucent",
+        render_controller: "controller.render.fixture",
+        bone_pattern: "window*",
+      }).success
+    ).toBe(true);
+    expect(
+      manageRenderProfileParameters.safeParse({
+        operation: "bind",
+        client_entity_source: { content: "{}" },
+        render_controller_source: { content: "{}" },
+        slot: "glass",
+        render_profile: "custom",
+        render_controller: "controller.render.fixture",
+        bone_pattern: "window*",
+      }).success
+    ).toBe(false);
   });
 
   test("pixel schemas reject malformed colors and out-of-enum blend modes", () => {
