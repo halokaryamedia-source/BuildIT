@@ -32,7 +32,8 @@ describe("advertised surface and fail-closed integrity guards", () => {
         !name.includes("fixture") &&
         !extendedToolNames.has(name)
     );
-    expect(enabledDefinitions.length).toBe(53);
+    expect(enabledDefinitions.length).toBe(54);
+    expect(enabledDefinitions.some(([name]) => name === "manage_render_profile")).toBe(true);
 
     for (const [, toolDef] of enabledDefinitions) {
       const { description, status } = toolDef as {
@@ -77,8 +78,17 @@ describe("advertised surface and fail-closed integrity guards", () => {
     expect(getEnabledToolDefinitions().manage_cubes).toBeDefined();
     expect(getEnabledToolDefinitions().create_project).toBeDefined();
     expect(getEnabledToolDefinitions().export_model).toBeDefined();
-    expect(getEnabledToolDefinitions().manage_cubes).toBeDefined();
     expect(getEnabledToolDefinitions().manage_geometry_reference).toBeDefined();
+    expect(getEnabledToolDefinitions().manage_render_profile).toBeDefined();
+    expect(shapeFieldNames("manage_render_profile")).toEqual(
+      expect.arrayContaining([
+        "operation",
+        "client_entity_source",
+        "render_profile",
+        "render_controller",
+        "bone_pattern",
+      ])
+    );
   });
 
   test("pixel schemas reject malformed colors and out-of-enum blend modes", () => {
