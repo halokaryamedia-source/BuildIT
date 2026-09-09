@@ -16,11 +16,13 @@ export type GeometryGroupQualityInput = {
   name: string;
 };
 
+type GeometryAxis = "x" | "y" | "z";
+
 type PrecisionExample = {
   cube_uuid: string;
   cube_name: string;
   field: "from" | "to" | "origin" | "rotation" | "inflate";
-  axis: "x" | "y" | "z" | null;
+  axis: GeometryAxis | null;
   current: number;
   suggested: number;
   delta: number;
@@ -30,7 +32,14 @@ type DegenerateExample = {
   cube_uuid: string;
   cube_name: string;
   size: [number, number, number];
-  invalid_axes: Array<"x" | "y" | "z">;
+  invalid_axes: GeometryAxis[];
+};
+
+type PlaneLikeExample = {
+  cube_uuid: string;
+  cube_name: string;
+  size: [number, number, number];
+  zero_axis: GeometryAxis;
 };
 
 function bounded<T>(values: readonly T[], limit: number) {
@@ -53,6 +62,28 @@ function vectorSize(from: readonly number[], to: readonly number[]): [number, nu
     Number(to[1]) - Number(from[1]),
     Number(to[2]) - Number(from[2]),
   ];
+}
+
+function spanClass(value: number): "negative" | "zero" | "positive" | "nonfinite" {
+  if (!Number.isFinite(value)) return "nonfinite";
+  if (value < 0) return "negative";
+  if (value === 0) return "zero";
+  return "positive";
+}
+
+function preservesSpanClass(
+  cube: GeometryCubeQualityInput,
+  field: "from" | "to",
+  axis: number,
+  suggested: number
+): boolean {
+  if (cube.from.length < 3 || cube.to.length < 3) return true;
+  const before = Number(cube.to[axis]) - Number(cube.from[axis]);
+  const after =
+    field === "from"
+      ? Number(cube.to[axis]) - suggested
+      : suggested - Number(cube.from[axis]);
+  return spanClass(before) === spanClass(after);
 }
 
 export function analyzeGeometryHygiene(
@@ -87,6 +118,12 @@ export function analyzeGeometryHygiene(
         const current = Number(values[index]);
         const suggested = precisionSuggestion(current, epsilon);
         if (suggested === null) continue;
+        if (
+          (field === "from" || field === "to") &&
+          !preservesSpanClass(cube, field, index, suggested)
+        ) {
+          continue;
+        }
         precisionCubeIds.add(cube.uuid);
         precisionExamples.push({
           cube_uuid: cube.uuid,
@@ -119,19 +156,38 @@ export function analyzeGeometryHygiene(
   }
 
   const degenerateExamples: DegenerateExample[] = [];
+  const planeLikeExamples: PlaneLikeExample[] = [];
   for (const cube of cubes) {
     if (cube.from.length < 3 || cube.to.length < 3) continue;
     const size = vectorSize(cube.from, cube.to);
     const invalidAxes = axes.filter(
-      (_, index) => !Number.isFinite(size[index]) || size[index] <= 0
+      (_, index) => !Number.isFinite(size[index]) || size[index] < 0
     );
-    if (invalidAxes.length === 0) continue;
-    degenerateExamples.push({
-      cube_uuid: cube.uuid,
-      cube_name: cube.name,
-      size,
-      invalid_axes: invalidAxes,
-    });
+    const zeroAxes = axes.filter((_, index) => size[index] === 0);
+
+    if (invalidAxes.length > 0 || zeroAxes.length >= 2) {
+      degenerateExamples.push({
+        cube_uuid: cube.uuid,
+        cube_name: cube.name,
+        size,
+        invalid_axes: [
+          ...new Set([
+            ...invalidAxes,
+            ...(zeroAxes.length >= 2 ? zeroAxes : []),
+          ]),
+        ],
+      });
+      continue;
+    }
+
+    if (zeroAxes.length === 1) {
+      planeLikeExamples.push({
+        cube_uuid: cube.uuid,
+        cube_name: cube.name,
+        size,
+        zero_axis: zeroAxes[0],
+      });
+    }
   }
 
   const groupsByName = new Map<string, GeometryGroupQualityInput[]>();
@@ -160,6 +216,7 @@ export function analyzeGeometryHygiene(
 
   const precisionBounded = bounded(precisionExamples, exampleLimit);
   const degenerateBounded = bounded(degenerateExamples, exampleLimit);
+  const planeLikeBounded = bounded(planeLikeExamples, exampleLimit);
   const duplicateBounded = bounded(duplicateNames, exampleLimit);
   const reviewRequired =
     precisionExamples.length > 0 ||
@@ -173,6 +230,10 @@ export function analyzeGeometryHygiene(
       drift_count: precisionExamples.length,
       affected_cube_count: precisionCubeIds.size,
       ...precisionBounded,
+    },
+    plane_like_cubes: {
+      count: planeLikeExamples.length,
+      ...planeLikeBounded,
     },
     degenerate_cubes: {
       count: degenerateExamples.length,

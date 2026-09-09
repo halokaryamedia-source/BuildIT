@@ -46,9 +46,80 @@ describe("bounded authoring quality intelligence", () => {
       axis: "x",
       suggested: 0,
     });
-    expect(result.degenerate_cubes.count).toBe(1);
+    expect(result.plane_like_cubes.count).toBe(1);
+    expect(result.plane_like_cubes.examples[0]).toMatchObject({
+      cube_uuid: "cube-b",
+      zero_axis: "x",
+    });
+    expect(result.degenerate_cubes.count).toBe(0);
     expect(result.duplicate_bone_names.name_count).toBe(1);
     expect(result.duplicate_bone_names.examples[0].count).toBe(2);
+  });
+
+  test("plane-like Cubes stay valid while line/point or reversed spans remain degenerate", () => {
+    const result = analyzeGeometryHygiene(
+      [
+        {
+          uuid: "plane",
+          name: "carrier",
+          from: [0, 0, 0],
+          to: [0, 8, 8],
+        },
+        {
+          uuid: "line",
+          name: "line",
+          from: [0, 0, 0],
+          to: [0, 0, 8],
+        },
+        {
+          uuid: "reversed",
+          name: "reversed",
+          from: [4, 0, 0],
+          to: [2, 2, 2],
+        },
+      ],
+      []
+    );
+
+    expect(result.state).toBe("review_required");
+    expect(result.plane_like_cubes.count).toBe(1);
+    expect(result.plane_like_cubes.examples[0]).toMatchObject({
+      cube_uuid: "plane",
+      size: [0, 8, 8],
+      zero_axis: "x",
+    });
+    expect(result.degenerate_cubes.count).toBe(2);
+    expect(result.degenerate_cubes.examples).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          cube_uuid: "line",
+          invalid_axes: expect.arrayContaining(["x", "y"]),
+        }),
+        expect.objectContaining({
+          cube_uuid: "reversed",
+          invalid_axes: expect.arrayContaining(["x"]),
+        }),
+      ])
+    );
+  });
+
+  test("precision cleanup never collapses a positive span into a plane", () => {
+    const result = analyzeGeometryHygiene(
+      [
+        {
+          uuid: "thin",
+          name: "thin",
+          from: [0, 0, 0],
+          to: [0.0000004, 8, 8],
+        },
+      ],
+      []
+    );
+
+    expect(result.state).toBe("clean");
+    expect(result.precision.drift_count).toBe(0);
+    expect(result.plane_like_cubes.count).toBe(0);
+    expect(result.degenerate_cubes.count).toBe(0);
   });
 
   test("clean geometry stays compact", () => {
@@ -67,6 +138,7 @@ describe("bounded authoring quality intelligence", () => {
     );
     expect(result.state).toBe("clean");
     expect(result.precision.drift_count).toBe(0);
+    expect(result.plane_like_cubes.count).toBe(0);
     expect(result.degenerate_cubes.count).toBe(0);
     expect(result.duplicate_bone_names.name_count).toBe(0);
   });

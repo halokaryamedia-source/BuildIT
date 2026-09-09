@@ -187,6 +187,7 @@ The visual reference may be an original source image or canonical board. Use onl
 ```text
 Approved Reference + Dimensions + Requirements
 → semantic form
+→ representation choice
 → transient Primary Mass Contract only when form is nontrivial
 → coherent primary Cube/Group batch
 → one Core View Triad evidence bundle
@@ -202,6 +203,7 @@ Approved Reference + Dimensions + Requirements
    │  → same causal correction fails twice without new evidence: BLOCKED
    └─ primary PASS
       → identity-weighted secondary Geometry only when needed
+→ conditional Surface Integrity review when adjacency/layer/contact is material
 → internal Geometry PASS
 → UV READINESS PREFLIGHT
    ├─ blocker → correct exact Geometry owner
@@ -257,7 +259,7 @@ Retry remains bounded: one targeted Shape regeneration maximum; no blind Primiti
 
 Canonical persistent external state stays under `workspace/active/<asset>/3d-assisted/`: `state.json`, `shape.glb`, `primitive-decomposition.json`. Failed/temp output stays `.cache/`.
 
-Semantic cleanup may rename/reparent/merge/delete/split/resize/translate/rotate/replace/add Cubes and repair hierarchy/pivots. Approved Reference = visual authority; requested dimensions = numeric authority.
+Semantic cleanup may rename/reparent/merge/delete/split/resize/translate/rotate/replace/add Cubes and repair hierarchy/pivots. **Primitive count is not final Cube authority**: remove/merge/replace primitive Cubes and technical Groups unless they still own silhouette, volume, contact, negative space, layering, or transform/motion. Approved Reference = visual authority; requested dimensions = numeric authority.
 
 ## 7. Geometry / Surface / UV
 
@@ -276,11 +278,23 @@ All Geometry stays future-animation-friendly: semantic hierarchy, naturally mova
 
 ### Surface quality
 
-A clean positive-volume overlap audit is not surface PASS. Inspect current whole-form views for accidental coplanar surfaces, penetration, gaps/holes, contact seams, and intended layer offsets. Required continuous cohorts must be covered; every unsupported gap is a Geometry defect.
+Surface integrity means every material relationship is intentional, not universal watertight closure:
+
+```text
+CLOSED_BOUNDARY
+INTENTIONAL_OPENING
+LAYERED_OFFSET
+INTENTIONAL_INTERSECTION
+CUTOUT_CARRIER
+```
+
+Large semantic openings are judged from reference/current views. For material adjacency/layer/contact, call `inspect_model_bounds` once and read bounded `geometry_hygiene` + `surface_quality_summary`; do not poll it as a progress check. `z_fighting`, `micro_gap`, `coplanar_edge_gap`, and `shallow_penetration` are review hints, not semantic or visual PASS/FAIL by themselves. Required `CLOSED_BOUNDARY` cohorts must be covered, intentional openings/intersections preserved, and no material surface risk may remain unresolved before Geometry PASS. Positive-volume overlap never proves contact, and a clean diagnostic never creates visual PASS.
 
 ### Geometry vs Texture
 
-Surface-only detail defaults to texture. Detail-only geometry with smallest material span/thickness `<=4 Blockbench units` defaults to Texture/omit unless it materially changes silhouette, volume/contact, intentional negative-space boundary, or independent motion.
+Representation is decided before Cube count. Geometry owns required 3D silhouette, volume, contact/opening boundary, layering, transform, or motion; Texture owns surface-only information. `PLANAR_CUTOUT_CARRIER` may use one plane or a crossed pair when alpha owns the internal silhouette.
+
+Detail-only geometry with smallest material span/thickness `<=4 Blockbench units` is an **anti-overcube guardrail, not a classifier**. Challenge whether the feature actually needs 3D behavior; if not, Texture/omit. One zero-span axis can be intentional plane-like Geometry; 2+ collapsed axes are not usable visible surface construction.
 
 ### Geometry user gate
 
@@ -415,7 +429,7 @@ Start with the requested target plus only direct dependencies/evidence needed to
 
 ```text
 repository continuation    → docs/knowledge/next-action.md
-active asset continuity    → workspace/active/<asset>/README.md
+active asset continuity    → workspace/active/<project>/README.md
 asset workspace rules      → workspace/README.md
 stable facts               → CONTEXT.md
 current proof state        → docs/knowledge/current-validation.md

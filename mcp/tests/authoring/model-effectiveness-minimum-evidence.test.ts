@@ -30,9 +30,9 @@ describe("model creation effectiveness — minimum necessary evidence", () => {
     const workflow = await source("prompts/bedrock_entity_workflow.md");
 
     expect(orchestrator).toContain("deferred spec loading after routing");
-    expect(orchestrator).toContain("inspect_model_bounds` only for envelope/scale/ground/displacement");
+    expect(orchestrator).toContain("diagnosed bounded surface/contact integrity question");
+    expect(orchestrator).toContain("bounded surface/contact review");
     expect(modelling).toContain("Otherwise skip the bounds call");
-    expect(workflow).toContain("inspect_model_bounds` is only for envelope/scale/ground/displacement");
     expect(workflow).toContain("`UNVERIFIED` is not a retry command");
   });
 

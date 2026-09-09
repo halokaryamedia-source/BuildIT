@@ -1,7 +1,7 @@
 # BlockIT — Geometry Standard
 
 **Status:** Active Policy  
-**Version:** 1.8  
+**Version:** 1.9  
 **Updated:** 2026-09-09
 
 ## Purpose
@@ -10,9 +10,11 @@ Define object-agnostic geometry-quality rules for Minecraft Bedrock Entity model
 
 ## Core Principle
 
-Every material Cuboid must have a modelling purpose in the **whole form**.
+Use the **minimum geometry required to preserve correct 3D form**, not the minimum Cube count.
 
-A Cube existing, touching, overlapping, being parented, or being accepted by a tool is structural state only. It does not prove correct representation, size, placement, orientation, hierarchy, or pivot.
+Every material Cuboid must have a modelling purpose in the **whole form**. Its 3D purpose is silhouette, real volume, opening/negative-space boundary, contact, 3D layering, transform ownership, or motion. Surface information that does not need those properties belongs in Texture; unsupported/immaterial detail may be omitted.
+
+A Cube existing, touching, overlapping, being parented, or being accepted by a tool is structural state only. It does not prove correct representation, size, placement, orientation, hierarchy, pivot, or surface integrity.
 
 ## Whole-Form Contract
 
@@ -20,6 +22,8 @@ A Cube existing, touching, overlapping, being parented, or being accepted by a t
 Modelling Brief
 ↓
 Semantic Form
+↓
+Representation Choice
 ↓
 construction + transform ownership
 ↓
@@ -29,12 +33,14 @@ intentional coarse geometry
 ↓
 primary visual gate
 ↓
+conditional Surface Integrity review
+↓
 targeted correction or rebuild
 ↓
 identity-weighted secondary geometry
 ```
 
-There is no universal support-first, section-first, largest-first, fixed-Cube count, asset preset, or per-Cube approval order.
+There is no universal support-first, section-first, largest-first, fixed-Cube count, asset preset, watertight requirement, or per-Cube approval order.
 
 ## Primary Readiness
 
@@ -50,30 +56,33 @@ It is a no-guess reasoning gate, not a persisted Cube plan.
 
 ## Representation Choice
 
-Choose the **simplest construction that preserves the visible requirement**. These are reasoning patterns, not presets or asset classes:
+Choose the **simplest construction that preserves the visible 3D requirement**. These are reasoning patterns, not presets, schemas, or asset classes:
 
-- **solid Cuboid** — real volume or silhouette-bearing mass;
-- **thin or zero-thickness plane-like Cube** — genuinely sheet-like geometry where thickness is not a material visible requirement;
-- **layered/inflated shell** — a visible layer over an established form;
-- **linked meaningful segments** — a bend/curve/articulated chain that needs several purposeful pieces;
-- **texture-only** — surface information that does not require silhouette, real volume, or independent motion.
+- **solid Cuboid / `SOLID_CUBOID`** — real volume or silhouette-bearing mass;
+- **thin or zero-thickness plane-like Cube / `PLANE_LIKE`** — genuinely sheet-like geometry where thickness is not material;
+- **planar cutout carrier / `PLANAR_CUTOUT_CARRIER`** — plane-like host whose alpha texture owns the internal silhouette;
+- **layered surface / layered/inflated shell / `LAYERED_SURFACE`** — a visible layer over/inside an established form;
+- **linked meaningful segments / `SEGMENTED_FORM`** — bend/curve/articulated chain requiring purposeful pieces;
+- **texture-only / `TEXTURE`** — surface information requiring no 3D behavior;
+- **`OMIT`** — unsupported or immaterial detail.
 
 Rules:
 
 - A plane-like Cube is not a shortcut for unknown depth.
+- Zero span on exactly one axis can be valid plane-like Geometry when the representation requires it. Two or more collapsed axes do not form a usable surface carrier.
 - `inflate` is layer-control, not proportion repair or fake detail. Its sign and magnitude are local authored choices; do not impose a positive-only or fixed-value rule.
 - Linked segments must express meaningful changes of direction/contact; reject micro-segmentation and unit-Cube staircasing used only to imitate a curve.
-- A visible marking, color break, scratch, seam, or painted feature stays texture unless it materially changes volume/silhouette.
+- A visible marking, color break, scratch, seam, painted line, or shallow graphic feature stays Texture unless it materially changes 3D behavior.
 - Complexity follows visible need. A simple professional object may require very few Cubes; a complex one may require many.
 
 ### Planar cutout carrier
 
-`PLANAR_CUTOUT_CARRIER` is a representation choice inside `DIRECT`, not a new Geometry Strategy or object preset. Use it only when broad plane-like faces are the minimum host for a texture/alpha silhouette and the cut-out feature needs no material depth, volume, contact, or independent motion.
+`PLANAR_CUTOUT_CARRIER` is inside `DIRECT`, not a new Geometry Strategy or object preset. Use it when broad plane-like faces are the minimum host for a texture/alpha silhouette and the cut-out feature needs no material depth, volume, contact, or independent motion.
 
-- Geometry owns carrier count, envelope, placement, orientation, contact, parent, and pivot; Texture owns silhouette/holes inside the carrier bounds.
+- Geometry owns carrier count, envelope, placement, orientation, contact, parent, and pivot; Texture owns silhouette/holes inside carrier bounds.
 - Small-detail thresholds measure the visible feature, not incidental carrier thickness.
 - Prefer `SINGLE`; when yaw coverage needs a cross, `CROSSED_PAIR` uses two co-centered plane-like Cubes about 90° apart under one shared transform and one coherent creation batch. More planes need explicit evidence.
-- Do not decompose alpha-owned repeated subfeatures into micro-Cubes. If texture cannot express required volume/contact/motion, use normal Geometry.
+- Do not decompose alpha-owned repeated subfeatures into micro-Cubes.
 - Use zero/minimal positive thickness according to format/UV/render stability; prefer per-face UV over thickening only to satisfy Box UV.
 
 ## Transform Ownership
@@ -110,7 +119,7 @@ from: [x,y,z]
 to:   [x,y,z]
 ```
 
-Zero span on one axis is valid only when the intended representation is genuinely plane-like. Do not create a default `[0,0,0] → [1,1,1]` Cube merely to have geometry and decide later.
+Zero span on one axis is valid only for an intentional plane-like representation. Two or more zero spans are degenerate for visible surface construction. Do not create a default `[0,0,0] → [1,1,1]` Cube merely to have geometry and decide later.
 
 ### Parent
 
@@ -245,9 +254,49 @@ Secondary complexity is **identity-weighted**: concentrate geometry where recogn
 
 ## Cuboid Efficiency
 
-Prefer fewer meaningful Cuboids over dense approximations. Split a mass only for demonstrated different silhouette/orientation, separate transform/pivot/motion, genuinely separate visible volume, or verified technical constraint.
+Cube efficiency is **representation-first**, never a fixed count target.
 
-Adding another Cube is not the default correction.
+Before adding a secondary Cube, ask whether the feature needs 3D silhouette, real volume, contact, negative-space boundary, 3D layering, transform ownership, or motion. If none apply and Texture can carry the visible information, use Texture.
+
+Detail-only span/thickness `<= 4 Blockbench units` is an **anti-overcube guardrail, not a classifier**. It triggers a stronger representation challenge; it does not forbid Geometry when the small feature genuinely carries required 3D form.
+
+Prefer fewer meaningful Cuboids over dense approximations. Split a mass only for demonstrated different silhouette/orientation, separate transform/pivot/motion, genuinely separate visible volume, or verified technical constraint. Adding another Cube is not the default correction.
+
+For `3D_ASSISTED`, PrimitiveAnything output is an editable scaffold, not final Cube-count authority. Semantic Geometry Cleanup must merge/remove/replace primitive Cubes and technical Groups that do not remain necessary for silhouette, volume, contact, negative space, layering, or transform/motion.
+
+## Surface Integrity Contract
+
+Surface integrity means **every material surface relationship is intentional**, not that every model is universally watertight.
+
+Reasoning relationships:
+
+```text
+CLOSED_BOUNDARY          surfaces must meet/cover as one enclosure
+INTENTIONAL_OPENING      visible opening/negative space is required
+LAYERED_OFFSET           surfaces are deliberately separated/inset
+INTENTIONAL_INTERSECTION hidden/structural penetration is deliberate
+CUTOUT_CARRIER           plane-like surface carries alpha silhouette
+```
+
+When adjacency, layering, or contact is material, combine fresh whole-form views with one bounded `inspect_model_bounds` review. The runtime may report:
+
+```text
+z_fighting
+micro_gap
+coplanar_edge_gap
+shallow_penetration
+```
+
+These are objective **review hints**, not semantic verdicts. They identify relationships that require judgement:
+
+- exposed same-facing coplanar overlap is a Z-fighting risk and must be corrected or removed;
+- a micro-gap or uncovered coplanar edge-gap is a defect when the relationship is `CLOSED_BOUNDARY`;
+- a large visible opening is judged from reference/semantic evidence, not auto-filled by a watertight rule;
+- deep hidden structural intersection may be intentional;
+- shallow penetration remains review-required until the intended relationship is demonstrated;
+- a valid zero-thickness plane-like carrier is not a degenerate solid merely because one axis has zero span.
+
+Geometry `PASS` requires no unresolved material surface risk. A clean diagnostic does not create visual PASS, and positive-volume overlap never proves contact.
 
 ## Correction Vocabulary
 
@@ -256,22 +305,25 @@ TRANSLATE    placement wrong
 RESIZE       extent/proportion wrong
 ROTATE       orientation/slope wrong
 REATTACH     contact/parent wrong
+LAYER OFFSET visible layer separation/inset wrong
 SPLIT        distinct orientation/volume genuinely needed
 MERGE/REMOVE unnecessary or compensating geometry
 ADD MASS     required visible volume genuinely missing
 ```
 
+`LAYER OFFSET` describes the cause, not a mandatory numeric mechanism. Use translate/resize or justified inflate/deflate according to the visible relationship; never apply a universal epsilon.
+
 Use `ADD MASS` only when evidence shows missing volume.
 
 ## Correction Accuracy Contract
 
-Reuse fresh exact authored state already returned for the target when sufficient. Call `inspect_elements(mode=detail)` once only when the required current state is missing or stale.
+Reuse fresh exact authored state already returned for the target when sufficient. Call `inspect_elements(mode=detail)` once only when required current state is missing or stale.
 
 Before mutating a diagnosed local mismatch:
 
 ```text
 mismatch + supporting view(s)
-causal class: TRANSLATE | RESIZE | ROTATE | REATTACH | SPLIT | MERGE/REMOVE | ADD MASS
+causal class: TRANSLATE | RESIZE | ROTATE | REATTACH | LAYER OFFSET | SPLIT | MERGE/REMOVE | ADD MASS
 exact target UUID(s)
 current authored state
 invariant(s) that must remain unchanged
@@ -282,8 +334,9 @@ Keep this compact.
 
 - **TRANSLATE** — size remains unchanged; preserve intended pivot relationship.
 - **RESIZE** — name changed axis and fixed center/face/contact.
-- **ROTATE** — do not change `from/to/size`; use the existing known or explicitly justified pivot.
-- **REATTACH** — distinguish visual contact from hierarchy-parent correction; unsupported reparenting stays `BLOCKED`.
+- **ROTATE** — do not change `from/to/size`; use existing known or explicitly justified pivot.
+- **REATTACH** — distinguish visual contact from hierarchy-parent correction.
+- **LAYER OFFSET** — preserve the parent form while correcting only intended surface separation/inset.
 
 After `manage_cubes(operation=update|batch_update)`, inspect returned `geometry_effect`:
 
@@ -293,6 +346,7 @@ center_delta
 size_delta
 origin_delta
 rotation_delta
+inflate_delta
 visibility_changed
 ```
 
@@ -308,13 +362,13 @@ After two failed attempts in the same causal direction without new evidence, sto
 
 ## Geometry vs Texture
 
-Use geometry for silhouette/real volume/separate motion. Use texture for surface information. Texture must not hide incorrect geometry.
+Use Geometry for required 3D behavior. Use Texture for surface information. Texture must not hide incorrect Geometry, but Geometry must not duplicate detail that Texture can carry without changing the 3D requirement.
 
 ## Attachment / Intersection
 
 Visible connection quality is judged visually. **AABB overlap or hierarchy alone is not proof.**
 
-Avoid floating required parts, accidental penetration, excessive unreadable intersection, or compensating Cubes used to conceal a wrong mass relationship.
+Avoid floating required parts, accidental penetration, exposed coplanar overlap, excessive unreadable intersection, or compensating Cubes used to conceal a wrong mass relationship.
 
 ## Symmetry
 
@@ -333,8 +387,11 @@ A required non-visible effect, hold, or attachment point that needs transform id
 Geometry is ready for UV/texture only when:
 
 - whole primary form passed visual review;
-- representation choices match the visible form instead of convenience;
+- representation choices match the visible 3D requirement instead of convenience;
+- small/detail Geometry survived the anti-overcube representation challenge;
 - major proportions/contacts are coherent;
+- required continuous surfaces are covered and intentional openings preserved;
+- no unresolved Z-fighting, micro-gap, edge-gap, or accidental shallow penetration remains;
 - material shared transforms have an intentional owner;
 - required primary hierarchy/pivots are established;
 - each material rotation and pivot has a form/motion/attachment reason;

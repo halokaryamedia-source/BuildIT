@@ -25,11 +25,60 @@ describe("model creation effectiveness — professional construction without pre
     }
 
     expect(geometry).toContain("thin or zero-thickness plane-like Cube");
-    expect(geometry).toContain("layered/inflated shell");
+    expect(geometry).toContain("layered surface");
     expect(geometry).toContain("linked meaningful segments");
     expect(geometry).toContain("unit-Cube staircasing");
     expect(geometry).toContain("Locator intent");
     expect(geometry).toContain("positive-only or fixed-value rule");
+  });
+
+  test("representation stays 3D-need-first while the small-detail threshold remains a guardrail", async () => {
+    const [modelling, geometry, flow] = await Promise.all([
+      source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
+      source("../docs/foundation/05-geometry-standard.md"),
+      source("../docs/knowledge/flow.md"),
+    ]);
+
+    for (const text of [modelling, geometry, flow]) {
+      expect(text).toContain("PLANAR_CUTOUT_CARRIER");
+      expect(lower(text)).toContain("representation");
+      expect(lower(text)).toContain("guardrail");
+      expect(lower(text)).toContain("not a classifier");
+    }
+
+    expect(geometry).toContain("minimum geometry required to preserve correct 3D form");
+    expect(geometry).toContain("PrimitiveAnything output is an editable scaffold");
+    expect(flow).toContain("Primitive count is not final Cube authority");
+  });
+
+  test("surface integrity distinguishes required closure from intentional openings and intersections", async () => {
+    const [orchestrator, modelling, geometry, flow] = await Promise.all([
+      source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md"),
+      source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
+      source("../docs/foundation/05-geometry-standard.md"),
+      source("../docs/knowledge/flow.md"),
+    ]);
+
+    for (const relation of [
+      "CLOSED_BOUNDARY",
+      "INTENTIONAL_OPENING",
+      "LAYERED_OFFSET",
+      "INTENTIONAL_INTERSECTION",
+      "CUTOUT_CARRIER",
+    ]) {
+      expect(modelling).toContain(relation);
+      expect(geometry).toContain(relation);
+      expect(flow).toContain(relation);
+    }
+
+    expect(orchestrator).toContain("bounded surface/contact review");
+    expect(orchestrator).toContain("diagnosed bounded surface/contact integrity question");
+    expect(orchestrator).not.toContain(
+      "`inspect_model_bounds` only for envelope/scale/ground/displacement."
+    );
+    expect(modelling).toContain("do not force universal watertight geometry");
+    expect(geometry).toContain("not that every model is universally watertight");
+    expect(flow).toContain("surface_quality_summary");
   });
 
   test("transform ownership distinguishes local Cube transforms from shared Group/Bone transforms", async () => {
