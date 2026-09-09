@@ -87,7 +87,7 @@ No guessed/stretched islands. Prefer per-face UV; use minimum proven native powe
 `LAYER OFFSET` uses translate/resize or justified inflate/deflate; never a universal epsilon. Hidden intersection may be intentional; exposed coplanar overlap/hairline gaps are not.
 Reuse fresh exact authored state; otherwise `inspect_elements(mode=detail)` once. State target UUID(s), cause, intended change, invariant; returned `geometry_effect` must match intent.
 `REMOVE`/`REATTACH` preserve the whole assembly boundary and intentional openings. For `RESIZE` on mapped/textured Geometry, preflight UV/pixel impact and choose `PRESERVE_MAPPING | PRESERVE_DENSITY | RELAYOUT`.
-Reuse fresh affected pre-correction evidence; capture before mutation only when none exists. After mutation, recapture affected view(s); expand only for cross-view risk. `IMPROVED | UNCHANGED | REGRESSED`; require `IMPROVED` without regression elsewhere. Same causal correction failing twice without new evidence → `BLOCKED`.
+Reuse fresh affected pre-correction evidence; capture before mutation only when none exists. After mutation, recapture affected view(s); expand only for cross-view regression risk. `IMPROVED | UNCHANGED | REGRESSED`; require `IMPROVED` without regression elsewhere. Same causal correction failing twice without new evidence → `BLOCKED`.
 
 ## Existing Assets / Shared Session
 Existing geometry is a baseline, not fidelity proof. Geometry owns shape/rig/UV; Texturing pixels/PBR. Geometry↔Texturing stays shared AUTHORING; `HANDOFF_REQUIRED` + `switch_authoring_phase` only for AUTHORING↔Animation.
