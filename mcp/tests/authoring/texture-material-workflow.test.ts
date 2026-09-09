@@ -18,12 +18,37 @@ describe("texture material workflow and diagnostics", () => {
     expect(skill).toContain("pbr_content");
   });
 
-  test("foundation material standard documents native MERS and save readiness semantics", async () => {
-    const standard = await source("../docs/foundation/10-material-standard.md");
-    expect(standard).toContain("MER texture + subsurface_value>0");
-    expect(standard).toContain("save.path_ready");
-    expect(standard).toContain("normal XOR height");
-    expect(standard).toContain("manage_material");
+  test("foundation standards separate render, PBR, geometry-instance, and surface-pattern namespaces", async () => {
+    const [pbr, render, pattern, skill] = await Promise.all([
+      source("../docs/foundation/10-material-standard.md"),
+      source("../docs/foundation/11-render-profile-standard.md"),
+      source("../docs/foundation/12-surface-pattern-standard.md"),
+      source("../.agents/skills/blockit-bedrock-texturing/SKILL.md"),
+    ]);
+
+    expect(pbr).toContain("MER texture + subsurface_value>0");
+    expect(pbr).toContain("save.path_ready");
+    expect(pbr).toContain("normal XOR height");
+    expect(pbr).toContain("manage_material");
+    expect(pbr).toContain("pbr_texture_set");
+
+    for (const marker of [
+      "render_profile",
+      "minecraft_material_code",
+      "pbr_texture_set",
+      "geometry_material_instance",
+      "surface_pattern",
+    ]) {
+      expect(render).toContain(marker);
+      expect(skill).toContain(marker);
+    }
+    expect(render).toContain("entity_alphatest");
+    expect(render).toContain("entity_alphablend");
+    expect(render).toContain("entity_emissive");
+    expect(render).toContain("render_mode");
+    expect(pattern).toContain("wood_grain");
+    expect(pattern).toContain("brushed_metal");
+    expect(pattern).toContain("cloth_weave");
   });
 
   test("runtime augments existing texture/material tools instead of adding another MCP surface", async () => {
