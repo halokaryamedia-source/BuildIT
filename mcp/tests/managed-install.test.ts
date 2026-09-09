@@ -112,3 +112,19 @@ test("concurrent writers and symlink/junction destinations are refused", async (
   const file = join(d, "changed"); await writeFile(file, "now");
   await assert.rejects(applyTransaction(o.root, [{ path: file, bytes: Buffer.from("bad"), expected: sha256("stale") }]), /Concurrent/);
 }));
+
+
+test("TOML preflight rejects parser-recovered statements and incomplete values", () => {
+  for (const source of ['not valid TOML', 'model="chosen"\nignored words', 'model="unterminated', 'args=["one"', 'model= # missing']) {
+    assert.throws(() => configureCodex(source, "x.exe", parse));
+    // A permissive parser cannot authorize silently discarded source.
+    assert.throws(() => configureCodex(source, "x.exe", () => ({})));
+  }
+});
+
+test("TOML preflight preserves quoted comments and multiline configuration", () => {
+  const original = '# comment\nmodel="chosen"\nnote="""first # [ ignored\nsecond"""\n[ mcp_servers.other ]\nargs = [\n "one", # comma\n "two",\n]\n';
+  const after = configureCodex(original, "C:\\BlockIT\\blockit.exe", parse);
+  assert.deepEqual(parse(after).mcp_servers.other, parse(original).mcp_servers.other);
+  assert.equal(parse(after).note, parse(original).note);
+});

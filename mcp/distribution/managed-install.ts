@@ -105,9 +105,44 @@ function managedBlock(original: string, replacement: string): string {
   return start < 0 ? `${original}${original.endsWith("\n") || !original ? "" : "\n"}\n${block}\n` : original.slice(0, start) + block + original.slice(end + END.length);
 }
 
+// Bun's TOML parser may recover from a bare, invalid statement without throwing.
+// This bounded lexical preflight rejects skipped statements/unbalanced delimiters;
+// value semantics remain the injected TOML parser's responsibility.
+function requireTomlStatements(text: string): void {
+  if (text.length > 2_000_000) throw new Error("Codex configuration is too large.");
+  let statement = "", quote = "", triple = false;
+  const stack: string[] = [];
+  const key = String.raw`(?:[A-Za-z0-9_-]+|@)(?:\s*\.\s*(?:[A-Za-z0-9_-]+|@))*`;
+  const assignment = new RegExp(`^${key}\\s*=\\s*\\S[\\s\\S]*$`);
+  const table = new RegExp(`^\\[\\s*${key}\\s*\\]$|^\\[\\[\\s*${key}\\s*\\]\\]$`);
+  const complete = () => {
+    const value = statement.trim(); statement = "";
+    if (value && !assignment.test(value) && !table.test(value)) throw new Error("Invalid or unsupported TOML statement; no configuration changed.");
+  };
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i]!;
+    if (quote) {
+      if (quote === '"' && c === "\\") { i++; continue; }
+      if (triple ? text.slice(i, i + 3) === quote.repeat(3) : c === quote) {
+        if (triple) i += 2;
+        quote = ""; triple = false;
+      } else if (!triple && (c === "\n" || c === "\r")) throw new Error("Unclosed TOML string.");
+      continue;
+    }
+    if (c === "#") { while (i < text.length && text[i] !== "\n") i++; if (!stack.length) complete(); continue; }
+    if (c === '"' || c === "'") { quote = c; triple = text.slice(i, i + 3) === c.repeat(3); if (triple) i += 2; statement += "@"; continue; }
+    if (c === "[" || c === "{") stack.push(c);
+    if (c === "]" || c === "}") { if (stack.pop() !== (c === "]" ? "[" : "{")) throw new Error("Unbalanced TOML delimiters."); }
+    if ((c === "\n" || c === "\r") && !stack.length) complete(); else statement += c;
+  }
+  if (quote || stack.length) throw new Error("Incomplete TOML configuration.");
+  complete();
+}
+
 // Parse both versions with Bun's TOML parser; never regex-edit unvalidated config.
 // Existing unowned BlockIT configuration needs explicit adoption, other servers do not.
 export function configureCodex(original: string, executable: string, parse: (text: string) => any, adopt = false): string {
+  requireTomlStatements(original);
   const before = parse(original);
   const hasManaged = original.includes(BEGIN);
   let base = original;
@@ -138,6 +173,7 @@ export function configureCodex(original: string, executable: string, parse: (tex
     throw new Error("Unsupported existing BlockIT TOML value; no configuration changed.");
   };
   const after = managedBlock(base, `[mcp_servers.blockit]\n${Object.entries(options).map(([k, v]) => `${JSON.stringify(k)} = ${scalar(v)}`).join("\n")}`);
+  requireTomlStatements(after);
   const parsed = parse(after);
   const strip = (o: any) => { const copy = structuredClone(o); if (copy.mcp_servers) { delete copy.mcp_servers.blockit; if (!Object.keys(copy.mcp_servers).length) delete copy.mcp_servers; } return copy; };
   const canonical = (v: any): any => Array.isArray(v) ? v.map(canonical) : v && typeof v === "object" ? Object.fromEntries(Object.keys(v).sort().map(k => [k, canonical(v[k])])) : v;
