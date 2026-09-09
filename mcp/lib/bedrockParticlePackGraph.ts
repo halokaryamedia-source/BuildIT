@@ -14,6 +14,7 @@ export type ParticlePackDiagnostic = {
   severity: "error" | "warning" | "info";
   code: string;
   message: string;
+  path?: string;
   particle_identifier?: string;
   source_path?: string | null;
 };
@@ -133,6 +134,18 @@ export function analyzeBedrockParticlePack(input: ParticlePackAnalysisInput): Pa
   for (const particle of input.particles) {
     const summary = inspectParticleDocument(particle.document);
     const identifier = summary.identifier;
+    for (const diagnostic of summary.diagnostics) {
+      emit(diagnostics, {
+        severity: diagnostic.severity,
+        code: diagnostic.code,
+        message: identifier
+          ? `Particle "${identifier}": ${diagnostic.message}`
+          : diagnostic.message,
+        path: diagnostic.path,
+        particle_identifier: identifier ?? undefined,
+        source_path: particle.source_path ?? null,
+      });
+    }
     if (!identifier) {
       emit(diagnostics, {
         severity: "error",
@@ -238,6 +251,17 @@ export function analyzeBedrockParticlePack(input: ParticlePackAnalysisInput): Pa
         source_path: entry.source_path ?? null,
       });
       continue;
+    }
+    for (const diagnostic of bindings.diagnostics) {
+      emit(diagnostics, {
+        severity: diagnostic.severity,
+        code: diagnostic.code,
+        message: bindings.entity_identifier
+          ? `Client entity "${bindings.entity_identifier}": ${diagnostic.message}`
+          : diagnostic.message,
+        path: diagnostic.path,
+        source_path: entry.source_path ?? null,
+      });
     }
     for (const binding of bindings.bindings) {
       if (known.has(binding.effect)) continue;

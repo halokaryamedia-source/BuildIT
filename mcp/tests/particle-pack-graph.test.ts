@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 import {
   applyParticleOperations,
   createParticleDocument,
+  type JsonObject,
 } from "../lib/bedrockParticleDocument";
 import { parseClientEntityDocument } from "../lib/bedrockParticleBinding";
 import { analyzeBedrockParticlePack } from "../lib/bedrockParticlePackGraph";
@@ -72,6 +73,31 @@ describe("Bedrock particle pack dependency analysis", () => {
     expect(result.valid).toBe(false);
   });
 
+  test("propagates blocking diagnostics from an invalid particle document", () => {
+    const document = nestedParticle("blockit:invalid") as JsonObject;
+    const effect = document.particle_effect as JsonObject;
+    const components = effect.components as JsonObject;
+    components["minecraft:emitter_local_space"] = {
+      position: false,
+      rotation: true,
+    };
+
+    const result = analyzeBedrockParticlePack({
+      particles: [
+        { document, source_path: "/rp/particles/invalid.particle.json" },
+      ],
+    });
+
+    expect(result.valid).toBe(false);
+    expect(
+      result.diagnostics.some(
+        (entry) =>
+          entry.severity === "error" &&
+          entry.source_path === "/rp/particles/invalid.particle.json"
+      )
+    ).toBe(true);
+  });
+
   test("reports unresolved nested particles and unresolved client-entity targets separately", () => {
     const client = parseClientEntityDocument(`{
       "minecraft:client_entity": {
@@ -91,6 +117,28 @@ describe("Bedrock particle pack dependency analysis", () => {
 
     expect(result.diagnostics.map((entry) => entry.code)).toContain("unresolved_nested_particle");
     expect(result.diagnostics.map((entry) => entry.code)).toContain("unresolved_client_entity_particle");
+    expect(result.valid).toBe(false);
+  });
+
+  test("propagates client-entity particle binding diagnostics", () => {
+    const client = parseClientEntityDocument(`{
+      "minecraft:client_entity": {
+        "description": {
+          "identifier": "blockit:test",
+          "particle_effects": { "broken": 12 }
+        }
+      }
+    }`);
+    const result = analyzeBedrockParticlePack({
+      particles: [{ document: nestedParticle("blockit:a") }],
+      client_entities: [
+        { document: client, source_path: "/rp/entity/test.entity.json" },
+      ],
+    });
+
+    expect(result.diagnostics.map((entry) => entry.code)).toContain(
+      "non_string_particle_binding"
+    );
     expect(result.valid).toBe(false);
   });
 
