@@ -19,8 +19,8 @@ Animation → Texturing APPROVED + checkpoint + Animation Readiness Preflight �
 `approved image`; Strategy: user-selected `DIRECT | 3D_ASSISTED`. `3D_ASSISTED` → Shape Reconstruction → PrimitiveAnything → cleanup. 1 Minecraft block = 16 Blockbench units; `front_direction`.
 ## Fast Routing Contract
 Asset work **must not begin by searching repository files**.
-**Authoring Context Firewall:** `workspace/active/<asset>/` as cwd, not `mcp/`; deeper MCP development rules are not authoring plan. Do **not** inspect tests/CI/source or run Bun/build/verifiers/deploy.
-Existing → inspect only affected target/dependencies; broaden if unclear.
+**Authoring Context Firewall:** Authoring Codex uses `workspace/active/<asset>/` as cwd, not `mcp/`; deeper MCP development rules are not authoring plan. Do **not** inspect tests/CI/source or run Bun/build/verifiers/deploy.
+Existing → inspect only affected target/dependencies.
 `ACTIVE STAGE + intent + known state/UUIDs → exact known Runtime capability → Gateway execution → reuse result`
 ## Authoring Stage Lock
 `DISCOVER → AUTHOR → VERIFY → CORRECT → VERIFY → DONE`.
@@ -58,7 +58,7 @@ Known Cubes sharing one deterministic TRANSLATE/RESIZE intent → derive absolut
 Validation failure repairs arguments for the **same capability**.
 ## Capability Discovery / Recovery
 Discovery = deferred spec loading after routing.
-known exact capability   → invoke directly
+known exact capability → invoke directly
 unknown/stale → one precise `search_capabilities` query, `limit=4`; `describe_capability` once before mutation.
 One precise search miss → reformulate once; second miss → `BLOCKED`. A known foreign-phase capability is never a discovery miss: AUTHORING↔Animation uses handoff.
 `INVALID_INPUT` → repair args; same capability. `TARGET_AMBIGUOUS` → resolve UUID once; `TARGET_NOT_FOUND` → focused identity lookup; `STALE_STATE` → one focused refresh; `NO_EFFECT` → diagnose payload; `CAPABILITY_MISMATCH` → handoff/BLOCKED; `OUTCOME_UNKNOWN` → inspect before retry.
