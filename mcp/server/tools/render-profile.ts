@@ -189,6 +189,20 @@ type Fs = {
 
 type ResourceSource = z.infer<typeof sourceSchema>;
 type ResourceOutput = z.infer<typeof outputSchema>;
+type WriteIntent = {
+  key: "client_entity" | "render_controller";
+  path: string;
+  content: string;
+  allowReplace: boolean;
+};
+type StagedWrite = WriteIntent & {
+  existed: boolean;
+  byteLength: number;
+  temp: string;
+  backup: string;
+  backedUp: boolean;
+  committed: boolean;
+};
 
 function fsAccess(reason: string): Fs {
   // @ts-ignore Blockbench desktop runtime owner
@@ -223,69 +237,130 @@ function outputDecision(sourcePath: string | null, output?: ResourceOutput) {
   if (!path) return null;
   return {
     path,
+    explicit: output !== undefined,
     allowReplace:
       output?.overwrite === true ||
       (sourcePath !== null && normalizePath(sourcePath) === normalizePath(path)),
   };
 }
 
-function writeAtomic(path: string, content: string, allowReplace: boolean) {
-  const fs = fsAccess(`BlockIT requested write access to ${path}`);
-  const existed = fs.existsSync(path);
-  if (existed && !allowReplace) {
-    throw new Error(`Refusing to replace ${path} without overwrite=true.`);
-  }
-  let temp = "";
-  let backup = "";
+function allocateSiblingPath(
+  fs: Fs,
+  target: string,
+  kind: "tmp" | "bak"
+): string {
   for (let index = 0; index < 64; index += 1) {
-    const candidate = `${path}.blockit-render-tmp-${process.pid}-${index}`;
-    if (!fs.existsSync(candidate)) {
-      temp = candidate;
-      break;
-    }
+    const candidate = `${target}.blockit-render-${kind}-${process.pid}-${index}`;
+    if (!fs.existsSync(candidate)) return candidate;
   }
-  if (!temp) throw new Error("Could not allocate bounded temporary render resource file.");
-  if (existed) {
-    for (let index = 0; index < 64; index += 1) {
-      const candidate = `${path}.blockit-render-bak-${process.pid}-${index}`;
-      if (!fs.existsSync(candidate)) {
-        backup = candidate;
-        break;
-      }
-    }
-    if (!backup) throw new Error("Could not allocate bounded render resource backup.");
+  throw new Error(`Could not allocate bounded ${kind} file for ${target}.`);
+}
+
+function stageWrite(fs: Fs, intent: WriteIntent): StagedWrite {
+  const existed = fs.existsSync(intent.path);
+  if (existed && !intent.allowReplace) {
+    throw new Error(`Refusing to replace ${intent.path} without overwrite=true.`);
   }
-  const bytes = Buffer.byteLength(content, "utf8");
-  let committed = false;
-  let backedUp = false;
-  try {
-    fs.writeFileSync(temp, content);
-    const staged = fs.statSync(temp);
-    if (!staged.isFile() || staged.size !== bytes) {
-      throw new Error("Temporary render resource write verification failed.");
-    }
-    if (existed) {
-      fs.renameSync(path, backup);
-      backedUp = true;
-    }
-    fs.renameSync(temp, path);
-    committed = true;
-    const final = fs.statSync(path);
-    if (!final.isFile() || final.size !== bytes) {
-      throw new Error("Committed render resource write verification failed.");
-    }
-  } catch (error) {
+  const byteLength = Buffer.byteLength(intent.content, "utf8");
+  const temp = allocateSiblingPath(fs, intent.path, "tmp");
+  const backup = existed ? allocateSiblingPath(fs, intent.path, "bak") : "";
+  fs.writeFileSync(temp, intent.content);
+  const staged = fs.statSync(temp);
+  if (!staged.isFile() || staged.size !== byteLength) {
     try {
       if (fs.existsSync(temp)) fs.unlinkSync(temp);
-      if (committed && fs.existsSync(path)) fs.unlinkSync(path);
-      if (backedUp && backup && fs.existsSync(backup)) fs.renameSync(backup, path);
     } catch {}
+    throw new Error(`Temporary render resource write verification failed for ${intent.path}.`);
+  }
+  return {
+    ...intent,
+    existed,
+    byteLength,
+    temp,
+    backup,
+    backedUp: false,
+    committed: false,
+  };
+}
+
+function rollbackStagedWrites(fs: Fs, writes: readonly StagedWrite[]): void {
+  for (const write of [...writes].reverse()) {
+    try {
+      if (write.committed && fs.existsSync(write.path)) fs.unlinkSync(write.path);
+      if (fs.existsSync(write.temp)) fs.unlinkSync(write.temp);
+      if (write.backedUp && write.backup && fs.existsSync(write.backup)) {
+        fs.renameSync(write.backup, write.path);
+      }
+    } catch {}
+  }
+}
+
+export function writeRenderResourceBatchAtomic(intents: readonly WriteIntent[]) {
+  if (!intents.length) return [];
+  const normalized = new Set<string>();
+  for (const intent of intents) {
+    const key = normalizePath(intent.path);
+    if (normalized.has(key)) {
+      throw new Error("Render-profile batch outputs must use distinct files.");
+    }
+    normalized.add(key);
+  }
+
+  const fs = fsAccess(
+    `BlockIT requested transactional render-profile write access to ${intents.map((item) => item.path).join(", ")}`
+  );
+  const writes: StagedWrite[] = [];
+  try {
+    // Stage and verify every output before any target file is moved.
+    for (const intent of intents) writes.push(stageWrite(fs, intent));
+
+    // Preserve every existing target before committing the first replacement.
+    for (const write of writes) {
+      if (!write.existed) continue;
+      fs.renameSync(write.path, write.backup);
+      write.backedUp = true;
+    }
+
+    // Commit every staged file, then verify the entire set.
+    for (const write of writes) {
+      fs.renameSync(write.temp, write.path);
+      write.committed = true;
+    }
+    for (const write of writes) {
+      const final = fs.statSync(write.path);
+      if (!final.isFile() || final.size !== write.byteLength) {
+        throw new Error(`Committed render resource write verification failed for ${write.path}.`);
+      }
+    }
+  } catch (error) {
+    rollbackStagedWrites(fs, writes);
     throw error;
   }
-  try {
-    if (backup && fs.existsSync(backup)) fs.unlinkSync(backup);
-  } catch {}
-  return { path, byte_length: bytes, replaced_existing: existed };
+
+  for (const write of writes) {
+    try {
+      if (write.backup && fs.existsSync(write.backup)) fs.unlinkSync(write.backup);
+    } catch {}
+  }
+
+  return writes.map((write) => ({
+    key: write.key,
+    path: write.path,
+    byte_length: write.byteLength,
+    replaced_existing: write.existed,
+    transaction: intents.length > 1 ? ("paired_atomic" as const) : ("single_atomic" as const),
+  }));
+}
+
+function writeAtomic(
+  key: WriteIntent["key"],
+  path: string,
+  content: string,
+  allowReplace: boolean
+) {
+  return writeRenderResourceBatchAtomic([
+    { key, path, content, allowReplace },
+  ])[0];
 }
 
 function bounded(content: string, max: number) {
@@ -354,6 +429,7 @@ export function registerRenderProfileTools(): void {
               `Render-profile binding is invalid: ${blocking.map((item) => item.code).join(", ")}.`
             );
           }
+
           const clientText = serializeClientEntityDocument(result.client_entity);
           const renderText = serializeRenderControllerDocument(result.render_controller);
           const clientOutput = outputDecision(clientSource.path, request.client_entity_output);
@@ -365,14 +441,35 @@ export function registerRenderProfileTools(): void {
           ) {
             throw new Error("Client entity and render controller outputs must use different files.");
           }
-          // Both documents are fully compiled and validated before either write starts.
-          const clientWrite = clientOutput
-            ? writeAtomic(clientOutput.path, clientText, clientOutput.allowReplace)
-            : null;
-          const renderWrite = renderOutput
-            ? writeAtomic(renderOutput.path, renderText, renderOutput.allowReplace)
-            : null;
-          const max = defaultContentLimit(Boolean(clientWrite || renderWrite), request.max_content_length);
+
+          const writeIntents: WriteIntent[] = [];
+          if (
+            clientOutput &&
+            (result.binding.changed.client_entity_slot || clientOutput.explicit)
+          ) {
+            writeIntents.push({
+              key: "client_entity",
+              path: clientOutput.path,
+              content: clientText,
+              allowReplace: clientOutput.allowReplace,
+            });
+          }
+          if (
+            renderOutput &&
+            (result.binding.changed.render_controller_assignment || renderOutput.explicit)
+          ) {
+            writeIntents.push({
+              key: "render_controller",
+              path: renderOutput.path,
+              content: renderText,
+              allowReplace: renderOutput.allowReplace,
+            });
+          }
+          const writes = writeRenderResourceBatchAtomic(writeIntents);
+          const clientWrite = writes.find((item) => item.key === "client_entity") ?? null;
+          const renderWrite = writes.find((item) => item.key === "render_controller") ?? null;
+          const max = defaultContentLimit(writes.length > 0, request.max_content_length);
+
           return {
             content: [
               {
@@ -384,6 +481,10 @@ export function registerRenderProfileTools(): void {
               execution: "applied",
               action: "render_profile",
               binding: result.binding,
+              write_transaction: {
+                state: writes.length > 1 ? "paired_atomic" : writes.length === 1 ? "single_atomic" : "compile_only",
+                write_count: writes.length,
+              },
               client_entity_write: clientWrite,
               render_controller_write: renderWrite,
               summary,
@@ -405,7 +506,9 @@ export function registerRenderProfileTools(): void {
           );
           const text = serializeClientEntityDocument(document);
           const output = outputDecision(source.path, request.client_entity_output);
-          const write = output ? writeAtomic(output.path, text, output.allowReplace) : null;
+          const write = output
+            ? writeAtomic("client_entity", output.path, text, output.allowReplace)
+            : null;
           const max = defaultContentLimit(Boolean(write), request.max_content_length);
           return {
             content: [{ type: "text" as const, text: `Set client-entity render material slot ${request.slot}.` }],
@@ -435,7 +538,9 @@ export function registerRenderProfileTools(): void {
             );
         const text = serializeRenderControllerDocument(document);
         const output = outputDecision(source.path, request.render_controller_output);
-        const write = output ? writeAtomic(output.path, text, output.allowReplace) : null;
+        const write = output
+          ? writeAtomic("render_controller", output.path, text, output.allowReplace)
+          : null;
         const max = defaultContentLimit(Boolean(write), request.max_content_length);
         return {
           content: [
