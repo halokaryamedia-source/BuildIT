@@ -1,9 +1,13 @@
 import { describe, expect, test } from "bun:test";
-import { DEFAULT_MCP_REGISTRATION_PROFILE } from "@/lib/registrationProfile";
-import { describeMcpSurfaceToolNames } from "@/server/tools";
 
 async function text(path: string): Promise<string> {
   return Bun.file(path).text();
+}
+
+function sourceCount(source: string, pattern: RegExp, label: string): number {
+  const raw = source.match(pattern)?.[1];
+  if (!raw) throw new Error(`Could not read ${label} from canonical surface measurement source.`);
+  return Number(raw);
 }
 
 describe("current developer-facing documentation sync", () => {
@@ -18,6 +22,7 @@ describe("current developer-facing documentation sync", () => {
       mcpReadme,
       gatewayReadme,
       about,
+      phaseMeasureSource,
     ] = await Promise.all([
       text("../CONTEXT.md"),
       text("../docs/knowledge/flow.md"),
@@ -28,27 +33,35 @@ describe("current developer-facing documentation sync", () => {
       text("README.md"),
       text("gateway/README.md"),
       text("about.md"),
+      text("scripts/measure-phase-surfaces.ts"),
     ]);
 
-    const geometryTools = describeMcpSurfaceToolNames(
-      DEFAULT_MCP_REGISTRATION_PROFILE,
-      "geometry"
+    // Repository Verify intentionally runs without package installation. Read the
+    // stable measurement constants rather than importing Runtime modules that need
+    // zod/Blockbench dependencies; measure:phases separately proves these counts
+    // against the real source-owned tools/list surface in MCP Verify.
+    const callableToolCount = sourceCount(
+      phaseMeasureSource,
+      /const CATALOG_TOOL_COUNT = (\d+);/,
+      "callable catalog count"
     );
-    const texturingTools = describeMcpSurfaceToolNames(
-      DEFAULT_MCP_REGISTRATION_PROFILE,
-      "texturing"
+    const geometryToolCount = sourceCount(
+      phaseMeasureSource,
+      /geometry:\s*(\d+),/,
+      "Geometry surface count"
     );
-    const animationTools = describeMcpSurfaceToolNames(
-      DEFAULT_MCP_REGISTRATION_PROFILE,
-      "animation"
+    const texturingToolCount = sourceCount(
+      phaseMeasureSource,
+      /texturing:\s*(\d+),/,
+      "Texturing surface count"
     );
-    const callableToolCount = new Set([
-      ...geometryTools,
-      ...texturingTools,
-      ...animationTools,
-    ]).size;
+    const animationToolCount = sourceCount(
+      phaseMeasureSource,
+      /animation:\s*(\d+),/,
+      "Animation surface count"
+    );
 
-    expect(geometryTools).toEqual(texturingTools);
+    expect(geometryToolCount).toBe(texturingToolCount);
     expect(flow).toContain("current proof state        → docs/knowledge/current-validation.md");
     expect(flow).not.toContain("docs/foundation/validation-report.md");
 
@@ -71,27 +84,27 @@ describe("current developer-facing documentation sync", () => {
     expect(implementation).toContain("`mcp/tests/developer-loop.test.ts`");
     expect(implementation).toContain(`${api.tools.length} declared source ToolSpecs`);
     expect(implementation).toContain(`callable union has **${callableToolCount} tools**`);
-    expect(implementation).toContain(`share **${geometryTools.length}** AUTHORING tools`);
-    expect(implementation).toContain(`Animation exposes **${animationTools.length}**`);
+    expect(implementation).toContain(`share **${geometryToolCount}** AUTHORING tools`);
+    expect(implementation).toContain(`Animation exposes **${animationToolCount}**`);
     expect(implementation).toContain("blend-transition curves are available");
 
     expect(rootReadme).toContain(`Source callable union        ${callableToolCount} tools`);
-    expect(rootReadme).toContain(`AUTHORING source surface     ${geometryTools.length} tools`);
-    expect(rootReadme).toContain(`Animation source surface     ${animationTools.length} tools`);
+    expect(rootReadme).toContain(`AUTHORING source surface     ${geometryToolCount} tools`);
+    expect(rootReadme).toContain(`Animation source surface     ${animationToolCount} tools`);
     expect(rootReadme).not.toContain("Runtime callable union          51 tools");
     expect(rootReadme).not.toContain("not yet production-implemented end-to-end");
 
     expect(mcpReadme).toContain(`Source callable union        ${callableToolCount} tools`);
-    expect(mcpReadme).toContain(`AUTHORING surface            ${geometryTools.length} tools`);
-    expect(mcpReadme).toContain(`Animation surface            ${animationTools.length} tools`);
+    expect(mcpReadme).toContain(`AUTHORING surface            ${geometryToolCount} tools`);
+    expect(mcpReadme).toContain(`Animation surface            ${animationToolCount} tools`);
     expect(mcpReadme).toContain("materialize_3d_assisted_scaffold");
     expect(mcpReadme).not.toContain(
       "Remaining implementation is the thin public materializer ToolSpec binding"
     );
 
     expect(gatewayReadme).toContain(`Runtime callable union  ${callableToolCount}`);
-    expect(gatewayReadme).toContain(`AUTHORING surface       ${geometryTools.length}`);
-    expect(gatewayReadme).toContain(`Animation surface       ${animationTools.length}`);
+    expect(gatewayReadme).toContain(`AUTHORING surface       ${geometryToolCount}`);
+    expect(gatewayReadme).toContain(`Animation surface       ${animationToolCount}`);
     expect(gatewayReadme).toContain("client_reconnect_required=false");
     expect(gatewayReadme).toContain("without a manual AI-client reconnect");
 
