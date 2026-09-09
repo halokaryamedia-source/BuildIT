@@ -17,28 +17,15 @@ export const CODEX_TOOL_SEARCH_REFERENCE = {
   ranking: "BM25",
 } as const;
 
-type ToolDiscoveryCase = {
-  expected: string;
-  query: string;
-};
-
-type CorpusEntry = {
-  name: string;
-  search_text: string;
-};
-
-type RankedTool = {
-  name: string;
-  score: number;
-};
-
+type ToolDiscoveryCase = { expected: string; query: string };
+type CorpusEntry = { name: string; search_text: string };
+type RankedTool = { name: string; score: number };
 type CollisionPair = {
   expected: string;
   actual: string;
   count: number;
   examples: string[];
 };
-
 type Top8Miss = {
   query: string;
   expected: string;
@@ -393,7 +380,6 @@ function tokenize(text: string): string[] {
 
 export function buildToolSearchCorpus(): CorpusEntry[] {
   const definitions = getEnabledToolDefinitions();
-
   return Object.entries(definitions)
     .map(([name, definition]) => {
       const topLevelProperties = Object.keys(definition.inputSchema).sort();
@@ -409,8 +395,9 @@ export function buildToolSearchCorpus(): CorpusEntry[] {
           MCP_SERVER_INSTRUCTIONS,
           ...topLevelProperties,
         ]
-          .filter((part): part is string =>
-            typeof part === "string" && part.length > 0
+          .filter(
+            (part): part is string =>
+              typeof part === "string" && part.length > 0
           )
           .join(" "),
       };
@@ -421,7 +408,6 @@ export function buildToolSearchCorpus(): CorpusEntry[] {
 function rankTools(query: string, corpus: CorpusEntry[]): RankedTool[] {
   const tokenizedDocuments = corpus.map((entry) => tokenize(entry.search_text));
   const documentFrequencies = new Map<string, number>();
-
   for (const tokens of tokenizedDocuments) {
     for (const token of new Set(tokens)) {
       documentFrequencies.set(token, (documentFrequencies.get(token) ?? 0) + 1);
@@ -448,7 +434,6 @@ function rankTools(query: string, corpus: CorpusEntry[]): RankedTool[] {
       for (const token of queryTokens) {
         const frequency = termFrequencies.get(token) ?? 0;
         if (frequency === 0) continue;
-
         const documentFrequency = documentFrequencies.get(token) ?? 0;
         const inverseDocumentFrequency = Math.log(
           1 +
@@ -456,15 +441,12 @@ function rankTools(query: string, corpus: CorpusEntry[]): RankedTool[] {
               (documentFrequency + 0.5)
         );
         const lengthNormalization =
-          1 -
-          b +
-          b * (tokens.length / Math.max(averageDocumentLength, 1));
+          1 - b + b * (tokens.length / Math.max(averageDocumentLength, 1));
         score +=
           inverseDocumentFrequency *
           ((frequency * (k1 + 1)) /
             (frequency + k1 * lengthNormalization));
       }
-
       return { name: entry.name, score };
     })
     .sort(
@@ -516,9 +498,7 @@ export function evaluateToolDiscovery(): ToolDiscoveryEvalReport {
         examples: [],
       };
       collision.count += 1;
-      if (collision.examples.length < 3) {
-        collision.examples.push(testCase.query);
-      }
+      if (collision.examples.length < 3) collision.examples.push(testCase.query);
       collisionMap.set(key, collision);
     }
 
@@ -570,9 +550,9 @@ export function assertToolDiscoveryEvalIntegrity(
 ): void {
   const failures: string[] = [];
 
-  if (report.enabled_tool_count !== 53) {
+  if (report.enabled_tool_count !== 54) {
     failures.push(
-      `enabled_tool_count=${report.enabled_tool_count}; expected 53`
+      `enabled_tool_count=${report.enabled_tool_count}; expected 54`
     );
   }
   if (report.case_count < 100 || report.case_count > 150) {
