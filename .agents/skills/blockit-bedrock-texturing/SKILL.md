@@ -18,6 +18,7 @@ atlas → list_textures / activate_texture / create_texture / get_texture
 paint → draw_shape_tool / paint_fill_tool / paint_with_brush / eraser_tool
 fresh-revision batch → paint_texture_transaction
 PBR/material semantics → manage_material / manage_material_instances
+render runtime → manage_render_profile
 ```
 Unknown → `search_capabilities(limit=4)`. No confirmation rereads.
 **Pin atlas UUID and pass `texture_id` when multiple textures are loaded.**
@@ -26,7 +27,7 @@ Unknown → `search_capabilities(limit=4)`. No confirmation rereads.
 Requested atlas size/density are constraints; never silently enlarge.
 ## First Call
 `blank create_texture → explicit width+height from project UV`; **not omit blank Atlas size**.
-`create_texture`: provisional **16×16 blank**; **128×128 default, 256×256 opt-in**. Reuse existing atlas UUID.
+`create_texture`: provisional **16×16 blank**; **128×128 default, 256×256 opt-in**. Reuse atlas UUID.
 ## Workplan / Coverage
 material cohorts; palette roles `BASE | SHADOW | HIGHLIGHT | ACCENT/IDENTITY`; form/contact/occlusion/edge/identity/detail.
 Face Coverage Ledger: `UNPAINTED | BASE_ONLY | STYLED | INTENTIONAL_FLAT | INTENTIONAL_TRANSPARENT | SHARED`.
@@ -35,13 +36,13 @@ Variants/PBR: `list_textures.production_alignment.gate=ready`; `seam_continuity`
 ### Reference-Grounded Palette / Atlas-Island Discipline
 Integer texels; **pixels per UV unit** owns scale; hue ramp; hard clusters; no antialiasing.
 ## Texture Styling
-generic palette, copied unrelated texture, flat rectangles, or random high-contrast noise are not completion. Avoid pillow shading, banding, mixels, border-only detail.
-`BASE PASS → VALUE / FORM PASS → IDENTITY PASS → SECONDARY DETAIL PASS → VERIFY`.
+generic palette/copied unrelated texture/flat rectangles/random high-contrast noise ≠ completion. Avoid pillow shading, banding, mixels, border-only detail.
+`BASE PASS → VALUE / FORM PASS → SURFACE PATTERN PASS → IDENTITY PASS → SECONDARY DETAIL PASS → RENDER / ALPHA VERIFY → VERIFY`.
 ### Render / PBR / Paint Safety
-Namespaces: `render_profile`+`minecraft_material_code` | `pbr_texture_set` | `geometry_material_instance` | `surface_pattern`; `render_mode`=preview only.
-cutout=`entity_alphatest`; translucent=`entity_alphablend`; emissive_mask=`entity_emissive`; custom=`UNVERIFIED`. Alpha follows render_profile, not PNG/surface_pattern.
+Namespaces: `render_profile`+`minecraft_material_code` | `pbr_texture_set` | `geometry_material_instance` | `surface_pattern`; `render_mode` preview-only.
+cutout=`entity_alphatest`; translucent=`entity_alphablend`; emissive_mask=`entity_emissive`. Alpha follows render_profile.
 Variants preserve production base role + compatible dimensions/mapping; `normal XOR height`.
-`authoring_status`; MERS=MER+`subsurface_value>0`. `manage_material_instances`=geometry metadata, not entity render material.
+`authoring_status`; MERS=MER+`subsurface_value>0`.
 `paint_settings`: `pixel_perfect`, `lock_alpha`, `paint_side_restrict`; Mirror after semantic symmetry.
 ## Coherent Styling Window / Anti-Micro-Loop
 representative patch/cohort → cohort-wide; formula/gradient/color count is not quality evidence.
