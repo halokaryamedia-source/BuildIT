@@ -5,7 +5,7 @@ description: Mandatory BlockIT Bedrock Texture specialist.
 # BlockIT Bedrock Texturing
 Geometry/UV capabilities remain callable for bounded upstream correction; Texturing **must not borrow Cube mutation**.
 ## Asset-Only Visual Runtime Boundary
-No RP development: opaque/cutout/blend/emissive = visual intent; Texture variants = asset-only.
+No RP dev: opaque/cutout/blend/emissive = visual intent; Texture variants asset-only.
 ## Entry / Correction
 **No Geometry↔Texturing phase switch.** AUTHORING↔Animation only: `HANDOFF_REQUIRED` + `switch_authoring_phase`.
 Entry: **Geometry APPROVED + UV Layout PASS**; final Box UV locked with `autouv=0`, no invalid/out-of-bounds/partial-overlap.
@@ -34,9 +34,9 @@ Requested atlas size/density are constraints; never silently enlarge.
 material cohorts; palette roles `BASE | SHADOW | HIGHLIGHT | ACCENT/IDENTITY`; form/contact/occlusion/edge/identity/detail.
 Face Coverage Ledger: `UNPAINTED | BASE_ONLY | STYLED | INTENTIONAL_FLAT | INTENTIONAL_TRANSPARENT | SHARED`.
 `list_textures.optimization_opportunities.coverage.gate`: `incomplete|partial` / `FACE_ACCOUNTING_INCOMPLETE` → no completion; one `list_textures`/pass; `ready` ≠ visual PASS.
-Variants/PBR: `list_textures.production_alignment.gate=ready`; `seam_continuity`; `pbr_content`.
+Variants: `list_textures.production_alignment.gate=ready`; `seam_continuity`; `pbr_content`.
 ### Reference-Grounded Palette / Atlas-Island Discipline
-Integer texels; **pixels per UV unit** owns scale; hue; hard clusters.
+Integer texels; **pixels per UV unit** owns scale; hue ramp; hard clusters.
 ## Texture Styling
 generic palette; copied unrelated texture; flat rectangles; random high-contrast noise ≠ completion.
 `BASE PASS → VALUE / FORM PASS → SURFACE PATTERN PASS → IDENTITY PASS → SECONDARY DETAIL PASS → RENDER / ALPHA VERIFY → VERIFY`.

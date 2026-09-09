@@ -50,10 +50,10 @@ Large counts, rotated Cubes, per-face UV and Locators can be valid. Locator = li
 
 ## Primary Mass / Proportion / Depth
 `frame/envelope → primary masses → shared boundaries → cross-view proportions → depth/layering → silhouette/proportion gate → primary blockout`.
-Front/back constrain width+height; sides depth+height; top width+depth. **Front agreement does not certify depth.** Depth: `OBSERVED | INFERRED | UNRESOLVED`. Minor drift → one interpretation; do not average. Unresolved material conflict → `BLOCKED`.
+Front/back constrain width+height; sides depth+height; top width+depth. **Front agreement does not certify depth.** Depth: `OBSERVED | INFERRED | UNRESOLVED`. Minor drift → one interpretation. Do not average drift. Unresolved material conflict → `BLOCKED`.
 
 ## Surface Coverage / Negative Space
-**Do not force universal watertight geometry**; designed openings remain open.
+**do not force universal watertight geometry**; designed openings remain open.
 Relations: `CLOSED_BOUNDARY | INTENTIONAL_OPENING | LAYERED_OFFSET | INTENTIONAL_INTERSECTION | CUTOUT_CARRIER`.
 For adjacency/layer/contact use fresh views + one bounded `inspect_model_bounds`. Each required surface class needs current evidence once. Review `z_fighting | micro_gap | coplanar_edge_gap | shallow_penetration`; overlap alone never proves correctness.
 
@@ -72,7 +72,7 @@ Detail-only span/thickness `<= 4 Blockbench units` is an **anti-overcube guardra
 
 Verdict requires approved reference + fresh current-revision model evidence:
 `claim | matching reference view | current view | observed difference | FAIL | UNVERIFIED | PASS`.
-Mutation stales affected captures. Correct first cause, then recapture affected views. `capture_model_views` correspondence only maps board slots; it is not a scorer and never creates visual PASS.
+Mutation stales affected captures. Correct first cause, then recapture affected views. `capture_model_views` correspondence metadata only maps captures to canonical board slots; it is not a scorer and never creates visual PASS.
 Tool success, coordinates, bounds, hierarchy, validators, or similarity scores cannot justify `PASS`. Internal Geometry `PASS` requires form/depth, surface integrity, hierarchy/pivots, and no major defect.
 
 **UV Readiness Preflight** checks thin/Box-UV collapse, aspect/representation, seam/unique-region blockers. Read-only: no production UV/`UV Layout PASS`. **User Geometry APPROVED is required** before production UV.
