@@ -3,7 +3,7 @@ name: blockit-bedrock-texturing
 description: Mandatory BlockIT Bedrock Texture specialist.
 ---
 # BlockIT Bedrock Texturing
-Geometry/UV callable for bounded correction; Texturing **must not borrow Cube mutation**.
+Geometry/UV capabilities remain callable for bounded upstream correction; Texturing **must not borrow Cube mutation**.
 ## Asset-Only Visual Runtime Boundary
 No RP dev: opaque/cutout/blend/emissive=visual intent; Texture variants asset-only.
 ## Entry / Correction
@@ -31,14 +31,14 @@ Requested atlas size/density are constraints; never silently enlarge; return to 
 `blank create_texture → explicit width+height from project UV`; **not omit blank Atlas size**.
 `create_texture`: provisional **16×16 blank**; **128×128 default, 256×256 opt-in**. Reuse existing atlas UUID.
 ## Workplan / Coverage
-material cohorts; palette roles `BASE | SHADOW | HIGHLIGHT | ACCENT/IDENTITY`; form/contact/occlusion/edge/identity/detail.
+cohorts; palette roles `BASE | SHADOW | HIGHLIGHT | ACCENT/IDENTITY`; form/contact/occlusion/edge/identity/detail.
 Face Coverage Ledger: `UNPAINTED | BASE_ONLY | STYLED | INTENTIONAL_FLAT | INTENTIONAL_TRANSPARENT | SHARED`.
 `list_textures.optimization_opportunities.coverage.gate`: `incomplete|partial` / `FACE_ACCOUNTING_INCOMPLETE` → no completion; one `list_textures`/pass; `ready` ≠ visual PASS.
 Variants: `list_textures.production_alignment.gate=ready`; `seam_continuity`; `pbr_content`.
 ### Reference-Grounded Palette / Atlas-Island Discipline
 Integer texels; **pixels per UV unit** owns scale; hue ramp; hard clusters.
 ## Texture Styling
-generic palette; copied unrelated texture; flat rectangles; random high-contrast noise ≠ completion.
+generic palette/copy/flat/random-noise ≠ completion.
 `BASE PASS → VALUE / FORM PASS → SURFACE PATTERN PASS → IDENTITY PASS → SECONDARY DETAIL PASS → RENDER / ALPHA VERIFY → VERIFY`.
 ### Render / PBR / Paint Safety
 Namespaces: `render_profile`+`minecraft_material_code` | `pbr_texture_set` | `geometry_material_instance` | `surface_pattern`; `render_mode` preview-only.
@@ -51,11 +51,11 @@ representative patch/cohort → cohort-wide; formula/gradient/color count is not
 **No evidence-per-micro-mutation loop.**
 ## Texture Verify
 Reference + fresh `get_texture` + fresh **mapped model-view evidence** from `capture_model_views` → `FAIL | UNVERIFIED | PASS`.
-Verify required hidden material surfaces.
+Verify hidden material surfaces.
 `FAIL` → **smallest bounded causal correction** → one fresh affected evidence bundle → `IMPROVED | UNCHANGED | REGRESSED`; same causal direction twice → `BLOCKED`.
 Never use stale exported PNG/bbmodel.
 Animation → user Texture APPROVED + checkpoint → Animation Readiness Preflight → `HANDOFF_REQUIRED(target_phase=animation, readiness=ready)` → Gateway `switch_authoring_phase`, same task.
 ## Conditional Support — Not Default Routing
-User-intent only; not normal hot path.
+Conditional on user intent; not normal hot path.
 `gradient_tool | color_picker_tool | copy_brush_tool | paint_settings | create_brush_preset | load_brush_preset | texture_selection | texture_layer_management | add_texture_group | list_materials | get_material_info | import_texture_set`.
 `gradient_tool`: reference-supported continuous transition; no extra discovery/readback.

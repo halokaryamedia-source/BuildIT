@@ -20,7 +20,7 @@ Animation → Texturing APPROVED + checkpoint + Animation Readiness Preflight �
 ## Fast Routing Contract
 Asset work **must not begin by searching repository files**.
 **Authoring Context Firewall:** Authoring Codex uses `workspace/active/<asset>/` as cwd, not `mcp/`; deeper MCP development rules are not authoring plan. Do **not** inspect tests/CI/source or run Bun/build/verifiers/deploy.
-Existing → inspect only affected target/dependencies; broaden if unclear.
+Existing → inspect affected target/dependencies; broaden if unclear.
 `ACTIVE STAGE + intent + known state/UUIDs → exact known Runtime capability → Gateway execution → reuse result`
 ## Authoring Stage Lock
 `DISCOVER → AUTHOR → VERIFY → CORRECT → VERIFY → DONE`.
@@ -60,11 +60,11 @@ Validation failure repairs arguments for the **same capability**.
 Discovery = deferred spec loading after routing.
 known exact capability   → invoke directly
 unknown/stale → one precise `search_capabilities` query, `limit=4`; `describe_capability` once before mutation.
-Search miss → reformulate once; second → `BLOCKED`. Known foreign-phase capability → AUTHORING↔Animation handoff.
+One precise search miss → reformulate once; second → `BLOCKED`. Known foreign-phase capability → AUTHORING↔Animation handoff.
 `INVALID_INPUT` → repair args; same capability. `TARGET_AMBIGUOUS` → resolve UUID once; `TARGET_NOT_FOUND` → focused identity lookup; `STALE_STATE` → one focused refresh; `NO_EFFECT` → diagnose payload; `CAPABILITY_MISMATCH` → handoff/BLOCKED; `OUTCOME_UNKNOWN` → inspect before retry.
 Same routed failure twice without new evidence → `BLOCKED`.
 ## State Reuse / Anti-Loop
 Fresh mutation → reuse state/`geometry_effect`; no confirmation readback. Do not automatically re-read fresh mutation targets with `inspect_elements(mode=detail)`; no status/discovery/bounds/capture progress checks.
 `inspect_model_bounds` only for envelope/scale/ground/displacement or a diagnosed bounded surface/contact integrity question.
-Skip `get_project_info` after create/export unless lifecycle state is unknown/stale.
+Skip `get_project_info` after create/export unless lifecycle unknown/stale.
 `export_model`: `bedrock` JSON or `project` `.bbmodel`.
