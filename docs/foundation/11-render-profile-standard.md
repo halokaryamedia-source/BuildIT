@@ -38,7 +38,9 @@ These domains must never be inferred from one another.
 
 Do not use `transparent` as a canonical profile. It is ambiguous between cutout and translucency.
 
-## Canonical runtime route
+## Conditional integration route
+
+These retained APIs serve explicitly requested integration/compatibility work. Normal visual-asset authoring records render intent and checks its appearance without constructing an RP file graph.
 
 `manage_render_profile` is the entity-render mutation boundary for Texturing. It is intentionally separate from `manage_material` (PBR) and `manage_material_instances` (geometry metadata).
 

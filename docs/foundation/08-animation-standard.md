@@ -201,6 +201,8 @@ Controller states may link an Animation or another AnimationController. Nested-c
 
 ## Runtime Resource Wiring
 
+This retained file-backed route and the state-variable/remap operations below serve explicitly requested integration/compatibility work. Normal visual-asset authoring does not construct an RP file graph.
+
 A valid clip/controller is not Minecraft-active until the resource definition connects it. `manage_animation_controller(resource_operations=[...])` owns bounded file-backed runtime resource edits without creating another MCP tool.
 
 For `resource_kind="client_entity"`, the supported cohort is:

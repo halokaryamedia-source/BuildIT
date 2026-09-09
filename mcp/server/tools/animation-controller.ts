@@ -328,7 +328,7 @@ export const animationControllerToolDocs: ToolSpec[] = [
   {
     name: "manage_animation_controller",
     description:
-      "Creates or updates one Bedrock AnimationController in one Undo unit. Supports states, transitions, animation links, effects, scripts, and blend settings.",
+      "Creates/updates Bedrock AnimationControllers plus bounded client-entity animation/Molang runtime wiring, public/init/pre-animation scripts, scale, and controller variables without adding another tool.",
     annotations: {
       title: "Manage Animation Controller",
       destructiveHint: true,

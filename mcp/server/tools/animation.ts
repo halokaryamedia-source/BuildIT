@@ -720,9 +720,9 @@ export const animationToolDocs: ToolSpec[] = [
   {
     name: "create_animation",
     description:
-      "Creates a Bedrock animation with optional numeric bone transforms and particle/sound effects. Use manage_animation_timeline with operation=keyframes for later Molang or keyframe edits.",
+      "Creates one new authored Bedrock Animation clip with explicit bone transforms and optional initial sound/particle effects. Use this for a new clip, not project creation.",
     annotations: {
-      title: "Create Animation",
+      title: "Create Bedrock Animation Clip",
       destructiveHint: true,
     },
     parameters: createAnimationParameters,

@@ -451,6 +451,7 @@ function wireTextureReads(): void {
   const originalListTextures = listTextures.execute.bind(listTextures);
   listTextures.execute = async (args, context) => {
     const result = await originalListTextures(args, context);
+    if (args.diagnostics === false) return result;
     const record = objectRecord(result);
     const structured = record ? objectRecord(record.structuredContent) : null;
     if (!record || !structured) return result;

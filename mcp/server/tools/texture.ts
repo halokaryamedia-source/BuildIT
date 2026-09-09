@@ -186,7 +186,11 @@ export const addTextureGroupParameters = z.object({
     .describe("Whether the texture group is a PBR material or not."),
 });
 
-export const listTexturesParameters = z.object({});
+export const listTexturesParameters = z.object({
+  diagnostics: z.boolean().optional().default(true).describe(
+    "Keep true for UV/coverage/seam/PBR review; false returns texture inventory without UV or pixel diagnostics."
+  ),
+});
 
 export const getTextureParameters = z.object({
   texture: textureIdOptionalSchema,
@@ -427,7 +431,7 @@ export const textureToolDocs: ToolSpec[] = [
   {
     name: "list_textures",
     description:
-      "Lists texture identity, UV hygiene and bounded face-pixel diagnostics. Coverage states.varied means pixel variation, not styling acceptance; solid_color_faces identifies flat surfaces for review. Empty scans are incomplete. Pixel-read budget counts unique texture regions per invocation; every face remains accounted. Fractional logical UV is diagnostic; NON_INTEGRAL_PIXEL_MAPPING blocks non-integral physical texels. Readiness is not visual layout approval.",
+      "Lists texture identity; diagnostics=false skips UV/pixel analysis for discovery. Default true includes UV hygiene and bounded coverage/seam/PBR diagnostics. Seam scope is intra-Cube; cross-Cube continuity is not evaluated. Coverage states.varied means pixel variation, not styling acceptance; solid_color_faces identifies flat surfaces for review. Empty scans are incomplete. Pixel-read budget counts unique texture regions per invocation; every face remains accounted. Fractional logical UV is diagnostic; NON_INTEGRAL_PIXEL_MAPPING blocks non-integral physical texels. Readiness is not visual layout approval.",
     annotations: {
       title: "List Textures",
       readOnlyHint: true,
@@ -1703,17 +1707,17 @@ export function registerTextureTools() {
   createTool(textureToolDocs[3].name, {
     ...textureToolDocs[3],
     parameters: listTexturesParameters,
-    async execute() {
+    async execute({ diagnostics }) {
       const inventory = currentTextureInventory();
-      const uvAudit = buildUvAtlasAudit(
+      const uvAudit = diagnostics === false ? null : buildUvAtlasAudit(
         collectUvAtlasUsages(),
         Project?.texture_width ?? null,
         Project?.texture_height ?? null
       );
       const uvGate =
-        uvAudit.state === "available"
+        uvAudit?.state === "available"
           ? uvAudit.production_gate.state
-          : "unavailable";
+          : diagnostics === false ? "not_requested" : "unavailable";
       const result = {
         logical_uv: {
           width: Project?.texture_width ?? null,
@@ -1727,7 +1731,7 @@ export function registerTextureTools() {
           default_texture_uuid: inventory.default_texture_uuid,
           selected_texture_uuid: inventory.selected_texture_uuid,
         },
-        uv_audit: uvAudit,
+        ...(uvAudit ? { uv_audit: uvAudit } : {}),
         textures: inventory.textures,
       };
 

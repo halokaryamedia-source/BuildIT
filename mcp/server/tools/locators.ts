@@ -145,7 +145,7 @@ export const locatorToolDocs: ToolSpec[] = [
   {
     name: "list_locator_elements",
     description:
-      "Lists Locator/Null Object identity, type, and parent. Use inspect_element only for detailed authored state.",
+      "Lists Locator/Null Object identity, type, and parent. Use inspect_elements(mode=detail) for detailed authored state.",
     annotations: {
       title: "List Bedrock Locator Elements",
       readOnlyHint: true,

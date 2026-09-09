@@ -220,9 +220,9 @@ Approved Reference + Dimensions + Requirements
 
 DIRECT evidence rules:
 
-- First blockout uses one `capture_model_views` call for `front + left + top`.
+- New whole-form blockout defaults to one `capture_model_views` call for `front + left + top`; bounded edits use affected views.
 - Add `back` only for rear topology/asymmetry.
-- Add `front_left_3q` only for attachment/layering/orientation ambiguity.
+- Add `front_left_3q` for attachment/layering/orientation ambiguity or source-matched fidelity; compare only source-supported views.
 - Do not recapture all five views routinely.
 - A fresh capture already used to diagnose a defect is valid pre-correction evidence; do not capture it again before mutation merely for ceremony.
 - Every mutation makes affected prior captures stale for the post-mutation verdict, so recapture affected view(s) after the correction.
@@ -274,6 +274,8 @@ Texture Atlas   = bitmap/PNG canvas
 Texture Styling = authored pixels
 Texture Verify  = atlas + mapped-model validation
 ```
+
+Use `list_textures(diagnostics=false)` for identity discovery and `diagnostics=true` for UV/coverage/seam/PBR checkpoints (the default remains true). Inventory-only results are not readiness evidence. Seam diagnostics pair faces within one Cube; inspect cross-Cube contacts in mapped views. `inspect_animation` runs optional technical diagnostics only with `diagnostics=true`; neither diagnostic proves visual quality.
 
 Construction forms are **not presets**. Decide **transform ownership** before coordinates. Form/contact/articulation-defining **REQUIRED PRIMARY GROUPS/PIVOTS** may belong in the **PRIMARY BLOCKOUT**; neutral organization stays downstream. After primary PASS, add only **identity-weighted** secondary geometry.
 
@@ -382,7 +384,7 @@ Before keys, specify support/flight/impact events, weight path, plant/release ti
 
 Artist decisions precede batch coordinates: shared volume boundaries and landmark proportions for Geometry; observed stepped shading, contact shadows, highlights and surface continuity for Texture; contact/weight/timing for Animation. Batch known intent and reuse returned state. Texture scan budgets count unique physical regions per invocation while retaining every face; this reduces read work, not the visual evidence required.
 
-Diagnostic readiness is not acceptance: Texture `states.varied` means pixel variation only, and Animation numeric seam counts exclude unevaluated expressions/insufficient keys. Known major visual defects stay FAIL even after earlier approval. Corrective painting preserves unaffected shading/identity; side/bottom evidence is required when other views conceal material contacts. Do not replace a user-stopped test with another fixture.
+Diagnostic readiness is not acceptance: Texture `states.varied` means pixel variation only, and Animation numeric seam counts exclude unevaluated expressions/insufficient keys. Known major visual defects stay FAIL even after earlier approval. Corrective painting preserves unaffected shading/identity; side/bottom evidence is required when other views conceal material contacts. Do not resume or replace a user-stopped test without later explicit authorization. A newly authorized model is a separate intake; preserve the rejected asset unchanged.
 
 Invalidate minimum dependency:
 

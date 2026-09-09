@@ -85,8 +85,8 @@ can still produce the wrong visual result.
 
 ## Proof
 
-Apply root `AGENTS.md` minimum-proof rules. ChatGPT→GitHub can inspect runtime
-owners and consistency but cannot claim live Blockbench execution. Codex local
+Apply root `AGENTS.md` minimum-proof rules. `REMOTE_GITHUB` can inspect runtime
+owners and consistency but cannot claim live Blockbench execution. `LIVE_BLOCKBENCH`
 should use the smallest live reproduction that can falsify the changed runtime
 behavior, such as one load/unload, one changed operation plus undo, or one
 specific UI interaction.

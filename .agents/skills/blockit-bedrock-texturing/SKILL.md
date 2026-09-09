@@ -13,14 +13,14 @@ unlocked/invalid UV → Geometry owner + bounded UV correction; no phase switch.
 ## Direct Routing
 Reuse fresh state.
 ```text
-global UV/atlas readiness → list_textures
+discovery → list_textures(diagnostics=false); UV/atlas readiness → list_textures(diagnostics=true)
 face mapping → inspect_elements(mode=detail) only when needed
 blank atlas resolution unknown → get_project_info once
 atlas → list_textures / activate_texture / create_texture / get_texture
 paint → draw_shape_tool|paint_fill_tool|paint_with_brush|eraser_tool
 batch → paint_texture_transaction
 PBR/material semantics → manage_material / manage_material_instances
-render/preview → manage_render_profile
+render/preview → declared profile + mapped-model evidence; explicit file integration → manage_render_profile
 ```
 Unknown → `search_capabilities(limit=4)`. No confirmation rereads.
 **Pin atlas UUID and pass `texture_id` when multiple textures are loaded.**
@@ -35,7 +35,7 @@ material cohorts; palette roles `BASE | SHADOW | HIGHLIGHT | ACCENT/IDENTITY`; f
 Face Coverage Ledger: `UNPAINTED | BASE_ONLY | STYLED | INTENTIONAL_FLAT | INTENTIONAL_TRANSPARENT | SHARED`.
 `list_textures.optimization_opportunities.coverage.gate`: `incomplete|partial` / `FACE_ACCOUNTING_INCOMPLETE` → no completion; one `list_textures`/pass; `ready` ≠ visual PASS.
 `states.varied` ≠ `STYLED`; `review.solid_color_faces` locates flat candidates, not failures.
-Variants: `list_textures.production_alignment.gate=ready`; `seam_continuity`; `pbr_content`.
+Variants: `list_textures.production_alignment.gate=ready`; `seam_continuity` (intra-Cube only; inspect cross-Cube contacts visually); `pbr_content`.
 ### Reference-Grounded Palette / Atlas-Island Discipline
 Integer texels; **pixels per UV unit** owns detail scale. Build stepped hue/value ramps, contact shadows and highlights from observed form. Surface coordinates keep shading continuous across Cubes; UV edges do not invent seams.
 ## Texture Styling

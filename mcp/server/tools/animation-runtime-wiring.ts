@@ -545,24 +545,8 @@ async function executeOptimizedAnimationTimeline(
 export function wireAnimationRuntimeContracts(): void {
   if (animationRuntimeContractsWired) return;
 
-  const createDefinition = requireRuntimeToolDefinition("create_animation");
-  createDefinition.title = "Create Bedrock Animation Clip";
-  createDefinition.description =
-    "Creates one new authored Bedrock Animation clip with explicit bone transforms and optional initial sound/particle effects. Use this for a new clip, not project creation.";
-  createDefinition.annotations = {
-    ...(createDefinition.annotations ?? {}),
-    title: createDefinition.title,
-  };
-
   const inspectDefinition = requireRuntimeToolDefinition("inspect_animation");
   const originalInspect = inspectDefinition.execute.bind(inspectDefinition);
-  inspectDefinition.title = "Inspect Animation Clip or Controller";
-  inspectDefinition.description =
-    "Inspects authored Bedrock Animation clips or AnimationControllers. Use bone/channel/time_range for focused transform evidence; this is not model-element inspection.";
-  inspectDefinition.annotations = {
-    ...(inspectDefinition.annotations ?? {}),
-    title: inspectDefinition.title,
-  };
   inspectDefinition.parameterSchema = focusedInspectAnimationParameters;
   inspectDefinition.inputSchema = {
     ...inspectDefinition.inputSchema,
@@ -603,13 +587,6 @@ export function wireAnimationRuntimeContracts(): void {
   const timelineDefinition = requireRuntimeToolDefinition(
     "manage_animation_timeline"
   );
-  timelineDefinition.title = "Manage Bedrock Animation Timeline";
-  timelineDefinition.description =
-    "Authors one Bedrock Animation timeline through keyframes, graph/easing, timeline properties, coherent batch edits, or copy/paste. Batch uses batch_operation for offset/scale/reverse/mirror/smooth/bake.";
-  timelineDefinition.annotations = {
-    ...(timelineDefinition.annotations ?? {}),
-    title: timelineDefinition.title,
-  };
   timelineDefinition.parameterSchema = optimizedAnimationTimelineParameters;
   timelineDefinition.inputSchema = {
     ...timelineDefinition.inputSchema,

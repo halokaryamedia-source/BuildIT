@@ -43,13 +43,16 @@ describe("static footprint budget", () => {
     expect(referenceGenerator.length).toBeLessThan(8_000);
     // Review evidence/contact/pixel-space checks are deliberate added guidance.
     // These ceilings bound accidental growth, not visual acceptance or efficiency.
-    expect(orchestrator.length).toBeLessThan(5_500);
-    expect(modelling.length).toBeLessThan(9_500);
+    // Later explicit authorization must not be blocked by a historical test stop.
+    expect(orchestrator.length).toBeLessThan(5_700);
+    expect(modelling.length).toBeLessThan(9_800);
     // Preserve the actual handoff payload and atlas precedence rather than
     // compressing operational meaning to satisfy an incidental character cap.
-    expect(texturing.length).toBeLessThan(5_500);
-    expect(animation.length).toBeLessThan(5_500);
-    expect(workflow.length).toBeLessThan(9_000);
+    // Optional diagnostic routing and the intra-Cube seam boundary are required
+    // operational guidance; do not erase them to preserve the old byte ceiling.
+    expect(texturing.length).toBeLessThan(5_700);
+    expect(animation.length).toBeLessThan(5_700);
+    expect(workflow.length).toBeLessThan(9_200);
   });
 
   test("static footprint is explicitly separate from authoring efficiency", async () => {

@@ -179,8 +179,9 @@ export const addGroupParameters = z
             .describe("Parent Group UUID/name or `root`; may reference an earlier batch entry."),
         })
       )
+      .min(1)
       .optional()
-      .describe("Coherent Group/bone batch; ordered, one Undo unit."),
+      .describe("Coherent non-empty Group/bone batch; ordered, one Undo unit."),
   })
   .strict()
   .superRefine((value, ctx) => {

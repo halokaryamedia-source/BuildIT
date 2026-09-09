@@ -129,7 +129,7 @@ Neither GLB nor scaffold is final model authority.
 
 Codex must understand and validate what it authored before requesting review. Internal validation may use current Blockbench state, focused structural reads, and fresh model captures; those captures are for Codex and do not need to be shown to the user.
 
-Use `inspect_model_bounds` only when the numeric whole-model envelope materially matters.
+Use `inspect_model_bounds` only for material envelope/scale/ground/displacement or bounded surface/contact questions; reuse fresh evidence.
 
 ```text
 material defect remains → correct internally

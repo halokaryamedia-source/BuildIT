@@ -35,8 +35,8 @@ See:
 ## Canonical authoring route
 
 ```text
-list_materials
-  → get_material_info(one PBR Texture Set)
+reuse known UUID/state; list_materials only if identity is unknown
+  → get_material_info only if required state is missing/stale (skip for new material)
   → manage_material(create/configure/assign_channel)
   → list_textures validation
   → PBR preview / mapped model evidence

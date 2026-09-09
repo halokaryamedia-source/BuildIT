@@ -34,9 +34,9 @@ export const animationInspectionToolDocs: ToolSpec[] = [
   {
     name: "inspect_animation",
     description:
-      "Read-only Animation or AnimationController inspection. Use `bone` for transform keyframes, `state` for controller state detail, and effect detail only for authored Animation keyframes.",
+      "Inspects authored Bedrock Animation clips or AnimationControllers. Use bone/channel/time_range for focused transform evidence; this is not model-element inspection.",
     annotations: {
-      title: "Inspect Authored Animation",
+      title: "Inspect Animation Clip or Controller",
       readOnlyHint: true,
     },
     parameters: inspectAnimationParameters,

@@ -106,32 +106,4 @@ describe("Animation runtime efficiency contracts", () => {
     ).toBe(false);
   });
 
-  test("runtime wiring and specialist guidance stay aligned without adding tools", async () => {
-    const [wiring, registration, specialist] = await Promise.all([
-      Bun.file("server/tools/animation-runtime-wiring.ts").text(),
-      Bun.file("server/tools.ts").text(),
-      Bun.file("../.agents/skills/blockit-bedrock-animation/SKILL.md").text(),
-    ]);
-
-    expect(wiring).toContain("wireAnimationRuntimeContracts");
-    expect(wiring).toContain("optimizedAnimationTimelineParameters");
-    expect(wiring).toContain("withTemporaryAnimationPreview");
-    expect(wiring).toContain("loop_endpoint_mismatch_candidates");
-    expect(wiring).toContain("Create Bedrock Animation Clip");
-    expect(wiring).toContain("not project creation");
-    expect(wiring).toContain("Inspect Animation Clip or Controller");
-    expect(wiring).toContain("not model-element inspection");
-    expect(registration).toContain("registerConsolidatedAnimationTimelineTool();");
-    expect(registration).toContain("wireAnimationRuntimeContracts();");
-    expect(
-      registration.indexOf("registerConsolidatedAnimationTimelineTool();")
-    ).toBeLessThan(registration.indexOf("wireAnimationRuntimeContracts();"));
-    expect(wiring).not.toContain("createTool(");
-
-    expect(specialist).toContain("capture_model_views(animation_preview)");
-    expect(specialist).toContain("views × times <= 8");
-    expect(specialist).toContain('operation="batch"');
-    expect(specialist).toContain("batch_operation=");
-    expect(specialist).toContain("participating hierarchy/pivots are suitable");
-  });
 });

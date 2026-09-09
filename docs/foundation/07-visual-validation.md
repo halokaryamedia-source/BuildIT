@@ -34,7 +34,7 @@ A filename/path/manifest, Reference Evidence Map, prose description, remembered 
 
 ## Reference Claim / View Grounding
 
-Every material visual question should trace to the compact Reference Evidence Map derived from the actual approved image:
+Use a compact Reference Evidence Map only when material identity/view/attachment ambiguity needs explicit tracking; otherwise state the concrete difference and supporting views directly:
 
 ```text
 claim_id | observable reference claim | supporting reference view(s) | evidence state
@@ -42,7 +42,7 @@ claim_id | observable reference claim | supporting reference view(s) | evidence 
 
 The map is navigation/cache for current reasoning, not independent visual proof. If the actual image contradicts a cached claim, the image wins and the claim must be re-grounded.
 
-Compare like with like through an explicit View Pair Map:
+Compare like with like; use an explicit View Pair Map when correspondence is materially ambiguous:
 
 ```text
 REFERENCE FRONT ↔ MODEL front
@@ -66,7 +66,7 @@ PASS
 
 ### FAIL
 
-Use when any critical or major mismatch is visible in an applicable criterion. The review must name the `claim_id`, mismatch, and corresponding reference/model view evidence.
+Use when any critical or major mismatch is visible in an applicable criterion. The review must name the mismatch and corresponding reference/model view evidence; include `claim_id` only when a claim map was needed.
 
 ### UNVERIFIED
 
@@ -139,7 +139,7 @@ Current Local source includes:
 
 Returns raw rendered whole-Cube envelope facts such as size/center/ground context.
 
-Use `inspect_model_bounds` only when envelope/scale/ground/displacement materially affects the current decision, including an approved numeric target envelope. Do not call it as a mandatory modelling checkpoint. It is structural evidence, not a visual validator.
+Use `inspect_model_bounds` only for material envelope/scale/ground/displacement or bounded surface/contact questions; reuse fresh evidence. Do not call it as a mandatory modelling checkpoint. It is structural evidence, not a visual validator.
 
 ### `capture_model_views`
 
@@ -363,8 +363,7 @@ visual Cube.
 
 ### Group pivot
 
-Group/bone pivot changes use Blockbench transfer-origin semantics in the hardened
-`bone_rigging` path.
+Group/bone pivot changes use Blockbench transfer-origin semantics through `modify_group(origin)`; reserve `bone_rigging` for IK/mirror.
 
 Both behaviors are source implemented; live behavior still requires local proof.
 

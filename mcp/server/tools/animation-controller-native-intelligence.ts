@@ -478,8 +478,6 @@ export function wireAnimationControllerNativeIntelligence(): void {
       .optional()
       .describe("Native nested-controller/blend-curve branch; use instead of operations."),
   };
-  tool.description =
-    "Creates/updates Bedrock AnimationControllers, including bounded native nested-controller links and blend-transition curves.";
   tool.execute = async (args, context) => {
     if (args.native_operations !== undefined) {
       return executeNative(animationControllerNativeParameters.parse(args));

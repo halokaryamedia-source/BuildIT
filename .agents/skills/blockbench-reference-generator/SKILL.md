@@ -33,7 +33,7 @@ Resolve: explicit user fact → visible source evidence → leave optional unkno
 - simplest recognizable Blockbench-buildable geometry target;
 - Minecraft-readable palette/material regions/identity-critical markings.
 
-Keep nonvisual constraints outside image pixels. Original **Source Image(s)** remain visual authority. Generated previews normalize projection instead of copying lens distortion.
+Keep nonvisual constraints outside image pixels. Original **Source Image(s)** govern reference preparation; the explicitly approved interpretation governs downstream modelling. Generated previews normalize projection instead of copying lens distortion.
 
 `READY` means no ambiguity remains that could materially change identity, primary geometry, attachment/topology, buildability, or identity-critical texture information.
 

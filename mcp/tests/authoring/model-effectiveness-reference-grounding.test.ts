@@ -23,7 +23,7 @@ describe("model creation effectiveness — actual reference grounding", () => {
       expect(lower).toContain("memory");
     }
     expect(normalized(modelling)).toContain("active multimodal context");
-    expect(normalized(modelling)).toContain("context, not visual evidence");
+    expect(normalized(modelling)).toMatch(/path\/prose\/memory[^.]*not visual evidence/);
     expect(normalized(workflow)).toContain("actual approved image in active multimodal context");
     expect(normalized(workflow)).toContain("path/memory is not image evidence");
     expect(normalized(validation)).toContain("difference-first");

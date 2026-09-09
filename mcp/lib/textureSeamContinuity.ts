@@ -173,6 +173,8 @@ export function analyzeTextureSeamContinuity(
 
   return {
     state: edges.length === 0 ? ("not_applicable" as const) : ("available" as const),
+    scope: "intra_cube" as const,
+    cross_cube_continuity: "not_evaluated" as const,
     sampled_edge_count: edges.length,
     paired_seam_count: paired.length,
     unpaired_edge_count: unpaired.length,
@@ -191,6 +193,6 @@ export function analyzeTextureSeamContinuity(
       reasons: review.length > 0 ? ["SEAM_CONTINUITY_REVIEW"] : [],
     },
     note:
-      "Seam contrast is advisory evidence, not a style score or automatic failure. Intentional face lighting/material boundaries may differ; inspect only ranked candidates against the approved reference.",
+      "Only face edges within the same Cube are paired; cross-Cube continuity is not evaluated. Seam contrast is advisory evidence, not a style score or automatic failure. Intentional face lighting/material boundaries may differ; inspect ranked candidates against the approved reference.",
   };
 }

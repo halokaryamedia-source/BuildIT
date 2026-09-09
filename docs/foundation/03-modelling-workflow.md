@@ -16,7 +16,7 @@ known current state + optional grounded reference when reference-driven
 → when reference-driven: Semantic Form → construction / transform ownership / contact invariants → Primary Form Hypothesis
 → minimum coherent primary Cubes + required primary Groups/pivots
 → only evidence that can change the next decision
-→ FAIL | UNVERIFIED→PROVISIONAL (continue with hypothesis) | PASS (final needs paired images)
+→ FAIL | UNVERIFIED→PROVISIONAL (continue with hypothesis) | PASS (reference-fidelity verdict needs paired images)
 → causal local correction or global rebuild
 → identity-weighted downstream work only after prerequisites pass
 ```
@@ -26,7 +26,7 @@ known current state + optional grounded reference when reference-driven
 - Reuse fresh exact identity/authored state returned by prior calls when sufficient — `manage_cubes` return values are sufficient for immediate correction without `inspect_elements(mode=detail)`.
 - Use focused discovery only for unknown, stale, or ambiguous state.
 - `inspect_elements(mode=detail)` is a fallback for missing/stale exact target state, not a mandatory pre-correction ritual.
-- `inspect_model_bounds` is only for material envelope/scale/ground/displacement questions; otherwise skip it.
+- `inspect_model_bounds` is only for material envelope/scale/ground/displacement or bounded surface/contact questions; reuse fresh evidence.
 - Do not inspect every newly placed Cube or capture after every mutation.
 - `UNVERIFIED` is an evidence state, not a command to create more calls — for non-reference tasks it becomes `PROVISIONAL` and work continues with a marked hypothesis.
 - After a local correction, capture affected view(s) first; expand only when a material cross-view claim could regress.

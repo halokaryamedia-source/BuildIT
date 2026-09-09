@@ -21,7 +21,7 @@ async function source(path: string): Promise<string> {
 describe("context and payload cleanup", () => {
   test("canonical workflow stays compact while preserving current hard validity invariants", async () => {
     const workflow = await source("prompts/bedrock_entity_workflow.md");
-    expect(workflow.length).toBeLessThan(9_000);
+    // Character ceilings are owned by authoring/static-footprint-budget.test.ts.
     for (const invariant of [
       "Minimum Necessary Evidence",
       "FAIL",

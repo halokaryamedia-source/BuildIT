@@ -141,12 +141,12 @@ Preference order for minor discrepancy:
 
 ```text
 explicit user requirement
-→ original Source Image evidence
-→ best-supported Approved Reference view(s)
+→ explicitly approved target / best-supported Approved Reference view(s)
+→ original Source Image evidence for unresolved details
 → simplest recognizable Blockbench-buildable interpretation
 ```
 
-Only unresolved material conflict becomes `CONFLICTING` / `BLOCKED`.
+Original source governs reference preparation; an explicitly approved interpretation governs downstream modelling. Do not silently reverse accepted stylization toward the original source. Numeric dimensions remain independently authoritative. Only unresolved material conflict becomes `CONFLICTING` / `BLOCKED`.
 
 ## View Pair Map
 

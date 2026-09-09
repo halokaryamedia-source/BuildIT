@@ -43,7 +43,7 @@ The rule above still holds for normal Geometry. Narrow exception: when Geometry 
 ## Production Workflow
 
 ```text
-GEOMETRY PASS
+explicit Geometry APPROVED
 ↓
 UV LAYOUT
 ↓
@@ -89,7 +89,7 @@ It owns mapping, orientation, reuse, mirroring, seams, bounds, and lock state. I
 Important visible surfaces must have usable finite UVs. For new AI production:
 
 - important faces remain inside the logical canvas;
-- integer logical UV is standard unless a requirement justifies fractional UV;
+- require integral physical texel mapping; fractional logical UV is valid when it maps to whole physical pixels;
 - accidental partial overlap is rejected;
 - exact reuse is allowed when intentionally symmetric/repeated;
 - mirror use is deliberate;
@@ -108,7 +108,7 @@ For fresh AI-authored Box UV:
 manage_cubes(operation=create)
 → deterministic initial uv_offset / returned box_uv_region
 → geometry correction while autouv remains active
-→ GEOMETRY PASS
+→ explicit Geometry APPROVED
 → one coherent final UV lock with autouv=0
 → list_textures global audit
 → TEXTURE ATLAS
@@ -158,7 +158,7 @@ Texture Atlas is the bitmap/PNG canvas that stores pixels. It is separate from l
 
 ## AI Authoring Canvas Standard
 
-For **new AI-authored Bedrock Entity projects**, logical UV remains **128×128** for production.
+For **new AI-authored Bedrock Entity projects**, logical UV is **128×128 by default**, with **256×256 opt-in**.
 
 The production base-color bitmap uses explicit square 128-based sizes:
 

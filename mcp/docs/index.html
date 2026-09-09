@@ -225,8 +225,8 @@ bun run docs:check
           <span class="badge badge-destructive">destructive</span>
         </div>
       </div>
-      <p class="card-title">Manage Animation Timeline</p>
-      <p class="card-desc">Authors Bedrock animation keyframes, timing, graph/easing, batch edits, and copy/paste through one focused boundary.</p>
+      <p class="card-title">Manage Bedrock Animation Timeline</p>
+      <p class="card-desc">Authors one Bedrock Animation through keyframes, graph/easing, timeline, coherent batch/copy operations, or a one-call native property cohort.</p>
       <div class="overflow-x">
         <p class="empty-params">No parameters</p>
       </div>
@@ -239,8 +239,8 @@ bun run docs:check
           <span class="badge badge-destructive">destructive</span>
         </div>
       </div>
-      <p class="card-title">Create Animation</p>
-      <p class="card-desc">Creates a Bedrock animation with optional numeric bone transforms and particle/sound effects. Use manage_animation_timeline with operation=keyframes for later Molang or keyframe edits.</p>
+      <p class="card-title">Create Bedrock Animation Clip</p>
+      <p class="card-desc">Creates one new authored Bedrock Animation clip with explicit bone transforms and optional initial sound/particle effects. Use this for a new clip, not project creation.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -362,7 +362,7 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">Manage Animation Controller</p>
-      <p class="card-desc">Creates or updates one Bedrock AnimationController in one Undo unit. Supports states, transitions, animation links, effects, scripts, and blend settings.</p>
+      <p class="card-desc">Creates/updates Bedrock AnimationControllers plus bounded client-entity animation/Molang runtime wiring, public/init/pre-animation scripts, scale, and controller variables without adding another tool.</p>
       <div class="overflow-x">
         <p class="empty-params">No parameters</p>
       </div>
@@ -468,8 +468,8 @@ bun run docs:check
           <span class="badge badge-readonly">read-only</span>
         </div>
       </div>
-      <p class="card-title">Inspect Authored Animation</p>
-      <p class="card-desc">Read-only Animation or AnimationController inspection. Use `bone` for transform keyframes, `state` for controller state detail, and effect detail only for authored Animation keyframes.</p>
+      <p class="card-title">Inspect Animation Clip or Controller</p>
+      <p class="card-desc">Inspects authored Bedrock Animation clips or AnimationControllers. Use bone/channel/time_range for focused transform evidence; this is not model-element inspection.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -609,7 +609,7 @@ bun run docs:check
       <td class="col-name">groups</td>
       <td class="col-type">object[]</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Coherent Group/bone batch; ordered, one Undo unit.</td>
+      <td class="col-desc">Coherent non-empty Group/bone batch; ordered, one Undo unit. <span class="param-meta">[minItems: 1]</span></td>
     </tr></tbody>
     </table>
       </div>
@@ -895,7 +895,7 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">List Bedrock Locator Elements</p>
-      <p class="card-desc">Lists Locator/Null Object identity, type, and parent. Use inspect_element only for detailed authored state.</p>
+      <p class="card-desc">Lists Locator/Null Object identity, type, and parent. Use inspect_elements(mode=detail) for detailed authored state.</p>
       <div class="overflow-x">
         <p class="empty-params">No parameters</p>
       </div>
@@ -2172,9 +2172,24 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">List Textures</p>
-      <p class="card-desc">Lists texture identity, UV hygiene and bounded face-pixel diagnostics. Coverage states.varied means pixel variation, not styling acceptance; solid_color_faces identifies flat surfaces for review. Empty scans are incomplete. Pixel-read budget counts unique texture regions per invocation; every face remains accounted. Fractional logical UV is diagnostic; NON_INTEGRAL_PIXEL_MAPPING blocks non-integral physical texels. Readiness is not visual layout approval.</p>
+      <p class="card-desc">Lists texture identity; diagnostics=false skips UV/pixel analysis for discovery. Default true includes UV hygiene and bounded coverage/seam/PBR diagnostics. Seam scope is intra-Cube; cross-Cube continuity is not evaluated. Coverage states.varied means pixel variation, not styling acceptance; solid_color_faces identifies flat surfaces for review. Empty scans are incomplete. Pixel-read budget counts unique texture regions per invocation; every face remains accounted. Fractional logical UV is diagnostic; NON_INTEGRAL_PIXEL_MAPPING blocks non-integral physical texels. Readiness is not visual layout approval.</p>
       <div class="overflow-x">
-        <p class="empty-params">No parameters</p>
+        <table class="param-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Required</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody><tr>
+      <td class="col-name">diagnostics</td>
+      <td class="col-type">boolean</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Keep true for UV/coverage/seam/PBR review; false returns texture inventory without UV or pixel diagnostics. <span class="param-meta">(default: <code>true</code>)</span></td>
+    </tr></tbody>
+    </table>
       </div>
     </div>
 <div id="tool-get_texture" class="card tool-card">
@@ -2567,7 +2582,7 @@ bun run docs:check
       </section>
 
       <footer class="page-footer">
-        Generated 2026-09-09T19:30:19.774Z from Zod schemas
+        Generated 2026-09-09T19:59:12.417Z from Zod schemas
       </footer>
     </main>
   </div>

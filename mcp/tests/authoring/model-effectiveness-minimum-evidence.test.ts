@@ -32,7 +32,7 @@ describe("model creation effectiveness — minimum necessary evidence", () => {
     expect(orchestrator).toContain("deferred spec loading after routing");
     expect(orchestrator).toContain("diagnosed bounded surface/contact integrity question");
     expect(orchestrator).toContain("bounded surface/contact review");
-    expect(modelling).toContain("Otherwise skip the bounds call");
+    expect(modelling).toContain("reuse fresh evidence");
     expect(workflow).toContain("`UNVERIFIED` is not a retry command");
   });
 

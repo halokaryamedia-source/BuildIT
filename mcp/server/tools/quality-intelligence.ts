@@ -465,6 +465,10 @@ function wireTool(
   const execute = definition.execute;
   definition.execute = async (args, context) => {
     const result = await execute(args, context);
+    if (
+      (toolName === "inspect_animation" && args.diagnostics !== true) ||
+      (toolName === "list_textures" && args.diagnostics === false)
+    ) return result;
     const record = objectRecord(result);
     const structured = record ? objectRecord(record.structuredContent) : null;
     if (!structured) return result;

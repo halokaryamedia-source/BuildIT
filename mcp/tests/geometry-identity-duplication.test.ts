@@ -1,10 +1,16 @@
 import { describe, expect, test } from "bun:test";
 import {
+  addGroupParameters,
   hasCaseInsensitiveGroupNameCollision,
   requireFiniteTranslatedElementVector3,
 } from "@/server/tools/element";
 
 describe("Geometry identity and duplication hardening", () => {
+  test("empty Group batches are rejected before a mutation can start", () => {
+    expect(addGroupParameters.safeParse({ groups: [] }).success).toBe(false);
+    expect(addGroupParameters.safeParse({ groups: [{ name: "root" }] }).success).toBe(true);
+    expect(addGroupParameters.safeParse({ name: "root" }).success).toBe(true);
+  });
   test("Group/bone collision guard is case-insensitive and supports exclusion", () => {
     const groups = [
       { uuid: "a", name: "Arm_Left" },

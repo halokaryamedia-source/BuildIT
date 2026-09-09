@@ -39,7 +39,7 @@ Known → Gateway; unknown/stale → `search_capabilities`; schema → `describe
 
 ## Motion Design Contract
 
-Before keys define:
+Before keys define only applicable facts (no foot-plant/gameplay contract for an unrelated mechanical loop):
 ```text
 archetype + intent + duration/snapping
 primary driver + counter-motion + followers

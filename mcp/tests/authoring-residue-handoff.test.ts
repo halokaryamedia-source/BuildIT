@@ -89,7 +89,7 @@ describe("REMOTE_GITHUB authoring handoff contracts", () => {
     ]) {
       expect(continuation).not.toContain(retired);
     }
-    expect(continuation).toContain("four Gateway tools");
-    expect(continuation).toContain("No background polling/service");
+    // Gateway tool cardinality is tested against registration, not continuation prose.
+    expect(continuation).toMatch(/(?:no|not)[^\n]*background polling/i);
   });
 });

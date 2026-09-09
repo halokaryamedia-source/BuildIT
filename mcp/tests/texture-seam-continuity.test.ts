@@ -25,6 +25,15 @@ function edge(
 }
 
 describe("texture seam continuity", () => {
+  test("reports intra-Cube scope instead of certifying coincident edges on different Cubes", () => {
+    const result = analyzeTextureSeamContinuity([
+      edge(), edge({ cube_uuid: "cube-b", face: "east", samples: [[255, 255, 255, 255]] }),
+    ]);
+    expect(result.scope).toBe("intra_cube");
+    expect(result.cross_cube_continuity).toBe("not_evaluated");
+    expect(result.paired_seam_count).toBe(0);
+    expect(result.unpaired_edge_count).toBe(2);
+  });
   test("pairs reversed physical edges and ranks strong contrast as advisory review", () => {
     const result = analyzeTextureSeamContinuity([
       edge(),

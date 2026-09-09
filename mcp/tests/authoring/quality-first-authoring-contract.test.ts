@@ -5,6 +5,37 @@ async function source(path: string): Promise<string> {
 }
 
 describe("quality-first generic authoring contract", () => {
+  test("bounds policy permits both numeric and bounded contact questions", async () => {
+    for (const path of [
+      "../.agents/skills/blockbench-bedrock-modelling/SKILL.md",
+      "../docs/foundation/02-product-requirements.md",
+      "../docs/foundation/03-modelling-workflow.md",
+      "../docs/foundation/07-visual-validation.md",
+    ]) {
+      const text = await source(path);
+      expect(text, path).toMatch(/inspect_model_bounds[^\n]*(?:envelope|scale)[^\n]*surface\/contact/);
+    }
+  });
+  test("reference and production UV policy preserve explicit authority without blocking nonvisual edits", async () => {
+    const geometry = await source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md");
+    const reference = await source("../docs/foundation/04-reference-guide.md");
+    const texture = await source("../docs/foundation/06-texture-standard.md");
+    expect(geometry).toMatch(/nonvisual edits[^\n]*current authored state/i);
+    expect(reference).toMatch(/explicit user requirement\s*→.*Approved Reference[\s\S]*→.*original Source/);
+    expect(texture).not.toContain("GEOMETRY PASS");
+    expect(texture).toMatch(/128[^\n]*default[^\n]*256[^\n]*opt-in/);
+    expect(texture).toMatch(/integral physical texel[^\n]*fractional logical UV/i);
+  });
+  test("supported controller editing and fresh state are not blocked by stale workflow rules", async () => {
+    const workflow = await source("prompts/bedrock_entity_workflow.md");
+    const gaps = workflow.split("Protected gaps remain")[1] ?? "";
+    expect(gaps).not.toContain("controller blend-curve mutation");
+    expect(workflow).toMatch(/observed geometry mismatch[^\n]*reuse[^\n]*missing\/stale/);
+    const router = await source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md");
+    expect(router).toMatch(/stopped tests[^\n]*later explicit authorization/);
+    const texture = await source("../.agents/skills/blockit-bedrock-texturing/SKILL.md");
+    expect(texture).toMatch(/explicit file integration[^\n]*manage_render_profile/);
+  });
   test("runtime guidance preserves explicit atlas constraints and distinguishes concealed contact evidence", async () => {
     const prompt = await source("prompts/bedrock_entity_workflow.md");
     expect(prompt).toContain("Approved bitmap size/density takes precedence");

@@ -590,8 +590,6 @@ function wireTimelineNativeProperties(): void {
     override_previous_animation: z.boolean().optional(),
     rotation_spaces: z.array(rotationSpaceSchema).min(1).max(32).optional(),
   };
-  definition.description =
-    "Authors one Bedrock Animation through keyframes, graph/easing, timeline, coherent batch/copy operations, or a one-call native property cohort.";
   definition.execute = async (args, context) => {
     if (args.operation === "properties") {
       return executeNativeProperties(

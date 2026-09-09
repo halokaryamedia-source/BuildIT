@@ -7,11 +7,11 @@ description: Mandatory BlockIT Bedrock Geometry and UV Layout specialist.
 ## Minimum Necessary Evidence
 - **No per-Cube inspection ceremony** without a diagnosed problem.
 - **No screenshot-per-mutation loop.** Build a judgeable form, then gate it.
-- Surface/contact question → `inspect_model_bounds` once. Otherwise skip the bounds call.
+- `inspect_model_bounds` only for material envelope/scale/ground/displacement or bounded surface/contact questions; reuse fresh evidence.
 - `UNVERIFIED` is not a retry command; request only decision-changing evidence.
 
 ## Reference Grounding
-The **actual approved reference image** must be in **active multimodal context**; path/prose/memory is context, not visual evidence. Unavailable → `BLOCKED`.
+For reference-driven visual work, the **actual approved reference image** must be in **active multimodal context**; path/prose/memory is not visual evidence. Unavailable → `BLOCKED`. Bounded nonvisual edits use explicit intent and current authored state.
 approved image owns visuals; dimensions own numeric scale; strategy is user-selected `DIRECT | 3D_ASSISTED`.
 Do not silently change agreed dimensions to improve resemblance. Resolve a material proportion/scale conflict with the user before dependent construction.
 Evidence: `SUPPORTED | PROVISIONAL | CONFLICTING | UNAVAILABLE`. View Pair Map only for material front/back, depth, attachment, or 3/4 ambiguity.
@@ -27,7 +27,7 @@ cross-view proportions / identity landmarks / surface-only detail reserved for T
 parent/contact + symmetry/asymmetry
 transform owner/pivot + negative-space boundary + representation
 ```
-No per-Cube plan. First blockout uses one Core View Triad `front + left + top`. Add `back` only for rear topology/asymmetry; add `front_left_3q` only for attachment/layering/orientation ambiguity. Never recapture all five routinely.
+No per-Cube plan. New whole-form blockout defaults to Core View Triad `front + left + top`; bounded edits use affected views. Add `back` for rear topology/asymmetry; use `front_left_3q` for ambiguity or source-matched fidelity. Never recapture all five routinely.
 Repeated/symmetric cohorts: derive once → one coherent `manage_cubes` batch; no per-Cube loop.
 
 ## Semantic Form / Construction / Transform Gate

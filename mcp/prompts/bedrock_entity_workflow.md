@@ -69,7 +69,7 @@ Correction: reuse fresh target state; otherwise `inspect_elements(mode=detail)` 
 
 UV Layout: **which atlas region does each surface read?**
 
-Reuse `manage_cubes` returned `box_uv_region`. Keep auto UV active during Geometry correction. After explicit user Geometry APPROVED, use `create_texture(type=template)` and its `uv_audit`; rebuilding the single atlas requires `texture_id` and invalidates affected texture evidence. Lock final Box UV with `autouv=0`; `list_textures` audits existing UV.
+Reuse `manage_cubes` returned `box_uv_region`. Keep auto UV active during Geometry correction. After explicit user Geometry APPROVED, use `create_texture(type=template)` and its `uv_audit`; rebuilding the single atlas requires `texture_id` and invalidates affected texture evidence. Lock final Box UV with `autouv=0`; `list_textures(diagnostics=true)` audits existing UV; use diagnostics=false for identity discovery without pixel scans.
 
 Require integral physical pixel mapping, no invalid/out-of-bounds UV, no accidental partial overlap, deliberate exact reuse/mirror, and stable seam/orientation. Fractional logical UV is diagnostic, not failure when the bitmap scale maps it to whole pixels. Use `inspect_elements(mode=detail)` only when face-specific mapping/orientation is actually needed; one Cube inspection returns all faces.
 
@@ -128,7 +128,7 @@ Painting stales evidence. `FAIL` → causal correction → affected evidence →
 ```text
 project absent              → create_project
 new reference geometry      → create_project → add_group/manage_cubes/modify_group → capture_model_views
-observed geometry mismatch  → inspect affected element → manage_cubes/modify_group → affected capture_model_views
+observed geometry mismatch  → reuse target state; inspect if missing/stale → manage_cubes/modify_group → affected capture_model_views
 UV Layout                   → returned box_uv_region → final UV lock → list_textures audit
 Texture Atlas               → create_texture / activate_texture
 Texture Styling             → Painter tools / material configuration
@@ -136,4 +136,4 @@ Texture Verify              → get_texture + capture_model_views
 file deliverable            → export_model
 ```
 
-Protected gaps remain TextureMesh direct authoring, visible bounds, animated textures, controller blend-curve mutation, and bone-binding expressions.
+Protected gaps remain TextureMesh direct authoring, visible bounds, animated textures, and bone-binding expressions.

@@ -38,10 +38,9 @@ describe("model creation effectiveness — semantic form, rotation, pivot and co
       "Never recapture all five routinely",
     ]) expect(modelling).toContain(term);
 
-    expect(modelling).toContain("Add `back` only for rear topology/asymmetry");
-    expect(modelling).toContain(
-      "add `front_left_3q` only for attachment/layering/orientation ambiguity"
-    );
+    expect(modelling).toMatch(/`back`[^;]*rear topology\/asymmetry/);
+    expect(modelling).toMatch(/`front_left_3q`[^.]*ambiguity[^.]*source-matched fidelity/);
+    expect(modelling).toMatch(/bounded edits[^.]*affected views/);
     expect(modelling).toContain(
       "correspondence metadata only maps captures to canonical board slots"
     );

@@ -94,8 +94,8 @@ const consolidatedAnimationTimelineParameters = z.union([
 
 export const consolidatedAnimationTimelineToolDocs = {
   name: "manage_animation_timeline",
-  description: "Authors Bedrock animation keyframes, timing, graph/easing, batch edits, and copy/paste through one focused boundary.",
-  annotations: { title: "Manage Animation Timeline", destructiveHint: true },
+  description: "Authors one Bedrock Animation through keyframes, graph/easing, timeline, coherent batch/copy operations, or a one-call native property cohort.",
+  annotations: { title: "Manage Bedrock Animation Timeline", destructiveHint: true },
   parameters: consolidatedAnimationTimelineParameters,
   status: "stable" as const,
 };

@@ -7,7 +7,7 @@ Before any asset mutation, load `.agents/skills/blockit-bedrock-entity-mcp/SKILL
 - Texture, pixels or PBR: `.agents/skills/blockit-bedrock-texturing/SKILL.md`.
 - Animation: `.agents/skills/blockit-bedrock-animation/SKILL.md`.
 
-Use `workspace/active/<asset>/` for asset continuity and `workspace/README.md` for workspace conventions. Actual approved image, dimensions, user-selected `DIRECT | 3D_ASSISTED`, and Animation Required remain intake requirements. Geometry approval precedes production UV; UV PASS precedes Texturing; approved Texturing and a checkpoint precede optional Animation. Follow the specialist's quality and approval gates.
+Use `workspace/active/<asset>/` for asset continuity and `workspace/README.md` for workspace conventions. New-model intake requires actual approved image, dimensions, user-selected `DIRECT | 3D_ASSISTED`, and Animation Required. Bounded nonvisual edits follow the specialist using explicit intent and current state. Geometry approval precedes production UV; UV PASS precedes Texturing; approved Texturing and a checkpoint precede optional Animation. Follow the specialist's quality and approval gates.
 
 Known capability → direct invocation through the existing four-tool Gateway. Discovery is conditional; no status polling or confirmation rereads. Never guess unavailable tool schemas or bypass permissions through eval/UI automation. Installed distribution does not by itself install optional 3D_ASSISTED GPU providers; a missing external backend is a setup blocker, not permission to switch strategy.
 
