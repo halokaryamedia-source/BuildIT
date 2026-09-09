@@ -1,4 +1,4 @@
-import { createResource } from "@/lib/factories";
+import { createResource, type ResourceSpec } from "@/lib/factories";
 import {
   TEXTURE_SURFACE_PATTERN_NAMES,
   TEXTURE_SURFACE_PATTERN_RECIPES,
@@ -17,6 +17,14 @@ const TOPICS = [
 ] as const;
 
 type TextureKnowledgeTopic = (typeof TOPICS)[number];
+
+export const textureAuthoringKnowledgeResourceDocs: ResourceSpec = {
+  name: "texture-authoring-knowledge",
+  uriTemplate: "texture-authoring://{topic}",
+  title: "Texture Authoring Knowledge",
+  description:
+    "On-demand BlockIT texture treatment knowledge: surface-pattern recipes, Vanilla pixel/render principles, known entity render profiles, and treatment-plan structure. Read only the topic needed for the current texture decision.",
+};
 
 function isTopic(value: string | undefined): value is TextureKnowledgeTopic {
   return TOPICS.includes(value as TextureKnowledgeTopic);
@@ -77,11 +85,10 @@ function topicPayload(topic: TextureKnowledgeTopic) {
   };
 }
 
-createResource("texture-authoring-knowledge", {
-  uriTemplate: "texture-authoring://{topic}",
-  title: "Texture Authoring Knowledge",
-  description:
-    "On-demand BlockIT texture treatment knowledge: surface-pattern recipes, Vanilla pixel/render principles, known entity render profiles, and treatment-plan structure. Read only the topic needed for the current texture decision.",
+createResource(textureAuthoringKnowledgeResourceDocs.name, {
+  uriTemplate: textureAuthoringKnowledgeResourceDocs.uriTemplate,
+  title: textureAuthoringKnowledgeResourceDocs.title,
+  description: textureAuthoringKnowledgeResourceDocs.description,
   async listCallback() {
     return {
       resources: TOPICS.map((topic) => ({
