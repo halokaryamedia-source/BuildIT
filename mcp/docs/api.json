@@ -1,6 +1,6 @@
 {
   "version": "0.1.0",
-  "generatedAt": "2026-09-06T13:14:47.264Z",
+  "generatedAt": "2026-09-09T05:12:26.812Z",
   "tools": [
     {
       "name": "manage_cubes",
@@ -5161,6 +5161,411 @@
       }
     },
     {
+      "name": "manage_render_profile",
+      "title": "Manage Render Profile",
+      "description": "Inspects or authors Minecraft Entity render_profile bindings across client_entity material slots and ordered render-controller bone assignments. This is separate from PBR manage_material and geometry material instances.",
+      "status": "stable",
+      "category": "Textures",
+      "annotations": {
+        "destructiveHint": true,
+        "openWorldHint": true
+      },
+      "parameters": {
+        "$ref": "#/definitions/manage_render_profile",
+        "definitions": {
+          "manage_render_profile": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "operation": {
+                    "type": "string",
+                    "const": "inspect"
+                  },
+                  "client_entity_source": {
+                    "type": "object",
+                    "properties": {
+                      "path": {
+                        "type": "string"
+                      },
+                      "content": {
+                        "type": "string",
+                        "minLength": 2
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  "render_controller_source": {
+                    "type": "object",
+                    "properties": {
+                      "path": {
+                        "type": "string"
+                      },
+                      "content": {
+                        "type": "string",
+                        "minLength": 2
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  "render_controller": {
+                    "type": "string",
+                    "pattern": "^controller\\.render\\.[^\\s]+$",
+                    "errorMessage": {
+                      "pattern": "Expected controller.render.* identifier."
+                    }
+                  },
+                  "max_content_length": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 2000000
+                  }
+                },
+                "required": [
+                  "operation",
+                  "client_entity_source"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "operation": {
+                    "type": "string",
+                    "const": "bind"
+                  },
+                  "client_entity_source": {
+                    "type": "object",
+                    "properties": {
+                      "path": {
+                        "type": "string"
+                      },
+                      "content": {
+                        "type": "string",
+                        "minLength": 2
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  "render_controller_source": {
+                    "type": "object",
+                    "properties": {
+                      "path": {
+                        "type": "string"
+                      },
+                      "content": {
+                        "type": "string",
+                        "minLength": 2
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  "client_entity_output": {
+                    "type": "object",
+                    "properties": {
+                      "path": {
+                        "type": "string"
+                      },
+                      "overwrite": {
+                        "type": "boolean",
+                        "default": false
+                      }
+                    },
+                    "required": [
+                      "path"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "render_controller_output": {
+                    "type": "object",
+                    "properties": {
+                      "path": {
+                        "type": "string"
+                      },
+                      "overwrite": {
+                        "type": "boolean",
+                        "default": false
+                      }
+                    },
+                    "required": [
+                      "path"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "slot": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
+                    "errorMessage": {
+                      "pattern": "Material slot must be a simple identifier."
+                    }
+                  },
+                  "render_profile": {
+                    "type": "string",
+                    "enum": [
+                      "opaque",
+                      "opaque_nocull",
+                      "cutout",
+                      "translucent",
+                      "color_mask",
+                      "emissive_mask",
+                      "emissive_translucent",
+                      "emissive_translucent_one_sided",
+                      "emissive_layer",
+                      "glint",
+                      "cutout_glint",
+                      "custom"
+                    ]
+                  },
+                  "minecraft_material_code": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "render_controller": {
+                    "type": "string",
+                    "pattern": "^controller\\.render\\.[^\\s]+$",
+                    "errorMessage": {
+                      "pattern": "Expected controller.render.* identifier."
+                    }
+                  },
+                  "bone_pattern": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 128
+                  },
+                  "max_content_length": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 2000000
+                  }
+                },
+                "required": [
+                  "operation",
+                  "client_entity_source",
+                  "render_controller_source",
+                  "slot",
+                  "render_profile",
+                  "render_controller",
+                  "bone_pattern"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "operation": {
+                    "type": "string",
+                    "const": "set_slot"
+                  },
+                  "client_entity_source": {
+                    "type": "object",
+                    "properties": {
+                      "path": {
+                        "type": "string"
+                      },
+                      "content": {
+                        "type": "string",
+                        "minLength": 2
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  "client_entity_output": {
+                    "type": "object",
+                    "properties": {
+                      "path": {
+                        "type": "string"
+                      },
+                      "overwrite": {
+                        "type": "boolean",
+                        "default": false
+                      }
+                    },
+                    "required": [
+                      "path"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "slot": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
+                    "errorMessage": {
+                      "pattern": "Material slot must be a simple identifier."
+                    }
+                  },
+                  "render_profile": {
+                    "type": "string",
+                    "enum": [
+                      "opaque",
+                      "opaque_nocull",
+                      "cutout",
+                      "translucent",
+                      "color_mask",
+                      "emissive_mask",
+                      "emissive_translucent",
+                      "emissive_translucent_one_sided",
+                      "emissive_layer",
+                      "glint",
+                      "cutout_glint",
+                      "custom"
+                    ]
+                  },
+                  "minecraft_material_code": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "max_content_length": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 2000000
+                  }
+                },
+                "required": [
+                  "operation",
+                  "client_entity_source",
+                  "slot",
+                  "render_profile"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "operation": {
+                    "type": "string",
+                    "const": "assign"
+                  },
+                  "render_controller_source": {
+                    "type": "object",
+                    "properties": {
+                      "path": {
+                        "type": "string"
+                      },
+                      "content": {
+                        "type": "string",
+                        "minLength": 2
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  "render_controller_output": {
+                    "type": "object",
+                    "properties": {
+                      "path": {
+                        "type": "string"
+                      },
+                      "overwrite": {
+                        "type": "boolean",
+                        "default": false
+                      }
+                    },
+                    "required": [
+                      "path"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "render_controller": {
+                    "type": "string",
+                    "pattern": "^controller\\.render\\.[^\\s]+$",
+                    "errorMessage": {
+                      "pattern": "Expected controller.render.* identifier."
+                    }
+                  },
+                  "bone_pattern": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 128
+                  },
+                  "slot": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
+                    "errorMessage": {
+                      "pattern": "Material slot must be a simple identifier."
+                    }
+                  },
+                  "max_content_length": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 2000000
+                  }
+                },
+                "required": [
+                  "operation",
+                  "render_controller_source",
+                  "render_controller",
+                  "bone_pattern",
+                  "slot"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "operation": {
+                    "type": "string",
+                    "const": "unassign"
+                  },
+                  "render_controller_source": {
+                    "type": "object",
+                    "properties": {
+                      "path": {
+                        "type": "string"
+                      },
+                      "content": {
+                        "type": "string",
+                        "minLength": 2
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  "render_controller_output": {
+                    "type": "object",
+                    "properties": {
+                      "path": {
+                        "type": "string"
+                      },
+                      "overwrite": {
+                        "type": "boolean",
+                        "default": false
+                      }
+                    },
+                    "required": [
+                      "path"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "render_controller": {
+                    "type": "string",
+                    "pattern": "^controller\\.render\\.[^\\s]+$",
+                    "errorMessage": {
+                      "pattern": "Expected controller.render.* identifier."
+                    }
+                  },
+                  "bone_pattern": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 128
+                  },
+                  "max_content_length": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 2000000
+                  }
+                },
+                "required": [
+                  "operation",
+                  "render_controller_source",
+                  "render_controller",
+                  "bone_pattern"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      }
+    },
+    {
       "name": "manage_material",
       "title": "Manage Material",
       "description": "Creates, configures, assigns channels, or saves one Bedrock PBR material through one focused boundary.",
@@ -6136,6 +6541,12 @@
       "title": "Validator Errors",
       "description": "Returns current validation errors. Any elementRefs are best-effort message-text inferences and are explicitly marked non-authoritative.",
       "uriTemplate": "validator://errors"
+    },
+    {
+      "name": "texture-authoring-knowledge",
+      "title": "Texture Authoring Knowledge",
+      "description": "On-demand BlockIT texture treatment knowledge: surface-pattern recipes, Vanilla pixel/render principles, known entity render profiles, and treatment-plan structure. Read only the topic needed for the current texture decision.",
+      "uriTemplate": "texture-authoring://{topic}"
     }
   ]
 }

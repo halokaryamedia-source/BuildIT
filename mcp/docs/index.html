@@ -18,9 +18,9 @@
 
       <div class="nav-group">
         <p class="nav-heading">Overview</p>
-        <a href="#tools" class="nav-link">Tools <span class="count">(64)</span></a>
+        <a href="#tools" class="nav-link">Tools <span class="count">(65)</span></a>
         <a href="#prompts" class="nav-link">Prompts <span class="count">(1)</span></a>
-        <a href="#resources" class="nav-link">Resources <span class="count">(8)</span></a>
+        <a href="#resources" class="nav-link">Resources <span class="count">(9)</span></a>
       </div>
 
       <div class="nav-group">
@@ -35,7 +35,7 @@
         <a href="#cat-material-instances" class="nav-link">Material Instances <span class="count">(1)</span></a>
         <a href="#cat-paint-tools" class="nav-link">Paint Tools <span class="count">(12)</span></a>
         <a href="#cat-project" class="nav-link">Project <span class="count">(5)</span></a>
-        <a href="#cat-textures" class="nav-link">Textures <span class="count">(10)</span></a>
+        <a href="#cat-textures" class="nav-link">Textures <span class="count">(11)</span></a>
         <a href="#cat-ui-interaction" class="nav-link">UI Interaction <span class="count">(4)</span></a>
       </div>
     </nav>
@@ -45,9 +45,9 @@
         <h1>BlockIT — Bedrock Entity MCP</h1>
         <p class="subtitle">API Reference — v0.1.0</p>
         <nav class="stats">
-          <a href="#tools"><strong>64</strong> tools (28 stable, 36 experimental)</a>
+          <a href="#tools"><strong>65</strong> tools (29 stable, 36 experimental)</a>
           <a href="#prompts"><strong>1</strong> prompts</a>
-          <a href="#resources"><strong>8</strong> resources</a>
+          <a href="#resources"><strong>9</strong> resources</a>
         </nav>
       </header>
 
@@ -1916,7 +1916,21 @@ bun run docs:check
         </section>
 <section id="cat-textures" class="category-section">
           <h3 class="category-title">Textures</h3>
-          <div id="tool-manage_material" class="card tool-card">
+          <div id="tool-manage_render_profile" class="card tool-card">
+      <div class="card-header">
+        <h3 class="card-name">manage_render_profile</h3>
+        <div class="card-badges">
+          <span class="badge badge-stable">stable</span>
+          <span class="badge badge-destructive">destructive</span><span class="badge badge-openworld">open-world</span>
+        </div>
+      </div>
+      <p class="card-title">Manage Render Profile</p>
+      <p class="card-desc">Inspects or authors Minecraft Entity render_profile bindings across client_entity material slots and ordered render-controller bone assignments. This is separate from PBR manage_material and geometry material instances.</p>
+      <div class="overflow-x">
+        <p class="empty-params">No parameters</p>
+      </div>
+    </div>
+<div id="tool-manage_material" class="card tool-card">
       <div class="card-header">
         <h3 class="card-name">manage_material</h3>
         <div class="card-badges">
@@ -2482,10 +2496,18 @@ bun run docs:check
       <p class="uri-template">validator://errors</p>
       <p class="card-desc">Returns current validation errors. Any elementRefs are best-effort message-text inferences and are explicitly marked non-authoritative.</p>
     </div>
+<div class="card">
+      <div class="card-header">
+        <h3 class="card-name">texture-authoring-knowledge</h3>
+      </div>
+      <p class="card-title">Texture Authoring Knowledge</p>
+      <p class="uri-template">texture-authoring://{topic}</p>
+      <p class="card-desc">On-demand BlockIT texture treatment knowledge: surface-pattern recipes, Vanilla pixel/render principles, known entity render profiles, and treatment-plan structure. Read only the topic needed for the current texture decision.</p>
+    </div>
       </section>
 
       <footer class="page-footer">
-        Generated 2026-09-06T13:14:47.264Z from Zod schemas
+        Generated 2026-09-09T05:12:26.812Z from Zod schemas
       </footer>
     </main>
   </div>
