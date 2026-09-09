@@ -39,95 +39,117 @@ render_profile=emissive_mask
 
 The pattern name alone does not decide transparency, glow, culling, alpha semantics, or PBR.
 
-## Pattern recipes
+## Canonical recipe library
 
-Patterns are advisory recipes, not fixed generators and not quality scores. Reference evidence always wins.
+`mcp/lib/textureSurfacePattern.ts` owns the compact typed recipe library. Recipes describe qualitative pixel language, not pre-generated bitmaps and not numeric quality targets.
 
-### `wood_grain`
+Current vocabulary:
 
-- directional grain aligned with construction;
-- irregular short clusters instead of uniform stripes;
-- sparse knots or darker interruptions when supported;
-- hue/value movement should feel organic rather than metallic.
+```text
+wood_grain            painted_wood
+brushed_metal         bare_metal          painted_metal
+stone_cluster         concrete_speckle
+cloth_weave           leather_wear
+clean_glass           dirty_glass
+plastic_clean         rubber_matte
+organic_skin          fur_cluster
+emissive_panel        energy_surface
+```
 
-### `brushed_metal`
+Each recipe records:
 
-- controlled directional streaks or bands;
-- hard value breaks and selective edge highlights;
-- sparse wear; avoid stone-like random noise;
-- panel seams remain deliberate.
+```text
+directionality
+cluster_language
+value_behavior
+edge_behavior
+secondary_detail
+avoid[]
+render_profile_inference = forbidden
+```
 
-### `painted_metal`
+The final field is a hard invariant: surface appearance never silently selects Minecraft render behavior.
 
-- paint color owns the broad surface;
-- exposed-metal language is limited to supported chips/edges/seams;
-- avoid making every edge bright.
+## Representative treatments
 
-### `stone_cluster`
+### `wood_grain` / `painted_wood`
 
-- irregular medium/large value islands;
-- non-directional breakup unless the reference has strata;
-- controlled chips or pores; no wood-like repetition.
+- directional cues follow construction grain;
+- use irregular clustered runs instead of uniform stripes;
+- painted wood remains paint-dominant, with underlying grain/wear only where supported;
+- sparse knots/chips are secondary evidence, never a noise blanket.
 
-### `concrete_speckle`
+### `brushed_metal` / `bare_metal` / `painted_metal`
 
-- broad matte base with sparse low-contrast speckle;
-- larger variation before micro-noise;
-- avoid uniform high-frequency noise.
+- use clean hard clusters and deliberate value breaks;
+- selective edge highlights communicate hard surfaces better than universal outlines;
+- brushed metal may carry restrained directional streaks;
+- painted metal exposes bare-metal language only at justified chips/edges/seams.
 
-### `cloth_weave`
+### `stone_cluster` / `concrete_speckle`
 
-- lower contrast than hard metal;
-- stepped folds/value transitions first;
-- weave hints only where texel density can support them.
+- stone uses irregular medium/large value islands;
+- concrete keeps larger quiet fields with sparse grouped aggregate marks;
+- avoid dense salt-and-pepper noise and wood-like directionality.
 
-### `leather_wear`
+### `cloth_weave` / `leather_wear`
 
-- broad warm/cool value variation;
-- sparse crease and edge wear;
-- avoid repetitive grain across every face.
+- cloth prioritizes fold/form readability with restrained contrast;
+- weave hints appear only when physical texel density supports them;
+- leather uses broad organic variation plus sparse crease/edge wear.
 
-### `clean_glass`
+### `clean_glass` / `dirty_glass`
 
-- sparse reflection/value clusters;
-- border/frame cues only when supported;
-- do not encode transparency rules here; use `render_profile`.
+- keep the field visually quiet enough to read as glass-like surface treatment;
+- use sparse reflection, smudge, dust, or structural-edge cues;
+- transparency is never encoded by this pattern name—`render_profile` owns that decision.
 
-### `plastic_clean`
+### `plastic_clean` / `rubber_matte`
 
-- clean broad color masses;
-- restrained highlights;
-- low random variation.
+- plastic favors broad clean color masses and small selective highlights;
+- rubber keeps a compressed darker range with subdued highlights and sparse molded detail.
 
-### `rubber_matte`
+### `organic_skin` / `fur_cluster`
 
-- compressed value range;
-- subdued highlights;
-- sparse surface breakup.
+- organic skin follows body/form and identity markings rather than mechanical panel language;
+- fur clusters follow growth direction in grouped tufts, not single-pixel hair noise.
 
-### `organic_form`
+### `emissive_panel` / `energy_surface`
 
-- variation follows body/form rather than panel language;
-- asymmetry may be desirable;
-- avoid mechanical edge-striping unless reference-supported.
+- `emissive_panel` describes visual RGB organization of a luminous-looking panel, not actual runtime glow;
+- `energy_surface` uses purposeful flow/arc clusters rather than random electric noise;
+- actual emissive behavior still requires an explicit `render_profile` such as `emissive_mask`.
 
-## Selection rules
+## Reference-grounded selection
 
-- choose a pattern from the approved reference or explicit user intent;
-- do not infer object category solely from name or geometry;
-- custom/unknown visual treatment may use `surface_pattern=custom` in reasoning without inventing a preset;
-- a pattern can be mixed or localized by material cohort;
-- pattern application must respect physical pixels-per-UV-unit and face coverage.
+Before painting, build a compact region treatment plan:
+
+```text
+region
+→ reference evidence state
+→ surface_pattern
+→ render_profile / minecraft_material_code
+→ optional pbr_intent
+→ identity colors / notes
+```
+
+`planTextureTreatment` owns this separation. Missing evidence remains `review_required`; it must not be filled by guessing from object/category names.
+
+## Vanilla knowledge boundary
+
+`textureVanillaKnowledge.ts` provides durable Minecraft/Blockbench texture principles and source categories without copying texture assets or requiring runtime network access. Use it to improve texture grammar, not to clone a Vanilla entity texture.
 
 ## Execution order
 
 ```text
 reference/material cohort
-→ select/adapt surface_pattern
-→ BASE
-→ VALUE / FORM
-→ IDENTITY
-→ SECONDARY DETAIL
+→ treatment plan
+→ BASE PASS
+→ VALUE / FORM PASS
+→ SURFACE PATTERN PASS
+→ IDENTITY PASS
+→ SECONDARY DETAIL PASS
+→ RENDER / ALPHA VERIFY
 → seam/coverage review
 → mapped-model verify
 ```
