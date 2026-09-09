@@ -12,7 +12,7 @@ Default endpoint:
 
 Transport is loopback-only, stateless Streamable HTTP with JSON responses.
 
-The normal `bedrock_entity` source profile retains **52 callable tools**. Installed proof is tracked separately in `current-validation.md`. Runtime exposure is organized as:
+The normal `bedrock_entity` source profile retains **54 callable tools**. Installed proof is tracked separately in `current-validation.md`. Runtime exposure is organized as:
 
 ```text
 MCP CORE + AUTHORING
@@ -51,7 +51,7 @@ Generated API documentation enumerates **65 declared source ToolSpecs**, includi
 - Undo/redo/history.
 - Editable `.bbmodel` persistence and Bedrock geometry JSON export.
 
-Protected gaps remain controller blend-curve mutation, TextureMesh direct authoring/inspection, native visible bounding-box fields, animated-texture authoring, and bone-binding expressions.
+Protected gaps remain TextureMesh direct authoring/inspection, native visible bounding-box fields, animated-texture authoring, and bone-binding expressions.
 
 ## Security Boundary
 - `risky_eval` is disabled.

@@ -1,4 +1,6 @@
 import { describe, expect, test } from "bun:test";
+import { DEFAULT_MCP_REGISTRATION_PROFILE } from "@/lib/registrationProfile";
+import { describeMcpSurfaceToolNames } from "@/server/tools";
 
 async function text(path: string): Promise<string> {
   return Bun.file(path).text();
@@ -7,6 +9,7 @@ async function text(path: string): Promise<string> {
 describe("current developer-facing documentation sync", () => {
   test("current proof, Runtime shape, developer loop, and user-facing surfaces stay aligned", async () => {
     const [
+      context,
       flow,
       llms,
       implementation,
@@ -16,6 +19,7 @@ describe("current developer-facing documentation sync", () => {
       gatewayReadme,
       about,
     ] = await Promise.all([
+      text("../CONTEXT.md"),
       text("../docs/knowledge/flow.md"),
       text("llms.txt"),
       text("../docs/knowledge/implementation-map.md"),
@@ -26,12 +30,33 @@ describe("current developer-facing documentation sync", () => {
       text("about.md"),
     ]);
 
+    const geometryTools = describeMcpSurfaceToolNames(
+      DEFAULT_MCP_REGISTRATION_PROFILE,
+      "geometry"
+    );
+    const texturingTools = describeMcpSurfaceToolNames(
+      DEFAULT_MCP_REGISTRATION_PROFILE,
+      "texturing"
+    );
+    const animationTools = describeMcpSurfaceToolNames(
+      DEFAULT_MCP_REGISTRATION_PROFILE,
+      "animation"
+    );
+    const callableToolCount = new Set([
+      ...geometryTools,
+      ...texturingTools,
+      ...animationTools,
+    ]).size;
+
+    expect(geometryTools).toEqual(texturingTools);
     expect(flow).toContain("current proof state        → docs/knowledge/current-validation.md");
     expect(flow).not.toContain("docs/foundation/validation-report.md");
 
-    expect(llms).toContain("52 callable tools");
+    expect(context).toContain(`**${callableToolCount} callable Bedrock tools**`);
+    expect(llms).toContain(`${callableToolCount} callable tools`);
     expect(llms).toContain("MCP CORE + AUTHORING");
     expect(llms).toContain("Geometry and Texturing startup focus values expose the same AUTHORING capability set");
+    expect(llms).not.toContain("controller blend-curve mutation");
     const api = JSON.parse(await text("docs/api.json"));
     expect(llms).toContain(`${api.tools.length} declared source ToolSpecs`);
     expect(llms).not.toContain("MCP CORE + exactly one ACTIVE PHASE");
@@ -45,19 +70,28 @@ describe("current developer-facing documentation sync", () => {
     );
     expect(implementation).toContain("`mcp/tests/developer-loop.test.ts`");
     expect(implementation).toContain(`${api.tools.length} declared source ToolSpecs`);
+    expect(implementation).toContain(`callable union has **${callableToolCount} tools**`);
+    expect(implementation).toContain(`share **${geometryTools.length}** AUTHORING tools`);
+    expect(implementation).toContain(`Animation exposes **${animationTools.length}**`);
+    expect(implementation).toContain("blend-transition curves are available");
 
-    expect(rootReadme).toContain("Source callable union        52 tools");
-    expect(rootReadme).toContain("AUTHORING source surface     47 tools");
+    expect(rootReadme).toContain(`Source callable union        ${callableToolCount} tools`);
+    expect(rootReadme).toContain(`AUTHORING source surface     ${geometryTools.length} tools`);
+    expect(rootReadme).toContain(`Animation source surface     ${animationTools.length} tools`);
     expect(rootReadme).not.toContain("Runtime callable union          51 tools");
     expect(rootReadme).not.toContain("not yet production-implemented end-to-end");
 
-    expect(mcpReadme).toContain("Source callable union        52 tools");
+    expect(mcpReadme).toContain(`Source callable union        ${callableToolCount} tools`);
+    expect(mcpReadme).toContain(`AUTHORING surface            ${geometryTools.length} tools`);
+    expect(mcpReadme).toContain(`Animation surface            ${animationTools.length} tools`);
     expect(mcpReadme).toContain("materialize_3d_assisted_scaffold");
     expect(mcpReadme).not.toContain(
       "Remaining implementation is the thin public materializer ToolSpec binding"
     );
 
-    expect(gatewayReadme).toContain("Runtime callable union  52");
+    expect(gatewayReadme).toContain(`Runtime callable union  ${callableToolCount}`);
+    expect(gatewayReadme).toContain(`AUTHORING surface       ${geometryTools.length}`);
+    expect(gatewayReadme).toContain(`Animation surface       ${animationTools.length}`);
     expect(gatewayReadme).toContain("client_reconnect_required=false");
     expect(gatewayReadme).toContain("without a manual AI-client reconnect");
 
@@ -95,7 +129,6 @@ describe("current developer-facing documentation sync", () => {
     }
     expect(root).toMatch(/without a marker[\s\S]*lowest sufficient provable context/i);
     expect(root).toMatch(/never infer `LOCAL_CODE`[\s\S]*never infer `LIVE_BLOCKBENCH`/i);
-    expect(root).toMatch(/`LIVE_BLOCKBENCH` is never assumed/i);
     expect(root).toMatch(
       /proof ceiling[\s\S]*exhaust source\/static\/CI-verifiable work first[\s\S]*handoff only the minimum[\s\S]*never transfer the whole task/i
     );

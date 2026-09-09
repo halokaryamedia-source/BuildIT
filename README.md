@@ -60,9 +60,9 @@ There is no normal GLB-only, PrimitiveAnything-only, provider-selection, or auto
 
 ```text
 Gateway client surface        4 fixed tools
-Source callable union        52 tools
-AUTHORING source surface     47 tools
-Animation source surface     19 tools
+Source callable union        54 tools
+AUTHORING source surface     49 tools
+Animation source surface     18 tools
 ```
 
 Gateway tools are always:

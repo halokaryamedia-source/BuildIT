@@ -111,9 +111,9 @@ Generated API docs must never be hand-edited.
 
 ```text
 Gateway client surface        4 fixed tools
-Source callable union        52 tools
-AUTHORING surface            47 tools
-Animation surface            19 tools
+Source callable union        54 tools
+AUTHORING surface            49 tools
+Animation surface            18 tools
 ```
 
 Geometry and Texturing startup focus values resolve to the same AUTHORING tool set. AUTHORING↔Animation crossing is Gateway-managed and continues the same task/chat without a normal AI-client reconnect or new chat.
@@ -131,7 +131,7 @@ EXPERIMENTAL explicit matching intent only
 MAINTENANCE  legacy/debug fallback; de-prioritized
 ```
 
-Tiering affects discovery priority only. It does not create a second authoring profile.
+Tiering affects discovery priority only. It does not create a second authoring profile. Known capabilities are invoked directly; bounded search is fallback-only and carries compact workflow aliases for high-value current authoring terminology.
 
 ## Quality Gates
 
@@ -212,10 +212,10 @@ These do not prove visual fidelity or accepted asset quality.
 
 ```text
 Gateway client surface                 4 tools
-retained Bedrock source catalog       52 tools
+retained Bedrock source catalog       54 tools
 initialize instructions                <= 700 characters
 catalog tools/list budget              <= 82,000 characters
-catalog input schemas                  <= 58,500 characters
+catalog input schemas                  <= 58,700 characters
 catalog descriptions                   <= 11,500 characters
 max per-tool payload                   <= 3,200 characters
 runtime workflow prompt             < 9,000 characters
@@ -226,7 +226,7 @@ These are static footprint guardrails, not Authoring Efficiency proof.
 
 ## Current Capability Shape
 
-Normal authoring includes Cube/Group authoring, hierarchy/rig/pivots, Locator/Null lifecycle, canonical capture, UV Layout mutation/audit, Texture Atlas/Painter/PBR/material instances, animation/timeline/effects/controllers, Undo/history, `.bbmodel` persistence, Bedrock geometry export, stage control, and the dedicated 3D-Assisted scaffold materializer.
+Normal authoring includes Cube/Group authoring, hierarchy/rig/pivots, Locator/Null lifecycle, canonical capture, UV Layout mutation/audit, Texture Atlas/Painter/PBR/material instances/render-profile bindings, animation/timeline/effects/controllers, Undo/history, `.bbmodel` persistence, Bedrock geometry export, stage control, and the dedicated 3D-Assisted scaffold materializer.
 
 3D-Assisted source also includes the resumable external orchestrator and strict state/decomposition contracts. Remaining work is proof/environment closure where capability genuinely requires `LOCAL_CODE` or `LIVE_BLOCKBENCH`, not another public binding layer.
 

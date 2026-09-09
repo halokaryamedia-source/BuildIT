@@ -52,6 +52,8 @@ MAINTENANCE  legacy/debug fallback; de-prioritized
 
 Known hot-path capabilities should be invoked directly. Search is for unknown/stale capability names, not progress confirmation. `search_capabilities` returns at most **4 results by default**; callers may explicitly request a larger bound when truncation is material. `describe_capability` is for actual schema uncertainty, not reassurance before every call.
 
+Fallback search also recognizes compact workflow aliases for exact-pixel transactions, render/alpha profiles, native Animation properties/Molang, controller blend composition, and Animation effects. These aliases improve recovery only; they do not replace direct routing from the active specialist.
+
 Tiering never deletes capability. Exact intent may still discover an exposed support/experimental/maintenance capability.
 
 ## Project / Tab Affinity
@@ -177,9 +179,9 @@ A project-scoped client configuration may carry the same command when the reposi
 
 ```text
 Gateway client tools     4
-Runtime callable union  52
-AUTHORING surface       47
-Animation surface       19
+Runtime callable union  54
+AUTHORING surface       49
+Animation surface       18
 ```
 
 These are source-owned counts. Exact installed Runtime identity and lifecycle behavior remain verification results in `../docs/knowledge/current-validation.md`.

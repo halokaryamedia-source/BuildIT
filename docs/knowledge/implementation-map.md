@@ -1,6 +1,6 @@
 # Implementation Map
 
-Updated: 2026-09-05
+Updated: 2026-09-09
 
 Current `Local` source/ownership only. This map contains **no active task status**; continuation belongs in `next-action.md`, proof in `current-validation.md`, asset continuity in `workspace/active/<asset>/README.md`.
 
@@ -140,7 +140,7 @@ describe_capability
 invoke_capability
 ```
 
-The source Bedrock Runtime callable union has **52 tools**: Geometry and Texturing share **47** AUTHORING tools; Animation exposes **19**. The last installed proof predates the materializer binding; exact installed identity and lifecycle evidence belong in `current-validation.md`. Generated API inventory contains **65 declared source ToolSpecs**, including disabled/source-preserved definitions and phase control; that inventory is not the active client surface. A materializer is a Runtime capability behind the existing Gateway, never a fifth Gateway tool.
+The source Bedrock Runtime callable union has **54 tools**: Geometry and Texturing share **49** AUTHORING tools; Animation exposes **18**. Installed proof remains separate and belongs in `current-validation.md`. Generated API inventory contains **65 declared source ToolSpecs**, including disabled/source-preserved definitions and phase control; that inventory is not the active client surface. A materializer is a Runtime capability behind the existing Gateway, never a fifth Gateway tool.
 
 ## Hot-Path Defect Index
 
@@ -156,6 +156,7 @@ The source Bedrock Runtime callable union has **52 tools**: Geometry and Texturi
 | `inspect_elements` | `mcp/server/tools.ts` | `mcp/tests/model-effectiveness-correction-accuracy.test.ts` |
 | `capture_model_views` | `mcp/server/tools/camera.ts` | `mcp/tests/camera-framing-contract.test.ts` |
 | `manage_locator`, `manage_null_object` | `mcp/server/tools/locators.ts` | `mcp/tests/bedrock-locator-coverage.test.ts` |
+| `manage_render_profile` | `mcp/server/tools/render-profile.ts` | `mcp/tests/render-profile-binding.test.ts` |
 | `manage_animation_controller` | `mcp/server/tools/animation-controller.ts` | `mcp/tests/animation-controller-mutation-contract.test.ts` |
 | `export_model` | `mcp/server/tools/export.ts` | `mcp/tests/prelocal-generic-semantics.test.ts` |
 | external 3D-Assisted state/orchestration | `mcp/lib/threeDAssistedProduction.ts`, `mcp/scripts/three-d-assisted-run.ts` | `mcp/tests/three-d-assisted-production-contract.test.ts` |
@@ -174,13 +175,12 @@ Runtime-enforced generalized surface/UV metrics remain a LOCAL_CODE/LIVE_BLOCKBE
 
 Protected gaps remain explicit and must not be bypassed through generic UI/eval fallback:
 
-- controller blend-curve mutation;
 - TextureMesh direct authoring/inspection;
 - native visible bounding-box fields;
 - animated textures;
 - bone-binding expressions.
 
-Locator/Null is available through `manage_locator` / `manage_null_object`; material instances are available through `manage_material_instances`; animation controller lifecycle is available through `manage_animation_controller`.
+Locator/Null is available through `manage_locator` / `manage_null_object`; material instances are available through `manage_material_instances`; animation controller lifecycle, nested-controller links, and blend-transition curves are available through `manage_animation_controller`.
 
 ## Protected Boundary
 

@@ -1,6 +1,6 @@
 # BlockIT Workspace Context
 
-Last verified stable facts: 2026-09-06  
+Last verified stable facts: 2026-09-09  
 Stability: stable design contract; implementation/proof tracked separately
 
 This file owns **stable project facts only**. Continuation → `docs/knowledge/next-action.md`; proof → `current-validation.md`; ownership → `implementation-map.md`; asset continuity → `workspace/active/<asset>/README.md`; routing → `AGENTS.md`.
@@ -128,7 +128,7 @@ describe_capability
 invoke_capability
 ```
 
-Current source retains **52 callable Bedrock tools**. Geometry and Texturing startup stages expose the same shared AUTHORING surface; Animation remains a separate runtime surface. Installed evidence is tracked separately in `current-validation.md`. Direct Runtime MCP remains for Inspector/conformance/debugging, not normal AI-client authoring.
+Current source retains **54 callable Bedrock tools**. Geometry and Texturing startup stages expose the same shared AUTHORING surface; Animation remains a separate runtime surface. Installed evidence is tracked separately in `current-validation.md`. Direct Runtime MCP remains for Inspector/conformance/debugging, not normal AI-client authoring.
 
 Gateway handoff keeps the same task/chat alive and refreshes backend catalog only when crossing AUTHORING↔Animation.
 
