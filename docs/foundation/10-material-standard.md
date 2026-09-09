@@ -1,27 +1,53 @@
-# Material Standard
+# PBR Texture Set Standard
 
 ## Purpose
 
-Material authoring is optional. A normal Minecraft-style entity can remain on the single production color atlas with no PBR material at all. Create a PBR material only when the asset actually needs normal/height, metalness, emissive, roughness, or subsurface behavior.
+This document owns Blockbench PBR TextureGroups / Bedrock `texture_set.json` authoring. Its canonical domain name is:
 
-The material workflow must stay easy to reason about and must not fragment the normal texturing path.
+```text
+pbr_texture_set
+```
+
+Do not call this domain simply `material` when another material concept could be confused with it.
+
+A normal Minecraft-style entity can remain on the single production color atlas with no PBR Texture Set at all. Create PBR only when the asset actually needs normal/height, metalness, emissive, roughness, or subsurface behavior.
+
+## Naming boundary
+
+BuildIT uses four separate namespaces:
+
+```text
+render_profile             = Minecraft entity render behavior/code
+pbr_texture_set            = this document; normal/height/MER/MERS
+geometry_material_instance = face material-instance metadata
+surface_pattern            = visual pixel-language recipe
+```
+
+The existing public tool names `manage_material`, `list_materials`, and `get_material_info` are compatibility names. Their semantic domain is `pbr_texture_set`.
+
+`manage_material_instances` is **not** part of this domain; it owns `geometry_material_instance`.
+
+See:
+
+- `11-render-profile-standard.md` for Minecraft transparency/glow/render-material semantics;
+- `12-surface-pattern-standard.md` for wood/metal/cloth/etc. visual texture treatment.
 
 ## Canonical authoring route
 
 ```text
 list_materials
-  → get_material_info(one material)
+  → get_material_info(one PBR Texture Set)
   → manage_material(create/configure/assign_channel)
   → list_textures validation
-  → material preview / mapped model evidence
+  → PBR preview / mapped model evidence
   → manage_material(save)
 ```
 
-`manage_material` remains the single mutation boundary. `list_materials` is the compact overview; `get_material_info` is the one-material diagnostic read. `manage_material_instances` is a separate per-face override mechanism and does not replace PBR channel configuration.
+`manage_material` remains the single PBR mutation boundary. `list_materials` is the compact overview; `get_material_info` is the one-PBR-set diagnostic read.
 
-## Material sources
+## PBR sources
 
-A material has three semantic source groups:
+A PBR Texture Set has three semantic source groups.
 
 ### Color
 
@@ -30,7 +56,7 @@ Use exactly one of:
 - a color texture; or
 - uniform RGBA.
 
-Do not create a second color atlas merely because the model has several visual materials. The standard entity path remains one production base-color atlas.
+Do not create a second base-color atlas merely because the model has several visual material families. Normal entity production remains one production base-color atlas.
 
 ### Depth
 
@@ -39,7 +65,7 @@ Use at most one:
 - normal texture; or
 - height texture.
 
-`normal XOR height` is a hard material invariant. A normal texture represents surface directions in RGB. A height texture is grayscale displacement evidence. Do not place a grayscale height map into the normal channel or use normal and height simultaneously.
+`normal XOR height` is a hard PBR invariant. A normal texture represents surface directions in RGB. A height texture is scalar/grayscale displacement evidence. Do not place a grayscale height map into the normal channel or use normal and height simultaneously.
 
 ### Surface response
 
@@ -64,18 +90,22 @@ Uniform MER/MERS is also valid when no MER texture is required.
 
 ## `authoring_status`
 
-Material reads and mutation receipts should expose one compact `authoring_status` instead of forcing the caller to reconstruct state from several arrays.
+PBR reads and mutation receipts expose one compact `authoring_status` with:
+
+```text
+domain = pbr_texture_set
+```
 
 It separates:
 
 - `sources.color` — texture / uniform / unresolved;
 - `sources.depth` — normal texture / height texture / none;
 - `sources.surface` — MER texture / MERS texture / uniform / default;
-- `readiness.preview` — whether channel semantics are internally coherent;
+- `readiness.preview` — whether PBR channel semantics are internally coherent;
 - `readiness.save` — whether a native texture-set save target exists and whether it is already saved;
-- `next_actions` — only the remaining material steps.
+- `next_actions` — only the remaining PBR steps.
 
-A valid preview does not imply a writable export path. Native Blockbench derives the `.texture_set.json` save location from the material's color texture path. Therefore `save.path_ready=false` is not a material-quality failure; it means the native save target has not been established yet.
+A valid preview does not imply a writable export path. Native Blockbench derives the `.texture_set.json` save location from the PBR color texture path. Therefore `save.path_ready=false` is not a PBR-quality failure; it means the native save target has not been established yet.
 
 ## PBR content diagnostics
 
@@ -98,38 +128,50 @@ Height maps represent scalar height and should be grayscale. Meaningful RGB chan
 
 ### MER / MERS
 
-Partial metalness is allowed and is advisory only. Emissive coverage and roughness distribution are descriptive evidence. For MERS, significant simultaneous metalness and subsurface at the same pixels is a review candidate because physically these behaviors usually represent different surface classes.
+Partial metalness is allowed and advisory. Emissive coverage and roughness distribution are descriptive evidence. For MERS, significant simultaneous metalness and subsurface at the same pixels is a review candidate because these behaviors normally represent different surface classes.
+
+## Render-profile boundary
+
+PBR emissive data and Minecraft entity emissive render materials are separate concepts.
+
+```text
+MER green channel / MERS
+≠
+entity_emissive / entity_emissive_alpha
+```
+
+Do not select a `render_profile` merely because MER contains emissive values, and do not create MER just because the entity uses an emissive render material. Both may coexist when the target pipeline explicitly requires both.
 
 ## Seam continuity
 
 Texture completion is not proven by per-face coverage alone. `list_textures.seam_continuity` samples a small bounded set of physical cube edges and ranks high-contrast or alpha-discontinuous seams.
 
-Seam evidence is **advisory**:
+Seam evidence is advisory:
 
 - never auto-fix a seam;
 - never convert seam contrast alone into visual FAIL;
-- intentional face lighting, panel boundaries, trim, or material changes may legitimately differ;
-- inspect only ranked candidates against the approved reference and current mapped model views.
+- intentional face lighting, panel boundaries, trim, or render-profile boundaries may legitimately differ;
+- inspect only ranked candidates against approved reference and current mapped model views.
 
 The diagnostic uses edge samples only; it must not add another full-atlas scan.
 
 ## Reference identity
 
-`get_texture.color_profile` can support palette and value reasoning, but it is evidence rather than a similarity score. Preserve identity colors and accents visible in the approved reference, especially after broad palette/value passes. Do not enforce arbitrary color counts or automatic percentage similarity.
+`get_texture.color_profile` supports palette/value reasoning but is evidence rather than a similarity score. Preserve identity colors and accents visible in the approved reference. Do not enforce arbitrary color counts or automatic similarity percentages.
 
-## Material validation order
+## Validation order
 
 ```text
-channel membership
+PBR channel membership
   → production atlas alignment
   → PBR content sanity
   → seam/coverage advisories
-  → material preview
+  → PBR preview
   → mapped model-view verification
   → save
 ```
 
-Technical `ready` never means visually approved. Final quality remains evidence-based and requires the current atlas/model appearance to match the intended material treatment.
+Technical `ready` never means visually approved.
 
 ## Efficiency contract
 
@@ -137,5 +179,5 @@ Technical `ready` never means visually approved. Final quality remains evidence-
 - no new runtime dependency is required;
 - seam scanning is bounded edge sampling;
 - PBR-content scanning runs only for active PBR support textures and uses a bounded sample budget;
-- material status is metadata-only;
+- PBR status is metadata-only;
 - normal non-PBR texturing pays no PBR content-analysis cost beyond discovering that no active PBR maps exist.
