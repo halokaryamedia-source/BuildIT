@@ -1,8 +1,8 @@
 # BlockIT — Geometry Standard
 
 **Status:** Active Policy  
-**Version:** 1.7  
-**Updated:** 2026-08-14
+**Version:** 1.8  
+**Updated:** 2026-09-09
 
 ## Purpose
 
@@ -65,6 +65,16 @@ Rules:
 - Linked segments must express meaningful changes of direction/contact; reject micro-segmentation and unit-Cube staircasing used only to imitate a curve.
 - A visible marking, color break, scratch, seam, or painted feature stays texture unless it materially changes volume/silhouette.
 - Complexity follows visible need. A simple professional object may require very few Cubes; a complex one may require many.
+
+### Planar cutout carrier
+
+`PLANAR_CUTOUT_CARRIER` is a representation choice inside `DIRECT`, not a new Geometry Strategy or object preset. Use it only when broad plane-like faces are the minimum host for a texture/alpha silhouette and the cut-out feature needs no material depth, volume, contact, or independent motion.
+
+- Geometry owns carrier count, envelope, placement, orientation, contact, parent, and pivot; Texture owns silhouette/holes inside the carrier bounds.
+- Small-detail thresholds measure the visible feature, not incidental carrier thickness.
+- Prefer `SINGLE`; when yaw coverage needs a cross, `CROSSED_PAIR` uses two co-centered plane-like Cubes about 90° apart under one shared transform and one coherent creation batch. More planes need explicit evidence.
+- Do not decompose alpha-owned repeated subfeatures into micro-Cubes. If texture cannot express required volume/contact/motion, use normal Geometry.
+- Use zero/minimal positive thickness according to format/UV/render stability; prefer per-face UV over thickening only to satisfy Box UV.
 
 ## Transform Ownership
 

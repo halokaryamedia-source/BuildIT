@@ -1,7 +1,7 @@
 # BlockIT — UV Layout & Texture Standard
 
 **Status:** Active Policy  
-**Version:** 1.7
+**Version:** 1.8
 **Updated:** 2026-09-09
 
 ## Purpose
@@ -35,6 +35,10 @@ Hard boundaries:
 **Texture Styling supports geometry; it does not repair geometry.**
 
 Use styling for color/material identity, pattern, form readability, highlights/shadows, small surface detail, and information that does not need silhouette/real volume/separate motion. If silhouette, proportion, attachment, or required volume is wrong, fix Geometry first.
+
+### Alpha-owned silhouette carrier
+
+The rule above still holds for normal Geometry. Narrow exception: when Geometry has explicitly chosen `PLANAR_CUTOUT_CARRIER`, its plane-like carrier is valid Geometry and alpha intentionally owns only the 2D silhouette/holes inside that carrier. This must not invent missing depth, volume, contact, or motion. Geometry changes carrier count/envelope/orientation/contact; Texturing changes the in-plane alpha. Binary cutout uses 0/255 alpha with a compatible `cutout` / `entity_alphatest` consumer; true translucency remains a separate render contract.
 
 ## Production Workflow
 

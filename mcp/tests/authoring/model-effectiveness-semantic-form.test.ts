@@ -48,6 +48,33 @@ describe("model creation effectiveness — semantic form, rotation, pivot and co
     expect(modelling).toContain("it is not a scorer and never creates visual PASS");
   });
 
+  test("small-detail budget stays texture-first while alpha carriers avoid micro-Cubes", async () => {
+    const [modelling, geometry, texturing, textureStandard] = await Promise.all([
+      source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
+      source("../docs/foundation/05-geometry-standard.md"),
+      source("../.agents/skills/blockit-bedrock-texturing/SKILL.md"),
+      source("../docs/foundation/06-texture-standard.md"),
+    ]);
+
+    expect(modelling).toContain("`<= 4 Blockbench units`");
+    expect(modelling).toContain("PLANAR_CUTOUT_CARRIER");
+    expect(modelling).toContain("2 crossed planes (~90°) in one batch");
+    expect(geometry).toContain("### Planar cutout carrier");
+    expect(geometry).toContain("not a new Geometry Strategy or object preset");
+    expect(geometry).toContain("Small-detail thresholds measure the visible feature, not incidental carrier thickness");
+    expect(textureStandard).toContain("### Alpha-owned silhouette carrier");
+    expect(textureStandard).toContain("alpha intentionally owns only the 2D silhouette/holes");
+    expect(texturing).toContain("planar carrier silhouette stays alpha, not Cubes");
+
+    const crossed = placeCubeParameters.safeParse({
+      elements: [
+        { name: "carrier_a", from: [-4, 0, -0.0625], to: [4, 8, 0.0625], origin: [0, 4, 0], rotation: [0, 45, 0] },
+        { name: "carrier_b", from: [-4, 0, -0.0625], to: [4, 8, 0.0625], origin: [0, 4, 0], rotation: [0, -45, 0] },
+      ],
+    });
+    expect(crossed.success).toBe(true);
+  });
+
   test("rotation is an explicit modelling decision instead of zero-rotation default bias", async () => {
     const [modelling, geometry] = await Promise.all([
       source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
