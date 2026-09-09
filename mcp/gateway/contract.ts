@@ -68,12 +68,47 @@ const PRIMARY_CAPABILITIES = new Set([
   "draw_shape_tool",
   "paint_with_brush",
   "eraser_tool",
+  "paint_texture_transaction",
   "manage_material",
   "manage_material_instances",
+  "manage_render_profile",
   "create_animation",
   "inspect_animation",
   "manage_animation_timeline",
+  "manage_animation_effects",
+  "manage_animation_controller",
 ]);
+
+const CAPABILITY_SEARCH_ALIASES: Readonly<Record<string, readonly string[]>> = {
+  paint_texture_transaction: [
+    "atomic paint",
+    "exact pixel",
+    "exact pixels",
+    "revision protected paint",
+  ],
+  manage_render_profile: [
+    "alpha cutout translucent",
+    "render material",
+    "entity alphatest alphablend emissive",
+  ],
+  manage_animation_timeline: [
+    "animation properties",
+    "native animation properties",
+    "animation molang",
+    "rotation space",
+  ],
+  manage_animation_controller: [
+    "state machine",
+    "nested controller",
+    "blend curve",
+    "transition curve",
+  ],
+  manage_animation_effects: [
+    "animation sound",
+    "animation particle",
+    "animation timeline event",
+  ],
+};
 
 const EXPERIMENTAL_CAPABILITIES = new Set([
   "manage_geometry_reference",
@@ -260,6 +295,9 @@ function lexicalCapabilityScore(tool: BackendTool, tokens: string[]): number {
   const name = tool.name.toLowerCase();
   const searchableName = name.replace(/[_.\/-]+/g, " ");
   const description = (tool.description ?? "").toLowerCase();
+  const aliases = (CAPABILITY_SEARCH_ALIASES[tool.name] ?? [])
+    .join(" ")
+    .toLowerCase();
   let score = 0;
 
   for (const token of tokens) {
@@ -268,6 +306,7 @@ function lexicalCapabilityScore(tool: BackendTool, tokens: string[]): number {
     else if (name.includes(token)) score += 40;
     else if (searchableName.includes(token)) score += 30;
 
+    if (aliases.includes(token)) score += 24;
     if (description.includes(token)) score += 10;
   }
 

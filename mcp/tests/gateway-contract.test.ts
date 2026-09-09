@@ -53,6 +53,56 @@ describe("BlockIT Gateway contract", () => {
     expect(classifyCapabilityTier(tools[3]!)).toBe("maintenance");
   });
 
+  test("fallback discovery recognizes current high-value authoring terminology without broad search", () => {
+    const tools: BackendTool[] = [
+      {
+        name: "paint_texture_transaction",
+        description: "Apply a bounded texture transaction.",
+      },
+      {
+        name: "paint_with_brush",
+        description: "Paint texture pixels with the native brush.",
+      },
+      {
+        name: "manage_render_profile",
+        description: "Manage Bedrock entity rendering bindings.",
+      },
+      {
+        name: "manage_material",
+        description: "Manage a Bedrock PBR material.",
+      },
+      {
+        name: "manage_animation_timeline",
+        description: "Manage authored animation timeline data.",
+      },
+      {
+        name: "manage_animation_controller",
+        description: "Manage animation controller state composition.",
+      },
+    ];
+
+    expect(
+      searchCapabilityCatalog(tools, "exact pixel paint", 4)[0]?.capability_id
+    ).toBe("paint_texture_transaction");
+    expect(
+      searchCapabilityCatalog(tools, "alpha cutout render material", 4)[0]
+        ?.capability_id
+    ).toBe("manage_render_profile");
+    expect(
+      searchCapabilityCatalog(tools, "native animation properties molang", 4)[0]
+        ?.capability_id
+    ).toBe("manage_animation_timeline");
+    expect(
+      searchCapabilityCatalog(tools, "nested controller blend curve", 4)[0]
+        ?.capability_id
+    ).toBe("manage_animation_controller");
+
+    expect(classifyCapabilityTier(tools[0]!)).toBe("primary");
+    expect(classifyCapabilityTier(tools[2]!)).toBe("primary");
+    expect(classifyCapabilityTier(tools[4]!)).toBe("primary");
+    expect(classifyCapabilityTier(tools[5]!)).toBe("primary");
+  });
+
   test("maintenance fallbacks stay out of empty discovery but remain explicitly discoverable", () => {
     const tools: BackendTool[] = [
       { name: "manage_cubes", description: "Create Bedrock cubes." },
