@@ -9,12 +9,12 @@ import {
  * authority. Complex operation payloads are described by the routed skill and
  * validated by their strict branch schema when invoked.
  */
-const compactControllerOperations = z
+const compactOperations = z
   .array(z.record(z.unknown()))
   .min(1)
   .max(32)
   .optional()
-  .describe("Bounded controller operation batch; exact branch schema is validated on invocation.");
+  .describe("Bounded operation batch; exact branch schema is validated on invocation.");
 
 const compactMolangValue = z
   .union([z.string(), z.number().finite(), z.null()])
@@ -42,13 +42,14 @@ export function wireAnimationSchemaBudget(): void {
 
   controller.inputSchema = {
     ...controller.inputSchema,
-    operations: compactControllerOperations,
-    native_operations: compactControllerOperations,
-    resource_operations: compactControllerOperations,
+    operations: compactOperations,
+    native_operations: compactOperations,
+    resource_operations: compactOperations,
   };
 
   timeline.inputSchema = {
     ...timeline.inputSchema,
+    keyframes: compactOperations,
     anim_time_update: compactMolangValue,
     blend_weight: compactMolangValue,
     start_delay: compactMolangValue,
