@@ -1,6 +1,6 @@
 # Current Validation
 
-Updated: 2026-09-07
+Updated: 2026-09-09
 
 This file owns **current proof interpretation**. Continuation belongs in `docs/knowledge/next-action.md`; stable facts in `CONTEXT.md`; source ownership in `docs/knowledge/implementation-map.md`; active asset continuity in `workspace/active/<project>/README.md`.
 
@@ -9,45 +9,44 @@ This file owns **current proof interpretation**. Continuation belongs in `docs/k
 Repository: `halokaryamedia-source/BuildIT`  
 Branch: **`Local` only**.
 
-Per `GITHUB_RULES.md`, device-independent source acceptance must use complete checks on the same exact `Local` SHA. The last full Repository Verify + MCP Verify composite closure remains `1c1f74e160ce520d53fda3a3f271d9323b28558b`.
+### Final Pre-Local REMOTE_GITHUB hardening — ACCEPTED
 
-GitHub **Repository Verify** run `34046872083` completed successfully for that exact SHA and executed the repository routing/policy verifier.
+The current executable/source closure is accepted at exact `Local` SHA `ab82d8116d9b021f6546239f974256f8423f9c3b`.
 
-GitHub **MCP Verify** run `34046872042` completed successfully for the same exact SHA and executed `bun run verify:mcp`:
+GitHub **Repository Verify** run `34334588510` completed successfully for that SHA.
 
-- runtime: **409 PASS / 0 FAIL** across 69 files;
-- authoring: **120 PASS / 0 FAIL** across 26 files;
-- generated docs/prompt freshness: PASS;
-- TypeScript + Gateway typecheck: PASS;
-- source surface measurements: PASS;
-- build: PASS;
-- build identity: `sha256:c208ec49344db79fa22e1cddd330e563f14319d4ed0c724408ee0ba0a01c969c`.
+GitHub **MCP Verify** run `34334588675` completed successfully for the same SHA and executed the canonical MCP gate: generated docs/prompt freshness, TypeScript + Gateway typecheck, Runtime tests, authoring tests, source/phase surface measurements, and build/provenance upload.
 
-The same MCP run also produced exact-SHA provenance and uploaded `blockit-mcp-verified`:
+Current source surface remains:
 
-- artifact ID: `9993371261`;
-- artifact ZIP digest: `sha256:70cb1d126fe2bc9077d64b332f6d4e2715b6b14a93fe696b3493e776a0626fe3`;
-- verified bundle SHA-256: `9896b8c25e293b7f33dc2ebf3119942809ec4df548839f4ac753366bc8521f87`;
-- embedded build identity: `sha256:c208ec49344db79fa22e1cddd330e563f14319d4ed0c724408ee0ba0a01c969c`.
+```text
+Gateway client surface   4 fixed tools
+Runtime callable union   54 tools
+AUTHORING surface        49 tools
+Animation surface        18 tools
+```
 
-### Authoring-efficiency / Gateway REMOTE_GITHUB closure — ACCEPTED
+Pre-local closure now additionally protects:
 
-The current authoring-efficiency GitHub partition is accepted at exact source SHA `f3f7f8062d8e2cfafe79a273443dee2ab2f2a145`.
+- every enabled default capability has one registration family, an executable Runtime definition, and at least one semantic phase surface;
+- current Runtime augmentation fields remain attached to their canonical capabilities rather than becoming parallel tools;
+- `paint_texture_transaction` is the only explicitly bounded enabled Runtime capability still outside the current generated ToolSpec manifest;
+- Particle production exposure is fail-closed as an all-or-nothing contract across Runtime registration, enablement, Animation exposure, generated ToolSpec ownership, and `particle-reference` registration;
+- routed phase-scoped tool discovery remains the intended fallback model; the existing discovery evaluation stays inside `test:runtime`, avoiding a duplicate verification pass.
 
-GitHub **MCP Verify** run `34084250543` completed successfully on that exact SHA and executed `bun run verify:mcp`, including generated freshness, TypeScript + Gateway typecheck, runtime tests, `verify:authoring`, surface/phase measurements, and build. The run also completed exact-SHA provenance and verified bundle upload.
+The discovery proxy on this closure reports routed phase-scoped Top-3 and Top-8 recall of **1.0**; Animation Top-1 is **1.0**. These are static/spec-loading proxies, not installed Astra/Codex usage proof.
 
-Verified artifact:
+Verified artifact from MCP Verify:
 
 - name: `blockit-mcp-verified`;
-- artifact ID: `10004673848`;
-- artifact ZIP digest: `sha256:2adf4fa0f747fa1dd390b7bdeb2135403fda4e61d0023e2829d32fba6e43ac13`;
-- verified bundle SHA-256: `46c821431ead51618fa7ef5fa3fe385e510fc344fa70e71c10413030473e355b`;
-- embedded build identity: `sha256:8213f7e2e8bd6360d918394fa0ba7f9cdc96ec036ad38b58a4bfff4c78c49f41`;
-- Bun: `1.3.14`.
+- artifact ID: `10097189586`;
+- artifact ZIP digest: `sha256:0a18d4eeb18083e08002eb722cd260ede7fb0ee8310db29636a869e4d7bd3f11`.
 
-This closure covers the current remote authoring-efficiency changes: compact Gateway continuation receipts for `manage_cubes`; bounded Gateway discovery default `4`; compact Gateway describe behavior and tools-only boundary; asset-authoring cwd/test-development firewall; and compact Texturing palette/cohort/anti-micro-loop guidance. It is **SOURCE/CI/build-artifact proof only**. It does not prove actual Astra/Codex allowance reduction, installed Runtime behavior, or visual texture quality.
+This is **SOURCE/CI/build-artifact proof only**. It does not prove installed Blockbench behavior, native Undo/playback/persistence, visual fidelity, GPU inference quality, or actual Astra/Codex allowance reduction.
 
-The remaining proposed high-ROI Texturing optimizations alter Runtime Tool schemas/results and therefore require canonical `LOCAL_CODE` generation/verification before they can become source authority. Continuation owns that residue.
+Remaining source work is intentionally narrow and belongs to `LOCAL_CODE`: Particle production exposure plus its generator-coupled public-contract/docs closure, current generated ToolSpec alignment (including `paint_texture_transaction` and any import-safe Runtime augmentation parity needed by the generator), then the separate MCP SDK dependency closure. `next-action.md` owns the exact continuation.
+
+No additional Runtime wiring was removed during the final sweep because no other production wiring was proven dead. Stale tests that still described controller blend curves as unsupported or old PREWIRED continuation were corrected to the current canonical contracts.
 
 ## Live Acceptance Harness — SOURCE_READY / LIVE NOT_RUN
 
@@ -92,6 +91,10 @@ These are native-behavior acceptance assertions; they are not texture visual-fid
 - property and keyframe Undo/Redo restore exact expected state.
 
 This closes the manual-selection workaround at the test level once the live run passes; motion aesthetics remain separate.
+
+### Particle
+
+`verify:particle-live` is already source-prepared but must not run until the LOCAL_CODE Particle public exposure/generator closure is complete and the exact deployed Runtime advertises both `inspect_particle` and `manage_particle` on the Animation surface.
 
 ### Native persistence
 
@@ -148,9 +151,19 @@ BlockIT currently uses request-owned server/transport objects and has exact-SHA 
 
 Dependency closure remains `LOCAL_CODE`: upgrade to a patched compatible SDK, regenerate canonical `bun.lock` with Bun, then run the owning source verifier. Do not hand-edit the lockfile and do not use Actions as an authoring path.
 
-## Pending Live Sequence
+## Pending Local / Live Sequence
 
-After the SDK/local source closure and exact deployment, the generic MCP/native acceptance sequence is:
+Local source closure should remain ordered and diagnostic:
+
+```text
+Particle + generated public-contract closure
+→ bun run verify:full
+→ SDK upgrade + bun.lock regeneration
+→ bun run verify:full
+→ exact build/deploy
+```
+
+After that, the generic MCP/native acceptance sequence is:
 
 ```text
 shared AUTHORING
@@ -158,6 +171,7 @@ shared AUTHORING
 → verify:texturing-live
 → one real AUTHORING→Animation handoff/reconnect
 → verify:animation-live
+→ verify:particle-live
 → verify:persistence-live --prepare
 → one native close/reopen
 → verify:persistence-live --verify
@@ -187,12 +201,8 @@ If corresponding live evidence is unavailable, report `UNVERIFIED` or `LOCAL PRO
 
 AUTHORING TAXONOMY remains user-selected `DIRECT | 3D_ASSISTED`. 3D_ASSISTED source/orchestration and environment preparation remain `SOURCE_READY`; GPU inference quality, installed materializer identity, native materializer Undo/stale-state behavior and end-to-end asset quality remain deferred unless explicitly resumed. Source/static/CI proof never upgrades those live claims.
 
-## Generic Quality-First REMOTE_GITHUB Closure
+## Historical Generic Quality-First Closure
 
-The generic quality-first authoring contract is source/static accepted at exact `Local` SHA `8e2a54f3016f744e3cd1bedef27379bdb07c3885`. GitHub **Authoring Policy Verify** run `34119139741` completed successfully on that SHA.
+The generic quality-first authoring contract was source/static accepted at exact `Local` SHA `8e2a54f3016f744e3cd1bedef27379bdb07c3885` with Authoring Policy Verify run `34119139741`. It remains historical proof beneath the current pre-local closure, not the active continuation baseline.
 
-This closure protects generic Geometry assembly/coverage, mapped resize UV/pixel impact, atlas-constraint handling, Texturing material/variant/live-authority reasoning, Animation rig/query/full-loop readiness, and progressive-disclosure Finalization. It does **not** repair historical assets and does not claim live Blockbench or visual quality proof.
-
-The detailed 2026-09-07 multi-model DIRECT usage audit is historical evidence, not active proof or an automatic implementation queue: `Experimental/authoring-usage-audit-2026-09-07.md`. Its audited source baseline predates this quality-first closure, so each remaining defect must be reproduced against current source before it is treated as current.
-
-Public-contract residue such as revision-aware focused texture reads, coherent paint transactions, or other schema/result changes remains generator-coupled under `mcp/AGENTS.md`. With the current REMOTE_GITHUB-only scope, do not mutate canonical public contracts into an incomplete generated state; keep that residue deferred rather than transferring the whole task.
+The detailed 2026-09-07 multi-model DIRECT usage audit remains historical evidence only: `Experimental/authoring-usage-audit-2026-09-07.md`. Each defect must be reproduced against current source before it is treated as current.
