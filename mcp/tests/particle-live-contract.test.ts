@@ -16,14 +16,16 @@ describe("particle live verifier contract (source harness, not live proof)", () 
     expect(PARTICLE_LIVE_VISUAL_CLAIM).toBe("not_evaluated");
   });
 
-  test("prebuilds one math-driven create-patch-save-bind-preview path", () => {
+  test("prebuilds one math-driven create-patch-save-preview path", () => {
     const source = readFileSync(
       new URL("../scripts/verify-particle-live.ts", import.meta.url),
       "utf8"
     );
     expect(source).toContain("minecraft:particle_motion_parametric");
     expect(source).toContain("math.sin(variable.particle_age");
-    expect(source).toContain("client_entity_binding");
+    expect(source).not.toContain("client_entity_binding");
+    expect(source).not.toContain("client_entity_path");
+    expect(source).toContain("one_call_create_patch_save_preview");
     expect(source).toContain("preview: true");
     expect(source).toContain("visual_quality: PARTICLE_LIVE_VISUAL_CLAIM");
   });

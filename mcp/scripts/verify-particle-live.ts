@@ -1,4 +1,4 @@
-import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
@@ -39,21 +39,6 @@ async function main(): Promise<void> {
 
   const evidenceDir = mkdtempSync(join(tmpdir(), "blockit-particle-live-"));
   const particlePath = join(evidenceDir, "math_orbit.particle.json");
-  const clientEntityPath = join(evidenceDir, "particle_live.entity.json");
-  writeFileSync(
-    clientEntityPath,
-    `${JSON.stringify(
-      {
-        format_version: "1.10.0",
-        "minecraft:client_entity": {
-          description: { identifier: "blockit:particle_live_entity" },
-        },
-      },
-      null,
-      2
-    )}\n`,
-    "utf8"
-  );
 
   const managed = structuredObject(
     await client.callTool(
@@ -92,10 +77,6 @@ async function main(): Promise<void> {
           },
         ],
         output: { path: particlePath },
-        client_entity_binding: {
-          source: { path: clientEntityPath },
-          shortname: "math_orbit",
-        },
         preview: true,
         max_content_length: 0,
       },
@@ -104,32 +85,49 @@ async function main(): Promise<void> {
     "manage_particle"
   );
 
-  expect(managed.valid === true, `manage_particle was not valid: ${JSON.stringify(managed)}.`);
-  expect(managed.wrote_to_path === particlePath, "Particle write path was not verified.");
-  expect(managed.preview_path === particlePath, "Native preview did not target the written particle path.");
-  expect(managed.preview_error === null, `Native particle preview failed: ${String(managed.preview_error)}.`);
+  expect(
+    managed.valid === true,
+    `manage_particle was not valid: ${JSON.stringify(managed)}.`
+  );
+  expect(
+    managed.wrote_to_path === particlePath,
+    "Particle write path was not verified."
+  );
+  expect(
+    managed.preview_path === particlePath,
+    "Native preview did not target the written particle path."
+  );
+  expect(
+    managed.preview_error === null,
+    `Native particle preview failed: ${String(managed.preview_error)}.`
+  );
   const managedSummary = object(managed.summary);
-  expect(managedSummary.identifier === "blockit:math_orbit", "Particle identifier changed unexpectedly.");
+  expect(
+    managedSummary.identifier === "blockit:math_orbit",
+    "Particle identifier changed unexpectedly."
+  );
   expect(
     diagnosticCodes(managedSummary).includes("parametric_motion_molang"),
     "Math-driven parametric motion was not recognized by particle diagnostics."
   );
 
-  const binding = object(managed.client_entity_binding);
-  expect(binding.valid === true, "Client-entity particle binding is invalid.");
-  expect(binding.effect === "blockit:math_orbit", "Client-entity binding targets the wrong particle identifier.");
-  expect(binding.wrote_to_path === clientEntityPath, "Client-entity binding was not written in place.");
-
   const inspected = structuredObject(
     await client.callTool(
       "inspect_particle",
-      { source: { path: particlePath }, mode: "summary", max_content_length: 0 },
+      {
+        source: { path: particlePath },
+        mode: "summary",
+        max_content_length: 0,
+      },
       "inspection"
     ),
     "inspect_particle"
   );
   const inspectedSummary = object(inspected.summary);
-  expect(inspectedSummary.identifier === "blockit:math_orbit", "inspect_particle did not read back the authored identifier.");
+  expect(
+    inspectedSummary.identifier === "blockit:math_orbit",
+    "inspect_particle did not read back the authored identifier."
+  );
   const components = Array.isArray(inspectedSummary.components)
     ? inspectedSummary.components
     : [];
@@ -143,15 +141,10 @@ async function main(): Promise<void> {
   );
 
   const particleFile = readFileSync(particlePath, "utf8");
-  const entityFile = readFileSync(clientEntityPath, "utf8");
   expect(
     particleFile.includes("math.sin(variable.particle_age") &&
       particleFile.includes("minecraft:particle_motion_parametric"),
     "Verified particle file does not preserve the authored Molang motion."
-  );
-  expect(
-    entityFile.includes('"math_orbit": "blockit:math_orbit"'),
-    "Client-entity file does not contain the expected shortname mapping."
   );
 
   console.log(
@@ -162,15 +155,13 @@ async function main(): Promise<void> {
         phase: "animation",
         build_identity: environment.buildIdentity,
         particle_path: particlePath,
-        client_entity_path: clientEntityPath,
-        one_call_create_patch_save_bind_preview: true,
+        one_call_create_patch_save_preview: true,
         parametric_molang_readback: true,
         native_preview_loaded: true,
-        client_entity_binding_verified: true,
         cost: client.snapshotMetrics(),
         visual_quality: PARTICLE_LIVE_VISUAL_CLAIM,
         next:
-          "Inspect the Blockbench viewport to approve the intended orbit/size motion; native preview loading proves runtime integration, not visual quality or in-game gameplay truth.",
+          "Inspect the Blockbench viewport to approve the intended orbit/size motion; native preview loading proves visual-runtime integration, not visual quality or downstream gameplay integration.",
       },
       null,
       2

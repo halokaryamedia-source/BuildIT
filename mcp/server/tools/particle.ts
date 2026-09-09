@@ -11,16 +11,8 @@ import {
   isBedrockParticleIdentifier,
   parseParticleDocument,
   serializeParticleDocument,
-  type JsonObject,
   type JsonValue,
 } from "@/lib/bedrockParticleDocument";
-import {
-  applyParticleBindingOperations,
-  inspectParticleBindings,
-  isParticleEffectShortname,
-  parseClientEntityDocument,
-  serializeClientEntityDocument,
-} from "@/lib/bedrockParticleBinding";
 import {
   assertParticleSourceSnapshotMatches,
   assertParticleWriteRevisionUnchanged,
@@ -39,22 +31,10 @@ const particlePathSchema = absoluteJsonPathSchema.refine(
   { message: "Particle files must use the .particle.json suffix." }
 );
 
-const clientEntityPathSchema = absoluteJsonPathSchema.refine(
-  (value) => value.toLowerCase().endsWith(".json"),
-  { message: "Client-entity files must use a .json suffix." }
-);
-
 const particleIdentifierSchema = z
   .string()
   .refine(isBedrockParticleIdentifier, {
     message: "Particle identifier must use lowercase namespace:path syntax.",
-  });
-
-const particleShortnameSchema = z
-  .string()
-  .refine(isParticleEffectShortname, {
-    message:
-      "Particle shortname must be non-empty, whitespace-free authored text (max 128 chars).",
   });
 
 const jsonValueSchema: z.ZodType<JsonValue> = z.lazy(() =>
@@ -86,10 +66,6 @@ function exactlyOneSourceSchema(pathSchema: z.ZodType<string>, label: string) {
 }
 
 const particleSourceSchema = exactlyOneSourceSchema(particlePathSchema, "source");
-const clientEntitySourceSchema = exactlyOneSourceSchema(
-  clientEntityPathSchema,
-  "client_entity_binding.source"
-);
 
 const createParticleSchema = z
   .object({
@@ -206,20 +182,6 @@ const outputPathSchema = <T extends z.ZodType<string>>(pathSchema: T) =>
     })
     .strict();
 
-const clientEntityBindingSchema = z
-  .object({
-    source: clientEntitySourceSchema,
-    shortname: particleShortnameSchema.describe(
-      "Client-entity particle_effects shortname. Existing animation/controller effect fields reference this shortname, not the full particle identifier."
-    ),
-    output: outputPathSchema(clientEntityPathSchema)
-      .optional()
-      .describe(
-        "Optional destination. With source.path and no output, the explicitly supplied client-entity source is updated in place. With inline content and no output, the patched client-entity JSON is returned without a file write."
-      ),
-  })
-  .strict();
-
 export const inspectParticleParameters = z
   .object({
     source: particleSourceSchema,
@@ -250,11 +212,6 @@ export const manageParticleParameters = z
         "Ordered targeted particle mutations. Use patch for deep edits without replacing unknown sibling fields."
       ),
     output: outputPathSchema(particlePathSchema).optional(),
-    client_entity_binding: clientEntityBindingSchema
-      .optional()
-      .describe(
-        "Optional one-call client-entity shortname mapping to the final particle identifier. Keeps animation/controller effect references short and avoids a separate binding tool."
-      ),
     preview: z
       .boolean()
       .optional()
@@ -290,7 +247,7 @@ export const particleToolDocs: ToolSpec[] = [
   {
     name: "manage_particle",
     description:
-      "Creates or losslessly patches a Bedrock .particle.json document, preserves unknown JSON fields, validates final particle semantics, optionally performs verified transactional file writes, can map the final identifier to a client-entity particle shortname, and can load the particle into Blockbench's native preview. Animation/controller timing remains owned by existing animation tools.",
+      "Creates or losslessly patches a Bedrock .particle.json document, preserves unknown JSON fields, validates final particle semantics, optionally performs a verified transactional file write, and can load the particle into Blockbench's native preview. Animation/controller timing and downstream runtime binding remain owned by existing animation/controller tools.",
     annotations: {
       title: "Manage Bedrock Particle",
       destructiveHint: true,
@@ -311,7 +268,7 @@ type ParticleFilesystem = {
 };
 
 type PlannedWrite = {
-  kind: "particle" | "client_entity";
+  kind: "particle";
   path: string;
   content: string;
   allow_replace: boolean;
@@ -362,35 +319,6 @@ function readParticleSource(
   const content = fs.readFileSync(path, "utf8");
   return {
     document: parseParticleDocument(content),
-    source_path: path,
-    source_content: content,
-  };
-}
-
-function readClientEntitySource(
-  source: z.infer<typeof clientEntitySourceSchema>
-): {
-  document: ReturnType<typeof parseClientEntityDocument>;
-  source_path: string | null;
-  source_content: string | null;
-} {
-  if (source.content !== undefined) {
-    return {
-      document: parseClientEntityDocument(source.content),
-      source_path: null,
-      source_content: null,
-    };
-  }
-  const path = source.path!;
-  const fs = requireParticleFilesystem(
-    `BlockIT requested read access to bind Bedrock particle in client entity ${path}`
-  );
-  if (!fs.existsSync(path)) {
-    throw new Error(`Client-entity source file does not exist: ${path}`);
-  }
-  const content = fs.readFileSync(path, "utf8");
-  return {
-    document: parseClientEntityDocument(content),
     source_path: path,
     source_content: content,
   };
@@ -646,52 +574,6 @@ function allowReplaceForExplicitSource(
   );
 }
 
-function prepareClientEntityBinding(
-  binding: z.infer<typeof clientEntityBindingSchema>,
-  particleIdentifier: string
-): {
-  source_path: string | null;
-  source_content: string | null;
-  output_path: string | null;
-  document: JsonObject;
-  serialized: string;
-  summary: ReturnType<typeof inspectParticleBindings>;
-  valid: boolean;
-  allow_replace: boolean;
-} {
-  const base = readClientEntitySource(binding.source);
-  const document = applyParticleBindingOperations(base.document, [
-    {
-      op: "set",
-      shortname: binding.shortname,
-      effect: particleIdentifier,
-    },
-  ]);
-  const summary = inspectParticleBindings(document);
-  const valid = !summary.diagnostics.some(
-    (entry) => entry.severity === "error"
-  );
-  const serialized = serializeClientEntityDocument(document);
-  const outputPath = binding.output?.path ?? base.source_path;
-  return {
-    source_path: base.source_path,
-    source_content: base.source_content,
-    output_path: outputPath,
-    document,
-    serialized,
-    summary,
-    valid,
-    allow_replace:
-      outputPath !== null
-        ? allowReplaceForExplicitSource(
-            base.source_path,
-            outputPath,
-            binding.output?.overwrite === true
-          )
-        : false,
-  };
-}
-
 export function registerParticleTools(): void {
   createTool(
     particleToolDocs[0].name,
@@ -735,7 +617,6 @@ export function registerParticleTools(): void {
         create,
         operations,
         output,
-        client_entity_binding,
         preview,
         max_content_length,
       }) {
@@ -748,21 +629,11 @@ export function registerParticleTools(): void {
             };
         const document = applyParticleOperations(base.document, operations);
         const summary = inspectParticleDocument(document);
-        const particleValid = !summary.diagnostics.some(
+        const valid = !summary.diagnostics.some(
           (entry) => entry.severity === "error"
         );
         const serialized = serializeParticleDocument(document);
         const byteLength = Buffer.byteLength(serialized, "utf8");
-
-        const bindingState =
-          client_entity_binding && summary.identifier && particleValid
-            ? prepareClientEntityBinding(
-                client_entity_binding,
-                summary.identifier
-              )
-            : null;
-        const bindingValid = bindingState ? bindingState.valid : true;
-        const valid = particleValid && bindingValid;
 
         const intendedPreviewPath = output?.path ?? base.source_path;
         if (preview && valid) {
@@ -792,24 +663,8 @@ export function registerParticleTools(): void {
             ),
           });
         }
-        if (bindingState?.output_path && valid) {
-          writePlans.push({
-            kind: "client_entity",
-            path: bindingState.output_path,
-            content: bindingState.serialized,
-            allow_replace: bindingState.allow_replace,
-            expected_existing_content: sourceContentForOutput(
-              bindingState.source_path,
-              bindingState.source_content,
-              bindingState.output_path
-            ),
-          });
-        }
         const writes = valid ? writeArtifactsAtomically(writePlans) : [];
         const particleWrite = writes.find((entry) => entry.kind === "particle");
-        const bindingWrite = writes.find(
-          (entry) => entry.kind === "client_entity"
-        );
 
         let previewPath: string | null = null;
         let previewError: string | null = null;
@@ -829,20 +684,14 @@ export function registerParticleTools(): void {
           serialized,
           effectiveMaxContentLength
         );
-        const bindingContent = bindingState
-          ? boundedContent(
-              bindingState.serialized,
-              bindingWrite ? 0 : effectiveMaxContentLength
-            )
-          : null;
 
         return {
           content: [
             {
               type: "text" as const,
               text: valid
-                ? `Prepared particle ${summary.identifier}: ${summary.component_count} components${particleWrite ? "; particle write verified" : ""}${bindingState ? `; client-entity shortname ${client_entity_binding!.shortname} mapped` : ""}${bindingWrite ? "; binding write verified" : ""}${previewPath && !previewError ? "; native preview loaded" : ""}${previewError ? "; native preview failed after artifact preparation" : ""}.`
-                : `Particle ${summary.identifier ?? "<missing identifier>"} or requested client-entity binding has validation errors; no file write or preview was performed.`,
+                ? `Prepared particle ${summary.identifier}: ${summary.component_count} components${particleWrite ? "; particle write verified" : ""}${previewPath && !previewError ? "; native preview loaded" : ""}${previewError ? "; native preview failed after artifact preparation" : ""}.`
+                : `Particle ${summary.identifier ?? "<missing identifier>"} has validation errors; no file write or preview was performed.`,
             },
           ],
           structuredContent: {
@@ -855,17 +704,6 @@ export function registerParticleTools(): void {
             operation_count: operations.length,
             summary,
             writes,
-            client_entity_binding: bindingState
-              ? {
-                  shortname: client_entity_binding!.shortname,
-                  effect: summary.identifier,
-                  source_path: bindingState.source_path,
-                  wrote_to_path: bindingWrite?.path ?? null,
-                  valid: bindingState.valid,
-                  summary: bindingState.summary,
-                  ...bindingContent,
-                }
-              : null,
             ...particleContent,
           },
         };

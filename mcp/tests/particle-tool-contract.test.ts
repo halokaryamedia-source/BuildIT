@@ -18,7 +18,7 @@ describe("particle MCP contract", () => {
     ]);
   });
 
-  test("supports one-call create, client-entity binding, save intent and native preview request", () => {
+  test("supports one-call create, save intent and native preview request", () => {
     const parsed = manageParticleParameters.safeParse({
       create: {
         identifier: "blockit:engine_smoke",
@@ -35,14 +35,32 @@ describe("particle MCP contract", () => {
       output: {
         path: "C:\\packs\\example\\particles\\engine_smoke.particle.json",
       },
-      client_entity_binding: {
-        source: { path: "C:\\packs\\example\\entity\\vehicle.entity.json" },
-        shortname: "engine_smoke",
-      },
       preview: true,
     });
 
     expect(parsed.success).toBe(true);
+  });
+
+  test("keeps client-entity mutation outside the particle authoring surface", () => {
+    expect(
+      manageParticleParameters.safeParse({
+        create: { identifier: "blockit:test" },
+        client_entity_binding: {
+          source: {
+            content: JSON.stringify({
+              "minecraft:client_entity": {
+                description: { identifier: "blockit:test_entity" },
+              },
+            }),
+          },
+          shortname: "engine_smoke",
+        },
+      }).success
+    ).toBe(false);
+    expect(particleToolDocs[1].description).not.toContain("client-entity");
+    expect(particleToolDocs[1].description).toContain(
+      "downstream runtime binding remain owned by existing animation/controller tools"
+    );
   });
 
   test("accepts future component payloads as JSON while keeping authored identity strict", () => {
@@ -69,52 +87,46 @@ describe("particle MCP contract", () => {
   });
 
   test("requires one source form and keeps full inspection opt-in", () => {
-    expect(inspectParticleParameters.safeParse({
-      source: { content: "{\"particle_effect\":{}}" },
-    }).success).toBe(true);
-    expect(inspectParticleParameters.safeParse({
-      source: {
-        path: "/tmp/example.particle.json",
-        content: "{\"particle_effect\":{}}",
-      },
-    }).success).toBe(false);
-  });
-
-  test("keeps client-entity effect references shortname-based and rejects unsafe binding names", () => {
-    expect(manageParticleParameters.safeParse({
-      create: { identifier: "blockit:test" },
-      client_entity_binding: {
-        source: { content: JSON.stringify({
-          "minecraft:client_entity": {
-            description: { identifier: "blockit:test_entity" },
-          },
-        }) },
-        shortname: "engine smoke",
-      },
-    }).success).toBe(false);
+    expect(
+      inspectParticleParameters.safeParse({
+        source: { content: "{\"particle_effect\":{}}" },
+      }).success
+    ).toBe(true);
+    expect(
+      inspectParticleParameters.safeParse({
+        source: {
+          path: "/tmp/example.particle.json",
+          content: "{\"particle_effect\":{}}",
+        },
+      }).success
+    ).toBe(false);
   });
 
   test("rejects ambiguous patch payloads before runtime mutation", () => {
-    expect(manageParticleParameters.safeParse({
-      create: { identifier: "blockit:test" },
-      operations: [
-        {
-          op: "patch",
-          path: ["components", "x"],
-          remove: true,
-          value: {},
-        },
-      ],
-    }).success).toBe(false);
+    expect(
+      manageParticleParameters.safeParse({
+        create: { identifier: "blockit:test" },
+        operations: [
+          {
+            op: "patch",
+            path: ["components", "x"],
+            remove: true,
+            value: {},
+          },
+        ],
+      }).success
+    ).toBe(false);
 
-    expect(manageParticleParameters.safeParse({
-      create: { identifier: "blockit:test" },
-      operations: [
-        {
-          op: "set_render",
-        },
-      ],
-    }).success).toBe(false);
+    expect(
+      manageParticleParameters.safeParse({
+        create: { identifier: "blockit:test" },
+        operations: [
+          {
+            op: "set_render",
+          },
+        ],
+      }).success
+    ).toBe(false);
   });
 });
 

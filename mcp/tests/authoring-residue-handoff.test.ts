@@ -78,12 +78,15 @@ describe("REMOTE_GITHUB authoring handoff contracts", () => {
       "inspect_particle",
       "manage_particle",
       "particle-reference",
+      "create/patch/save/preview",
       "docs:build",
       "docs:check",
       "verify:full",
       "AUTHORING TAXONOMY",
       "DIRECT | 3D_ASSISTED",
       "@modelcontextprotocol/sdk",
+      "v1.x",
+      "not a v2 protocol migration",
       "bun.lock",
     ]) {
       expect(continuation).toContain(marker);
@@ -99,7 +102,9 @@ describe("REMOTE_GITHUB authoring handoff contracts", () => {
     ]) {
       expect(continuation).not.toContain(retired);
     }
-    expect(continuation).toContain("No Particle specialist and no fifth Gateway tool");
+    expect(continuation).toContain(
+      "No Particle specialist and no fifth Gateway tool"
+    );
     expect(continuation).toContain("Do not add a routing framework");
   });
 });
