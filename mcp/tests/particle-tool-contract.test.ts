@@ -123,7 +123,16 @@ describe("particle reference resource contract", () => {
     expect(particleReferenceResourceDocs.map((resource) => resource.name)).toEqual([
       "particle-reference",
     ]);
-    expect(PARTICLE_REFERENCE_IDS).toEqual(["components", "curves", "events", "presets", "molang", "workflow"]);
+    expect(PARTICLE_REFERENCE_IDS).toEqual([
+      "components",
+      "materials",
+      "curves",
+      "events",
+      "presets",
+      "molang",
+      "workflow",
+    ]);
+    expect((getParticleReferencePayload("materials") as any).materials.particles_base).toBeTruthy();
     expect((getParticleReferencePayload("molang") as any).variables["variable.particle_age"]).toBeTruthy();
   });
 });
