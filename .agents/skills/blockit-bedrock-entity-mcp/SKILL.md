@@ -54,7 +54,7 @@ Known Cubes sharing one deterministic TRANSLATE/RESIZE intent → derive absolut
 `manage_cubes update       → id + at least one authored field change`
 `manage_cubes rotated create → origin required`
 `manage_locator create → name+parent; update → id+authored change`
-`manage_null_object create → id+parent/position`
+`manage_null_object create → name+parent; update → id+parent/position`
 Validation failure repairs arguments for the **same capability**.
 ## Capability Discovery / Recovery
 Capability discovery is deferred spec loading after routing.
