@@ -9,7 +9,7 @@ Use at `ACTIVE PHASE: ANIMATION` after Texturing approval + checkpoint + Animati
 
 ## Boundary
 
-Animation owns motion, not structural rig mutation. Blocker → `HANDOFF_REQUIRED`, `target_phase: geometry` → `switch_authoring_phase` → resume same task through Gateway. Before keys, representative extreme poses preserve contact/clearance. Do not search for `bone_rigging`.
+Animation owns motion, not structural rig mutation. Blocker → `HANDOFF_REQUIRED`, `target_phase: geometry` + readiness → `switch_authoring_phase` → resume same task through Gateway; if motion structure is unsuitable, handoff Geometry first. Before keys, representative extreme poses preserve contact/clearance. Do not search for `bone_rigging`.
 
 ## Direct Routing
 
@@ -30,7 +30,7 @@ pose/time visual evidence             → capture_model_views(animation_preview)
 
 Known → Gateway; unknown/stale → `search_capabilities`; schema → `describe_capability` once. Reuse fresh UUID/state; known identity must not fall back to broad hierarchy discovery or confirmation reads.
 
-`batch` uses operation="batch" + batch_operation= for one coherent cohort, not loops per key. `properties` owns clip state; `native_operations` nested controllers/curves. `resource_operations` owns client/runtime JSON and controller variables/remap.
+`batch` uses operation="batch" + batch_operation= for one coherent cohort, not loops per key. `properties` owns clip state; `native_operations` nested controllers/curves. `resource_operations` owns client/runtime JSON and controller variables/remap. Controller/effect/graph/copy-paste are conditional.
 
 ## Motion Design Contract
 
