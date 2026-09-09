@@ -1,4 +1,14 @@
 export const BLOCKIT_PROJECT_AFFINITY_HEADER = "x-blockit-project-uuid";
+export const BLOCKIT_AUTHORING_PHASE_AFFINITY_HEADER = "x-blockit-authoring-phase";
+
+export const BLOCKIT_AUTHORING_PHASES = [
+  "geometry",
+  "texturing",
+  "animation",
+] as const;
+
+export type BlockitAuthoringPhaseAffinity =
+  (typeof BLOCKIT_AUTHORING_PHASES)[number];
 
 export type RuntimeProjectHealth = {
   active_project_uuid: string | null;
@@ -22,6 +32,21 @@ export function normalizeProjectAffinityUuid(value: unknown): string | null {
     throw new Error("BlockIT project affinity contains an invalid project UUID.");
   }
   return normalized;
+}
+
+export function normalizeAuthoringPhaseAffinity(
+  value: unknown
+): BlockitAuthoringPhaseAffinity | null {
+  if (value === undefined || value === null || value === "") return null;
+  if (
+    typeof value !== "string" ||
+    !BLOCKIT_AUTHORING_PHASES.includes(value as BlockitAuthoringPhaseAffinity)
+  ) {
+    throw new Error(
+      "BlockIT authoring phase affinity must be geometry, texturing, or animation."
+    );
+  }
+  return value as BlockitAuthoringPhaseAffinity;
 }
 
 export function readRuntimeProjectHealth(value: unknown): RuntimeProjectHealth | null {
@@ -67,4 +92,19 @@ export function readRuntimeProjectHealth(value: unknown): RuntimeProjectHealth |
     requested_project_available: available,
     open_project_count: openCount,
   };
+}
+
+export function readRuntimeAuthoringPhase(
+  value: unknown
+): BlockitAuthoringPhaseAffinity | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const product = (value as { product?: unknown }).product;
+  if (!product || typeof product !== "object" || Array.isArray(product)) return null;
+
+  const phase = (product as { authoring_phase?: unknown }).authoring_phase;
+  try {
+    return normalizeAuthoringPhaseAffinity(phase);
+  } catch {
+    return null;
+  }
 }

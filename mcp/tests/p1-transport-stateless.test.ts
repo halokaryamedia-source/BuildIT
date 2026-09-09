@@ -1,5 +1,8 @@
 import { describe, expect, test } from "bun:test";
 import { readFile } from "node:fs/promises";
+import { registerToolsOnServer } from "@/lib/factories";
+import { DEFAULT_MCP_REGISTRATION_PROFILE } from "@/lib/registrationProfile";
+import { getMcpSurfaceToolNames } from "@/server/tools";
 
 describe("P1.4 stateless Streamable HTTP ownership", () => {
   test("default MCP request path is stateless JSON on the existing SDK line", async () => {
@@ -11,7 +14,7 @@ describe("P1.4 stateless Streamable HTTP ownership", () => {
     expect(source).toContain("sessionIdGenerator: undefined");
     expect(source).toContain("enableJsonResponse: true");
     expect(source).toContain("const requestServer = createMcpServer(");
-    expect(source).toContain("registerToolsOnServer(requestServer)");
+    expect(source).toContain("registerToolsOnServer(requestServer, scopedToolNames)");
     expect(source).toContain("registerResourcesOnServer(requestServer)");
     expect(source).toContain("registerPromptsOnServer(requestServer)");
     expect(source).toContain("await requestServer.close()");
@@ -43,6 +46,42 @@ describe("P1.4 stateless Streamable HTTP ownership", () => {
     expect(factoriesSource).toContain(
       "Invalidation is intentionally explicit so profile and phase mutations"
     );
+    expect(factoriesSource).toContain("getToolRegistrationEntries(");
+  });
+
+  test("Gateway phase affinity selects an existing surface without global tool mutation", async () => {
+    const animationSurface = getMcpSurfaceToolNames(
+      DEFAULT_MCP_REGISTRATION_PROFILE,
+      "animation"
+    );
+    const authoringSurface = getMcpSurfaceToolNames(
+      DEFAULT_MCP_REGISTRATION_PROFILE,
+      "geometry"
+    );
+    const registered: string[] = [];
+
+    registerToolsOnServer(
+      {
+        registerTool(name: string) {
+          registered.push(name);
+        },
+      },
+      animationSurface
+    );
+
+    expect(registered).toEqual(animationSurface);
+    expect(animationSurface.length).toBeLessThan(authoringSurface.length);
+    expect(animationSurface).toContain("switch_authoring_phase");
+    expect(animationSurface).toContain("create_animation");
+    expect(animationSurface).not.toContain("manage_cubes");
+
+    const source = await readFile(
+      new URL("../server/net.ts", import.meta.url),
+      "utf8"
+    );
+    expect(source).toContain("BLOCKIT_AUTHORING_PHASE_AFFINITY_HEADER");
+    expect(source).toContain("requestedAuthoringPhase !== null");
+    expect(source).toContain("requestMcpPhaseSwitch(envelope.targetAuthoringPhase)");
   });
 
   test("standalone SSE and session DELETE are not offered by the default endpoint", async () => {

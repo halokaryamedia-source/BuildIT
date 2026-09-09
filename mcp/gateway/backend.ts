@@ -5,8 +5,12 @@ import {
 } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 import { ErrorCode, McpError } from "@modelcontextprotocol/sdk/types.js";
 import {
+  BLOCKIT_AUTHORING_PHASE_AFFINITY_HEADER,
   BLOCKIT_PROJECT_AFFINITY_HEADER,
+  normalizeAuthoringPhaseAffinity,
+  readRuntimeAuthoringPhase,
   readRuntimeProjectHealth,
+  type BlockitAuthoringPhaseAffinity,
 } from "./projectAffinity";
 import {
   DEFAULT_RUNTIME_URL,
@@ -48,6 +52,7 @@ export type GatewayRuntimeStatus = {
   gateway: "ready";
   affinity: {
     project_uuid: string | null;
+    authoring_phase: BlockitAuthoringPhaseAffinity | null;
   };
   runtime: {
     online: boolean;
@@ -141,7 +146,7 @@ function normalizeGatewayManagedResult(
     content: [
       {
         type: "text",
-        text: "BlockIT authoring phase switched. Continue the same task; the Gateway invalidated its Runtime catalog and will refresh automatically on the next capability request.",
+        text: "This BlockIT Gateway authoring phase switched. Continue the same task; its Runtime catalog will refresh automatically on the next capability request.",
       },
     ],
     structuredContent: {
@@ -165,6 +170,7 @@ export class BlockitRuntimeBackend {
   private connectedSignature: string | null = null;
   private catalog = new Map<string, BackendTool>();
   private projectUuid: string | null = null;
+  private authoringPhase: BlockitAuthoringPhaseAffinity | null = null;
   private operationTail: Promise<void> = Promise.resolve();
   private pendingOperations = 0;
   private activeOperations = 0;
@@ -267,6 +273,9 @@ export class BlockitRuntimeBackend {
     if (this.projectUuid) {
       headers.set(BLOCKIT_PROJECT_AFFINITY_HEADER, this.projectUuid);
     }
+    if (this.authoringPhase) {
+      headers.set(BLOCKIT_AUTHORING_PHASE_AFFINITY_HEADER, this.authoringPhase);
+    }
     return headers;
   }
 
@@ -302,6 +311,36 @@ export class BlockitRuntimeBackend {
     } finally {
       clearTimeout(timer);
     }
+  }
+
+  private syncAuthoringPhaseFromHealth(health: JsonRecord): boolean {
+    const runtimePhase = readRuntimeAuthoringPhase(health);
+    if (!runtimePhase) {
+      throw new GatewayBackendError(
+        "BACKEND_UNAVAILABLE",
+        "The connected BlockIT Runtime does not expose a valid authoring phase. Deploy/reload the matching BlockIT build before authoring.",
+        false
+      );
+    }
+
+    if (!this.authoringPhase) {
+      this.authoringPhase = runtimePhase;
+      return true;
+    }
+
+    if (runtimePhase !== this.authoringPhase) {
+      throw new GatewayBackendError(
+        "BACKEND_UNAVAILABLE",
+        `BlockIT Runtime did not honor this Gateway's ${this.authoringPhase} authoring phase affinity (reported ${runtimePhase}). Deploy/reload the matching BlockIT build before continuing.`,
+        false,
+        {
+          requested_authoring_phase: this.authoringPhase,
+          runtime_authoring_phase: runtimePhase,
+        }
+      );
+    }
+
+    return false;
   }
 
   private syncProjectAffinityFromHealth(
@@ -344,12 +383,29 @@ export class BlockitRuntimeBackend {
       return false;
     }
 
-    if (bindIfUnset && projectHealth.active_project_uuid) {
-      this.projectUuid = projectHealth.active_project_uuid;
-      return true;
+    if (!bindIfUnset) return false;
+
+    if (
+      projectHealth.open_project_count !== 1 ||
+      !projectHealth.active_project_uuid
+    ) {
+      const message = projectHealth.open_project_count > 1
+        ? `BlockIT Gateway is not bound and ${projectHealth.open_project_count} Blockbench projects are open. Select the intended tab and explicitly bind this chat before authoring.`
+        : "BlockIT Gateway is not bound and there is no single active Blockbench project to bind safely.";
+      throw new GatewayBackendError(
+        "PROJECT_CONTEXT_LOST",
+        message,
+        false,
+        {
+          active_project_uuid: projectHealth.active_project_uuid,
+          open_project_count: projectHealth.open_project_count,
+          action: "select intended Blockbench tab, then call status with adopt_active_project=true",
+        }
+      );
     }
 
-    return false;
+    this.projectUuid = projectHealth.active_project_uuid;
+    return true;
   }
 
   private async closeClientBestEffort(client: Client): Promise<void> {
@@ -449,11 +505,13 @@ export class BlockitRuntimeBackend {
 
     let affinityChanged = false;
     try {
-      affinityChanged = this.syncProjectAffinityFromHealth(
-        probe.health,
-        bindProject,
-        allowMissingBoundProject
-      );
+      affinityChanged = this.syncAuthoringPhaseFromHealth(probe.health);
+      affinityChanged =
+        this.syncProjectAffinityFromHealth(
+          probe.health,
+          bindProject,
+          allowMissingBoundProject
+        ) || affinityChanged;
     } catch (error) {
       await this.closeConnectionUnsafe();
       this.lastError = errorMessage(error);
@@ -479,7 +537,10 @@ export class BlockitRuntimeBackend {
     if (!probe.online) {
       return {
         gateway: "ready",
-        affinity: { project_uuid: this.projectUuid },
+        affinity: {
+          project_uuid: this.projectUuid,
+          authoring_phase: this.authoringPhase,
+        },
         runtime: {
           online: false,
           endpoint: this.runtimeUrl,
@@ -499,7 +560,11 @@ export class BlockitRuntimeBackend {
       Boolean(this.client) && this.connectedSignature === probe.signature;
     return {
       gateway: "ready",
-      affinity: { project_uuid: this.projectUuid },
+      affinity: {
+        project_uuid: this.projectUuid,
+        authoring_phase:
+          this.authoringPhase ?? readRuntimeAuthoringPhase(probe.health),
+      },
       runtime: {
         online: true,
         endpoint: this.runtimeUrl,
@@ -544,8 +609,12 @@ export class BlockitRuntimeBackend {
         );
       }
 
+      let affinityChanged = this.syncAuthoringPhaseFromHealth(initial.health);
       if (this.projectUuid !== projectHealth.active_project_uuid) {
         this.projectUuid = projectHealth.active_project_uuid;
+        affinityChanged = true;
+      }
+      if (affinityChanged) {
         await this.closeConnectionUnsafe();
       }
       this.lastError = null;
@@ -606,6 +675,7 @@ export class BlockitRuntimeBackend {
           { timeout: this.callTimeoutMs }
         );
         const normalized = normalizeRuntimeCallResult(result);
+        let managed = normalized;
 
         if (capability === "create_project" && normalized.isError !== true) {
           const structured = isRecord(normalized.structuredContent)
@@ -625,10 +695,42 @@ export class BlockitRuntimeBackend {
           capability === "switch_authoring_phase" &&
           normalized.isError !== true
         ) {
+          const structured = isRecord(normalized.structuredContent)
+            ? normalized.structuredContent
+            : null;
+          let nextPhase: BlockitAuthoringPhaseAffinity | null = null;
+          try {
+            nextPhase = normalizeAuthoringPhaseAffinity(structured?.phase);
+          } catch {
+            nextPhase = null;
+          }
+          if (!nextPhase) {
+            await this.closeConnectionUnsafe();
+            throw new GatewayBackendError(
+              "BACKEND_UNAVAILABLE",
+              "BlockIT Runtime returned an invalid authoring phase handoff receipt.",
+              false
+            );
+          }
+
+          const previousPhase = this.authoringPhase;
+          this.authoringPhase = nextPhase;
+          managed = {
+            ...normalized,
+            structuredContent: {
+              ...(structured ?? {}),
+              phase: nextPhase,
+              surface_changed:
+                previousPhase === null
+                  ? structured?.surface_changed === true
+                  : (previousPhase === "animation") !==
+                    (nextPhase === "animation"),
+            },
+          };
           await this.closeConnectionUnsafe();
         }
 
-        return normalizeGatewayManagedResult(capability, normalized);
+        return normalizeGatewayManagedResult(capability, managed);
       } catch (error) {
         const message = errorMessage(error);
         if (isRuntimeProjectContextError(error)) {
@@ -645,6 +747,10 @@ export class BlockitRuntimeBackend {
               action: "select intended Blockbench tab, then call status with adopt_active_project=true",
             }
           );
+        }
+        if (error instanceof GatewayBackendError) {
+          this.lastError = message;
+          throw error;
         }
 
         const classification = classifyInterruptedCall(tool);

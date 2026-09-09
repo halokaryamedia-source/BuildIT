@@ -18,10 +18,13 @@ import {
 } from '@/lib/authoringPhase'
 import {
   getActiveMcpRegistrationProfile,
-  getMcpSurfaceToolNames
+  getMcpSurfaceToolNames,
+  requestMcpPhaseSwitch
 } from '@/server/tools'
 import {
+  BLOCKIT_AUTHORING_PHASE_AFFINITY_HEADER,
   BLOCKIT_PROJECT_AFFINITY_HEADER,
+  normalizeAuthoringPhaseAffinity,
   normalizeProjectAffinityUuid,
   type RuntimeProjectHealth
 } from '@/gateway/projectAffinity'
@@ -246,31 +249,47 @@ export async function runWithRuntimeProjectAffinity<T> (
 function readRequestEnvelope (body: string): {
   method: string | null
   capability: string | null
+  targetAuthoringPhase: McpAuthoringPhase | null
   id: string | number | null
 } {
   try {
     const parsed = JSON.parse(body) as unknown
     if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
-      return { method: null, capability: null, id: null }
+      return { method: null, capability: null, targetAuthoringPhase: null, id: null }
     }
     const record = parsed as {
       method?: unknown
       id?: unknown
-      params?: { name?: unknown }
+      params?: {
+        name?: unknown
+        arguments?: { target_phase?: unknown }
+      }
+    }
+    const capability =
+      record.method === 'tools/call' && typeof record.params?.name === 'string'
+        ? record.params.name
+        : null
+    let targetAuthoringPhase: McpAuthoringPhase | null = null
+    if (capability === 'switch_authoring_phase') {
+      try {
+        targetAuthoringPhase = normalizeAuthoringPhaseAffinity(
+          record.params?.arguments?.target_phase
+        )
+      } catch {
+        targetAuthoringPhase = null
+      }
     }
     return {
       method: typeof record.method === 'string' ? record.method : null,
-      capability:
-        record.method === 'tools/call' && typeof record.params?.name === 'string'
-          ? record.params.name
-          : null,
+      capability,
+      targetAuthoringPhase,
       id:
         typeof record.id === 'string' || typeof record.id === 'number'
           ? record.id
           : null
     }
   } catch {
-    return { method: null, capability: null, id: null }
+    return { method: null, capability: null, targetAuthoringPhase: null, id: null }
   }
 }
 
@@ -291,6 +310,19 @@ interface SerializedWebResponse {
   body: string
 }
 
+function isSuccessfulToolCallResponse (response: SerializedWebResponse): boolean {
+  if (response.status !== 200) return false
+  try {
+    const parsed = JSON.parse(response.body) as {
+      error?: unknown
+      result?: { isError?: unknown }
+    }
+    return parsed.error === undefined && parsed.result?.isError !== true
+  } catch {
+    return false
+  }
+}
+
 /**
  * Handle one MCP HTTP request with request-owned server/transport state.
  *
@@ -302,13 +334,17 @@ interface SerializedWebResponse {
 async function handleStatelessMcpRequest (
   webRequest: Request,
   phase: McpAuthoringPhase = getActiveMcpAuthoringPhase(),
-  profile: McpRegistrationProfile = DEFAULT_MCP_REGISTRATION_PROFILE
+  profile: McpRegistrationProfile = DEFAULT_MCP_REGISTRATION_PROFILE,
+  phaseScoped: boolean = false
 ): Promise<SerializedWebResponse> {
-  // Phase/profile mutations explicitly invalidate registration caches. Fresh
-  // request-owned servers reuse the current snapshot instead of rebuilding the
-  // same registration/invocation metadata on every stateless POST.
+  // Gateway phase affinity selects from the existing cached catalog without
+  // mutating global tools.enabled. Direct Runtime clients retain the global
+  // phase surface and existing request-owned registration path.
   const requestServer = createMcpServer(phase, profile)
-  registerToolsOnServer(requestServer)
+  const scopedToolNames = phaseScoped
+    ? getMcpSurfaceToolNames(profile, phase)
+    : undefined
+  registerToolsOnServer(requestServer, scopedToolNames)
   registerResourcesOnServer(requestServer)
   registerPromptsOnServer(requestServer)
 
@@ -618,6 +654,32 @@ export default function createNetServer (
             continue
           }
 
+          let requestedAuthoringPhase: McpAuthoringPhase | null
+          try {
+            requestedAuthoringPhase = normalizeAuthoringPhaseAffinity(
+              headers[BLOCKIT_AUTHORING_PHASE_AFFINITY_HEADER]
+            )
+          } catch (error) {
+            sendResponse(
+              socket,
+              400,
+              { 'content-type': 'application/json' },
+              JSON.stringify({
+                jsonrpc: '2.0',
+                error: {
+                  code: -32000,
+                  message: error instanceof Error ? error.message : String(error)
+                },
+                id: readRequestEnvelope(body).id
+              }),
+              'close'
+            )
+            continue
+          }
+
+          const effectiveAuthoringPhase =
+            requestedAuthoringPhase ?? getActiveMcpAuthoringPhase()
+          const activeProfile = getActiveMcpRegistrationProfile()
           const pathWithoutQuery = path.split('?')[0]
 
           if (
@@ -632,15 +694,15 @@ export default function createNetServer (
                 status: 'ok',
                 timestamp: new Date().toISOString(),
                 product: createProductIdentity(
-                  getActiveMcpRegistrationProfile(),
-                  getActiveMcpAuthoringPhase()
+                  activeProfile,
+                  effectiveAuthoringPhase
                 ),
                 build_identity: BUILD_IDENTITY,
                 instance_id: INSTANCE_ID,
                 startup_time: STARTUP_TIME,
                 exposed_tool_count: getMcpSurfaceToolNames(
-                  getActiveMcpRegistrationProfile(),
-                  getActiveMcpAuthoringPhase()
+                  activeProfile,
+                  effectiveAuthoringPhase
                 ).length,
                 project_context: getRuntimeProjectHealth(requestedProjectUuid),
                 transport: {
@@ -733,8 +795,9 @@ export default function createNetServer (
             socket.setTimeout(0)
             const execute = async () => await handleStatelessMcpRequest(
               webRequest,
-              getActiveMcpAuthoringPhase(),
-              getActiveMcpRegistrationProfile()
+              effectiveAuthoringPhase,
+              activeProfile,
+              requestedAuthoringPhase !== null
             )
             const dispatch = async () => needsProjectContext
               ? await runWithRuntimeProjectAffinity(
@@ -751,6 +814,19 @@ export default function createNetServer (
                   return await dispatch()
                 })
               : await dispatch()
+
+            // Direct Runtime/Inspector clients keep the existing global phase
+            // behavior. Gateway requests carry a phase affinity header, so their
+            // handoff changes only that Gateway and cannot disturb another chat.
+            if (
+              requestedAuthoringPhase === null &&
+              envelope.capability === 'switch_authoring_phase' &&
+              envelope.targetAuthoringPhase !== null &&
+              isSuccessfulToolCallResponse(response)
+            ) {
+              requestMcpPhaseSwitch(envelope.targetAuthoringPhase)
+            }
+
             // Stateless MCP has no session state to preserve across requests.
             // Close each MCP response so a client-side keep-alive socket cannot
             // remain poisoned when a previous Blockbench operation stalls.

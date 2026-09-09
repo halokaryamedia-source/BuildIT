@@ -278,6 +278,13 @@ export function setMcpPhaseSwitchHandler(
   phaseSwitchHandler = handler;
 }
 
+export function requestMcpPhaseSwitch(phase: McpAuthoringPhase): void {
+  if (!phaseSwitchHandler) {
+    throw new Error("Runtime phase switching is unavailable; reload BlockIT.");
+  }
+  phaseSwitchHandler(phase);
+}
+
 export function setMcpProfileSwitchHandler(
   handler: (profile: McpRegistrationProfile) => void
 ): void {
@@ -314,7 +321,6 @@ function registerPhaseControlTool(): void {
         if (!phaseSwitchHandler) throw new Error("Runtime phase switching is unavailable; reload BlockIT.");
         const previousPhase = getActiveMcpAuthoringPhase();
         const surfaceChanged = (previousPhase === "animation") !== (target_phase === "animation");
-        phaseSwitchHandler(target_phase);
         return {
           content: [
             {

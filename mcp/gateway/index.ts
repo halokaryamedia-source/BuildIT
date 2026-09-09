@@ -32,7 +32,7 @@ const server = new McpServer(
   },
   {
     instructions:
-      "Stable BlockIT client boundary. Use a known Runtime capability directly and search only when the capability is unknown or stale. This Gateway exposes tools only; Runtime resources and prompts are not proxied. Normal authoring is approved image + optional 3D Evidence, then Geometry → Texturing → optional Animation. The Gateway binds to the active Blockbench project on first Runtime invocation; intentional target-tab changes use status(adopt_active_project=true) once. Phase handoffs continue the same task; invoke_capability never auto-retries an interrupted backend call.",
+      "Stable BlockIT client boundary. Use a known Runtime capability directly and search only when the capability is unknown or stale. This Gateway exposes tools only; Runtime resources and prompts are not proxied. Normal authoring is approved image + optional 3D Evidence, then Geometry → Texturing → optional Animation. With one open Blockbench project the Gateway can bind on first Runtime invocation; with multiple open projects select the intended tab and call status(adopt_active_project=true) once before authoring. Project and authoring-phase affinity then remain local to this Gateway. Phase handoffs continue the same task; invoke_capability never auto-retries an interrupted backend call.",
   }
 );
 
@@ -102,7 +102,7 @@ const statusInput = z.object({
     .boolean()
     .default(false)
     .describe(
-      "Rare explicit rebind only: after intentionally selecting a different Blockbench project tab, set true once so this Gateway adopts that active project. Leave false for normal status checks."
+      "One-time explicit bind/rebind: select the intended Blockbench project tab, then set true so this Gateway adopts it. Required before first authoring when multiple project tabs are open; leave false for normal status checks."
     ),
 });
 
@@ -135,7 +135,7 @@ registerGatewayTool(
   {
     title: "BlockIT Status",
     description:
-      "Reports Gateway health and current Blockbench Runtime state. Normal authoring does not poll status. Set adopt_active_project=true only after intentionally changing this Gateway to another open Blockbench project tab.",
+      "Reports Gateway health and current Blockbench Runtime state. Normal authoring does not poll status. When multiple project tabs are open, select the intended tab and set adopt_active_project=true once before first authoring; use it again only for an intentional rebind.",
     inputSchema: statusInput.shape,
     annotations: {
       readOnlyHint: true,
@@ -156,8 +156,8 @@ registerGatewayTool(
             type: "text" as const,
             text: status.runtime.online
               ? status.affinity.project_uuid
-                ? `BlockIT Gateway is ready; Runtime is online and this Gateway is bound to project ${status.affinity.project_uuid}.`
-                : "BlockIT Gateway is ready and the Blockbench Runtime is online; project affinity will bind on the first Runtime invocation."
+                ? `BlockIT Gateway is ready; Runtime is online and this Gateway is bound to project ${status.affinity.project_uuid} in ${status.affinity.authoring_phase ?? "the Runtime startup"} phase.`
+                : "BlockIT Gateway is ready and the Blockbench Runtime is online. With one open project affinity can bind on first authoring call; with multiple open projects select the intended tab and bind once with status(adopt_active_project=true)."
               : "BlockIT Gateway is ready; the Blockbench Runtime is currently offline.",
           },
         ],
@@ -274,7 +274,7 @@ registerGatewayTool(
   {
     title: "Invoke BlockIT Capability",
     description:
-      "Invokes one exact BlockIT capability. Runtime calls use this Gateway's bound Blockbench project; rare read-only local support references do not mutate project state. Runtime calls are serialized and never automatically retried after interruption.",
+      "Invokes one exact BlockIT capability. Runtime calls use this Gateway's bound Blockbench project and authoring phase; rare read-only local support references do not mutate project state. Runtime calls are serialized and never automatically retried after interruption.",
     inputSchema: invokeInput.shape,
   },
   async (rawArgs) => {

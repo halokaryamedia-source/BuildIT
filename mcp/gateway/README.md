@@ -58,17 +58,33 @@ Tiering never deletes capability. Exact intent may still discover an exposed sup
 
 ## Project / Tab Affinity
 
-One Gateway process represents one authoring task and retains only one lightweight **Blockbench project UUID affinity**. It does not cache model objects, selections, textures, animations, or authored state.
-
-Normal behavior:
+One Gateway process represents one authoring task and retains only two lightweight routing values:
 
 ```text
-first Runtime capability invocation
-→ Gateway reuses its existing health probe
-→ active Blockbench project UUID becomes this Gateway's affinity
-→ UUID is carried on later Runtime requests as a local HTTP header
-→ no extra MCP discovery/status/read call is added
+project UUID affinity
++ authoring phase affinity (geometry | texturing | animation)
 ```
+
+It does not cache model objects, selections, textures, animations, Undo state, or other authored project data.
+
+Project binding is intentionally conservative:
+
+```text
+0 open projects
+→ no binding
+
+1 open project
+→ first project-sensitive Runtime invocation reuses the existing health probe
+→ that single project UUID becomes this Gateway's affinity
+
+2+ open projects
+→ automatic first-bind is refused before authoring
+→ select the intended Blockbench tab
+→ status(adopt_active_project=true) once
+→ continue normal authoring
+```
+
+The UUID and phase are then carried as passive local HTTP headers on the Runtime requests that already occur. Binding and phase isolation add no heartbeat, polling, background synchronizer, or extra MCP round trip.
 
 When another project tab is active, a project-sensitive Runtime `tools/call` temporarily activates the Gateway-bound project through Blockbench's native `ModelProject.select()`. The target tab is locked for the duration of the call so user tab switching/close cannot redirect a mutation midway. After ordinary calls, Blockbench restores the previously active project tab. Runtime `tools/call` requests are serialized across Gateway processes because Blockbench project globals are process-wide.
 
@@ -82,25 +98,26 @@ select intended Blockbench project tab manually
 → continue normal direct capability calls
 ```
 
-Do not poll `status` for project affinity. Rebinding is an explicit exceptional action, not part of the authoring hot path.
+Do not poll `status` for project affinity. Binding/rebinding is a one-time or exceptional action, not part of the authoring hot path.
 
-For multiple simultaneous chats, select the intended Blockbench tab before each Gateway's first Runtime invocation. Each Gateway then keeps its own project UUID affinity; Runtime serialization prevents two project-bound tool calls from racing Blockbench's global project state.
+For multiple simultaneous chats, bind each Gateway once to its intended Blockbench tab. Each Gateway then keeps its own project UUID and phase affinity; Runtime serialization prevents project-bound tool calls from racing Blockbench's process-wide globals.
 
 ## Authoring / Animation Handoff
 
 Geometry↔Texturing is **not** a Gateway handoff. Both capability families remain present on the AUTHORING Runtime surface; semantic ownership decides which specialist governs the correction.
 
-A successful Runtime `switch_authoring_phase` call is reserved for the AUTHORING↔Animation boundary and remains Gateway-managed:
+A successful `switch_authoring_phase` call is reserved for the AUTHORING↔Animation boundary and remains Gateway-managed:
 
 ```text
-invoke switch_authoring_phase
-→ Runtime surface changes AUTHORING ↔ Animation
-→ Gateway invalidates backend client/catalog
-→ next capability request reconnects to Runtime and refetches the catalog
+invoke switch_authoring_phase through Gateway A
+→ Gateway A changes only its own phase affinity
+→ Gateway A invalidates its backend client/catalog
+→ next capability request reconnects and refetches A's requested surface
+→ Gateway B/C/D/E keep their own phase surfaces unchanged
 → AI client continues the same task/chat
 ```
 
-The backend reconnect above is internal to the Gateway. Gateway normalizes the result with `client_reconnect_required=false` and `new_chat_required=false`; normal AI-client use does not manually reconnect. Direct Runtime clients used for debug/conformance bypass this protection.
+The backend reconnect above is internal to the Gateway. Gateway normalizes the result with `client_reconnect_required=false` and `new_chat_required=false`; normal AI-client use does not manually reconnect. Direct Runtime/Inspector clients without Gateway phase affinity retain the Runtime-global phase behavior for debug/conformance compatibility.
 
 ## Context / Result Economy
 
@@ -108,7 +125,7 @@ The Runtime remains the complete native/debug evidence owner. The Gateway may pr
 
 Normal authoring does not use `status`, search, describe, repository tests, or Runtime resources as confirmation ceremonies after a successful mutation.
 
-Reliability hardening is deliberately **failure-path only**. The Gateway does not add heartbeat chatter, background catalog polling, automatic confirmation reads, or mutation retries. Queue/timeout counters are passive and appear only when `status` is explicitly requested. Project affinity piggybacks on the health probe already required by Gateway catalog safety and on the existing Runtime request itself.
+Reliability hardening is deliberately **failure-path only**. The Gateway does not add heartbeat chatter, background catalog polling, automatic confirmation reads, or mutation retries. Queue/timeout counters are passive and appear only when `status` is explicitly requested. Project and phase affinity piggyback on the health probe already required by Gateway catalog safety and on the existing Runtime request itself.
 
 ## Reliability Invariants
 
@@ -116,7 +133,10 @@ Reliability hardening is deliberately **failure-path only**. The Gateway does no
 - Blockbench/plugin reload does not terminate the Gateway process.
 - Runtime health is checked before catalog-dependent operations.
 - Changed Runtime build/profile/stage invalidates cached backend catalog.
-- Each Gateway binds to one project UUID on first Runtime invocation; active UI selection is not durable authority.
+- Each Gateway owns one lightweight project UUID affinity and one lightweight authoring-phase affinity.
+- Automatic project first-bind is allowed only when exactly one Blockbench project is open; multi-tab authoring requires one explicit bind before mutation.
+- Active UI selection is not durable authority after binding.
+- A Gateway phase handoff changes that Gateway's requested Runtime surface, not another Gateway's authoring surface.
 - Cross-Gateway Runtime `tools/call` execution is serialized before project-tab switching.
 - A queued cross-Gateway tool call re-checks socket liveness immediately before native dispatch; an already-disconnected waiter is dropped before any Blockbench operation can execute late.
 - Bound project loss fails closed; `create_project` alone automatically advances affinity to its new project UUID.
@@ -127,7 +147,7 @@ Reliability hardening is deliberately **failure-path only**. The Gateway does no
 - `tools/call` is never automatically retried after transport interruption or timeout.
 - Interrupted or timed-out non-read-only operations return `OUTCOME_UNKNOWN`; inspect current model state before retrying.
 - Gateway cleanup has its own short deadline so a dead backend cannot pin shutdown indefinitely.
-- Gateway owns no Cube, Group, texture, animation, Undo, or authored project state; project affinity is UUID-only routing state.
+- Gateway owns no Cube, Group, texture, animation, Undo, or authored project state.
 - Gateway connects only to localhost/loopback Runtime URLs.
 - Native Runtime MCP remains available for Inspector/conformance/debugging.
 
@@ -188,6 +208,6 @@ These are source-owned counts. Exact installed Runtime identity and lifecycle be
 
 ## Proof Boundary
 
-Source/static tests can prove the fixed Gateway surface, shared AUTHORING routing contract, loopback containment, capability priority, catalog invalidation, bounded queue/deadline semantics, retry semantics, result compaction, project-affinity state machine, and fail-closed tab routing contracts. They do not prove live client survival, native Blockbench tab switching/locking, persistence, visual fidelity, or reduced model usage.
+Source/static tests can prove the fixed Gateway surface, request-scoped phase filtering, shared AUTHORING routing contract, loopback containment, capability priority, catalog invalidation, bounded queue/deadline semantics, retry semantics, result compaction, project-affinity state machine, and fail-closed multi-tab binding contracts. They do not prove live client-process ownership, native Blockbench tab switching/locking, persistence, visual fidelity, or reduced model usage.
 
-The pending live gate should exercise one continuous task: Runtime offline→online, two open project tabs with two Gateway processes, shared Geometry/Texturing AUTHORING behavior, one AUTHORING↔Animation handoff through Gateway, plugin lifecycle, native authoring/history, and persistence where applicable—without a manual AI-client reconnect or new chat.
+The pending live gate should exercise the real operating ceiling where practical: up to five Gateway-backed jobs/projects, explicit multi-tab binding, cross-project mutation isolation, independent AUTHORING/Animation phase state, plugin lifecycle, native authoring/history, and persistence where applicable—without a manual AI-client reconnect or new chat.

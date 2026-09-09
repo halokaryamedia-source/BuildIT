@@ -323,7 +323,7 @@ function compactMirroredStructuredContent(
 }
 
 /**
- * Stores one MCP tool definition for request-owned server registration.
+ * Stores one MCP tool definition for documentation and registration.
  * @param name - The exact MCP tool name.
  * @param tool - The tool configuration.
  * @param tool.description - The description of the tool.
@@ -362,7 +362,6 @@ export function createTool<T extends z.ZodType>(
     annotations: tool.annotations,
   };
 
-  // Store tool definition
   toolDefinitions[name] = toolDef;
   toolCatalogOrdered.push(name);
   invalidateToolRegistrationRuntimeCaches();
@@ -377,16 +376,10 @@ export function createTool<T extends z.ZodType>(
   return tools[name];
 }
 
-/**
- * Gets all tool definitions for server reconstruction
- */
 export function getAllToolDefinitions() {
   return toolDefinitions;
 }
 
-/**
- * Gets enabled tool definitions for server reconstruction
- */
 export function getEnabledToolDefinitions() {
   if (enabledToolDefinitionsCache) {
     return enabledToolDefinitionsCache;
@@ -416,11 +409,31 @@ export function getEnabledToolRegistrationEntries() {
   return entries;
 }
 
+function getToolRegistrationEntries(
+  allowedToolNames?: readonly string[]
+): Array<{ name: string; definition: ToolDefinition }> {
+  if (allowedToolNames === undefined) {
+    return getEnabledToolRegistrationEntries();
+  }
+
+  return allowedToolNames.map((name) => {
+    const definition = toolDefinitions[name];
+    if (!definition) {
+      throw new Error(`Requested MCP tool "${name}" has no registered definition.`);
+    }
+    return { name, definition };
+  });
+}
+
 /**
- * Registers all enabled tools on a server instance
- * Used to set up fresh request-owned servers with the same tools
+ * Registers enabled tools, or one explicit request-scoped subset, on a server.
+ * Explicit subsets reuse canonical definitions/callbacks without mutating
+ * global `tools.enabled`, so simultaneous Gateway phases remain isolated.
  */
-export function registerToolsOnServer(server: unknown) {
+export function registerToolsOnServer(
+  server: unknown,
+  allowedToolNames?: readonly string[]
+) {
   const typedServer = server as {
     registerTool: (
       toolName: string,
@@ -434,7 +447,9 @@ export function registerToolsOnServer(server: unknown) {
     ) => void;
   };
 
-  for (const { name, definition: toolDef } of getEnabledToolRegistrationEntries()) {
+  for (const { name, definition: toolDef } of getToolRegistrationEntries(
+    allowedToolNames
+  )) {
     typedServer.registerTool(
       name,
       {
@@ -448,9 +463,6 @@ export function registerToolsOnServer(server: unknown) {
   }
 }
 
-/**
- * Resource definition storage for request-owned server reconstruction
- */
 interface ResourceDefinition {
   name: string;
   uriTemplate: string;
@@ -479,17 +491,6 @@ interface ResourceDefinition {
 
 const resourceDefinitions: Record<string, ResourceDefinition> = {};
 
-/**
- * Stores one MCP resource definition for request-owned server registration.
- * @param name - The resource name.
- * @param config - The resource configuration.
- * @param config.uriTemplate - The URI template pattern (e.g., "nodes://{id}").
- * @param config.title - Optional title for the resource.
- * @param config.description - The description of the resource.
- * @param config.listCallback - Optional async function to list available resources.
- * @param config.readCallback - Async function to read the resource.
- * @returns - The created resource metadata.
- */
 export function createResource(
   name: string,
   config: {
@@ -530,7 +531,6 @@ export function createResource(
     readCallback: config.readCallback,
   };
 
-  // Store resource definition for request-owned server reconstruction
   resourceDefinitions[name] = resourceDef;
   invalidateToolRegistrationRuntimeCaches();
 
@@ -543,17 +543,10 @@ export function createResource(
   return resources[name];
 }
 
-/**
- * Gets all resource definitions for server reconstruction
- */
 export function getAllResourceDefinitions() {
   return resourceDefinitions;
 }
 
-/**
- * Registers all resources on a server instance
- * Used to set up fresh request-owned servers with the same resources
- */
 export function registerResourcesOnServer(server: unknown) {
   const typedServer = server as {
     registerResource: (
@@ -602,9 +595,6 @@ export function registerResourcesOnServer(server: unknown) {
   }
 }
 
-/**
- * Prompt definition storage for request-owned server reconstruction
- */
 interface PromptDefinition {
   name: string;
   title: string;
@@ -627,18 +617,6 @@ function promptArgumentsFromShape(
   }));
 }
 
-/**
- * Stores one MCP prompt definition for request-owned server registration.
- * @param name - The prompt name
- * @param prompt - The prompt configuration.
- * @param prompt.description - The description of the prompt.
- * @param prompt.arguments - Zod schema for prompt arguments.
- * @param prompt.generate - Function to generate prompt messages from arguments.
- * @param status - The status of the prompt.
- * @param enabled - Whether the prompt is enabled.
- * @returns - The created prompt metadata.
- * @throws - If a prompt with the same name already exists.
- */
 export function createPrompt<T extends z.ZodRawShape = Record<string, never>>(
   name: string,
   prompt: {
@@ -658,7 +636,6 @@ export function createPrompt<T extends z.ZodRawShape = Record<string, never>>(
 
   const argsShape = prompt.argsSchema?.shape;
 
-  // Store enabled prompt definitions for request-owned server reconstruction.
   if (enabled && prompt.generate && argsShape) {
     const promptDef: PromptDefinition = {
       name,
@@ -685,17 +662,10 @@ export function createPrompt<T extends z.ZodRawShape = Record<string, never>>(
   return prompts[name];
 }
 
-/**
- * Gets all prompt definitions for server reconstruction
- */
 export function getAllPromptDefinitions() {
   return promptDefinitions;
 }
 
-/**
- * Registers all prompts on a server instance
- * Used to set up fresh request-owned servers with the same prompts
- */
 export function registerPromptsOnServer(server: unknown) {
   const typedServer = server as {
     registerPrompt: (
