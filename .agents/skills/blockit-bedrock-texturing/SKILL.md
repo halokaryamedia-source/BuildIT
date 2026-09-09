@@ -28,7 +28,7 @@ Requested atlas size/density are constraints; never silently enlarge.
 `blank create_texture → explicit width+height from project UV`; **not omit blank Atlas size**.
 `create_texture`: provisional **16×16 blank**; **128×128 default, 256×256 opt-in**. Reuse existing atlas UUID.
 ## Workplan / Coverage
-material cohorts: `BASE | SHADOW | HIGHLIGHT | ACCENT/IDENTITY`; form/contact/occlusion/edge/identity/detail.
+material cohorts; palette roles `BASE | SHADOW | HIGHLIGHT | ACCENT/IDENTITY`; form/contact/occlusion/edge/identity/detail.
 Face Coverage Ledger: `UNPAINTED | BASE_ONLY | STYLED | INTENTIONAL_FLAT | INTENTIONAL_TRANSPARENT | SHARED`.
 `list_textures.optimization_opportunities.coverage.gate`: `incomplete|partial`/`FACE_ACCOUNTING_INCOMPLETE` → no completion. one `list_textures`/pass. `ready` ≠ visual PASS.
 Variants/PBR: `list_textures.production_alignment.gate=ready`; `seam_continuity` advisory; `pbr_content`.
