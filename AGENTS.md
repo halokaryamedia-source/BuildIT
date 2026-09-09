@@ -168,30 +168,7 @@ UNKNOWN
 
 ## Product Boundary
 
-BlockIT's normal product boundary is **Blockbench Bedrock visual-asset authoring**, not Minecraft add-on development.
-
-In scope:
-
-```text
-reference → geometry / rig / pivots / locators / UV
-→ texture / visual material intent / texture variants
-→ animation clips / artistic controller composition / effects preview
-→ native Blockbench project + Bedrock visual asset export
-```
-
-Out of scope for normal asset authoring:
-
-```text
-Behavior Pack components / component_groups / events / AI / spawn rules
-Script API gameplay logic
-manifest / pack assembly / addon packaging
-client_entity or render_controller file construction as a deliverable
-property-driven gameplay integration or server-side animation-controller logic
-```
-
-Resource-Pack knowledge is retained only when it changes the authored model's visual semantics or export compatibility, such as opaque/cutout/blend/emissive intent. Animation Controller support is artist-facing: clip composition, transition/blend continuity, and effect preview. Existing file-backed runtime capabilities may remain for compatibility/inspection, but normal asset authoring must not route into BP/RP pack development.
-
-Minecraft Bedrock Entity (`bedrock`) remains default. For `mcp/**`, `mcp/AGENTS.md` owns package rules.
+BlockIT authors Bedrock visual assets, not Minecraft add-on development. `bedrock` remains default; `mcp/AGENTS.md` owns `mcp/**`.
 
 ## Canonical Owners
 

@@ -12,7 +12,6 @@ description: Mandatory BlockIT Bedrock Geometry and UV Layout specialist.
 
 ## Reference Grounding
 Reference-driven work requires the **actual approved reference image** in **active multimodal context**. Path/manifest/prose/memory is context, not visual evidence. Unavailable → `BLOCKED`.
-
 approved image owns visuals; dimensions own numeric scale; strategy is user-selected `DIRECT | 3D_ASSISTED`.
 Evidence: `SUPPORTED | PROVISIONAL | CONFLICTING | UNAVAILABLE`. Use a View Pair Map only for material front/back, depth, attachment, or 3/4 ambiguity.
 `DIRECT` uses Groups/Cubes; `3D_ASSISTED` keeps its pipeline; no auto-switch.
@@ -42,24 +41,12 @@ evidence state
 ```
 `SOLID_CUBOID | PLANE_LIKE | PLANAR_CUTOUT_CARRIER | LAYERED_SURFACE | SEGMENTED_FORM | TEXTURE | OMIT`.
 
-A semantic label never authorizes coordinates. **No orphan/filler Cube**. `PROVISIONAL` is a hypothesis; placement never verifies it. Construction forms are **not presets**. Use texture for surface information needing no 3D silhouette/volume/contact/negative-space boundary/layering/motion.
-
+A semantic label never authorizes coordinates. **No orphan/filler Cube**. `PROVISIONAL` placement never verifies it. Construction forms are **not presets**; use texture for surface-only information.
 Shared orientation/attachment/articulation → **Group/Bone-owned**; local rigid orientation may be Cube-owned. Primary mass: `AXIS_ALIGNED | ROTATED | UNRESOLVED`. Visible slope → pivot role `MASS_CENTER | ATTACHMENT | JOINT | PARENT_TRANSFORM`; attachment/joint pivot owns shared transform. Material `UNRESOLVED` → `BLOCKED`. AABB overlap, hierarchy, or numeric touching is not contact proof.
 When `Animation Required = YES`, leave **motion-ready structure**: cohorts, pivots, clearance, contact invariants. A known rig/contact defect does not wait for Animation.
 
 ## Production-Scale Entity Construction
-Production Bedrock entities may legitimately use large Cube/bone counts, many rotated Cubes, dense per-face UV, and many Locator anchors. Complexity alone is **not** evidence that a Mesh, a new tool, or a different Geometry strategy is required.
-
-- Local rigid slope/detail → Cube rotation is valid; shared orientation/contact/articulation → Group/Bone transform.
-- Repeated mechanical panels/segments → derive one cohort and batch author; do not inspect/write one Cube at a time.
-- Thin, rotated, directional, or face-specific surfaces → prefer explicit per-face UV when Box UV would collapse, distort, or waste atlas space. Never thicken approved Geometry only to simplify UV.
-- Locator = lightweight attachment/effect anchor, not visible Geometry. Create only for a real animation/effect/attachment target; parent it to the motion owner so downstream cues follow the intended part.
-- High Cube count is a performance/review consideration, not an automatic quality failure. Preserve semantic hierarchy and editability before micro-optimizing count.
-
-### Visible Bounds
-Bedrock `visible_bounds_*` describes the exported entity visibility/culling envelope; it is not shape Geometry and is not a reason to create extra Cubes. Blockbench's native Bedrock exporter owns this metadata. BuildIT does not hand-author BP/RP files merely to set it.
-
-Use actual rendered envelope evidence plus representative animation extremes when clipping/culling risk is material. Geometry inspection can identify envelope changes, but final native export/runtime culling remains a separate live/export proof. Do not claim visibility safety from a static front pose alone when an animation materially extends limbs, weapons, wings, or effects.
+Large Cube/bone counts, rotated Cubes, per-face UV and Locators can be valid; complexity alone does not require Mesh/new tools. Locator = lightweight attachment/effect anchor. Visible Bounds is native export/culling metadata; check animation extremes when relevant.
 
 ## Primary Mass / Proportion / Depth
 `frame/envelope → primary masses → shared boundaries → cross-view proportions → depth/layering → silhouette/proportion gate → primary blockout`.

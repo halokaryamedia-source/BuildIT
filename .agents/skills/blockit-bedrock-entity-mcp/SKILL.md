@@ -7,9 +7,7 @@ Own AUTHORING/Animation tool routing.
 `geometry/rig/UV judgement` → `blockbench-bedrock-modelling`; texture/PBR → `blockit-bedrock-texturing`; animation/motion → `blockit-bedrock-animation`.
 
 ## Product Scope Firewall
-Normal BlockIT authoring stops at the **Blockbench visual asset**. Do not route into Behavior Pack components/events/AI/spawn rules, Script API gameplay logic, manifest/pack assembly, addon packaging, server-side behavior controllers, or property-driven gameplay integration.
-
-Resource-Pack knowledge is allowed only when it changes asset appearance/export compatibility. `manage_render_profile` is visual material intent/support, not a reason to build an RP file graph. Animation Controller is artist-facing composition/preview; file-backed `client_entity`/controller `resource_operations` are **not a normal model-authoring route**. Existing compatibility/inspection capability does not expand product scope.
+Asset-only: no BP/gameplay/Script API/pack assembly. RP only visual/export; Animation Controller only composition/preview; `resource_operations` is **not a normal model-authoring route**.
 
 ## Mandatory Authoring Latch
 Load router + matching current worktree specialist before mutation:
@@ -22,9 +20,7 @@ Texture → Geometry APPROVED + UV Layout PASS
 Animation → Texturing APPROVED + checkpoint + Animation Readiness Preflight → HANDOFF_REQUIRED
 `HANDOFF_REQUIRED`: `target_phase`, `reason`, `readiness`, `resume_from`; Gateway `switch_authoring_phase` → same task/chat.
 
-Approved image = visual authority. Strategy: user-selected `DIRECT | 3D_ASSISTED`; never auto-switch.
-`3D_ASSISTED` → Shape Reconstruction → PrimitiveAnything → cleanup; unavailable → `BLOCKED`; no fallback.
-1 Minecraft block = 16 Blockbench units. Reuse `front_direction`.
+`approved image` = visual authority; strategy = user-selected `DIRECT | 3D_ASSISTED`, no auto-switch/fallback. `3D_ASSISTED` → Shape Reconstruction → PrimitiveAnything → cleanup. 1 block=16 units; reuse `front_direction`.
 
 ## Fast Routing Contract
 Normal asset work **must not begin by searching repository files**.
@@ -70,19 +66,14 @@ Known Cubes sharing one deterministic TRANSLATE/RESIZE intent → derive absolut
 Validation failure repairs arguments for the **same capability**.
 
 ## Capability Discovery / Recovery
-Capability discovery is deferred spec loading after routing.
-known exact capability   → invoke directly.
-unknown/stale capability → one precise `search_capabilities` query, `limit=4`.
-schema needed → `describe_capability` once before mutation.
+Known exact capability → invoke directly; unknown/stale → one precise `search_capabilities` query, `limit=4`; schema needed → `describe_capability` once.
 One precise search miss → reformulate once; second miss → `BLOCKED`. A known foreign-phase capability is never a discovery miss: AUTHORING↔Animation uses handoff.
 
 `INVALID_INPUT` → repair args; same capability. `TARGET_AMBIGUOUS` → resolve UUID once; `TARGET_NOT_FOUND` → focused identity lookup; `STALE_STATE` → one focused refresh; `NO_EFFECT` change diagnosis/payload; `CAPABILITY_MISMATCH` handoff once or BLOCKED; `OUTCOME_UNKNOWN` inspect state before retry.
 Same routed failure twice without new evidence → `BLOCKED`.
 
 ## State Reuse / Anti-Loop
-Fresh mutation → reuse state/`geometry_effect`; no confirmation readback.
-Do not automatically re-read fresh mutation targets with `inspect_elements(mode=detail)`.
-No status/search/describe/project/bounds/capture progress checks.
+Fresh mutation → reuse state/`geometry_effect`; no confirmation/detail readback or status/search/describe/project/bounds/capture progress checks.
 `inspect_model_bounds` only for envelope/scale/ground/displacement or a diagnosed bounded surface/contact integrity question.
 Skip `get_project_info` after create/export unless lifecycle state is unknown/stale.
 `export_model`: `bedrock` JSON or `project` `.bbmodel`.
