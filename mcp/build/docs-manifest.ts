@@ -11,6 +11,7 @@ import { importToolDocs } from "../server/tools/import";
 import { paintToolDocs } from "../server/tools/paint";
 import { projectToolDocs } from "../server/tools/project";
 import { textureToolDocs } from "../server/tools/texture";
+import { renderProfileToolDocs } from "../server/tools/render-profile";
 import { animationToolDocs } from "../server/tools/animation";
 import { animationEffectToolDocs } from "../server/tools/animation-effects";
 import { animationControllerToolDocs } from "../server/tools/animation-controller";
@@ -19,6 +20,7 @@ import { uiToolDocs } from "../server/tools/ui";
 import { materialInstanceToolDocs } from "../server/tools/material-instances";
 import { historyToolDocs } from "../server/tools/history";
 import { exportToolDocs } from "../server/tools/export";
+import { textureAuthoringKnowledgeResourceDocs } from "../server/resources/texture-authoring-knowledge";
 import { consolidatedInspectionToolDocs, consolidatedMaterialToolDocs, consolidatedAnimationTimelineToolDocs, consolidatedMaterialInstancesToolDocs, phaseControlToolDocs } from "../server/tools";
 
 export interface CategoryGroup {
@@ -46,7 +48,7 @@ export const toolManifest: CategoryGroup[] = [
   { category: "Material Instances", tools: [consolidatedMaterialInstancesToolDocs, ...materialInstanceToolDocs.filter((tool) => !["get_face_material_instances", "set_face_material_instance", "list_material_instances", "bulk_set_material_instances", "clear_material_instances"].includes(tool.name))] },
   { category: "Paint Tools", tools: paintToolDocs },
   { category: "Project", tools: [...projectToolDocs, phaseControlToolDocs] },
-  { category: "Textures", tools: [consolidatedMaterialToolDocs, ...textureToolDocs.filter((tool) => !["create_pbr_material", "configure_material", "assign_texture_channel", "save_material_config"].includes(tool.name))] },
+  { category: "Textures", tools: [renderProfileToolDocs, consolidatedMaterialToolDocs, ...textureToolDocs.filter((tool) => !["create_pbr_material", "configure_material", "assign_texture_channel", "save_material_config"].includes(tool.name))] },
   { category: "UI Interaction", tools: uiToolDocs },
 ];
 
@@ -63,7 +65,7 @@ export const promptDocs: PromptSpec[] = [
   },
 ];
 
-// Resource specs defined inline — server/resources.ts uses Blockbench globals at module level
+// Resource specs defined inline or imported from resource owners that are free of Blockbench-global execution.
 export const resourceDocs: ResourceSpec[] = [
   {
     name: "projects",
@@ -121,4 +123,5 @@ export const resourceDocs: ResourceSpec[] = [
     description:
       "Returns current validation errors. Any elementRefs are best-effort message-text inferences and are explicitly marked non-authoritative.",
   },
+  textureAuthoringKnowledgeResourceDocs,
 ];
