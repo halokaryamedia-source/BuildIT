@@ -45,14 +45,53 @@ export type ParticlePackAnalysis = {
 
 const DIAGNOSTIC_LIMIT = 128;
 
+type DiagnosticAccumulator = {
+  entries: ParticlePackDiagnostic[];
+  seen: Set<string>;
+  has_error: boolean;
+  truncated: boolean;
+};
+
 function object(value: JsonValue | undefined): JsonObject | null {
   return value !== undefined && value !== null && typeof value === "object" && !Array.isArray(value)
     ? (value as JsonObject)
     : null;
 }
 
-function emit(diagnostics: ParticlePackDiagnostic[], diagnostic: ParticlePackDiagnostic): void {
-  if (diagnostics.length < DIAGNOSTIC_LIMIT) diagnostics.push(diagnostic);
+function diagnosticKey(diagnostic: ParticlePackDiagnostic): string {
+  return [
+    diagnostic.severity,
+    diagnostic.code,
+    diagnostic.path ?? "",
+    diagnostic.particle_identifier ?? "",
+    diagnostic.source_path ?? "",
+    diagnostic.message,
+  ].join("|");
+}
+
+function emit(state: DiagnosticAccumulator, diagnostic: ParticlePackDiagnostic): void {
+  if (diagnostic.severity === "error") state.has_error = true;
+  const key = diagnosticKey(diagnostic);
+  if (state.seen.has(key)) return;
+  state.seen.add(key);
+  if (state.entries.length < DIAGNOSTIC_LIMIT) {
+    state.entries.push(diagnostic);
+  } else {
+    state.truncated = true;
+  }
+}
+
+function finalizeDiagnostics(state: DiagnosticAccumulator): ParticlePackDiagnostic[] {
+  if (!state.truncated) return state.entries;
+  const marker: ParticlePackDiagnostic = {
+    severity: "info",
+    code: "particle_pack_diagnostics_truncated",
+    message: `Particle pack diagnostics were bounded to ${DIAGNOSTIC_LIMIT} entries; validity still reflects errors beyond the returned diagnostic window.`,
+  };
+  if (state.entries.length >= DIAGNOSTIC_LIMIT) {
+    return [...state.entries.slice(0, DIAGNOSTIC_LIMIT - 1), marker];
+  }
+  return [...state.entries, marker];
 }
 
 function stableUnique(values: Iterable<string>): string[] {
@@ -125,7 +164,12 @@ function cycleComponents(
 }
 
 export function analyzeBedrockParticlePack(input: ParticlePackAnalysisInput): ParticlePackAnalysis {
-  const diagnostics: ParticlePackDiagnostic[] = [];
+  const diagnosticState: DiagnosticAccumulator = {
+    entries: [],
+    seen: new Set<string>(),
+    has_error: false,
+    truncated: false,
+  };
   const byIdentifier = new Map<string, ParticlePackDocument[]>();
   const summaries = new Map<string, ReturnType<typeof inspectParticleDocument>>();
   const textureDependencies = new Set<string>();
@@ -135,7 +179,7 @@ export function analyzeBedrockParticlePack(input: ParticlePackAnalysisInput): Pa
     const summary = inspectParticleDocument(particle.document);
     const identifier = summary.identifier;
     for (const diagnostic of summary.diagnostics) {
-      emit(diagnostics, {
+      emit(diagnosticState, {
         severity: diagnostic.severity,
         code: diagnostic.code,
         message: identifier
@@ -147,7 +191,7 @@ export function analyzeBedrockParticlePack(input: ParticlePackAnalysisInput): Pa
       });
     }
     if (!identifier) {
-      emit(diagnostics, {
+      emit(diagnosticState, {
         severity: "error",
         code: "particle_pack_missing_identifier",
         message: "Pack particle document has no valid identifier.",
@@ -168,7 +212,7 @@ export function analyzeBedrockParticlePack(input: ParticlePackAnalysisInput): Pa
 
   for (const [identifier, entries] of byIdentifier) {
     if (entries.length <= 1) continue;
-    emit(diagnostics, {
+    emit(diagnosticState, {
       severity: "error",
       code: "duplicate_particle_identifier",
       message: `Particle identifier "${identifier}" appears in ${entries.length} pack documents.`,
@@ -189,7 +233,7 @@ export function analyzeBedrockParticlePack(input: ParticlePackAnalysisInput): Pa
       targets.add(target);
       edges.push({ from: identifier, to: target });
       if (!known.has(target)) {
-        emit(diagnostics, {
+        emit(diagnosticState, {
           severity: "warning",
           code: "unresolved_nested_particle",
           message: `Particle "${identifier}" references nested particle "${target}" that is not present in the analyzed pack set.`,
@@ -204,7 +248,7 @@ export function analyzeBedrockParticlePack(input: ParticlePackAnalysisInput): Pa
   edges.sort((left, right) => `${left.from}|${left.to}`.localeCompare(`${right.from}|${right.to}`));
   const cycles = cycleComponents(identifiers, adjacency);
   for (const cycle of cycles) {
-    emit(diagnostics, {
+    emit(diagnosticState, {
       severity: "warning",
       code: "particle_dependency_cycle",
       message: `Particle dependency cycle detected across: ${cycle.join(" -> ")}. Verify event/lifetime conditions bound repeated spawning.`,
@@ -217,7 +261,7 @@ export function analyzeBedrockParticlePack(input: ParticlePackAnalysisInput): Pa
     const available = new Set(input.available_textures);
     for (const texture of textureDependencies) {
       if (!available.has(texture)) {
-        emit(diagnostics, {
+        emit(diagnosticState, {
           severity: "warning",
           code: "unresolved_particle_texture",
           message: `Particle texture dependency "${texture}" is not present in the supplied texture set.`,
@@ -230,7 +274,7 @@ export function analyzeBedrockParticlePack(input: ParticlePackAnalysisInput): Pa
     const available = new Set(input.available_sound_events);
     for (const sound of soundDependencies) {
       if (!available.has(sound)) {
-        emit(diagnostics, {
+        emit(diagnosticState, {
           severity: "warning",
           code: "unresolved_particle_sound_event",
           message: `Particle sound event "${sound}" is not present in the supplied sound-event set.`,
@@ -244,7 +288,7 @@ export function analyzeBedrockParticlePack(input: ParticlePackAnalysisInput): Pa
     try {
       bindings = inspectParticleBindings(entry.document);
     } catch (error) {
-      emit(diagnostics, {
+      emit(diagnosticState, {
         severity: "error",
         code: "invalid_particle_client_entity",
         message: error instanceof Error ? error.message : "Client entity particle binding could not be inspected.",
@@ -253,7 +297,7 @@ export function analyzeBedrockParticlePack(input: ParticlePackAnalysisInput): Pa
       continue;
     }
     for (const diagnostic of bindings.diagnostics) {
-      emit(diagnostics, {
+      emit(diagnosticState, {
         severity: diagnostic.severity,
         code: diagnostic.code,
         message: bindings.entity_identifier
@@ -265,7 +309,7 @@ export function analyzeBedrockParticlePack(input: ParticlePackAnalysisInput): Pa
     }
     for (const binding of bindings.bindings) {
       if (known.has(binding.effect)) continue;
-      emit(diagnostics, {
+      emit(diagnosticState, {
         severity: "error",
         code: "unresolved_client_entity_particle",
         message: `Client entity particle shortname "${binding.shortname}" targets "${binding.effect}", which is absent from the analyzed particle pack set.`,
@@ -275,14 +319,7 @@ export function analyzeBedrockParticlePack(input: ParticlePackAnalysisInput): Pa
     }
   }
 
-  if (diagnostics.length >= DIAGNOSTIC_LIMIT) {
-    diagnostics[DIAGNOSTIC_LIMIT - 1] = {
-      severity: "info",
-      code: "particle_pack_diagnostics_truncated",
-      message: `Particle pack diagnostics were bounded to ${DIAGNOSTIC_LIMIT} entries.`,
-    };
-  }
-
+  const diagnostics = finalizeDiagnostics(diagnosticState);
   return {
     particle_count: input.particles.length,
     client_entity_count: input.client_entities?.length ?? 0,
@@ -292,6 +329,6 @@ export function analyzeBedrockParticlePack(input: ParticlePackAnalysisInput): Pa
     texture_dependencies: stableUnique(textureDependencies),
     sound_dependencies: stableUnique(soundDependencies),
     diagnostics,
-    valid: !diagnostics.some((entry) => entry.severity === "error"),
+    valid: !diagnosticState.has_error,
   };
 }
