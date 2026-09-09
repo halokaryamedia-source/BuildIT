@@ -1,7 +1,7 @@
 # BlockIT — UV Layout & Texture Standard
 
 **Status:** Active Policy  
-**Version:** 1.6
+**Version:** 1.7
 **Updated:** 2026-09-09
 
 ## Purpose
@@ -48,11 +48,16 @@ UV LOCK / AUDIT
 TEXTURE TEMPLATE / ATLAS
   native UV arrangement + exact pixel grid
 ↓
+TEXTURE TREATMENT PLAN
+   region + evidence + surface_pattern + render_profile + optional PBR intent
+↓
 TEXTURE STYLING
    BASE PASS
    VALUE / FORM PASS
+   SURFACE PATTERN PASS
    IDENTITY PASS
    SECONDARY DETAIL PASS
+   RENDER / ALPHA VERIFY
 ↓
 TEXTURE VERIFY
 ↓
@@ -200,6 +205,7 @@ Texture Styling owns the visual pixels:
 ```text
 palette
 material separation
+surface_pattern
 value / hue
 face/form readability
 contact / occlusion
@@ -209,6 +215,20 @@ controlled secondary detail
 ```
 
 Before detailed styling establish physical pixels per UV unit and readable detail scale.
+
+## Treatment Plan
+
+Before broad painting, convert approved reference evidence into semantic regions. Each region independently records:
+
+```text
+reference evidence state
+surface_pattern
+render_profile / minecraft_material_code
+optional pbr_intent
+identity colors / notes
+```
+
+`surface_pattern` describes visual pixel language only. `render_profile` describes Minecraft render behavior only. PBR remains optional and explicit. Missing evidence stays unresolved; object/category names never fill it automatically.
 
 ## Material-Family Palette Ramps
 
@@ -250,6 +270,12 @@ Prefer stepped pixel ramps for Minecraft/pixel-art styling. Continuous smooth gr
 
 Texture may reinforce real contact/recess/overlap/underside/joint depth but must not invent missing large volume.
 
+## SURFACE PATTERN PASS
+
+Apply the selected `surface_pattern` recipe to each material cohort only after BASE and VALUE/FORM are readable. Recipes describe directionality, cluster language, value behavior, edge behavior, secondary detail, and anti-patterns. They are not bitmap presets and never select transparency/glow/PBR by name.
+
+Examples include `wood_grain`, `painted_metal`, `stone_cluster`, `cloth_weave`, `clean_glass`, `rubber_matte`, `fur_cluster`, and `emissive_panel`. Reference evidence overrides the generic recipe.
+
 ## IDENTITY PASS
 
 Identity-critical features include required markings, facial features, emblems, wraps, seams, panel lines, symbols, and recognizability-critical color breaks.
@@ -265,20 +291,24 @@ For crisp Minecraft texture:
 - use deliberate pixel clusters;
 - use hard texel edges;
 - avoid accidental softness/antialiasing;
-- default authored alpha intent is **0 or 255**.
+- for ordinary opacity/cutout authoring, default authored alpha intent is **0 or 255**.
 
-Intermediate alpha is valid only when material behavior requires translucency/blending.
+Intermediate alpha is valid only when material behavior requires translucency/blending **or another declared non-opacity alpha semantic such as color/emissive masking**. Never classify the byte range before resolving `render_profile`.
 
 ## Render Material / Alpha Contract
 
-Alpha meaning is downstream-material dependent and must not be inferred from PNG pixels alone:
+Alpha meaning is downstream-material dependent and must not be inferred from PNG/TGA pixels alone:
 
 - opaque/default entity rendering uses the normal `entity` material;
 - cutout transparency requires a compatible alpha-test consumer such as `entity_alphatest`;
 - true translucency requires a blending consumer such as `entity_alphablend`;
-- emissive material families may repurpose alpha for emissiveness.
+- `entity_change_color` uses alpha as a color mask;
+- `entity_emissive` uses alpha as emissive intensity and requires TGA;
+- emissive/translucent and layered variants have their own declared contracts.
 
-If the downstream client-entity/render material is unknown, alpha-dependent appearance is **UNVERIFIED**. Do not treat a transparent-looking atlas preview as Minecraft runtime proof.
+Use `manage_render_profile` to inspect/bind `client_entity.description.materials` and ordered render-controller bone assignments. `render_mode` remains Blockbench preview state and is not Minecraft runtime proof.
+
+If the downstream client-entity/render material is unknown, alpha-dependent appearance is **UNVERIFIED**. A texture-wide intermediate-alpha scan is only a candidate signal because one atlas can serve bones using different render profiles. Do not treat a transparent-looking atlas preview as Minecraft runtime proof.
 
 ## Paint Safety / Atomic Authoring
 
@@ -340,11 +370,13 @@ Review in this order:
 ```text
 1. UV Layout validity / bounds / overlap / lock
 2. Texture Atlas ownership / fragmentation / scale
-3. palette + material separation
+3. treatment-plan region ownership + palette/material separation
 4. form + contact + edge readability
-5. seam / orientation
-6. identity-critical marks
-7. secondary detail density
+5. surface-pattern language
+6. render/alpha contract
+7. seam / orientation
+8. identity-critical marks
+9. secondary detail density
 ```
 
 `Texture Atlas exists`, `UV Layout exists`, or `paint tool succeeded` does not prove Texture Styling quality.
@@ -362,12 +394,13 @@ Requested texture scope is complete when:
 - atlas identity and physical pixel density are known;
 - material families have readable palette/value separation;
 - visible form is not left as unjustified flat fill;
+- reference-important regions have explicit surface treatment instead of generic noise;
 - contact/edge treatment is used when materially useful;
 - identity-critical markings are present;
 - detail density matches physical pixels-per-UV-unit;
 - no accidental soft/alpha artifacts remain for crisp pixel style;
 - active variants/PBR have `production_alignment.gate=ready`;
-- alpha-dependent appearance has a known downstream material contract or remains explicitly UNVERIFIED;
+- alpha-dependent appearance has a known downstream `render_profile`/material contract or remains explicitly UNVERIFIED;
 - Texture Verify has no unresolved critical/major issue.
 
 ## Related
@@ -375,3 +408,6 @@ Requested texture scope is complete when:
 - [Geometry Standard](05-geometry-standard.md)
 - [Visual Validation](07-visual-validation.md)
 - [Current Validation](../knowledge/current-validation.md)
+- [Material Standard](10-material-standard.md)
+- [Render Profile Standard](11-render-profile-standard.md)
+- [Surface Pattern Standard](12-surface-pattern-standard.md)
