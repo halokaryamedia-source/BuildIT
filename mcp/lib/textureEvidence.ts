@@ -34,6 +34,9 @@ export const textureEvidenceOptionsSchema = z
  * It supports bounded PNG evidence plus optional optimistic revision checking
  * without placing raw RGBA in structuredContent. Render semantics are opt-in:
  * normal texture reads do not perform a second alpha-analysis scan.
+ *
+ * This remains a plain ZodObject because runtime wiring intentionally reuses
+ * its `.shape`; cross-field render semantics are validated by the alpha wrapper.
  */
 export const focusedGetTextureParameters = z
   .object({
@@ -54,25 +57,7 @@ export const focusedGetTextureParameters = z
         "Optional literal Minecraft entity material code for render-aware alpha interpretation."
       ),
   })
-  .strict()
-  .superRefine((value, ctx) => {
-    if (value.render_profile && value.minecraft_material_code) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["minecraft_material_code"],
-        message:
-          "Pass render_profile or minecraft_material_code for evidence interpretation, not both.",
-      });
-    }
-    if (value.render_profile === "custom") {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["render_profile"],
-        message:
-          "Custom render evidence requires the literal minecraft_material_code so semantics remain explicitly unverified.",
-      });
-    }
-  });
+  .strict();
 
 export type TextureEvidenceRegion = z.infer<typeof textureEvidenceRegionSchema>;
 export type TextureEvidenceOptions = z.infer<typeof textureEvidenceOptionsSchema>;
