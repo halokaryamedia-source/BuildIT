@@ -10,6 +10,7 @@ import { BEDROCK_PARTICLE_SPECIAL_MOLANG_VARIABLES } from "@/lib/bedrockParticle
 
 export const PARTICLE_REFERENCE_IDS = [
   "components",
+  "materials",
   "curves",
   "events",
   "presets",
@@ -25,9 +26,31 @@ export const particleReferenceResourceDocs: ResourceSpec[] = [
     uriTemplate: "particle_reference://{id}",
     title: "Bedrock Particle Reference",
     description:
-      "Lazy reference for Bedrock particle component families, compact starting presets, particle Molang/math, and authoring workflow. Read only the section needed for the current particle decision.",
+      "Lazy reference for Bedrock particle component families, render materials, compact starting presets, particle Molang/math, and authoring workflow. Read only the section needed for the current particle decision.",
   },
 ];
+
+const PARTICLE_MATERIAL_REFERENCE = {
+  principle:
+    "basic_render_parameters.material selects the Bedrock particle material contract; preserve custom material strings losslessly and use known Vanilla particle materials when their render semantics fit the effect.",
+  materials: {
+    particles_base:
+      "Base Vanilla particle material. Use when an authored particle or inherited Vanilla contract explicitly calls for the base particle material rather than alpha/blend/additive specializations.",
+    particles_opaque:
+      "Opaque particle rendering; best for fully opaque sprites that do not need alpha blending.",
+    particles_alpha:
+      "Alpha-tested/alpha-oriented particle rendering commonly used for cutout-style particle sprites.",
+    particles_blend:
+      "Standard translucent blending for soft smoke, mist, transparent energy and similar effects.",
+    particles_add:
+      "Additive particle blending for glow-like sparks, energy, magic and light-emitting visual effects.",
+  },
+  rules: [
+    "Do not infer a material only from the texture filename.",
+    "Unknown/custom material strings are preserved and remain unverified rather than rewritten.",
+    "Visual approval still belongs to native Blockbench/Minecraft preview because JSON validity does not prove blend appearance.",
+  ],
+};
 
 const PARTICLE_MOLANG_REFERENCE = {
   principle:
@@ -100,6 +123,8 @@ export function getParticleReferencePayload(id: ParticleReferenceId) {
   switch (id) {
     case "components":
       return BEDROCK_PARTICLE_COMPONENT_REFERENCE;
+    case "materials":
+      return PARTICLE_MATERIAL_REFERENCE;
     case "curves":
       return BEDROCK_PARTICLE_CURVE_REFERENCE;
     case "events":
