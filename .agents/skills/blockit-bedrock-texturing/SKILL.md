@@ -29,7 +29,7 @@ Unknown → `search_capabilities(limit=4)`. No confirmation rereads.
 Requested atlas size/density are constraints; never silently enlarge; return to Geometry/UV if detail cannot fit.
 ## First Call
 `blank create_texture → explicit width+height from project UV`; **not omit blank Atlas size**.
-`create_texture`: provisional **16×16 blank**; **128×128 default, 256×256 opt-in**. Reuse existing atlas UUID.
+`create_texture`: provisional **16×16 blank**; **128×128 default, 256×256 opt-in**. Approved atlas/density takes precedence; reuse its UUID.
 ## Workplan / Coverage
 material cohorts; palette roles `BASE | SHADOW | HIGHLIGHT | ACCENT/IDENTITY`; form/contact/occlusion/edge/identity/detail.
 Face Coverage Ledger: `UNPAINTED | BASE_ONLY | STYLED | INTENTIONAL_FLAT | INTENTIONAL_TRANSPARENT | SHARED`.
@@ -54,7 +54,12 @@ Reference + fresh `get_texture` + fresh **mapped model-view evidence** from `cap
 Verify required hidden material surfaces.
 `FAIL` → **smallest bounded causal correction** → one fresh affected evidence bundle → `IMPROVED | UNCHANGED | REGRESSED`; same causal direction twice → `BLOCKED`.
 Never use stale exported PNG/bbmodel.
-Animation → user Texture APPROVED + checkpoint → Animation Readiness Preflight → `HANDOFF_REQUIRED(target_phase=animation, readiness=ready)` → Gateway `switch_authoring_phase`, same task.
+Animation → user Texture APPROVED + checkpoint → Animation Readiness Preflight → `HANDOFF_REQUIRED` → Gateway `switch_authoring_phase`, same task.
+Pass `target_phase="animation"`, `reason`, `resume_from`, and the recorded approval/checkpoint object, never a readiness string:
+```json
+{"geometry_approved":true,"uv_layout":"PASS","texture_approved":true,"checkpoint":"<saved .bbmodel path>","no_blockers":true}
+```
+The object above is `readiness`; never infer approval.
 ## Conditional Support — Not Default Routing
 Conditional on user intent; not normal hot path.
 `gradient_tool | color_picker_tool | copy_brush_tool | paint_settings | create_brush_preset | load_brush_preset | texture_selection | texture_layer_management | add_texture_group | list_materials | get_material_info | import_texture_set`.

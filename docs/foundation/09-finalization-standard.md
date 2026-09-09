@@ -37,6 +37,12 @@ These labels do not imply one another. Save/compile/parse success, bounds, UV hy
 
 A native model containing an animation does not satisfy a separately requested animation export. A successful export does not prove the native project metadata or Minecraft binding is correct.
 
+### Current Export Routes
+
+`export_model(codec_id=project)` saves editable `.bbmodel`; `codec_id=bedrock` exports geometry JSON. Neither exports a separate animation/controller file or PNG.
+
+For a separately requested animation/controller file, use the actual native Blockbench AnimationCodec export/save route; for a PNG use the native texture save/export route. These are explicit native steps, not additional Gateway capabilities. Do not invent codec IDs, substitute `.bbmodel`, or bypass through generic UI/eval. If the required native step is unavailable, report that output as pending and keep its finalization blocked. Existing Bedrock geometry files require native overwrite/merge or a new path; `.bbmodel` replacement requires explicit overwrite consent.
+
 ## Identifier / Reference Integrity
 
 The native project is metadata authority. Set or repair identifiers through the native/project owner; do not patch compiled JSON merely to pretend native state changed.

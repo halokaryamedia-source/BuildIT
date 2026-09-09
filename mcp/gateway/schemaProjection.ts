@@ -84,33 +84,53 @@ function isRecord(value: unknown): value is JsonRecord {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
 
+// Only check explicit discriminator constraints; this is not a JSON Schema
+// validator. Execution still uses the complete Runtime parameterSchema.
+function excludesBranchValue(schema: JsonRecord, value: string): boolean {
+  if (Object.hasOwn(schema, "const") && schema.const !== value) return true;
+  if (Array.isArray(schema.enum) && !schema.enum.includes(value)) return true;
+  for (const key of ["anyOf", "oneOf"] as const) {
+    const variants = schema[key];
+    if (Array.isArray(variants) && variants.length > 0 &&
+        variants.every((variant) => isRecord(variant) && excludesBranchValue(variant, value))) {
+      return true;
+    }
+  }
+  return false;
+}
+
 function projectObjectSchema(
   schema: JsonRecord,
   branch: CapabilitySchemaBranch,
   allowedFields: readonly string[]
 ): JsonRecord {
-  if (!isRecord(schema.properties)) return schema;
+  if (!isRecord(schema.properties)) {
+    throw new Error("Runtime schema has no object properties; describe the full capability instead.");
+  }
+  const discriminator = schema.properties[branch.field];
+  if (!isRecord(discriminator) || excludesBranchValue(discriminator, branch.value)) {
+    throw new Error(`Runtime schema does not advertise ${branch.field}=${branch.value}; describe the full capability instead.`);
+  }
   const allowed = new Set(allowedFields);
   const properties = Object.fromEntries(
     Object.entries(schema.properties).filter(([name]) => allowed.has(name))
   );
-  const discriminator = properties[branch.field];
-  if (isRecord(discriminator)) {
-    properties[branch.field] = {
-      ...discriminator,
-      const: branch.value,
-      enum: [branch.value],
-    };
-  }
+  properties[branch.field] = {
+    ...discriminator,
+    const: branch.value,
+    enum: [branch.value],
+  };
+  // A selected projection must explicitly select its branch. Preserve the
+  // Runtime's existing required fields, but do not invent lost branch rules.
   const required = Array.isArray(schema.required)
     ? schema.required.filter(
         (name): name is string => typeof name === "string" && allowed.has(name)
       )
-    : undefined;
+    : [];
   return {
     ...schema,
     properties,
-    ...(required ? { required } : {}),
+    required: [...new Set([...required, branch.field])],
   };
 }
 

@@ -5,16 +5,16 @@ import {
 } from "@/lib/factories";
 
 /**
- * Keeps tools/list cheap while exact parameterSchema remains the execution
- * authority. Complex operation payloads are described by the routed skill and
- * validated by their strict branch schema when invoked.
+ * This shape is also parsed by the SDK BEFORE parameterSchema. Presentation
+ * budgets must never reject input accepted by the canonical branch schema.
+ * Keep the existing compact catalog during the generator-coupled description
+ * closure, but leave batch limits to the original strict parameterSchema.
  */
 const compactOperations = z
   .array(z.record(z.unknown()))
   .min(1)
-  .max(32)
   .optional()
-  .describe("Bounded operation batch; exact branch schema is validated on invocation.");
+  .describe("Operation entries and branch-specific limits are validated on invocation.");
 
 const compactMolangValue = z
   .union([z.string(), z.number().finite(), z.null()])
@@ -23,9 +23,8 @@ const compactMolangValue = z
 const compactRotationSpaces = z
   .array(z.record(z.unknown()))
   .min(1)
-  .max(32)
   .optional()
-  .describe("Bounded bone rotation-space updates; exact entries are validated on invocation.");
+  .describe("Bone rotation-space entries and limits are validated on invocation.");
 
 let wired = false;
 
