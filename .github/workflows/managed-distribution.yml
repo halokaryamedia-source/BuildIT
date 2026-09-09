@@ -54,6 +54,9 @@ jobs:
       run:
         working-directory: mcp
     steps:
+      - name: Preserve canonical source line endings before checkout
+        working-directory: ${{ runner.temp }}
+        run: git config --global core.autocrlf false
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
         with:
           persist-credentials: false
