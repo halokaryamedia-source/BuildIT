@@ -24,7 +24,7 @@ Approved image = visual authority. Strategy: user-selected `DIRECT | 3D_ASSISTED
 ## Fast Routing Contract
 Normal asset work **must not begin by searching repository files**.
 **Authoring Context Firewall:** Authoring Codex uses `workspace/active/<asset>/` as cwd, not `mcp/`; deeper MCP development rules are not authoring plan. Do **not** inspect tests/CI/source or run Bun/build/verifiers/deploy.
-Existing/revision → inspect only affected target/dependencies; broaden only when identity/state is unclear.
+Existing → inspect only affected target/dependencies; broaden if unclear.
 `ACTIVE STAGE + intent + known state/UUIDs → exact known Runtime capability → Gateway execution → reuse result`
 
 ## Authoring Stage Lock
@@ -54,7 +54,7 @@ rig IK/mirror                  → bone_rigging
 `bone_rigging` only for IK/mirror.
 `validator://*` resources are Direct Runtime/Inspector only; a Gateway client must not search for or emulate them.
 Known coherent Cubes → one `manage_cubes(operation=create, elements=[...])`; uncertainty → no batch.
-Known Cubes sharing one deterministic TRANSLATE/RESIZE intent → derive absolute targets once from fresh state → `manage_cubes(operation=batch_update)`; never loop inspect→modify per Cube. **Semantic cohort rule:** shared motion → Group; otherwise correct sibling cohort.
+Known Cubes sharing one deterministic TRANSLATE/RESIZE intent → derive absolute targets once from fresh state → `manage_cubes(operation=batch_update)`; never loop inspect→modify per Cube; relative intent stays reasoning-layer arithmetic; writes stay absolute/fail-closed. **Semantic cohort rule:** shared motion → Group; else sibling cohort.
 
 ## First-Call Invariants
 `add_group` → pass name OR groups, never both.
