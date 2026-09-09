@@ -5,6 +5,7 @@ Branch: **`Local` only**. Proof → `current-validation.md`; ownership → `impl
 
 ## Current State
 
+- **AUTHORING TAXONOMY** stays user-selected `DIRECT | 3D_ASSISTED`; Geometry↔Texturing share AUTHORING and only AUTHORING↔Animation hands off.
 - Gateway stays **4 tools**; known capability → direct invoke. Fallback search now prioritizes exact-pixel paint, render/alpha, native Animation properties/Molang, controller blend composition, and Animation effects. MCP Verify passed at `5acb0c3b57a807677ff37dc8655ff15a8a694d13`.
 - Source surface: **54 callable / 49 AUTHORING / 18 Animation**. Doc sync reads the canonical counts from `mcp/scripts/measure-phase-surfaces.ts`; Repository Verify passed at `d222835aa54e89322de8be58908bbb6adf1e626a`.
 - Native Animation properties, Molang diagnostics, motion intelligence, nested controllers, and blend-transition curves are already wired through canonical tools. Do not add parallels.
