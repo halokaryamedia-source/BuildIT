@@ -12,6 +12,7 @@ import { describeMcpSurfaceToolNames } from "@/server/tools";
 import { wireAuthoringQualityIntelligence } from "@/server/tools/quality-intelligence";
 import { wireTextureQualityRuntime } from "@/server/tools/texture-quality-runtime";
 import { wireTextureAuthoringRuntime } from "@/server/tools/texture-authoring-runtime";
+import { wireTextureAlphaRuntime } from "@/server/tools/texture-alpha-runtime";
 import { wireAnimationNativeIntelligence } from "@/server/tools/animation-native-intelligence";
 import { wireAnimationControllerNativeIntelligence } from "@/server/tools/animation-controller-native-intelligence";
 import { wireAnimationRuntimeResourceIntelligence } from "@/server/tools/animation-runtime-resource-intelligence";
@@ -27,6 +28,7 @@ import {
 wireAuthoringQualityIntelligence();
 wireTextureQualityRuntime();
 wireTextureAuthoringRuntime();
+wireTextureAlphaRuntime();
 wireAnimationNativeIntelligence();
 wireAnimationControllerNativeIntelligence();
 wireAnimationRuntimeResourceIntelligence();
