@@ -21,6 +21,11 @@ import {
   parseClientEntityDocument,
   serializeClientEntityDocument,
 } from "@/lib/bedrockParticleBinding";
+import {
+  assertParticleSourceSnapshotMatches,
+  assertParticleWriteRevisionUnchanged,
+  captureParticleWriteRevision,
+} from "@/lib/particleWriteRevision";
 
 const absoluteJsonPathSchema = z
   .string()
@@ -310,6 +315,7 @@ type PlannedWrite = {
   path: string;
   content: string;
   allow_replace: boolean;
+  expected_existing_content?: string;
 };
 
 type WriteReceipt = {
@@ -337,11 +343,13 @@ function readParticleSource(
 ): {
   document: ReturnType<typeof parseParticleDocument>;
   source_path: string | null;
+  source_content: string | null;
 } {
   if (source.content !== undefined) {
     return {
       document: parseParticleDocument(source.content),
       source_path: null,
+      source_content: null,
     };
   }
   const path = source.path!;
@@ -351,9 +359,11 @@ function readParticleSource(
   if (!fs.existsSync(path)) {
     throw new Error(`Particle source file does not exist: ${path}`);
   }
+  const content = fs.readFileSync(path, "utf8");
   return {
-    document: parseParticleDocument(fs.readFileSync(path, "utf8")),
+    document: parseParticleDocument(content),
     source_path: path,
+    source_content: content,
   };
 }
 
@@ -362,11 +372,13 @@ function readClientEntitySource(
 ): {
   document: ReturnType<typeof parseClientEntityDocument>;
   source_path: string | null;
+  source_content: string | null;
 } {
   if (source.content !== undefined) {
     return {
       document: parseClientEntityDocument(source.content),
       source_path: null,
+      source_content: null,
     };
   }
   const path = source.path!;
@@ -376,9 +388,11 @@ function readClientEntitySource(
   if (!fs.existsSync(path)) {
     throw new Error(`Client-entity source file does not exist: ${path}`);
   }
+  const content = fs.readFileSync(path, "utf8");
   return {
-    document: parseClientEntityDocument(fs.readFileSync(path, "utf8")),
+    document: parseClientEntityDocument(content),
     source_path: path,
+    source_content: content,
   };
 }
 
@@ -391,6 +405,18 @@ function normalizePathIdentity(path: string): string {
     normalized = normalized.toLowerCase();
   }
   return normalized;
+}
+
+function sourceContentForOutput(
+  sourcePath: string | null,
+  sourceContent: string | null,
+  outputPath: string
+): string | undefined {
+  return sourcePath !== null &&
+    sourceContent !== null &&
+    normalizePathIdentity(sourcePath) === normalizePathIdentity(outputPath)
+    ? sourceContent
+    : undefined;
 }
 
 function sliceWithoutSplittingSurrogatePair(
@@ -498,15 +524,23 @@ function writeArtifactsAtomically(plans: readonly PlannedWrite[]): WriteReceipt[
     `BlockIT requested write access for ${plans.length} validated Bedrock particle artifact${plans.length === 1 ? "" : "s"}`
   );
   const prepared = plans.map((plan) => {
-    const existed = fs.existsSync(plan.path);
+    const revision = captureParticleWriteRevision(fs, plan.path);
+    const existed = revision.existed;
     if (existed && !plan.allow_replace) {
       throw new Error(
         `Refusing to replace existing ${plan.kind} file ${plan.path} without overwrite=true.`
       );
     }
+    assertParticleSourceSnapshotMatches(
+      revision,
+      plan.expected_existing_content,
+      plan.path,
+      plan.kind
+    );
     return {
       ...plan,
       existed,
+      revision,
       byte_length: Buffer.byteLength(plan.content, "utf8"),
       temp_path: uniqueSiblingPath(fs, plan.path, "tmp"),
       backup_path: existed ? uniqueSiblingPath(fs, plan.path, "bak") : null,
@@ -527,6 +561,12 @@ function writeArtifactsAtomically(plans: readonly PlannedWrite[]): WriteReceipt[
     }
 
     for (const item of prepared) {
+      assertParticleWriteRevisionUnchanged(
+        fs,
+        item.path,
+        item.revision,
+        item.kind
+      );
       if (item.existed && item.backup_path) {
         fs.renameSync(item.path, item.backup_path);
         item.backup_moved = true;
@@ -611,6 +651,7 @@ function prepareClientEntityBinding(
   particleIdentifier: string
 ): {
   source_path: string | null;
+  source_content: string | null;
   output_path: string | null;
   document: JsonObject;
   serialized: string;
@@ -634,6 +675,7 @@ function prepareClientEntityBinding(
   const outputPath = binding.output?.path ?? base.source_path;
   return {
     source_path: base.source_path,
+    source_content: base.source_content,
     output_path: outputPath,
     document,
     serialized,
@@ -702,6 +744,7 @@ export function registerParticleTools(): void {
           : {
               document: createParticleDocument(create!),
               source_path: null,
+              source_content: null,
             };
         const document = applyParticleOperations(base.document, operations);
         const summary = inspectParticleDocument(document);
@@ -742,6 +785,11 @@ export function registerParticleTools(): void {
               output.path,
               output.overwrite === true
             ),
+            expected_existing_content: sourceContentForOutput(
+              base.source_path,
+              base.source_content,
+              output.path
+            ),
           });
         }
         if (bindingState?.output_path && valid) {
@@ -750,6 +798,11 @@ export function registerParticleTools(): void {
             path: bindingState.output_path,
             content: bindingState.serialized,
             allow_replace: bindingState.allow_replace,
+            expected_existing_content: sourceContentForOutput(
+              bindingState.source_path,
+              bindingState.source_content,
+              bindingState.output_path
+            ),
           });
         }
         const writes = valid ? writeArtifactsAtomically(writePlans) : [];
