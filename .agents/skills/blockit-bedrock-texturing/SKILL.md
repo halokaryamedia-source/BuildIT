@@ -5,22 +5,22 @@ description: Mandatory BlockIT Bedrock Texture specialist.
 # BlockIT Bedrock Texturing
 Geometry/UV capabilities remain callable for bounded upstream correction; Texturing **must not borrow Cube mutation**.
 ## Asset-Only Visual Runtime Boundary
-No RP dev: opaque/cutout/blend/emissive=visual intent; Texture variants asset-only.
+No RP dev: opaque/cutout/blend/emissive; Texture variants asset-only.
 ## Entry / Correction
 **No Geometry↔Texturing phase switch.** AUTHORING↔Animation only: `HANDOFF_REQUIRED` + `switch_authoring_phase`.
-Entry: **Geometry APPROVED + UV Layout PASS**; final Box UV locked with `autouv=0`, no invalid/out-of-bounds/partial-overlap.
-unlocked/invalid UV → Geometry owner + bounded UV correction; no phase switch.
+Entry: **Geometry APPROVED + UV Layout PASS**; Box UV `autouv=0`, no invalid/out-of-bounds/partial-overlap.
+unlocked/invalid UV → Geometry bounded correction; no phase switch.
 ## Direct Routing
 Reuse fresh state.
 ```text
 global UV/atlas readiness → list_textures
-face mapping → inspect_elements(mode=detail) only when needed
+face mapping → inspect_elements(mode=detail) if needed
 blank atlas resolution unknown → get_project_info once
 atlas → list_textures / activate_texture / create_texture / get_texture
 paint → draw_shape_tool / paint_fill_tool / paint_with_brush / eraser_tool
 batch → paint_texture_transaction
-PBR/material semantics → manage_material / manage_material_instances
-render intent/preview → manage_render_profile
+PBR/material → manage_material / manage_material_instances
+render/preview → manage_render_profile
 ```
 Unknown → `search_capabilities(limit=4)`. No confirmation rereads.
 **Pin atlas UUID and pass `texture_id` when multiple textures are loaded.**
@@ -31,14 +31,14 @@ Requested atlas size/density are constraints; never silently enlarge; return to 
 `blank create_texture → explicit width+height from project UV`; **not omit blank Atlas size**.
 `create_texture`: provisional **16×16 blank**; **128×128 default, 256×256 opt-in**. Reuse existing atlas UUID.
 ## Workplan / Coverage
-cohorts; palette roles `BASE | SHADOW | HIGHLIGHT | ACCENT/IDENTITY`; form/contact/occlusion/edge/identity/detail.
+material cohorts; palette `BASE | SHADOW | HIGHLIGHT | ACCENT/IDENTITY`; form/contact/occlusion/edge/identity/detail.
 Face Coverage Ledger: `UNPAINTED | BASE_ONLY | STYLED | INTENTIONAL_FLAT | INTENTIONAL_TRANSPARENT | SHARED`.
 `list_textures.optimization_opportunities.coverage.gate`: `incomplete|partial` / `FACE_ACCOUNTING_INCOMPLETE` → no completion; one `list_textures`/pass; `ready` ≠ visual PASS.
 Variants: `list_textures.production_alignment.gate=ready`; `seam_continuity`; `pbr_content`.
 ### Reference-Grounded Palette / Atlas-Island Discipline
 Integer texels; **pixels per UV unit** owns scale; hue ramp; hard clusters.
 ## Texture Styling
-generic palette/copy/flat/random-noise ≠ completion.
+generic palette/copy; flat rectangles/random high-contrast noise ≠ completion.
 `BASE PASS → VALUE / FORM PASS → SURFACE PATTERN PASS → IDENTITY PASS → SECONDARY DETAIL PASS → RENDER / ALPHA VERIFY → VERIFY`.
 ### Render / PBR / Paint Safety
 Namespaces: `render_profile`+`minecraft_material_code` | `pbr_texture_set` | `geometry_material_instance` | `surface_pattern`; `render_mode` preview-only.
@@ -51,11 +51,11 @@ representative patch/cohort → cohort-wide; formula/gradient/color count is not
 **No evidence-per-micro-mutation loop.**
 ## Texture Verify
 Reference + fresh `get_texture` + fresh **mapped model-view evidence** from `capture_model_views` → `FAIL | UNVERIFIED | PASS`.
-Verify hidden material surfaces.
+Verify required hidden material surfaces.
 `FAIL` → **smallest bounded causal correction** → one fresh affected evidence bundle → `IMPROVED | UNCHANGED | REGRESSED`; same causal direction twice → `BLOCKED`.
 Never use stale exported PNG/bbmodel.
 Animation → user Texture APPROVED + checkpoint → Animation Readiness Preflight → `HANDOFF_REQUIRED(target_phase=animation, readiness=ready)` → Gateway `switch_authoring_phase`, same task.
 ## Conditional Support — Not Default Routing
 Conditional on user intent; not normal hot path.
 `gradient_tool | color_picker_tool | copy_brush_tool | paint_settings | create_brush_preset | load_brush_preset | texture_selection | texture_layer_management | add_texture_group | list_materials | get_material_info | import_texture_set`.
-`gradient_tool`: reference-supported continuous transition; no extra discovery/readback.
+`gradient_tool`: reference-supported transition; no extra discovery/readback.
