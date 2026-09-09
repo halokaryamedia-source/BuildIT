@@ -35,7 +35,7 @@ Existing/revision → inspect only affected target/dependencies; broaden only wh
 CORE / SHARED
 project unknown → get_project_info
 identity/hierarchy/detail → inspect_elements(mode=search|outline|detail)
-visible/reference comparison → capture_model_views
+visible/reference comparison  → capture_model_views
 envelope/scale/ground OR bounded surface/contact review → inspect_model_bounds
 UV/atlas readiness → list_textures
 file deliverable → export_model
@@ -43,22 +43,22 @@ Animation boundary → switch_authoring_phase
 
 GEOMETRY OWNER
 3D-Assisted GLB → manage_geometry_reference
-create normal bone/Group → add_group
-create/update Cubes → manage_cubes(operation=create|update|batch_update)
-Group/bone parent move → reparent_element
-Group pivot/rotation/visible → modify_group
-delete/rename → remove_element / rename_element
-Locator/Null → manage_locator / manage_null_object
-rig IK/mirror → bone_rigging
+create normal bone/Group       → add_group
+create/update Cubes            → manage_cubes(operation=create|update|batch_update)
+Group/bone parent move         → reparent_element
+Group pivot/rotation/visible   → modify_group
+delete/rename                  → remove_element / rename_element
+Locator/Null                   → manage_locator / manage_null_object
+rig IK/mirror                  → bone_rigging
 ```
 `bone_rigging` only for IK/mirror.
 `validator://*` resources are Direct Runtime/Inspector only; a Gateway client must not search for or emulate them.
 Known coherent Cubes → one `manage_cubes(operation=create, elements=[...])`; uncertainty → no batch.
-Known Cubes sharing one deterministic TRANSLATE/RESIZE intent → derive absolute targets once from fresh state → `manage_cubes(operation=batch_update)`; never loop inspect→modify per Cube. Relative intent stays reasoning-layer arithmetic; writes stay absolute/fail-closed. **Semantic cohort rule:** shared motion → Group; otherwise correct sibling cohort.
+Known Cubes sharing one deterministic TRANSLATE/RESIZE intent → derive absolute targets once from fresh state → `manage_cubes(operation=batch_update)`; never loop per Cube. **Semantic cohort rule:** shared motion → Group; otherwise correct sibling cohort.
 
 ## First-Call Invariants
 `add_group` → pass name OR groups, never both.
-`manage_cubes update → id + at least one authored field change`
+`manage_cubes update       → id + at least one authored field change`
 `manage_cubes rotated create → origin required`
 `manage_locator create → name+parent; update → id+authored change`
 `manage_null_object create → name+parent; update → id+parent/position`
@@ -66,7 +66,7 @@ Validation failure repairs arguments for the **same capability**.
 
 ## Capability Discovery / Recovery
 Capability discovery is deferred spec loading after routing.
-known exact capability → invoke directly.
+known exact capability   → invoke directly.
 unknown/stale capability → one precise `search_capabilities` query, `limit=4`.
 schema needed → `describe_capability` once before mutation.
 One precise search miss → reformulate once; second miss → `BLOCKED`. A known foreign-phase capability is never a discovery miss: AUTHORING↔Animation uses handoff.
