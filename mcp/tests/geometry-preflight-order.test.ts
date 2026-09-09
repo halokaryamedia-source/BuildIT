@@ -1,6 +1,74 @@
 import { describe, expect, test } from "bun:test";
+import { validateCubeGeometrySpan } from "@/server/tools/cubes";
 
 describe("Geometry mutation preflight ordering", () => {
+  test("Cube span preflight permits solid/plane-like geometry and rejects invalid spans", () => {
+    expect(
+      validateCubeGeometrySpan([0, 0, 0], [4, 8, 4], 0, "solid")
+    ).toMatchObject({
+      representation: "solid",
+      authored_size: [4, 8, 4],
+      rendered_size: [4, 8, 4],
+    });
+
+    expect(
+      validateCubeGeometrySpan([0, 0, 0], [0, 8, 8], 0, "plane")
+    ).toMatchObject({
+      representation: "plane_like",
+      authored_size: [0, 8, 8],
+      rendered_size: [0, 8, 8],
+    });
+
+    expect(() =>
+      validateCubeGeometrySpan([4, 0, 0], [0, 8, 8], 0, "reversed")
+    ).toThrow("reverses authored Cube bounds");
+
+    expect(() =>
+      validateCubeGeometrySpan([0, 0, 0], [0, 0, 8], 0, "line")
+    ).toThrow("collapses 2 authored axes");
+
+    expect(() =>
+      validateCubeGeometrySpan([0, 0, 0], [1, 1, 1], -0.75, "over-deflated")
+    ).toThrow("negative rendered span");
+
+    expect(
+      validateCubeGeometrySpan([0, 0, 0], [1, 2, 2], -0.5, "deflated-plane")
+    ).toMatchObject({
+      representation: "plane_like",
+      rendered_size: [0, 1, 1],
+    });
+  });
+
+  test("Cube geometry safety preflight runs before Undo for create/update/batch", async () => {
+    const source = await Bun.file("server/tools/cubes.ts").text();
+    const sections = [
+      {
+        start: "const executeCreateCubes",
+        end: "const executeUpdateCube",
+      },
+      {
+        start: "const executeUpdateCube",
+        end: "const executeBatchUpdateCubes",
+      },
+      {
+        start: "const executeBatchUpdateCubes",
+        end: "createTool(cubeToolDocs[0].name",
+      },
+    ];
+
+    for (const section of sections) {
+      const start = source.indexOf(section.start);
+      const end = source.indexOf(section.end, start);
+      const block = source.slice(start, end);
+      const preflight = block.indexOf("validateCubeGeometrySpan(");
+      const undo = block.indexOf("Undo.initEdit");
+      expect(start).toBeGreaterThanOrEqual(0);
+      expect(end).toBeGreaterThan(start);
+      expect(preflight).toBeGreaterThanOrEqual(0);
+      expect(undo).toBeGreaterThan(preflight);
+    }
+  });
+
   test("add_group resolves all names and parent targets before opening Undo", async () => {
     const source = await Bun.file("server/tools/element.ts").text();
     const start = source.indexOf("createTool(elementToolDocs[1].name");

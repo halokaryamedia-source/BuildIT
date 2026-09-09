@@ -67,6 +67,74 @@ function requireFiniteCubeSpan(
   }
 }
 
+const CUBE_AXIS_NAMES = ["x", "y", "z"] as const;
+
+export function validateCubeGeometrySpan(
+  from: readonly number[],
+  to: readonly number[],
+  inflate = 0,
+  context = "Cube"
+) {
+  requireFiniteCubeSpan(from, to, context);
+  if (!Number.isFinite(inflate)) {
+    throw new Error(`${context} inflate must be finite.`);
+  }
+
+  const authoredSize = to.map(
+    (value, axis) => value - from[axis]
+  ) as [number, number, number];
+  const reversedAxes = CUBE_AXIS_NAMES.filter(
+    (_, axis) => authoredSize[axis] < 0
+  );
+  if (reversedAxes.length > 0) {
+    throw new Error(
+      `${context} reverses authored Cube bounds on ${reversedAxes.join(", ")}. Keep to >= from on every axis.`
+    );
+  }
+
+  const authoredCollapsedAxes = CUBE_AXIS_NAMES.filter(
+    (_, axis) => authoredSize[axis] === 0
+  );
+  if (authoredCollapsedAxes.length >= 2) {
+    throw new Error(
+      `${context} collapses ${authoredCollapsedAxes.length} authored axes (${authoredCollapsedAxes.join(", ")}). A visible Cube needs positive 3D span or exactly one zero-span plane-like axis.`
+    );
+  }
+
+  const renderedSize = authoredSize.map(
+    (size) => size + inflate * 2
+  ) as [number, number, number];
+  if (renderedSize.some((size) => !Number.isFinite(size))) {
+    throw new Error(`${context} inflate would produce a non-finite rendered span.`);
+  }
+  const negativeRenderedAxes = CUBE_AXIS_NAMES.filter(
+    (_, axis) => renderedSize[axis] < 0
+  );
+  if (negativeRenderedAxes.length > 0) {
+    throw new Error(
+      `${context} inflate/deflate would produce a negative rendered span on ${negativeRenderedAxes.join(", ")}. Reduce deflate or increase the authored span.`
+    );
+  }
+
+  const renderedCollapsedAxes = CUBE_AXIS_NAMES.filter(
+    (_, axis) => renderedSize[axis] === 0
+  );
+  if (renderedCollapsedAxes.length >= 2) {
+    throw new Error(
+      `${context} inflate/deflate collapses ${renderedCollapsedAxes.length} rendered axes (${renderedCollapsedAxes.join(", ")}). Keep a solid volume or exactly one plane-like axis.`
+    );
+  }
+
+  return {
+    authored_size: authoredSize,
+    rendered_size: renderedSize,
+    representation:
+      renderedCollapsedAxes.length === 1
+        ? ("plane_like" as const)
+        : ("solid" as const),
+  };
+}
+
 function hasNonZeroRotation(rotation?: readonly number[]): boolean {
   return rotation?.some((value) => value !== 0) ?? false;
 }
@@ -599,6 +667,14 @@ export function registerCubesTools() {
             ? resolvePlacementGroup(element.group)
             : defaultOutlinerGroup,
       }));
+      placements.forEach(({ element }) =>
+        validateCubeGeometrySpan(
+          element.from,
+          element.to,
+          element.inflate ?? 0,
+          `Cube ${element.name} creation`
+        )
+      );
       const customFaceUvs = Array.isArray(faces);
       const autoPackBoxUv = !customFaceUvs && Project?.box_uv === true;
       let plannedBoxUvOffsets: [number, number][] | null = null;
@@ -736,11 +812,14 @@ export function registerCubesTools() {
       cubes.forEach((cube) =>
         requireIntentionalRotationActivation(cube, rotation, origin)
       );
-      requireFiniteCubeSpan(
-        from ?? cubes[0].from,
-        to ?? cubes[0].to,
-        `Cube ${cubes[0].name} (${cubes[0].uuid}) update`
-      );
+      if (from !== undefined || to !== undefined || inflate !== undefined) {
+        validateCubeGeometrySpan(
+          from ?? cubes[0].from,
+          to ?? cubes[0].to,
+          inflate ?? (cubes[0].inflate ?? 0),
+          `Cube ${cubes[0].name} (${cubes[0].uuid}) update`
+        );
+      }
       if (!modifyCubeRequestWouldChange(cubes[0], {
         id, name, origin, from, to, rotation, uv_offset, autouv, mirror_uv, inflate, faces, visibility,
       })) {
@@ -850,11 +929,14 @@ export function registerCubesTools() {
           update.rotation,
           update.origin
         );
-        requireFiniteCubeSpan(
-          update.from ?? cube.from,
-          update.to ?? cube.to,
-          `Cube ${cube.name} (${cube.uuid}) batch update`
-        );
+        if (update.from !== undefined || update.to !== undefined) {
+          validateCubeGeometrySpan(
+            update.from ?? cube.from,
+            update.to ?? cube.to,
+            cube.inflate ?? 0,
+            `Cube ${cube.name} (${cube.uuid}) batch update`
+          );
+        }
         if (!modifyCubeRequestWouldChange(cube, update)) {
           throw new Error(
             `Batch update for Cube ${cube.name} (${cube.uuid}) has no authored effect; every supplied value already matches current state.`
