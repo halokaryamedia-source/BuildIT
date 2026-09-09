@@ -22,16 +22,16 @@ batch → paint_texture_transaction
 PBR/material semantics → manage_material / manage_material_instances
 render/preview → manage_render_profile
 ```
-Unknown → `search_capabilities(limit=4)`; no confirmation rereads.
+Unknown → `search_capabilities(limit=4)`. No confirmation rereads.
 **Pin atlas UUID and pass `texture_id` when multiple textures are loaded.**
 ## UV Gate
-`uv_audit.production_gate`=ready = hygiene, **not UV Layout PASS**; review aspect/density/reuse.
+`uv_audit.production_gate`=ready = hygiene, **not UV Layout PASS**; review face aspect ratio, texel density, semantic UV reuse.
 Requested atlas size/density are constraints; never enlarge; return to Geometry/UV if detail cannot fit.
 ## First Call
 `blank create_texture → explicit width+height from project UV`; **not omit blank Atlas size**.
 `create_texture`: provisional **16×16 blank**; **128×128 default, 256×256 opt-in**. Reuse existing atlas UUID.
 ## Workplan / Coverage
-material cohorts; palette roles `BASE | SHADOW | HIGHLIGHT | ACCENT/IDENTITY`; form/contact/edge/identity/detail.
+material cohorts; palette roles `BASE | SHADOW | HIGHLIGHT | ACCENT/IDENTITY`; form/contact/occlusion/edge/identity/detail.
 Face Coverage Ledger: `UNPAINTED | BASE_ONLY | STYLED | INTENTIONAL_FLAT | INTENTIONAL_TRANSPARENT | SHARED`.
 `list_textures.optimization_opportunities.coverage.gate`: `incomplete|partial` / `FACE_ACCOUNTING_INCOMPLETE` → no completion; one `list_textures`/pass; `ready` ≠ visual PASS.
 Variants: `list_textures.production_alignment.gate=ready`; `seam_continuity`; `pbr_content`.
@@ -47,7 +47,7 @@ Variants preserve production base role + compatible dimensions/mapping; `normal 
 `authoring_status`; MERS=MER+`subsurface_value>0`.
 `paint_settings`: `pixel_perfect`, `lock_alpha`, `paint_side_restrict`; Mirror after semantic symmetry.
 ## Coherent Styling Window / Anti-Micro-Loop
-cohort-wide; formula/gradient/color count is not quality evidence.
+representative patch/cohort → cohort-wide; formula/gradient/color count is not quality evidence.
 **No evidence-per-micro-mutation loop.**
 ## Texture Verify
 Reference + fresh `get_texture` + fresh **mapped model-view evidence** from `capture_model_views` → `FAIL | UNVERIFIED | PASS`.
@@ -58,4 +58,4 @@ Animation → user Texture APPROVED + checkpoint → Animation Readiness Preflig
 ## Conditional Support — Not Default Routing
 Conditional on user intent; not normal hot path.
 `gradient_tool | color_picker_tool | copy_brush_tool | paint_settings | create_brush_preset | load_brush_preset | texture_selection | texture_layer_management | add_texture_group | list_materials | get_material_info | import_texture_set`.
-`gradient_tool`: reference-supported continuous transition.
+`gradient_tool`: reference-supported continuous transition; no extra discovery/readback.

@@ -58,7 +58,7 @@ Known Cubes sharing one deterministic TRANSLATE/RESIZE intent → derive absolut
 Validation failure repairs arguments for the **same capability**.
 ## Capability Discovery / Recovery
 Discovery = deferred spec loading after routing.
-known exact capability → invoke directly
+known exact capability   → invoke directly
 unknown/stale → one precise `search_capabilities` query, `limit=4`; `describe_capability` once before mutation.
 One precise search miss → reformulate once; second miss → `BLOCKED`. A known foreign-phase capability is never a discovery miss: AUTHORING↔Animation uses handoff.
 `INVALID_INPUT` → repair args; same capability. `TARGET_AMBIGUOUS` → resolve UUID once; `TARGET_NOT_FOUND` → focused identity lookup; `STALE_STATE` → one focused refresh; `NO_EFFECT` → diagnose payload; `CAPABILITY_MISMATCH` → handoff/BLOCKED; `OUTCOME_UNKNOWN` → inspect before retry.
