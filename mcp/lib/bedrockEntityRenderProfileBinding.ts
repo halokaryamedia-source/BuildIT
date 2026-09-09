@@ -194,6 +194,27 @@ function directMaterialSlot(expression: string): string | null {
   return match?.[1] ?? null;
 }
 
+function exactMaterialAssignment(
+  source: JsonObject,
+  controllerInput: string,
+  bonePatternInput: string
+): { index: number; expression: JsonValue } | null {
+  const controller = requireController(controllerInput);
+  const pattern = requireBonePattern(bonePatternInput);
+  const materials = materialArray(
+    controllerDefinition(source, controller),
+    false
+  ) ?? [];
+  let match: { index: number; expression: JsonValue } | null = null;
+  for (let index = 0; index < materials.length; index += 1) {
+    const entry = object(materials[index]);
+    if (entry && Object.prototype.hasOwnProperty.call(entry, pattern)) {
+      match = { index, expression: entry[pattern] };
+    }
+  }
+  return match;
+}
+
 export function applyRenderControllerMaterialAssignment(
   source: JsonObject,
   controllerInput: string,
@@ -263,29 +284,56 @@ export function bindEntityRenderProfile(
   request: RenderProfileBindRequest
 ) {
   const slot = requireSlot(request.slot);
+  const bonePattern = requireBonePattern(request.bone_pattern);
+  const controller = requireController(request.render_controller);
   const materialCode = minecraftMaterialCodeForRenderProfile(
     request.render_profile,
     request.minecraft_material_code
   );
-  const client_entity = applyClientEntityRenderProfile(
-    clientSource,
-    slot,
-    request.render_profile,
-    request.minecraft_material_code
-  );
-  const render_controller = applyRenderControllerMaterialAssignment(
+  const currentSlot = clientMaterials(clientSource, false)?.[slot];
+  const clientChanged = currentSlot !== materialCode;
+  const targetExpression = `Material.${slot}`;
+  const currentAssignment = exactMaterialAssignment(
     renderControllerSource,
-    request.render_controller,
-    request.bone_pattern,
-    slot
+    controller,
+    bonePattern
   );
+  const renderControllerChanged = currentAssignment?.expression !== targetExpression;
+
+  if (!clientChanged && !renderControllerChanged) {
+    throw new Error(
+      `Render-profile binding ${bonePattern} → ${targetExpression} with ${materialCode} is already unchanged.`
+    );
+  }
+
+  const client_entity = clientChanged
+    ? applyClientEntityRenderProfile(
+        clientSource,
+        slot,
+        request.render_profile,
+        request.minecraft_material_code
+      )
+    : cloneJsonValue(clientSource);
+  const render_controller = renderControllerChanged
+    ? applyRenderControllerMaterialAssignment(
+        renderControllerSource,
+        controller,
+        bonePattern,
+        slot
+      )
+    : cloneJsonValue(renderControllerSource);
+
   return {
     client_entity,
     render_controller,
     binding: {
       slot,
-      bone_pattern: requireBonePattern(request.bone_pattern),
-      render_controller: requireController(request.render_controller),
+      bone_pattern: bonePattern,
+      render_controller: controller,
+      changed: {
+        client_entity_slot: clientChanged,
+        render_controller_assignment: renderControllerChanged,
+      },
       ...inspectEntityRenderMaterialCode(materialCode),
     },
   };
