@@ -15,11 +15,12 @@ on:
       - "!mcp/tests/authoring/**"
       - "!mcp/prompts/blockbench_code_eval_safety.md"
       - "!mcp/prompts/blockbench_native_apis.md"
-      # Runtime contract tests read these semantic skill owners directly.
+      # Executable contract tests read these non-mcp owners directly.
       - ".agents/skills/blockit-bedrock-entity-mcp/**"
       - ".agents/skills/blockbench-bedrock-modelling/**"
       - ".agents/skills/blockit-bedrock-texturing/**"
       - ".agents/skills/blockit-bedrock-animation/**"
+      - "docs/knowledge/next-action.md"
       - "Experimental/three-d-assisted-hunyuan-poc/**"
       - "Experimental/primitiveanything-poc/**"
       - ".bun-version"

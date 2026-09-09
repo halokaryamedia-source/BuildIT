@@ -9,15 +9,15 @@ This file owns **current proof interpretation**. Continuation belongs in `docs/k
 Repository: `halokaryamedia-source/BuildIT`  
 Branch: **`Local` only**.
 
-Per `GITHUB_RULES.md`, device-independent composite acceptance requires Repository Verify + MCP Verify on the same exact `Local` SHA. Exact-SHA source/CI proof below is reusable only within its stated proof ceiling and does not establish `LOCAL_CODE` or `LIVE_BLOCKBENCH` claims.
+Per `GITHUB_RULES.md`, device-independent composite acceptance requires Repository Verify + MCP Verify on the same exact `Local` SHA. Exact-SHA source/CI proof below is reusable only within its stated proof ceiling and does not establish `LOCAL_CODE` or `LIVE_BLOCKBENCH` claims. Documentation-only commits after the accepted SHA do not upgrade or invalidate that executable proof.
 
 ### Final Pre-Local REMOTE_GITHUB hardening — ACCEPTED
 
-The current executable/source closure is accepted at exact `Local` SHA `ab82d8116d9b021f6546239f974256f8423f9c3b`.
+The current executable/source closure is accepted at exact `Local` SHA `9be8d7e00a78ea7383d70c3988902fff62bdd360`.
 
-GitHub **Repository Verify** run `34334588510` completed successfully for that SHA.
+GitHub **Repository Verify** run `34346382752` completed successfully for that SHA.
 
-GitHub **MCP Verify** run `34334588675` completed successfully for the same SHA and executed the canonical MCP gate: generated docs/prompt freshness, TypeScript + Gateway typecheck, Runtime tests, authoring tests, source/phase surface measurements, and build/provenance upload.
+GitHub **MCP Verify** run `34346382820` completed successfully for the same SHA and executed the canonical MCP gate: generated docs/prompt freshness, TypeScript + Gateway typecheck, Runtime tests, authoring tests, source/phase surface measurements, build/provenance generation, and verified bundle upload.
 
 Current source surface remains:
 
@@ -34,6 +34,9 @@ Pre-local closure now additionally protects:
 - current Runtime augmentation fields remain attached to their canonical capabilities rather than becoming parallel tools;
 - `paint_texture_transaction` is the only explicitly bounded enabled Runtime capability still outside the current generated ToolSpec manifest;
 - Particle production exposure is fail-closed as an all-or-nothing contract across Runtime registration, enablement, Animation exposure, generated ToolSpec ownership, and `particle-reference` registration;
+- the future public Particle path is asset-only: create/patch/save/native preview remain in `manage_particle`, while client-entity/gameplay binding is downstream integration owned by existing animation/controller infrastructure;
+- the live Particle harness is source-prepared around create/patch/save/preview + readback rather than client-entity mutation;
+- the four semantic authoring skills read by executable MCP contract tests are explicit `MCP Verify` trigger dependencies, with repository regression protecting that coverage;
 - routed phase-scoped tool discovery remains the intended fallback model; the existing discovery evaluation stays inside `test:runtime`, avoiding a duplicate verification pass.
 
 The discovery proxy on this closure reports routed phase-scoped Top-3 and Top-8 recall of **1.0**; Animation Top-1 is **1.0**. These are static/spec-loading proxies, not installed Astra/Codex usage proof.
@@ -41,14 +44,14 @@ The discovery proxy on this closure reports routed phase-scoped Top-3 and Top-8 
 Verified artifact from MCP Verify:
 
 - name: `blockit-mcp-verified`;
-- artifact ID: `10097189586`;
-- artifact ZIP digest: `sha256:0a18d4eeb18083e08002eb722cd260ede7fb0ee8310db29636a869e4d7bd3f11`.
+- artifact ID: `10101875068`;
+- artifact ZIP digest: `sha256:feb8f4f77525d85a0351da700ce3f210a3d5ec266742e8736e8946e7ef02411a`.
 
 This is **SOURCE/CI/build-artifact proof only**. It does not prove installed Blockbench behavior, native Undo/playback/persistence, visual fidelity, GPU inference quality, or actual Astra/Codex allowance reduction.
 
 Remaining source work is intentionally narrow and belongs to `LOCAL_CODE`: Particle production exposure plus its generator-coupled public-contract/docs closure, current generated ToolSpec alignment (including `paint_texture_transaction` and any import-safe Runtime augmentation parity needed by the generator), then the separate MCP SDK dependency closure. `next-action.md` owns the exact continuation.
 
-No additional Runtime wiring was removed during the final sweep because no other production wiring was proven dead. Stale tests that still described controller blend curves as unsupported or old PREWIRED continuation were corrected to the current canonical contracts.
+No additional speculative Runtime framework or routing layer is justified by the final remote sweep. The accepted closure keeps the established four-tool Gateway and bounded semantic specialist routing.
 
 ## Live Acceptance Harness — SOURCE_READY / LIVE NOT_RUN
 
@@ -96,7 +99,7 @@ This closes the manual-selection workaround at the test level once the live run 
 
 ### Particle
 
-`verify:particle-live` is already source-prepared but must not run until the LOCAL_CODE Particle public exposure/generator closure is complete and the exact deployed Runtime advertises both `inspect_particle` and `manage_particle` on the Animation surface.
+`verify:particle-live` is already source-prepared but must not run until the LOCAL_CODE Particle public exposure/generator closure is complete and the exact deployed Runtime advertises both `inspect_particle` and `manage_particle` on the Animation surface. Its prepared success path is create/patch/save/native preview + readback; it does not author client-entity integration.
 
 ### Native persistence
 
@@ -151,7 +154,7 @@ Current `mcp/bun.lock` resolves `@modelcontextprotocol/sdk` **1.25.3**. `GHSA-34
 
 BlockIT currently uses request-owned server/transport objects and has exact-SHA CI regression for concurrent same-ID request isolation. That mitigation evidence does **not** make the dependency version patched.
 
-Dependency closure remains `LOCAL_CODE`: upgrade to a patched compatible SDK, regenerate canonical `bun.lock` with Bun, then run the owning source verifier. Do not hand-edit the lockfile and do not use Actions as an authoring path.
+Dependency closure remains `LOCAL_CODE`: upgrade within a compatible maintained patched **v1.x** line, regenerate canonical `bun.lock` with pinned Bun, then run the owning source verifier. Do not hand-edit the lockfile, migrate protocol major version as part of this security fix, or use Actions as an authoring path.
 
 ## Pending Local / Live Sequence
 
@@ -160,7 +163,7 @@ Local source closure should remain ordered and diagnostic:
 ```text
 Particle + generated public-contract closure
 → bun run verify:full
-→ SDK upgrade + bun.lock regeneration
+→ SDK v1.x security upgrade + bun.lock regeneration
 → bun run verify:full
 → exact build/deploy
 ```
