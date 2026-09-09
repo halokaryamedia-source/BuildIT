@@ -399,6 +399,7 @@ describe("texturing authoring contract", () => {
     if (!getAllToolDefinitions().paint_with_brush) registerPaintTools();
     const tool = getAllToolDefinitions().paint_with_brush;
     const writes: number[][] = [];
+    const cleared: number[][] = [];
     const nativeCalls: unknown[][] = [];
     const undoCalls: string[] = [];
     class FixtureNumSlider {
@@ -416,7 +417,11 @@ describe("texturing authoring contract", () => {
       globalAlpha: 1,
       globalCompositeOperation: "source-over",
       fillStyle: "",
+      clearRect: (x: number, y: number, width: number, height: number) => {
+        cleared.push([x, y, width, height]);
+      },
       fillRect: (x: number, y: number, width: number, height: number) => {
+        expect(cleared.at(-1)).toEqual([x, y, width, height]);
         writes.push([x, y, width, height]);
       },
     };
@@ -470,18 +475,20 @@ describe("texturing authoring contract", () => {
       }
       for (const size of [1, 2]) {
         writes.length = 0;
+        cleared.length = 0;
         nativeCalls.length = 0;
         undoCalls.length = 0;
         const result = await tool.execute(paintWithBrushParameters.parse({
           coordinates: [{ x: 3, y: 4 }],
           brush_settings: {
             size, opacity: 255, softness: 0, shape: "square",
-            blend_mode: "default", color: "#112233",
+            blend_mode: "default", color: "#11223380",
           },
           connect_strokes: false,
         }));
         if (size === 1) {
           expect(writes).toEqual([[3, 4, 1, 1]]);
+          expect(cleared).toEqual([[3, 4, 1, 1]]);
           expect(nativeCalls).toEqual([["select"]]);
           expect(undoCalls).toEqual(["init", "finish"]);
           expect(typeof result).not.toBe("string");
@@ -491,6 +498,7 @@ describe("texturing authoring contract", () => {
           });
         } else {
           expect(writes).toEqual([]);
+          expect(cleared).toEqual([]);
           expect(undoCalls).toEqual([]);
           expect(nativeCalls).toEqual([["select"], ["start", 2, 3, 4], ["stop"]]);
         }

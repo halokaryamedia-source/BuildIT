@@ -1147,6 +1147,13 @@ export function registerPaintTools() {
                 env.ctx.globalCompositeOperation = "source-over";
                 env.ctx.fillStyle = colorHex;
                 for (const coordinate of coordinates) {
+                  // Exact RGBA replaces the destination, including its alpha.
+                  env.ctx.clearRect(
+                    coordinate.x - env.offset[0],
+                    coordinate.y - env.offset[1],
+                    1,
+                    1
+                  );
                   env.ctx.fillRect(
                     coordinate.x - env.offset[0],
                     coordinate.y - env.offset[1],

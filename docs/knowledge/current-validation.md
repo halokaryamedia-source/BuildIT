@@ -17,7 +17,9 @@ Working checkout: `D:/Work/AI Stuff/BuildIT-refresh`, based on `adcb0d64f8450810
 Bun 1.3.14; SDK 1.30.0. `verify:closure` and `verify:full` PASS locally: 35 repository, 620 runtime, 153 authoring tests; generated freshness, both typechecks, loopback surface checks, and build PASS.
 Source surface: 56 callable / 49 AUTHORING / 20 Animation; four Gateway tools; 68 documented source ToolSpecs and 10 resources.
 SDK-boundary regression proves 33 valid keyframes, strict invalid-input rejection, selected-branch required/nested structure and Animation/Particle ToolSpec parity.
-Managed package and native host acceptance are pending. Source proof does not establish native trust, skill pickup, visual quality, persistence, or live update/rollback.
+Managed package at `477061c570b787eee3734100af12f1b57c0b526d` built and installed on the host. Compiled four-tool Gateway, repeated install, active-Gateway staging, activation, recovery and initial-install rollback passed in disposable paths; unrelated host Codex configuration and user assets were preserved.
+The user removed the old plugin. Native Geometry passed on installed identity `sha256:c33d05a07ed1fadb2cd763d4de0d7c942b8eb32778803f01a61e5aa9f9c15880`, including Undo/Redo and thin per-face UV. Texturing exposed alpha blending in the exact-pixel path. The fix clears only each target pixel before writing RGBA; 15 focused tests and `verify:mcp` passed. Updated package/native retest remains pending.
+Source/package proof does not establish fresh Codex skill pickup, visual quality, persistence, or two-version native update/rollback.
 
 ### Prior REMOTE_GITHUB hardening — historical accepted baseline
 

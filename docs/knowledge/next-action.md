@@ -8,11 +8,11 @@ Branch: **`Local` only**. Proof: `current-validation.md`; ownership: `implementa
 - Candidate: `D:/Work/AI Stuff/BuildIT-refresh`. User will remove the old BuildIT directory later; do not delete or develop in that old checkout.
 - Schema/Particle implemented: canonical nested/conditional Runtime listing, branch projection, shared Animation schemas/docs, Particle on Animation, paint transaction docs. Surface: 56 callable / 49 AUTHORING / 20 Animation; four Gateway tools.
 - SDK upgraded to 1.30.0 with pinned Bun 1.3.14 and regenerated lockfile.
-- **SOURCE_READY**: local `verify:closure` and `verify:full` PASS. Managed/native acceptance remains pending.
+- **SOURCE_READY**: `verify:closure`/`verify:full` PASS; managed package installed. Old plugin removed; native Geometry PASS. Texturing exposed exact-pixel alpha blending: fixed with targeted clear before RGBA write; focused tests and `verify:mcp` PASS. Package/retest this fix next.
 
 ## Remaining Local Execution Order
 1. Reuse the completed `bun run verify:closure` and `bun run verify:full` evidence for unchanged source. New executable changes need their owning verification.
-2. Commit the complete verified source/generated changes on local `Local` (no automatic push), then run `bun run build` and `bun run ./distribution/package.ts`. Packaging requires a clean tracked checkout. Test the compiled manager in disposable paths: repeated install, status, conflict rejection, rollback/recover; preserve unrelated Codex settings and user assets.
+2. Package the verified RGBA fix from a clean tracked checkout using Bun 1.3.14. Compiled repeated install, four-tool Gateway, active-Gateway staging/activation, recover and initial-install rollback already passed. Preserve unrelated Codex settings and assets.
 3. Local testing is explicitly reactivated. Follow managed installation in `mcp/distribution/README.md`; never manually copy plugin/config/skills. First native Load Plugin from File trust and a fresh Codex session may be required. Do not fake either.
 4. On a disposable project, prove installed identity, healthy Runtime, installed Gateway with four tools, AUTHORING read, Geometry mutation + Undo/Redo, shared AUTHORING Texturing, Animation handoff/read/mutation/playback, Particle inspect/create/patch/save/preview, and .bbmodel save/close/reopen persistence.
 5. Test managed vA-to-vB update while hosts are active (defer/fail safe), close hosts normally, activate vB, reopen and verify identity, then rollback to vA. No background polling/service.
