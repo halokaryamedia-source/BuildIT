@@ -105,6 +105,7 @@ describe("Bedrock Locator / Null Object direct coverage", () => {
     expect(orchestrator).toMatch(/Do not automatically re-read fresh .*targets with `inspect_elements\(mode=detail\)`/);
     expect(implementation).toContain("mcp/tests/bedrock-locator-coverage.test.ts");
     expect(implementation).toContain("TextureMesh direct authoring/inspection");
-    expect(implementation).toContain("controller blend-curve mutation");
+    expect(implementation).toContain("blend-transition curves are available through `manage_animation_controller`");
+    expect(implementation).not.toContain("controller blend-curve mutation");
   });
 });

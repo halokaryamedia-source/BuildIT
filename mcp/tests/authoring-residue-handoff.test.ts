@@ -69,33 +69,37 @@ describe("REMOTE_GITHUB authoring handoff contracts", () => {
     );
   });
 
-  test("continuation stays compact and routes local work to prepared owners", async () => {
+  test("continuation stays compact and routes only current local residue", async () => {
     const continuation = await Bun.file("../docs/knowledge/next-action.md").text();
     expect(continuation.length).toBeLessThan(2_500);
     for (const marker of [
+      "SOURCE_READY / LOCAL_CODE REQUIRED",
+      "Particle Production Exposure",
+      "inspect_particle",
+      "manage_particle",
+      "particle-reference",
+      "docs:build",
+      "docs:check",
+      "verify:full",
+      "AUTHORING TAXONOMY",
+      "DIRECT | 3D_ASSISTED",
+      "@modelcontextprotocol/sdk",
+      "bun.lock",
+    ]) {
+      expect(continuation).toContain(marker);
+    }
+    for (const retired of [
       "SOURCE_READY / PREWIRED",
       "textureEvidence.ts",
       "textureEvidenceDelivery.ts",
       "paintTransaction.ts",
-      "paintTransactionPolicy.ts",
       "textureVariantPlan.ts",
       "bedrockProjectIdentity.ts",
       "bedrockExportIntegrity.ts",
-      "bedrockExportWritePolicy.ts",
-      "paint_texture_transaction",
-      "Project.model_identifier",
-      "manage_cubes",
-      "NATIVE_MERGE_REQUIRED",
-      "docs:build",
-      "docs:check",
-      "verify:mcp",
-      "verify:full",
-      "AUTHORING TAXONOMY",
     ]) {
-      expect(continuation).toContain(marker);
+      expect(continuation).not.toContain(retired);
     }
-    expect(continuation).toContain("Historical assets are evidence, not repair targets");
-    expect(continuation).toContain("Local should be limited to canonical generation");
-    expect(continuation).toContain("No object-specific repair queue or another design phase");
+    expect(continuation).toContain("No Particle specialist and no fifth Gateway tool");
+    expect(continuation).toContain("Do not add a routing framework");
   });
 });

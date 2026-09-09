@@ -139,7 +139,7 @@ describe("pre-local BlockIT plugin surface hardening", () => {
       "TextureMesh direct authoring",
       "Locator/Null",
       "manage_animation_controller",
-      "controller blend-curve mutation",
+      "blend-transition curves are available",
       "native visible bounding-box fields",
       "animated textures",
       "bone-binding expressions",
@@ -148,5 +148,6 @@ describe("pre-local BlockIT plugin surface hardening", () => {
     expect(implementation).toContain("manage_locator");
     expect(implementation).toContain("manage_null_object");
     expect(implementation).toContain("Protected gaps remain");
+    expect(implementation).not.toContain("controller blend-curve mutation");
   });
 });
