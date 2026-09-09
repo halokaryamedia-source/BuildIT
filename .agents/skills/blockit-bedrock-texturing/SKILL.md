@@ -16,7 +16,7 @@ Reuse fresh state.
 global UV/atlas readiness → list_textures
 face mapping → inspect_elements(mode=detail) only when needed
 blank atlas resolution unknown → get_project_info once
-atlas → list_textures|activate_texture|create_texture|get_texture
+atlas → list_textures / activate_texture / create_texture / get_texture
 paint → draw_shape_tool|paint_fill_tool|paint_with_brush|eraser_tool
 batch → paint_texture_transaction
 PBR/material semantics → manage_material / manage_material_instances
