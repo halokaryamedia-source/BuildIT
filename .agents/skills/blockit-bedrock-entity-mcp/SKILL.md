@@ -6,7 +6,7 @@ description: Mandatory router for BlockIT Bedrock Entity asset authoring.
 Own AUTHORING/Animation tool routing.
 `geometry/rig/UV judgement` → `blockbench-bedrock-modelling`; texture/PBR → `blockit-bedrock-texturing`; animation/motion → `blockit-bedrock-animation`.
 ## Product Scope Firewall
-Asset-only: BP/gameplay/pack assembly OUT; RP visual/export; Animation Controller composition/preview; `resource_operations` **not a normal model-authoring route**.
+Asset-only: BP/gameplay/pack OUT; RP visual/export; Animation Controller composition/preview; `resource_operations` **not a normal model-authoring route**.
 ## Mandatory Authoring Latch
 Load router + matching current worktree specialist before mutation:
 `router_loaded=YES | active_owner=GEOMETRY|TEXTURING|ANIMATION | specialist_loaded=YES | gate_satisfied=YES`.
@@ -20,7 +20,7 @@ Animation → Texturing APPROVED + checkpoint + Animation Readiness Preflight �
 ## Fast Routing Contract
 Normal asset work **must not begin by searching repository files**.
 **Authoring Context Firewall:** Authoring Codex uses `workspace/active/<asset>/` as cwd, not `mcp/`; deeper MCP development rules are not authoring plan. Do **not** inspect tests/CI/source or run Bun/build/verifiers/deploy.
-Existing → inspect affected target/dependencies; broaden if unclear.
+Existing → inspect only affected target/dependencies; broaden if unclear.
 `ACTIVE STAGE + intent + known state/UUIDs → exact known Runtime capability → Gateway execution → reuse result`
 ## Authoring Stage Lock
 `DISCOVER → AUTHOR → VERIFY → CORRECT → VERIFY → DONE`.

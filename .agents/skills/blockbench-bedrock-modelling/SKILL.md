@@ -50,7 +50,7 @@ Large counts, rotated Cubes, per-face UV and Locators can be valid. Locator = li
 
 ## Primary Mass / Proportion / Depth
 `frame/envelope → primary masses → shared boundaries → cross-view proportions → depth/layering → silhouette/proportion gate → primary blockout`.
-Front/back constrain width+height; sides depth+height; top width+depth. **Front agreement does not certify depth.** Depth: `OBSERVED | INFERRED | UNRESOLVED`. Minor drift → one interpretation. Do not average drift. Unresolved material conflict → `BLOCKED`.
+Front/back constrain width+height; sides depth+height; top width+depth. **Front agreement does not certify depth.** Depth: `OBSERVED | INFERRED | UNRESOLVED`. Minor drift → one interpretation. Do not average drift. Only unresolved material conflict becomes `BLOCKED`.
 
 ## Surface Coverage / Negative Space
 **do not force universal watertight geometry**; designed openings remain open.
