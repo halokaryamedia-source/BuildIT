@@ -16,8 +16,8 @@ const PROTOCOL_VERSION = "2025-06-18";
 const CATALOG_TOOL_COUNT = 53;
 
 const EXPECTED_PHASE_TOOL_COUNTS: Record<McpAuthoringPhase, number> = {
-  geometry: 48,
-  texturing: 48,
+  geometry: 49,
+  texturing: 49,
   // Animation intentionally excludes create_project; project lifecycle belongs
   // to AUTHORING before the approved handoff into the Animation surface.
   animation: 18,
