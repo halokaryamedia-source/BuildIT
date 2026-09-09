@@ -3,12 +3,12 @@ name: blockit-bedrock-entity-mcp
 description: Mandatory router for BlockIT Bedrock Entity asset authoring.
 ---
 # BlockIT Bedrock Entity MCP
-Own AUTHORING/Animation tool routing.
+Own AUTHORING/Animation routing.
 `geometry/rig/UV judgement` → `blockbench-bedrock-modelling`; texture/PBR → `blockit-bedrock-texturing`; animation/motion → `blockit-bedrock-animation`.
 ## Product Scope Firewall
 Asset-only: BP/gameplay/pack OUT; RP visual/export; Animation Controller composition/preview; `resource_operations` **not a normal model-authoring route**.
 ## Mandatory Authoring Latch
-Load router + matching current worktree specialist before mutation:
+Load router + matching specialist before mutation:
 `router_loaded=YES | active_owner=GEOMETRY|TEXTURING|ANIMATION | specialist_loaded=YES | gate_satisfied=YES`.
 Any `NO` → **DO NOT MUTATE**.
 Geometry → approved image + Dimensions + user-selected strategy + Animation Required
@@ -18,7 +18,7 @@ Animation → Texturing APPROVED + checkpoint + Animation Readiness Preflight �
 `HANDOFF_REQUIRED`: `target_phase`, `reason`, `readiness`, `resume_from`; Gateway `switch_authoring_phase` → same task/chat.
 `approved image`=visual authority; Strategy: user-selected `DIRECT | 3D_ASSISTED`. `3D_ASSISTED` → Shape Reconstruction → PrimitiveAnything → cleanup. 1 Minecraft block = 16 Blockbench units; reuse `front_direction`.
 ## Fast Routing Contract
-Normal asset work **must not begin by searching repository files**.
+Asset work **must not begin by searching repository files**.
 **Authoring Context Firewall:** Authoring Codex uses `workspace/active/<asset>/` as cwd, not `mcp/`; deeper MCP development rules are not authoring plan. Do **not** inspect tests/CI/source or run Bun/build/verifiers/deploy.
 Existing → inspect only affected target/dependencies; broaden if unclear.
 `ACTIVE STAGE + intent + known state/UUIDs → exact known Runtime capability → Gateway execution → reuse result`
@@ -54,7 +54,7 @@ Known Cubes sharing one deterministic TRANSLATE/RESIZE intent → derive absolut
 `manage_cubes update       → id + at least one authored field change`
 `manage_cubes rotated create → origin required`
 `manage_locator create → name+parent; update → id+authored change`
-`manage_null_object create → name+parent; update → id+parent/position`
+`manage_null_object create → id+parent/position`
 Validation failure repairs arguments for the **same capability**.
 ## Capability Discovery / Recovery
 Capability discovery is deferred spec loading after routing.
