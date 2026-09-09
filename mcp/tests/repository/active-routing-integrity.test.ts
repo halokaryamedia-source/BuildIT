@@ -39,4 +39,16 @@ describe("active routing integrity", () => {
       expect(await Bun.file(`../.agents/skills/${name}/SKILL.md`).exists()).toBe(true);
     }
   });
+
+  test("MCP Verify tracks semantic skills consumed by executable contract tests", async () => {
+    const workflow = await source("../.github/workflows/mcp-verify.yml");
+    for (const path of [
+      "blockit-bedrock-entity-mcp",
+      "blockbench-bedrock-modelling",
+      "blockit-bedrock-texturing",
+      "blockit-bedrock-animation",
+    ]) {
+      expect(workflow).toContain(`- ".agents/skills/${path}/**"`);
+    }
+  });
 });
