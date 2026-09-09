@@ -140,7 +140,7 @@ describe_capability
 invoke_capability
 ```
 
-The source Bedrock Runtime callable union has **52 tools**: Geometry and Texturing share **47** AUTHORING tools; Animation exposes **19**. The last installed proof predates the materializer binding; exact installed identity and lifecycle evidence belong in `current-validation.md`. Generated API inventory contains **64 declared source ToolSpecs**, including disabled/source-preserved definitions and phase control; that inventory is not the active client surface. A materializer is a Runtime capability behind the existing Gateway, never a fifth Gateway tool.
+The source Bedrock Runtime callable union has **52 tools**: Geometry and Texturing share **47** AUTHORING tools; Animation exposes **19**. The last installed proof predates the materializer binding; exact installed identity and lifecycle evidence belong in `current-validation.md`. Generated API inventory contains **65 declared source ToolSpecs**, including disabled/source-preserved definitions and phase control; that inventory is not the active client surface. A materializer is a Runtime capability behind the existing Gateway, never a fifth Gateway tool.
 
 ## Hot-Path Defect Index
 
