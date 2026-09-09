@@ -117,6 +117,22 @@ describe("schema budget is not an authoring limit", () => {
     }
   });
 
+  test("projection checks explicit union discriminators without fabricating a branch", () => {
+    const branch = { field: "mode", value: "detail" };
+    for (const union of ["anyOf", "oneOf"]) {
+      const schema = (values: string[]) => ({
+        type: "object",
+        properties: { mode: { [union]: values.map((value) => ({ const: value })) } },
+      });
+      expect(() => projectCapabilityInputSchema(
+        "inspect_elements", schema(["outline", "search"]), branch
+      )).toThrow();
+      expect(projectCapabilityInputSchema(
+        "inspect_elements", schema(["outline", "detail"]), branch
+      ).projected).toBe(true);
+    }
+  });
+
   test("projection preserves nested entry structure and existing required fields without mutation", () => {
     const schema = {
       type: "object",

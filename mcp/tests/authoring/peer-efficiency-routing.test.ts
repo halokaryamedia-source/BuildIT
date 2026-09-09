@@ -18,7 +18,9 @@ describe("peer-inspired authoring efficiency routing", () => {
   test("Texturing keeps atlas lifecycle idempotent and avoids the provisional blank default", async () => {
     const skill = await source("../.agents/skills/blockit-bedrock-texturing/SKILL.md");
     expect(skill).toMatch(/blank atlas resolution unknown\s+→ get_project_info once/i);
-    expect(skill).toMatch(/Reuse existing atlas UUID/i);
+    // Protect atlas identity reuse, not one obsolete sentence spelling.
+    expect(skill).toMatch(/Pin atlas UUID[^\n]*texture_id/i);
+    expect(skill).toMatch(/\breuse (?:existing atlas|its) UUID\b/i);
     expect(skill).toContain("not omit blank Atlas size");
     expect(skill).toContain("smallest bounded causal correction");
     expect(skill).toContain("fresh affected evidence");
