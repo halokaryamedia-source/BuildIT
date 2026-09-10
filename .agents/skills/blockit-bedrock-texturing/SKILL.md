@@ -1,18 +1,61 @@
 ---
 name: blockit-bedrock-texturing
-description: Mandatory BlockIT Bedrock Texture specialist.
+description: Mandatory LazyDesigner Bedrock Texture specialist.
 ---
-# BlockIT Bedrock Texturing
+# LazyDesigner Bedrock Texturing
+
 Geometry/UV capabilities remain callable for bounded upstream correction; Texturing **must not borrow Cube mutation**.
 
 User-authorized autonomy replaces approval waits with verified checkpoints; never claim user approval.
 
+## Control Context Projection
+
+Normal Texturing starts from a **stage-specific projection prepared by LazyDesigner Control**, not by loading the complete Modelling Profile or complete Reference Package again.
+
+Control should provide only the material subset needed for the current texturing decision:
+
+```text
+original user intent / current texture request
+asset identity + selected_profile label
+Geometry APPROVED + UV Layout PASS state
+relevant semantic part IDs
+relevant material entries
+identity-critical markings / palette regions
+emissive / alpha / PBR requirements when applicable
+relevant approved reference image(s) / views
+current atlas / UV identity when known
+blocking texture-stage unknowns or upstream blockers
+```
+
+Do **not** load the full asset modelling profile by default. Profile knowledge already used to establish Geometry should reach Texturing only through relevant semantic parts/material relationships or narrowly justified guidance.
+
+Examples:
+
+```text
+VEHICLE texture task
+→ body / glass / wheel / lamp material entries
+→ paint/marking evidence
+→ no wheelbase, steering-pivot or suspension reasoning unless it directly changes texture ownership
+
+HUMANOID texture task
+→ skin / clothing / armor / face-marking regions
+→ no full joint/rig profile unless a material boundary depends on it
+
+PLANT_FOLIAGE texture task
+→ alpha silhouette, leaf/stem/flower material regions
+→ no unrelated foliage construction rules
+```
+
+If the projection lacks a decision-critical material fact, request only that missing context through Control. Do not broaden into the full profile as reassurance.
+
 ## Asset-Only Visual Runtime Boundary
 No RP dev: opaque/cutout/blend/emissive; Texture variants asset-only.
+
 ## Entry / Correction
 **No Geometry↔Texturing phase switch.** AUTHORING↔Animation only: `HANDOFF_REQUIRED` + `switch_authoring_phase`.
 Entry: **Geometry APPROVED + UV Layout PASS**; final Box UV locked with `autouv=0`, no invalid/out-of-bounds/partial-overlap.
 unlocked/invalid UV → Geometry owner + bounded UV correction; no phase switch.
+
 ## Direct Routing
 Reuse fresh state.
 ```text
@@ -27,12 +70,15 @@ render/preview → declared profile + mapped-model evidence; explicit file integ
 ```
 Unknown → `search_capabilities(limit=4)`. No confirmation rereads.
 **Pin atlas UUID and pass `texture_id` when multiple textures are loaded.**
+
 ## UV Gate
 `uv_audit.production_gate`=ready = hygiene, **not UV Layout PASS**; review face aspect ratio, texel density, semantic UV reuse.
 Requested atlas size/density are constraints; never silently enlarge; return to Geometry/UV if detail cannot fit.
+
 ## First Call
 `blank create_texture → explicit width+height from project UV`; **not omit blank Atlas size**.
 `create_texture`: provisional **16×16 blank**; **128×128 default, 256×256 opt-in**. Approved atlas/density takes precedence; reuse its UUID.
+
 ## Workplan / Coverage
 material cohorts; palette roles `BASE | SHADOW | HIGHLIGHT | ACCENT/IDENTITY`; form/contact/occlusion/edge/identity/detail.
 Face Coverage Ledger: `UNPAINTED | BASE_ONLY | STYLED | INTENTIONAL_FLAT | INTENTIONAL_TRANSPARENT | SHARED`.
@@ -42,7 +88,8 @@ Variants: `list_textures.production_alignment.gate=ready`; `seam_continuity` (in
 
 ## Reference Fidelity Contract
 Reference-driven Texturing inherits the approved visual authority used by Geometry; it must not invent a new interpretation merely because UV islands differ from the reference projection.
-Before broad paint propagation, establish one bounded **Texture Reference Contract** for applicable regions:
+
+Use the Control projection as the first material contract. Before broad paint propagation, resolve only applicable entries:
 ```text
 material/color region → matching reference evidence
 identity marking → required location/orientation/relative scale
@@ -84,9 +131,11 @@ If verification reveals Geometry/UV ownership, stop Texturing correction and ret
 Integer texels; **pixels per UV unit** owns detail scale. Build stepped hue/value ramps, contact shadows and highlights from observed form. Surface coordinates keep shading continuous across Cubes; UV edges do not invent seams.
 Unused atlas pixels stay transparent; opaque material does not authorize full-canvas fill. Paint mapped islands plus deliberate bounded padding only.
 Pixel art must read as deliberate clusters at normal model scale with Shading ON: distinct shadow/base/light masses, folds and identity accents. Barely visible noise or smooth formula variation is BASE_ONLY, never STYLED.
+
 ## Texture Styling
 generic palette; copied unrelated texture; flat rectangles/random high-contrast noise ≠ completion.
 `BASE PASS → VALUE / FORM PASS → SURFACE PATTERN PASS → IDENTITY PASS → SECONDARY DETAIL PASS → RENDER / ALPHA VERIFY → VERIFY`.
+
 ### Render / PBR / Paint Safety
 Namespaces: `render_profile`+`minecraft_material_code` | `pbr_texture_set` | `geometry_material_instance` | `surface_pattern`; `render_mode` preview-only.
 cutout=`entity_alphatest`; translucent=`entity_alphablend`; emissive_mask=`entity_emissive`. Alpha follows render_profile; planar carrier silhouette stays alpha, not Cubes.
@@ -94,23 +143,42 @@ Variants preserve production base role + compatible dimensions/mapping; `normal 
 `authoring_status`; MERS=MER+`subsurface_value>0`.
 `paint_settings`: `pixel_perfect`, `lock_alpha`, `paint_side_restrict`; Mirror after semantic symmetry.
 Brush settings/presets affect native brushes, not exact-pixel transactions. Configure only the chosen executor; a transaction does not prove brush/plugin use.
+
 ## Coherent Styling Window / Anti-Micro-Loop
 representative patch/cohort → cohort-wide; formula/gradient/color count is not quality evidence.
 Finish an identity-critical patch and adjoining body surface pair before propagation. Compare landmarks, value clusters, pattern direction/scale and seams against the actual reference at matching scale. Generic bands cannot replace observed detail. This is internal verification, not a user gate.
 **No evidence-per-micro-mutation loop.**
 Preserve unaffected shading/identity during correction. Coordinate formulas execute observed designs, not invent them. Dark patches may be paint, occlusion or missing surfaces: diagnose the owner before repainting.
+
 ## Texture Verify
 Reference + fresh `get_texture` + fresh **mapped model-view evidence** from `capture_model_views` → `FAIL | UNVERIFIED | PASS`.
 Record capture view, front direction, Shading ON and artifact revision. Blockbench preview is not actual in-game lighting proof. Off/unknown shading cannot support final comparison.
 Verify required hidden material surfaces.
 `FAIL` → **smallest bounded causal correction** → one fresh affected evidence bundle → `IMPROVED | UNCHANGED | REGRESSED`; same causal direction twice → `BLOCKED`.
 Never use stale exported PNG/bbmodel.
+
+## Stage Projection Exit
+When Texturing reaches a review/handoff boundary, return only stage-relevant state to Control:
+
+```text
+changed material/texture cohorts
+current atlas/texture identity
+affected semantic part IDs
+texture evidence freshness
+upstream Geometry/UV blocker if discovered
+texture-stage blocking unknowns
+READY_FOR_USER_REVIEW | BLOCKED | HANDOFF_REQUIRED
+```
+
+Do not return or persist the whole modelling profile as texture state.
+
 Animation → user Texture APPROVED + checkpoint → Animation Readiness Preflight → `HANDOFF_REQUIRED` → Gateway `switch_authoring_phase`, same task.
 Handoff: `target_phase="animation"`, `reason`, `resume_from`, and object `readiness`:
 ```json
 {"geometry_approved":true,"uv_layout":"PASS","texture_approved":true,"checkpoint":"<saved .bbmodel path>","no_blockers":true}
 ```
 Never infer approval.
+
 ## Conditional Support — Not Default Routing
 Conditional on user intent; not normal hot path.
 `gradient_tool | color_picker_tool | copy_brush_tool | paint_settings | create_brush_preset | load_brush_preset | texture_selection | texture_layer_management | add_texture_group | list_materials | get_material_info | import_texture_set`.
