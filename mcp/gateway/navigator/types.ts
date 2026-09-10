@@ -9,6 +9,12 @@ export type NavigatorContextHandle = {
   sha256: string;
 };
 
+export type NavigatorSourceOwner = {
+  source: string;
+  specialist: string | null;
+  test_owner: string | null;
+};
+
 export type NavigatorSystemState = "READY" | "DEGRADED" | "OFFLINE";
 
 export type NavigatorSnapshot = {
@@ -45,6 +51,7 @@ export type NavigatorCapabilitySummary = CapabilitySummary & {
     owner: NavigatorOwner;
     current_owner: boolean;
     eligibility: "RECOMMENDED" | "AVAILABLE" | "FOREIGN_PHASE";
+    source_owner: NavigatorSourceOwner;
   };
 };
 
