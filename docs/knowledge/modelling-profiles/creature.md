@@ -239,7 +239,7 @@ color transitions
 flat claws/teeth detail when silhouette does not require geometry
 ```
 
-Use `PLANT_CUTOUT`-style carriers only when thin alpha-dominant features materially benefit from that representation; do not switch the entire creature profile merely because it has one thin appendage.
+Use `PLANT_FOLIAGE`-style thin-carrier reasoning only for local alpha-dominant appendages when that representation is materially useful; do not switch the whole creature profile because one ear, fin, feather layer, or membrane is thin.
 
 ## 11. Motion Participation
 
