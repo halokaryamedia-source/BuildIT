@@ -3,11 +3,53 @@ name: blockit-bedrock-animation
 description: Minecraft Bedrock Entity animation specialist.
 ---
 
-# BlockIT Bedrock Animation
+# LazyDesigner Bedrock Animation
 
 Use at `ACTIVE PHASE: ANIMATION` after Texturing approval + checkpoint + Animation Readiness Preflight when participating hierarchy/pivots are suitable.
 
 User-authorized autonomy replaces approval waits with verified checkpoints; never claim user approval.
+
+## Control Context Projection
+
+Normal Animation starts from a **stage-specific projection prepared by LazyDesigner Control**. Do not reload the complete Modelling Profile or full Reference Package by default.
+
+Control should provide only motion-relevant context:
+
+```text
+original user intent / current animation request
+asset identity + selected_profile label
+approved Geometry/Texture checkpoint state
+semantic moving part IDs
+parent-child articulation relationships
+pivot / axis intent
+joint coverage / clearance requirements
+motion participation classification
+relevant ANIMATION_KEYFRAME / POSE_ACTION / RIG_DEFORMATION guidance
+relevant approved reference image(s) / pose views
+current animation clip identity/state when known
+blocking animation-stage unknowns or upstream rig blockers
+```
+
+Profile knowledge should reach Animation through these resolved semantic relationships, not by loading the full `HUMANOID`, `CREATURE`, `VEHICLE`, `MECHANICAL`, or other profile unless a narrowly scoped unresolved relationship genuinely requires it.
+
+Examples:
+
+```text
+HUMANOID walk
+→ legs / feet / pelvis / torso / arms participating chain
+→ hip/knee/ankle coverage + foot contact + timing reference
+→ no clothing/UV/material profile detail unless it affects motion
+
+CREATURE tail motion
+→ tail chain + tail-base attachment + body interaction
+→ no full creature anatomy profile when unrelated limbs are unaffected
+
+VEHICLE wheel/door animation
+→ moving wheel/door IDs + parent + axis/pivot + contact/clearance
+→ no wheelbase/cockpit/material context unless it changes the motion decision
+```
+
+If a decision-critical motion relationship is missing, request only that exact context through Control. Do not broaden into full-profile discovery as reassurance.
 
 ## Boundary
 
@@ -59,7 +101,7 @@ Author the smallest judgeable motion cohort first. Validate its contact and curv
 ## Keyframe Reference Fidelity Contract
 When the user supplies animation/keyframe/pose reference, it becomes the motion authority for visible pose intent. Geometry remains authority for actual bone hierarchy, pivots, attachments, and feasible deformation; Animation must not force keys that compensate for a wrong rig.
 
-Before production keys, establish one bounded **Keyframe Reference Contract**:
+Use the Control projection as the first motion contract. Before production keys, establish only applicable relationships:
 ```text
 reference pose/event → target time or phase role
 participating bone chain → driver + followers
@@ -74,7 +116,9 @@ Each item is `SUPPORTED | PROVISIONAL | CONFLICTING | UNAVAILABLE`. If a referen
 
 Reference fidelity is **pose-correspondence-first**, not key-count-first. Compare representative reference poses against current animation at comparable view and phase. A technically smooth curve is still `FAIL` if the pose silhouette, joint closure, contact, or action timing contradicts the supplied reference.
 
-For articulated characters/creatures, explicitly inspect motion-critical gaps at hip/groin, knee, ankle/foot, shoulder, elbow/wrist, neck, waist, jaw/cheek, and any custom hinge. Required rule:
+For articulated characters/creatures, explicitly inspect motion-critical gaps at hip/groin, knee, ankle/foot, shoulder, elbow/wrist, neck, waist, jaw/cheek, and any custom hinge only when those regions participate in the current motion. Do not automatically inspect every joint in the asset.
+
+Required rule:
 ```text
 joint rotates through intended range
 → adjacent forms preserve believable overlap/closure
@@ -134,7 +178,23 @@ AUTHOR coherent keys/batch
 ```
 
 Verify `DISCOVER → AUTHOR → VERIFY → CORRECT → VERIFY → DONE`; record `IMPROVED | UNCHANGED | REGRESSED`. Cyclic/idle verification requires repeated full-loop playback; three static snapshots do not prove timing/phase/contact/seam.
-Observe at least three consecutive cycles for cyclic review. Check plant/release, foot sliding, floor penetration, weight transfer, follow-through and loop velocity continuity; action clips also require landing/recovery and any intended preview transition. Retain a playable evidence clip with revision, duration and view at review boundaries. Playback unavailable or interrupted means `UNVERIFIED`, not a replacement static PASS.
+Observe at least three consecutive cycles for cyclic review. Check only motion-relevant contact, sliding, penetration, weight transfer, follow-through and loop continuity. Action clips also require landing/recovery and any intended preview transition. Retain a playable evidence clip with revision, duration and view at review boundaries. Playback unavailable or interrupted means `UNVERIFIED`, not a replacement static PASS.
+
+## Stage Projection Exit
+
+At a review/handoff boundary, return only animation-stage state to Control:
+
+```text
+changed animation clip / controller / effect IDs
+participating semantic part IDs
+articulation relationships used
+current playback/evidence freshness
+upstream Geometry blocker if discovered
+animation-stage blocking unknowns
+READY_FOR_USER_REVIEW | BLOCKED | HANDOFF_REQUIRED
+```
+
+Do not persist or return the complete Modelling Profile as animation state.
 
 ## Completion
 
