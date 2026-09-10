@@ -7,7 +7,6 @@ description: Minecraft Bedrock Entity animation specialist.
 
 Use at `ACTIVE PHASE: ANIMATION` after Texturing approval + checkpoint + Animation Readiness Preflight when participating hierarchy/pivots are suitable.
 
-
 User-authorized autonomy replaces approval waits with verified checkpoints; never claim user approval.
 
 ## Boundary
@@ -56,6 +55,46 @@ loop seam or neutral/controller handoff
 
 Archetypes are not presets. No universal FPS, duration, amplitude, phase, keyframe count, or Bezier target. Do not use an animation quality score.
 Author the smallest judgeable motion cohort first. Validate its contact and curves before propagating followers. Dense baked samples need a specific interpolation/export reason; mathematical offline generation or many keys does not prove advanced motion. Record what visible behavior each Molang expression owns, not merely that math exists.
+
+## Keyframe Reference Fidelity Contract
+When the user supplies animation/keyframe/pose reference, it becomes the motion authority for visible pose intent. Geometry remains authority for actual bone hierarchy, pivots, attachments, and feasible deformation; Animation must not force keys that compensate for a wrong rig.
+
+Before production keys, establish one bounded **Keyframe Reference Contract**:
+```text
+reference pose/event → target time or phase role
+participating bone chain → driver + followers
+root/COM direction → weight/load intent
+contact/attachment invariant → what must stay planted/connected
+joint neighborhood → expected bend direction + closure/clearance
+silhouette landmark → required pose read from relevant view
+secondary motion → delayed/follow-through relation
+transition/loop relation → entry, exit, or seam expectation
+```
+Each item is `SUPPORTED | PROVISIONAL | CONFLICTING | UNAVAILABLE`. If a reference-critical limb, joint direction, contact, or attachment cannot be achieved without excessive separation, penetration, or implausible compensation, stop Animation and hand off to Geometry; do not hide the defect with extra keys.
+
+Reference fidelity is **pose-correspondence-first**, not key-count-first. Compare representative reference poses against current animation at comparable view and phase. A technically smooth curve is still `FAIL` if the pose silhouette, joint closure, contact, or action timing contradicts the supplied reference.
+
+For articulated characters/creatures, explicitly inspect motion-critical gaps at hip/groin, knee, ankle/foot, shoulder, elbow/wrist, neck, waist, jaw/cheek, and any custom hinge. Required rule:
+```text
+joint rotates through intended range
+→ adjacent forms preserve believable overlap/closure
+→ no excessive open seam
+→ no collision that materially changes silhouette
+→ contact/attachment remains intentional
+```
+Do not solve an open joint by scaling/deforming unrelated geometry through animation unless that behavior is explicitly part of the design.
+
+Prioritize correction by motion impact:
+```text
+wrong participating bone/rig blocker
+→ wrong primary pose silhouette / action direction
+→ broken contact or attachment
+→ excessive joint gap / penetration
+→ wrong timing / phase / weight transfer
+→ missing counter-motion / follow-through
+→ secondary polish/easing
+```
+A correction is `REGRESSED` if the target pose improves but another required reference pose, contact phase, loop seam, or neighboring joint becomes materially worse.
 
 Use Molang for continuous/cyclic/reactive **visual motion**; authored poses own identity-critical action/contact/silhouette. `q.anim_time` is time-driven; `q.modified_distance_moved` can own travel phase. External gameplay callers remain integration contracts; never invent caller values or signed reverse semantics. Chains use `driver → delayed followers`. Actions preserve `anticipation → action/impact → follow-through → recovery`.
 
