@@ -1,14 +1,14 @@
 # LazyDesigner — Reference Guide
 
 **Status:** Active Policy  
-**Version:** 4.0  
+**Version:** 4.1  
 **Updated:** 2026-09-11
 
 ## Purpose
 
 Own durable Source Image → Approved Reference → Reference Package semantics for LazyDesigner.
 
-Operational reference preparation belongs in ChatGPT using `.agents/skills/blockbench-reference-generator/SKILL.md`. The detailed handoff contract belongs in `docs/knowledge/reference-handoff.md`.
+Operational reference preparation belongs in ChatGPT using `.agents/skills/blockbench-reference-generator/SKILL.md`. The detailed handoff contract belongs in `docs/knowledge/reference-handoff.md`. Canonical visual-sheet composition belongs in `docs/knowledge/image-reference-standard.md`.
 
 The goal is a recognizable, Minecraft-appropriate, Blockbench-buildable interpretation plus enough structured technical evidence to prevent avoidable downstream guessing.
 
@@ -31,14 +31,13 @@ When multiple source images are available, use each only for what it visibly pro
 
 Reference generation/editing requires a fresh explicit user request. Repository work, audit, CI or downstream Codex authoring never implicitly authorizes image generation.
 
-Normal handoff is now:
+Normal handoff is:
 
 ```text
 Approved Reference Image(s)
 + compact Reference Package metadata
 + original user intent
-→ LazyDesigner Control
-→ Codex
+→ Codex / LazyDesigner authoring flow
 ```
 
 The package is not a giant blueprint. It exists only to preserve decision-critical facts, relationships and unknowns that ChatGPT already resolved during reference preparation.
@@ -54,7 +53,7 @@ actual image supplied
 → material evidence missing/conflicting
    → request smallest decision-changing extra source/detail
    → if still unresolved and blocking
-      → canonical board or BLOCKED
+      → normalized reference generation or BLOCKED
 ```
 
 Preferred escalation:
@@ -62,7 +61,7 @@ Preferred escalation:
 ```text
 current supplied evidence
 → one decision-changing additional source/detail
-→ canonical turnaround only when stronger normalized coverage is needed
+→ generated unified reference sheet only when stronger normalized coverage is needed
 ```
 
 Do not generate extra views that cannot change the next decision.
@@ -77,7 +76,7 @@ VEHICLE
 HUMANOID
 CREATURE
 MECHANICAL
-PLANT_CUTOUT
+PLANT_FOLIAGE
 GENERIC
 ```
 
@@ -86,6 +85,7 @@ Profiles are knowledge overlays, not geometry presets. `GENERIC` is fallback onl
 ## Optional Reference Modules
 
 ```text
+CONCEPT
 TURNAROUND
 STRUCTURAL_DETAIL
 MATERIAL_TEXTURE
@@ -96,6 +96,46 @@ ANIMATION_KEYFRAME
 ```
 
 Only include modules that materially improve the next modelling decision.
+
+## Unified Visual Reference Policy
+
+All generated reference images use one visual system, defined canonically in:
+
+```text
+docs/knowledge/image-reference-standard.md
+```
+
+Default behavior:
+
+```text
+1 primary reference sheet per asset
+```
+
+The primary sheet may combine Geometry, Texture and Animation evidence when all remain readable.
+
+Additional sheets are allowed only for real information overflow.
+
+```text
+Sheet 01 = identity anchor + core construction
+Sheet 02+ = elaboration only
+```
+
+Every visible panel must materially reduce Geometry, Texture or Animation ambiguity.
+
+Default upper guidance:
+
+```text
+1 hero
+2–4 construction views
+0–3 critical details
+0–5 key poses
+```
+
+These are not quotas.
+
+When space is constrained, preserve useful Geometry evidence before lower-value support content.
+
+Do not include decorative/reference-board filler merely to make a sheet appear complete.
 
 ## Minecraft-First Fidelity
 
@@ -108,22 +148,45 @@ Preserve base palette, material regions, part separation and identity-critical m
 ### Articulation
 Use structurally readable poses. Preserve joint overlap, parent/child relationship, motion-bearing regions and plausible clearance without inventing hidden precision or creating exaggerated gaps.
 
-## Canonical Turnaround
+## View Selection
 
-When normalized turnaround evidence is required:
+Use minimum sufficient construction evidence instead of a mandatory all-view board.
+
+Typical roles:
 
 ```text
-UPPER: LEFT | FRONT | BACK
-LOWER: TOP  | FRONT-LEFT 3/4
+FRONT → width/height/part count/silhouette
+LEFT  → depth/profile/attachment/body axis
+BACK  → only when rear topology/asymmetry matters
+TOP   → only when footprint/depth/layout matters
+RIGHT → only when left/right asymmetry matters
+FRONT-LEFT 3/4 → whole-form volume/readability
 ```
-
-`LEFT`, `FRONT`, `BACK`, `TOP` are construction evidence. `FRONT-LEFT 3/4` is supplemental volume/readability evidence. Do not substitute generic `SIDE` when orientation matters.
 
 Keep subjects uncropped, consistently scaled and on a neutral background. Do not overload the image with dimensions, pivots, JSON-like notes or implementation instructions; nonvisual technical information belongs in metadata.
 
+## Identity Lock / Multi-Sheet Consistency
+
+Once Sheet 01 is approved visual authority, later sheets must preserve:
+
+```text
+asset identity
+whole-model proportions
+required part count
+major silhouette
+approved materials/colors
+accessories/props
+asymmetry/orientation
+construction logic
+```
+
+Additional sheets may reveal more information but may not silently redesign the asset.
+
+If a later request changes any locked identity element, treat it as a revision and update all materially affected evidence coherently.
+
 ## Semantic Parts
 
-Reference Preparation may name decision-critical semantic parts to create stable communication anchors across image, metadata, Control and Codex.
+Reference Preparation may name decision-critical semantic parts to create stable communication anchors across image, metadata and Codex.
 
 Each relevant part may record:
 
@@ -201,7 +264,7 @@ Minor cross-view drift does not invalidate an otherwise useful reference. Materi
 
 ## View Pair Map
 
-Use only when canonical corresponding views exist:
+Use only when corresponding views exist:
 
 ```text
 REFERENCE FRONT      ↔ MODEL front
@@ -225,7 +288,9 @@ Check in this order:
 5. buildability;
 6. articulation readability when relevant;
 7. material usability when relevant;
-8. crop/readability.
+8. crop/readability;
+9. panel usefulness/density;
+10. cross-sheet identity consistency.
 
 ## Correction Strategy
 
@@ -239,7 +304,7 @@ cross-view structural defect
 → edit all affected views coherently
 
 global identity/layout/coherence failure
-→ regenerate full board
+→ regenerate affected reference sheet coherently
 ```
 
 For one unchanged automatic cycle:
@@ -254,22 +319,17 @@ A fresh user-directed correction starts a new user-led review cycle.
 
 ## Reference Package
 
-Compact metadata may contain:
+Canonical package structure and stage documents are owned under `docs/knowledge/`.
+
+Use:
 
 ```text
-asset/profile/original intent
-requirements
-reference readiness
-critical views/modules
-semantic parts
-articulation relationships
-materials
-animation guidance
-constraints
-blocking + non-blocking unknowns
+REFERENCE.json
+GEOMETRY.md
+TEXTURE.md only when useful
+ANIMATION.md only when useful/required
+approved/supporting image(s)
 ```
-
-Use JSON for structured facts and Markdown only for explanation-heavy relationships. `null` means unknown and is never permission to infer.
 
 Images remain visual authority. Metadata does not replace or paraphrase away visual identity.
 
@@ -278,7 +338,9 @@ Images remain visual authority. Metadata does not replace or paraphrase away vis
 Reference Preparation is complete when:
 - visual authority is approved or explicitly accepted from source-only evidence;
 - one canonical profile is selected;
-- only necessary modules are included;
+- only necessary visual evidence/modules are included;
+- every panel has a downstream decision purpose;
+- additional sheets exist only for real overflow and remain identity-locked;
 - semantic parts cover material downstream relationships without becoming a Cube plan;
 - blocking/non-blocking unknowns are separated;
 - stage-specific readiness is explicit;
@@ -286,7 +348,9 @@ Reference Preparation is complete when:
 
 ## Related
 
+- [Unified Image Reference Standard](../knowledge/image-reference-standard.md)
 - [Reference → Codex Handoff](../knowledge/reference-handoff.md)
+- [Reference Package Schema](../knowledge/reference-package-schema.md)
 - [Skill Taxonomy](../knowledge/skill-taxonomy.md)
 - [Product Requirements](02-product-requirements.md)
 - [Modelling Workflow](03-modelling-workflow.md)
