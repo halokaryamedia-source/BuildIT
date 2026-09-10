@@ -20,7 +20,7 @@ These categories are mutually exclusive as primary ownership. Another category i
 
 ## Canonical Asset Profile Vocabulary
 
-Reference Preparation and Modelling use one shared profile vocabulary:
+Reference Preparation and Modelling use one shared, user-readable profile vocabulary:
 
 ```text
 PROP_FURNITURE
@@ -28,11 +28,15 @@ VEHICLE
 HUMANOID
 CREATURE
 MECHANICAL
-PLANT_CUTOUT
+PLANT_FOLIAGE
 GENERIC
 ```
 
+Profile names describe the **asset class**, not the modelling technique. Technical terms such as `PLANE_LIKE`, `CROSSED_CUTOUT`, `LAYERED_CUTOUT`, or `VOLUMETRIC_GEOMETRY` belong inside the relevant profile as representation choices and must not become user-facing profile names.
+
 Do not maintain parallel `PROP` and `FURNITURE` profile names. `PROP_FURNITURE` may use optional subtype vocabulary such as `STATIC_PROP`, `FURNITURE`, `CONTAINER`, `INTERACTIVE_PROP`, or `MECHANICAL_PROP`, but those are not primary profiles.
+
+`PLANT_FOLIAGE` covers vegetation/foliage assets. It does not imply that every plant uses cutout planes; representation remains reference-driven.
 
 `GENERIC` is fail-safe fallback only; it is not the default profile when another profile materially improves downstream decisions.
 
@@ -95,7 +99,7 @@ VEHICLE
 HUMANOID
 CREATURE
 MECHANICAL
-PLANT_CUTOUT
+PLANT_FOLIAGE
 GENERIC
 ```
 
