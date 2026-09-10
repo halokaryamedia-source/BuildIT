@@ -5,7 +5,13 @@ on:
     branches:
       - Local
     paths:
+      - "mcp/**"
+      - ".agents/**"
+      - "docs/**"
+      - "workspace/**"
+      - "Experimental/**"
       - ".github/workflows/local-generator-bundle.yml"
+  workflow_dispatch:
 
 permissions:
   contents: read
