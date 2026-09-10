@@ -68,6 +68,7 @@ jobs:
               s = s.replace('import { STATUS_EXPERIMENTAL, STATUS_STABLE } from "@/lib/constants";', 'import { STATUS_STABLE } from "@/lib/constants";')
               s = s.replace('import { isAbsoluteFilesystemPath } from "@/lib/util";\n', '')
               s = re.sub(r'\n// Compatibility-only schema retained until the next LOCAL_CODE docs generation\..*?\nexport const createProjectParameters', '\nexport const createProjectParameters', s, flags=re.S)
+              s = re.sub(r'\nexport const manageGeometryReferenceParameters = z\n  \.object\(\{.*?\n  \}\);\n', '\n', s, flags=re.S)
               s = re.sub(r'\n  \{\n    name: "manage_geometry_reference",.*?\n    status: STATUS_EXPERIMENTAL,\n  \},', '', s, flags=re.S)
               s = re.sub(r'\n  // Retained only as a generated-doc compatibility descriptor.*?\n  \}, projectToolDocs\[3\]\.status\);', '', s, flags=re.S)
               return s
@@ -110,7 +111,7 @@ jobs:
           def prompt(s):
               s = s.replace(
                   'Choose DIRECT or 3D_ASSISTED with the user; never infer or auto-switch. For DIRECT Geometry: create the project, add required Groups and Cubes, set explicit positions/sizes/parents/transforms, then capture canonical views for visual review. Do not use the retired reference-grounded plan/compiler flow.',
-                  'Use the single native BlockIT Geometry path: create the project, add required Groups and Cubes, set explicit positions/sizes/parents/transforms, then capture canonical views for visual review. Do not revive retired reference-grounded or external 3D-assisted routes.'
+                  'Use the single native BlockIT Geometry path: create the project, add required Groups and Cubes, set explicit positions/sizes/parents/transforms, then capture canonical views for visual review. Do not revive retired external modelling routes.'
               )
               s = s.replace('3D_ASSISTED: after external gates, use Gateway `materialize_3d_assisted_scaffold(workspace_path)`.\n\n', '')
               return s
