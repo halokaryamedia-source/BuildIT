@@ -1,5 +1,5 @@
 import type { CapabilitySummary } from "../contract";
-import { ownerForCapability } from "./registry";
+import { ownerForCapability, sourceOwnerForCapability } from "./registry";
 import type { NavigatorCapabilitySummary, NavigatorOwner } from "./types";
 
 export function decorateCapabilities(
@@ -19,6 +19,7 @@ export function decorateCapabilities(
             ? "AVAILABLE"
             : "RECOMMENDED"
           : "FOREIGN_PHASE",
+        source_owner: sourceOwnerForCapability(capability.capability_id),
       },
     };
   });
