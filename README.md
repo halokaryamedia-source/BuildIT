@@ -1,6 +1,8 @@
-# BlockIT
+# LazyDesigner
 
-BlockIT is an AI-assisted **Minecraft Bedrock Entity** authoring workspace built around a local Blockbench MCP Runtime and a stable AI-client-facing Gateway.
+LazyDesigner is an AI-assisted **Minecraft Bedrock Entity** authoring workspace built around a local Blockbench MCP Runtime, a stable AI-client-facing Gateway, and a lightweight Control front line for context-efficient Codex work.
+
+**Former project name:** BlockIT. Internal `blockit-*` compatibility identifiers and legacy filenames may remain temporarily during the controlled migration; they are not the current product name.
 
 **Project snapshot:** `v0.1` (separate from the MCP package version).
 
@@ -16,28 +18,40 @@ Routine repository development uses `Local`. Repository behavior is routed by `A
 ## Canonical Product Flow
 
 ```text
-ChatGPT reference
-→ Active Workspace + Requirement Gate
-→ native BlockIT Geometry
-→ user approve + checkpoint
-→ UV Layout PASS
-→ Texturing
-→ user approve + checkpoint
-→ Animation when required
-→ user approve + checkpoint
+User request
+→ ChatGPT Reference Preparation
+   ├─ approved visual reference(s)
+   ├─ explicit technical requirements
+   ├─ buildability / representation guidance
+   ├─ geometry / rig / material / animation guidance when relevant
+   └─ compact machine-readable handoff metadata
+→ LazyDesigner Control
+   ├─ preserve original user intent
+   ├─ resolve task / asset / stage / readiness
+   ├─ select minimum canonical context
+   └─ route the minimum legal Codex path
+→ Codex authoring reasoning
+→ Gateway
+→ Runtime
+→ Blockbench
+→ verification / approval / checkpoint
+→ next stage
 → Finalization
 → final .bbmodel save
 ```
 
-The approved image is visual authority. Requested dimensions are numeric authority. BlockIT now has **one native modelling path**; the retired 3D-assisted/Hunyuan/PrimitiveAnything path is not part of current authoring.
+ChatGPT owns **reference preparation**, not Blockbench execution. Its job is not only to create an image: it should provide enough explicit visual and technical information that Codex does not need to guess material requirements. Control remains a thin routing/context layer and must not duplicate canonical Skills, Tool schemas, workspace state, or creative reasoning.
+
+The approved image is visual authority. Requested dimensions are numeric authority. LazyDesigner has **one native modelling path**; the retired 3D-assisted/Hunyuan/PrimitiveAnything path is not part of current authoring.
 
 ## Current Product Surface
 
 ```text
-Gateway client surface        4 fixed tools
-Active phase-union catalog   54 tools
-AUTHORING source surface     47 tools
-Animation source surface     20 tools
+Control                     front-line context/readiness/routing
+Gateway client surface      4 fixed tools
+Active phase-union catalog 54 tools
+AUTHORING source surface   47 tools
+Animation source surface   20 tools
 ```
 
 Gateway tools are always:
@@ -63,6 +77,7 @@ Current state owners:
 
 - stable project facts → `CONTEXT.md`
 - product flow → `docs/knowledge/flow.md`
+- reference-to-Codex intake contract → `docs/knowledge/reference-handoff.md`
 - repository/plugin continuation → `docs/knowledge/next-action.md`
 - current proof state → `docs/knowledge/current-validation.md`
 - exact source/tool ownership → `docs/knowledge/implementation-map.md`
@@ -73,17 +88,17 @@ Current state owners:
 ```text
 .agents/skills/    task/domain specialists loaded only when relevant
 docs/foundation/  durable authoring policy
-docs/knowledge/   current flow, continuation, source ownership, proof, local procedure
-mcp/              Blockbench MCP plugin/runtime/Gateway/build/tests/generated API docs
+docs/knowledge/   current flow, continuation, source ownership, proof, intake/local procedure
+mcp/              Blockbench MCP plugin/runtime/Gateway/Control/build/tests/generated API docs
 workspace/        persistent active/saved asset packages
-Experimental/     bounded research; currently BlockIT Navigator only
+Experimental/     bounded research only
 ```
 
 Historical audits, retired product paths, obsolete continuation, and old roadmaps belong in Git history rather than parallel current-state owners.
 
 ## Development
 
-BlockIT source/builds come from this repository; do not use an upstream hosted plugin as runtime authority for this repository. Production plugin: `dist/blockit_mcp.js`.
+LazyDesigner source/builds come from this repository; do not use an upstream hosted plugin as runtime authority for this repository. Legacy output filename `dist/blockit_mcp.js` remains during the controlled identifier/file migration.
 
 From `mcp/`:
 
@@ -104,13 +119,13 @@ Build/watch without deployment:
 bun run dev:watch
 ```
 
-Manual deployment remains explicit:
+Manual deployment remains explicit while legacy filenames are present:
 
 ```bash
 bun run deploy:local -- /absolute/path/to/blockit_mcp.js
 ```
 
-Normal AI-client use connects through the Gateway. See `mcp/gateway/README.md`.
+Normal AI-client use connects through Control and the Gateway. See `mcp/gateway/README.md`.
 
 ## Contributing
 
@@ -118,4 +133,4 @@ Repository development conventions, verification routing, commit discipline, and
 
 ## License
 
-BlockIT is distributed under the GNU General Public License v3.0. See `LICENSE` for the full terms.
+LazyDesigner is distributed under the GNU General Public License v3.0. See `LICENSE` for the full terms.
