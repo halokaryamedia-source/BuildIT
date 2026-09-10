@@ -8,6 +8,7 @@ export type NavigatorContextDelivery = {
   required: NavigatorContextHandle[];
   optional: NavigatorContextHandle[];
   cached_ids: string[];
+  invalidated_ids: string[];
 };
 
 export type NavigatorPacket = Omit<NavigatorSnapshot, "context"> & {
@@ -29,16 +30,27 @@ function taskContextId(
   return `task:${createHash("sha256").update(payload).digest("hex").slice(0, 20)}`;
 }
 
+function contextFamily(id: string): string {
+  const at = id.lastIndexOf("@");
+  return at > 0 ? id.slice(0, at) : id;
+}
+
 function filterContext(
   snapshot: NavigatorSnapshot,
   knownContextIds: readonly string[]
 ): NavigatorContextDelivery {
   const known = new Set(knownContextIds);
-  const all = [...snapshot.context.required, ...snapshot.context.optional];
+  const current = [...snapshot.context.required, ...snapshot.context.optional];
+  const currentIds = new Set(current.map((handle) => handle.id));
+  const currentFamilies = new Set(current.map((handle) => contextFamily(handle.id)));
+
   return {
     required: snapshot.context.required.filter((handle) => !known.has(handle.id)),
     optional: snapshot.context.optional.filter((handle) => !known.has(handle.id)),
-    cached_ids: all.filter((handle) => known.has(handle.id)).map((handle) => handle.id),
+    cached_ids: current.filter((handle) => known.has(handle.id)).map((handle) => handle.id),
+    invalidated_ids: knownContextIds.filter(
+      (id) => !currentIds.has(id) && currentFamilies.has(contextFamily(id))
+    ),
   };
 }
 
