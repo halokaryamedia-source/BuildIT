@@ -2,11 +2,36 @@
 
 Updated: 2026-09-11
 
-This file owns the reference-preparation handoff contract between ChatGPT and Codex. Operational reference behavior is owned by `.agents/skills/blockbench-reference-generator/SKILL.md`. Durable reference policy is owned by `docs/foundation/04-reference-guide.md`. The canonical machine-readable package schema is owned by `docs/knowledge/reference-package-schema.md`. `GEOMETRY.md` content is owned by `docs/knowledge/geometry-reference-contract.md`. Product flow remains in `docs/knowledge/flow.md`.
+This file owns the reference-preparation handoff relationship between ChatGPT and Codex. It does not duplicate detailed schemas or stage-document contracts.
+
+Canonical owners:
+
+```text
+ChatGPT operational reference flow
+→ docs/knowledge/chatgpt-reference-flow.md
+
+REFERENCE.json schema
+→ docs/knowledge/reference-package-schema.md
+
+GEOMETRY.md
+→ docs/knowledge/geometry-reference-contract.md
+
+TEXTURE.md
+→ docs/knowledge/texture-reference-contract.md
+
+ANIMATION.md
+→ docs/knowledge/animation-reference-contract.md
+
+Codex/Astra package load order
+→ docs/knowledge/reference-package-load-contract.md
+
+Durable visual-reference policy
+→ docs/foundation/04-reference-guide.md
+```
 
 ## Purpose
 
-ChatGPT prepares enough visual and structured technical reference information for Codex to work without repeating avoidable interpretation.
+ChatGPT prepares enough confirmed visual and technical reference information for Codex to work without repeating avoidable interpretation.
 
 ```text
 MAKE AMBIGUITY EXPLICIT BEFORE CODEX PAYS TO RESOLVE IT
@@ -27,6 +52,7 @@ USER REQUEST
 → INTERNAL QA
 → USER VISUAL REVIEW WHEN MATERIAL
 → PACKAGE GENERATION CONFIRMATION WHEN REQUIRED
+→ PACKAGE CONSISTENCY GATE
 → REFERENCE PACKAGE
 → CODEX
 ```
@@ -47,21 +73,21 @@ asset_reference/
     └── approved/supporting reference images
 ```
 
-Do not add `README.md`, `CODEX_START.md`, transcripts, or giant prompt files by default when they only duplicate the same information.
+Do not add `README.md`, `CODEX_START.md`, transcripts, compiled prompts, or other duplicate briefing files by default.
 
 ## Authority Model
 
 ```text
-explicit current user requirement
-→ approved visual reference
-→ REFERENCE.json structured facts
-→ stage-specific Markdown projection
-→ downstream Codex interpretation
+1. explicit current user requirement
+2. approved visual reference
+3. REFERENCE.json structured facts
+4. active stage Markdown projection
+5. downstream Codex interpretation
 ```
 
-`REFERENCE.json` is the canonical structured index. Stage Markdown files are projections for the relevant authoring stage, not independent truth sources.
+`REFERENCE.json` is the canonical structured index. Stage Markdown files express only stage-specific consequences of the same authority. Images remain visual authority for visible design.
 
-Images remain visual authority for visible design.
+A lower authority never silently overrides a higher authority. Material conflicts block only the dependent decision until resolved.
 
 ## Canonical Asset Profiles
 
@@ -94,7 +120,7 @@ Do not force every module on every asset.
 
 ## Machine-Readable Contract
 
-The canonical file is:
+Canonical file:
 
 ```text
 REFERENCE.json
@@ -106,7 +132,7 @@ Schema identifier:
 lazydesigner-reference-v1
 ```
 
-Exact field ownership and vocabulary are defined only in:
+Exact field ownership and vocabulary live only in:
 
 ```text
 docs/knowledge/reference-package-schema.md
@@ -118,55 +144,33 @@ Do not maintain another full JSON schema in this document or in the Reference Pr
 
 ### `GEOMETRY.md`
 
-Canonical content/order is owned only by:
+Owned only by:
 
 ```text
 docs/knowledge/geometry-reference-contract.md
 ```
 
-This handoff document does not repeat that full contract.
-
-At minimum, `GEOMETRY.md` explains only the asset-specific Geometry conclusions already supported by stronger authority, including applicable target/scale, primary structure, proportion/silhouette, attachment/contact/openings, representation guidance, rig-readiness constraints, relevant image IDs, and Geometry-stage unknowns.
-
-It must not become a Cube plan, UV plan, animation plan, or tool-call plan.
+Contains only asset-specific Geometry interpretation already supported by stronger authority. It must not become a Cube plan, UV plan, animation plan, or Tool-call plan.
 
 ### `TEXTURE.md`
 
-Create only when material/texturing guidance is materially useful.
-
-Typical content:
+Owned only by:
 
 ```text
-material regions
-palette/value relationships
-surface character
-identity markings
-alpha/cutout requirement
-emissive/PBR requirement
-relevant image IDs
+docs/knowledge/texture-reference-contract.md
 ```
 
-A dedicated canonical content contract should own this file rather than duplicating Texturing Skill prose here.
+Create only when material/texturing guidance materially improves downstream correctness. It must not become a pixel-by-pixel painting recipe or UV packing plan.
 
 ### `ANIMATION.md`
 
-Create only when animation is required and motion guidance is useful.
-
-Typical content:
+Owned only by:
 
 ```text
-animation goal
-participating semantic parts
-motion relationships
-contacts/attachments
-key poses
-relative timing
-joint/deformation risks
-secondary motion
-relevant image IDs
+docs/knowledge/animation-reference-contract.md
 ```
 
-Do not convert it into compulsory frame-by-frame implementation unless explicitly requested. A dedicated canonical content contract should own this file.
+Create only when animation is required and motion guidance materially helps. It must not become a compulsory frame-by-frame implementation recipe unless the user explicitly requires that precision.
 
 ## Image Identity
 
@@ -176,10 +180,31 @@ Example:
 
 ```text
 IMG_GEO_01 → PRIMARY_GEOMETRY → images/turnaround.png
+IMG_TEX_01 → MATERIAL_TEXTURE → images/material-reference.png
 IMG_ANIM_01 → ANIMATION_KEYFRAME → images/keyframe-guide.png
 ```
 
-Stage Markdown should refer to image IDs rather than forcing Codex to infer which image owns which decision.
+Stage Markdown refers to image IDs and states what each image owns for that stage. Codex should not scan the whole image folder by default.
+
+## Codex/Astra Load Rule
+
+Package consumption is owned by:
+
+```text
+docs/knowledge/reference-package-load-contract.md
+```
+
+Default behavior:
+
+```text
+REFERENCE.json
+→ determine active stage/readiness
+→ load only active stage Markdown
+→ inspect only image IDs referenced by that stage
+→ work
+```
+
+Do not load every stage document and every image automatically.
 
 ## Unknown Classification
 
@@ -190,9 +215,9 @@ blocking
 non_blocking
 ```
 
-Neither class may be silently guessed.
+`REFERENCE.json` owns the canonical unknown inventory. Stage Markdown repeats only stage-relevant consequences.
 
-Blocking unknowns prevent the affected stage from becoming `READY`. Non-blocking unknowns remain visible without stopping unrelated work.
+A Texture-only unknown must not block Geometry. A rig blocker may block Animation while Texture remains ready.
 
 ## Stage Readiness
 
@@ -205,7 +230,23 @@ NEEDS_REVIEW
 BLOCKED
 ```
 
-Readiness is stage-specific. Missing texture information does not automatically block Geometry. Animation may be `NOT_REQUIRED`.
+Readiness is stage-specific. Missing Texture information does not automatically block Geometry. Animation may be `NOT_REQUIRED`.
+
+## Package Consistency Gate
+
+Before handoff, ChatGPT verifies:
+
+```text
+all listed documents actually exist
+all referenced image IDs actually exist
+stage files agree with REFERENCE.json
+no stage file introduces unsupported facts
+no stage file leaks another stage's implementation plan
+readiness agrees with blockers
+omitted optional files are not referenced
+```
+
+Failure means the package is not ready for Codex.
 
 ## Correction Behavior
 
@@ -216,11 +257,13 @@ USER DELTA
 → compile CHANGE + PRESERVE
 → ask only if the new target is materially ambiguous
 → concise confirmation before revised artifact generation
-→ update affected image/document/REFERENCE.json entries
+→ update affected REFERENCE.json facts
+→ update only affected stage document(s)
+→ update only affected image(s)
 → preserve unaffected accepted information
 ```
 
-Do not regenerate an entire package for a local change.
+Do not rebuild the entire package for a local change.
 
 ## Existing Asset / Update
 
@@ -232,7 +275,7 @@ USER CHANGE REQUEST
 → hand revised package to Codex
 ```
 
-The package should remain self-contained so Codex does not need the original ChatGPT transcript to understand current authority.
+The package remains self-contained. Codex should not need the original ChatGPT transcript to understand current authority.
 
 ## System Development Boundary
 
@@ -243,18 +286,21 @@ USER MCP / PLUGIN / BUILD REQUEST
 → product-development workflow
 ```
 
-Do not misuse the reference package as a general development brief format.
+Do not misuse this package as a general development-brief format.
 
 ## Non-Goals
 
 The Reference Package must not become:
-- a conversation transcript;
-- a giant master prompt;
-- a copy of Skills or Tool schemas;
-- a hidden source of guessed requirements;
-- a mandatory full set of stage documents for trivial assets;
-- a second asset-state database;
-- a Cube-by-Cube modelling blueprint;
-- a duplicate authority system across JSON and Markdown.
 
-Its purpose is to make the next Codex authoring decision correct, explicit and efficient.
+```text
+conversation transcript
+giant master prompt
+copy of Skills or Tool schemas
+hidden source of guessed requirements
+mandatory full set of stage documents for trivial assets
+second asset-state database
+Cube-by-Cube modelling blueprint
+duplicate authority system across JSON and Markdown
+```
+
+Its purpose is to make the next Codex authoring decision correct, explicit, and efficient.
