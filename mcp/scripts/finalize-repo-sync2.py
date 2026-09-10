@@ -8,7 +8,7 @@ def write(path, value): (ROOT / path).write_text(value)
 # Keep root routing under its existing compactness budget without changing semantics.
 p = 'AGENTS.md'
 s = read(p)
-s = s.replace('User-authorized autonomy replaces approval waits with verified checkpoints; never claim user approval.', 'Authorized autonomy replaces approval waits with verified checkpoints; never claim user approval.')
+s = s.replace('User-authorized autonomy replaces approval waits with verified checkpoints; never claim user approval.', 'Authorized autonomy replaces approval waits with checkpoints; never claim user approval.')
 write(p, s)
 
 # Exact-commit proof language is part of current validation ownership.
@@ -25,4 +25,11 @@ s = read(p)
 anchor = 'Require a clean tree before reusing proof. Do not reuse source checks from another SHA.\n'
 if 'Fast path' not in s:
     s = s.replace(anchor, anchor + '\nFast path: reuse exact green source proof only for the same clean `Local` SHA.\n')
+write(p, s)
+
+# Experimental is an isolation area, never a production authority.
+p = 'Experimental/README.md'
+s = read(p)
+if 'NOT PRODUCTION' not in s:
+    s = s.replace('# Experimental\n', '# Experimental\n\n**NOT PRODUCTION.**\n')
 write(p, s)
