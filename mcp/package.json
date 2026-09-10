@@ -22,6 +22,7 @@
     "gateway": "bun run ./gateway/index.ts",
     "measure:surface": "bun run ./scripts/measure-default-surface.ts",
     "measure:phases": "bun run ./scripts/measure-phase-surfaces.ts",
+    "measure:navigator": "bun run ./scripts/measure-navigator-context.ts",
     "verify:repository": "bun test tests/repository/*.test.ts",
     "verify:authoring": "bun test tests/authoring/*.test.ts",
     "verify:fixture-static": "bun test tests/authoring/current-workspace-fixture-static.test.ts",
