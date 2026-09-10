@@ -15,6 +15,12 @@ import {
 } from "./contract";
 import { projectCapabilityInputSchema } from "./schemaProjection";
 import {
+  buildNavigatorDelta,
+  buildNavigatorSnapshot,
+  decorateCapabilities,
+  ownerForCapability,
+} from "./navigator";
+import {
   VANILLA_ENTITY_REFERENCE_CAPABILITY,
   VANILLA_ENTITY_REFERENCE_TOOL,
   VanillaEntityReferenceError,
@@ -32,7 +38,7 @@ const server = new McpServer(
   },
   {
     instructions:
-      "Stable BlockIT client boundary. Use a known Runtime capability directly and search only when the capability is unknown or stale. This Gateway exposes tools only; Runtime resources and prompts are not proxied. Normal authoring is approved image + optional 3D Evidence, then Geometry → Texturing → optional Animation. With one open Blockbench project the Gateway can bind on first Runtime invocation; with multiple open projects select the intended tab and call status(adopt_active_project=true) once before authoring. Project and authoring-phase affinity then remain local to this Gateway. Phase handoffs continue the same task; invoke_capability never auto-retries an interrupted backend call.",
+      "Stable BlockIT client boundary with BlockIT Navigator. Start/resume with status only when orientation is unknown or materially stale; reuse its compact navigation packet. Known Runtime capability → invoke directly; search only when unknown/stale and describe only for real schema uncertainty. Gateway exposes tools only; Runtime resources and prompts are not proxied. Geometry/Texturing share AUTHORING; Animation is the only runtime handoff. Project/phase affinity remain local to this Gateway. invoke_capability never auto-retries an interrupted mutation.",
   }
 );
 
@@ -161,7 +167,10 @@ registerGatewayTool(
               : "BlockIT Gateway is ready; the Blockbench Runtime is currently offline.",
           },
         ],
-        structuredContent: status,
+        structuredContent: {
+          ...status,
+          navigation: buildNavigatorSnapshot(status),
+        },
       };
     } catch (error) {
       return gatewayErrorResult(error);
@@ -190,7 +199,7 @@ registerGatewayTool(
       const includeVanillaReference =
         shouldProbeVanillaEntityReference(query) &&
         (await vanillaReferenceProvider.isAvailable());
-      const capabilities = includeVanillaReference
+      const rawCapabilities = includeVanillaReference
         ? [
             summarizeCapability(VANILLA_ENTITY_REFERENCE_TOOL),
             ...runtimeCapabilities.filter(
@@ -199,6 +208,9 @@ registerGatewayTool(
             ),
           ].slice(0, limit)
         : runtimeCapabilities;
+      const navigationStatus = await backend.getStatus();
+      const currentOwner = buildNavigatorSnapshot(navigationStatus).authoring.owner;
+      const capabilities = decorateCapabilities(rawCapabilities, currentOwner);
       return {
         content: [
           {
@@ -260,6 +272,10 @@ registerGatewayTool(
               projected: projection.projected,
               branch: projection.branch,
             },
+            navigation: {
+              owner: ownerForCapability(capability),
+              current_phase: (await backend.getStatus()).affinity.authoring_phase,
+            },
           },
         },
       };
@@ -284,13 +300,35 @@ registerGatewayTool(
         capability === VANILLA_ENTITY_REFERENCE_CAPABILITY
           ? await vanillaReferenceProvider.invoke(args)
           : await backend.invokeCapability(capability, args);
-      if (result.structuredContent === undefined) return result;
+      const structured = result.structuredContent && typeof result.structuredContent === "object" && !Array.isArray(result.structuredContent)
+        ? result.structuredContent as JsonRecord
+        : null;
+      const targetPhase = capability === "switch_authoring_phase" && typeof structured?.phase === "string"
+        ? structured.phase as "geometry" | "texturing" | "animation"
+        : null;
+      const projectUuid = capability === "create_project" && structured?.project && typeof structured.project === "object" && !Array.isArray(structured.project)
+        ? typeof (structured.project as JsonRecord).uuid === "string" ? (structured.project as JsonRecord).uuid as string : null
+        : null;
+      const navigationDelta = buildNavigatorDelta({
+        capability,
+        phaseBefore: null,
+        phaseAfter: targetPhase,
+        projectUuid,
+        succeeded: result.isError !== true,
+      });
+      if (result.structuredContent === undefined) {
+        return { ...result, structuredContent: { navigation_delta: navigationDelta } };
+      }
+      const compacted = compactGatewayCapabilityStructuredContent(
+        capability,
+        result.structuredContent
+      );
       return {
         ...result,
-        structuredContent: compactGatewayCapabilityStructuredContent(
-          capability,
-          result.structuredContent
-        ),
+        structuredContent:
+          compacted && typeof compacted === "object" && !Array.isArray(compacted)
+            ? { ...(compacted as JsonRecord), navigation_delta: navigationDelta }
+            : { runtime_result: compacted, navigation_delta: navigationDelta },
       };
     } catch (error) {
       return gatewayErrorResult(error);
