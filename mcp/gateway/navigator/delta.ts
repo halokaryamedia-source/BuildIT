@@ -13,8 +13,12 @@ export function buildNavigatorDelta(input: {
   succeeded: boolean;
 }): NavigatorDelta {
   const changed: string[] = [];
-  if (input.phaseBefore !== input.phaseAfter) changed.push("authoring_phase");
-  if (input.capability === "create_project" && input.succeeded) changed.push("project_affinity");
+  if (input.succeeded && input.phaseBefore !== input.phaseAfter) {
+    changed.push("authoring_phase");
+  }
+  if (input.capability === "create_project" && input.succeeded) {
+    changed.push("project_affinity");
+  }
 
   const authoringDomain = authoringDomainForCapability(input.capability);
   const nextIntent = !input.succeeded
