@@ -88,6 +88,14 @@ capability routing metadata
 post-operation invalidation/delta
 ```
 
+Canonical stage-specific authoring projection contract:
+
+```text
+docs/knowledge/control-context-projection.md
+```
+
+This contract defines `GEOMETRY_CONTEXT`, `TEXTURE_CONTEXT`, and `ANIMATION_CONTEXT`. Control owns selecting/projecting these subsets. Domain Skills consume them but must not rebuild parallel projection contracts.
+
 Control does not own canonical Skill prose, Tool schemas, live model data, persistent asset state, build execution, or Codex creative reasoning.
 
 ## Reference Preparation Ownership
@@ -111,6 +119,7 @@ Reference package data may include images, compact JSON metadata, and conditiona
 | Animation / motion / effects/controllers | `.agents/skills/blockit-bedrock-animation/SKILL.md` | `mcp/server/tools/animation*.ts`, particle/controller owners |
 | Current asset routing / phase classification | `.agents/skills/blockit-bedrock-entity-mcp/SKILL.md` | `mcp/lib/authoringPhase.ts`, `mcp/server/tools.ts` |
 | Reference generation/preparation | `.agents/skills/blockbench-reference-generator/SKILL.md` + `reference-handoff.md` | ChatGPT; no Runtime authoring owner |
+| Stage-specific Codex context projection | `docs/knowledge/control-context-projection.md` | LazyDesigner Control (`mcp/gateway/navigator/**` during migration) |
 
 Legacy Skill package names will be migrated separately. Do not duplicate their content into Control during the rename.
 
