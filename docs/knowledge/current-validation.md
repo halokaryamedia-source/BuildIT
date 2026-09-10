@@ -1,20 +1,50 @@
-# Current Validation
+# LazyDesigner Current Validation
 
-Updated: 2026-09-10
+Updated: 2026-09-11
 
-This file owns **current proof interpretation**. Continuation belongs in `docs/knowledge/next-action.md`; stable facts in `CONTEXT.md`; source ownership in `docs/knowledge/implementation-map.md`; active asset continuity in `workspace/active/<project>/README.md`.
+This file owns **current proof interpretation only**. Product workflow belongs in `flow.md`; reference preparation in `reference-handoff.md`; source ownership in `implementation-map.md`; continuation in `next-action.md`; active asset continuity in `workspace/active/<asset>/README.md`.
 
-## Current Source Baseline
+## Product Rename Boundary
 
-The last user-identified local executable baseline is BlockIT MCP `v0.2.0` at commit `b6c29c5d9edb7bb5058c42bbce123efe9dc02ed8`.
+Current product name is **LazyDesigner**. Historical executable/runtime evidence was produced under the former BlockIT identity.
 
-Prior native evidence established BlockIT 0.2.0 startup in Blockbench 5.1.6, matching Gateway/Runtime build identity at the time of that run, and a 49-tool AUTHORING surface before the later retirement described below. That historical runtime evidence does **not** prove the current post-retirement source is installed or active.
+The last user-identified local executable baseline remains BlockIT MCP `v0.2.0` at commit `b6c29c5d9edb7bb5058c42bbce123efe9dc02ed8`.
+
+Prior native evidence established that historical build running in Blockbench 5.1.6 with matching Gateway/Runtime identity at the time of that run. This evidence must not be relabeled as proof that the current LazyDesigner migration source is installed or active.
+
+## Current Source Architecture State
+
+Source/documentation now defines the intended product boundary as:
+
+```text
+ChatGPT Reference Preparation
+→ Reference Package
+→ LazyDesigner Control
+→ Codex
+→ Gateway
+→ Runtime
+→ Blockbench
+```
+
+The current Control implementation is still physically located under the legacy `mcp/gateway/navigator/` source path. Therefore:
+
+```text
+CONTROL ARCHITECTURE: SOURCE/DESIGN IN MIGRATION
+CONTROL LIVE PROOF: NOT ESTABLISHED
+LAZYDESIGNER INSTALLED PROOF: NOT ESTABLISHED
+```
+
+Do not describe the old Experimental Navigator proposal as the current product architecture. Historical proposal material is superseded by the current `flow.md`, `reference-handoff.md`, and `implementation-map.md` authority set.
 
 ## 3D-Assisted Retirement
 
-On 2026-09-10 the user retired the previous 3D-assisted modelling path and all older Experimental research. Current product semantics are one native BlockIT Geometry path.
+The previous 3D-assisted/Hunyuan/PrimitiveAnything modelling route remains retired from current product semantics. Current authoring intent is one native Geometry path.
 
-The remote cleanup removes the old Experimental projects, Hunyuan/PrimitiveAnything source, external orchestration/scripts/tests, active strategy routing, and active Runtime phase exposure. The intended active source counts are:
+Generated compatibility residue and tests/docs may still contain retired identifiers until the later migration cleanup. Their presence does not reactivate the retired route.
+
+## Current Surface Counts
+
+Previously documented source targets after retirement were:
 
 ```text
 phase-union callable tools   54
@@ -22,17 +52,25 @@ AUTHORING tools              47
 Animation tools              20
 ```
 
-Two old ToolSpec shapes and the bundled runtime-prompt text remain a **temporary generated-compatibility residue only** until the next `LOCAL_CODE` generator pass can remove them together with regenerated API/prompt output. Active phase routing excludes both retired capability names, so this residue is not current authoring capability.
+Treat these as source-era documented counts, not installed Runtime proof, until the post-migration generated/runtime surface is rebuilt and verified.
 
-This cleanup requires exact-SHA CI/source proof after publication. It does not by itself establish installed/native proof.
+## Documentation Proof
 
-## Navigator Research
+The documentation cleanup can establish only that current repository intent is now separated into canonical owners:
 
-`Experimental/blockit-navigator/` is the only active Experimental research. It is a machine-first context-projection/navigation proposal intended to reduce Codex context overhead while preserving canonical information. It is **not production capability yet** and no usage saving is claimed until measured against accepted results.
+```text
+flow.md                → end-to-end workflow
+reference-handoff.md   → ChatGPT → Codex reference package contract
+implementation-map.md  → source/module ownership
+next-action.md         → implementation continuation
+current-validation.md  → proof interpretation
+```
+
+It does not prove that source implementation already matches the complete documented design.
 
 ## Visual / Reference Proof Rule
 
-A visual/reference `PASS` requires the **actual approved reference image** plus **fresh evidence** from the current model/revision at a comparable view/scale.
+A visual/reference `PASS` requires the actual approved reference image plus fresh evidence from the current model/revision at a comparable view/scale.
 
 Tool success, source/CI success, hashes, coordinates, export, scalar metrics, UV occupancy, native repack success, or a clean structural diagnostic cannot create visual PASS by themselves.
 
@@ -40,6 +78,26 @@ If corresponding live evidence is unavailable, report `UNVERIFIED` or `LOCAL PRO
 
 ## Authoring Efficiency
 
-**Authoring Efficiency** means **Cost to Accepted Result**. Static Footprint, raw call count, schema bytes, and transport bytes are guardrails/diagnostics only. Efficiency improves only when accepted quality is preserved while avoidable discovery, readback, phase bouncing, retries, recovery or correction cost decreases on a comparable task.
+Authoring Efficiency means **Cost to Accepted Result**.
 
-Whole-task token savings remain `UNKNOWN` until measured on comparable accepted work.
+Current source structure supports the hypothesis that Control can reduce repeated context loading, discovery, readback, phase bouncing, and recovery loops. Whole-task usage reduction remains **UNKNOWN** until measured on comparable accepted work after the Control architecture is implemented and exercised.
+
+Static payload/context measurements are supporting diagnostics only; they are not equivalent to end-to-end token/cost savings.
+
+## Current Proof Ceiling
+
+At this point the safe statement is:
+
+```text
+LazyDesigner naming: introduced in source/docs
+new canonical workflow: documented
+Reference Package contract: documented
+Control architecture: documented + partial legacy-path implementation
+full Control implementation: pending
+identifier migration: pending
+generated/test/CI synchronization: intentionally pending
+installed/live Blockbench validation: pending
+usage-savings benchmark: pending
+```
+
+Do not strengthen these claims without matching source/local/live evidence.
