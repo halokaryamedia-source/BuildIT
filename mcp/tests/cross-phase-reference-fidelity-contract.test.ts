@@ -10,6 +10,18 @@ function normalized(value: string): string {
 }
 
 describe("cross-phase reference fidelity contract", () => {
+  test("router keeps one authority chain and forbids downstream compensation", async () => {
+    const router = normalized(
+      await skill(".agents/skills/blockit-bedrock-entity-mcp/SKILL.md")
+    );
+
+    expect(router).toContain("cross-phase reference authority");
+    expect(router).toContain("a downstream phase must not compensate for an upstream defect");
+    expect(router).toContain("texture cannot paint around it");
+    expect(router).toContain("animation cannot key around it");
+    expect(router).toContain("fail | unverified | pass");
+  });
+
   test("texturing preserves geometry ownership and judges mapped-surface fidelity", async () => {
     const source = normalized(
       await skill(".agents/skills/blockit-bedrock-texturing/SKILL.md")
