@@ -6,7 +6,7 @@ This file owns **current implementation continuation only**. Architecture belong
 
 ## Current Objective
 
-Documentation-first transition from BlockIT/Navigator terminology to the LazyDesigner architecture, with Skill ownership clarified before further Control implementation.
+Documentation-first transition from BlockIT/Navigator terminology to the LazyDesigner architecture, with asset-authoring profile knowledge and stage-specific context projection now defined before further Control implementation.
 
 Canonical product flow is:
 
@@ -27,7 +27,7 @@ Control is the former Navigator role, expanded into the single Codex front line 
 
 ## Current Skill Architecture
 
-The semantic taxonomy is now fixed as:
+The semantic taxonomy is fixed as:
 
 ```text
 REFERENCE_PREPARATION
@@ -35,47 +35,93 @@ ASSET_AUTHORING
 PRODUCT_DEVELOPMENT
 ```
 
-`docs/knowledge/skill-taxonomy.md` owns the exact current-to-target Skill mapping and naming. Legacy physical names remain temporarily until routing/Control migration can rename them coherently without parallel aliases.
+Canonical modelling profile vocabulary is now:
+
+```text
+PROP_FURNITURE
+VEHICLE
+HUMANOID
+CREATURE
+MECHANICAL
+PLANT_FOLIAGE
+GENERIC
+```
+
+`docs/knowledge/modelling-profiles/README.md` owns profile selection. `GENERIC` is fallback only.
+
+Stage-specific Control projection is now defined in:
+
+```text
+docs/knowledge/control-context-projection.md
+```
+
+with canonical outputs:
+
+```text
+GEOMETRY_CONTEXT
+TEXTURE_CONTEXT
+ANIMATION_CONTEXT
+```
+
+## Completed Design Work
+
+The following design/semantic work is sufficiently defined for Control implementation to consume:
+
+```text
+✓ canonical modelling profiles and resolver
+✓ Reference Preparation + Reference Package contract
+✓ Modelling Skill selected-profile contract
+✓ Texturing stage-specific projection consumer contract
+✓ Animation stage-specific projection consumer contract
+✓ canonical Control context projection contract
+```
+
+Do not duplicate these contracts inside Control implementation. Control should project/route them.
 
 ## Implementation Order
 
 Do not optimize CI or generated-output cleanup yet. The current implementation sequence is:
 
 ```text
-1. audit and complete missing ASSET_AUTHORING modelling profiles
-2. upgrade REFERENCE_PREPARATION to emit the Reference Package contract
-3. rename current Navigator module/concepts to Control without permanent aliases
-4. make Control the explicit front-line intake for asset and product-development requests
-5. derive capability/domain classification from canonical owners instead of manual duplicate tables
-6. implement asset task-intent resolution
-7. implement lifecycle readiness projection
-8. implement dependency/downstream invalidation projection
-9. implement evidence freshness projection
-10. implement minimum-context / content-addressed continuation
-11. hard-bound discovery and remove avoidable status/context rereads
-12. migrate remaining BlockIT Skill/package/protocol identifiers only after dependency mapping is stable
-13. then restore generated-output/tests/CI closure
-14. finally run local/live acceptance
+1. rename current Navigator module/concepts to Control without permanent aliases
+2. make Control the explicit front-line intake for ASSET_AUTHORING and SYSTEM_DEVELOPMENT
+3. implement canonical stage projections: GEOMETRY_CONTEXT / TEXTURE_CONTEXT / ANIMATION_CONTEXT
+4. derive capability/domain classification from canonical owners instead of manual duplicate tables
+5. implement asset task-intent resolution
+6. implement lifecycle readiness projection
+7. implement dependency/downstream invalidation projection
+8. implement evidence freshness projection
+9. implement minimum-context / content-addressed continuation
+10. hard-bound discovery and remove avoidable status/context rereads
+11. migrate remaining BlockIT Skill/package/protocol identifiers only after dependency mapping is stable
+12. then restore generated-output/tests/CI closure
+13. finally run local/live acceptance
 ```
 
-## Immediate Design Work
+## Immediate Next Implementation
 
-Before touching Control implementation further, define the modelling-profile layer that complements the current technical modelling core:
+The next source-level task is to migrate the current `mcp/gateway/navigator/` responsibility surface into **LazyDesigner Control** coherently and wire the projection contract without creating a second architecture.
+
+Before mutation, inspect dependencies on:
 
 ```text
-PROP
-FURNITURE
-VEHICLE
-MECHANICAL
-HUMANOID
-CREATURE
-PLANT_CUTOUT
-GENERIC
+mcp/gateway/navigator/**
+mcp/gateway/index.ts
+mcp/gateway/backend.ts
+mcp/lib/authoringPhase.ts
+mcp/server/tools.ts
 ```
 
-Profiles are lightweight authoring knowledge overlays, not fixed geometry presets. They may describe semantic assemblies, articulation concerns, useful view relationships, common pivot/hierarchy concerns, and geometry-vs-texture decisions. They must not prescribe fixed cube counts or coordinates.
+Goals:
 
-After these profiles are defined, upgrade the ChatGPT Reference Preparation contract so it can selectively use the same profile vocabulary and pass only decision-critical technical guidance to Codex.
+```text
+Navigator terminology removed from active architecture
+Control becomes one front-line source authority
+existing working routing/context logic preserved where valid
+GEOMETRY_CONTEXT / TEXTURE_CONTEXT / ANIMATION_CONTEXT generated by Control
+no duplicate capability-domain classification tables
+no second persistent asset-state database
+```
 
 ## Stop Rules
 
@@ -83,6 +129,7 @@ After these profiles are defined, upgrade the ChatGPT Reference Preparation cont
 - Do not duplicate Skill/Tool canonical content into Control.
 - Do not load PRODUCT_DEVELOPMENT Skills during normal asset authoring.
 - Do not keep a permanent router Skill after Control becomes canonical routing authority.
+- Do not send all stage contexts when one owner is known.
 - Do not force complete reference packages for trivial corrections.
 - Do not rename protocol/package identifiers blindly before their dependency map is understood.
 - Do not spend effort making CI green while the architecture intentionally remains in active migration.
