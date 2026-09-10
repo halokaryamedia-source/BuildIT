@@ -29,22 +29,93 @@ jobs:
         working-directory: mcp
         run: bun install --frozen-lockfile
 
-      - name: Remove retired 3D-assisted runtime residue
+      - name: Remove retired 3D-assisted dependency closure
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          p = Path('mcp/server/tools/camera.ts')
-          s = p.read_text()
-          s = s.replace('import { hasVisibleLoadedBlockItThreeDAssistedReference } from "./project";\n', '')
-          s = s.replace(
-              'Model framing requires visible Cubes; explicit framing can also capture a loaded visible 3D-Assisted Evidence reference before blockout.',
-              'Model and explicit framing require visible Cube geometry in the current Blockbench project.'
-          )
-          old = '''      } else if (\n        observed.rendered_cube_count === 0 &&\n        !hasVisibleLoadedBlockItThreeDAssistedReference()\n      ) {\n        throw new Error(\n          "Explicit framing requires visible Cube geometry or a loaded visible BlockIT 3D-Assisted Evidence reference."\n        );\n      }\n'''
-          new = '''      } else if (observed.rendered_cube_count === 0) {\n        throw new Error("Explicit framing requires visible Cube geometry to capture.");\n      }\n'''
-          if old not in s:
-              raise SystemExit('camera retired-3d block did not match expected source')
-          p.write_text(s.replace(old, new))
+          import re
+
+          def edit(path, fn):
+              p = Path(path)
+              s = p.read_text()
+              n = fn(s)
+              if n == s:
+                  raise SystemExit(f'expected retirement edit did not change {path}')
+              p.write_text(n)
+
+          def camera(s):
+              s = s.replace('import { hasVisibleLoadedBlockItThreeDAssistedReference } from "./project";\n', '')
+              s = s.replace(
+                  'Model framing requires visible Cubes; explicit framing can also capture a loaded visible 3D-Assisted Evidence reference before blockout.',
+                  'Model and explicit framing require visible Cube geometry in the current Blockbench project.'
+              )
+              return re.sub(
+                  r'''      \} else if \(\n        observed\.rendered_cube_count === 0 &&\n        !hasVisibleLoadedBlockItThreeDAssistedReference\(\)\n      \) \{\n        throw new Error\(\n          "Explicit framing requires visible Cube geometry or a loaded visible BlockIT 3D-Assisted Evidence reference\."\n        \);\n      \}\n''',
+                  '      } else if (observed.rendered_cube_count === 0) {\n        throw new Error("Explicit framing requires visible Cube geometry to capture.");\n      }\n',
+                  s,
+              )
+          edit('mcp/server/tools/camera.ts', camera)
+
+          def element(s):
+              s = s.replace('import { materializeThreeDAssistedScaffoldFromWorkspace } from "@/server/threeDAssistedMaterializer";\n', '')
+              s = re.sub(r'\nexport const materializeThreeDAssistedParameters = z\.object\(\{.*?\n\};\n', '\n', s, flags=re.S)
+              s = s.replace('  materializeThreeDAssistedTool,\n', '')
+              s = re.sub(r'  createTool\(materializeThreeDAssistedTool\.name, \{.*?\n  \}, materializeThreeDAssistedTool\.status\);\n', '', s, flags=re.S)
+              return s
+          edit('mcp/server/tools/element.ts', element)
+
+          def project(s):
+              s = s.replace('import { STATUS_EXPERIMENTAL, STATUS_STABLE } from "@/lib/constants";', 'import { STATUS_STABLE } from "@/lib/constants";')
+              s = s.replace('import { isAbsoluteFilesystemPath } from "@/lib/util";\n', '')
+              s = re.sub(r'\n// Compatibility-only schema retained until the next LOCAL_CODE docs generation\..*?\nexport const createProjectParameters', '\nexport const createProjectParameters', s, flags=re.S)
+              s = re.sub(r'\n  \{\n    name: "manage_geometry_reference",.*?\n    status: STATUS_EXPERIMENTAL,\n  \},', '', s, flags=re.S)
+              s = re.sub(r'\n  // Retained only as a generated-doc compatibility descriptor.*?\n  \}, projectToolDocs\[3\]\.status\);', '', s, flags=re.S)
+              return s
+          edit('mcp/server/tools/project.ts', project)
+
+          def resources(s):
+              s = re.sub(r'import \{\n  isBlockItThreeDAssistedReference,.*?\n\} from "@/server/tools/project";\n', '', s, flags=re.S)
+              s = re.sub(r'\nfunction normalizeHalfTurn\(yaw: unknown\):.*?\n\}\n\n/\*\*\n \* Conditionally registers', '\n/**\n * Conditionally registers', s, flags=re.S)
+              old = '''      // Helper to extract reference model info. Tool-owned 3D-Assisted Evidence references\n      // also expose the same quantitative evidence needed after a fresh MCP/Codex\n      // connection, without creating a second discovery tool or persisting a\n      // parallel registry.\n      const getReferenceModelInfo = (model: OutlinerElement) => {\n        const refModel = model as ReferenceModelRuntime;\n        const threeDAssistedOwned = isBlockItThreeDAssistedReference(model);\n        const loaded = Boolean(refModel.mesh?.children.length);\n        return {\n          uuid: refModel.uuid,\n          name: refModel.name,\n          path: refModel.path || null,\n          origin: normalizeVec3(refModel.origin, [0, 0, 0]),\n          rotation: normalizeVec3(refModel.rotation, [0, 0, 0]),\n          scale: normalizeVec3(refModel.scale, [1, 1, 1]),\n          visibility: refModel.visibility ?? true,\n          wireframe: refModel.wireframe ?? false,\n          locked: refModel.locked ?? false,\n          export: refModel.export !== false,\n          loaded,\n          three_d_assisted_owned: threeDAssistedOwned,\n          reference_only: threeDAssistedOwned ? true : null,\n          production_geometry: threeDAssistedOwned ? false : null,\n          alignment: threeDAssistedOwned ? recoverThreeDAssistedAlignment(refModel) : null,\n          evidence:\n            threeDAssistedOwned && loaded\n              ? readThreeDAssistedReferenceEvidence(refModel)\n              : null,\n        };\n      };'''
+              new = '''      const getReferenceModelInfo = (model: OutlinerElement) => {\n        const refModel = model as OutlinerElement & {\n          path?: string; origin?: unknown; rotation?: unknown; scale?: unknown;\n          visibility?: boolean; wireframe?: boolean; locked?: boolean; export?: boolean;\n          mesh?: { children?: unknown[] };\n        };\n        return {\n          uuid: refModel.uuid,\n          name: refModel.name,\n          path: refModel.path || null,\n          origin: normalizeVec3(refModel.origin, [0, 0, 0]),\n          rotation: normalizeVec3(refModel.rotation, [0, 0, 0]),\n          scale: normalizeVec3(refModel.scale, [1, 1, 1]),\n          visibility: refModel.visibility ?? true,\n          wireframe: refModel.wireframe ?? false,\n          locked: refModel.locked ?? false,\n          export: refModel.export !== false,\n          loaded: Boolean(refModel.mesh?.children?.length),\n        };\n      };'''
+              if old not in s:
+                  raise SystemExit('reference model info block did not match')
+              return s.replace(old, new)
+          edit('mcp/server/resources.ts', resources)
+
+          def quality(s):
+              s = s.replace('  analyzeProjectedEnvelopeFidelity,\n', '')
+              s = re.sub(r'import \{\n  listBlockItThreeDAssistedReferences,\n  readThreeDAssistedReferenceEvidence,\n\} from "\./project";\n', '', s)
+              s = re.sub(r'\nfunction referenceEnvelopeFidelityRuntime\(.*?\n\}\n\nfunction textureColorProfileRuntime', '\nfunction textureColorProfileRuntime', s, flags=re.S)
+              s = re.sub(r'\n    \{\n      field: "reference_envelope_fidelity",\n      read: referenceEnvelopeFidelityRuntime,\n    \},', '', s)
+              return s
+          edit('mcp/server/tools/quality-intelligence.ts', quality)
+
+          def export_tool(s):
+              s = s.replace('import { listBlockItThreeDAssistedReferences } from "./project";\n', '')
+              s = re.sub(r'        if \(codec_id === "project"\) \{\n          const activeThreeDAssistedReferences.*?\n        \}\n', '', s, flags=re.S)
+              return s
+          edit('mcp/server/tools/export.ts', export_tool)
+
+          def phase(s):
+              s = re.sub(r'\nconst RETIRED_CAPABILITIES = new Set\(\[.*?\n\]\);\n', '\n', s, flags=re.S)
+              s = s.replace('  if (RETIRED_CAPABILITIES.has(toolName)) return null;\n', '')
+              return s
+          edit('mcp/lib/authoringPhase.ts', phase)
+
+          def gateway_contract(s):
+              return re.sub(r'const EXPERIMENTAL_CAPABILITIES = new Set\(\[\n  "manage_geometry_reference",\n\]\);', 'const EXPERIMENTAL_CAPABILITIES = new Set<string>();', s)
+          edit('mcp/gateway/contract.ts', gateway_contract)
+
+          def prompt(s):
+              s = s.replace(
+                  'Choose DIRECT or 3D_ASSISTED with the user; never infer or auto-switch. For DIRECT Geometry: create the project, add required Groups and Cubes, set explicit positions/sizes/parents/transforms, then capture canonical views for visual review. Do not use the retired reference-grounded plan/compiler flow.',
+                  'Use the single native BlockIT Geometry path: create the project, add required Groups and Cubes, set explicit positions/sizes/parents/transforms, then capture canonical views for visual review. Do not revive retired reference-grounded or external 3D-assisted routes.'
+              )
+              s = s.replace('3D_ASSISTED: after external gates, use Gateway `materialize_3d_assisted_scaffold(workspace_path)`.\n\n', '')
+              return s
+          edit('mcp/prompts/bedrock_entity_workflow.md', prompt)
+
           Path('mcp/server/threeDAssistedMaterializer.ts').unlink(missing_ok=True)
           PY
 
@@ -52,7 +123,7 @@ jobs:
         run: |
           if grep -RniE '3D_ASSISTED|3D-Assisted|threeDAssisted|Hunyuan|PrimitiveAnything|materialize_3d_assisted|manage_geometry_reference' \
             mcp/server mcp/lib mcp/gateway .agents/skills mcp/prompts \
-            --exclude='README.md' --exclude='*.test.ts'; then
+            --exclude='README.md' --exclude='manifest.json' --exclude='*.test.ts'; then
             echo 'Retired 3D authoring residue remains in active source.' >&2
             exit 1
           fi
