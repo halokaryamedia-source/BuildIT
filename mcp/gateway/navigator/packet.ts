@@ -4,7 +4,11 @@ import { resolveDevelopmentIntent, type NavigatorDevelopmentResolution } from ".
 import { NAVIGATOR_ROUTING_POLICY, type NavigatorRoutingPolicy } from "./routingPolicy";
 import { buildNavigatorSnapshot } from "./snapshot";
 import { readWorkspaceProjection, type NavigatorWorkspaceProjection } from "./workspace";
-import type { NavigatorContextHandle, NavigatorSnapshot } from "./types";
+import type {
+  NavigatorContextHandle,
+  NavigatorReadiness,
+  NavigatorSnapshot,
+} from "./types";
 
 export type NavigatorTaskMode = "ASSET_AUTHORING" | "MCP_DEVELOPMENT";
 
@@ -18,6 +22,7 @@ export type NavigatorContextDelivery = {
 export type NavigatorPacket = Omit<NavigatorSnapshot, "context" | "mode"> & {
   mode: NavigatorTaskMode;
   task_context_id: string;
+  readiness: NavigatorReadiness;
   routing: NavigatorRoutingPolicy;
   workspace: NavigatorWorkspaceProjection;
   development: NavigatorDevelopmentResolution | null;
@@ -94,6 +99,51 @@ function filterContext(
   };
 }
 
+function buildReadiness(
+  snapshot: NavigatorSnapshot,
+  workspace: NavigatorWorkspaceProjection,
+  mode: NavigatorTaskMode
+): NavigatorReadiness {
+  if (mode === "MCP_DEVELOPMENT") {
+    return {
+      modelling_start: "NEEDS_ORIENTATION",
+      runtime_ready: snapshot.runtime.online && !snapshot.runtime.catalog_stale,
+      project_ready: false,
+      domain_ready: false,
+      context_ready: true,
+      workspace_state: "NOT_REQUIRED",
+      reasons: ["MCP_DEVELOPMENT_MODE"],
+    };
+  }
+
+  const runtimeReady = snapshot.runtime.online && !snapshot.runtime.catalog_stale;
+  const projectReady = snapshot.project.binding === "BOUND";
+  const domainReady = snapshot.authoring.domain !== null;
+  const contextReady = snapshot.context.required.length > 0;
+  const reasons: string[] = [];
+
+  if (!snapshot.runtime.online) reasons.push("RUNTIME_OFFLINE");
+  if (snapshot.runtime.catalog_stale) reasons.push("CATALOG_STALE");
+  if (!projectReady) reasons.push("PROJECT_NOT_BOUND");
+  if (!domainReady) reasons.push("AUTHORING_DOMAIN_UNRESOLVED");
+  if (!contextReady) reasons.push("REQUIRED_CONTEXT_UNRESOLVED");
+
+  const blocked = !runtimeReady || snapshot.project.binding === "LOST";
+  return {
+    modelling_start: blocked
+      ? "BLOCKED"
+      : projectReady && domainReady && contextReady
+        ? "READY"
+        : "NEEDS_ORIENTATION",
+    runtime_ready: runtimeReady,
+    project_ready: projectReady,
+    domain_ready: domainReady,
+    context_ready: contextReady,
+    workspace_state: workspace.available ? "AVAILABLE" : "UNAVAILABLE",
+    reasons,
+  };
+}
+
 export async function buildNavigatorPacket(
   status: GatewayRuntimeStatus,
   options: {
@@ -121,6 +171,7 @@ export async function buildNavigatorPacket(
     mode,
     system: snapshot.system === "READY" && workspaceBlockers.length > 0 ? "DEGRADED" : snapshot.system,
     task_context_id: taskContextId(snapshot, workspace, mode, development),
+    readiness: buildReadiness(snapshot, workspace, mode),
     routing: NAVIGATOR_ROUTING_POLICY,
     workspace,
     development,
