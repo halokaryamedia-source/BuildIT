@@ -36,22 +36,31 @@ function emptyWorkspace(): NavigatorWorkspaceProjection {
   };
 }
 
+function runtimeContextIdentity(snapshot: NavigatorSnapshot): string {
+  return snapshot.runtime.build_identity ?? snapshot.runtime.runtime_signature ?? "offline";
+}
+
 function taskContextId(
   snapshot: NavigatorSnapshot,
   workspace: NavigatorWorkspaceProjection,
   mode: NavigatorTaskMode,
   development: NavigatorDevelopmentResolution | null
 ): string {
-  const payload = [
-    mode,
-    snapshot.project.affinity_uuid ?? "unbound",
-    snapshot.authoring.phase ?? "unknown",
-    snapshot.runtime.build_identity ?? snapshot.runtime.runtime_signature ?? "offline",
-    workspace.fingerprint ?? "no-workspace-state",
-    development?.domain ?? "no-development-domain",
-    development?.intent ?? "no-development-intent",
-  ].join("|");
-  return `task:${createHash("sha256").update(payload).digest("hex").slice(0, 20)}`;
+  const payload = mode === "MCP_DEVELOPMENT"
+    ? [
+        mode,
+        runtimeContextIdentity(snapshot),
+        development?.domain ?? "no-development-domain",
+        development?.intent ?? "no-development-intent",
+      ]
+    : [
+        mode,
+        snapshot.project.affinity_uuid ?? "unbound",
+        snapshot.authoring.phase ?? "unknown",
+        runtimeContextIdentity(snapshot),
+        workspace.fingerprint ?? "no-workspace-state",
+      ];
+  return `task:${createHash("sha256").update(payload.join("|")).digest("hex").slice(0, 20)}`;
 }
 
 function contextFamily(id: string): string {

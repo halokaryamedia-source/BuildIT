@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import {
   buildNavigatorDelta,
+  buildNavigatorPacket,
   buildNavigatorSnapshot,
   decorateCapabilities,
   resolveDevelopmentIntent,
@@ -76,6 +77,25 @@ describe("BlockIT Navigator active naming contract", () => {
     });
     expect(delta.authoring_domain).toBe("GEOMETRY");
     expect(delta).not.toHaveProperty("owner");
+  });
+
+  test("development task identity ignores unrelated asset affinity and authoring phase", async () => {
+    const first = await buildNavigatorPacket(status, {
+      taskMode: "MCP_DEVELOPMENT",
+      taskIntent: "animation keyframe terlalu kaku",
+    });
+    const second = await buildNavigatorPacket(
+      {
+        ...status,
+        affinity: { project_uuid: "project-b", authoring_phase: "texturing" },
+      },
+      {
+        taskMode: "MCP_DEVELOPMENT",
+        taskIntent: "animation keyframe terlalu kaku",
+      }
+    );
+
+    expect(second.task_context_id).toBe(first.task_context_id);
   });
 
   test("unresolved development routing remains bounded and fail-closed", () => {
