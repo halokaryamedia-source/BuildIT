@@ -59,6 +59,7 @@ export type NavigatorDelta = {
   protocol: "blockit-navigator-v1";
   capability: string;
   owner: NavigatorOwner;
+  source_owner: NavigatorSourceOwner;
   phase_before: BlockitAuthoringPhaseAffinity | null;
   phase_after: BlockitAuthoringPhaseAffinity | null;
   project_uuid: string | null;
