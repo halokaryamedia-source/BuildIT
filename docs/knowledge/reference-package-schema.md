@@ -4,7 +4,13 @@ Updated: 2026-09-11
 
 This document owns the canonical structure of `REFERENCE.json`, the machine-readable reference index handed from ChatGPT Reference Preparation to Codex.
 
-It does not own visual-reference design, Geometry/Texturing/Animation authoring rules, or Control implementation.
+It does not own visual-reference design, stage-document prose, Geometry/Texturing/Animation authoring rules, or Control implementation.
+
+Canonical `GEOMETRY.md` content is owned separately by:
+
+```text
+docs/knowledge/geometry-reference-contract.md
+```
 
 ## Objective
 
@@ -201,7 +207,9 @@ Optional object mapping stage documents that actually exist.
 Rules:
 - do not create entries for missing/not-required documents;
 - file path is relative to the package root;
-- these documents are projections derived from the same authority, not independent truth sources.
+- these documents are projections derived from the same authority, not independent truth sources;
+- `GEOMETRY.md` content must conform to `docs/knowledge/geometry-reference-contract.md`;
+- texture/animation document contracts are owned separately when defined.
 
 ## 6. `images`
 
