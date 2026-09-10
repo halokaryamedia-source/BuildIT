@@ -4,6 +4,11 @@ export { readWorkspaceProjection } from "./workspace";
 export { decorateCapabilities } from "./capabilities";
 export { buildNavigatorDelta } from "./delta";
 export { contextIds, contextSetChanged } from "./contextCache";
+export { resolveDevelopmentIntent } from "./developmentIntent";
+export type {
+  NavigatorDevelopmentDomain,
+  NavigatorDevelopmentResolution,
+} from "./developmentIntent";
 export {
   contextForOwner,
   ownerForCapability,
