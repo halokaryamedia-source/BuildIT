@@ -18,8 +18,27 @@ approved image owns visuals; dimensions own numeric scale; Geometry uses the nat
 Do not silently change agreed dimensions to improve resemblance. Resolve a material proportion/scale conflict with the user before dependent construction.
 Evidence: `SUPPORTED | PROVISIONAL | CONFLICTING | UNAVAILABLE`. View Pair Map only for material front/back, depth, attachment, or 3/4 ambiguity.
 
+### Reference Evidence Contract
+Before the first primary Geometry batch, resolve only the structure that can materially change construction:
+```text
+identity-bearing silhouette
+primary mass inventory + required visible part count
+attachment/topology graph: parent → contact target → continuity expectation
+cross-view width/height/depth evidence for each primary mass
+intentional negative spaces/openings and required closed boundaries
+asymmetry/orientation that changes construction
+identity landmarks that require Geometry rather than Texture
+motion participation: rigid | articulated | nonparticipating
+pivot/contact/clearance requirement when Animation Required = YES
+```
+Each item is `SUPPORTED | PROVISIONAL | CONFLICTING | UNAVAILABLE`. `PROVISIONAL` may guide a reversible primary mass only when it cannot change part count, topology, articulation, or identity-critical silhouette. `CONFLICTING` or `UNAVAILABLE` on any such material item → `BLOCKED` before dependent construction.
+
+**Coverage rule:** a visible required part may not disappear merely because one canonical view hides it. Build a primary-part checklist from the approved reference set and account for every required part as `GEOMETRY | TEXTURE | ANIMATION | OMIT(with reason)`. No silent omission, duplicate substitute, filler mass, or unsupported hidden structure.
+
+**Depth rule:** front agreement never closes a mass whose depth remains material. For each primary mass, record depth as `OBSERVED | INFERRED | UNRESOLVED` and identify the view that constrains it. `UNRESOLVED` depth that changes silhouette, attachment, collision/contact, or motion clearance blocks dependent construction.
+
 ## Geometry Hot Path
-`semantic form → representation choice → primary batch → Core View Triad → conditional surface integrity → causal correction → Geometry PASS → UV preflight → user review`.
+`reference evidence contract → semantic form → representation choice → primary batch → Core View Triad → conditional surface integrity → causal correction → Geometry PASS → UV preflight → user review`.
 
 Nontrivial form: **transient Primary Mass Contract**:
 ```text
@@ -73,9 +92,14 @@ Detail-only span/thickness `<= 4 Blockbench units` is an **anti-overcube guardra
 `requirement → source evidence → simplest recognizable Blockbench-buildable interpretation → PRIMARY BLOCKOUT + required hierarchy/pivots → primary PASS → identity-weighted secondary geometry`.
 
 Verdict requires approved reference + fresh current-revision model evidence:
-`claim | matching reference view | current view | observed difference | FAIL | UNVERIFIED | PASS`.
+`claim | matching reference view | current view | observed difference | severity | owning cause | FAIL | UNVERIFIED | PASS`.
 Mutation stales affected captures. Correct first cause, then recapture affected views. `capture_model_views` correspondence metadata only maps captures to canonical board slots; it is not a scorer and never creates visual PASS.
 Tool success, coordinates, bounds, hierarchy, validators, or similarity scores cannot justify `PASS`. Internal Geometry `PASS` requires form/depth, surface integrity, hierarchy/pivots, and no major defect.
+
+**Largest-difference-first:** rank only material visible differences by construction consequence, not pixel area. Fix in this order when applicable: missing/extra required part → wrong topology/attachment → wrong primary silhouette/proportion/depth → broken negative space/contact → pivot/motion-readiness defect → secondary geometric detail. Do not spend a correction round polishing a smaller difference while a higher-order structural defect remains.
+
+**Cross-view regression rule:** a correction is accepted only when the intended difference improves and no required orthographic relation materially regresses. A front-view improvement that breaks side depth, rear attachment, top footprint, or motion clearance is `REGRESSED`, not progress.
+
 Before user review, state the largest remaining reference differences at comparable angle/scale, including depth and identity landmarks. Neutral contact alone cannot certify an articulated assembly: inspect required closed boundaries in representative extremes, especially jaw/cheek/chest and limb attachments when present. Correct the owning structure before detail or production keys; do not hide unresolved gaps behind texture or filler Cubes.
 
 **UV Readiness Preflight** checks thin/Box-UV collapse, aspect/representation, seam/unique-region blockers. Read-only: no production UV/`UV Layout PASS`. **User Geometry APPROVED is required** before production UV.
