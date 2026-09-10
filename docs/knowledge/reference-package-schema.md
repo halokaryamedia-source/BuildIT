@@ -11,6 +11,7 @@ Canonical stage-document content is owned separately by:
 ```text
 docs/knowledge/geometry-reference-contract.md
 docs/knowledge/texture-reference-contract.md
+docs/knowledge/animation-reference-contract.md
 ```
 
 ## Objective
@@ -211,7 +212,7 @@ Rules:
 - these documents are projections derived from the same authority, not independent truth sources;
 - `GEOMETRY.md` content must conform to `docs/knowledge/geometry-reference-contract.md`;
 - `TEXTURE.md` content must conform to `docs/knowledge/texture-reference-contract.md`;
-- `ANIMATION.md` content must conform to its own canonical contract once defined.
+- `ANIMATION.md` content must conform to `docs/knowledge/animation-reference-contract.md`.
 
 ## 6. `images`
 
