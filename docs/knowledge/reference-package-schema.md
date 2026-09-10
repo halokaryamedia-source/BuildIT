@@ -6,10 +6,11 @@ This document owns the canonical structure of `REFERENCE.json`, the machine-read
 
 It does not own visual-reference design, stage-document prose, Geometry/Texturing/Animation authoring rules, or Control implementation.
 
-Canonical `GEOMETRY.md` content is owned separately by:
+Canonical stage-document content is owned separately by:
 
 ```text
 docs/knowledge/geometry-reference-contract.md
+docs/knowledge/texture-reference-contract.md
 ```
 
 ## Objective
@@ -209,7 +210,8 @@ Rules:
 - file path is relative to the package root;
 - these documents are projections derived from the same authority, not independent truth sources;
 - `GEOMETRY.md` content must conform to `docs/knowledge/geometry-reference-contract.md`;
-- texture/animation document contracts are owned separately when defined.
+- `TEXTURE.md` content must conform to `docs/knowledge/texture-reference-contract.md`;
+- `ANIMATION.md` content must conform to its own canonical contract once defined.
 
 ## 6. `images`
 
