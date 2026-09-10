@@ -1,114 +1,172 @@
-# BlockIT Flow
+# LazyDesigner Flow
 
-Updated: 2026-09-10
+Updated: 2026-09-11
 
-This is the **single detailed current flow**. Root `AGENTS.md` owns deterministic task/Skill routing; `workspace/README.md` owns asset continuity; `next-action.md` owns implementation continuation.
+This file is the **single canonical end-to-end workflow** for LazyDesigner. It defines how a request moves from the user through ChatGPT, Control, Codex, Gateway, Runtime, Blockbench, verification, review, and continuation.
 
-## Explicit autonomous authorization
+Detailed reference-package contents belong in `reference-handoff.md`. Source ownership belongs in `implementation-map.md`. Current implementation work belongs in `next-action.md`.
 
-When the user explicitly authorizes end-to-end AI execution, intermediate user-approval waits below are replaced by current-revision technical and visual verification with saved checkpoints. Quality gates remain; internal PASS never means user approval. Animation handoff uses `autonomous_authorized=true`, `geometry_verified=true`, `texture_verified=true`, `uv_layout=PASS`, evidence, checkpoint and `no_blockers=true`. Otherwise retain the review workflow. This does not reopen a stopped test or invent missing asset requirements.
-
-## 1. Route / Proof Ceiling
+## 1. Product Boundary
 
 ```text
-PIN CURRENT AUTHORITY
-→ EXECUTION CONTEXT
-   REMOTE_GITHUB | LOCAL_CODE | LIVE_BLOCKBENCH
-→ PROOF CEILING
-→ TASK CLASS
+USER
+  ↓
+CHATGPT
+  ↓
+REFERENCE PACKAGE
+  ↓
+LAZYDESIGNER CONTROL
+  ↓
+CODEX
+  ↓
+GATEWAY
+  ↓
+RUNTIME
+  ↓
+BLOCKBENCH
+  ↓
+RESULT
+  ↓
+CONTROL DELTA
+  ↓
+VERIFY / REVIEW / CONTINUE
 ```
 
-`REMOTE_GITHUB` = source/docs/static/CI evidence. `LOCAL_CODE` adds local build/test/generator/filesystem evidence. `LIVE_BLOCKBENCH` adds deployed/reloaded BlockIT + live Gateway/runtime/model evidence.
-
-Asset authoring that mutates or visually judges Blockbench belongs to `LIVE_BLOCKBENCH`; this does not activate formal Local Acceptance unless explicitly requested.
-
-## 2. Product / Authoring Boot Boundary
+Responsibilities:
 
 ```text
-REFERENCE CREATION → ChatGPT
-ASSET AUTHORING    → Codex → BlockIT Gateway → Runtime → Blockbench
-PERSISTENCE        → workspace/active/<asset>/
-USER STAGE REVIEW  → live Blockbench
+ChatGPT             = reference preparation + ambiguity reduction
+LazyDesigner Control= front-line intake + state + readiness + context + routing + invalidation
+Codex               = modelling/coding reasoning and execution planning
+Gateway             = stable MCP client boundary
+Runtime             = capability execution and mutation safety
+Blockbench          = live asset truth
+Workspace           = persistent asset continuity
+Skills / docs       = canonical knowledge
 ```
 
-### Normal asset authoring at a glance
+Control does not replace Codex reasoning and must not become a second Runtime, second workflow database, or duplicate knowledge base.
+
+## 2. Request Classes
+
+Every LazyDesigner request enters through Control after any required ChatGPT preparation.
+
+Two top-level task modes exist:
 
 ```text
-Approved Reference
-→ Requirement Gate
-→ Geometry
-→ internal Geometry verify
-→ UV Readiness Preflight
-→ user Geometry review/approval
-→ production UV Layout
-→ Texturing
-→ user Texture review/approval
-→ Animation Readiness Preflight when required
-→ Animation when required
-→ Finalization
-→ COMPLETE
+ASSET_AUTHORING
+SYSTEM_DEVELOPMENT
 ```
 
-Gateway remains exactly `status`, `search_capabilities`, `describe_capability`, `invoke_capability`.
-
-Before **any authoring mutation**, current-worktree routing is mandatory:
+Asset authoring includes:
 
 ```text
-root AGENTS.md
-→ blockit-bedrock-entity-mcp
-→ active semantic specialist
-
-Geometry / rig / pivots / UV Layout → blockbench-bedrock-modelling
-Texture Atlas / Styling / PBR       → blockit-bedrock-texturing
-Animation / motion                   → blockit-bedrock-animation
+new asset
+continue asset
+correction / edit
+geometry / rig / UV
+texturing / materials / PBR
+animation
+particle/effect work associated with the asset
+inspection / verification
+finalization
 ```
 
-No mutation until router + matching specialist are loaded and its prerequisite gate is satisfied. When Geometry↔Texturing ownership changes, load the new specialist before its first mutation; both remain on the shared AUTHORING Runtime surface. **No Geometry↔Texturing `switch_authoring_phase` is required.** AUTHORING↔Animation alone uses `switch_authoring_phase`, and the same task/chat continues.
-
-Persist current project state only at **meaningful handoff/resume/park/completion boundaries**. At those boundaries, reconcile the existing asset README/report with the current revision: operation evidence, technical checks, internal visual verdict and user acceptance are separate. A final user rejection overrides current acceptance without erasing historical approvals. Stopped production does not resume automatically for coverage.
-
-## 3. Reference Preparation
-
-Reference generation is optional when the actual original source image already provides sufficient visual evidence. A canonical five-view board remains the preferred normalized coverage path for complex/asymmetric assets.
+System development includes:
 
 ```text
-actual image supplied to Codex
-├─ material evidence sufficient
-│  → use original source image directly as Approved Reference
-└─ material evidence missing/conflicting
-   → request only the smallest decision-changing extra source image/detail
-   → if still materially insufficient, recommend canonical board or BLOCKED
+MCP update
+new capability/tool
+plugin development
+Gateway/Runtime change
+build/generator change
+distribution/update change
+bug fix
+refactor
 ```
 
-Do not force board generation as intake ceremony and do not auto-generate it in Codex. An actual image explicitly sent for modelling is approved unless the user marks it draft/not ready.
+The two modes share Control as the front door but do not share asset readiness requirements.
 
-When a canonical board is requested, ChatGPT generates one fixed five-preview board:
+## 3. ChatGPT Reference Preparation
+
+For asset work, ChatGPT prepares the reference before Codex when preparation materially reduces ambiguity.
+
+ChatGPT may receive:
 
 ```text
-UPPER: LEFT | FRONT | BACK
-LOWER: TOP  | FRONT-LEFT 3/4
+user prompt only
+user image(s)
+existing concept/reference
+existing asset + requested change
 ```
 
-Use fixed normalized regions, crop-safe spacing, uniform background, no panel labels/borders/technical metadata. Minor cross-view drift is acceptable unless it changes identity, primary mass/count, topology/attachment, important negative space, articulation, or buildability.
+ChatGPT returns a **Reference Package** containing the minimum decision-critical evidence and technical guidance needed by Codex.
+
+Typical contents:
 
 ```text
-source image + user intent
-→ ChatGPT draft/correction
-→ user approves
-→ actual approved image handed to Codex
+approved image(s)
+original user intent
+asset identity
+requested dimensions/scale when known
+animation required: yes/no/unknown
+primary silhouette/masses
+important openings/negative space
+attachment/contact relationships
+symmetry/asymmetry
+material identity
+moving parts/articulation
+representation guidance when useful
+hierarchy/pivot/rig guidance when useful
+UV/texture notes when useful
+animation/keyframe guidance when useful
+explicit unknowns and conflicts
 ```
 
-Handoff is always the actual image + normal user message. No sidecar/manifest/ZIP.
+Simple assets receive a simple package. Complex/asymmetric/animated assets may receive richer views and guidance.
 
-## 4. New Model Intake
+ChatGPT must not invent unavailable dimensions, hidden geometry, articulation, materials, or motion as facts. See `reference-handoff.md` for the exact package contract.
+
+## 4. Control Intake
+
+Control receives the original user intent plus the Reference Package or system-development request.
+
+Control preserves the original request and derives compact routing metadata.
+
+For asset work it resolves:
 
 ```text
-Approved Reference arrives
-→ create Active Workspace
-→ REQUIREMENT GATE
+task class
+asset identity
+new/existing/correction/continue
+requested target
+requested semantic domain
+reference status
+requirements status
+project/workspace identity
+current lifecycle stage
+current gates/blockers
+required canonical context
+legal next route
 ```
 
-Mandatory:
+For system development it resolves:
+
+```text
+development task class
+problem/feature intent
+affected subsystem/domain
+source owner(s)
+direct dependencies
+minimum context
+build/generate/deploy path when known
+```
+
+Control must not transform the user's actual design intent into a lossy generic summary.
+
+## 5. Asset Requirement Gate
+
+For a new asset, no authoring mutation begins until the required facts are known:
 
 ```text
 Asset
@@ -117,192 +175,275 @@ Dimensions: width × height × length in Minecraft blocks
 Animation Required: YES | NO
 ```
 
-Missing fields are asked once as a batch. Before the gate passes: no `.bbmodel` or Cubes/Groups. Agreed dimensions remain numeric authority. A material conflict with reference proportions requires the user's decision; visual priority is not implicit permission to replace numeric requirements.
+Unknown required values remain explicit and block only the work that depends on them.
 
-After it passes:
+Agreed numeric dimensions are numeric authority. Approved reference imagery is visual authority. A material conflict between them requires an explicit decision rather than silent inference.
+
+## 6. Control Orientation
+
+Before Codex mutates an asset, Control resolves current operational state from canonical owners:
 
 ```text
-create Blockbench project
-→ shared AUTHORING with Geometry owner
+Runtime online/identity
+catalog freshness
+project affinity / active project
+current authoring phase
+Active Workspace state
+current lifecycle stage
+current gate status
+blockers
+already-loaded context handles
 ```
 
-## 5. Non-Skippable Authoring Sequence
+Control projects the minimum state needed for the current decision. It must not dump the whole repository or every Skill/schema into Codex context.
 
-Geometry and Texturing share Runtime capabilities, but semantic gates are ordered:
+## 7. Lifecycle Readiness
+
+Asset readiness is ordered:
+
+```text
+REFERENCE / REQUIREMENTS
+→ GEOMETRY
+→ GEOMETRY VERIFY
+→ UV READINESS PREFLIGHT
+→ GEOMETRY USER APPROVAL
+→ PRODUCTION UV LAYOUT
+→ TEXTURING
+→ TEXTURE VERIFY
+→ TEXTURE USER APPROVAL
+→ ANIMATION READINESS when required
+→ ANIMATION when required
+→ FINALIZATION
+→ COMPLETE
+```
+
+Control should expose readiness as a projection, for example:
+
+```text
+reference: READY
+requirements: READY
+geometry: READY
+uv: LOCKED
+texturing: LOCKED
+animation: LOCKED
+```
+
+Readiness is derived from canonical state; Control is not a second authority for approvals or gates.
+
+## 8. Semantic Ownership
+
+Current semantic domains are:
+
+```text
+GEOMETRY
+TEXTURING
+ANIMATION
+CORE
+```
+
+Ownership:
+
+```text
+Geometry / rig / pivots / UV Layout
+→ modelling specialist
+
+Texture Atlas / Styling / materials / PBR
+→ texturing specialist
+
+Animation / motion / controllers / animation effects
+→ animation specialist
+```
+
+Geometry and Texturing share the AUTHORING Runtime surface. Normal Geometry↔Texturing corrections do **not** require a Runtime phase switch.
+
+AUTHORING↔Animation alone uses the explicit phase handoff.
+
+## 9. Minimum Context Projection
+
+Control gives Codex only the context required for the current decision.
+
+Examples:
+
+```text
+new whole-model geometry
+→ original intent + primary reference + dimensions + geometry constraints + modelling context
+
+small geometry correction
+→ changed user intent + affected target + affected reference view(s) + current target state
+
+texture correction
+→ relevant material/reference evidence + UV/texture state + texturing context
+
+animation correction
+→ relevant rig state + motion/keyframe evidence + affected clip + animation context
+```
+
+Content-addressed context that is unchanged should be referenced rather than retransmitted.
+
+## 10. Capability Routing
+
+Control follows direct-first routing:
+
+```text
+known capability + known arguments
+→ invoke directly
+
+unknown capability
+→ bounded capability search
+
+schema uncertainty
+→ describe exact capability/branch
+
+stale/lost orientation
+→ status refresh
+```
+
+Search and describe are fallbacks, not mandatory rituals.
+
+Control should eventually hard-bound discovery to the smallest useful result set; current design target is four results maximum.
+
+## 11. Codex Authoring
+
+After Control supplies the current task packet, Codex performs the creative/technical reasoning.
+
+Codex owns decisions such as:
+
+```text
+3D interpretation
+primary/secondary form strategy
+cube/group decomposition
+representation choice
+hierarchy construction
+visual comparison and correction reasoning
+texture design
+rig/animation construction
+source implementation for system-development tasks
+```
+
+Control may provide guidance and constraints but must not precompute an inflexible cube-by-cube model plan.
+
+## 12. Gateway → Runtime → Blockbench
+
+Codex uses the stable Gateway boundary:
+
+```text
+status
+search_capabilities
+describe_capability
+invoke_capability
+```
+
+Gateway handles client-facing stability and project affinity. Runtime executes the actual capabilities. Blockbench contains the live model state.
+
+## 13. Post-Operation Control Delta
+
+Every meaningful result returns through Control as a compact delta rather than forcing a full re-orientation.
+
+Control delta answers:
+
+```text
+WHAT CHANGED?
+WHAT BECAME STALE?
+WHAT REMAINS VALID?
+WHAT IS THE NEXT LEGAL INTENT?
+IS A STATUS REFRESH REQUIRED?
+```
+
+Example geometry mutation:
+
+```text
+changed: geometry
+invalidated: affected geometry evidence / candidate acceptance state
+preserved: project affinity / Runtime identity / unrelated accepted state
+next: verify affected geometry
+status refresh: no, unless operational orientation changed
+```
+
+## 14. Evidence Freshness and Verification
+
+Mutation invalidates only affected evidence.
+
+For new whole-form Geometry, default internal visual evidence is the smallest useful multi-view bundle, typically front + left + top. Add rear/3q views only when they affect a decision.
+
+Correction loop:
+
+```text
+MUTATE
+→ VERIFY
+→ PASS?
+   ├─ YES → next gate
+   └─ NO → diagnose smallest material cause
+            → smallest correction
+            → verify affected area only
+```
+
+The same causal correction failing twice without decision-changing evidence becomes `BLOCKED` rather than an endless retry loop.
+
+Tool success, coordinates, hierarchy, validators, or save/export success do not by themselves create visual approval.
+
+## 15. User Review and Approval
+
+Internal verification and user approval are separate.
+
+```text
+internal PASS
+→ READY_FOR_USER_REVIEW
+→ user APPROVE or REVISION
+```
+
+A revision request re-enters Control as a new/continued correction intent. Control preserves accepted unaffected state and routes only the affected owner/dependencies.
+
+## 16. Geometry → UV → Texturing
+
+Normal sequence:
 
 ```text
 GEOMETRY IN_PROGRESS
 → internal Geometry verify
 → UV READINESS PREFLIGHT
-   ├─ blocker → GEOMETRY IN_PROGRESS
-   └─ ready → READY_FOR_USER_REVIEW
-→ user inspects live Blockbench
-   ├─ revision → GEOMETRY IN_PROGRESS
-   └─ explicit approve → Geometry APPROVED
-→ checkpoint save
-
-Geometry APPROVED
-→ Geometry-owned production UV Layout
+→ READY_FOR_USER_REVIEW
+→ Geometry APPROVED
+→ checkpoint
+→ production UV Layout
 → UV Layout PASS
-→ checkpoint/update continuity
-
-Geometry APPROVED + UV Layout PASS
-→ Texturing specialist
-→ Texture Atlas + Styling
+→ Texturing
 → Texture Verify
 → READY_FOR_USER_REVIEW
-→ user approve → Texturing APPROVED
-→ checkpoint save
-
-Texturing APPROVED
-→ when Animation Required=YES: ANIMATION READINESS PREFLIGHT
-   ├─ blocker → correct exact owner on shared AUTHORING
-   └─ ready → Animation handoff
-→ otherwise Finalization
+→ Texturing APPROVED
+→ checkpoint
 ```
 
-**Geometry user approval is required before fresh/rebuilt production UV Layout. Texture/PBR mutation is forbidden before `Geometry APPROVED + UV Layout PASS`.** Readiness preflights are bounded internal checks, not new user approvals or persisted stages; they do not create UV Layout PASS or Animation PASS.
+Texture/PBR mutation requires `Geometry APPROVED + UV Layout PASS`.
 
-Codex uses current Blockbench state + `capture_model_views` for internal evidence; internal captures are not user approval. Do not send materially broken work to review. Same material causal correction failing twice without new evidence → `BLOCKED`.
+If Texturing exposes a Geometry/UV defect, Control routes the correction to the exact upstream owner on the shared AUTHORING surface, then invalidates only affected downstream evidence/state.
 
-## 6. Geometry
+## 17. Animation Handoff
 
-BlockIT has one native Geometry authoring path using semantic Groups/Cubes, appropriate plane-like/cutout carriers, Locators/Nulls when needed, and native Blockbench hierarchy/pivot behavior.
+If `Animation Required = NO`, proceed to Finalization after Texture approval.
+
+If `YES`:
 
 ```text
-Approved Reference + Dimensions + Requirements
-→ semantic form
-→ representation choice
-→ transient Primary Mass Contract only when form is nontrivial
-→ coherent primary Cube/Group batch
-→ one Core View Triad evidence bundle
-   front + left + top
-→ difference-first verdict
-   ├─ material defect
-   │  → reuse fresh affected pre-correction evidence when available
-   │  → smallest causal correction
-   │  → recapture affected view(s)
-   │  → expand only for cross-view regression risk
-   │  → IMPROVED: continue
-   │  → UNCHANGED/REGRESSED: re-diagnose
-   │  → same causal correction fails twice without new evidence: BLOCKED
-   └─ primary PASS
-      → identity-weighted secondary Geometry only when needed
-→ conditional Surface Integrity review when adjacency/layer/contact is material
-→ internal Geometry PASS
-→ UV READINESS PREFLIGHT
+Texturing APPROVED
++ current checkpoint
+→ Animation Readiness Preflight
+→ hierarchy/pivots/attachments/clearance ready
+→ no unresolved upstream blocker
+→ HANDOFF_REQUIRED
+→ switch_authoring_phase(animation)
+→ animation specialist
+→ Animation authoring
+→ playback/technical/visual verify
 → READY_FOR_USER_REVIEW
 → user approval
-→ checkpoint save
-→ production UV Layout
+→ checkpoint
 ```
 
-Evidence rules:
+Upstream corrections return to AUTHORING through the same controlled handoff.
 
-- New whole-form blockout defaults to one `capture_model_views` call for `front + left + top`; bounded edits use affected views.
-- Add `back` only for rear topology/asymmetry.
-- Add `front_left_3q` for attachment/layering/orientation ambiguity or source-matched fidelity; compare only source-supported views.
-- Do not recapture all five views routinely.
-- A fresh capture already used to diagnose a defect is valid pre-correction evidence.
-- Every mutation makes affected prior captures stale for the post-mutation verdict.
-- Tool success, coordinates, bounds, hierarchy, validators, or correspondence metadata never create visual PASS.
+## 18. Dependency Invalidation
 
-## 7. Geometry / Surface / UV
-
-Canonical vocabulary:
-
-```text
-UV Layout       = geometry-to-atlas mapping
-Texture Atlas   = bitmap/PNG canvas
-Texture Styling = authored pixels
-Texture Verify  = atlas + mapped-model validation
-```
-
-Use `list_textures(diagnostics=false)` for identity discovery and `diagnostics=true` for UV/coverage/seam/PBR checkpoints. Inventory-only results are not readiness evidence. Seam diagnostics pair faces within one Cube; inspect cross-Cube contacts in mapped views.
-
-Construction forms are **not presets**. Decide transform ownership before coordinates. Form/contact/articulation-defining required primary Groups/pivots may belong in the primary blockout; neutral organization stays downstream. After primary PASS, add only identity-weighted secondary geometry.
-
-All Geometry stays future-animation-friendly: semantic hierarchy, naturally movable parts transformable, sensible pivots, no speculative full rig. If Animation is required, participating hierarchy/pivots/attachments must be ready before Geometry approval.
-
-### Surface quality
-
-Surface integrity means every material relationship is intentional, not universal watertight closure:
-
-```text
-CLOSED_BOUNDARY
-INTENTIONAL_OPENING
-LAYERED_OFFSET
-INTENTIONAL_INTERSECTION
-CUTOUT_CARRIER
-```
-
-For material adjacency/layer/contact, call `inspect_model_bounds` once and read bounded geometry/surface diagnostics; do not poll it as a progress check. Diagnostic hints never create semantic or visual PASS by themselves.
-
-### Geometry vs Texture
-
-Geometry owns required 3D silhouette, volume, contact/opening boundary, layering, transform, or motion; Texture owns surface-only information. `PLANAR_CUTOUT_CARRIER` may use one plane or a crossed pair when alpha owns the internal silhouette.
-
-Detail-only geometry with smallest material span/thickness `<=4 Blockbench units` is an anti-overcube guardrail, not a classifier.
-
-### Geometry user gate
-
-Geometry internal PASS + fresh current-revision evidence must also clear **UV READINESS PREFLIGHT** before `READY_FOR_USER_REVIEW`. This preflight is read-only: do not create/rebuild the production template, repack UV, paint, or claim UV Layout PASS. User approval locks the Geometry checkpoint before production UV rebuild.
-
-### UV Layout
-
-For fresh/materially rebuilt Cube-based production UV, default to native `create_texture(type=template)` with explicit `pixel_density` and `rearrange_uv=true`.
-
-UV Layout PASS requires technical validity, face geometry↔UV aspect, consistent texel density, orientation, padding/seams, intentional reuse/mirroring, and unique regions for asymmetric identity detail. `uv_audit.production_gate=ready` is necessary hygiene, not UV Layout PASS. Persist `UV Layout: PASS` before Texturing.
-
-## 8. Texturing
-
-Entry:
-
-```text
-Geometry APPROVED
-+ UV Layout PASS
-+ current-worktree blockit-bedrock-texturing loaded
-```
-
-Then:
-
-```text
-Texture Atlas
-→ BASE
-→ VALUE / FORM
-→ IDENTITY
-→ controlled SECONDARY DETAIL
-→ Texture Verify
-→ READY_FOR_USER_REVIEW
-→ user Texture APPROVED
-```
-
-Pixels are authored against final UV atlas/islands. No arbitrary procedural pattern/noise, stretched pixel art, reference-image transfer shortcut, or Texture used to hide Geometry. If Texturing reveals a Geometry/UV blocker, route judgement to Geometry in-session, correct it on shared AUTHORING, invalidate only materially affected downstream texture evidence, then resume Texturing.
-
-## 9. Animation
-
-If `Animation Required = NO`, skip after Texturing approval.
-
-If YES, remain on shared AUTHORING until the handoff is ready. **ANIMATION READINESS PREFLIGHT** requires intended moving hierarchy, pivots, attachments/contact, clearance, and no known UV/texture blocker.
-
-```text
-Texturing APPROVED + current .bbmodel checkpoint
-→ ANIMATION READINESS PREFLIGHT
-→ HANDOFF_REQUIRED(target_phase=animation)
-→ switch_authoring_phase through Gateway
-→ load Animation specialist
-→ Animation
-→ internal playback/technical/visual verify
-→ READY_FOR_USER_REVIEW
-→ user approve
-→ checkpoint save
-```
-
-Review cyclic motion over at least three full loops and actions through landing/recovery when applicable. Static poses, key counts and math presence are not motion-quality proof.
-
-## 10. Downstream Invalidation
-
-Invalidate minimum dependency:
+Invalidate the minimum dependency set.
 
 ```text
 Geometry material change affecting mapped surfaces
@@ -312,58 +453,136 @@ Geometry material change affecting mapped surfaces
 UV Layout material change
 → affected Texture INVALIDATED
 
-unaffected downstream state
-→ keep accepted
+unaffected accepted downstream state
+→ preserve
 ```
 
-Routine Geometry↔Texturing correction uses shared AUTHORING; no phase bounce.
+Control tracks/projections should express dependency impact without resetting the whole asset unnecessarily.
 
-## 11. Finalization
+## 19. Persistence
 
-After all required approvals/gates, load `docs/foundation/09-finalization-standard.md` only for `FINALIZATION`.
+Persistent asset continuity remains:
+
+```text
+workspace/active/<asset>/README.md
+```
+
+Persist/reconcile state at meaningful boundaries:
+
+```text
+handoff
+approval
+resume
+park
+completion
+```
+
+Do not persist every small mutation as a new state system. Git history owns historical versions.
+
+## 20. Finalization
+
+When all required gates are ready:
 
 ```text
 FINALIZATION
-→ current-state authority
-→ requested deliverable contract
-→ format/dimensions/hierarchy/UV/textures/animation refs
-→ native identifier/reference consistency
-→ requested exports present for current revision
-→ no temporary/debug elements
-→ proof labels no stronger than evidence
-→ workspace current summary consistent
+→ current state check
+→ hierarchy / dimensions / UV / textures / animation refs
+→ identifiers and native references
+→ requested exports
+→ remove temporary/debug residue
+→ reconcile workspace summary
+→ COMPLETE
 ```
 
-Finalization cannot silently alter approved visual work or treat native-save/export/parse success as visual completion.
+Finalization cannot silently change approved visual work.
 
-## 12. Existing Model / Improvement
+## 21. Existing Asset / Correction Flow
 
 ```text
-user supplies/identifies .bbmodel + change
-→ recover/create Active Workspace
-→ persist untracked supplied baseline before mutation
-→ minimum targeted baseline inspection
-→ determine affected owner/gate
-→ load current router + matching specialist
-→ update smallest owning stage/gate
-→ internal verify
-→ required user approval/PASS
-→ Finalization
+USER CHANGE REQUEST
+→ ChatGPT adds reference/technical clarification only when useful
+→ Control recovers current asset/workspace/live state
+→ preserve unaffected accepted state
+→ classify target/domain/dependencies
+→ project minimum context to Codex
+→ Codex mutation
+→ Control delta
+→ affected verification only
+→ user review when required
+→ continue/finalize
 ```
 
-Start with the requested target plus only direct dependencies/evidence needed to classify owner and impact. Broaden inspection only when identity, dependency impact, or a requested visual criterion remains unresolved. Use one editable `.bbmodel`; Git history owns prior versions.
+Do not regenerate a complete Reference Package for every small edit.
 
-## 13. Evidence / Continuity
+## 22. System Development Flow
+
+LazyDesigner Control is also the front line for product development.
 
 ```text
-repository continuation    → docs/knowledge/next-action.md
-active asset continuity    → workspace/active/<asset>/README.md
-asset workspace rules      → workspace/README.md
-stable facts               → CONTEXT.md
-current proof state        → docs/knowledge/current-validation.md
-current source ownership   → docs/knowledge/implementation-map.md
-formal local acceptance    → docs/knowledge/operations/local-acceptance-runbook.md only when reactivated
-historical rationale       → Git history
+USER MCP / PLUGIN / BUILD / RUNTIME REQUEST
+→ optional ChatGPT technical research/reference preparation
+→ Control: SYSTEM_DEVELOPMENT
+→ classify bug/feature/refactor/update
+→ resolve affected source owner(s)
+→ resolve dependency/impact boundary
+→ project minimum source + Skill/test/build context
+→ Codex implementation
+→ source delta
+→ required build/generate/package/deploy path
 ```
 
-Do not create duplicate route/profile/provider/approval/workspace-state systems. For measured authoring, record actual calls/errors/retries and available active time; unknown counts/time/tokens are `UNKNOWN`. Optimize cost only against comparably accepted quality.
+System development does not pass through asset Reference/Dimensions/Animation requirement gates.
+
+Control must not become a compiler, package manager, source editor, or updater itself. It routes those operations to their real owners.
+
+## 23. Efficiency Principle
+
+Primary objective:
+
+```text
+COST TO ACCEPTED RESULT
+```
+
+Efficiency means preserving or improving accepted quality while reducing avoidable:
+
+```text
+repository/context scans
+repeated Skill delivery
+capability discovery
+schema reads
+status rereads
+wrong-route attempts
+phase bouncing
+full-view recaptures
+retries and recovery loops
+```
+
+A smaller packet is useful only if it preserves decision-critical information.
+
+## 24. Non-Goals
+
+LazyDesigner Control must not become:
+
+```text
+second MCP server
+second workflow authority
+duplicate Tool/Skill knowledge base
+creative modelling engine
+visual judge replacing Codex/user
+persistent model database
+large UI requirement
+broad autonomous planner
+```
+
+Its core verbs remain:
+
+```text
+INTAKE
+RESOLVE
+PROJECT
+ROUTE
+INVALIDATE
+CONTINUE
+```
+
+This is the required workflow baseline for the next Control implementation phase.
