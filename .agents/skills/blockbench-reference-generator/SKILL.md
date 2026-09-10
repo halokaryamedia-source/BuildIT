@@ -1,62 +1,173 @@
 ---
 name: blockbench-reference-generator
-description: LazyDesigner reference-preparation specialist for ChatGPT. Produce the minimum sufficient visual reference plus structured decision-critical technical handoff for downstream Codex authoring.
+description: LazyDesigner ChatGPT-side reference-preparation authority. Resolve missing vital requirements, compile a clean brief, confirm before generation, generate minimum sufficient unified visual evidence, and package it for Codex.
 ---
 
 # LazyDesigner Reference Preparation
 
-This Skill is the single ChatGPT-side reference-preparation authority for LazyDesigner asset authoring.
+This Skill is the single ChatGPT-side authority for preparing LazyDesigner asset references before Codex authoring.
+
+It orchestrates existing canonical contracts rather than duplicating them.
 
 ```text
-CORE RULES
-+ ONE PRIMARY ASSET PROFILE
-+ ONLY NECESSARY REFERENCE MODULES
-→ APPROVED VISUAL REFERENCE(S)
-+ STRUCTURED TECHNICAL HANDOFF
-→ LazyDesigner Control
-→ Codex
+USER REQUEST
+→ UNDERSTAND
+→ REQUIREMENT GATE
+→ SIMPLE QUESTIONS WHEN BLOCKING INFO IS MISSING
+→ PROMPT COMPILER
+→ CLEAN PRODUCTION BRIEF
+→ FINAL CONFIRMATION
+→ REFERENCE PLAN
+→ GENERATE MINIMUM USEFUL VISUAL EVIDENCE
+→ INTERNAL QA
+→ USER VISUAL APPROVAL WHEN MATERIAL
+→ PACKAGE GENERATION CONFIRMATION
+→ PACKAGE BUILD + CONSISTENCY GATE
+→ CODEX
 ```
 
-Do not split Character, Creature, Vehicle, Prop, Furniture, Material, Rig or Animation Reference into independent workflow authorities. They are profiles/modules inside this one system.
+## Canonical Owners
 
-## 1. Boundary
-
-ChatGPT owns reference preparation. LazyDesigner Control owns intake, readiness, context projection and routing. Codex owns modelling/coding reasoning. Runtime/Blockbench own execution and live asset state.
-
-Do not create Blockbench models here. Do not prescribe Cube coordinates/counts as facts. Do not invent hidden structure, dimensions, materials, articulation or motion. Do not duplicate modelling Skills or Runtime ToolSpecs into the handoff.
-
-## 2. Input Authority
-
-Accept text prompts, one or more user images, text + images, or an already-approved visual reference.
-
-Resolve in this order:
+Use these documents as authority:
 
 ```text
-explicit user fact
+ChatGPT-side operational flow
+→ docs/knowledge/chatgpt-reference-flow.md
+
+Prompt normalization
+→ .agents/skills/lazydesigner-prompt-compiler/SKILL.md
+
+Visual reference layout / panel economy / anti-drift
+→ docs/knowledge/image-reference-standard.md
+
+REFERENCE.json schema
+→ docs/knowledge/reference-package-schema.md
+
+GEOMETRY.md
+→ docs/knowledge/geometry-reference-contract.md
+
+TEXTURE.md
+→ docs/knowledge/texture-reference-contract.md
+
+ANIMATION.md
+→ docs/knowledge/animation-reference-contract.md
+
+Package load order / consistency
+→ docs/knowledge/reference-package-load-contract.md
+
+Durable reference policy
+→ docs/foundation/04-reference-guide.md
+```
+
+Do not maintain parallel copies of those contracts in this Skill.
+
+## Boundary
+
+ChatGPT owns:
+- requirement clarification;
+- prompt normalization;
+- reference planning;
+- image generation/editing;
+- visual consistency QA;
+- technical extraction;
+- reference package creation.
+
+ChatGPT does **not** own:
+- Blockbench modelling implementation;
+- exact Cube coordinates/counts;
+- exact pivots or UV placement;
+- Runtime Tool call planning;
+- final animation key authoring;
+- MCP/Gateway implementation.
+
+## Input Authority
+
+Accept:
+- text prompt;
+- user image(s);
+- text + image(s);
+- previously approved reference(s);
+- bounded correction to an existing approved reference.
+
+Resolve facts in this order:
+
+```text
+explicit current user requirement
 → visible source evidence
-→ already-approved target decision
-→ optional unknown remains UNKNOWN
+→ approved prior target decision
+→ unresolved remains UNKNOWN
 ```
 
-Never infer numeric scale from pixels. Never average materially conflicting views into invented structure. Ask only for decision-changing missing information. Prefer one concise clarification round when necessary; otherwise preserve uncertainty explicitly.
+Never infer numeric scale from pixels. Never silently average materially conflicting evidence.
 
-## 3. Output Principle
+## Requirement Gate
 
-The goal is the minimum package that lets Codex work correctly without repeating avoidable interpretation.
+Before generating any user-facing artifact, classify missing information:
 
 ```text
-SIMPLE ASSET   → simple package
-COMPLEX ASSET  → richer package
-SMALL REVISION → delta-only package
+BLOCKING
+USEFUL
+OPTIONAL
 ```
 
-Visual information belongs in images. Technical facts/relationships belong in structured metadata. Markdown is optional and only used when a relationship cannot be expressed clearly in compact fields.
+`BLOCKING` means the answer can materially change identity, primary structure, intended scale, required articulation/action, or another major output decision.
 
-## 4. Canonical Asset Profiles
+When blocking information is missing:
+- do not generate;
+- ask only the fewest decision-changing questions;
+- use basic user-facing wording;
+- never ask the user to understand topology, pivot ownership, UV, deformation strategy, or prompting terminology.
 
-Use exactly one primary profile unless a genuinely hybrid asset requires another as a secondary note.
+`USEFUL` is asked only when it materially improves expected correctness.
 
-Profile names describe asset classes, not modelling techniques:
+`OPTIONAL` remains unspecified and does not create a questionnaire.
+
+## Prompt Compiler
+
+After blocking information is resolved, compile one clean internal production brief using `lazydesigner-prompt-compiler`.
+
+The compiler may:
+- organize;
+- normalize wording;
+- remove superseded directions;
+- deduplicate;
+- translate casual language into clear technical intent.
+
+It may not invent:
+- dimensions;
+- materials;
+- part count;
+- topology;
+- animation requirements;
+- hidden structure;
+- visual design choices absent from authority.
+
+The compiled brief is internal working state and is not exported by default.
+
+## Final Confirmation — Hard Gate
+
+Before generating **any** image or handoff file, show a concise confirmation and obtain explicit user approval.
+
+Preferred user-facing shape:
+
+```text
+Konfirmasi sebelum dibuat:
+- Objek: <asset>
+- Arah: <main target>
+- Tambahan: <only material extras>
+
+Sudah sesuai?
+```
+
+Keep it short. Do not expose internal profile/module jargon unless useful.
+
+Silence is not approval.
+
+A materially revised target requires confirmation again before generation.
+
+## Asset Profiles
+
+Use one primary profile:
 
 ```text
 PROP_FURNITURE
@@ -68,33 +179,18 @@ PLANT_FOLIAGE
 GENERIC
 ```
 
-`GENERIC` is fail-safe fallback only, never the default when another profile materially improves downstream decisions.
+Profiles classify the dominant asset problem. They are not geometry presets.
 
-### PROP_FURNITURE
-Static or mostly rigid props, furniture, kiosks, racks, tables, containers and interactive objects. Focus on main masses, supports, openings, shelves/drawers/doors/panels/handles/hinges, stable ground contact, movable sections and material separation.
+`GENERIC` is fallback only.
 
-### VEHICLE
-Cars, bikes, carts, trains, aircraft, boats and other vehicles. Focus on chassis/body mass, wheels/tracks/landing gear, wheelbase/track spacing, ground clearance, front/rear identity, cabin/cockpit, repeated assemblies, steering/axles/rotors/propellers and articulated parts.
+A hybrid asset keeps one primary profile; narrowly scoped secondary guidance may be used only when materially needed.
 
-### HUMANOID
-Human-like characters/NPCs. Focus on head, torso, pelvis, upper/lower limbs, hands/feet, shoulder/hip/neck overlap, clothing/accessory layers, face identity, joint coverage and rig clearance.
+## Reference Modules
 
-### CREATURE
-Non-humanoid animals, monsters and fantasy creatures. Focus on body axis/spine, head/neck/jaw, limb topology, ground contact, paws/hooves/claws, tail chains, wings, ears/horns/appendages, joint overlap and flexible-region deformation risk.
-
-### MECHANICAL
-Machinery where mechanism/kinematics matters more than vehicle identity. Focus on rigid assemblies, linkage hierarchy, rotation/translation axes, contact, clearance, repeated components, service panels, handles and exposed mechanisms.
-
-### PLANT_FOLIAGE
-Plants, foliage, grass, flowers, crops, leaves, reeds and similar vegetation assets. Focus on overall growth silhouette, stem/root/branch relationships, cluster depth, material identity, and choosing the simplest suitable representation. Plane-like, crossed-cutout, layered-cutout or volumetric geometry are internal representation choices; the profile name does not imply one technique.
-
-Profiles add decision vocabulary only. They are not geometry presets.
-
-## 5. Optional Reference Modules
-
-Load only modules that materially improve the next downstream decision:
+Choose only modules that materially reduce downstream uncertainty:
 
 ```text
+CONCEPT
 TURNAROUND
 STRUCTURAL_DETAIL
 MATERIAL_TEXTURE
@@ -104,296 +200,324 @@ EXPRESSION_FACE
 ANIMATION_KEYFRAME
 ```
 
-### TURNAROUND
-Use when stronger multi-view construction evidence is required. Canonical normalized board:
+Do not generate every module by default.
+
+## Unified Visual Reference Rule
+
+All generated assets use the **LazyDesigner Unified Image Reference Standard**.
+
+Default:
 
 ```text
-UPPER: LEFT | FRONT | BACK
-LOWER: TOP | FRONT-LEFT 3/4
+1 PRIMARY REFERENCE SHEET
 ```
 
-LEFT/FRONT/BACK/TOP are construction evidence. FRONT-LEFT 3/4 is supplemental volume evidence. Do not use generic SIDE when orientation matters.
+That sheet may carry useful Geometry, Texture and Animation evidence together.
 
-### STRUCTURAL_DETAIL
-Use for local assemblies too small, occluded or mechanically complex to resolve from the main reference: hinge, wheel hub, cockpit, drawer, linkage, attachment base, jaw, wing root, etc.
-
-### MATERIAL_TEXTURE
-Use for material identity, palette, close-up texture, wear/damage, emissive and PBR-relevant regions. Prefer neutral lighting and separable material regions.
-
-### RIG_DEFORMATION
-Use when articulation quality matters. Record/clarify attachment center, parent/child relationship, bend/rotation direction, pivot region, overlap/coverage, clearance and deformation risk. Avoid exaggerated gaps at hips, knees, shoulders, elbows, neck, jaw, waist or equivalent joints.
-
-### POSE_ACTION
-Use when neutral pose is insufficient to understand silhouette, contact or articulation in a meaningful action.
-
-### EXPRESSION_FACE
-Use only when face-region fidelity materially affects modelling or texturing.
-
-### ANIMATION_KEYFRAME
-Use when motion reference materially improves downstream animation. Capture animation name/purpose, loop vs one-shot, key poses, relative timing, contact events, motion direction, extremes, recovery/loop intent and relevant view angles. Do not produce frame-by-frame micromanagement unless explicitly required.
-
-## 6. Core Visual Rules
-
-Every generated reference must prioritize:
-- complete uncropped subject;
-- readable silhouette;
-- consistent proportions;
-- neutral/plain background;
-- primary masses and required visible part count;
-- attachment/contact relationships;
-- intentional openings/negative spaces;
-- source-supported asymmetry/orientation;
-- Minecraft/Blockbench-buildable form;
-- material regions and identity-critical markings;
-- motion-bearing parts when relevant.
-
-Prefer the simplest native Blockbench / Minecraft Bedrock representation that preserves the visible requirement: solid cuboids, segmented forms, plane-like geometry, planar cutout carriers or layered surfaces. Do not use the old generic cube/mesh-hybrid framing.
-
-Texture supports geometry; it must not replace required silhouette, volume, openings or attachment structure.
-
-## 7. Semantic Part Contract
-
-Before handoff, name only decision-critical parts with stable semantic IDs. Do not create per-Cube plans.
-
-Each relevant part may record:
+Add Sheet 02+ only when useful information would otherwise become crowded or too small.
 
 ```text
-id/name
-role: GEOMETRY | TEXTURE | ANIMATION_ONLY | EFFECT | OMIT | UNRESOLVED
-parent/contact target when material
-symmetry: NONE | MIRRORED | PAIRED | REPEATED | ASYMMETRIC | UNKNOWN
-motion: RIGID | ARTICULATED | FLEXIBLE | STATIC | UNKNOWN
-evidence: SUPPORTED | PROVISIONAL | CONFLICTING | UNAVAILABLE
+Sheet 01 = canonical visual identity + core construction
+Sheet 02+ = elaboration / overflow only
 ```
 
-Examples: `head`, `torso`, `rear_wheel`, `door_left`, `tail_base`, `tail_mid`, `rotor_main`.
+### Panel Budget
 
-Part IDs are communication anchors across image, metadata, Codex, correction and animation. They are not implementation coordinates.
-
-## 8. Unknown / Conflict Contract
-
-Unknowns are not all equal.
+Default upper guidance:
 
 ```text
-blocking
-= missing/conflicting information that can change part count, topology, primary silhouette/depth, articulation, required attachment/contact, numeric requirement or identity-critical material decision for the next stage
-
-non_blocking
-= unresolved detail that does not change the next legal modelling decision
+HERO                 1
+CONSTRUCTION VIEWS   2–4
+CRITICAL DETAILS     0–3
+KEY POSES            0–5
 ```
 
-Never convert either class into guessed facts. Blocking unknowns prevent `READY` for the affected next stage; non-blocking unknowns remain visible but do not stop unrelated work.
+These are not quotas.
 
-Evidence vocabulary:
-`SUPPORTED | PROVISIONAL | CONFLICTING | UNAVAILABLE`.
+Every panel must reduce at least one of:
 
-## 9. Reference Readiness Contract
+```text
+GEOMETRY_AMBIGUITY
+TEXTURE_AMBIGUITY
+ANIMATION_AMBIGUITY
+```
 
-Reference status is explicit:
+If it does not, remove it.
+
+### Panel Priority
+
+```text
+P1 REQUIRED
+P2 USEFUL
+P3 REDUNDANT / DECORATIVE
+```
+
+Include P1. Include P2 only while readability remains strong. Remove P3.
+
+If density becomes excessive, remove the lowest-value P2 panel before shrinking critical evidence.
+
+### Information Priority
+
+When space is constrained:
+
+```text
+GEOMETRY > TEXTURE > ANIMATION
+```
+
+Do not sacrifice readable form/depth/topology to fit extra support content.
+
+## Universal Layout Grammar
+
+Preferred composition:
+
+```text
+┌──────────────────────────────────────────────────────┐
+│ ASSET NAME                                           │
+├──────────────────────────┬───────────────────────────┤
+│                          │ FRONT                     │
+│       HERO / 3/4         │ LEFT                      │
+│                          │ BACK / TOP / RIGHT        │
+│                          │ only when useful          │
+├──────────────────────────┴───────────────────────────┤
+│ CRITICAL DETAIL 1 │ DETAIL 2 │ DETAIL 3             │
+├──────────────────────────────────────────────────────┤
+│ KEY POSES / MOTION STRIP — only when useful         │
+└──────────────────────────────────────────────────────┘
+```
+
+Adaptive rules:
+
+```text
+no animation       → no motion row
+no critical detail → no detail row
+no useful BACK/TOP → enlarge useful views
+complex overflow   → create additional sheet
+```
+
+Core rule:
+
+```text
+CONTENT DECIDES LAYOUT
+NOT LAYOUT FORCES CONTENT
+```
+
+## View Selection
+
+Use minimum sufficient construction evidence.
+
+Typical roles:
+
+```text
+FRONT → width / height / visible part count / primary silhouette
+LEFT  → depth / profile / attachment / body axis
+BACK  → rear topology or asymmetry only when material
+TOP   → footprint / depth / layout only when material
+RIGHT → only when left/right asymmetry matters
+3/4   → whole-form volume and layering readability
+```
+
+Do not require all sides ceremonially.
+
+## Critical Details
+
+Create a detail panel only when a high-risk relationship is not already clear from main views.
+
+Good examples:
+- shelf angle;
+- wheel mounting;
+- cockpit opening;
+- hand/tool attachment;
+- backpack attachment;
+- shoulder/hip overlap;
+- wing root;
+- jaw connection;
+- tail base;
+- linkage/slider/axis relationship;
+- plant stem/branch or carrier relationship.
+
+Do not create decorative close-ups.
+
+## Texture Evidence
+
+Do not reserve a mandatory separate texture panel.
+
+Prefer material/color/marking evidence to remain readable in hero, construction and critical-detail panels.
+
+Add dedicated visual material evidence only when it resolves a material ambiguity such as:
+- identity-critical marking;
+- emissive region;
+- alpha/cutout silhouette;
+- asymmetric material treatment;
+- directional pattern;
+- source-specific material distinction.
+
+Do not add palette boxes by default.
+
+## Motion Evidence
+
+When animation is required and pose evidence helps, use the minimum useful key poses.
+
+Preferred action pattern when applicable:
 
 ```text
 READY
+ANTICIPATION
+ACTION / CONTACT
+FOLLOW_THROUGH
+RECOVERY
+```
+
+Simpler motion may use:
+
+```text
+START
+EXTREME
+RETURN
+```
+
+The image owns pose silhouette/direction/contact. Timing detail belongs in `ANIMATION.md`.
+
+## Minecraft Target Rule
+
+When starting from a real-world or non-Minecraft source, final production sheets normally show the **Minecraft/Blockbench target interpretation only**.
+
+Do not place the original real image into the final production sheet for comparison.
+
+The source may remain separately available as source authority when needed.
+
+## Visual Language
+
+Use:
+- clean light/neutral background;
+- neutral studio-like lighting;
+- clear Minecraft/Blockbench target construction;
+- readable silhouette and edges;
+- consistent subject scale across related views;
+- minimal visual noise;
+- minimal text.
+
+Image text is limited to:
+- asset title;
+- view labels;
+- short panel labels;
+- short pose labels.
+
+Do not place paragraphs, long technical notes, JSON-like annotations, or implementation instructions inside the image.
+
+## Anti-Drift / Identity Lock
+
+After Sheet 01 becomes approved visual authority, every later sheet must preserve:
+
+```text
+same asset identity
+same whole-model proportions
+same required part count
+same major silhouette
+same approved materials/colors
+same accessories/props
+same asymmetry/orientation
+same construction logic
+```
+
+Additional sheets elaborate; they do not redesign.
+
+If the user changes a locked identity element, treat it as a revision and update all materially affected visual evidence coherently.
+
+If the same view appears again, preserve orientation, proportion, material identity and camera convention.
+
+## Internal Visual QA
+
+Before user review, check:
+
+```text
+identity matches confirmed brief
+required parts are present
+hero and construction views agree
+proportions do not drift
+attachments/openings agree
+approved material identity remains stable
+support panels describe the same asset
+motion poses preserve the same geometry identity
+labels are minimal and correct
+no panel is redundant
+critical evidence remains large enough to interpret
+```
+
+For Sheet 02+, compare against the Sheet 01 identity lock.
+
+Fix the largest structural inconsistency first.
+
+## Approval
+
+A generated visual becomes approved visual authority only after explicit user acceptance when visual approval is material.
+
+For corrections:
+
+```text
+USER DELTA
+→ compile CHANGE + PRESERVE
+→ ask only if materially ambiguous
+→ concise confirmation
+→ bounded visual correction
+→ QA against existing identity lock
+→ user review
+```
+
+Never claim approval that did not occur.
+
+## Reference Package
+
+After required visual authority is accepted, obtain package-generation approval when not already explicit, then produce only the required package files:
+
+```text
+REFERENCE.json
+GEOMETRY.md
+TEXTURE.md      only when useful
+ANIMATION.md    only when useful/required
+approved/supporting image(s)
+```
+
+Use the canonical contracts listed at the top of this Skill.
+
+Do not export:
+- conversation transcript;
+- compiled prompt history;
+- duplicate README/bootstrap files by default;
+- Cube-by-Cube plans;
+- MCP/Tool schemas;
+- generic tutorials.
+
+## Unknown / Readiness Rule
+
+Unknowns remain explicit:
+
+```text
+blocking
+non_blocking
+```
+
+Do not guess either class.
+
+Readiness is stage-specific:
+
+```text
+READY
+NOT_REQUIRED
 NEEDS_REVIEW
 BLOCKED
 ```
 
-`READY` means the next intended modelling decision has sufficient authority and no blocking unknown/conflict.
+Missing Texture information must not block Geometry unless it actually changes a Geometry decision.
 
-Assess only relevant dimensions:
+## Completion
 
-```text
-identity
-part completeness
-topology/attachment
-depth evidence
-articulation evidence
-material evidence
-```
+Reference Preparation is complete only when:
+- blocking information for the intended next stage is resolved;
+- required confirmations/approvals are explicit;
+- the visual set uses the minimum useful panels;
+- additional sheets exist only for real overflow;
+- all sheets remain identity-locked;
+- package consistency passes;
+- no unsupported fact was invented.
 
-Each dimension is `PASS | NOT_REQUIRED | NEEDS_REVIEW | BLOCKED`.
-
-Rules:
-- `BLOCKED` in any required dimension → overall `BLOCKED`.
-- no blocker but unresolved material interpretation requiring user choice → `NEEDS_REVIEW`.
-- all required dimensions `PASS`/`NOT_REQUIRED` and blocking unknowns empty → `READY`.
-
-Readiness is stage-specific. Missing texture detail does not block Geometry if Geometry is otherwise resolvable.
-
-## 10. Adaptive Progression
-
-Do not force a fixed concept → turnaround → detail → material ceremony.
-
-```text
-simple prop
-→ one approved source/reference may be enough
-
-complex vehicle
-→ concept only if identity unresolved
-→ turnaround
-→ structural detail/material only when decision-changing
-
-animated creature
-→ turnaround
-→ rig/deformation when articulation is material
-→ pose/keyframe only when motion needs it
-```
-
-Pause for user approval at a material authority-changing milestone. Auxiliary sheets that only elaborate an already-approved target do not automatically require separate approval unless strict per-stage review is explicitly requested.
-
-## 11. Visual Gate
-
-Review generated references in this order:
-1. source/brief identity;
-2. required part completeness;
-3. topology/attachment/negative-space correctness;
-4. cross-view proportion and depth consistency;
-5. Blockbench buildability;
-6. articulation/joint readability when relevant;
-7. texture/material usability;
-8. crop-safe presentation.
-
-Fix the largest structural difference first. FRONT alone never closes a form whose depth changes silhouette, attachment, negative space or articulation.
-
-## 12. Correction Budget
-
-Use delta-first correction. State only the defect/change and what must remain unchanged.
-
-```text
-local defect
-→ edit affected area
-
-cross-view structural defect
-→ edit all materially affected views together
-
-global identity/layout/coherence failure
-→ regenerate full board
-```
-
-For one unchanged material brief / automatic review cycle:
-
-```text
-first draft          = maximum 1
-targeted correction  = maximum 1
-automatic variants   = 0
-```
-
-A fresh user-directed correction starts a new user-led review cycle.
-
-## 13. Structured Technical Handoff
-
-Preferred package schema remains `lazydesigner-reference-package-v1`.
-
-```json
-{
-  "schema": "lazydesigner-reference-package-v1",
-  "asset": {
-    "name": "...",
-    "profile": "PROP_FURNITURE|VEHICLE|HUMANOID|CREATURE|MECHANICAL|PLANT_FOLIAGE|GENERIC",
-    "task": "NEW_ASSET|CONTINUE_ASSET|CORRECTION",
-    "original_user_intent": "..."
-  },
-  "requirements": {
-    "dimensions_blocks": {"width": null, "height": null, "length": null},
-    "animation_required": null
-  },
-  "reference": {
-    "status": "READY|NEEDS_REVIEW|BLOCKED",
-    "readiness": {
-      "identity": "PASS",
-      "part_completeness": "PASS",
-      "topology_attachment": "PASS",
-      "depth": "NOT_REQUIRED",
-      "articulation": "NOT_REQUIRED",
-      "material": "NOT_REQUIRED"
-    },
-    "critical_views": [],
-    "modules": [],
-    "known_conflicts": []
-  },
-  "parts": [
-    {
-      "id": "example_part",
-      "role": "GEOMETRY",
-      "parent": null,
-      "contact": null,
-      "symmetry": "NONE",
-      "motion": "STATIC",
-      "evidence": "SUPPORTED"
-    }
-  ],
-  "articulation": [],
-  "materials": [],
-  "animation_guidance": [],
-  "constraints": [],
-  "unknowns": {
-    "blocking": [],
-    "non_blocking": []
-  }
-}
-```
-
-Optional structured articulation entry:
-
-```json
-{
-  "joint": "knee",
-  "parent_part": "upper_leg",
-  "child_part": "lower_leg",
-  "motion": "HINGE_LIKE",
-  "axis_intent": null,
-  "pivot_region": "knee_center",
-  "coverage": "maintain_overlap",
-  "clearance": "avoid_visible_gap",
-  "risk": "deep_bend_gap"
-}
-```
-
-Optional structured material entry:
-
-```json
-{
-  "id": "dark_wood",
-  "applies_to": ["frame", "shelf"],
-  "base_color": null,
-  "surface": "matte",
-  "emissive": false,
-  "pbr_relevant": false
-}
-```
-
-`null` means unknown and must never be converted into a guessed requirement.
-
-Images remain visual authority. Metadata records technical facts, relationships, evidence and unknowns; it must not paraphrase away visual identity.
-
-## 14. Control Handoff
-
-Reference Preparation hands the package to LazyDesigner Control. Control forwards only the subset needed for the current Codex decision.
-
-```text
-whole-model geometry
-→ primary views + dimensions + profile + relevant parts + geometry/rig constraints
-
-wheel correction
-→ user delta + affected view(s) + relevant VEHICLE part relationships
-
-texture correction
-→ affected material entries + UV/material constraints
-
-animation correction
-→ relevant articulation + keyframe guidance + affected clip
-```
-
-Do not resend the full package every turn when unchanged content can be identified by task/context hash.
-
-## 15. Completion
-
-Reference Preparation is complete when:
-- visual authority is approved or explicitly accepted as source-only evidence;
-- one canonical profile is selected;
-- only necessary modules are present;
-- semantic parts cover material downstream decisions without becoming a Cube plan;
-- blocking and non-blocking unknowns are separated;
-- stage-specific readiness is explicit;
-- technical handoff contains no guessed facts.
-
-Then stop. Downstream work belongs to LazyDesigner Control → Codex.
+Then stop. Downstream implementation belongs to Codex/LazyDesigner authoring Skills.
