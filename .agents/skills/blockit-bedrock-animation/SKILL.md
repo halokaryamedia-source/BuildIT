@@ -96,6 +96,21 @@ wrong participating bone/rig blocker
 ```
 A correction is `REGRESSED` if the target pose improves but another required reference pose, contact phase, loop seam, or neighboring joint becomes materially worse.
 
+## Correction Convergence
+Treat each failed motion review as one diagnosed motion cause, not an invitation to add keys broadly.
+
+```text
+FAIL
+→ identify first wrong motion/rig cause
+→ reuse current animation UUID + fresh inspected state/playback evidence
+→ mutate one coherent bone/channel cohort
+→ recapture only affected reference pose/time or replay the affected loop segment
+→ IMPROVED | UNCHANGED | REGRESSED
+```
+Do not repeatedly `inspect_animation`, re-search capability schemas, or recapture unchanged times between coherent keyframe mutations. A fresh timeline mutation receipt remains authoritative for authored state; visual/playback evidence is refreshed only where the mutation can change the verdict.
+
+If the same causal direction fails twice without new evidence, `BLOCKED`. Do not add denser keys, stronger easing, or extra follower motion as a third guess. If the blocker is hierarchy/pivot/contact geometry, hand off to Geometry immediately and preserve the current animation evidence for resume.
+
 Use Molang for continuous/cyclic/reactive **visual motion**; authored poses own identity-critical action/contact/silhouette. `q.anim_time` is time-driven; `q.modified_distance_moved` can own travel phase. External gameplay callers remain integration contracts; never invent caller values or signed reverse semantics. Chains use `driver → delayed followers`. Actions preserve `anticipation → action/impact → follow-through → recovery`.
 
 ### Molang / math
