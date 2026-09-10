@@ -16,6 +16,7 @@ import {
 import { projectCapabilityInputSchema } from "./schemaProjection";
 import {
   buildNavigatorDelta,
+  buildNavigatorPacket,
   buildNavigatorSnapshot,
   decorateCapabilities,
   ownerForCapability,
@@ -110,6 +111,20 @@ const statusInput = z.object({
     .describe(
       "One-time explicit bind/rebind: select the intended Blockbench project tab, then set true so this Gateway adopts it. Required before first authoring when multiple project tabs are open; leave false for normal status checks."
     ),
+  known_context_ids: z
+    .array(z.string().min(1).max(160))
+    .max(16)
+    .default([])
+    .describe(
+      "Optional Navigator context handles already loaded in this task. Matching exact hashes are omitted from delivery instead of retransmitted."
+    ),
+  workspace_path: z
+    .string()
+    .min(1)
+    .optional()
+    .describe(
+      "Optional Active Workspace directory or README.md path. Supply once when Runtime does not expose a saved project path; Navigator remembers it for this bound project."
+    ),
 });
 
 const searchInput = z.object({
@@ -141,7 +156,7 @@ registerGatewayTool(
   {
     title: "BlockIT Status",
     description:
-      "Reports Gateway health and current Blockbench Runtime state. Normal authoring does not poll status. When multiple project tabs are open, select the intended tab and set adopt_active_project=true once before first authoring; use it again only for an intentional rebind.",
+      "Reports Gateway health plus a compact BlockIT Navigator packet. Pass known_context_ids to suppress exact Skill handles already loaded in this task. workspace_path is only a one-time hint when the Runtime cannot expose the current saved project path.",
     inputSchema: statusInput.shape,
     annotations: {
       readOnlyHint: true,
@@ -152,24 +167,28 @@ registerGatewayTool(
   },
   async (rawArgs) => {
     try {
-      const { adopt_active_project } = statusInput.parse(rawArgs);
+      const { adopt_active_project, known_context_ids, workspace_path } = statusInput.parse(rawArgs);
       const status = adopt_active_project
         ? await backend.adoptActiveProject()
         : await backend.getStatus();
+      const navigation = await buildNavigatorPacket(status, {
+        knownContextIds: known_context_ids,
+        workspacePath: workspace_path,
+      });
       return {
         content: [
           {
             type: "text" as const,
             text: status.runtime.online
               ? status.affinity.project_uuid
-                ? `BlockIT Gateway is ready; Runtime is online and this Gateway is bound to project ${status.affinity.project_uuid} in ${status.affinity.authoring_phase ?? "the Runtime startup"} phase.`
-                : "BlockIT Gateway is ready and the Blockbench Runtime is online. With one open project affinity can bind on first authoring call; with multiple open projects select the intended tab and bind once with status(adopt_active_project=true)."
+                ? `BlockIT Gateway is ready; Navigator task ${navigation.task_context_id} is bound to project ${status.affinity.project_uuid}.`
+                : "BlockIT Gateway is ready and Runtime is online; Navigator has no project binding yet."
               : "BlockIT Gateway is ready; the Blockbench Runtime is currently offline.",
           },
         ],
         structuredContent: {
           ...status,
-          navigation: buildNavigatorSnapshot(status),
+          navigation,
         },
       };
     } catch (error) {
@@ -183,7 +202,7 @@ registerGatewayTool(
   {
     title: "Search BlockIT Capabilities",
     description:
-      "Searches the live BlockIT capability catalog. Primary authoring capabilities rank ahead of support, experimental, and maintenance fallbacks when relevance is comparable.",
+      "Searches the live BlockIT capability catalog and decorates results with Navigator ownership/eligibility. Primary authoring capabilities rank ahead of support, experimental, and maintenance fallbacks when relevance is comparable.",
     inputSchema: searchInput.shape,
     annotations: {
       readOnlyHint: true,
@@ -231,7 +250,7 @@ registerGatewayTool(
   {
     title: "Describe BlockIT Capability",
     description:
-      "Returns description, annotations, and input schema for one exact BlockIT capability. Known consolidated branches can be projected to continuation-relevant fields.",
+      "Returns description, annotations, and exact input schema for one BlockIT capability. Known consolidated branches can be projected to continuation-relevant fields without returning unrelated schema branches.",
     inputSchema: describeInput.shape,
     annotations: {
       readOnlyHint: true,
@@ -359,7 +378,6 @@ async function main(): Promise<void> {
 }
 
 main().catch((error) => {
-  // stdout is reserved exclusively for the MCP stdio transport.
   console.error("[BlockIT Gateway] fatal:", error);
   void shutdown(1);
 });
