@@ -5,9 +5,11 @@ ROOT = Path(__file__).resolve().parents[2]
 def read(path): return (ROOT / path).read_text()
 def write(path, value): (ROOT / path).write_text(value)
 
-# Discovery fixture follows the intentional retired-tool count.
+# Discovery fixture follows the intentional retired-tool count and removed query pair.
 p = 'mcp/tests/tool-discovery-eval.test.ts'
-s = read(p).replace('expect(raw.expected_tool_count).toBe(39);', 'expect(raw.expected_tool_count).toBe(38);')
+s = read(p)
+s = s.replace('expect(raw.expected_tool_count).toBe(39);', 'expect(raw.expected_tool_count).toBe(38);')
+s = s.replace('expect(raw.case_count).toBe(108);', 'expect(raw.case_count).toBe(106);')
 write(p, s)
 
 # Preserve the exact current capability marker consumed by regression tests.
