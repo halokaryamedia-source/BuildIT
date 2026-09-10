@@ -8,6 +8,7 @@ on:
       - "mcp/scripts/finalize-retirement.py"
       - "mcp/scripts/finalize-repo-sync.py"
       - "mcp/scripts/finalize-repo-sync2.py"
+      - "mcp/scripts/finalize-repo-sync3.py"
       - "mcp/scripts/fix-reference-resource.py"
 
 permissions:
@@ -36,6 +37,7 @@ jobs:
           python3 mcp/scripts/fix-reference-resource.py
           python3 mcp/scripts/finalize-repo-sync.py
           python3 mcp/scripts/finalize-repo-sync2.py
+          python3 mcp/scripts/finalize-repo-sync3.py
       - name: Reject active retired route residue
         run: |
           if grep -RniE '3D_ASSISTED|3D-Assisted|threeDAssisted|Hunyuan|PrimitiveAnything|materialize_3d_assisted|manage_geometry_reference' \
@@ -59,6 +61,7 @@ jobs:
           rm -f mcp/scripts/finalize-retirement.py
           rm -f mcp/scripts/finalize-repo-sync.py
           rm -f mcp/scripts/finalize-repo-sync2.py
+          rm -f mcp/scripts/finalize-repo-sync3.py
           rm -f mcp/scripts/fix-reference-resource.py
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
