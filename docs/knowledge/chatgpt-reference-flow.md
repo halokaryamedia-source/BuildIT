@@ -29,6 +29,7 @@ USER REQUEST
 → GENERATE REQUIRED IMAGE(S)
 → INTERNAL QA
 → USER VISUAL REVIEW / CORRECTION WHEN MATERIAL
+→ PACKAGE GENERATION CONFIRMATION WHEN REQUIRED
 → PACKAGE BUILD
 → HANDOFF TO CODEX
 ```
@@ -103,6 +104,8 @@ raw user intent
 Rejected or superseded chat directions must not remain active.
 
 The compiled brief must never introduce new creative facts.
+
+The compiled brief is internal working state. It is not exported as a default Codex handoff file.
 
 ## 5. Final Confirmation Gate — HARD GATE
 
@@ -182,32 +185,71 @@ USER DELTA
 
 The confirmation gate applies again before a new/revised artifact is generated, but the summary should mention only the changed target and important preserved constraints.
 
-## 9. Package Build
+## 9. Package Generation Gate
 
-Only after the required visual authority is accepted should ChatGPT build the Codex handoff package.
+After required visual authority is accepted, prepare the package plan but do not create files until package generation is explicitly approved when that approval was not already given in the immediately preceding user instruction.
 
-Exact JSON/Markdown/image package content is intentionally defined separately and may evolve without changing this workflow.
+The package confirmation should remain concise, for example:
 
-No handoff file is created before a concise package-generation confirmation if package creation has not already been explicitly approved in the immediately preceding step.
+```text
+Reference sudah siap.
+Saya akan buat:
+- REFERENCE.json
+- GEOMETRY.md
+- TEXTURE.md
+- ANIMATION.md (jika diperlukan)
+- image reference yang sudah disetujui
 
-## 10. Authority Order
+Lanjut generate package?
+```
+
+Do not create unnecessary package files merely to fill a template.
+
+## 10. Package Build
+
+Canonical package structure:
+
+```text
+asset_reference/
+├── REFERENCE.json
+├── GEOMETRY.md
+├── TEXTURE.md      ← only when required
+├── ANIMATION.md    ← only when required
+└── images/
+    └── approved/supporting reference images
+```
+
+`REFERENCE.json` is the canonical structured index and machine-readable fact contract.
+
+Exact schema is owned by:
+
+```text
+docs/knowledge/reference-package-schema.md
+```
+
+Stage Markdown files are stage-specific projections. They must not become independent competing authorities.
+
+Do not export the compiled production prompt, conversation transcript, or duplicate README/bootstrap files by default.
+
+## 11. Authority Order
 
 ```text
 explicit current user requirement
 → approved visual reference
-→ confirmed compiled brief
-→ structured handoff metadata
-→ generated stage summaries
+→ REFERENCE.json structured facts
+→ generated stage Markdown projections
+→ downstream Codex interpretation
 ```
 
-The compiled brief and package organize authority; they do not override the user or approved images.
+The compiled brief organizes generation but is not a higher authority than approved user/reference facts.
 
-## 11. Stop Conditions
+## 12. Stop Conditions
 
 Do not generate when:
 - a blocking requirement is missing;
 - materially conflicting sources are unresolved;
 - the final confirmation has not been approved;
+- package generation is pending explicit approval;
 - a correction would require guessing what must remain unchanged;
 - a requested reference would not materially help the downstream decision.
 
@@ -220,7 +262,8 @@ The user should only need to:
 2. answer a few simple questions when vital information is missing
 3. approve a concise final summary
 4. review generated reference when necessary
-5. receive the completed handoff package for Codex
+5. approve package generation
+6. receive the completed handoff package for Codex
 ```
 
 Prompt quality is the responsibility of the ChatGPT-side system, not the user.
