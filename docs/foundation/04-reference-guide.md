@@ -1,140 +1,207 @@
-# BlockIT — Reference Guide
+# LazyDesigner — Reference Guide
 
 **Status:** Active Policy  
-**Version:** 3.3  
-**Updated:** 2026-09-10
+**Version:** 4.0  
+**Updated:** 2026-09-11
 
 ## Purpose
 
-Own durable Source Image → Approved Reference semantics. Operational image generation belongs in **ChatGPT** using `.agents/skills/blockbench-reference-generator/SKILL.md` as the specification. Codex/BlockIT consumes the approved image.
+Own durable Source Image → Approved Reference → Reference Package semantics for LazyDesigner.
 
-The goal is a recognizable, Minecraft-appropriate, Blockbench-buildable interpretation, not exact real-world reconstruction. A generated reference **does not need to be 100% identical** to the source when a simpler Minecraft interpretation preserves identity and buildability.
+Operational reference preparation belongs in ChatGPT using `.agents/skills/blockbench-reference-generator/SKILL.md`. The detailed handoff contract belongs in `docs/knowledge/reference-handoff.md`.
 
-A canonical five-view board is **optional stronger coverage**, not mandatory for every asset. The original source image itself may be the Approved Reference when its visible evidence is sufficient.
+The goal is a recognizable, Minecraft-appropriate, Blockbench-buildable interpretation plus enough structured technical evidence to prevent avoidable downstream guessing.
 
 ## Authority / Evidence
 
 ```text
-user brief / approved target        → identity + requested function
-original Source Image(s)            → source-visible evidence regardless of camera angle
-actual Approved Reference Image     → visual modelling authority; source image or canonical board
-approved numeric dimensions         → whole-model scale/envelope
-user technical constraints          → downstream facts outside the image
+user brief / approved target      → identity + requested function
+original Source Image(s)          → source-visible evidence
+Approved Reference Image(s)       → visual modelling authority
+approved numeric dimensions       → numeric scale/envelope authority
+user technical constraints        → nonvisual requirement authority
+Reference Package metadata        → structured relationships/evidence/unknowns; never overrides stronger authority
 ```
 
-The **actual Approved Reference Image** must be available as multimodal input when used for reference-driven visual reasoning. A path itself is not visual evidence. A manifest, prose summary, filename, or memory is context only.
+The actual Approved Reference Image must be available as multimodal input when used for reference-driven visual reasoning. A path, filename, prose summary or metadata alone is not visual evidence.
 
-When multiple source images are available during reference preparation, treat them as a small evidence set for the same intended subject. Use each only for what it visibly proves—such as identity, depth, rear structure, asymmetry, material, or detail. Do not average conflicting evidence into invented geometry.
-
-When the original Source Image is used directly, it serves as both source-visible evidence and the Approved Reference Image. Do not invent a second authority layer merely because no generated board exists.
+When multiple source images are available, use each only for what it visibly proves. Do not average conflicting views into invented geometry.
 
 ## Execution Boundary
 
-Repository/policy work, audit, CI, or Codex asset authoring never implicitly authorizes reference generation. Generate/edit only from a fresh explicit user instruction in ChatGPT.
+Reference generation/editing requires a fresh explicit user request. Repository work, audit, CI or downstream Codex authoring never implicitly authorizes image generation.
 
-After approval, normal handoff to Codex is:
+Normal handoff is now:
 
 ```text
-actual Approved Reference Image + user message
+Approved Reference Image(s)
++ compact Reference Package metadata
++ original user intent
+→ LazyDesigner Control
+→ Codex
 ```
 
-No ZIP, JSON sidecar, manifest, coordinate sheet, or modelling blueprint is required. An actual image explicitly sent to Codex for modelling is approved unless the user marks it draft/not ready.
+The package is not a giant blueprint. It exists only to preserve decision-critical facts, relationships and unknowns that ChatGPT already resolved during reference preparation.
 
 ## Progressive Reference Intake
 
-Accept the user's actual image first. Do not force reference-board generation as intake ceremony.
+Accept the user's actual image first. Do not force reference-board generation as ceremony.
 
 ```text
 actual image supplied
-→ evidence sufficient for material modelling decisions
-   → use image directly as Approved Reference
+→ sufficient for next material decision
+   → may become Approved Reference directly
 → material evidence missing/conflicting
-   → request only the smallest decision-changing extra source image/detail
-   → if still materially insufficient, recommend canonical board or mark BLOCKED
+   → request smallest decision-changing extra source/detail
+   → if still unresolved and blocking
+      → canonical board or BLOCKED
 ```
 
-The preferred escalation order is:
+Preferred escalation:
 
 ```text
-current supplied image
-→ one decision-changing additional source view/detail when needed
-→ canonical five-view board when stronger normalized coverage is needed
+current supplied evidence
+→ one decision-changing additional source/detail
+→ canonical turnaround only when stronger normalized coverage is needed
 ```
 
-If the user already supplied multiple useful source images, consume that evidence before asking for another image or recommending board generation.
+Do not generate extra views that cannot change the next decision.
 
-Do not automatically regenerate a board, add a reference mode, or ask for extra views that cannot change the next decision.
+## Canonical Asset Profile Vocabulary
+
+Reference Preparation and downstream Modelling use one vocabulary:
+
+```text
+PROP_FURNITURE
+VEHICLE
+HUMANOID
+CREATURE
+MECHANICAL
+PLANT_CUTOUT
+GENERIC
+```
+
+Profiles are knowledge overlays, not geometry presets. `GENERIC` is fallback only.
+
+## Optional Reference Modules
+
+```text
+TURNAROUND
+STRUCTURAL_DETAIL
+MATERIAL_TEXTURE
+RIG_DEFORMATION
+POSE_ACTION
+EXPRESSION_FACE
+ANIMATION_KEYFRAME
+```
+
+Only include modules that materially improve the next modelling decision.
 
 ## Minecraft-First Fidelity
 
-Reference fidelity is identity-first and buildability-first, not pixel-copy-first.
-
 ### Geometry
-
-Preserve recognizable silhouette, major masses, defining part count, attachments/topology, important negative spaces, and identity-critical features. Prefer the simplest Blockbench-buildable form preserving those requirements.
+Preserve recognizable silhouette, major masses, defining part count, attachments/topology, important negative spaces and identity-critical features. Prefer the simplest native Blockbench representation preserving those requirements.
 
 ### Texture
+Preserve base palette, material regions, part separation and identity-critical markings. Texture supports Geometry; it must not fake required silhouette or missing structure.
 
-Preserve base palette, major color/material regions, part separation, and identity-critical markings. Texture supports geometry; it must not fake required silhouette or missing structure. Minor shade/noise/marking drift is acceptable when identity/material reading remain clear.
+### Articulation
+Use structurally readable poses. Preserve joint overlap, parent/child relationship, motion-bearing regions and plausible clearance without inventing hidden precision or creating exaggerated gaps.
 
-## Pose / Articulation
+## Canonical Turnaround
 
-Use the most structurally readable stable pose unless another state is required. Preserve identity-bearing silhouette/major-mass proportion and visible root → direction/bend → terminal intent for identity-critical articulated features without inventing hidden joint precision.
-
-Duplicated/missing required parts, changed part count, incompatible attachment/topology, or structurally different major masses are material defects.
-
-## Canonical Five-View Board
-
-Every **generated canonical board** uses one fixed normalized layout:
+When normalized turnaround evidence is required:
 
 ```text
 UPPER: LEFT | FRONT | BACK
 LOWER: TOP  | FRONT-LEFT 3/4
 ```
 
-Do not dynamically choose RIGHT, use generic `SIDE`, or reorder views per asset.
+`LEFT`, `FRONT`, `BACK`, `TOP` are construction evidence. `FRONT-LEFT 3/4` is supplemental volume/readability evidence. Do not substitute generic `SIDE` when orientation matters.
 
-- `LEFT`, `FRONT`, `BACK`, `TOP` are orthographic construction evidence.
-- `FRONT-LEFT 3/4` is supplemental volume/readability evidence and never overrides stronger orthographic/source evidence.
-- five views describe one intended Minecraft model, **not five exact engineering drawings**.
-- image resolution may vary; normalized region identity remains fixed.
+Keep subjects uncropped, consistently scaled and on a neutral background. Do not overload the image with dimensions, pivots, JSON-like notes or implementation instructions; nonvisual technical information belongs in metadata.
 
-Keep each subject fully inside its region with neutral uniform background, consistent scale, and generous separation. Do not allow subject/shadow/prop content to cross into another region.
+## Semantic Parts
 
-Default board contains no panel border, divider, label, title, header, note, dimensions, target-use text, Blockbench UI/gizmos, gameplay UI, or cinematic scene.
+Reference Preparation may name decision-critical semantic parts to create stable communication anchors across image, metadata, Control and Codex.
 
-If identity-critical structure exists on a side not sufficiently visible in the canonical five views, do not invent it. Ask for one additional source image/detail or mark the unresolved material claim `UNAVAILABLE` / `CONFLICTING`.
+Each relevant part may record:
+
+```text
+id/name
+role: GEOMETRY | TEXTURE | ANIMATION_ONLY | EFFECT | OMIT | UNRESOLVED
+parent/contact target when material
+symmetry
+motion participation
+evidence state
+```
+
+This is not a per-Cube plan and must not prescribe implementation coordinates.
+
+## Evidence State
+
+For material modelling claims:
+
+```text
+SUPPORTED
+PROVISIONAL
+CONFLICTING
+UNAVAILABLE
+```
+
+Claim text describes what evidence supports, not what the object usually has.
+
+## Unknown Classification
+
+```text
+blocking unknown
+= can change the next stage's part count, topology, primary silhouette/depth, articulation, required attachment/contact, numeric requirement or identity-critical material decision
+
+non-blocking unknown
+= unresolved detail that does not change the next legal decision
+```
+
+Do not guess either class. Blocking unknowns prevent readiness for the affected stage; non-blocking unknowns remain visible without stopping unrelated work.
+
+## Reference Readiness
+
+Overall status:
+
+```text
+READY
+NEEDS_REVIEW
+BLOCKED
+```
+
+Relevant readiness dimensions:
+
+```text
+identity
+part completeness
+topology/attachment
+depth
+articulation
+material
+```
+
+Each is `PASS | NOT_REQUIRED | NEEDS_REVIEW | BLOCKED`.
+
+Rules:
+- required `BLOCKED` dimension → overall `BLOCKED`;
+- material user choice still unresolved but no hard blocker → `NEEDS_REVIEW`;
+- all required dimensions `PASS`/`NOT_REQUIRED` and no blocking unknown → `READY`.
+
+Readiness is stage-specific. Missing texture detail does not block Geometry if Geometry evidence is otherwise sufficient.
 
 ## Material Consistency
 
-A discrepancy is material only when it changes identity, primary mass/required part count, topology/attachment, important negative space, Minecraft buildability, or identity-critical texture/material information.
+A discrepancy is material only when it changes identity, primary mass/required part count, topology/attachment, important negative space, buildability, articulation or identity-critical material information.
 
-Minor cross-view drift does not invalidate an otherwise recognizable/buildable board. Material conflicts must not be averaged into invented geometry.
-
-## Downstream Interpretation
-
-For a material modelling decision, retain explicit evidence states:
-
-```text
-claim | observable requirement | supporting view | SUPPORTED | PROVISIONAL | CONFLICTING | UNAVAILABLE
-```
-
-Claim text describes what is visible, not what the object “usually” has. No Cube coordinates/count/pivot plan or pixel-derived dimensions belong in reference evidence.
-
-Preference order for minor discrepancy:
-
-```text
-explicit user requirement
-→ explicitly approved target / best-supported Approved Reference view(s)
-→ original Source Image evidence for unresolved details
-→ simplest recognizable Blockbench-buildable interpretation
-```
-
-Original source governs reference preparation; an explicitly approved interpretation governs downstream modelling. Do not silently reverse accepted stylization toward the original source. Numeric dimensions remain independently authoritative. Only unresolved material conflict becomes `CONFLICTING` / `BLOCKED`.
+Minor cross-view drift does not invalidate an otherwise useful reference. Material conflict must not be averaged into invented geometry.
 
 ## View Pair Map
 
-Use a View Pair Map only when comparison identity is material:
+Use only when canonical corresponding views exist:
 
 ```text
 REFERENCE FRONT      ↔ MODEL front
@@ -144,34 +211,38 @@ REFERENCE TOP        ↔ MODEL top
 REFERENCE FRONT-LEFT ↔ MODEL front-left 3/4
 ```
 
-This map applies when those canonical board views exist. For a direct original source image, compare only views that the source actually supports; do not fabricate canonical view correspondence.
-
-Ambiguous/mirrored pairing remains `UNVERIFIED`; do not silently compare the closest-looking view.
+For direct source images, compare only supported views. Ambiguous/mirrored pairing remains unverified.
 
 ## Visual Gate
 
-A generated Draft is acceptable only when it is recognizable, geometry-buildable, texture-useful, free of material cross-view contradiction, crop-safe, and approved by the user.
+A generated reference is acceptable only when it is recognizable, structurally buildable, free of material cross-view contradiction, sufficiently complete for the next stage, and approved when it changes visual authority.
+
+Check in this order:
+1. identity;
+2. required part completeness;
+3. topology/attachment/negative space;
+4. proportion/depth consistency;
+5. buildability;
+6. articulation readability when relevant;
+7. material usability when relevant;
+8. crop/readability.
 
 ## Correction Strategy
 
-Use the current board as the edit target when possible. Correction should be **delta-first**: describe the defect/change and what must stay unchanged instead of restating the whole generation prompt.
-
-Choose the **smallest coherent** correction:
+Use delta-first correction and fix the largest structural difference first.
 
 ```text
-local presentation/detail defect
-→ edit only the affected area; preserve the rest
+local defect
+→ edit affected area
 
-structural defect affecting multiple views
-→ edit all materially affected views together; preserve unaffected views
+cross-view structural defect
+→ edit all affected views coherently
 
-global identity / pose / layout / cross-view coherence failure
-→ regenerate the full board
+global identity/layout/coherence failure
+→ regenerate full board
 ```
 
-Do not create a separate corrected-panel deliverable. The result remains one complete canonical board. **Full-board regeneration is a fallback** for global/cross-view failure or when a bounded edit cannot preserve consistency—not the default correction path.
-
-For one unchanged material brief / automatic review cycle:
+For one unchanged automatic cycle:
 
 ```text
 first draft            = maximum 1
@@ -179,18 +250,44 @@ targeted correction    = maximum 1
 automatic alternatives = 0
 ```
 
-The one automatic correction may be a bounded edit or a full-board regeneration, not both.
+A fresh user-directed correction starts a new user-led review cycle.
 
-A fresh explicit **user-directed correction** after review starts a **new user-led review cycle** and permits one revised board even when the previous automatic correction budget was used. Apply the requested delta once, preserve still-valid relationships, then stop for user review again.
+## Reference Package
 
-A materially new user-approved source, pose, target, or requirement also begins a new review cycle. Do not open a new cycle automatically to bypass a failed correction.
+Compact metadata may contain:
 
-## Image Content / Completion
+```text
+asset/profile/original intent
+requirements
+reference readiness
+critical views/modules
+semantic parts
+articulation relationships
+materials
+animation guidance
+constraints
+blocking + non-blocking unknowns
+```
 
-Requested dimensions and technical constraints stay **outside the image** and are collected by Codex during the new-model Requirement Gate. Reference validity never proves final model fidelity.
+Use JSON for structured facts and Markdown only for explanation-heavy relationships. `null` means unknown and is never permission to infer.
+
+Images remain visual authority. Metadata does not replace or paraphrase away visual identity.
+
+## Completion
+
+Reference Preparation is complete when:
+- visual authority is approved or explicitly accepted from source-only evidence;
+- one canonical profile is selected;
+- only necessary modules are included;
+- semantic parts cover material downstream relationships without becoming a Cube plan;
+- blocking/non-blocking unknowns are separated;
+- stage-specific readiness is explicit;
+- no guessed technical facts enter the handoff.
 
 ## Related
 
+- [Reference → Codex Handoff](../knowledge/reference-handoff.md)
+- [Skill Taxonomy](../knowledge/skill-taxonomy.md)
 - [Product Requirements](02-product-requirements.md)
 - [Modelling Workflow](03-modelling-workflow.md)
 - [Geometry Standard](05-geometry-standard.md)
