@@ -66,6 +66,20 @@ wrong/missing identity marking
 ```
 An improvement on one island is `REGRESSED` if the mapped model introduces a material seam, mirrored identity error, or cross-surface discontinuity elsewhere. Do not let atlas neatness override mapped fidelity.
 
+## Correction Convergence
+One visible cause owns one correction round. Reuse the latest atlas UUID, mapped-face state, mutation receipt, and fresh comparable capture when they already answer the next decision.
+
+Do not repeat `list_textures`, `get_texture`, face-detail inspection, or mapped captures merely to reconfirm a successful paint mutation. Refresh only the evidence class made stale by the change or needed to detect a likely regression.
+
+```text
+FAIL
+→ identify one texture-owned cause
+→ one coherent patch/cohort mutation
+→ affected mapped-surface verification
+→ IMPROVED | UNCHANGED | REGRESSED
+```
+If verification reveals Geometry/UV ownership, stop Texturing correction and return the bounded defect upstream. Same texture-owned causal direction twice without new evidence → `BLOCKED`; do not produce a third palette/pattern variation as guesswork.
+
 ### Reference-Grounded Palette / Atlas-Island Discipline
 Integer texels; **pixels per UV unit** owns detail scale. Build stepped hue/value ramps, contact shadows and highlights from observed form. Surface coordinates keep shading continuous across Cubes; UV edges do not invent seams.
 Unused atlas pixels stay transparent; opaque material does not authorize full-canvas fill. Paint mapped islands plus deliberate bounded padding only.
