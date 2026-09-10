@@ -1,0 +1,77 @@
+name: Finalize Retired 3D Path
+
+on:
+  push:
+    branches: [Local]
+    paths:
+      - ".github/workflows/finalize-3d-retirement.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: true
+          fetch-depth: 1
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6
+        with:
+          bun-version-file: .bun-version
+
+      - name: Install exact dependencies
+        working-directory: mcp
+        run: bun install --frozen-lockfile
+
+      - name: Remove retired 3D-assisted runtime residue
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('mcp/server/tools/camera.ts')
+          s = p.read_text()
+          s = s.replace('import { hasVisibleLoadedBlockItThreeDAssistedReference } from "./project";\n', '')
+          s = s.replace(
+              'Model framing requires visible Cubes; explicit framing can also capture a loaded visible 3D-Assisted Evidence reference before blockout.',
+              'Model and explicit framing require visible Cube geometry in the current Blockbench project.'
+          )
+          old = '''      } else if (\n        observed.rendered_cube_count === 0 &&\n        !hasVisibleLoadedBlockItThreeDAssistedReference()\n      ) {\n        throw new Error(\n          "Explicit framing requires visible Cube geometry or a loaded visible BlockIT 3D-Assisted Evidence reference."\n        );\n      }\n'''
+          new = '''      } else if (observed.rendered_cube_count === 0) {\n        throw new Error("Explicit framing requires visible Cube geometry to capture.");\n      }\n'''
+          if old not in s:
+              raise SystemExit('camera retired-3d block did not match expected source')
+          p.write_text(s.replace(old, new))
+          Path('mcp/server/threeDAssistedMaterializer.ts').unlink(missing_ok=True)
+          PY
+
+      - name: Reject active retired 3D references
+        run: |
+          if grep -RniE '3D_ASSISTED|3D-Assisted|threeDAssisted|Hunyuan|PrimitiveAnything|materialize_3d_assisted|manage_geometry_reference' \
+            mcp/server mcp/lib mcp/gateway .agents/skills mcp/prompts \
+            --exclude='README.md' --exclude='*.test.ts'; then
+            echo 'Retired 3D authoring residue remains in active source.' >&2
+            exit 1
+          fi
+
+      - name: Regenerate canonical outputs
+        working-directory: mcp
+        run: |
+          bun run prompts:build
+          bun run docs:build
+
+      - name: Verify MCP
+        working-directory: mcp
+        run: bun run verify:mcp
+
+      - name: Remove temporary workflow and commit
+        run: |
+          rm .github/workflows/finalize-3d-retirement.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "refactor(blockit): complete 3d-assisted retirement"
+          git push origin HEAD:Local
