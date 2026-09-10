@@ -39,6 +39,33 @@ Face Coverage Ledger: `UNPAINTED | BASE_ONLY | STYLED | INTENTIONAL_FLAT | INTEN
 `list_textures.optimization_opportunities.coverage.gate`: `incomplete|partial` / `FACE_ACCOUNTING_INCOMPLETE` → no completion; one `list_textures`/pass; `ready` ≠ visual PASS.
 `states.varied` ≠ `STYLED`; `review.solid_color_faces` locates flat candidates, not failures.
 Variants: `list_textures.production_alignment.gate=ready`; `seam_continuity` (intra-Cube only; inspect cross-Cube contacts visually); `pbr_content`.
+
+## Reference Fidelity Contract
+Reference-driven Texturing inherits the approved visual authority used by Geometry; it must not invent a new interpretation merely because UV islands differ from the reference projection.
+Before broad paint propagation, establish one bounded **Texture Reference Contract** for applicable regions:
+```text
+material/color region → matching reference evidence
+identity marking → required location/orientation/relative scale
+value structure → light/base/shadow relationship without baking scene lighting
+pattern direction/scale → mapped-surface continuation requirement
+transparent/cutout region → silhouette owner and render requirement
+hidden-but-required surface → evidence or explicit intentional treatment
+```
+Evidence remains `SUPPORTED | PROVISIONAL | CONFLICTING | UNAVAILABLE`. A material identity marking, major region boundary, or cutout silhouette that is `CONFLICTING`/`UNAVAILABLE` must not be replaced with generic decoration and called fidelity.
+
+Reference comparison is **mapped-surface-first**, not atlas-image-first. Compare the actual mapped model against the approved reference at comparable view/scale; the atlas is implementation evidence only. Preserve Geometry-owned part boundaries: Texture may clarify form, but must not paint around a missing/incorrect mass, attachment, opening, or joint defect to simulate correctness.
+
+Prioritize correction by visible identity impact:
+```text
+wrong/missing identity marking
+→ wrong major material/color region
+→ broken mapped continuity / invented seam
+→ wrong pattern direction or scale
+→ wrong value/form read
+→ secondary detail/noise
+```
+An improvement on one island is `REGRESSED` if the mapped model introduces a material seam, mirrored identity error, or cross-surface discontinuity elsewhere. Do not let atlas neatness override mapped fidelity.
+
 ### Reference-Grounded Palette / Atlas-Island Discipline
 Integer texels; **pixels per UV unit** owns detail scale. Build stepped hue/value ramps, contact shadows and highlights from observed form. Surface coordinates keep shading continuous across Cubes; UV edges do not invent seams.
 Unused atlas pixels stay transparent; opaque material does not authorize full-canvas fill. Paint mapped islands plus deliberate bounded padding only.
