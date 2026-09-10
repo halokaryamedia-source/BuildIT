@@ -1,0 +1,155 @@
+{
+  "version": 1,
+  "verdicts": ["PASS", "FAIL", "UNVERIFIED"],
+  "aggregate_score": false,
+  "quality_precedes_efficiency": true,
+  "cases": [
+    {
+      "id": "prop_furniture",
+      "profile": "PROP_FURNITURE",
+      "required_phases": ["GEOMETRY", "TEXTURING"],
+      "geometry_dimensions": [
+        "silhouette",
+        "cross_view_proportion",
+        "required_part_completeness",
+        "attachment_contact",
+        "depth_layering",
+        "negative_space"
+      ],
+      "texture_dimensions": [
+        "palette_material_regions",
+        "identity_markings",
+        "mapped_surface_continuity",
+        "seam_control"
+      ],
+      "animation_dimensions": [],
+      "critical_failures": [
+        "missing_required_part",
+        "floating_required_part",
+        "wrong_part_count",
+        "broken_attachment",
+        "reference_unsupported_invention"
+      ]
+    },
+    {
+      "id": "vehicle",
+      "profile": "VEHICLE",
+      "required_phases": ["GEOMETRY", "TEXTURING", "ANIMATION_IF_REQUIRED"],
+      "geometry_dimensions": [
+        "silhouette",
+        "cross_view_proportion",
+        "required_part_completeness",
+        "attachment_contact",
+        "depth_layering",
+        "negative_space",
+        "motion_ready_structure"
+      ],
+      "texture_dimensions": [
+        "palette_material_regions",
+        "identity_markings",
+        "mapped_surface_continuity",
+        "seam_control"
+      ],
+      "animation_dimensions": [
+        "pivot_rig_suitability",
+        "reference_pose_fidelity",
+        "clearance_contact",
+        "timing_motion_readability",
+        "loop_or_handoff_continuity"
+      ],
+      "critical_failures": [
+        "missing_required_part",
+        "floating_required_part",
+        "wrong_part_count",
+        "broken_attachment",
+        "reference_unsupported_invention",
+        "invalid_motion_pivot",
+        "interpenetration_at_required_extreme"
+      ]
+    },
+    {
+      "id": "character_mob",
+      "profile": "CHARACTER_MOB",
+      "required_phases": ["GEOMETRY", "TEXTURING", "ANIMATION"],
+      "geometry_dimensions": [
+        "silhouette",
+        "cross_view_proportion",
+        "required_part_completeness",
+        "attachment_contact",
+        "depth_layering",
+        "negative_space",
+        "motion_ready_structure"
+      ],
+      "texture_dimensions": [
+        "palette_material_regions",
+        "identity_markings",
+        "mapped_surface_continuity",
+        "seam_control"
+      ],
+      "animation_dimensions": [
+        "pivot_rig_suitability",
+        "reference_pose_fidelity",
+        "joint_gap_control",
+        "clearance_contact",
+        "weight_transfer",
+        "timing_motion_readability",
+        "loop_or_handoff_continuity"
+      ],
+      "critical_failures": [
+        "missing_required_part",
+        "floating_required_part",
+        "wrong_part_count",
+        "broken_attachment",
+        "reference_unsupported_invention",
+        "invalid_motion_pivot",
+        "excessive_joint_gap",
+        "floor_penetration",
+        "unintended_foot_slide"
+      ]
+    },
+    {
+      "id": "organic_curved",
+      "profile": "ORGANIC_CURVED",
+      "required_phases": ["GEOMETRY", "TEXTURING", "ANIMATION_IF_REQUIRED"],
+      "geometry_dimensions": [
+        "silhouette",
+        "cross_view_proportion",
+        "required_part_completeness",
+        "attachment_contact",
+        "depth_layering",
+        "negative_space",
+        "curve_segmentation_quality"
+      ],
+      "texture_dimensions": [
+        "palette_material_regions",
+        "identity_markings",
+        "mapped_surface_continuity",
+        "seam_control"
+      ],
+      "animation_dimensions": [
+        "pivot_rig_suitability",
+        "reference_pose_fidelity",
+        "clearance_contact",
+        "timing_motion_readability"
+      ],
+      "critical_failures": [
+        "missing_required_part",
+        "floating_required_part",
+        "wrong_part_count",
+        "broken_attachment",
+        "reference_unsupported_invention",
+        "silhouette_stair_step_oversegmentation"
+      ]
+    }
+  ],
+  "efficiency_observations": [
+    "status_calls",
+    "search_capability_calls",
+    "describe_capability_calls",
+    "redundant_readbacks",
+    "visual_capture_batches",
+    "correction_rounds",
+    "repeated_same_cause_failures",
+    "tool_calls_to_accepted_result"
+  ]
+}
