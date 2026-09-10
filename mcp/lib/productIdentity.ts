@@ -5,8 +5,8 @@ import {
   type McpAuthoringPhase,
 } from "@/lib/authoringPhase";
 
-export const PRODUCT_ID = "blockit-bedrock-entity-mcp";
-export const PRODUCT_NAME = "BlockIT — Bedrock Entity MCP";
+export const PRODUCT_ID = "lazydesigner-bedrock-entity-mcp";
+export const PRODUCT_NAME = "LazyDesigner — Bedrock Entity MCP";
 export const PRODUCT_DESCRIPTION =
   "AI-assisted Minecraft Bedrock Entity authoring for Blockbench.";
 export const PRODUCT_ABOUT =
