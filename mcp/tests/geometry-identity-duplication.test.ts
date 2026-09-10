@@ -50,7 +50,7 @@ describe("Geometry identity and duplication hardening", () => {
     expect(block).not.toContain("function cloneGroup");
   });
 
-  test("Group creation and rename preflight export-safe names before Undo", async () => {
+  test("Group creation preflights names and anchor rename retains its guard", async () => {
     const source = await Bun.file("server/tools/element.ts").text();
 
     const addStart = source.indexOf("createTool(elementToolDocs[1].name");
@@ -64,11 +64,8 @@ describe("Geometry identity and duplication hardening", () => {
     const renameStart = source.indexOf("createTool(elementToolDocs[4].name");
     const renameEnd = source.indexOf("createTool(elementToolDocs[5].name", renameStart);
     const renameBlock = source.slice(renameStart, renameEnd);
-    expect(renameBlock).toContain("assertGroupNameAvailable(new_name, element.uuid)");
     expect(renameBlock).toContain("assertAnchorRenameAvailable(element, new_name)");
-    expect(renameBlock.indexOf("assertGroupNameAvailable")).toBeLessThan(
-      renameBlock.indexOf("Undo.initEdit")
-    );
+    // Group rename preflight is exercised through the executor in batch-group-rename.test.ts.
   });
 
   test("public duplicate schema remains unchanged while runtime fidelity is hardened", async () => {

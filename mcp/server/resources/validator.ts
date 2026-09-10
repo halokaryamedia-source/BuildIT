@@ -78,7 +78,7 @@ export function summarizeActiveValidatorChecks(
  * Extract element references from a problem's buttons
  * Looks for common patterns like "Select Cube", "Select Texture", etc.
  */
-function extractElementRefs(problem: ValidatorProblem): {
+export function extractElementRefs(problem: ValidatorProblem): {
   type?: string;
   name?: string;
   uuid?: string;
@@ -96,7 +96,8 @@ function extractElementRefs(problem: ValidatorProblem): {
   const cubeMatch = problem.message.match(/cube\s+"([^"]+)"/i);
   if (cubeMatch) {
     const cubeName = cubeMatch[1];
-    const cube = Cube.all.find((c) => c.name === cubeName);
+    const matches = Cube.all.filter((c) => c.name === cubeName);
+    const cube = matches.length === 1 ? matches[0] : undefined;
     if (cube) {
       refs.push({ type: "cube", name: cube.name, uuid: cube.uuid });
     }
@@ -105,9 +106,10 @@ function extractElementRefs(problem: ValidatorProblem): {
   const textureMatch = problem.message.match(/texture\s+"([^"]+)"/i);
   if (textureMatch) {
     const textureName = textureMatch[1];
-    const texture = Texture.all.find(
+    const matches = Texture.all.filter(
       (t) => t.name === textureName || t.folder + "/" + t.name === textureName
     );
+    const texture = matches.length === 1 ? matches[0] : undefined;
     if (texture) {
       refs.push({ type: "texture", name: texture.name, uuid: texture.uuid });
     }
@@ -117,7 +119,8 @@ function extractElementRefs(problem: ValidatorProblem): {
   if (animationMatch) {
     const animName = animationMatch[1];
     // @ts-ignore - Animation.all exists at runtime
-    const animation = Animation.all?.find((a: { name: string; uuid: string }) => a.name === animName);
+    const matches = Animation.all?.filter((a: { name: string; uuid: string }) => a.name === animName) ?? [];
+    const animation = matches.length === 1 ? matches[0] : undefined;
     if (animation) {
       refs.push({ type: "animation", name: animation.name, uuid: animation.uuid });
     }
@@ -126,7 +129,8 @@ function extractElementRefs(problem: ValidatorProblem): {
   const boneMatch = problem.message.match(/on\s+"([^"]+)"/i);
   if (boneMatch && !animationMatch) {
     const boneName = boneMatch[1];
-    const group = Group.all.find((g) => g.name === boneName);
+    const matches = Group.all.filter((g) => g.name === boneName);
+    const group = matches.length === 1 ? matches[0] : undefined;
     if (group) {
       refs.push({ type: "group", name: group.name, uuid: group.uuid });
     }

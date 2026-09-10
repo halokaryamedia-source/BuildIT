@@ -1,9 +1,12 @@
 /// <reference types="three" />
 /// <reference types="blockbench-types" />
 import { z } from "zod";
+import {runPaintStroke} from "@/lib/paintStroke";
 import { createTool, type ToolSpec } from "@/lib/factories";
 import { STATUS_EXPERIMENTAL } from "@/lib/constants";
-import { getAndActivateTexture, setBarItemValue } from "@/lib/util";
+import { getAndActivateTexture, setBarItemValues } from "@/lib/util";
+import {generateTexturePalette, texturePaletteParameters} from "@/lib/texturePalette";
+import {resolveCoreTexture} from "@/lib/coreIdentity";
 import {
   textureIdOptionalSchema,
   hexColorSchema,
@@ -164,6 +167,12 @@ export const eraserToolParameters = z.object({
 });
 
 export const paintSettingsParameters = z.object({
+  texture_preview: z.object({
+    texture_id: z.string().min(1),
+    filtering: z.enum(["nearest","linear"]).optional(),
+    wrapping: z.enum(["clamp","repeat"]).optional(),
+  }).strict().refine(value=>value.filtering!==undefined||value.wrapping!==undefined,"Specify filtering or wrapping.").optional().describe("Current texture GPU preview only; not pixel data, exported sampler state, or persistent plugin preferences."),
+  palette: texturePaletteParameters.optional().describe("Generate a stepped hue-shifted palette; preview is default. Does not paint or grade texture art."),
   mirror_painting: z
     .object({
       enabled: z.boolean().describe("Enable mirror painting."),
@@ -233,6 +242,11 @@ export const paintWithBrushParameters = z.object({
     .describe("Whether to connect paint strokes with lines."),
 });
 
+const pressureCurveSchema = z.array(z.number().finite().min(0).max(1)).length(8)
+  .refine((p) => p[0] === 0 && p[6] === 1 && p[2] <= p[4],
+    "Curve requires pressure endpoints 0/1 and ordered control-point pressure coordinates.")
+  .describe("Four normalized Bezier [pressure,value] pairs. Requires active Brush Tuna and stylus pressure when loaded; does not affect exact pixel transactions.");
+
 export const createBrushPresetParameters = z.object({
   name: z.string().min(1).describe("Non-empty name of the brush preset."),
   size: brushSizeSchema,
@@ -241,6 +255,10 @@ export const createBrushPresetParameters = z.object({
   shape: brushShapeEnum.optional().describe("Brush shape."),
   color: hexColorSchema.describe("Brush color as hex string."),
   blend_mode: blendModeEnum.optional().describe("Brush blend mode."),
+  lock_alpha: z.boolean().optional().describe("Preserve transparent pixels during native brush painting. Does not control exact pixel transactions."),
+  size_pressure_curve: pressureCurveSchema.optional(),
+  softness_pressure_curve: pressureCurveSchema.optional(),
+  opacity_pressure_curve: pressureCurveSchema.optional(),
   pixel_perfect: z
     .boolean()
     .optional()
@@ -378,7 +396,7 @@ export const paintToolDocs: ToolSpec[] = [
   },
   {
     name: "paint_settings",
-    description: "Configures paint mode settings and preferences.",
+    description: "Configures paint settings, hue-shifted palette or texture preview filtering/wrapping. Palette defaults to preview; append/replace updates native colors. Preview sampler changes are not exported game settings. Neither operation paints pixels.",
     annotations: {
       title: "Paint Settings",
       destructiveHint: true,
@@ -409,7 +427,7 @@ export const paintToolDocs: ToolSpec[] = [
   },
   {
     name: "load_brush_preset",
-    description: "Loads and applies a brush preset by name.",
+    description: "Loads and applies a brush preset by name. Pressure curves require active Brush Tuna and stylus input; presets do not control exact pixel transactions.",
     annotations: {
       title: "Load Brush Preset",
       destructiveHint: true,
@@ -619,27 +637,22 @@ export function registerPaintTools() {
         const texture = getAndActivateTexture(texture_id);
         requirePixelsWithinTexture(texture, [{ x, y }]);
 
-        // Apply settings
+        // Native sliders are scoped to the selected tool.
+        // @ts-ignore
+        BarItems.fill_tool.select();
+        setBarItemValues({
+          ...(opacity === undefined ? {} : {slider_brush_opacity:opacity}),
+          ...(fill_mode === undefined ? {} : {fill_mode}),
+          ...(blend_mode === undefined ? {} : {blend_mode}),
+        });
         if (color) {
           ColorPanel.set(color, false, false);
         }
-        if (opacity !== undefined) {
-          setBarItemValue("slider_brush_opacity", opacity);
-        }
-        if (fill_mode) {
-          setBarItemValue("fill_mode", fill_mode);
-        }
-        if (blend_mode) {
-          setBarItemValue("blend_mode", blend_mode);
-        }
-
-        // Select fill tool
-        // @ts-ignore
-        BarItems.fill_tool.select();
 
         // Perform fill
-        getRuntimePainter().startPaintTool(texture, x, y, {}, { shiftKey: false });
-        getRuntimePainter().stopPaintTool();
+        runPaintStroke(() => {
+          getRuntimePainter().startPaintTool(texture, x, y, {}, { shiftKey: false });
+        });
         Canvas.updateAll();
 
         return `Filled area at (${x}, ${y}) on texture "${texture.name}"`;
@@ -685,38 +698,29 @@ export function registerPaintTools() {
           "draw_shape_tool"
         );
 
-        // Apply settings
+        // @ts-ignore
+        BarItems.draw_shape_tool.select();
+        setBarItemValues({draw_shape_type:shape,
+          ...(opacity === undefined ? {} : {slider_brush_opacity:opacity}),
+          ...(line_width === undefined ? {} : {slider_brush_size:line_width}),
+          ...(blend_mode === undefined ? {} : {blend_mode}),
+        });
         if (color) {
           ColorPanel.set(color, false, false);
         }
-        if (opacity !== undefined) {
-          setBarItemValue("slider_brush_opacity", opacity);
-        }
-        if (line_width !== undefined) {
-          setBarItemValue("slider_brush_size", line_width);
-        }
-        if (blend_mode) {
-          setBarItemValue("blend_mode", blend_mode);
-        }
-
-        // Set shape type
-        setBarItemValue("draw_shape_type", shape);
-
-        // Select draw shape tool
-        // @ts-ignore
-        BarItems.draw_shape_tool.select();
 
         // Pass the bounded UV tag through Blockbench's native Painter so the
         // requested pixel rectangle clips the shape instead of allowing bleed.
-        getRuntimePainter().startPaintTool(
-          texture,
-          start.x,
-          start.y,
-          uvTag,
-          { shiftKey: false }
-        );
-        getRuntimePainter().useShapeTool(texture, end.x, end.y, {}, uvTag);
-        getRuntimePainter().stopPaintTool();
+        runPaintStroke(() => {
+          getRuntimePainter().startPaintTool(
+            texture,
+            start.x,
+            start.y,
+            uvTag,
+            { shiftKey: false }
+          );
+          getRuntimePainter().useShapeTool(texture, end.x, end.y, {}, uvTag);
+        });
         Canvas.updateAll();
 
         const result = {
@@ -758,26 +762,22 @@ export function registerPaintTools() {
         const texture = getAndActivateTexture(texture_id);
         requirePixelsWithinTexture(texture, [start, end]);
 
-        // Apply settings
+        // @ts-ignore
+        BarItems.gradient_tool.select();
+        setBarItemValues({
+          ...(opacity === undefined ? {} : {slider_brush_opacity:opacity}),
+          ...(blend_mode === undefined ? {} : {blend_mode}),
+        });
         ColorPanel.set(start_color, false, false);
         // @ts-ignore
         ColorPanel.set(end_color, true, false); // Set as secondary color
 
-        if (opacity !== undefined) {
-          setBarItemValue("slider_brush_opacity", opacity);
-        }
-        if (blend_mode) {
-          setBarItemValue("blend_mode", blend_mode);
-        }
-
-        // Select gradient tool
-        // @ts-ignore
-        BarItems.gradient_tool.select();
 
         // Apply gradient
-        getRuntimePainter().startPaintTool(texture, start.x, start.y, {}, { shiftKey: false });
-        getRuntimePainter().useGradientTool(texture, end.x, end.y, {});
-        getRuntimePainter().stopPaintTool();
+        runPaintStroke(() => {
+          getRuntimePainter().startPaintTool(texture, start.x, start.y, {}, { shiftKey: false });
+          getRuntimePainter().useGradientTool(texture, end.x, end.y, {});
+        });
         Canvas.updateAll();
 
         return `Applied gradient from (${start.x}, ${start.y}) to (${end.x}, ${end.y}) on texture "${texture.name}"`;
@@ -834,29 +834,24 @@ export function registerPaintTools() {
         const texture = getAndActivateTexture(texture_id);
         requirePixelsWithinTexture(texture, [source, target]);
 
-        // Apply settings
-        if (brush_size !== undefined) {
-          setBarItemValue("slider_brush_size", brush_size);
-        }
-        if (opacity !== undefined) {
-          setBarItemValue("slider_brush_opacity", opacity);
-        }
-        if (mode) {
-          setBarItemValue("copy_brush_mode", mode);
-        }
-
         // Select copy brush tool
         // @ts-ignore
         BarItems.copy_brush.select();
-
-        // Set source point (Ctrl+click equivalent)
-        getRuntimePainter().startPaintTool(texture, source.x, source.y, {}, {
-          ctrlOrCmd: true,
+        setBarItemValues({
+          ...(brush_size === undefined ? {} : {slider_brush_size:brush_size}),
+          ...(opacity === undefined ? {} : {slider_brush_opacity:opacity}),
+          ...(mode === undefined ? {} : {copy_brush_mode:mode}),
         });
 
-        // Apply at target point. The native Painter lifecycle owns Undo.
-        getRuntimePainter().startPaintTool(texture, target.x, target.y, {}, { shiftKey: false });
-        getRuntimePainter().stopPaintTool();
+        // Set source point (Ctrl+click equivalent)
+        runPaintStroke(() => {
+          getRuntimePainter().startPaintTool(texture, source.x, source.y, {}, {
+            ctrlOrCmd: true,
+          });
+
+          // Apply at target point. The native Painter lifecycle owns Undo.
+          getRuntimePainter().startPaintTool(texture, target.x, target.y, {}, { shiftKey: false });
+        });
         Canvas.updateAll();
 
         return `Copied from (${source.x}, ${source.y}) to (${target.x}, ${target.y}) on texture "${texture.name}"`;
@@ -883,40 +878,34 @@ export function registerPaintTools() {
         const texture = getAndActivateTexture(texture_id);
         requirePixelsWithinTexture(texture, coordinates);
 
-        if (brush_size !== undefined) {
-          setBarItemValue("slider_brush_size", brush_size);
-        }
-        if (opacity !== undefined) {
-          setBarItemValue("slider_brush_opacity", opacity);
-        }
-        if (softness !== undefined) {
-          setBarItemValue("slider_brush_softness", softness);
-        }
-        if (shape !== undefined) {
-          setBarItemValue("brush_shape", shape);
-        }
-
         // @ts-ignore - official Blockbench Painter tool ID
         BarItems.eraser.select();
+        setBarItemValues({
+          ...(brush_size === undefined ? {} : {slider_brush_size:brush_size}),
+          ...(opacity === undefined ? {} : {slider_brush_opacity:opacity}),
+          ...(softness === undefined ? {} : {slider_brush_softness:softness}),
+          ...(shape === undefined ? {} : {brush_shape:shape}),
+        });
 
         const first = coordinates[0];
-        getRuntimePainter().startPaintTool(
-          texture,
-          first.x,
-          first.y,
-          {},
-          { shiftKey: false }
-        );
-        for (const coord of coordinates.slice(1)) {
-          getRuntimePainter().movePaintTool(
+        runPaintStroke(() => {
+          getRuntimePainter().startPaintTool(
             texture,
-            coord.x,
-            coord.y,
+            first.x,
+            first.y,
             {},
-            !connect_strokes
+            { shiftKey: false }
           );
-        }
-        getRuntimePainter().stopPaintTool();
+          for (const coord of coordinates.slice(1)) {
+            getRuntimePainter().movePaintTool(
+              texture,
+              coord.x,
+              coord.y,
+              {},
+              !connect_strokes
+            );
+          }
+        });
         Canvas.updateAll();
 
         return `Erased ${coordinates.length} points on texture "${texture.name}"`;
@@ -931,6 +920,8 @@ export function registerPaintTools() {
       ...paintToolDocs[6],
       parameters: paintSettingsParameters,
       async execute({
+        texture_preview,
+        palette,
         mirror_painting,
         lock_alpha,
         pixel_perfect,
@@ -943,6 +934,15 @@ export function registerPaintTools() {
         pick_combined_color,
       }) {
         const appliedSettings: string[] = [];
+        const paletteResult = palette ? generateTexturePalette(palette) : undefined;
+        const nativePalette = typeof ColorPanel === "undefined" ? undefined : (ColorPanel as unknown as {palette?: string[]}).palette;
+        if (palette && palette.mode !== "preview" && !Array.isArray(nativePalette)) throw new Error("Native ColorPanel palette is unavailable.");
+        const previewTexture = texture_preview ? resolveCoreTexture(texture_preview.texture_id) : undefined;
+        const previewMap = previewTexture ? (previewTexture as unknown as {material?: {map?: THREE.Texture}}).material?.map : undefined;
+        if (texture_preview && !previewMap) throw new Error("Texture preview material.map is unavailable; no sampler changed.");
+        const three = (globalThis as unknown as {THREE?: typeof import("three")}).THREE;
+        if (texture_preview && !three) throw new Error("Native THREE preview runtime is unavailable.");
+        const previousSampler = previewMap ? {min_filter:previewMap.minFilter,mag_filter:previewMap.magFilter,wrap_s:previewMap.wrapS,wrap_t:previewMap.wrapT} : undefined;
         const requestedBlockbenchSettings = [
           ["paint_side_restrict", paint_side_restrict],
           ["brush_opacity_modifier", brush_opacity_modifier],
@@ -952,40 +952,64 @@ export function registerPaintTools() {
           ["pick_combined_color", pick_combined_color],
         ] as const;
 
-        for (const [settingId, value] of requestedBlockbenchSettings) {
-          if (value !== undefined && !settings[settingId]) {
-            throw new Error(`Blockbench setting "${settingId}" is unavailable.`);
-          }
-        }
+        const nativeSettings = requestedBlockbenchSettings.flatMap(([id, value]) => {
+          if (value === undefined) return [];
+          const setting = typeof settings === "undefined" ? undefined : settings[id];
+          if (!setting || typeof setting.set !== "function") throw new Error(`Blockbench setting "${id}" is unavailable.`);
+          const previous = setting.value;
+          if (!["boolean", "string", "number"].includes(typeof previous)) throw new Error(`Blockbench setting "${id}" cannot be safely snapshotted.`);
+          return [{id, value, previous, setting}];
+        });
 
+        const hasMirrorOptions = mirror_painting && (mirror_painting.axis !== undefined || mirror_painting.texture !== undefined || mirror_painting.texture_center !== undefined);
+        if (hasMirrorOptions && !mirror_painting.enabled) throw new Error("Mirror sub-options require mirror_painting.enabled.");
+        if (hasMirrorOptions && !getRuntimePainter().mirror_painting_options) throw new Error("Native mirror options are unavailable.");
+        // Native setters can mutate before throwing. Restore every attempted setter,
+        // including the failing one; the control batch owns its own rollback.
+        let attemptedSetting = -1;
+        try {
+          for (let i = 0; i < nativeSettings.length; i++) {
+            attemptedSetting = i;
+            const {setting, value} = nativeSettings[i];
+            setting.set(value);
+            if (setting.value !== value) throw new Error(`Blockbench setting "${nativeSettings[i].id}" did not apply.`);
+          }
+          setBarItemValues({
+            ...(mirror_painting === undefined ? {} : {mirror_painting:mirror_painting.enabled}),
+            ...(pixel_perfect === undefined ? {} : {pixel_perfect_drawing:pixel_perfect}),
+            ...(color_erase_mode === undefined ? {} : {color_erase_mode}),
+          });
+        } catch (error) {
+          const failures: string[] = [];
+          for (let i = attemptedSetting; i >= 0; i--) {
+            const {id, setting, previous} = nativeSettings[i];
+            try {
+              setting.set(previous);
+              if (setting.value !== previous) throw new Error("Restore did not apply.");
+            } catch { failures.push(id); }
+          }
+          if (failures.length) throw new Error(`Paint settings rollback failed: ${failures.join(", ")}. Inspect state before retrying. Cause: ${String(error)}`);
+          throw error;
+        }
+        for (const {id, value} of nativeSettings) appliedSettings.push(`${id}: ${value}`);
         // Mirror painting
         if (mirror_painting !== undefined) {
-          if (
-            !mirror_painting.enabled &&
-            (mirror_painting.axis ||
-              mirror_painting.texture ||
-              mirror_painting.texture_center)
-          ) {
-            throw new Error(
-              "Mirror sub-options (axis/texture/texture_center) require mirror_painting.enabled; they would be silently dropped otherwise."
-            );
-          }
 
-          setBarItemValue("mirror_painting", mirror_painting.enabled);
+
           getRuntimePainter().mirror_painting = mirror_painting.enabled;
           appliedSettings.push(`Mirror painting: ${mirror_painting.enabled}`);
 
           if (
             mirror_painting.enabled &&
             (mirror_painting.axis ||
-              mirror_painting.texture ||
+              mirror_painting.texture !== undefined ||
               mirror_painting.texture_center)
           ) {
             // @ts-ignore
             const options = getRuntimePainter().mirror_painting_options;
             if (mirror_painting.axis) {
-              mirror_painting.axis.forEach((axis) => {
-                options[axis] = true;
+              (["x", "y", "z"] as const).forEach((axis) => {
+                options[axis] = mirror_painting.axis!.includes(axis);
               });
             }
             if (mirror_painting.texture !== undefined) {
@@ -1009,47 +1033,37 @@ export function registerPaintTools() {
 
         // Pixel perfect
         if (pixel_perfect !== undefined) {
-          setBarItemValue("pixel_perfect_drawing", pixel_perfect);
+
           appliedSettings.push(`Pixel perfect: ${pixel_perfect}`);
         }
 
         // Color erase mode
         if (color_erase_mode !== undefined) {
-          setBarItemValue("color_erase_mode", color_erase_mode);
+
           getRuntimePainter().erase_mode = color_erase_mode;
           appliedSettings.push(`Color erase mode: ${color_erase_mode}`);
         }
 
-        if (paint_side_restrict !== undefined) {
-          settings.paint_side_restrict.set(paint_side_restrict);
-          appliedSettings.push(`Paint side restrict: ${paint_side_restrict}`);
+        if (texture_preview && previewMap && three) {
+          if (texture_preview.filtering) {
+            const filter=texture_preview.filtering==="nearest"?three.NearestFilter:three.LinearFilter;
+            previewMap.minFilter=filter;previewMap.magFilter=filter;
+          }
+          if (texture_preview.wrapping) {
+            const wrap=texture_preview.wrapping==="repeat"?three.RepeatWrapping:three.ClampToEdgeWrapping;
+            previewMap.wrapS=wrap;previewMap.wrapT=wrap;
+          }
+          previewMap.needsUpdate=true;
         }
-
-        if (brush_opacity_modifier !== undefined) {
-          settings.brush_opacity_modifier.set(brush_opacity_modifier);
-          appliedSettings.push(`Brush opacity modifier: ${brush_opacity_modifier}`);
+        const previewResult = texture_preview ? {texture_uuid:previewTexture!.uuid,...texture_preview,scope:"current_gpu_preview_only",previous:previousSampler} : undefined;
+        if (palette && paletteResult) {
+          if (palette.mode !== "preview") {
+            const next = [...new Set([...(palette.mode === "append" ? nativePalette! : []), ...paletteResult.colors])];
+            nativePalette!.splice(0, nativePalette!.length, ...next);
+          }
+          return {content:[{type:"text" as const,text:`Palette ${palette.mode}: ${paletteResult.colors.length} colors; ${appliedSettings.length} paint setting(s) updated.`}],structuredContent:{palette:{...paletteResult,mode:palette.mode},applied_settings:appliedSettings,texture_preview:previewResult}};
         }
-
-        if (brush_size_modifier !== undefined) {
-          settings.brush_size_modifier.set(brush_size_modifier);
-          appliedSettings.push(`Brush size modifier: ${brush_size_modifier}`);
-        }
-
-        if (paint_with_stylus_only !== undefined) {
-          settings.paint_with_stylus_only.set(paint_with_stylus_only);
-          appliedSettings.push(`Paint with stylus only: ${paint_with_stylus_only}`);
-        }
-
-        if (pick_color_opacity !== undefined) {
-          settings.pick_color_opacity.set(pick_color_opacity);
-          appliedSettings.push(`Pick color opacity: ${pick_color_opacity}`);
-        }
-
-        if (pick_combined_color !== undefined) {
-          settings.pick_combined_color.set(pick_combined_color);
-          appliedSettings.push(`Pick combined color: ${pick_combined_color}`);
-        }
-
+        if (previewResult) return {content:[{type:"text" as const,text:"Updated texture preview sampler; texture pixels and exported game settings unchanged."}],structuredContent:{texture_preview:previewResult,applied_settings:appliedSettings}};
         return `Updated paint settings: ${appliedSettings.join(", ")}`;
       },
     },
@@ -1083,13 +1097,8 @@ export function registerPaintTools() {
         // Native sliders store settings on the selected tool.
         // @ts-ignore - official Blockbench Painter tool ID
         BarItems.brush_tool.select();
-        setBarItemValue("slider_brush_size", size);
-        setBarItemValue("slider_brush_opacity", opacity);
-        setBarItemValue("slider_brush_softness", softness);
-        setBarItemValue("brush_shape", shape);
-        if (brush_settings?.blend_mode !== undefined) {
-          setBarItemValue("blend_mode", brush_settings.blend_mode);
-        }
+        setBarItemValues({slider_brush_size:size,slider_brush_opacity:opacity,
+          slider_brush_softness:softness,brush_shape:shape,blend_mode:blendMode});
         ColorPanel.set(colorHex, false, false);
 
         const exactPixelMode = isExactPixelAuthoringRequest(coordinates, {
@@ -1193,23 +1202,24 @@ export function registerPaintTools() {
         }
 
         const first = coordinates[0];
-        getRuntimePainter().startPaintTool(
-          texture,
-          first.x,
-          first.y,
-          undefined,
-          { shiftKey: false }
-        );
-        for (const coord of coordinates.slice(1)) {
-          getRuntimePainter().movePaintTool(
+        runPaintStroke(() => {
+          getRuntimePainter().startPaintTool(
             texture,
-            coord.x,
-            coord.y,
-            {},
-            !connect_strokes
+            first.x,
+            first.y,
+            undefined,
+            { shiftKey: false }
           );
-        }
-        getRuntimePainter().stopPaintTool();
+          for (const coord of coordinates.slice(1)) {
+            getRuntimePainter().movePaintTool(
+              texture,
+              coord.x,
+              coord.y,
+              {},
+              !connect_strokes
+            );
+          }
+        });
         Canvas.updateAll();
 
         return `Painted ${coordinates.length} points on texture "${texture.name}"`;
@@ -1232,7 +1242,18 @@ export function registerPaintTools() {
         color,
         blend_mode,
         pixel_perfect,
+        lock_alpha,
+        size_pressure_curve,
+        softness_pressure_curve,
+        opacity_pressure_curve,
       }) {
+        const memory = (globalThis as unknown as { StateMemory: {
+          brush_presets: Array<{ name: string }>;
+          save: (key: string) => void;
+        } }).StateMemory;
+        if (memory.brush_presets.some((p) => p.name === name)) {
+          throw new Error(`Brush preset "${name}" already exists.`);
+        }
         const preset = {
           name,
           size: size ?? null,
@@ -1242,12 +1263,19 @@ export function registerPaintTools() {
           color: color || null,
           blend_mode: blend_mode || "default",
           pixel_perfect: pixel_perfect || false,
+          ...(lock_alpha === undefined ? {} : { lock_alpha }),
+          ...(size_pressure_curve === undefined ? {} : { size_pressure_curve }),
+          ...(softness_pressure_curve === undefined ? {} : { softness_pressure_curve }),
+          ...(opacity_pressure_curve === undefined ? {} : { opacity_pressure_curve }),
         };
 
-        // @ts-ignore
-        StateMemory.brush_presets.push(preset);
-        // @ts-ignore
-        StateMemory.save("brush_presets");
+        memory.brush_presets.push(preset);
+        try {
+          memory.save("brush_presets");
+        } catch (error) {
+          memory.brush_presets.splice(memory.brush_presets.indexOf(preset), 1);
+          throw error;
+        }
 
         return `Created brush preset "${name}" with settings: ${JSON.stringify(
           preset
@@ -1277,8 +1305,24 @@ export function registerPaintTools() {
           );
         }
 
+        const preset = matches[0];
+        const hasPressure = ["size_pressure_curve", "softness_pressure_curve", "opacity_pressure_curve"]
+          .some((field) => preset[field] != null);
+        const tuna = (globalThis as unknown as { BrushTuna?: { brushPreset: unknown } }).BrushTuna;
+        if (hasPressure && !tuna) {
+          throw new Error("Brush Tuna must be active to load pressure curves; native presets alone ignore them.");
+        }
+        for (const field of ["size_pressure_curve", "softness_pressure_curve", "opacity_pressure_curve"]) {
+          if (preset[field] != null) pressureCurveSchema.parse(preset[field]);
+        }
+        const alphaToggle = BarItems.lock_alpha as unknown as { set?: (value: boolean) => void } | undefined;
+        if (typeof preset.lock_alpha === "boolean" && typeof alphaToggle?.set !== "function") {
+          throw new Error("Native lock-alpha control is unavailable.");
+        }
         // @ts-ignore
-        Painter.loadBrushPreset(matches[0]);
+        Painter.loadBrushPreset(preset);
+        if (hasPressure) tuna!.brushPreset = preset;
+        if (typeof preset.lock_alpha === "boolean") alphaToggle!.set!(preset.lock_alpha);
 
         return `Loaded brush preset "${preset_name}"`;
       },

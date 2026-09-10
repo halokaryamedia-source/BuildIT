@@ -1,11 +1,11 @@
 {
   "version": "0.1.0",
-  "generatedAt": "2026-09-09T19:59:12.417Z",
+  "generatedAt": "2026-09-10T08:03:27.341Z",
   "tools": [
     {
       "name": "manage_cubes",
       "title": "Place Cube",
-      "description": "Creates or updates Bedrock Cubes. Use operation=create for placement, update for one explicit UUID/name target, or batch_update for 1-32 UUID-targeted corrections. Texture stays global; reference fidelity is not evaluated.",
+      "description": "Creates or updates Bedrock Cubes. Use create for placement, update for one target, batch_update for 1-32 UUID corrections, or simplify for explicit bounds/rotation rounding with dry-run default. Simplify preserves UV/pivots and rejects collapsed axes; it does not reduce Cube count or evaluate visual fidelity.",
       "status": "stable",
       "category": "Cubes",
       "annotations": {
@@ -590,6 +590,64 @@
                     ]
                   }
                 ]
+              },
+              {
+                "allOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "operation": {
+                        "type": "string",
+                        "const": "simplify"
+                      }
+                    },
+                    "required": [
+                      "operation"
+                    ]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "ids": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "minItems": 1,
+                        "maxItems": 32
+                      },
+                      "increment": {
+                        "type": "number",
+                        "exclusiveMinimum": 0,
+                        "description": "Grid increment in model units for bounds, degrees for rotation.",
+                        "markdownDescription": "Grid increment in model units for bounds, degrees for rotation."
+                      },
+                      "fields": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "bounds",
+                            "rotation"
+                          ]
+                        },
+                        "minItems": 1
+                      },
+                      "dry_run": {
+                        "type": "boolean",
+                        "default": true,
+                        "description": "Return proposed corrections without mutation; false applies one Undo unit. UV and pivots are preserved.",
+                        "markdownDescription": "Return proposed corrections without mutation; false applies one Undo unit. UV and pivots are preserved."
+                      }
+                    },
+                    "required": [
+                      "ids",
+                      "increment",
+                      "fields"
+                    ]
+                  }
+                ]
               }
             ]
           }
@@ -714,7 +772,7 @@
     {
       "name": "capture_model_views",
       "title": "Capture Model Views",
-      "description": "Captures 1-5 deterministic labeled 512×512 canonical views without changing the active editor camera. Model framing requires visible Cubes; explicit framing can also capture a loaded visible 3D-Assisted Evidence reference before blockout. Returns observation only; no score/PASS/FAIL.",
+      "description": "Captures 1-5 deterministic labeled square PNG views (default 512×512; optional icon size) without changing the active editor camera. Model framing requires visible Cubes; explicit framing can also capture a loaded visible 3D-Assisted Evidence reference before blockout. Returns observation only; no score/PASS/FAIL.",
       "status": "stable",
       "category": "Camera & Screenshots",
       "annotations": {
@@ -726,6 +784,20 @@
           "capture_model_views": {
             "type": "object",
             "properties": {
+              "size": {
+                "type": "integer",
+                "minimum": 32,
+                "maximum": 1024,
+                "default": 512,
+                "description": "Square PNG pixels: 256 for a quick silhouette/pose check, 512 default for texture/reference detail, 32-64 for icons only. Prefer one relevant view; increase size only when details are unreadable.",
+                "markdownDescription": "Square PNG pixels: 256 for a quick silhouette/pose check, 512 default for texture/reference detail, 32-64 for icons only. Prefer one relevant view; increase size only when details are unreadable."
+              },
+              "highlight_missing_textures": {
+                "type": "boolean",
+                "default": false,
+                "description": "Diagnostic capture: brighten native missing-texture materials temporarily. Restores state; not a normal shaded comparison or flashing UI.",
+                "markdownDescription": "Diagnostic capture: brighten native missing-texture materials temporarily. Restores state; not a normal shaded comparison or flashing UI."
+              },
               "views": {
                 "type": "array",
                 "items": {
@@ -1183,7 +1255,10 @@
                           "loop",
                           "select_range",
                           "set_anim_time_update",
-                          "set_blend_weight"
+                          "set_blend_weight",
+                          "expand_bones",
+                          "collapse_bones",
+                          "set_easing"
                         ],
                         "description": "Timeline or persistent authored-Animation property action.",
                         "markdownDescription": "Timeline or persistent authored-Animation property action."
@@ -1218,6 +1293,49 @@
                         ],
                         "description": "Loop mode for the animation.",
                         "markdownDescription": "Loop mode for the animation."
+                      },
+                      "easing": {
+                        "type": "object",
+                        "properties": {
+                          "curve": {
+                            "type": "string",
+                            "enum": [
+                              "sine",
+                              "quad",
+                              "cubic"
+                            ]
+                          },
+                          "direction": {
+                            "type": "string",
+                            "enum": [
+                              "in",
+                              "out",
+                              "in_out"
+                            ]
+                          },
+                          "replace_existing": {
+                            "type": "boolean",
+                            "default": false
+                          }
+                        },
+                        "required": [
+                          "curve",
+                          "direction"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Minecraft Bedrock Entity (bedrock) only. Whole-clip Molang time remapping. Reapply after changing clip length or loop mode. Existing Molang requires replace_existing=true.",
+                        "markdownDescription": "Minecraft Bedrock Entity (bedrock) only. Whole-clip Molang time remapping. Reapply after changing clip length or loop mode. Existing Molang requires replace_existing=true."
+                      },
+                      "bone_ids": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "minItems": 1,
+                        "maxItems": 128,
+                        "description": "Explicit bone UUIDs or unique names for expand_bones/collapse_bones, including descendants. View only; expansion shows existing keyed animators.",
+                        "markdownDescription": "Explicit bone UUIDs or unique names for expand_bones/collapse_bones, including descendants. View only; expansion shows existing keyed animators."
                       },
                       "range": {
                         "type": "object",
@@ -3913,7 +4031,7 @@
     {
       "name": "rename_element",
       "title": "Rename Element",
-      "description": "Renames one explicit Cube, Group, or outliner target.",
+      "description": "Renames one explicit outliner target via id/new_name, or up to 128 Groups via updates of UUID/new_name. Group batches preview by default (dry_run); false applies one Undo and synchronizes animation references. Final names must be unique case-insensitively.",
       "status": "experimental",
       "category": "Elements",
       "annotations": {
@@ -3923,26 +4041,68 @@
         "$ref": "#/definitions/rename_element",
         "definitions": {
           "rename_element": {
-            "type": "object",
-            "properties": {
-              "id": {
-                "type": "string",
-                "minLength": 1,
-                "description": "Exact element/Group UUID or unique name; ambiguous names are rejected before rename.",
-                "markdownDescription": "Exact element/Group UUID or unique name; ambiguous names are rejected before rename."
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Exact element/Group UUID or unique name; ambiguous names are rejected before rename.",
+                    "markdownDescription": "Exact element/Group UUID or unique name; ambiguous names are rejected before rename."
+                  },
+                  "new_name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Non-empty new name to assign.",
+                    "markdownDescription": "Non-empty new name to assign."
+                  }
+                },
+                "required": [
+                  "id",
+                  "new_name"
+                ],
+                "additionalProperties": false
               },
-              "new_name": {
-                "type": "string",
-                "minLength": 1,
-                "description": "Non-empty new name to assign.",
-                "markdownDescription": "Non-empty new name to assign."
+              {
+                "type": "object",
+                "properties": {
+                  "updates": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "new_name": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "new_name"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "minItems": 1,
+                    "maxItems": 128
+                  },
+                  "dry_run": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Preview Group batch rename; false applies names and animation references in one Undo.",
+                    "markdownDescription": "Preview Group batch rename; false applies names and animation references in one Undo."
+                  }
+                },
+                "required": [
+                  "updates"
+                ],
+                "additionalProperties": false
               }
-            },
-            "required": [
-              "id",
-              "new_name"
-            ],
-            "additionalProperties": false
+            ]
           }
         },
         "$schema": "http://json-schema.org/draft-07/schema#"
@@ -4062,7 +4222,7 @@
     {
       "name": "modify_group",
       "title": "Modify Group",
-      "description": "Modifies one explicit Bedrock Group pivot, rotation, or visibility. Use rename_element for names.",
+      "description": "Modifies one explicit Bedrock Group pivot, rotation, visibility, or translates its subtree using offset. Use rename_element for names.",
       "status": "stable",
       "category": "Elements",
       "annotations": {
@@ -4120,6 +4280,24 @@
                 "type": "boolean",
                 "description": "New Group visibility.",
                 "markdownDescription": "New Group visibility."
+              },
+              "offset": {
+                "type": "array",
+                "minItems": 3,
+                "maxItems": 3,
+                "items": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ],
+                "description": "Translate Group subtree in authored model coordinates, including bounds/pivots/anchors. Use alone; preserves UV and animation keys. Not a camera-relative drag.",
+                "markdownDescription": "Translate Group subtree in authored model coordinates, including bounds/pivots/anchors. Use alone; preserves UV and animation keys. Not a camera-relative drag."
               }
             },
             "required": [
@@ -5543,7 +5721,7 @@
     {
       "name": "paint_settings",
       "title": "Paint Settings",
-      "description": "Configures paint mode settings and preferences.",
+      "description": "Configures paint settings, hue-shifted palette or texture preview filtering/wrapping. Palette defaults to preview; append/replace updates native colors. Preview sampler changes are not exported game settings. Neither operation paints pixels.",
       "status": "experimental",
       "category": "Paint Tools",
       "annotations": {
@@ -5555,6 +5733,104 @@
           "paint_settings": {
             "type": "object",
             "properties": {
+              "texture_preview": {
+                "type": "object",
+                "properties": {
+                  "texture_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "filtering": {
+                    "type": "string",
+                    "enum": [
+                      "nearest",
+                      "linear"
+                    ]
+                  },
+                  "wrapping": {
+                    "type": "string",
+                    "enum": [
+                      "clamp",
+                      "repeat"
+                    ]
+                  }
+                },
+                "required": [
+                  "texture_id"
+                ],
+                "additionalProperties": false,
+                "description": "Current texture GPU preview only; not pixel data, exported sampler state, or persistent plugin preferences.",
+                "markdownDescription": "Current texture GPU preview only; not pixel data, exported sampler state, or persistent plugin preferences."
+              },
+              "palette": {
+                "type": "object",
+                "properties": {
+                  "base": {
+                    "type": "string",
+                    "pattern": "^#[0-9a-f]{6}$",
+                    "errorMessage": {
+                      "pattern": "Opaque #RRGGBB base color required."
+                    }
+                  },
+                  "count": {
+                    "type": "integer",
+                    "minimum": 3,
+                    "maximum": 31,
+                    "default": 7
+                  },
+                  "shadow_lightness": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "default": 0.25,
+                    "description": "HSL lightness decrease from base.",
+                    "markdownDescription": "HSL lightness decrease from base."
+                  },
+                  "highlight_lightness": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "default": 0.25,
+                    "description": "HSL lightness increase from base.",
+                    "markdownDescription": "HSL lightness increase from base."
+                  },
+                  "shadow_hue_shift": {
+                    "type": "number",
+                    "minimum": -180,
+                    "maximum": 180,
+                    "default": -15
+                  },
+                  "highlight_hue_shift": {
+                    "type": "number",
+                    "minimum": -180,
+                    "maximum": 180,
+                    "default": 15
+                  },
+                  "saturation_falloff": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "default": 0.15
+                  },
+                  "mode": {
+                    "type": "string",
+                    "enum": [
+                      "preview",
+                      "append",
+                      "replace"
+                    ],
+                    "default": "preview",
+                    "description": "Preview returns colors only; append/replace changes the native palette, never texture pixels.",
+                    "markdownDescription": "Preview returns colors only; append/replace changes the native palette, never texture pixels."
+                  }
+                },
+                "required": [
+                  "base"
+                ],
+                "additionalProperties": false,
+                "description": "Generate a stepped hue-shifted palette; preview is default. Does not paint or grade texture art.",
+                "markdownDescription": "Generate a stepped hue-shifted palette; preview is default. Does not paint or grade texture art."
+              },
               "mirror_painting": {
                 "type": "object",
                 "properties": {
@@ -5874,6 +6150,47 @@
                 "description": "Brush blend mode.",
                 "markdownDescription": "Brush blend mode."
               },
+              "lock_alpha": {
+                "type": "boolean",
+                "description": "Preserve transparent pixels during native brush painting. Does not control exact pixel transactions.",
+                "markdownDescription": "Preserve transparent pixels during native brush painting. Does not control exact pixel transactions."
+              },
+              "size_pressure_curve": {
+                "type": "array",
+                "items": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                },
+                "minItems": 8,
+                "maxItems": 8,
+                "description": "Four normalized Bezier [pressure,value] pairs. Requires active Brush Tuna and stylus pressure when loaded; does not affect exact pixel transactions.",
+                "markdownDescription": "Four normalized Bezier [pressure,value] pairs. Requires active Brush Tuna and stylus pressure when loaded; does not affect exact pixel transactions."
+              },
+              "softness_pressure_curve": {
+                "type": "array",
+                "items": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                },
+                "minItems": 8,
+                "maxItems": 8,
+                "description": "Four normalized Bezier [pressure,value] pairs. Requires active Brush Tuna and stylus pressure when loaded; does not affect exact pixel transactions.",
+                "markdownDescription": "Four normalized Bezier [pressure,value] pairs. Requires active Brush Tuna and stylus pressure when loaded; does not affect exact pixel transactions."
+              },
+              "opacity_pressure_curve": {
+                "type": "array",
+                "items": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                },
+                "minItems": 8,
+                "maxItems": 8,
+                "description": "Four normalized Bezier [pressure,value] pairs. Requires active Brush Tuna and stylus pressure when loaded; does not affect exact pixel transactions.",
+                "markdownDescription": "Four normalized Bezier [pressure,value] pairs. Requires active Brush Tuna and stylus pressure when loaded; does not affect exact pixel transactions."
+              },
               "pixel_perfect": {
                 "type": "boolean",
                 "description": "Enable pixel perfect drawing.",
@@ -5892,7 +6209,7 @@
     {
       "name": "load_brush_preset",
       "title": "Load Brush Preset",
-      "description": "Loads and applies a brush preset by name.",
+      "description": "Loads and applies a brush preset by name. Pressure curves require active Brush Tuna and stylus input; presets do not control exact pixel transactions.",
       "status": "experimental",
       "category": "Paint Tools",
       "annotations": {
@@ -6101,7 +6418,7 @@
     {
       "name": "paint_texture_transaction",
       "title": "Paint Texture Transaction",
-      "description": "Applies one bounded exact-pixel transaction to a non-layered texture with optimistic revision protection and one native Undo unit.",
+      "description": "Applies bounded set/fill/erase, mirrored copy_region, or seeded masked noise to a non-layered texture with revision protection and one native Undo. Copy preserves RGBA and requires explicit matching UV regions. Noise changes requested channels and preserves transparent pixels by default; neither operation grades art.",
       "status": "stable",
       "category": "Paint Tools",
       "annotations": {
@@ -6262,16 +6579,226 @@
                         "coordinates"
                       ],
                       "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "operation": {
+                          "type": "string",
+                          "const": "copy_region"
+                        },
+                        "source": {
+                          "type": "object",
+                          "properties": {
+                            "x": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "y": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "width": {
+                              "type": "integer",
+                              "exclusiveMinimum": 0
+                            },
+                            "height": {
+                              "type": "integer",
+                              "exclusiveMinimum": 0
+                            }
+                          },
+                          "required": [
+                            "x",
+                            "y",
+                            "width",
+                            "height"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "target": {
+                          "type": "object",
+                          "properties": {
+                            "x": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "y": {
+                              "type": "integer",
+                              "minimum": 0
+                            }
+                          },
+                          "required": [
+                            "x",
+                            "y"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "flip_x": {
+                          "type": "boolean"
+                        },
+                        "flip_y": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "operation",
+                        "source",
+                        "target"
+                      ],
+                      "additionalProperties": false,
+                      "description": "Copy an explicit same-atlas region, optionally mirrored, with RGBA preserved. Caller owns matching entity UV regions; no player-skin layout is assumed.",
+                      "markdownDescription": "Copy an explicit same-atlas region, optionally mirrored, with RGBA preserved. Caller owns matching entity UV regions; no player-skin layout is assumed."
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "operation": {
+                          "type": "string",
+                          "const": "noise"
+                        },
+                        "rect": {
+                          "type": "object",
+                          "properties": {
+                            "x": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "y": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "width": {
+                              "type": "integer",
+                              "exclusiveMinimum": 0
+                            },
+                            "height": {
+                              "type": "integer",
+                              "exclusiveMinimum": 0
+                            }
+                          },
+                          "required": [
+                            "x",
+                            "y",
+                            "width",
+                            "height"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "seed": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 4294967295
+                        },
+                        "amplitude": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 255,
+                          "description": "Maximum signed channel adjustment, not a styling quality setting.",
+                          "markdownDescription": "Maximum signed channel adjustment, not a styling quality setting."
+                        },
+                        "channels": {
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "enum": [
+                              "r",
+                              "g",
+                              "b",
+                              "a"
+                            ]
+                          },
+                          "minItems": 1,
+                          "maxItems": 4
+                        },
+                        "mask": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "x": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "y": {
+                                "type": "integer",
+                                "minimum": 0
+                              }
+                            },
+                            "required": [
+                              "x",
+                              "y"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "minItems": 1,
+                          "description": "Optional explicit pixel selection within rect; unselected pixels stay unchanged.",
+                          "markdownDescription": "Optional explicit pixel selection within rect; unselected pixels stay unchanged."
+                        },
+                        "preserve_transparent": {
+                          "type": "boolean",
+                          "description": "Defaults true: do not color fully transparent atlas pixels. Alpha changes require channel a.",
+                          "markdownDescription": "Defaults true: do not color fully transparent atlas pixels. Alpha changes require channel a."
+                        }
+                      },
+                      "required": [
+                        "operation",
+                        "rect",
+                        "seed",
+                        "amplitude",
+                        "channels"
+                      ],
+                      "additionalProperties": false
                     }
                   ]
                 },
                 "minItems": 1,
                 "maxItems": 64
+              },
+              "ambient_occlusion": {
+                "type": "object",
+                "properties": {
+                  "cube_ids": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "minItems": 1,
+                    "maxItems": 64
+                  },
+                  "radius": {
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                  },
+                  "samples": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 256,
+                    "default": 32
+                  },
+                  "bias": {
+                    "type": "number",
+                    "exclusiveMinimum": 0,
+                    "default": 0.001
+                  },
+                  "strength": {
+                    "type": "number",
+                    "exclusiveMinimum": 0,
+                    "maximum": 1,
+                    "default": 0.5
+                  }
+                },
+                "required": [
+                  "cube_ids",
+                  "radius"
+                ],
+                "additionalProperties": false,
+                "description": "Bedrock Cube AO at the current preview pose. Explicit targets, visible Cubes as occluders; preserves alpha, rejects conflicting UV. Repeated bakes darken again; use Undo to restore. Exclusive with operations.",
+                "markdownDescription": "Bedrock Cube AO at the current preview pose. Explicit targets, visible Cubes as occluders; preserves alpha, rejects conflicting UV. Repeated bakes darken again; use Undo to restore. Exclusive with operations."
               }
             },
             "required": [
-              "expected_revision",
-              "operations"
+              "expected_revision"
             ],
             "additionalProperties": false
           }
@@ -6461,7 +6988,7 @@
     {
       "name": "switch_authoring_phase",
       "title": "switch_authoring_phase",
-      "description": "Changes startup focus within shared AUTHORING or hands off AUTHORING↔Animation through Gateway in the same task. Animation requires recorded user approvals and a checkpoint; internal PASS is not approval.",
+      "description": "Changes focus or hands off AUTHORING↔Animation in the same task. Animation requires a checkpoint and either user approvals or explicitly authorized autonomous verification; internal PASS never means user approval.",
       "status": "stable",
       "category": "Project",
       "annotations": {},
@@ -6488,39 +7015,90 @@
                 "minLength": 1
               },
               "readiness": {
-                "type": "object",
-                "properties": {
-                  "geometry_approved": {
-                    "type": "boolean",
-                    "const": true
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "geometry_approved": {
+                        "type": "boolean",
+                        "const": true
+                      },
+                      "uv_layout": {
+                        "type": "string",
+                        "const": "PASS"
+                      },
+                      "texture_approved": {
+                        "type": "boolean",
+                        "const": true
+                      },
+                      "checkpoint": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Saved .bbmodel checkpoint path; records explicit user approval, never inferred by the caller.",
+                        "markdownDescription": "Saved .bbmodel checkpoint path; records explicit user approval, never inferred by the caller."
+                      },
+                      "no_blockers": {
+                        "type": "boolean",
+                        "const": true
+                      }
+                    },
+                    "required": [
+                      "geometry_approved",
+                      "uv_layout",
+                      "texture_approved",
+                      "checkpoint",
+                      "no_blockers"
+                    ],
+                    "additionalProperties": false
                   },
-                  "uv_layout": {
-                    "type": "string",
-                    "const": "PASS"
-                  },
-                  "texture_approved": {
-                    "type": "boolean",
-                    "const": true
-                  },
-                  "checkpoint": {
-                    "type": "string",
-                    "minLength": 1,
-                    "description": "Saved .bbmodel checkpoint path; records explicit user approval, never inferred by the caller.",
-                    "markdownDescription": "Saved .bbmodel checkpoint path; records explicit user approval, never inferred by the caller."
-                  },
-                  "no_blockers": {
-                    "type": "boolean",
-                    "const": true
+                  {
+                    "type": "object",
+                    "properties": {
+                      "autonomous_authorized": {
+                        "type": "boolean",
+                        "const": true,
+                        "description": "User explicitly authorized autonomous execution; never infer this from tool availability.",
+                        "markdownDescription": "User explicitly authorized autonomous execution; never infer this from tool availability."
+                      },
+                      "geometry_verified": {
+                        "type": "boolean",
+                        "const": true
+                      },
+                      "uv_layout": {
+                        "type": "string",
+                        "const": "PASS"
+                      },
+                      "texture_verified": {
+                        "type": "boolean",
+                        "const": true
+                      },
+                      "checkpoint": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "evidence": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Current-revision geometry/texture evidence and readiness summary; not a user-approval claim.",
+                        "markdownDescription": "Current-revision geometry/texture evidence and readiness summary; not a user-approval claim."
+                      },
+                      "no_blockers": {
+                        "type": "boolean",
+                        "const": true
+                      }
+                    },
+                    "required": [
+                      "autonomous_authorized",
+                      "geometry_verified",
+                      "uv_layout",
+                      "texture_verified",
+                      "checkpoint",
+                      "evidence",
+                      "no_blockers"
+                    ],
+                    "additionalProperties": false
                   }
-                },
-                "required": [
-                  "geometry_approved",
-                  "uv_layout",
-                  "texture_approved",
-                  "checkpoint",
-                  "no_blockers"
-                ],
-                "additionalProperties": false
+                ]
               }
             },
             "required": [
@@ -7938,7 +8516,7 @@
       "name": "particle-reference",
       "title": "Bedrock Particle Reference",
       "description": "Lazy reference for Bedrock particle component families, render materials, compact starting presets, particle Molang/math, and authoring workflow. Read only the section needed for the current particle decision.",
-      "uriTemplate": "particle_reference://{id}"
+      "uriTemplate": "particle-reference://{id}"
     },
     {
       "name": "projects",
@@ -7961,8 +8539,8 @@
     {
       "name": "reference_models",
       "title": "Reference Models",
-      "description": "Returns information about reference models in the current Blockbench project. Requires the Reference Models plugin. List URIs use the slugified name (e.g. `reference_models://turntable`) when unique, with a `~<uuid-prefix>` suffix on collision. Reads also accept the raw UUID or exact name.",
-      "uriTemplate": "reference_models://{id}"
+      "description": "Returns information about reference models in the current Blockbench project. Requires the Reference Models plugin. List URIs use the slugified name (e.g. `reference-models://turntable`) when unique, with a `~<uuid-prefix>` suffix on collision. Reads also accept the raw UUID or exact name.",
+      "uriTemplate": "reference-models://{id}"
     },
     {
       "name": "validator-status",

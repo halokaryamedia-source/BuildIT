@@ -124,6 +124,10 @@ describe("local source closure", () => {
     const base = { reason: "test", resume_from: "animation" };
     expect(phaseControlToolDocs.parameters.safeParse({ ...base, target_phase: "animation" }).success).toBe(false);
     expect(phaseControlToolDocs.parameters.safeParse({ ...base, target_phase: "texturing" }).success).toBe(true);
+    const autonomous={autonomous_authorized:true,geometry_verified:true,uv_layout:"PASS",texture_verified:true,checkpoint:"fixture.bbmodel",evidence:"Current revision visual and technical checks passed",no_blockers:true};
+    expect(phaseControlToolDocs.parameters.safeParse({...base,target_phase:"animation",readiness:autonomous}).success).toBe(true);
+    expect(phaseControlToolDocs.parameters.safeParse({...base,target_phase:"animation",readiness:{...autonomous,autonomous_authorized:false}}).success).toBe(false);
+    expect(phaseControlToolDocs.parameters.safeParse({...base,target_phase:"animation",readiness:{...autonomous,evidence:""}}).success).toBe(false);
     expect(phaseControlToolDocs.parameters.safeParse({ ...base, target_phase: "animation", readiness: { geometry_approved: true, uv_layout: "PASS", texture_approved: true, checkpoint: "fixture.bbmodel", no_blockers: true } }).success).toBe(true);
     for (const phase of ["geometry", "texturing"] as const) {
       expect(buildMcpPhaseHandoffContract(phase)).toContain("READY_FOR_USER_REVIEW");

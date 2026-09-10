@@ -37,6 +37,7 @@ export function slugify(name: string | null | undefined): string {
 export interface INamedItem {
   uuid: string;
   name?: string | null;
+  id?: string | number;
 }
 
 /**
@@ -56,6 +57,11 @@ export function makeResourceId(
 ): string {
   const slug = slugify(item.name);
   if (!slug) return item.uuid;
+  // UUID/name/native-ID precedence must not redirect a listed URI to a sibling.
+  const avoidShadow = (candidate: string): string => siblings.some(sibling =>
+    sibling.uuid !== item.uuid &&
+    [sibling.uuid, sibling.name, sibling.id].includes(candidate)
+  ) ? item.uuid : candidate;
 
   const collisionCount = siblings.reduce(
     (count, sibling) => (slugify(sibling.name) === slug ? count + 1 : count),
@@ -63,11 +69,15 @@ export function makeResourceId(
   );
 
   if (collisionCount <= 1) {
-    return slug;
+    return avoidShadow(slug);
   }
 
   const suffix = item.uuid.slice(0, UUID_DISAMBIGUATOR_LENGTH);
-  return `${slug}~${suffix}`;
+  if (siblings.some(sibling => sibling.uuid !== item.uuid &&
+      slugify(sibling.name) === slug && sibling.uuid.slice(0, UUID_DISAMBIGUATOR_LENGTH) === suffix)) {
+    return item.uuid;
+  }
+  return avoidShadow(`${slug}~${suffix}`);
 }
 
 /**

@@ -23,7 +23,7 @@ export type ParticleReferenceId = (typeof PARTICLE_REFERENCE_IDS)[number];
 export const particleReferenceResourceDocs: ResourceSpec[] = [
   {
     name: "particle-reference",
-    uriTemplate: "particle_reference://{id}",
+    uriTemplate: "particle-reference://{id}",
     title: "Bedrock Particle Reference",
     description:
       "Lazy reference for Bedrock particle component families, render materials, compact starting presets, particle Molang/math, and authoring workflow. Read only the section needed for the current particle decision.",
@@ -144,7 +144,7 @@ export function registerParticleResources(): void {
     async listCallback() {
       return {
         resources: PARTICLE_REFERENCE_IDS.map((id) => ({
-          uri: `particle_reference://${id}`,
+          uri: `particle-reference://${id}`,
           name: id,
           description: `Bedrock particle ${id} reference`,
           mimeType: "application/json",
@@ -152,7 +152,10 @@ export function registerParticleResources(): void {
       };
     },
     async readCallback(uri, { id }) {
-      if (!id || !PARTICLE_REFERENCE_IDS.includes(id as ParticleReferenceId)) {
+      if (id && !PARTICLE_REFERENCE_IDS.includes(id as ParticleReferenceId)) {
+        throw new Error(`Unknown particle reference section "${id}".`);
+      }
+      if (!id) {
         return {
           contents: [
             {

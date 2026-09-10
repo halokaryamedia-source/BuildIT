@@ -4,6 +4,9 @@ description: Mandatory BlockIT Bedrock Texture specialist.
 ---
 # BlockIT Bedrock Texturing
 Geometry/UV capabilities remain callable for bounded upstream correction; Texturing **must not borrow Cube mutation**.
+
+User-authorized autonomy replaces approval waits with verified checkpoints; never claim user approval.
+
 ## Asset-Only Visual Runtime Boundary
 No RP dev: opaque/cutout/blend/emissive; Texture variants asset-only.
 ## Entry / Correction
@@ -49,6 +52,7 @@ cutout=`entity_alphatest`; translucent=`entity_alphablend`; emissive_mask=`entit
 Variants preserve production base role + compatible dimensions/mapping; `normal XOR height`.
 `authoring_status`; MERS=MER+`subsurface_value>0`.
 `paint_settings`: `pixel_perfect`, `lock_alpha`, `paint_side_restrict`; Mirror after semantic symmetry.
+Brush settings/presets affect native brushes, not exact-pixel transactions. Configure only the chosen executor; a transaction does not prove brush/plugin use.
 ## Coherent Styling Window / Anti-Micro-Loop
 representative patch/cohort → cohort-wide; formula/gradient/color count is not quality evidence.
 Finish an identity-critical patch and adjoining body surface pair before propagation. Compare landmarks, value clusters, pattern direction/scale and seams against the actual reference at matching scale. Generic bands cannot replace observed detail. This is internal verification, not a user gate.

@@ -348,9 +348,43 @@ export const modifyCubesBatchParameters = z.object({
     ),
 }).strict();
 
+export const simplifyCubesParameters = z.object({
+  ids: z.array(z.string().min(1)).min(1).max(32).refine(ids => new Set(ids).size === ids.length, "Duplicate Cube UUIDs."),
+  increment: z.number().finite().positive().describe("Grid increment in model units for bounds, degrees for rotation."),
+  fields: z.array(z.enum(["bounds", "rotation"])).min(1).refine(fields => new Set(fields).size === fields.length, "Duplicate fields."),
+  dry_run: z.boolean().default(true).describe("Return proposed corrections without mutation; false applies one Undo unit. UV and pivots are preserved."),
+}).strict();
+
+export function planCubeSimplification(cubes: Array<Pick<Cube, "uuid" | "name" | "from" | "to" | "rotation" | "inflate">>, request: z.infer<typeof simplifyCubesParameters>) {
+  const round = (values: readonly number[]) => values.map(value => {
+    const result = Math.round(value / request.increment) * request.increment;
+    if (!Number.isFinite(result)) throw new Error("Simplification produced non-finite coordinates.");
+    return Object.is(result, -0) ? 0 : result;
+  }) as [number, number, number];
+  return request.ids.flatMap(id => {
+    const cube = cubes.find(candidate => candidate.uuid === id);
+    if (!cube) throw new Error(`Cube UUID "${id}" not found.`);
+    const update: BatchUpdate = { id };
+    if (request.fields.includes("bounds")) {
+      const from = round(cube.from), to = round(cube.to);
+      validateCubeGeometrySpan(from, to, cube.inflate ?? 0, `Simplify ${cube.name}`);
+      if (to.some((value, axis) => cube.to[axis] > cube.from[axis] && value <= from[axis])) {
+        throw new Error(`Simplify ${cube.name} would collapse a positive axis; choose a smaller increment.`);
+      }
+      if (from.some((value, axis) => value !== cube.from[axis])) update.from = from;
+      if (to.some((value, axis) => value !== cube.to[axis])) update.to = to;
+    }
+    if (request.fields.includes("rotation")) {
+      const rotation = round(cube.rotation);
+      if (rotation.some((value, axis) => value !== cube.rotation[axis])) update.rotation = rotation;
+    }
+    return Object.keys(update).length > 1 ? [update] : [];
+  });
+}
+
 function withCubeOperation<T extends z.ZodType>(
   schema: T,
-  operation: "create" | "update" | "batch_update"
+  operation: "create" | "update" | "batch_update" | "simplify"
 ) {
   return z.intersection(
     z.object({ operation: z.literal(operation) }),
@@ -366,7 +400,7 @@ export const cubeToolDocs: ToolSpec[] = [
   {
     name: "manage_cubes",
     description:
-      "Creates or updates Bedrock Cubes. Use operation=create for placement, update for one explicit UUID/name target, or batch_update for 1-32 UUID-targeted corrections. Texture stays global; reference fidelity is not evaluated.",
+      "Creates or updates Bedrock Cubes. Use create for placement, update for one target, batch_update for 1-32 UUID corrections, or simplify for explicit bounds/rotation rounding with dry-run default. Simplify preserves UV/pivots and rejects collapsed axes; it does not reduce Cube count or evaluate visual fidelity.",
     annotations: {
       title: "Place Cube",
       destructiveHint: true,
@@ -375,6 +409,7 @@ export const cubeToolDocs: ToolSpec[] = [
       withCubeOperation(placeCubeParameters, "create"),
       withCubeOperation(modifyCubeParameters, "update"),
       withCubeOperation(modifyCubesBatchParameters, "batch_update"),
+      withCubeOperation(simplifyCubesParameters, "simplify"),
     ]),
     status: STATUS_STABLE,
   },
@@ -382,10 +417,14 @@ export const cubeToolDocs: ToolSpec[] = [
 
 const cubeToolInputSchema: Record<string, z.ZodType> = {
   operation: z
-    .enum(["create", "update", "batch_update"])
+    .enum(["create", "update", "batch_update", "simplify"])
     .describe("Cube operation; provide the fields required by that operation."),
   elements: z.unknown().optional().describe("Cube placement payload."),
   updates: z.unknown().optional().describe("Bounded Cube correction payload."),
+  ids: z.array(z.string()).optional().describe("Explicit Cube UUIDs to simplify."),
+  increment: z.number().optional().describe("Positive rounding increment."),
+  fields: z.array(z.enum(["bounds", "rotation"])).optional(),
+  dry_run: z.boolean().optional(),
   group: z.string().optional().describe("Parent Group UUID or exact name."),
   faces: z.unknown().optional().describe("Optional per-face UV payload."),
   id: z.string().optional().describe("Cube UUID or exact unique name."),
@@ -1048,6 +1087,15 @@ export function registerCubesTools() {
     async execute(request) {
       if (request.operation === "create") return executeCreateCubes(request);
       if (request.operation === "update") return executeUpdateCube(request);
+      if (request.operation === "simplify") {
+        requireOpenProject("simplifying Cubes");
+        const updates = planCubeSimplification(Cube.all, request);
+        if (request.dry_run || updates.length === 0) return {
+          content: [{ type: "text" as const, text: `${updates.length} Cube correction(s) planned; no mutation.` }],
+          structuredContent: { execution: request.dry_run ? "planned" : "unchanged", updates },
+        };
+        return executeBatchUpdateCubes({ updates });
+      }
       return executeBatchUpdateCubes(request);
     },
   }, cubeToolDocs[0].status);

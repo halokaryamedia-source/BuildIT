@@ -4,6 +4,11 @@ Updated: 2026-09-09
 
 This is the **single detailed current flow**. Root `AGENTS.md` owns deterministic task/Skill routing; `workspace/README.md` owns asset continuity; `next-action.md` owns implementation continuation.
 
+
+## Explicit autonomous authorization
+
+When the user explicitly authorizes end-to-end AI execution, intermediate user-approval waits below are replaced by current-revision technical and visual verification with saved checkpoints. Quality gates remain; internal PASS never means user approval. Animation handoff uses autonomous_authorized=true, geometry_verified=true, texture_verified=true, uv_layout=PASS, evidence, checkpoint and no_blockers=true. Otherwise retain the review workflow. This does not reopen a stopped test or invent missing asset requirements.
+
 ## 1. Route / Proof Ceiling
 
 ```text

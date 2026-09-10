@@ -2,6 +2,8 @@
 
 Bedrock **Entity**: Cubes = geometry; Groups = bones.
 
+Authorized autonomy replaces approval waits with verified checkpoints. Use autonomous readiness at handoff; never claim user approval.
+
 ## Canonical Authoring Stages
 
 Keep these terms separate:

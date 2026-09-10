@@ -85,7 +85,7 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">Place Cube</p>
-      <p class="card-desc">Creates or updates Bedrock Cubes. Use operation=create for placement, update for one explicit UUID/name target, or batch_update for 1-32 UUID-targeted corrections. Texture stays global; reference fidelity is not evaluated.</p>
+      <p class="card-desc">Creates or updates Bedrock Cubes. Use create for placement, update for one target, batch_update for 1-32 UUID corrections, or simplify for explicit bounds/rotation rounding with dry-run default. Simplify preserves UV/pivots and rejects collapsed axes; it does not reduce Cube count or evaluate visual fidelity.</p>
       <div class="overflow-x">
         <p class="empty-params">No parameters</p>
       </div>
@@ -179,7 +179,7 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">Capture Model Views</p>
-      <p class="card-desc">Captures 1-5 deterministic labeled 512×512 canonical views without changing the active editor camera. Model framing requires visible Cubes; explicit framing can also capture a loaded visible 3D-Assisted Evidence reference before blockout. Returns observation only; no score/PASS/FAIL.</p>
+      <p class="card-desc">Captures 1-5 deterministic labeled square PNG views (default 512×512; optional icon size) without changing the active editor camera. Model framing requires visible Cubes; explicit framing can also capture a loaded visible 3D-Assisted Evidence reference before blockout. Returns observation only; no score/PASS/FAIL.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -191,6 +191,16 @@ bun run docs:check
         </tr>
       </thead>
       <tbody><tr>
+      <td class="col-name">size</td>
+      <td class="col-type">integer</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Square PNG pixels: 256 for a quick silhouette/pose check, 512 default for texture/reference detail, 32-64 for icons only. Prefer one relevant view; increase size only when details are unreadable. <span class="param-meta">(default: <code>512</code>) [min: 32, max: 1024]</span></td>
+    </tr><tr>
+      <td class="col-name">highlight_missing_textures</td>
+      <td class="col-type">boolean</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Diagnostic capture: brighten native missing-texture materials temporarily. Restores state; not a normal shaded comparison or flashing UI. <span class="param-meta">(default: <code>false</code>)</span></td>
+    </tr><tr>
       <td class="col-name">views</td>
       <td class="col-type">&quot;front&quot; | &quot;back&quot; | &quot;left&quot; | &quot;right&quot; | &quot;top&quot; | &quot;bottom&quot; | &quot;front_left_3q&quot; | &quot;front_right_3q&quot;[]</td>
       <td><span class="param-required">required</span></td>
@@ -662,29 +672,9 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">Rename Element</p>
-      <p class="card-desc">Renames one explicit Cube, Group, or outliner target.</p>
+      <p class="card-desc">Renames one explicit outliner target via id/new_name, or up to 128 Groups via updates of UUID/new_name. Group batches preview by default (dry_run); false applies one Undo and synchronizes animation references. Final names must be unique case-insensitively.</p>
       <div class="overflow-x">
-        <table class="param-table">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Required</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody><tr>
-      <td class="col-name">id</td>
-      <td class="col-type">string</td>
-      <td><span class="param-required">required</span></td>
-      <td class="col-desc">Exact element/Group UUID or unique name; ambiguous names are rejected before rename. <span class="param-meta">[minLength: 1]</span></td>
-    </tr><tr>
-      <td class="col-name">new_name</td>
-      <td class="col-type">string</td>
-      <td><span class="param-required">required</span></td>
-      <td class="col-desc">Non-empty new name to assign. <span class="param-meta">[minLength: 1]</span></td>
-    </tr></tbody>
-    </table>
+        <p class="empty-params">No parameters</p>
       </div>
     </div>
 <div id="tool-select_all_of_type" class="card tool-card">
@@ -788,7 +778,7 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">Modify Group</p>
-      <p class="card-desc">Modifies one explicit Bedrock Group pivot, rotation, or visibility. Use rename_element for names.</p>
+      <p class="card-desc">Modifies one explicit Bedrock Group pivot, rotation, visibility, or translates its subtree using offset. Use rename_element for names.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -819,6 +809,11 @@ bun run docs:check
       <td class="col-type">boolean</td>
       <td><span class="param-optional">optional</span></td>
       <td class="col-desc">New Group visibility.</td>
+    </tr><tr>
+      <td class="col-name">offset</td>
+      <td class="col-type">unknown[]</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Translate Group subtree in authored model coordinates, including bounds/pivots/anchors. Use alone; preserves UV and animation keys. Not a camera-relative drag. <span class="param-meta">[minItems: 3, maxItems: 3]</span></td>
     </tr></tbody>
     </table>
       </div>
@@ -1518,7 +1513,7 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">Paint Settings</p>
-      <p class="card-desc">Configures paint mode settings and preferences.</p>
+      <p class="card-desc">Configures paint settings, hue-shifted palette or texture preview filtering/wrapping. Palette defaults to preview; append/replace updates native colors. Preview sampler changes are not exported game settings. Neither operation paints pixels.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -1530,6 +1525,16 @@ bun run docs:check
         </tr>
       </thead>
       <tbody><tr>
+      <td class="col-name">texture_preview</td>
+      <td class="col-type">object</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Current texture GPU preview only; not pixel data, exported sampler state, or persistent plugin preferences.</td>
+    </tr><tr>
+      <td class="col-name">palette</td>
+      <td class="col-type">object</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Generate a stepped hue-shifted palette; preview is default. Does not paint or grade texture art.</td>
+    </tr><tr>
       <td class="col-name">mirror_painting</td>
       <td class="col-type">object</td>
       <td><span class="param-optional">optional</span></td>
@@ -1683,6 +1688,26 @@ bun run docs:check
       <td><span class="param-optional">optional</span></td>
       <td class="col-desc">Brush blend mode.</td>
     </tr><tr>
+      <td class="col-name">lock_alpha</td>
+      <td class="col-type">boolean</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Preserve transparent pixels during native brush painting. Does not control exact pixel transactions.</td>
+    </tr><tr>
+      <td class="col-name">size_pressure_curve</td>
+      <td class="col-type">number[]</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Four normalized Bezier [pressure,value] pairs. Requires active Brush Tuna and stylus pressure when loaded; does not affect exact pixel transactions. <span class="param-meta">[minItems: 8, maxItems: 8]</span></td>
+    </tr><tr>
+      <td class="col-name">softness_pressure_curve</td>
+      <td class="col-type">number[]</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Four normalized Bezier [pressure,value] pairs. Requires active Brush Tuna and stylus pressure when loaded; does not affect exact pixel transactions. <span class="param-meta">[minItems: 8, maxItems: 8]</span></td>
+    </tr><tr>
+      <td class="col-name">opacity_pressure_curve</td>
+      <td class="col-type">number[]</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Four normalized Bezier [pressure,value] pairs. Requires active Brush Tuna and stylus pressure when loaded; does not affect exact pixel transactions. <span class="param-meta">[minItems: 8, maxItems: 8]</span></td>
+    </tr><tr>
       <td class="col-name">pixel_perfect</td>
       <td class="col-type">boolean</td>
       <td><span class="param-optional">optional</span></td>
@@ -1700,7 +1725,7 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">Load Brush Preset</p>
-      <p class="card-desc">Loads and applies a brush preset by name.</p>
+      <p class="card-desc">Loads and applies a brush preset by name. Pressure curves require active Brush Tuna and stylus input; presets do not control exact pixel transactions.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -1832,7 +1857,7 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">Paint Texture Transaction</p>
-      <p class="card-desc">Applies one bounded exact-pixel transaction to a non-layered texture with optimistic revision protection and one native Undo unit.</p>
+      <p class="card-desc">Applies bounded set/fill/erase, mirrored copy_region, or seeded masked noise to a non-layered texture with revision protection and one native Undo. Copy preserves RGBA and requires explicit matching UV regions. Noise changes requested channels and preserves transparent pixels by default; neither operation grades art.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -1855,9 +1880,14 @@ bun run docs:check
       <td class="col-desc">Full decoded-RGBA texture revision returned by BlockIT.</td>
     </tr><tr>
       <td class="col-name">operations</td>
-      <td class="col-type">object | object | object[]</td>
-      <td><span class="param-required">required</span></td>
+      <td class="col-type">object | object | object | object | object[]</td>
+      <td><span class="param-optional">optional</span></td>
       <td class="col-desc"> <span class="param-meta">[minItems: 1, maxItems: 64]</span></td>
+    </tr><tr>
+      <td class="col-name">ambient_occlusion</td>
+      <td class="col-type">object</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Bedrock Cube AO at the current preview pose. Explicit targets, visible Cubes as occluders; preserves alpha, rejects conflicting UV. Repeated bakes darken again; use Undo to restore. Exclusive with operations.</td>
     </tr></tbody>
     </table>
       </div>
@@ -2005,7 +2035,7 @@ bun run docs:check
         </div>
       </div>
 
-      <p class="card-desc">Changes startup focus within shared AUTHORING or hands off AUTHORING↔Animation through Gateway in the same task. Animation requires recorded user approvals and a checkpoint; internal PASS is not approval.</p>
+      <p class="card-desc">Changes focus or hands off AUTHORING↔Animation in the same task. Animation requires a checkpoint and either user approvals or explicitly authorized autonomous verification; internal PASS never means user approval.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -2033,7 +2063,7 @@ bun run docs:check
       <td class="col-desc"> <span class="param-meta">[minLength: 1]</span></td>
     </tr><tr>
       <td class="col-name">readiness</td>
-      <td class="col-type">object</td>
+      <td class="col-type">object | object</td>
       <td><span class="param-optional">optional</span></td>
       <td class="col-desc"></td>
     </tr></tbody>
@@ -2504,7 +2534,7 @@ bun run docs:check
         <h3 class="card-name">particle-reference</h3>
       </div>
       <p class="card-title">Bedrock Particle Reference</p>
-      <p class="uri-template">particle_reference://{id}</p>
+      <p class="uri-template">particle-reference://{id}</p>
       <p class="card-desc">Lazy reference for Bedrock particle component families, render materials, compact starting presets, particle Molang/math, and authoring workflow. Read only the section needed for the current particle decision.</p>
     </div>
 <div class="card">
@@ -2536,8 +2566,8 @@ bun run docs:check
         <h3 class="card-name">reference_models</h3>
       </div>
       <p class="card-title">Reference Models</p>
-      <p class="uri-template">reference_models://{id}</p>
-      <p class="card-desc">Returns information about reference models in the current Blockbench project. Requires the Reference Models plugin. List URIs use the slugified name (e.g. `reference_models://turntable`) when unique, with a `~&lt;uuid-prefix&gt;` suffix on collision. Reads also accept the raw UUID or exact name.</p>
+      <p class="uri-template">reference-models://{id}</p>
+      <p class="card-desc">Returns information about reference models in the current Blockbench project. Requires the Reference Models plugin. List URIs use the slugified name (e.g. `reference-models://turntable`) when unique, with a `~&lt;uuid-prefix&gt;` suffix on collision. Reads also accept the raw UUID or exact name.</p>
     </div>
 <div class="card">
       <div class="card-header">
@@ -2582,7 +2612,7 @@ bun run docs:check
       </section>
 
       <footer class="page-footer">
-        Generated 2026-09-09T19:59:12.417Z from Zod schemas
+        Generated 2026-09-10T08:03:27.341Z from Zod schemas
       </footer>
     </main>
   </div>

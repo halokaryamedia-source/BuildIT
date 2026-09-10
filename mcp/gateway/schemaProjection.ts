@@ -66,7 +66,7 @@ const CAPABILITY_BRANCH_FIELDS: Record<string, CapabilityProjection> = {
     operation: {
       keyframes: ["operation", "animation_id", "action", "bone_name", "channel", "keyframes"],
       graph: ["operation", "animation_id", "bone_name", "channel", "axis", "action", "keyframe_range", "custom_curve"],
-      timeline: ["operation", "animation_id", "action", "time", "length", "fps", "loop_mode", "range", "molang"],
+      timeline: ["operation", "animation_id", "action", "time", "length", "fps", "loop_mode", "range", "molang", "easing", "bone_ids"],
       batch: ["operation", "animation_id", "batch_operation", "selection", "range", "pattern", "parameters"],
       copy_paste: ["operation", "action", "source", "target"],
       properties: ["operation", "animation_id", "length", "fps", "loop_mode", "anim_time_update", "blend_weight", "start_delay", "loop_delay", "override_previous_animation", "rotation_spaces"],

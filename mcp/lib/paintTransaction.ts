@@ -48,6 +48,22 @@ export const paintTransactionOperationSchema = z.union([
   setPixelsOperationSchema,
   fillRectOperationSchema,
   erasePixelsOperationSchema,
+  z.object({
+    operation: z.literal("copy_region"),
+    source: paintTransactionRectSchema,
+    target: paintTransactionCoordinateSchema,
+    flip_x: z.boolean().optional(),
+    flip_y: z.boolean().optional(),
+  }).strict().describe("Copy an explicit same-atlas region, optionally mirrored, with RGBA preserved. Caller owns matching entity UV regions; no player-skin layout is assumed."),
+  z.object({
+    operation: z.literal("noise"),
+    rect: paintTransactionRectSchema,
+    seed: z.number().int().min(0).max(0xffffffff),
+    amplitude: z.number().int().min(1).max(255).describe("Maximum signed channel adjustment, not a styling quality setting."),
+    channels: z.array(z.enum(["r", "g", "b", "a"])).min(1).max(4).refine(channels => new Set(channels).size === channels.length, "Duplicate noise channels."),
+    mask: z.array(paintTransactionCoordinateSchema).min(1).optional().describe("Optional explicit pixel selection within rect; unselected pixels stay unchanged."),
+    preserve_transparent: z.boolean().optional().describe("Defaults true: do not color fully transparent atlas pixels. Alpha changes require channel a."),
+  }).strict(),
 ]);
 
 /**
@@ -59,9 +75,17 @@ export const paintTransactionParameters = z
   .object({
     texture_id: textureIdOptionalSchema,
     expected_revision: textureRevisionSchema,
-    operations: z.array(paintTransactionOperationSchema).min(1).max(64),
+    operations: z.array(paintTransactionOperationSchema).min(1).max(64).optional(),
+    ambient_occlusion: z.object({
+      cube_ids:z.array(z.string().min(1)).min(1).max(64),
+      radius:z.number().finite().positive(),
+      samples:z.number().int().min(1).max(256).default(32),
+      bias:z.number().finite().positive().default(.001),
+      strength:z.number().finite().positive().max(1).default(.5),
+    }).strict().refine(v=>v.bias<v.radius,"AO bias must be smaller than radius.").optional()
+      .describe("Bedrock Cube AO at the current preview pose. Explicit targets, visible Cubes as occluders; preserves alpha, rejects conflicting UV. Repeated bakes darken again; use Undo to restore. Exclusive with operations."),
   })
-  .strict();
+  .strict().refine(v=>(v.operations!==undefined)!==(v.ambient_occlusion!==undefined),"Provide operations or ambient_occlusion, exclusively.");
 
 export type PaintTransactionOperation = z.infer<
   typeof paintTransactionOperationSchema
@@ -184,11 +208,23 @@ export function planPaintTransaction(
   let pixelWrites = 0;
 
   for (const [index, operation] of parsed.entries()) {
-    if (operation.operation === "fill_rect") {
+    if (operation.operation === "copy_region") {
+      requireRect(operation.source, width, height, "copy source");
+      const target = {...operation.source, ...operation.target};
+      requireRect(target, width, height, "copy target");
+      affectedRect = includeRect(affectedRect, target);
+      pixelWrites += target.width * target.height;
+      continue;
+    }
+    if (operation.operation === "fill_rect" || operation.operation === "noise") {
       requireRect(operation.rect, width, height, `operations[${index}].rect`);
-      parseHexRgba(operation.color);
+      if (operation.operation === "fill_rect") parseHexRgba(operation.color);
+      else for (const point of operation.mask ?? []) {
+        requirePoint(point, width, height, "noise mask");
+        if (point.x < operation.rect.x || point.y < operation.rect.y || point.x >= operation.rect.x + operation.rect.width || point.y >= operation.rect.y + operation.rect.height) throw new Error("Noise mask lies outside its rect.");
+      }
       affectedRect = includeRect(affectedRect, operation.rect);
-      pixelWrites += operation.rect.width * operation.rect.height;
+      pixelWrites += operation.operation === "noise" && operation.mask ? new Set(operation.mask.map(point => `${point.x},${point.y}`)).size : operation.rect.width * operation.rect.height;
       continue;
     }
 
@@ -259,6 +295,39 @@ export function applyPaintTransactionRgba(
   const result = new Uint8ClampedArray(source);
 
   for (const operation of plan.operations) {
+    if (operation.operation === "copy_region") {
+      // Snapshot this operation's source so overlapping copies cannot smear.
+      const snapshot = new Uint8ClampedArray(operation.source.width * operation.source.height * 4);
+      for (let y=0;y<operation.source.height;y++) {
+        const start=((operation.source.y+y)*width+operation.source.x)*4;
+        snapshot.set(result.subarray(start,start+operation.source.width*4),y*operation.source.width*4);
+      }
+      for (let y=0;y<operation.source.height;y++) for (let x=0;x<operation.source.width;x++) {
+        const sx=operation.flip_x?operation.source.width-1-x:x;
+        const sy=operation.flip_y?operation.source.height-1-y:y;
+        const offset=(sy*operation.source.width+sx)*4;
+        writePixel(result,width,operation.target.x+x,operation.target.y+y,[snapshot[offset],snapshot[offset+1],snapshot[offset+2],snapshot[offset+3]]);
+      }
+      continue;
+    }
+    if (operation.operation === "noise") {
+      const mask = operation.mask ? new Set(operation.mask.map(point => `${point.x},${point.y}`)) : null;
+      for (let y = operation.rect.y; y < operation.rect.y + operation.rect.height; y++) {
+        for (let x = operation.rect.x; x < operation.rect.x + operation.rect.width; x++) {
+          if (mask && !mask.has(`${x},${y}`)) continue;
+          const offset = (y * width + x) * 4;
+          if (operation.preserve_transparent !== false && result[offset + 3] === 0) continue;
+          // Coordinate-seeded noise stays identical when a region is split into batches.
+          let hash = (operation.seed ^ Math.imul(x, 0x9e3779b1) ^ Math.imul(y, 0x85ebca6b)) >>> 0;
+          hash = Math.imul(hash ^ (hash >>> 16), 0x7feb352d);
+          hash = Math.imul(hash ^ (hash >>> 15), 0x846ca68b);
+          hash = (hash ^ (hash >>> 16)) >>> 0;
+          const delta = Math.round((hash / 0xffffffff * 2 - 1) * operation.amplitude);
+          for (const channel of operation.channels) result[offset + "rgba".indexOf(channel)] += delta;
+        }
+      }
+      continue;
+    }
     if (operation.operation === "fill_rect") {
       const rgba = parseHexRgba(operation.color);
       for (let y = operation.rect.y; y < operation.rect.y + operation.rect.height; y += 1) {

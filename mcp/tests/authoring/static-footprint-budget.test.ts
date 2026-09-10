@@ -50,8 +50,10 @@ describe("static footprint budget", () => {
     // compressing operational meaning to satisfy an incidental character cap.
     // Optional diagnostic routing and the intra-Cube seam boundary are required
     // operational guidance; do not erase them to preserve the old byte ceiling.
-    expect(texturing.length).toBeLessThan(6_300);
-    expect(animation.length).toBeLessThan(5_700);
+    // Explicit executor routing prevents configuring unused brushes or baking
+    // continuous motion solely to fit the numeric-only creation contract.
+    expect(texturing.length).toBeLessThan(6_500);
+    expect(animation.length).toBeLessThan(6_100);
     expect(workflow.length).toBeLessThan(9_200);
   });
 

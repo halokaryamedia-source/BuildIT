@@ -1,11 +1,18 @@
 # Next Action
 Updated: 2026-09-10
-Branch: Local only. Working checkout: D:/Work/AI Stuff/BuildIT-refresh. Preserve user assets; no push/main changes.
+Branch Local; checkout D:/Work/AI Stuff/BuildIT-refresh. No push/main changes.
 
-SOURCE_READY: verify:full PASS 829 tests, both typechecks, freshness and build; evidence current-validation.md. Capture now forces Shading ON transiently, restores state and records render evidence. Rules require semantic UV zones, unused transparent pixels and visible pixel-art clusters. Candidate runtime d303b2c0...; package activation/native proof pending. Previous installed source 1e842557 is working under .blockit, not AppData. Old AppData deletion was policy-blocked; no retry.
+## Source closure
+SOURCE_READY: final gate partitions passed after bounded corrections. User requests completion through build/package. Named-plugin source increments and bounded full-surface audit are recorded in current-validation.md; native behavior and visual quality are not accepted by source tests.
 
-Managed installation: .blockit; plugin .blockit/plugin/blockit_mcp.js; authoring workspace .blockit/authoring. Use existing installer, no manual trust bypass/hot swap. Do not publish Stable or start background polling.
+AUTHORING TAXONOMY: Geometry/rig/UV; Texture; Animation. DIRECT | 3D_ASSISTED remain user-selected. Mesh UV Locker, image-format centering and bedrock_block collision are outside accepted Entity/Cube scope. Brush Tuna stylus pressure requires its native plugin; UI parity is not an AI requirement.
 
-Elephant DIRECT: Geometry user APPROVED. Texture v1 USER_REJECTED for raw/faint styling, scattered UV, unused opaque background. Corrected UV/pixel candidate saved in .blockit/authoring/workspace/active/elephant-direct/elephant-direct.bbmodel. New layout grouped by body/head/legs/ears/trunk; empty pixels transparent. Source-angle capture v2 exists; old capture runtime does not attest shading, user's UI screenshot does. Do not claim new-runtime or in-game proof. Next: activate verified capture/rules package then user Texture review. Animation walk/idle/trunk remains NOT_STARTED, requires approved Texture/checkpoint. Never resume Tiger or old visual fixtures. Whole-task tokens UNKNOWN.
+## Current work
+Build3734e293 completed. Prepare managed package from committed source; verify:full invoked once; fix failed owners and resume failed/unrun stages without repeating green suites. Record exact artifact identity and measured results in current-validation.md. Do not infer session-token savings or full native branch proof.
 
-AUTHORING TAXONOMY: user-selected DIRECT | 3D_ASSISTED; Geometry/UV and Texturing share AUTHORING, Animation uses same-task handoff.
+Implemented scope: Cube simplify/translation; rename reference integrity; noise/copy/palette/preview sampler/AO; capture sizing/highlight/byte receipts; nine Bedrock Easings/timeline expansion; animation target and effect/history result fixes; paint lifecycle/settings recovery; autonomous readiness and resource URI fixes. Detailed coverage/limits live in current-validation.md, not duplicated here.
+
+## Delivery boundary
+Build/package within repository; no automatic activation/hot swap. Managed installation path is .blockit/plugin/blockit_mcp.js. Installed1e842557 and staged506b79ea are historical identities, not current source proof. Do not publish Stable or start background polling. Prior AppData deletion policy-blocked; do not retry.
+
+After activation: validate native Undo/persistence, rotated Geometry, AO/UV/material mapping, capture readability and Molang/playback. Whole-request paint rollback and post-commit exceptions have documented limits. Preserve user assets. No elephant/new-model retest: elephant TEST CLOSED, texture/animation rejected. Whole-session tokens UNKNOWN.

@@ -2,6 +2,20 @@ import { describe, expect, test } from "bun:test";
 import { findByResourceId, makeResourceId } from "@/lib/resourceUri";
 
 describe("resource URI identity", () => {
+  test("listed ids cannot be shadowed by sibling UUIDs or exact names", () => {
+    for (const items of [
+      [{uuid:"a",name:"b"},{uuid:"b",name:"other"}],
+      [{uuid:"aaaaaaaa-1",name:"Part"},{uuid:"bbbbbbbb-2",name:"Part"},{uuid:"c",name:"part~aaaaaaaa"}],
+    ]) {
+      for (const item of items) expect(findByResourceId(items,makeResourceId(item,items))).toBe(item);
+    }
+  });
+  test("identical UUID prefixes cannot collide in generated resource ids",()=>{
+    const items=[{uuid:"aaaaaaaa-1111-2222-3333-444444444444",name:"part"},{uuid:"aaaaaaaa-9999-2222-3333-444444444444",name:"part"}];
+    const ids=items.map(item=>makeResourceId(item,items));
+    expect(new Set(ids).size).toBe(2);
+    items.forEach((item,index)=>expect(findByResourceId(items,ids[index])).toBe(item));
+  });
   test("collision-safe listed ids stay deterministic", () => {
     const items = [
       { uuid: "aaaaaaaa-1111-2222-3333-444444444444", name: "Door Panel" },

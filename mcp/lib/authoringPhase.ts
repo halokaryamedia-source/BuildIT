@@ -95,7 +95,7 @@ export function getMcpPhaseOwnerSummary(phase: McpAuthoringPhase): string {
 }
 
 export function getMcpPhaseReadinessSummary(phase: McpAuthoringPhase): string {
-  return PHASE_READINESS_SUMMARY[phase];
+  return PHASE_READINESS_SUMMARY[phase] + " Exception: explicit user authorization for autonomous execution replaces intermediate approval waits with current-revision technical/visual PASS and a saved checkpoint. Use autonomous_authorized, geometry_verified, texture_verified, uv_layout, evidence, checkpoint, no_blockers readiness; never claim user approval.";
 }
 
 export function buildMcpPhaseRuntimeContract(
@@ -140,14 +140,14 @@ export function buildMcpPhaseHandoffContract(
   if (isAuthoringStage(phase)) {
     return [
       "## Authoring Focus / Handoff",
-      PHASE_READINESS_SUMMARY[phase],
+      getMcpPhaseReadinessSummary(phase),
       "Geometry↔Texturing correction does not require HANDOFF_REQUIRED; use the semantic owner directly in AUTHORING.",
       `${MCP_HANDOFF_REQUIRED} is only AUTHORING↔ANIMATION through switch_authoring_phase via Gateway; continue the same task/chat with target_phase, reason, readiness, resume_from.`,
     ].join("\n\n");
   }
   return [
     "## Phase Readiness / Handoff",
-    PHASE_READINESS_SUMMARY[phase],
+    getMcpPhaseReadinessSummary(phase),
     "Keep target_phase, reason, readiness, resume_from.",
     `${MCP_HANDOFF_REQUIRED}: STOP Animation mutation routes, invoke switch_authoring_phase through Gateway, then continue the same task on the shared AUTHORING surface.`,
   ].join("\n\n");

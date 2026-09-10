@@ -99,10 +99,10 @@ export const resourceDocs: ResourceSpec[] = [
   },
   {
     name: "reference_models",
-    uriTemplate: "reference_models://{id}",
+    uriTemplate: "reference-models://{id}",
     title: "Reference Models",
     description:
-      "Returns information about reference models in the current Blockbench project. Requires the Reference Models plugin. List URIs use the slugified name (e.g. `reference_models://turntable`) when unique, with a `~<uuid-prefix>` suffix on collision. Reads also accept the raw UUID or exact name.",
+      "Returns information about reference models in the current Blockbench project. Requires the Reference Models plugin. List URIs use the slugified name (e.g. `reference-models://turntable`) when unique, with a `~<uuid-prefix>` suffix on collision. Reads also accept the raw UUID or exact name.",
   },
   {
     name: "validator-status",

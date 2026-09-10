@@ -26,13 +26,13 @@ const PROTOCOL_VERSION = "2025-06-18";
 // boundary plus one on-demand texture-authoring knowledge Resource. Existing
 // aggregate tool ceilings remain unchanged; only the measured catalog counts
 // and Resource metadata ceilings move by that justified capability delta.
-// 2026-09-09: canonical union/nested schemas + two Particle capabilities.
-// Loopback measurement: 101429 response / 85402 schema / 10814 largest tool chars.
+// 2026-09-10: named-plugin Cube/AO/noise/copy/palette/easing schemas.
+// Loopback: 111603 response / 94148 schema / 11578 largest tool chars.
 const SURFACE_BUDGET = {
   tool_count: 56,
   initialize_instructions_chars: 700,
-  tools_list_response_chars: 105_000,
-  input_schema_chars: 88_000,
+  tools_list_response_chars: 112_000,
+  input_schema_chars: 94_500,
   description_chars: 11_500,
   max_tool_payload_chars: 3_200,
   prompt_spec_count: 1,
@@ -257,10 +257,13 @@ function assertWithinSurfaceBudget(
   for (const row of rows) {
     // Measured canonical-schema growth; unrelated tools retain the original cap.
     const expandedSchemaLimits: Record<string, number> = {
-      manage_animation_timeline: 11_000, manage_animation_controller: 10_000,
-      manage_cubes: 7_700, manage_render_profile: 5_200, manage_particle: 4_400,
+      manage_animation_timeline: 11_650, manage_animation_controller: 10_000,
+      // Explicit simplify branch adds bounded targets/rounding/dry-run fields.
+      manage_cubes: 8_400, manage_render_profile: 5_200, manage_particle: 4_400,
       manage_material: 3_800, create_animation: 3_450, create_texture: 3_450,
       manage_material_instances: 3_400,
+      // Explicit palette/sampler and bounded noise/copy/Cube AO inputs.
+      paint_settings: 3_500, paint_texture_transaction: 5_200,
     };
     const limit = expandedSchemaLimits[row.name] ?? SURFACE_BUDGET.max_tool_payload_chars;
     if (row.payload_chars > limit) failures.push(`${row.name} payload=${row.payload_chars} exceeds ${limit}`);

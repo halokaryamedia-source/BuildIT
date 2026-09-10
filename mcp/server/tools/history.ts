@@ -151,6 +151,7 @@ function summarizeHistory(limit: number): {
 }
 
 function applyHistorySteps(direction: HistoryDirection, steps: number): string[] {
+  if (Undo.current_save) throw new Error("Finish the active Undo edit before navigating history.");
   const history = Undo.history ?? [];
   const index = Undo.index ?? 0;
   const available = direction === "undo" ? index : history.length - index;
@@ -173,21 +174,26 @@ function applyHistorySteps(direction: HistoryDirection, steps: number): string[]
   const actions: string[] = [];
   try {
     for (let i = 0; i < steps; i++) {
+      const previousIndex = Undo.index ?? 0;
       const entryIndex =
         direction === "undo" ? (Undo.index ?? 0) - 1 : (Undo.index ?? 0);
       const entry = history[entryIndex] as { action?: string } | undefined;
-      actions.push(entry?.action ?? "(unnamed edit)");
       if (direction === "undo") {
         Undo.undo();
       } else {
         Undo.redo();
       }
+      const expectedIndex = previousIndex + (direction === "undo" ? -1 : 1);
+      if (Undo.index !== expectedIndex) {
+        throw new Error(`History index did not move as requested (${previousIndex} -> ${expectedIndex}; actual ${Undo.index}).`);
+      }
+      actions.push(entry?.action ?? "(unnamed edit)");
     }
   } catch (error) {
     Canvas.updateAll();
     const action = direction === "undo" ? "Undo" : "Redo";
     throw new Error(
-      `${action} failed after ${actions.length} applied step(s): ${error instanceof Error ? error.message : String(error)}`
+      `${action} failed after ${actions.length} completed step(s); current history index ${Undo.index}. Inspect state before retrying: ${error instanceof Error ? error.message : String(error)}`
     );
   }
 

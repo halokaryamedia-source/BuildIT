@@ -107,7 +107,7 @@ describe("Geometry mutation preflight ordering", () => {
     const block = source.slice(start, end);
 
     const meshGuard = block.indexOf("!group.mesh");
-    const undo = block.indexOf("Undo.initEdit");
+    const undo = block.indexOf("Undo.initEdit", meshGuard);
     expect(meshGuard).toBeGreaterThan(-1);
     expect(undo).toBeGreaterThan(meshGuard);
     expect(block).toContain("pivot readback did not match the requested origin");

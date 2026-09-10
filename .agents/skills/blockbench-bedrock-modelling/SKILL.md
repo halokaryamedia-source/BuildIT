@@ -4,6 +4,9 @@ description: Mandatory BlockIT Bedrock Geometry and UV Layout specialist.
 ---
 # Blockbench Bedrock Modelling
 
+
+User-authorized autonomy replaces approval waits with verified checkpoints; never claim user approval.
+
 ## Minimum Necessary Evidence
 - **No per-Cube inspection ceremony** without a diagnosed problem.
 - **No screenshot-per-mutation loop.** Build a judgeable form, then gate it.

@@ -6,7 +6,8 @@ describe("default MCP registration is runtime-lazy", () => {
   test("default product registry reconstructs outside Blockbench with a bounded description surface", async () => {
     // Prove the registry import succeeds because runtime globals stay execution-owned,
     // not because this test environment accidentally provides Blockbench's Painter.
-    expect("Painter" in globalThis).toBe(false);
+    const probe = Bun.spawnSync([process.execPath, "-e", 'if ("Painter" in globalThis) throw Error("unexpected runtime"); await import("./server/tools.ts");'], {cwd:process.cwd()});
+    expect(probe.exitCode).toBe(0);
 
     const module = await import("../server/tools");
     const extendedToolNames = new Set([

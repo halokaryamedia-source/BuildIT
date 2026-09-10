@@ -3,6 +3,7 @@ import {
   buildModelViewReferenceComparison,
   captureModelViewsParameters,
   modelViewReferenceContract,
+  prepareOffscreenPreview,
 } from "@/server/tools/camera";
 
 const baseInput = {
@@ -11,6 +12,18 @@ const baseInput = {
 } as const;
 
 describe("capture_model_views explicit framing contract", () => {
+  test("icon sizes resize both native projection bases and preserve default comparisons",()=>{
+    expect(captureModelViewsParameters.parse(baseInput).size).toBe(512);
+    for(const size of [32,48,512,1024]){
+      const input=captureModelViewsParameters.parse({...baseInput,size});
+      let dimensions:number[]=[];
+      const preview={resize:(w:number,h:number)=>{dimensions=[w,h];},camPers:{aspect:0,updateProjectionMatrix(){}},camOrtho:{left:0,right:0,top:0,bottom:0,updateProjectionMatrix(){}}};
+      prepareOffscreenPreview(preview as any,input.size);
+      expect(dimensions).toEqual([size,size]);expect(preview.camPers.aspect).toBe(1);
+      expect([preview.camOrtho.left,preview.camOrtho.right,preview.camOrtho.top,preview.camOrtho.bottom]).toEqual([-size/80,size/80,size/80,-size/80]);
+    }
+    for(const size of [0,31,1025,48.5])expect(captureModelViewsParameters.safeParse({...baseInput,size}).success).toBe(false);
+  });
   test("uses overflow-safe midpoint math for accepted explicit envelopes", async () => {
     const cameraSource = await Bun.file(new URL("../server/tools/camera.ts", import.meta.url)).text();
     expect(cameraSource).toContain("min[0] + size[0] / 2");

@@ -168,6 +168,8 @@ const uniqueModelViewsSchema = z
   });
 
 export const captureModelViewsParameters = z.object({
+  size: z.number().int().min(32).max(1024).default(CAPTURE_SIZE).describe("Square PNG pixels: 256 for a quick silhouette/pose check, 512 default for texture/reference detail, 32-64 for icons only. Prefer one relevant view; increase size only when details are unreadable."),
+  highlight_missing_textures: z.boolean().default(false).describe("Diagnostic capture: brighten native missing-texture materials temporarily. Restores state; not a normal shaded comparison or flashing UI."),
   views: uniqueModelViewsSchema.describe(
     "One to five unique canonical model views to capture."
   ),
@@ -222,7 +224,7 @@ export const cameraToolDocs: ToolSpec[] = [
   {
     name: "capture_model_views",
     description:
-      "Captures 1-5 deterministic labeled 512×512 canonical views without changing the active editor camera. Model framing requires visible Cubes; explicit framing can also capture a loaded visible 3D-Assisted Evidence reference before blockout. Returns observation only; no score/PASS/FAIL.",
+      "Captures 1-5 deterministic labeled square PNG views (default 512×512; optional icon size) without changing the active editor camera. Model framing requires visible Cubes; explicit framing can also capture a loaded visible 3D-Assisted Evidence reference before blockout. Returns observation only; no score/PASS/FAIL.",
     annotations: {
       title: "Capture Model Views",
       readOnlyHint: true,
@@ -401,17 +403,17 @@ function cameraSpec(
   };
 }
 
-function prepareOffscreenPreview(preview: Preview): void {
-  resizePreview(preview, CAPTURE_SIZE, CAPTURE_SIZE);
+export function prepareOffscreenPreview(preview: Preview, size = CAPTURE_SIZE): void {
+  resizePreview(preview, size, size);
 
   // Preview.resize() updates the active projection only. Normalize both bases so
   // switching between principal and 3/4 views stays deterministic.
   preview.camPers.aspect = 1;
   preview.camPers.updateProjectionMatrix();
-  preview.camOrtho.left = -CAPTURE_SIZE / 80;
-  preview.camOrtho.right = CAPTURE_SIZE / 80;
-  preview.camOrtho.top = CAPTURE_SIZE / 80;
-  preview.camOrtho.bottom = -CAPTURE_SIZE / 80;
+  preview.camOrtho.left = -size / 80;
+  preview.camOrtho.right = size / 80;
+  preview.camOrtho.top = size / 80;
+  preview.camOrtho.bottom = -size / 80;
   preview.camOrtho.updateProjectionMatrix();
 }
 
@@ -461,12 +463,25 @@ export function withShadedCapture<T>(capture: () => T): T {
   }
 }
 
-function captureOffscreenPng(preview: Preview): string {
+export function withMissingTextureHighlight<T>(enabled: boolean, capture: () => T): T {
+  if (!enabled) return capture();
+  const materials = (Canvas as unknown as {emptyMaterials?: Array<{uniforms?: {BRIGHTNESS?: {value:number}}}>}).emptyMaterials;
+  if (!Array.isArray(materials)) throw new Error("Native missing-texture materials are unavailable.");
+  const uniforms = [...new Set(materials.map(material => material.uniforms?.BRIGHTNESS).filter((uniform): uniform is {value:number} => !!uniform))];
+  if (uniforms.some(uniform => !Number.isFinite(uniform.value))) throw new Error("Missing-texture brightness is invalid.");
+  const previous = uniforms.map(uniform => uniform.value);
+  try {
+    uniforms.forEach(uniform => uniform.value=2.5);
+    return capture();
+  } finally {uniforms.forEach((uniform,index)=>uniform.value=previous[index]);}
+}
+
+function captureOffscreenPng(preview: Preview, highlightMissing = false): string {
   let dataUrl: string | undefined;
-  withShadedCapture(() => Canvas.withoutGizmos(() => {
+  withShadedCapture(() => withMissingTextureHighlight(highlightMissing, () => Canvas.withoutGizmos(() => {
     preview.render();
     dataUrl = preview.canvas.toDataURL("image/png");
-  }));
+  })));
   if (!dataUrl) {
     throw new Error("Blockbench returned no image data for canonical model view capture.");
   }
@@ -507,7 +522,7 @@ export function registerCameraTools() {
 
   createTool(cameraToolDocs[3].name, {
     ...cameraToolDocs[3],
-    async execute({ views, front_direction, framing }) {
+    async execute({ views, front_direction, framing, highlight_missing_textures, size }) {
       if (!Project) {
         throw new Error(
           "No project is open. Open or create the intended Bedrock project before capturing model views."
@@ -543,7 +558,7 @@ export function registerCameraTools() {
           "Blockbench offscreen screenshot preview is unavailable; canonical capture refuses to mutate the active editor camera."
         );
       }
-      prepareOffscreenPreview(capturePreview);
+      prepareOffscreenPreview(capturePreview, size);
 
       const content: Array<
         | { type: "text"; text: string }
@@ -554,6 +569,7 @@ export function registerCameraTools() {
         projection: "orthographic" | "perspective";
         width: number;
         height: number;
+        png_bytes: number;
       }> = [];
 
       for (const view of views as ModelView[]) {
@@ -564,7 +580,7 @@ export function registerCameraTools() {
           framingBounds
         );
         applyCamera(capturePreview, spec);
-        const image = imageContent(captureOffscreenPng(capturePreview), "image/png")
+        const image = imageContent(captureOffscreenPng(capturePreview, highlight_missing_textures), "image/png")
           .content[0];
 
         content.push({ type: "text", text: `VIEW ${view}` });
@@ -572,8 +588,9 @@ export function registerCameraTools() {
         captures.push({
           view,
           projection: spec.projection,
-          width: CAPTURE_SIZE,
-          height: CAPTURE_SIZE,
+          width: size,
+          height: size,
+          png_bytes: Math.floor(image.data.length * 3 / 4) - (image.data.endsWith("==") ? 2 : image.data.endsWith("=") ? 1 : 0),
         });
       }
 
@@ -585,6 +602,7 @@ export function registerCameraTools() {
           format: format?.id ?? null,
         },
         count: captures.length,
+        total_png_bytes: captures.reduce((sum, capture) => sum + capture.png_bytes, 0),
         front_direction,
         framing_mode: framingInput.mode,
         captures,
@@ -593,6 +611,7 @@ export function registerCameraTools() {
         ),
         offscreen_capture: true,
         render_evidence: {
+          diagnostic_missing_texture_highlight: highlight_missing_textures,
           shading: true,
           brightness: Settings.get("brightness"),
           view_mode: Project.view_mode,

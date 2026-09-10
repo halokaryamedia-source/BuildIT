@@ -454,12 +454,13 @@ export function registerAnimationEffectTools() {
             if (runtimeIndex < 0) throw new Error(`Preflight/runtime mismatch: ${operation.channel} data point moved or disappeared.`);
             const point = keyframe.data_points[runtimeIndex];
             if (operation.operation === "remove") {
-              if (keyframe.data_points.length === 1) keyframe.remove();
+              const removedKeyframe = keyframe.data_points.length === 1;
+              if (removedKeyframe) keyframe.remove();
               else keyframe.data_points.splice(runtimeIndex, 1);
               // Positional indices of surviving sibling points shift after a
               // remove; publish the remap so later calls cannot silently
               // retarget a stale data_point_index onto a different effect.
-              const remainingEffects = keyframe.data_points.map((candidate) => {
+              const remainingEffects = removedKeyframe ? [] : keyframe.data_points.map((candidate) => {
                 const snapshot = effectPointSnapshot(candidate);
                 return { effect: snapshot.effect ?? "", script: snapshot.script ?? "" };
               });

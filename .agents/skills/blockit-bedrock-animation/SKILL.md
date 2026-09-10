@@ -7,6 +7,9 @@ description: Minecraft Bedrock Entity animation specialist.
 
 Use at `ACTIVE PHASE: ANIMATION` after Texturing approval + checkpoint + Animation Readiness Preflight when participating hierarchy/pivots are suitable.
 
+
+User-authorized autonomy replaces approval waits with verified checkpoints; never claim user approval.
+
 ## Boundary
 
 Animation owns motion, not structural rig mutation. Blocker → `HANDOFF_REQUIRED`, `target_phase: geometry` + readiness → `switch_authoring_phase` → resume same task through Gateway; if motion structure is unsuitable, handoff Geometry first. Before keys, representative extreme poses preserve contact/clearance. Do not search for `bone_rigging`.
@@ -59,6 +62,8 @@ Use Molang for continuous/cyclic/reactive **visual motion**; authored poses own 
 ### Molang / math
 
 No separate math tool. Author Molang through existing transforms/properties/controller/effect fields. Accept official trig, clamp/rounding, interpolation, exponential/power, random/die-roll, `math.pi`, and `math.ease_{in|out|in_out}_{back|bounce|circ|cubic|elastic|expo|quad|quart|quint|sine}`. Easing math is version-sensitive; trig uses degrees.
+
+Molang route: `create_animation(bones={})` → returned UUID → `manage_animation_timeline(operation="keyframes", action="create", values=[expressions])`, one bone/channel cohort per call. Creation accepts numbers only; do not bake continuous expressions merely to fit it. Contact-critical motion still requires native review.
 
 File-backed client/runtime wiring remains compatibility/inspection, not normal model creation. Never `risky_eval` or evaluate gameplay truth.
 

@@ -15,6 +15,14 @@ import {
 } from "@/gateway/schemaProjection";
 
 describe("BlockIT Gateway contract", () => {
+  test("timeline discovery retains AI-callable easing and bone visibility arguments",()=>{
+    const schema={type:"object",properties:{operation:{enum:["timeline","batch"]},action:{type:"string"},easing:{type:"object"},bone_ids:{type:"array"},parameters:{type:"object"}}};
+    const result=projectCapabilityInputSchema("manage_animation_timeline",schema,{field:"operation",value:"timeline"});
+    const projected=result.inputSchema as typeof schema;
+    expect(projected.properties).toHaveProperty("easing");
+    expect(projected.properties).toHaveProperty("bone_ids");
+    expect(projected.properties).not.toHaveProperty("parameters");
+  });
   test("client-facing MCP surface stays deliberately small and fixed", () => {
     expect(GATEWAY_TOOL_NAMES).toEqual([
       "status",

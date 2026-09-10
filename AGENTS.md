@@ -1,9 +1,12 @@
 # Workspace Agent Routing
 
+
+User-authorized autonomy replaces approval waits with verified checkpoints; never claim user approval.
+
 ## Instruction priority
 
 - Current user intent takes precedence over workflow guidance in `AGENTS.md` and Skills; repository safety/integrity rules and actual capability limits still apply.
-- Do not invent confirmation gates. If a Skill would pause, block, or redirect an explicit request, apply only the exact necessary constraint and name the rule when it materially changes the outcome.
+- Do not invent approval gates; explain any rule that materially blocks an authorized action.
 
 ## Branch and boot
 

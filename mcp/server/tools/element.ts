@@ -7,6 +7,7 @@ import { resolveCoreGroup, resolveCoreTexture } from "@/lib/coreIdentity";
 import { elementIdSchema } from "@/lib/zodObjects";
 import { isAbsoluteFilesystemPath, requireOpenProject } from "@/lib/util";
 import { materializeThreeDAssistedScaffoldFromWorkspace } from "@/server/threeDAssistedMaterializer";
+import {planGroupRename, applyGroupRename, type RenameAnimation} from "@/lib/batchGroupRename";
 
 export const materializeThreeDAssistedParameters = z.object({
   workspace_path: z.string().refine(isAbsoluteFilesystemPath, "Expected an absolute Active Workspace path.")
@@ -243,7 +244,7 @@ export const duplicateElementParameters = z.object({
     ),
 });
 
-export const renameElementParameters = z.object({
+export const renameElementParameters = z.union([z.object({
   id: elementIdSchema.describe(
     "Exact element/Group UUID or unique name; ambiguous names are rejected before rename."
   ),
@@ -251,7 +252,10 @@ export const renameElementParameters = z.object({
     .string()
     .min(1)
     .describe("Non-empty new name to assign."),
-});
+}).strict(), z.object({
+  updates: z.array(z.object({id: z.string().min(1), new_name: z.string().trim().min(1)}).strict()).min(1).max(128),
+  dry_run: z.boolean().default(true).describe("Preview Group batch rename; false applies names and animation references in one Undo."),
+}).strict()]);
 
 export const modifyGroupParameters = z
   .object({
@@ -259,15 +263,18 @@ export const modifyGroupParameters = z
     origin: finiteElementVector3Schema.optional().describe("New Group pivot/origin."),
     rotation: finiteElementVector3Schema.optional().describe("New Group rotation [x,y,z]."),
     visibility: z.boolean().optional().describe("New Group visibility."),
+    offset: finiteElementVector3Schema.optional().describe("Translate Group subtree in authored model coordinates, including bounds/pivots/anchors. Use alone; preserves UV and animation keys. Not a camera-relative drag."),
   })
   .strict()
   .refine(
     (update) =>
-      update.origin !== undefined ||
+      update.offset !== undefined || update.origin !== undefined ||
       update.rotation !== undefined ||
       update.visibility !== undefined,
     { message: "modify_group requires an origin, rotation, or visibility change." }
-  );
+  ).refine(update => update.offset === undefined ||
+    (update.origin === undefined && update.rotation === undefined && update.visibility === undefined),
+    {message:"offset cannot be combined with pivot, rotation or visibility edits."});
 
 export const reparentElementParameters = z.object({
   id: elementIdSchema.describe("Exact Cube or Group UUID or unique exact name."),
@@ -322,7 +329,7 @@ export const elementToolDocs: ToolSpec[] = [
   {
     name: "rename_element",
     description:
-      "Renames one explicit Cube, Group, or outliner target.",
+      "Renames one explicit outliner target via id/new_name, or up to 128 Groups via updates of UUID/new_name. Group batches preview by default (dry_run); false applies one Undo and synchronizes animation references. Final names must be unique case-insensitively.",
     annotations: { title: "Rename Element", destructiveHint: true },
     parameters: renameElementParameters,
     status: STATUS_EXPERIMENTAL,
@@ -374,7 +381,7 @@ export const elementToolDocs: ToolSpec[] = [
   {
     name: "modify_group",
     description:
-      "Modifies one explicit Bedrock Group pivot, rotation, or visibility. Use rename_element for names.",
+      "Modifies one explicit Bedrock Group pivot, rotation, visibility, or translates its subtree using offset. Use rename_element for names.",
     annotations: { title: "Modify Group", destructiveHint: true },
     parameters: modifyGroupParameters,
     status: STATUS_STABLE,
@@ -1165,18 +1172,36 @@ export function registerElementTools() {
 
   createTool(elementToolDocs[4].name, {
     ...elementToolDocs[4],
-    async execute({ id, new_name }) {
+    async execute(request) {
       requireOpenProject("renaming an element");
-      const element = resolveUniqueDestructiveElement(id);
+      const singleElement = "updates" in request ? undefined : resolveUniqueDestructiveElement(request.id);
+      if (!("updates" in request) && singleElement?.name === request.new_name) throw new Error("Rename has no authored effect.");
+      if ("updates" in request || singleElement instanceof Group) {
+        const batch = "updates" in request ? request : {updates:[{id: singleElement!.uuid, new_name: request.new_name}], dry_run:false};
+        const animations = (typeof AnimationItem === "undefined" ? [] : AnimationItem.all) as unknown as RenameAnimation[];
+        const plan = planGroupRename(Group.all, batch.updates, animations);
+        const changes = plan.rows.map(row => ({id: row.group.uuid, old_name: row.old_name, new_name: row.new_name}));
+        if (batch.dry_run || !changes.length) return {
+          content: [{type: "text" as const, text: `${changes.length} Group rename(s) planned; no mutation.`}],
+          structuredContent: {execution: batch.dry_run ? "planned" : "unchanged", changes, affected_animations: plan.references.length},
+        };
+        Undo.initEdit({groups: plan.rows.map(row => row.group) as Group[], animations: plan.references.map(ref => ref.animation) as unknown as _Animation[], outliner: true});
+        try {
+          applyGroupRename(plan);
+          Undo.finishEdit("Batch rename Groups");
+        } catch(error) {Undo.cancelEdit(true); Canvas.updateAll(); throw error;}
+        Canvas.updateAll();
+        return {content:[{type:"text" as const,text:`Renamed ${changes.length} Groups and synchronized ${plan.references.length} animation(s).`}], structuredContent:{execution:"applied",changes,affected_animations:plan.references.length,...(singleElement ? {element: elementContinuationState(singleElement)} : {})}};
+      }
+      const {id, new_name} = request;
+      const element = singleElement!;
 
       if (element.name === new_name) {
         throw new Error(
           `rename_element request for ${continuationElementType(element)} ${element.name} (${element.uuid}) has no authored effect.`
         );
       }
-      if (element instanceof Group) {
-        assertGroupNameAvailable(new_name, element.uuid);
-      } else if (element instanceof Locator || element instanceof NullObject) {
+      if (element instanceof Locator || element instanceof NullObject) {
         assertAnchorRenameAvailable(element, new_name);
       }
 
@@ -1396,15 +1421,42 @@ export function registerElementTools() {
 
   createTool("modify_group", {
     description:
-      "Modifies one explicit Bedrock Group pivot, rotation, or visibility. Use rename_element for names.",
+      "Modifies one explicit Bedrock Group pivot, rotation, visibility, or translates its subtree using offset. Use rename_element for names.",
     annotations: { title: "Modify Group", destructiveHint: true },
     parameters: modifyGroupParameters,
-    async execute({ id, origin, rotation, visibility }) {
+    async execute({ id, origin, rotation, visibility, offset }) {
       requireOpenProject("modifying a Group");
       const group = resolveCoreGroup(
         id,
         "Use inspect_elements(mode=search), then inspect_elements(mode=detail) to confirm the intended Group UUID."
       );
+      if (offset !== undefined) {
+        if (offset.every(value => value === 0)) throw new Error("Translation offset has no authored effect.");
+        preflightDuplicateTranslation(group, offset);
+        const groups: Group[] = [];
+        const elements: OutlinerElement[] = [];
+        const collect = (node: Group | OutlinerElement) => {
+          if (node instanceof Group) {
+            groups.push(node);
+            node.children.forEach(child => collect(child as Group | OutlinerElement));
+          } else elements.push(node);
+        };
+        collect(group);
+        Undo.initEdit({groups, elements, outliner:true});
+        try {
+          translateDuplicatedSubtree(group, offset);
+          Undo.finishEdit("Agent translated Group subtree");
+        } catch (error) {
+          Undo.cancelEdit(true);
+          Canvas.updateAll();
+          throw error;
+        }
+        Canvas.updateAll();
+        return {
+          content:[{type:"text" as const,text:`Translated ${groups.length} Group(s) and ${elements.length} element(s).`}],
+          structuredContent:{execution:"applied" as const,id:group.uuid,offset,origin:[...group.origin],groups:groups.length,elements:elements.length,coordinate_space:"authored_model"},
+        };
+      }
       const sameOrigin =
         origin === undefined || vector3Equals(origin, group.origin);
       const sameRotation =

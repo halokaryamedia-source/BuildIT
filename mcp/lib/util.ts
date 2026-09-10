@@ -107,11 +107,35 @@ export function fixCircularReferences<
 }
 
 type RuntimeMutableBarItem = BarItem & {
+  get?: () => unknown;
   set?: (value: unknown) => unknown;
   change?: (value: unknown) => unknown;
   update?: () => unknown;
   value?: unknown;
 };
+
+/** Snapshot every control before the first write; failed writes may mutate too. */
+export function setBarItemValues(values: Record<string, unknown>): void {
+  const rows=Object.entries(values).map(([id,value])=>{
+    const item=(typeof BarItems === "undefined" ? undefined : BarItems[id]) as RuntimeMutableBarItem | undefined;
+    if(!item)throw new Error(`Required paint control "${id}" is unavailable.`);
+    if(typeof item.set!=="function" && typeof item.change!=="function" && !("value" in item))throw new Error(`Paint control "${id}" has no supported setter.`);
+    const previous=typeof item.get==="function"?item.get():item.value;
+    if(!["number","boolean","string"].includes(typeof previous))throw new Error(`Paint control "${id}" cannot be safely snapshotted.`);
+    return {id,value,previous};
+  });
+  let attempted=-1;
+  try{
+    for(let i=0;i<rows.length;i++){attempted=i;setBarItemValue(rows[i].id,rows[i].value);}
+  }catch(error){
+    const failures:string[]=[];
+    for(let i=attempted;i>=0;i--){
+      try{setBarItemValue(rows[i].id,rows[i].previous);}catch{failures.push(rows[i].id);}
+    }
+    if(failures.length)throw new Error(`Paint settings failed; rollback failed for ${failures.join(", ")}. Inspect state before retrying. Cause: ${String(error)}`);
+    throw error;
+  }
+}
 
 /**
  * Programmatically sets a BarItems slider/widget's value, tolerating the API
@@ -121,24 +145,20 @@ type RuntimeMutableBarItem = BarItem & {
  * this runtime adapter instead of being cast throughout paint tools.
  */
 export function setBarItemValue(id: string, value: unknown): void {
-  const item = BarItems?.[id] as RuntimeMutableBarItem | undefined;
-  if (!item) return;
+  const item = (typeof BarItems === "undefined" ? undefined : BarItems[id]) as RuntimeMutableBarItem | undefined;
+  if (!item) throw new Error(`Required paint control "${id}" is unavailable.`);
 
   // NumSlider.change accepts a modifier and persists per-tool settings.
   // Assigning .value alone is ignored by its get()/update() methods.
-  if (item instanceof NumSlider && typeof value === "number") {
+  if (typeof NumSlider !== "undefined" && item instanceof NumSlider && typeof value === "number") {
     item.change(() => value);
     item.update();
     return;
   }
 
   if (typeof item.set === "function") {
-    try {
-      item.set(value);
-      return;
-    } catch {
-      // Fall through to another runtime-supported mutator.
-    }
+    item.set(value);
+    return;
   }
 
   if ("value" in item) {
@@ -148,13 +168,10 @@ export function setBarItemValue(id: string, value: unknown): void {
   }
 
   if (typeof item.change === "function") {
-    try {
-      item.change(value);
-    } catch {
-      // Best-effort UI setting; callers should not fail because Blockbench
-      // changed an optional widget mutator signature.
-    }
+    item.change(value);
+    return;
   }
+  throw new Error(`Paint control "${id}" has no supported setter.`);
 }
 
 /**

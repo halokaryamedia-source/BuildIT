@@ -33,6 +33,7 @@ createResource("projects", {
     const projects = ModelProject.all;
 
     if (!projects || projects.length === 0) {
+      if (id) throw new Error(`Project with ID "${id}" not found.`);
       return {
         contents: [
           {
@@ -205,6 +206,7 @@ createResource("textures", {
     const textures = Project?.textures ?? [];
 
     if (textures.length === 0) {
+      if (id) throw new Error(`Texture with ID "${id}" not found.`);
       return {
         contents: [
           {
@@ -242,8 +244,12 @@ createResource("textures", {
 
     // If ID provided, find specific texture
     if (id) {
-      const texture =
-        textures.find((t) => t.id === id) ?? findByResourceId(textures, id);
+      const uuidMatch = textures.find((t) => t.uuid === id);
+      const idMatches = textures.filter((t) => t.id === id);
+      if (!uuidMatch && idMatches.length > 1) {
+        throw new Error(`Texture ID "${id}" is ambiguous; use its UUID.`);
+      }
+      const texture = uuidMatch ?? idMatches[0] ?? findByResourceId(textures, id);
 
       if (!texture) {
         throw new Error(`Texture with ID "${id}" not found.`);
@@ -325,10 +331,10 @@ export function registerReferenceModelsResource(): void {
     return;
   }
   createResource("reference_models", {
-    uriTemplate: "reference_models://{id}",
+    uriTemplate: "reference-models://{id}",
     title: "Reference Models",
     description:
-      "Returns information about reference models in the current Blockbench project. Requires the Reference Models plugin. List URIs use the slugified name (e.g. `reference_models://turntable`) when unique, with a `~<uuid-prefix>` suffix on collision. Reads also accept the raw UUID or exact name.",
+      "Returns information about reference models in the current Blockbench project. Requires the Reference Models plugin. List URIs use the slugified name (e.g. `reference-models://turntable`) when unique, with a `~<uuid-prefix>` suffix on collision. Reads also accept the raw UUID or exact name.",
     async listCallback() {
       const elements = Outliner?.elements ?? [];
       const referenceModels = elements.filter(
@@ -339,7 +345,7 @@ export function registerReferenceModelsResource(): void {
       }
       return {
         resources: referenceModels.map((model) => ({
-          uri: makeResourceUri("reference_models", model, referenceModels),
+          uri: makeResourceUri("reference-models", model, referenceModels),
           name: model.name || model.uuid,
           description: (model as { path?: string }).path
             ? `Reference model from ${(model as { path?: string }).path}`
@@ -355,6 +361,7 @@ export function registerReferenceModelsResource(): void {
       );
 
       if (referenceModels.length === 0) {
+        if (id) throw new Error(`Reference model with ID "${id}" not found.`);
         return {
           contents: [
             {

@@ -75,7 +75,9 @@ describe("Bedrock prompt and skill surface", () => {
     ]);
     expect(root).toContain("shared AUTHORING surface");
     expect(orchestrator).toContain("Tool Lane Discipline");
-    expect(orchestrator).toContain("Own AUTHORING/Animation tool routing");
+    for (const owner of ["blockbench-bedrock-modelling", "blockit-bedrock-texturing", "blockit-bedrock-animation"]) {
+      expect(orchestrator).toContain(owner);
+    }
     expect(orchestrator).not.toContain("FAIL / UNVERIFIED / PASS");
     expect(orchestrator.toLowerCase()).not.toContain("difference-first");
     expect(modelling).toContain("Difference-First Reference Fidelity Verdict");
@@ -100,7 +102,7 @@ describe("Bedrock prompt and skill surface", () => {
     expect(context).toContain("Asset-only product scope");
     expect(context).toContain("Behavior Pack");
     expect(orchestrator).toContain("Product Scope Firewall");
-    expect(orchestrator).toContain("not a normal model-authoring route");
+    expect(orchestrator).toMatch(/`resource_operations` is not a normal (?:model-)?authoring route/);
 
     expect(modelling).toContain("Production-Scale Entity Construction");
     expect(modelling).toContain("rotated Cubes");

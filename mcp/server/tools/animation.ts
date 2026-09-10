@@ -4,6 +4,7 @@ import { z } from "zod";
 import { createTool, type ToolSpec } from "@/lib/factories";
 import { STATUS_EXPERIMENTAL, STATUS_STABLE } from "@/lib/constants";
 import { resolveCoreAnimation, resolveCoreGroup } from "@/lib/coreIdentity";
+import {animationEasingSchema,buildAnimationEasing} from "@/lib/animationEasing";
 import {
   vector3Schema,
   animationIdOptionalSchema,
@@ -464,6 +465,9 @@ export const animationTimelineParameters = z
         "select_range",
         "set_anim_time_update",
         "set_blend_weight",
+        "expand_bones",
+        "collapse_bones",
+        "set_easing",
       ])
       .describe("Timeline or persistent authored-Animation property action."),
     time: z
@@ -493,6 +497,9 @@ export const animationTimelineParameters = z
         "Animation snapping rate in frames per second for set_fps; Blockbench supports 10 to 500."
       ),
     loop_mode: loopModeEnum.optional().describe("Loop mode for the animation."),
+    easing: animationEasingSchema.optional(),
+    bone_ids: z.array(z.string().min(1)).min(1).max(128).optional()
+      .describe("Explicit bone UUIDs or unique names for expand_bones/collapse_bones, including descendants. View only; expansion shows existing keyed animators."),
     range: animationTimelineRangeSchema
       .optional()
       .describe("Inclusive time range for select_range."),
@@ -503,6 +510,13 @@ export const animationTimelineParameters = z
       ),
   })
   .superRefine((params, ctx) => {
+    const boneAction = params.action === "expand_bones" || params.action === "collapse_bones";
+    if ((params.action === "set_easing") !== (params.easing !== undefined)) {
+      ctx.addIssue({code:z.ZodIssueCode.custom,path:["easing"],message:"easing is required only for set_easing."});
+    }
+    if (boneAction !== (params.bone_ids !== undefined)) {
+      ctx.addIssue({code:z.ZodIssueCode.custom,path:["bone_ids"],message:"bone_ids is required only for expand_bones/collapse_bones."});
+    }
     const usesMolang =
       params.action === "set_anim_time_update" ||
       params.action === "set_blend_weight";
@@ -1932,11 +1946,12 @@ createTool(
   {
     ...animationToolDocs[4],
     parameters: animationTimelineParameters,
-    async execute({ animation_id, action, time, length, fps, loop_mode, range, molang }) {
+    async execute({ animation_id, action, time, length, fps, loop_mode, range, molang, bone_ids, easing }) {
       const animation = resolveAnimation(animation_id);
+      const timelineGroups = bone_ids?.map(resolveRigGroup);
       // Timeline is native global state. Resolve explicit identity before changing
       // selection; never let a different selected clip absorb the request.
-      const timelineAction = ["select", "play", "pause", "stop", "set_time", "select_range"].includes(action);
+      const timelineAction = ["select", "play", "pause", "stop", "set_time", "select_range", "expand_bones", "collapse_bones"].includes(action);
       if (timelineAction && AnimationItem.selected !== animation) {
         Timeline.pause();
         animation.select();
@@ -1967,6 +1982,47 @@ createTool(
       let result = "";
 
       switch (action) {
+        case "set_easing": {
+          if (typeof Format === "undefined" || Format.id !== "bedrock") {
+            throw new Error("Easings supports only Minecraft Bedrock Entity (bedrock) projects.");
+          }
+          const previous = animationMolang.anim_time_update || "";
+          if (previous && !easing!.replace_existing) {
+            throw new Error("Animation already has anim_time_update; set replace_existing=true to replace it.");
+          }
+          const expression=buildAnimationEasing(animation.uuid,animation.length,animation.loop,easing!);
+          if(expression===previous)throw new Error("Easing would not change this animation.");
+          runPersistentAnimationEdit("Set whole-clip easing",()=>animation.extend({anim_time_update:expression}));
+          Animator.preview();
+          return {
+            content:[{type:"text" as const,text:"Applied whole-clip easing. Reapply after changing length or loop mode."}],
+            structuredContent:{action,animation_id:animation.uuid,anim_time_update:expression,previous_anim_time_update:previous||null,scope:"whole_clip_time"},
+          };
+        }
+        case "expand_bones":
+        case "collapse_bones": {
+          const ids = new Set<string>();
+          const visit = (group: Group) => {
+            if (ids.has(group.uuid)) return;
+            ids.add(group.uuid);
+            group.children.forEach(child => { if (child instanceof Group) visit(child); });
+          };
+          timelineGroups!.forEach(visit);
+          if (action === "expand_bones") {
+            Object.values(animation.animators).forEach(animator => {
+              if (ids.has(animator.uuid) && animator.keyframes.length) animator.addToTimeline();
+            });
+          } else {
+            for (let i = Timeline.animators.length - 1; i >= 0; i--) {
+              if (ids.has(Timeline.animators[i].uuid)) Timeline.animators.splice(i, 1);
+            }
+          }
+          updateKeyframeSelection();
+          return {
+            content:[{type:"text" as const,text:`${action}: updated timeline visibility for ${ids.size} bone(s).`}],
+            structuredContent:{action,bone_ids:[...ids],visible_animator_ids:Timeline.animators.map(a=>a.uuid),scope:"timeline_view_only"},
+          };
+        }
         case "select":
           result = `Selected animation "${animation.name}"`;
           break;
@@ -2112,7 +2168,7 @@ createTool(
     parameters: batchKeyframeOperationsParameters,
     async execute({ selection, range, pattern, operation, parameters = {} }) {
       const animation = resolveAnimation();
-      const targetTimelineKeyframes = (Timeline.keyframes as _Keyframe[]).filter(
+      const targetTimelineKeyframes = Object.values(animation.animators).flatMap(animator => animator.keyframes).filter(
         (kf) => keyframeBelongsToAnimation(kf, animation)
       );
       const targetSelectedKeyframes = (Timeline.selected as _Keyframe[]).filter(
@@ -2281,13 +2337,15 @@ createTool(
             const channels = ["rotation", "position", "scale"];
             channels.forEach((channel) => {
               const channelKfs = animator[channel];
-              if (!channelKfs || channelKfs.length < 2) return;
+              const selectedKfs = keyframes.filter((kf) => kf.animator === animator && kf.channel === channel);
+              if (!channelKfs || selectedKfs.length < 2) return;
 
-              const startTime = Math.min(...channelKfs.map((kf: _Keyframe) => kf.time));
-              const endTime = Math.max(...channelKfs.map((kf: _Keyframe) => kf.time));
+              const startTime = Math.min(...selectedKfs.map((kf: _Keyframe) => kf.time));
+              const endTime = Math.max(...selectedKfs.map((kf: _Keyframe) => kf.time));
 
               for (let time = startTime; time <= endTime; time += interval) {
                 const targetTime = Timeline.snapTime(time, animation);
+                if (targetTime < startTime || targetTime > endTime) continue;
                 const alreadyExists = channelKfs.some(
                   (kf: _Keyframe) => Math.abs(kf.time - targetTime) < 0.001
                 );
@@ -2301,7 +2359,8 @@ createTool(
 
                 Timeline.time = targetTime;
                 const values = animator.interpolate(channel, true);
-                if (!Array.isArray(values) || values.length < 3) {
+                if (!Array.isArray(values) || values.length < 3 ||
+                    !values.slice(0, 3).every((value: unknown) => typeof value === "number" && Number.isFinite(value))) {
                   throw new Error(
                     `Could not sample ${channel} values while baking animation.`
                   );
@@ -2328,7 +2387,7 @@ createTool(
               const keyframe = sample.animator.addKeyframe({
                 channel: sample.channel,
                 time: sample.time,
-                interpolation: settings.default_keyframe_interpolation.value,
+                interpolation: "linear",
                 data_points: [
                   {
                     x: sample.values[0],

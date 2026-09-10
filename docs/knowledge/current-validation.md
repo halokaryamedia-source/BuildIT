@@ -6,6 +6,266 @@ This file owns **current proof interpretation**. Continuation belongs in `docs/k
 
 ## Current Source Proof
 
+### Final source verification and build — 2026-09-10
+
+SOURCE_READY for the implemented scope; native/visual acceptance NOT_RUN. verify:full was invoked once and failed first on continuation rules. Resumed failed/unrun stages: repository35 PASS; runtime689 PASS plus the one failed continuation test corrected and rerun in its18-test owner group; authoring158 PASS. This covers883 distinct tests across the final gate partitions, not a claim of one uninterrupted green verify:full invocation. Logs: mcp/.cache/plugin-audit/final-{repository,runtime-retry,continuation,authoring}.log. Typecheck, Gateway typecheck, docs freshness, surface and phase measurements PASS; build PASS.
+
+Integration corrections were fixture/bootstrap isolation, missing native keyframes getter in bake fixture, pivot-only source-test scope and compact continuation. No runtime fallback was added. Default full-catalog response111603 chars/schema94148; narrow schema budgets updated for new plugin functions. This grew versus the earlier101429/85402 baseline; it is not token-efficiency proof. Gateway remains four front-door tools; callable catalog56, generated ToolSpecs68.
+
+Built mcp/dist/blockit_mcp.js: build_identity sha256:3734e2935baff7be0faf14114d65ec0e8fbf3219ab63eb7cb6faf6fb93f27631; file SHA2560722dce7613709a725e8954bf546d9951035c7d3f7492adcf9a5492daa2754f1. Preparing managed package from committed Local source; no activation/push/main change. Package manifest will own its exact source SHA and file hashes.
+
+Audit closure is bounded source review plus regression/contract coverage, not exhaustive native branch coverage. Known residuals: native Cube AO world/UV/visual correctness, native Undo/persistence/controller/playback, post-commit errors, whole paint palette/GPU transaction rollback and manual-only Brush Tuna pressure. Existing project/export guards and texture target/selection restoration inspected without newly reproduced defects. No new model testing; rejected elephant remains closed. Full-session token cost UNKNOWN.
+
+### Batch animation coverage independent of Timeline visibility
+
+Reproduced selection=all skipping a target animator absent from Timeline.keyframes. Batch all/range/pattern now enumerate target Animation.animators keyframes; selected still uses Timeline.selected with animation ownership filtering. Registered executor covers visible/hidden target bones and foreign-animation exclusion for all four selection modes. Regression FAIL before / PASS after;28 targeted tests200 assertions PASS (batch, ownership and animation mutation contracts), typecheck/diff check PASS. Native UI/playback not tested. Copy/paste inspected for explicit targets, finite snapped times, same-channel collisions, native Undo rollback and count receipts; no additional change justified by that inspection, which is not exhaustive native proof.
+
+Before rebuild: complete the active operation coverage reconciliation (including remaining project/export and texture orchestration branches); fix only reproduced defects; synchronize changed generated contracts; then run final verify:full once. Native visual/Undo/persistence checks belong after installation and must not be presented as source blockers that require speculative plugin features.
+
+### Animation effect removal continuation
+
+Registered-executor reproduction: removing the sole particle/sound point removes its native keyframe from the animator, but the detached keyframe retains data_points; the result incorrectly listed the deleted effect in removed.remaining. The removal branch now returns an empty remaining list when the entire keyframe is removed. Multi-point removals still return surviving points in their new order. No schema or tool count change.
+
+Proof: regression FAIL before / PASS after, both particle/sound channels, sole/multiple points, explicit target despite another selected Animation, and one finish per request.15 targeted tests88 assertions PASS across effect executor/mutation and controller mutation/effect contracts; typecheck PASS. Controller plan validation/target resolution/Undo catch and final snapshot inspected; no additional source change justified by that inspection. Controller contract tests are not native execution proof. No full verifier/build/deploy/live playback run.
+
+Residual: effect results are ordered operation receipts, not a guaranteed final snapshot after later operations in the same batch. Native controller extend behavior, effect preview/Undo and animation export/playback still need runtime evidence. Next source audit owner: animation timeline copy/paste and batch target/result behavior.
+
+### History recovery result audit
+
+Reproduced registered undo executor returning success when native Undo.undo did not move its index. Shared undo/redo owner now rejects active edits, checks each native index transition, and adds an action to the completed count only after return and expected index movement. Exceptions include completed count and current index with inspect-before-retry guidance; no automatic inverse operation is attempted because a throwing native operation may have changed state partially. Index transition is not bitmap/model restoration proof.
+
+Regression FAIL before / PASS after: both directions, no-effect, second-step exception, successful multi-step receipt, exhausted stack and active-edit isolation.16 targeted tests63 assertions PASS across history executor, material-instance results and particle write-revision/contracts. Typecheck and diff check PASS. No generator needed (implementation-only history change); no full verifier/build/deploy/live run.
+
+Additional bounded inspection: material set/bulk/clear preflight targets and no-ops before Undo and return mutation summaries; existing result fixtures PASS. Native material setter/Undo exception behavior remains unproven. Particle executor validates before writes, checks source revisions and reports preview_error separately from verified writes; revision/contract tests PASS. Neither inspection establishes complete material/particle branch coverage. save_checkpoint is disabled at registration; get_undo_stack is bounded read-only history. Remaining active tool audit continues, next animation controller/effects mutation results.
+
+### Resource listing/read identity and prompt audit
+
+CONTEXT: LOCAL_CODE. Reproduced generated resource IDs redirecting to sibling UUIDs, exact names and Texture native IDs. makeResourceId now reserves those identities and falls back to the owner's UUID. Registered list/read callbacks demonstrate target round-trip. Found invalid URI schemes particle_reference and reference_models: URL parsing rejects underscores. Canonical runtime/templates/listings and generated documentation now use particle-reference and reference-models; resource registration names stay unchanged. Unknown explicit particle sections now throw instead of returning discovery. Omitted section still lists available sections.
+
+Proof: new identity tests FAIL before / PASS after; invalid legacy scheme failed URL construction.32 targeted tests406 assertions PASS across URI, resource callbacks, validator freshness, texture knowledge, prompt/skill surface and phase routing. Typecheck PASS after preserving numeric Object3D IDs in the shared item type. docs:build/docs:check PASS; diff check PASS. Two stale prompt prose assertions updated to assert specialist destinations and equivalent authoring exclusion. No source prompt expansion, full verifier, build/deploy or native run.
+
+| Resource/prompt owner | Audited branches and evidence | Limit |
+| --- | --- | --- |
+| projects/textures/reference_models | Empty list vs explicit target, list-to-read identities, metadata callbacks; targeted tests | Reference resource requires installed plugin; native persistence untested |
+| nodes | Scalar serialization and focused ID resolution inspected; shared URI tests | Native Object3D payload still requires runtime proof |
+| validator status/checks/warnings/errors | Fresh reads vs cheap listing, focused check not-found and UUID inference inspected; freshness tests | Native Validator execution untested here |
+| particle-reference | Every listed URI parses and reads; unknown explicit section rejects | Reference payload semantic freshness not re-researched |
+| texture-authoring knowledge | Topic validation and bounded static payload owner checked; resource tests | Knowledge is guidance, not visual-quality proof |
+| bedrock_entity_workflow | Canonical manifest/phase filtering, readiness header, specialist routing and scope tests | Does not establish complete active-tool branch audit or autonomous output quality |
+
+Next owner: remaining active tool operation/executor/result branches. Resource scheme change requires clients to refresh listings after eventual activation. Native proof and final full verification remain pending.
+
+### Native paint setting setter rollback
+
+Reproduced registered-executor failure before fix: lock_alpha remained true when a subsequent native setting setter threw. Requested native settings now snapshot/readback their scalar values, apply before Painter fields, and restore all attempted writes in reverse if any setter or the control batch fails. Restore failures name the affected setting and retain the original cause; unaffected restores still run. Replaced six repeated setter blocks with one bounded loop. Source scope is setter/control-stage recovery, not whole-request transactional guarantees for later palette/GPU setters or native side effects outside setting.value.
+
+Verification: regression FAIL before / PASS after;8 targeted tests46 assertions PASS (settings, controls, palette, sampler), typecheck PASS, diff check PASS. Tests cover partial-write exception, missing later control, silent setter rejection and failed restoration. No full verification, build, deployment or native proof performed.
+
+### Paint settings mirror state and control preflight
+
+Registered-executor regression first FAIL: lock_alpha changed despite missing pixel-perfect control rejecting the request. Controls now use existing batch preflight before Painter fields. Explicit mirror axes replace previous axes (including empty list clearing all); texture:false no longer skips the options branch. Unavailable mirror options reject before control writes. Whole-request atomicity across native settings/sampler/palette remains unproven and is the next bounded owner. Native painting proof not claimed. Continuation was consolidated to remove stale completed items from the pending list.
+### Native stroke failure recovery
+
+Fill, shape, gradient, copy, eraser and brush now share runPaintStroke. Active Undo rejects before stroke; native cancellation and unfinished edits report failure. Exceptions cancel the native bitmap/layer Undo, then use Painter's canceled-stop branch to release PointerTarget without committing or running end hooks; transient Painter state is cleared. Successful native stop remains the commit owner. Control/color restoration and failures after native commit are not covered by rollback.
+
+Evidence: cached native-painter.js start/stop lifecycle; regression replay with previous unguarded start/stop behavior FAIL (pixel stayed20 instead of10), restored implementation PASS.17 targeted tests/236 assertions PASS; typecheck PASS. Removed brittle stopPaintTool source-string assertions in favor of helper and registered-executor failure tests. No full verifier/build/deploy/live run. Native Undo/layer restoration and pointer release still require installed-runtime proof.
+
+### Remaining native stroke selection order
+
+Fill, shape, gradient and copy now select their own native tool before writing per-tool settings, using setBarItemValues for batch preflight/rollback. Previously all four wrote settings before selection. Registered-executor fixture covers each tool's setter/stroke ordering;16 targeted tests PASS (225 assertions) with texture-authoring contracts. Native painting/render proof pending. Color/selected-tool restoration is not claimed; mid-stroke exception cleanup remains next audit owner.
+
+### Paint setting batch recovery
+
+setBarItemValues snapshots readable scalar controls and preflights setters before writes. On failure it restores attempted controls in reverse order, including a setter that mutated before throwing; rollback failure explicitly names unresolved controls. paint_with_brush and eraser use it. Eraser now selects its native tool before changing per-tool sliders. Eighteen targeted tests PASS (222 assertions); typecheck PASS. Scope is widget values, not selected tool/color/whole paint_settings atomicity. Other native stroke families still need the same selection-order audit. Full/native gates remain deferred.
+
+### Native paint control failures
+
+All setBarItemValue production callers are in paint.ts and use requested/resolved settings, not optional discovery. Missing controls and unsupported setters now throw; native setter/change errors propagate instead of falling through to a value assignment or false success. NumSlider modifier semantics retained. Added failure regression, completed native brush fixtures and removed stale blend source-string assertion in favor of executor evidence. Partial settings before a later error are not yet transactionally restored; no bitmap stroke begins after a setter throws, but multi-setting rollback remains an audit concern. This is source-only evidence, not native validation.
+
+### Painting state audit
+
+paint_with_brush declared default blend mode but only wrote it to native controls when explicitly provided, allowing previous native blend state to leak into later non-exact strokes. It now always applies the resolved blend mode. Registered-executor regression1 PASS; typecheck PASS. Generic click/dialog tools are extended-profile fallbacks, not normal Entity surface; disabled eval remains disabled. Material save already preflights path/native access and checks saved/file existence; no replacement introduced. Remaining audit concern: shared setBarItemValue tolerates missing controls and setter failures; inspect all callers and establish required/optional semantics before changing that owner. Native stroke appearance not verified.
+
+### Resource explicit-target semantics
+
+Confirmed regression: reading projects://missing against empty state returned successful empty data. Explicit missing IDs now error for projects/textures/reference_models; empty listing remains valid. Texture reads now prioritize UUID over runtime ID and reject duplicated runtime IDs, preventing accidental target substitution. Five resource tests PASS (18 assertions), including executor callbacks; typecheck PASS. Reference-model empty branch changed consistently but native/reference callback execution remains unverified. Full-surface audit still open; no build activation or full verifier run.
+
+### Gateway/resource audit — identity and timeline discovery
+
+Resource ID generation previously emitted identical slug~uuid8 for equal names sharing UUID prefixes; generator now falls back to full UUID, with roundtrip regression. Gateway flattened timeline projection previously omitted easing/bone_ids; both fields now survive branch discovery, with a projection regression. Canonical union projections already retained branch fields; this fix closes the flattened-schema path. Resource/Gateway/reliability/project-affinity tests28 PASS before the added projection regression; Gateway suite14 PASS afterward. Typecheck PASS. Full audit and native execution are not complete.
+
+### Autonomous audit continuation — AO transaction and instruction footprint
+
+AO fixture now executes the registered paint_texture_transaction with native-shaped bitmap/Undo mocks and transformed Three geometry: success returns actual revision, stale revision rejects before Undo, corrupted readback cancels and restores bitmap. Test PASS (adapter/transaction fixture; native Blockbench not executed). Nine static footprint tests PASS after removing repeated autonomous-policy paragraphs; no ceilings raised. Workflow reduced9891→9189 characters while retaining explicit autonomous readiness and no fabricated user acceptance. Generated prompt/freshness PASS. This measures instruction characters, not token savings or full-surface audit completion.
+
+### Autonomous Astra audit — in progress, not a full-surface PASS
+
+User requests all tools/resources/prompt support AI-only execution. First confirmed workflow defect: switch_authoring_phase required user approval literals even when end-to-end autonomy was explicitly authorized. Added a strict alternative readiness branch with autonomous_authorized, geometry_verified, texture_verified, UV PASS, current evidence, checkpoint and no_blockers; never fabricates user approval. Runtime readiness text, workflow prompt, root/router/specialist instructions and flow document now carry the explicit-authority exception. Reviewed net.ts phase-switch ownership: actual phase change occurs through requestMcpPhaseSwitch after the tool response, not inside the registration executor.
+
+Resource defect fixed: validator parsed names and selected first matching Cube/Texture/Animation/Group. It now returns inferred UUID only for unique matches. Three resource regressions PASS (25 assertions), nine source-closure tests PASS (45 assertions); typecheck PASS, prompt/API generators and freshness PASS. Full verification remains deferred. Generated inventory is68 tools/10 resources/1 prompt, not proof that every active operation branch is audited. Remaining: exhaustive active Gateway routing/results/failure audit, execution-only/manual dependency review, autonomous semantic mirror/footprint checks, AO transaction integration tests and native proof. Do not report full audit completed from these initial fixes.
+
+### Cube AO integrated source path
+
+paint_texture_transaction now accepts ambient_occlusion instead of operations: explicit cube_ids, radius, samples, bias and strength. Native adapter reads transformed preview triangles, matches target texture material, transforms renderer UV through its texture map, and bakes only nontransparent mapped texels. Other visible Cubes occlude. Conflicting overlapping UV surfaces reject before mutation; alpha/source bytes are preserved; work is capped before ray sampling. Existing revision check, layer restriction, native edit/Undo and readback path are reused. Bake uses current preview pose and repeated application darkens again.
+
+Four AO tests PASS (18 assertions): hemisphere/radius/self-shadow checks, raster alpha/UV conflict checks and a Three.js transformed-mesh adapter fixture. Typecheck/docs freshness PASS. These are source fixtures, not native Blockbench proof. Runtime material/UV conventions, Undo persistence and visual quality remain pending; full verifier deferred. Prior kernel-only status below is superseded by this integration.
+
+### Cube AO computation in progress — not exposed
+
+Added a deterministic cosine-weighted hemisphere ray sampler over world-space triangles. It supports radius, sample count and normal bias, tests both triangle windings, rejects invalid inputs, and returns occlusion fractions without touching textures. Two tests PASS (9 assertions); typecheck PASS. This is only the computation kernel: no AO tool or usable bake is claimed. Remaining necessary work: read transformed Cube surfaces, establish native UV orientation/material ownership, rasterize mapped opaque texels, detect shared-UV conflicts, and commit through the existing revision-checked texture transaction. Native/visual proof remains pending. Full verifier not run.
+
+### Group translation and remaining scope
+
+modify_group.offset translates an explicit Group subtree in authored model coordinates, reusing duplicate translation preflight/mutation mechanics. Offset cannot combine with pivot/rotation/visibility edits; zero/overflow reject before Undo. All descendant Groups/elements enter one Undo; Cube UV and animation keys are retained. This is model-coordinate translation, not camera-plane gizmo UI parity. Regression1 PASS (11 assertions); native transforms with rotated ancestors, Undo and persistence remain pending.
+
+Current remaining implementation: Cube-compatible AO is not implemented. Brush Tuna pressure is an active-plugin bridge, not a standalone engine. Full additive-bake curve linearization is not implemented. Missing native acceptance applies to all recent source increments (render readability, sampler/material behavior, texture persistence, timeline/playback, transforms and reload). Full source verifier is deferred until implementation scope closes. Mesh UV Locker, Image-format Centering and bedrock_block collision are out of Bedrock Entity scope; do not add their format-specific implementations. Easings nine-curve scope is accepted by user. Capture utility, rename, simplify, palette/noise/mirror, sampler/highlight, timeline expansion and dev reloader have bounded source implementations, not blanket upstream UI parity.
+
+### Capture efficiency guidance
+
+Capture size description now recommends256 for quick silhouette/pose,512 for texture/reference detail (unchanged default),32–64 for icons only, and one relevant view before expanding coverage. Each capture reports actual PNG bytes derived from its encoded payload, plus total_png_bytes. Byte counts exclude JSON/base64 transport overhead and are not session-token savings. No claim that256 is visually sufficient for every model; native readability comparison remains pending. Camera tests7 PASS; typecheck and docs freshness PASS.
+
+### Capture/icon sizing and dev reloader audit
+
+capture_model_views now accepts square PNG size 32..1024 (default512). Offscreen resize and both projection bases use the same size; returned dimensions match it. Existing shaded/no-gizmo capture and explicit orientation remain. This supplies model icon/preview images through the existing image result; it does not replicate Menu Icon Exporter panels, preferences, custom backgrounds or filesystem export UI.
+
+camera-framing-contract:7 tests PASS (40 assertions), including 32/48/512/1024 projection sizing and invalid dimensions. Native rendered PNG proof pending. Existing dev:sync already builds/deploys and checks live build identity; index.ts contains file-based native plugin reload watching. No replacement watcher or background process added; live reload was not executed. Full verification remains deferred.
+
+### Easings scope narrowed by user
+
+User accepts Bedrock Entity scope only; additional curve parity is no longer required. set_easing now rejects absent/non-bedrock Format before Undo or data changes. No Mesh-specific implementation exists in the easing owner; bone animation remains supported. Two targeted tests PASS (45 assertions), covering rejection of free/java_block/bedrock_block and accepted bedrock. Typecheck/generated freshness checked; native playback remains pending. This does not remove unrelated retained tools.
+
+### Whole-clip Easings
+
+Timeline set_easing authors anim_time_update with sine/quad/cubic curves and in/out/in_out direction (nine combinations), using standard Molang trigonometry/power instead of custom parser functions. Duration must be positive; loop uses modulo for multi-cycle delta overruns, hold clamps, once returns beyond the endpoint to finish. Per-clip accumulator names encode UUID code points without lossy sanitizing. Existing expressions require explicit replace_existing; previous expression is returned for restoration through set_anim_time_update. Reapply after duration/loop changes. This is bounded whole-clip easing, not per-bone motion, per-keyframe easing or full upstream 24-curve parity.
+
+Two targeted tests PASS (36 assertions): actual installed MolangJS parser evaluates all nine endpoint/midpoint cases and loop/once overruns; registered executor checks overwrite guard before Undo, explicit clip targeting and unchanged selection/unrelated clip. Typecheck and generated freshness checked. Native playback/export acceptance remains pending; parser proof alone does not establish realistic motion. Full verification deferred.
+
+### Expand Bone Timeline
+
+Timeline actions expand_bones/collapse_bones accept explicit bone_ids and include descendants. Shared animationTimelineParameters feeds the public manage_animation_timeline timeline branch. Identity preflight occurs before clip selection. Expansion uses existing keyed animators only; collapse removes matching visible rows without deleting animation data. Group traversal deduplicates roots/descendants. No new UI listeners, plugin dependency or authored-data Undo is needed for this view operation.
+
+Targeted executor plus mutation contracts:26 PASS (195 assertions); typecheck PASS; docs regenerated and freshness PASS. Tests cover descendant inclusion, exclusion of empty/unrelated animators, repeated expansion, missing-target rejection and keyframe preservation. Native timeline rendering remains unverified. Easings source audit confirms whole-clip anim_time_update remapping; implementation remains outstanding.
+
+### Animation bake target isolation
+
+Reproduced via registered executor: selecting rotation keys at 0 and 1 generated seven new keys, including position and rotation beyond time 1. Bake now derives each channel's sampling interval from the selected keys, rejects snapped times outside it, emits new samples with linear interpolation, and rejects non-finite numeric samples before Undo. Original keys/interpolation remain unchanged; this is additive resampling, not full curve linearization or an authored-motion quality fix.
+
+Regression failed before the change and passes after it (animation-bake-selection:1 test,6 assertions); typecheck PASS. Timeline restoration and pre-mutation rejection are covered. Native playback/Undo remain unverified. Full verification remains deferred per user. This bug was not invoked during the rejected elephant test and is not evidence of its cause.
+
+### Brush Tuna pressure preset bridge
+
+Create/load brush presets now retain size/softness/opacity pressure curves as four normalized Bezier point pairs. Validation rejects malformed or non-monotonic pressure control coordinates; stored curves are checked again before loading. Loading pressure curves requires the active BrushTuna instance and passes the preset through native Painter.loadBrushPreset plus BrushTuna.brushPreset. This is an explicit dependency bridge, not a standalone reimplementation of the pressure engine. Actual stylus events and native plugin behavior remain unverified; exact pixel transactions do not synthesize pressure.
+
+Regression evidence: two new tests failed before implementation because curves were silently dropped. After implementation, three tests PASS (17 assertions) across brush-pressure-preset and brush-preset-runtime. Full verifier deliberately deferred. Mr Salmon AO source currently inspected requires exactly one selected Mesh; Cube/Bedrock entity AO needs a separate geometry-to-surface implementation and is not delivered by simply exposing its action.
+
+### Texture increment — diagnostic highlight and brush preset safety
+
+`capture_model_views.highlight_missing_textures` temporarily sets native missing-material brightness during shaded capture, restores exact previous values (including zero) on success/failure, and labels diagnostic render evidence. This is a static diagnostic capture, not the upstream flashing UI. Native render proof remains pending.
+
+Brush presets now persist optional `lock_alpha` and apply the native toggle after loading; unavailable toggle rejects before loading. Duplicate names reject before saving; failed persistence rolls back the added in-memory preset. Native opacity uses /255 and softness /100 in inspected Blockbench painter source, matching existing schema units. Brush Tuna pressure curves and stylus event behavior remain incomplete; exact pixel transactions are unaffected by brush presets.
+
+Two targeted tests PASS (15 assertions): missing-texture-highlight and brush-preset-runtime. Full verification remains deferred until all requested implementations are complete. No native/visual quality claim or installation performed.
+
+### Texture increment — palette, explicit region mirror, preview sampler
+
+Added `paint_settings.palette`: opaque base, odd stepped count retaining exact middle base, independent shadow/highlight hue shifts and lightness extents, saturation falloff; preview default, append/replace native ColorPanel palette without replacing its reactive array identity. Uses existing tinycolor2 dependency. This is a bounded hue-shift generator, not full upstream graph/UI/brightness-offset parity. Native palette persistence/visual quality unverified.
+
+Added `paint_texture_transaction.copy_region`: explicit same-atlas source rect/target and optional horizontal/vertical flip, preserving RGBA. Takes a source snapshot per operation so overlapping destinations cannot smear. Preflight validates source/destination bounds; existing revision and Undo path retained. No hardcoded player-skin regions; caller must establish matching entity UV regions. No cross-atlas/layer support claimed.
+
+Added `paint_settings.texture_preview`: explicit texture identity with nearest/linear filtering and clamp/repeat wrapping via current Blockbench5 material.map; previous numeric sampler state returned, unrelated maps untouched. Scope is current GPU preview only; no claim of persistence across reload, exported Minecraft sampler equivalence or replication of upstream global setting/event lifecycle.
+
+Targeted tests:11 PASS across texture-palette, texture-region-copy, texture-preview-sampler and texture-noise (35 assertions). Typecheck and generated docs performed; full verifier deliberately deferred per user until remaining implementations are complete. No native mutation or rejected-asset retest. Outstanding: missing-texture highlight, Brush Tuna parity, AO, image/capture utilities, format-bound features and Animation queue.
+
+### Ongoing named-plugin implementation — batch rename and bounded noise
+
+User requests full verification only after all implementations; no verify:full executed in this increment. Targeted checks:15 PASS across batch-group-rename, geometry-identity-duplication and texture-noise; typecheck passed before removal of an unreachable Group guard; generated API rebuilt. Final source/native gates remain pending.
+
+`rename_element` now accepts up to128 explicit Group UUID/new_name updates, with dry-run default. Full final namespace is checked case-insensitively before Undo; simultaneous name swaps preserve legacy name-keyed maps rather than overwriting tracks. UUID keys remain unchanged, animator labels/name-keyed maps synchronize, affected animations join the same Undo edit. Single Group rename uses the same planner while retaining its element receipt. Existing ambiguous names are rejected rather than guessed. Tests exercise registered executor preview/apply/preflight and pure map identity; native Undo/persistence not yet observed. Templates, presets and UI filtering from Batch Group Rename are not replicated; callers supply the exact rename map.
+
+`paint_texture_transaction` now supports explicit seeded `noise` with rect, optional pixel mask, selected RGBA channels and amplitude. Transparent pixels remain unchanged unless explicitly opted out; alpha changes require channel a. Coordinate-seeded output is identical across split rect batches. Existing revision check/non-layered bitmap/one Undo wiring is reused. This is a bounded noise subset inspired by Let there Be Noise, not exact upstream random-sequence or UI parity; it does not provide artistic completion. Tests prove deterministic output, split equivalence, mask/channel isolation and bounds rejection. No elephant or native texture changed.
+
+Remaining named-plugin work remains open: richer rename affordances as needed, group translation scope, palette generation, filtering/highlighting/wrapping, entity-safe mirror, native brush preset parity, UV Locker/Image mode boundaries, AO baking, capture utilities, Easings and timeline expansion. Prior bake defect still pending. Do not package/activate or claim the whole list completed from these increments.
+
+### User-named plugin scope — ordered implementation
+
+This list supersedes the earlier candidate inventory. Audit distinguishes native UI convenience, runtime preview state and exported asset changes. Upstream files fetched from the official repository; no upstream code copied into production. `Image Capture` has no separately matched catalog ID; treat as the capture requirement alongside Menu Icon Exporter unless the user supplies another exact plugin.
+
+| User plugin | Source behavior / current disposition |
+| --- | --- |
+| Translation Plane Gizmo | Mouse plane drag. Existing explicit XYZ Cube updates can express translation; custom gizmo UI parity is not implemented. Group-subtree translation needs separate proof |
+| Simplify Models | Coordinate rounding, not Cube-count reduction. New `manage_cubes(operation=simplify)` provides UUID-scoped bounds/rotation rounding, dry-run default and collapse rejection; UV/pivot rounding deliberately not included yet |
+| Batch Group Rename | Preview/templates/conflict handling plus animation-name synchronization. Current single rename is not batch parity; next Geometry implementation must preflight all final names and preserve animator UUID bindings/Undo |
+| Block Multi-Collision Editor | Source explicitly requires `Format.id === bedrock_block` and block collision JSON. Entity support must not masquerade as block collision support; user scope clarification pending |
+| UV Locker | Mesh vertex/face transform compensation. Cube autouv=0 is not equivalent; entity Cube UV preservation and Mesh extension are separate scopes |
+| Menu Icon Exporter / Image Capture | Camera/framing/icon output. Existing bounded model capture is partial overlap; exact camera/export options and continuous evidence still need implementation/proof |
+| Texture Filtering | Sets texture material min/mag filtering to Nearest/Linear. Preview state, not a new pixel-art generator or exported game sampler guarantee |
+| Missing Texture Highlighter | Flashes empty material brightness. Existing missing-face diagnostics do not replicate viewport highlighting; implement bounded highlight with state restoration |
+| Colour Gradient Generator | Hue-shift/lightness/saturation palette authoring. Current palette inspection is not generation; queued Texture implementation |
+| Skin Mirror | Prescribed player-skin arm/leg regions. Cannot map those coordinates to arbitrary entity UV; general entity mirror must use explicit corresponding face regions |
+| Repeating Textures | THREE RepeatWrapping versus ClampToEdgeWrapping. Preview wrapping is not proof of Bedrock entity export behavior |
+| Let there Be Noise | Seeded noise, selection mask and selected color channels. Add as controlled texture operation; noise alone is not styled art and alpha must remain opt-in |
+| Brush Tuna | Extends brush preset workflow/UI. Existing native presets/brush calls are only partial coverage; inspect authored preset data and execution behavior, not bundled UI similarity |
+| Image Centering | Centers viewport in Image format. Does not rearrange atlas UV or center painted islands; image-mode utility only |
+| Mr Salmon's Baked Ambient Occlusion | Geometry-dependent texture baking. Distinct from screen-space AO/preview shading; requires UV-aware output, sampling budget, alpha/layer preservation and Undo proof |
+| Easings | Generates Molang in `anim_time_update` for whole-clip time remapping. Graph/keyframe easing is not equivalent; preserve previous expressions and expose exact curve/duration semantics |
+| Expand Bone Timeline | Shows/hides a group and descendants in animation timeline. Editor utility, not a motion-quality improvement |
+| Live Dev Reloader | Watches/reloads plugin/theme files. Existing dev:watch/deploy/runtime lifecycle is overlap; never auto-reload dirty user assets or claim source build means active runtime updated |
+
+Order retained: Geometry first (including its utilities), then Texture, then Animation. No tests on the rejected elephant. Functions unrelated to Bedrock Entity remain explicitly scoped instead of silently changing format/framework. No full-plugin parity claimed for the first Simplify increment.
+
+Simplify first increment source proof: `verify:full` PASS (35 repository +642 runtime +158 authoring =835), both typechecks, generated docs freshness and build; log `mcp/.cache/plugin-audit/geometry-full.log`. Six added tests cover planner semantics and registered dry-run executor with no Undo; applying uses existing batch-update preflight/Undo path. Native apply/Undo/persistence is NOT_RUN. Source build identity `sha256:89d40dbb8d51938f971d40aca99ba63a89611d777deb9dc33abd98501d565879`; not packaged or activated. Public surface remains56 tools; manage_cubes schema grew to8255 measured payload units, dedicated ceiling adjusted7700→8400 for the new branch (not a token-savings claim). UV/pivot rounding remains unimplemented; bounds/rotation are explicit subsets of upstream Simplify. No runtime-code copying from upstream.
+
+### Cross-domain plugin audit — 2026-09-10
+
+Scope: current Local checkout, all four requested domains, existing 56-capability executor audit reused below; source comparison of 11 relevant upstream plugins, not every plugin in the marketplace and not exhaustive native execution of every branch. No elephant mutations, installations, or runtime implementation changes in this audit. Upstream pinned to `JannisX11/blockbench-plugins@38862eb66b219995b09926488f7d1084a0fb6b3a`. Downloaded source and executable reproduction are under ignored `mcp/.cache/plugin-audit/`. Source/license review is still required before copying upstream code; this audit copied no plugin code into production.
+
+**Confirmed defect, high priority:** `animation.ts` bake (around lines 2281–2346) expands selected keys to every transform channel and full channel time extent on each selected animator. Selecting only rotation at 0 and 1 with position keys at 0 and 2 and interval0.5 creates rotation0.5 AND position0.5/1/1.5. New keys use the editor default interpolation (Bezier in the probe); original Bezier keys remain unchanged. Upstream Bakery samples selected channel/range and linearizes target keys. Consequently the current bake is not an export-safe replacement for Bakery. Original timeline time is restored correctly. Reproduction: run Bun `.cache/plugin-audit/bake-probe.ts` from mcp; invokes registered executor with isolated native stubs. This is executor proof, not native playback proof. The public consolidated timeline maps batch to this executor in `server/tools.ts`. Elephant did not invoke bake; do not attribute its robotic motion to this defect.
+
+| Upstream function inspected | Current source behavior | Verdict / action |
+| --- | --- | --- |
+| Quick Box-UV Layout: six face rectangles laid out as a box while retaining per-face editability | `boxUvLayout.ts` packs Box-UV footprints; Cube face/offset edits exist | Related primitives, not identical one-operation conversion. Preserve existing layout; add explicit conversion only with face-orientation/Undo proof |
+| Simplify Models: rounds selected geometry, UV, rotations and origins | `manage_cubes` accepts explicit authored values | Can express updates; no inspected equivalent simplify operation. Rounding is not geometric simplification and can damage approved proportions |
+| Bone View: arrows, axes and joints updated as a visual overlay | Hierarchy/pivot inspection and locator/null editing exist | Structural inspection is not Bone View visualization; overlay parity unproven |
+| Reference Models: native reference element, external file/project source | `project.ts` checks actual ReferenceModel availability and bridges it | Real dependency/bridge, not standalone replication; requires installed plugin and native evidence |
+| Texture Stitcher: combines source images, replaces atlases and remaps Cube/Mesh UV | `create_texture` rebuild targets one existing base atlas through native TextureGenerator | Single-atlas repack is not multi-atlas stitch parity; explicit remap/alpha/identity/persistence proof required |
+| Plaster: fractional UV contraction for edge bleeding | Integral physical-texel rules, atlas padding and seam diagnostics | Different operation. Do not silently shrink all UV to claim parity; can conflict with pixel-art alignment |
+| Colour Gradient Generator: hue paths, lightness ranges, saturation falloff, palette output | `textureColorProfile.ts` extracts observed color buckets; paint gradient interpolates a painted gradient | Inspection/gradient painting is not hue-shift palette generation. Missing equivalent exposed generation in inspected owners |
+| Animation Sliders: tween, amplify, ease, retime, ground-speed and normalize controls | Offset/mirror, time scale/reverse, graph easing, native Molang properties | Partial overlap. Batch scale means time scaling, not amplify-values (including scale about1). Do not present as full parity |
+| Bakery: selected transform sampling plus linearization; optional quaternion interpolation | Current bake inserts default-interpolation samples and leaks selection to other channels | Confirmed defect above; no spherical option parity shown |
+| Animated Platforms: moving reference ground, textures and per-animation settings | Root-motion diagnostics and timeline playback | No inspected exposed moving-ground review operation. Diagnostic speed is not ground contact visualization |
+| Scene Recorder: extends native GIF recorder/export formats | `camera.ts` uses NoAAPreview for bounded still poses | Continuous recording/export absent from inspected public capture route; prioritize native recorder integration, not a new renderer |
+
+Particle: `particle.ts` validates and losslessly patches documents, performs revision-checked writes and invokes `Animator.loadParticleEmitter`; preview failure is reported separately after file preparation. This is native preview integration, not evidence of a full Snowstorm editor reimplementation. Existing source tests/older native receipts are separate from current visual acceptance. Particle was not part of the rejected elephant output.
+
+Painting: native fill/shape/gradient/copy/eraser/brush, presets, selections and layers dispatch into Blockbench/Painter. `paint_with_brush` also intentionally has an exact-pixel fast path for a narrow settings tuple, using bitmap/layer Undo. `paint_texture_transaction` is an exact designed-pixel route, not the native brush engine. Therefore a successful transaction cannot validate copy brush, preset, mirror, layering or artistic brush behavior. Full native action matrix remains missing; no blanket claim that these tools work perfectly or are broken.
+
+Coverage/proof: current runtime suite run during audit: **636 PASS / 0 FAIL across114 files**, log `.cache/plugin-audit/runtime-tests.log`. First run failed only because prior next-action cleanup changed the literal `Do not publish Stable`; restoring the explicit instruction resolved it. This illustrates prose-coupled tests, not a runtime regression. Bake probe demonstrates missing behavioral coverage despite green suite. No new full build/native verification claimed. Existing earlier all-capability matrix below remains the branch inventory; new findings supersede its bake confidence.
+
+Repair order: (1) bake selected-channel/range isolation + numeric linear output + endpoint/Undo tests; (2) continuous native playback capture and explicit contact-review surface; (3) coherent Molang authoring using current tools, then creation expansion only with expression round-trip proof; (4) hue-shift palette and native painting parity with representative samples; (5) multi-atlas stitching/optional UV tools; (6) particle editor/preview parity where user needs it. Geometry that already works is retained. Test-first minimal reproductions precede each source fix; no wholesale rewrite justified by this evidence.
+
+Efficiency: measure chosen executor input/output bytes, pixel/keyframe work and correction rounds; do not call them session token savings. Avoid dumping full affected-key arrays (12 edits previously emitted thousands of UUID fields), scan pixels only at checkpoints, reuse mutation state, validate one representative cohort before expanding. For cyclic secondary motion prefer expressions to arbitrary dense numeric keys. Native parity fixtures must test output/Undo/persistence; string-name checks cannot establish it. Accepted-result cost remains UNKNOWN until actual accepted work is measured.
+
+### Elephant test closed by user — 2026-09-10
+
+Final user verdict: Geometry acceptable in part ("lumayan"), Texture REJECTED, Animation REJECTED (rigid/robotic, no authored Math animation). Asset testing is CLOSED; do not resume polishing this elephant. Both clips were saved, but neither technical validation nor saved output constitutes visual acceptance. Whole-session token totals are UNKNOWN; this rejected result establishes no efficiency success.
+
+Confirmed authoring failures: numeric-only sampled motion was chosen despite an existing Molang edit route; exact-pixel texture transactions did not exercise configured brush behavior; continuous three-loop playback evidence was unavailable; animation finite-difference velocity concerns remained unresolved. These are agent-method/proof failures, not proof that every runtime tool is broken. Source creation rejects Molang deliberately while keyframe editing accepts it; expanding creation requires authored-space/codec sign and complex-expression round-trip proof, not just widening Zod.
+
+Current reimplementation scope: Geometry/UV, Texture, Animation and asset-only Particle. First compare each relevant upstream feature to its actual executor, observable state changes, Undo/persistence and native evidence. Preserve working functionality. Source tests, native operation proof and accepted art are separate outcomes.
+
+Initial upstream inventory: official catalog https://github.com/JannisX11/blockbench-plugins/blob/master/plugins.json (read 2026-09-10). Catalog descriptions are discovery evidence, not source-parity proof:
+
+| Area / upstream candidate | Existing owner / evidence | Outstanding comparison |
+| --- | --- | --- |
+| Reference Models; Quick Box-UV Layout; Bone View; Simplify Models | project.ts reference bridge, cubes.ts, boxUvLayout.ts; elephant geometry/UV evidence | Reference bridge requires actual plugin; compare cube-preserving layout and pivot visualization; do not apply rounding destructively |
+| Texture Stitcher; Plaster | texture.ts native template/repack and UV audit | Multi-atlas stitching is not proven by single-atlas repack; UV shrinking/bleeding corrections need texel-density and alpha tests |
+| Colour Gradient Generator; native brush/copy/layers | paint.ts, texture color/alpha owners | Hue-shift palette generation and native brush behavior need actual parity fixtures; none guarantees finished pixel art |
+| Animation Sliders; Bakery | animation.ts graph/batch/property/keyframe routes | Compare exact transforms and export baking; existing Molang edit support was unused in elephant |
+| Animated Platforms; Scene Recorder | capture_model_views gives bounded pose samples; timeline has playback | Moving-ground contact review and continuous playable capture remain gaps in exposed tooling |
+| Particle editor/native preview | particle.ts and bedrockParticleDocument owners | Existing create/patch/save/preview source and older native evidence; no particle feature was tested in elephant, no visual acceptance inferred |
+
+Efficiency priorities from observed work: correct representative cohort before propagation; expressions for continuous secondary motion instead of dense sampled keys; use mutation receipts without confirmation reads; inspect compact diagnostics fields instead of printing every affected key UUID; discovery with texture diagnostics disabled; native painting operations only when their settings affect the chosen executor; one final source gate per coherent delivery. Measure request/response size and native operation counts separately from whole-session tokens.
+
 **Elephant Texture rejection correction (2026-09-10):** User rejected faint/raw pixel art, scattered UV and opaque unused atlas; Geometry remains approved. First wrong owners: agent styling/layout judgement and missing capture shading contract. Source now forces Shading ON during canonical capture, restores state in finally and returns render_evidence (shading/brightness/view_mode, not in-game proof). Installed Blockbench app.asar sourcemap confirms settings.shading.value + Canvas.updateShading ownership. Three regression tests failed before the helper and pass afterward. verify:full PASS: 35 repository + 636 runtime + 158 authoring = 829 tests; both typechecks, freshness and build. Log mcp/.cache/texture-quality-full.log. New runtime identity d303b2c0ef2fd020093b28659027879edc70da673446a4b22a9020d095e791d1; not yet installed. Rules now require semantic UV zones, transparent unused pixels and readable pixel clusters; footprint ceilings increased only for this explicit guidance. Existing tools regrouped 39 elephant UV islands and repainted the rejected texture; native UV audit ready, no transparent mapped faces, no bounded seam candidates. Visual acceptance and measured token savings remain unproven; see asset README. No new framework/capability or source change to painting semantics.
 
 **Native installation connection verified (2026-09-10):** After the user loaded `.blockit/plugin/blockit_mcp.js`, Gateway status returned Runtime ONLINE with matching build `sha256:8fe22f3e1b063498bb0b0a8297979283e981620ec3e0813c56488b0dc4b74227`, geometry phase, 49 exposed tools and zero open projects. Live describe_capability(list_textures) succeeded and exposes diagnostics default true, lightweight false, and explicit intra-Cube-only seam scope. This proves matching native startup and capability discovery, not native mutation, visual quality or token savings. New-model intake remains required.
@@ -330,3 +590,5 @@ AUTHORING TAXONOMY remains user-selected `DIRECT | 3D_ASSISTED`. 3D_ASSISTED sou
 The generic quality-first authoring contract was source/static accepted at exact `Local` SHA `8e2a54f3016f744e3cd1bedef27379bdb07c3885` with Authoring Policy Verify run `34119139741`. It remains historical proof beneath the current pre-local closure, not the active continuation baseline.
 
 The detailed 2026-09-07 multi-model DIRECT usage audit remains historical evidence only: `Experimental/authoring-usage-audit-2026-09-07.md`. Each defect must be reproduced against current source before it is treated as current.
+
+Package delivery: source 506b79ea8a6e0152ac5b443ca60ae7fb86c5ef0e; ZIP SHA256 e5ae98430faa523a802084775f6c8ae5c4205a435a5d8831c1b7ec6696b23a2e. Compiled package smoke PASS; native_blockbench NOT_RUN. Existing .blockit installer returned STAGED because Runtime/Gateway are active. Model saved before staging. Close Blockbench normally, restart Codex while Blockbench remains closed, then reopen Blockbench; verify matching d303b2c0 build and shaded capture metadata. No file-path migration or new plugin copy required. Post-document targeted continuity checks: 10 PASS.

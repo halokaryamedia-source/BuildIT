@@ -28,7 +28,7 @@ describe("animation timeline and batch ownership", () => {
       "export function keyframeBelongsToAnimation("
     );
     expect(source).toContain(
-      "const targetTimelineKeyframes = (Timeline.keyframes as _Keyframe[]).filter("
+      "Object.values(animation.animators).flatMap(animator => animator.keyframes)"
     );
     expect(source).toContain(
       "const targetSelectedKeyframes = (Timeline.selected as _Keyframe[]).filter("

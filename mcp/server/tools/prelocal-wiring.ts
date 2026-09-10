@@ -8,6 +8,7 @@ import {
   type ToolSpec,
 } from "@/lib/factories";
 import { resolveCoreTexture } from "@/lib/coreIdentity";
+import {bakeNativeCubeAo} from "@/lib/cubeAoRuntime";
 import { getAndActivateTexture, imageContent } from "@/lib/util";
 import {
   applyPaintTransactionRgba,
@@ -47,7 +48,7 @@ export const wiredCreateTextureParameters = z.union([
 export const paintTextureTransactionToolDocs: ToolSpec = {
   name: PAINT_TEXTURE_TRANSACTION_TOOL_NAME,
   description:
-    "Applies one bounded exact-pixel transaction to a non-layered texture with optimistic revision protection and one native Undo unit.",
+    "Applies bounded set/fill/erase, mirrored copy_region, or seeded masked noise to a non-layered texture with revision protection and one native Undo. Copy preserves RGBA and requires explicit matching UV regions. Noise changes requested channels and preserves transparent pixels by default; neither operation grades art.",
   annotations: {
     title: "Paint Texture Transaction",
     destructiveHint: true,
@@ -300,7 +301,7 @@ export function registerPaintTextureTransactionTool(): void {
     {
       ...paintTextureTransactionToolDocs,
       parameters: paintTransactionParameters,
-      async execute({ texture_id, expected_revision, operations }) {
+      async execute({ texture_id, expected_revision, operations, ambient_occlusion }) {
         const texture = getAndActivateTexture(texture_id);
         requirePaintTransactionV1Target({
           texture_uuid: texture.uuid,
@@ -320,11 +321,11 @@ export function registerPaintTextureTransactionTool(): void {
           );
         }
 
-        const applied = applyPaintTransactionRgba(
+        const applied = ambient_occlusion ? bakeNativeCubeAo(texture,before.pixels,before.width,before.height,ambient_occlusion) : applyPaintTransactionRgba(
           before.pixels,
           before.width,
           before.height,
-          operations
+          operations!
         );
         const plannedAfterRevision = await computeTextureRevision(
           applied.pixels,

@@ -297,20 +297,28 @@ export function setMcpProfileSwitchHandler(
 
 export const phaseControlToolDocs = {
   name: "switch_authoring_phase",
-  description: "Changes startup focus within shared AUTHORING or hands off AUTHORING↔Animation through Gateway in the same task. Animation requires recorded user approvals and a checkpoint; internal PASS is not approval.",
+  description: "Changes focus or hands off AUTHORING↔Animation in the same task. Animation requires a checkpoint and either user approvals or explicitly authorized autonomous verification; internal PASS never means user approval.",
   parameters: z.object({
     target_phase: z.enum(["geometry", "texturing", "animation"]),
     reason: z.string().min(1),
     resume_from: z.string().min(1),
-    readiness: z.object({
+    readiness: z.union([z.object({
       geometry_approved: z.literal(true),
       uv_layout: z.literal("PASS"),
       texture_approved: z.literal(true),
       checkpoint: z.string().min(1).describe("Saved .bbmodel checkpoint path; records explicit user approval, never inferred by the caller."),
       no_blockers: z.literal(true),
-    }).optional(),
+    }).strict(), z.object({
+      autonomous_authorized: z.literal(true).describe("User explicitly authorized autonomous execution; never infer this from tool availability."),
+      geometry_verified: z.literal(true),
+      uv_layout: z.literal("PASS"),
+      texture_verified: z.literal(true),
+      checkpoint: z.string().min(1),
+      evidence: z.string().min(1).describe("Current-revision geometry/texture evidence and readiness summary; not a user-approval claim."),
+      no_blockers: z.literal(true),
+    }).strict()]).optional(),
   }).refine(value => value.target_phase !== "animation" || value.readiness !== undefined, {
-    message: "Animation handoff requires readiness with explicit user approvals, UV Layout PASS, and a saved checkpoint.",
+    message: "Animation handoff requires user-approved or authorized-autonomous readiness, UV Layout PASS, and a saved checkpoint.",
     path: ["readiness"],
   }),
   status: "stable" as const,

@@ -3,10 +3,12 @@ name: blockit-bedrock-entity-mcp
 description: Mandatory router for BlockIT Bedrock Entity asset authoring.
 ---
 # BlockIT Bedrock Entity MCP
-Own AUTHORING/Animation tool routing.
 `geometry/rig/UV judgement` → `blockbench-bedrock-modelling`; texture/PBR → `blockit-bedrock-texturing`; animation/motion → `blockit-bedrock-animation`.
+
+User-authorized autonomy replaces approval waits with verified checkpoints; never claim user approval.
+
 ## Product Scope Firewall
-Asset-only: BP/gameplay/pack OUT; RP visual/export; Animation Controller composition/preview; `resource_operations` **not a normal model-authoring route**.
+Asset-only: BP/gameplay/pack OUT; RP visual/export; controllers/preview. `resource_operations` is not a normal authoring route.
 ## Mandatory Authoring Latch
 Load router + matching current worktree specialist before mutation:
 `router_loaded=YES | active_owner=GEOMETRY|TEXTURING|ANIMATION | specialist_loaded=YES | gate_satisfied=YES`.

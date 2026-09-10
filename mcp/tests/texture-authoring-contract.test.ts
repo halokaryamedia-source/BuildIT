@@ -59,23 +59,7 @@ describe("texturing authoring contract", () => {
     ).not.toThrow();
   });
 
-  test("native Painter lifecycle owns Undo for direct stroke tools", async () => {
-    const paint = await source("server/tools/paint.ts");
-
-    for (const [index, nextIndex] of [
-      [0, 1],
-      [1, 2],
-      [2, 3],
-      [4, 5],
-      [5, 6],
-    ] as const) {
-      const block = toolBlock(paint, index, nextIndex);
-      expect(block).toContain("startPaintTool");
-      expect(block).toContain("stopPaintTool");
-      expect(block).not.toContain("Undo.initEdit");
-      expect(block).not.toContain("Undo.finishEdit");
-    }
-  });
+  // Native stroke lifecycle is verified by paint-stroke and paint-tool-selection executors.
 
   test("brush and eraser honor connected versus separated stroke semantics", async () => {
     const paint = await source("server/tools/paint.ts");
@@ -90,9 +74,7 @@ describe("texturing authoring contract", () => {
       'requirePaintCoordinates(coordinates, "paint_with_brush")'
     );
     expect(brush).toContain("BarItems.brush_tool.select()");
-    expect(brush).toContain(
-      'setBarItemValue("blend_mode", brush_settings.blend_mode)'
-    );
+    // Native blend behavior is covered by brush-blend-default.test.ts.
     expect(brush).toContain("movePaintTool");
     expect(brush).toContain("!connect_strokes");
     expect(brush).not.toContain("Painter.editCircle");
@@ -392,7 +374,7 @@ describe("texturing authoring contract", () => {
     }
     expect(brush).toContain("startPaintTool");
     expect(brush).toContain("movePaintTool");
-    expect(brush).toContain("stopPaintTool");
+
   });
 
   test("brush executor preserves size-1 pixels and delegates size-2 to native Painter", async () => {
@@ -409,6 +391,10 @@ describe("texturing authoring contract", () => {
     }
     const controls = {
       slider_brush_size: new FixtureNumSlider(),
+      slider_brush_opacity: new FixtureNumSlider(),
+      slider_brush_softness: new FixtureNumSlider(),
+      brush_shape: {value:"square"},
+      blend_mode: {value:"default"},
       brush_tool: { select: () => nativeCalls.push(["select"]) },
     };
     const ctx = {
