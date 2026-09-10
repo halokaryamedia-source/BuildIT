@@ -10,7 +10,9 @@ Help Codex reason about prop/furniture structure with less guessing while avoidi
 
 Use when the object is primarily defined by rigid construction, support/contact, storage/opening relationships, panels, shelves, drawers, handles, hinges, frames, surfaces or assembled furniture-like parts.
 
-Do not use merely because an asset is static if another profile is more semantically correct, such as `VEHICLE`, `MECHANICAL`, `HUMANOID`, `CREATURE`, or `PLANT_CUTOUT`.
+Do not use merely because an asset is static if another profile is more semantically correct, such as `VEHICLE`, `MECHANICAL`, `HUMANOID`, `CREATURE`, or `PLANT_FOLIAGE`.
+
+A prop may contain a hinge, wheel, cable, motor, or other mechanical detail and still remain `PROP_FURNITURE` when those mechanisms are secondary to the object's main prop/furniture identity. Use `MECHANICAL` only when mechanism topology, axes, linkage, or clearance become the dominant modelling problem.
 
 ## Intake Focus
 
