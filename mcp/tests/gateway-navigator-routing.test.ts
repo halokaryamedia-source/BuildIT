@@ -41,7 +41,7 @@ const status: GatewayRuntimeStatus = {
 };
 
 describe("BlockIT Navigator routing", () => {
-  test("known capabilities expose deterministic source, specialist and test owners", () => {
+  test("known capabilities expose deterministic source, specialist and test owners", async () => {
     expect(sourceOwnerForCapability("manage_cubes")).toEqual({
       source: "mcp/server/tools/cubes.ts",
       specialist: ".agents/skills/blockbench-bedrock-modelling/SKILL.md",
@@ -53,6 +53,22 @@ describe("BlockIT Navigator routing", () => {
     expect(sourceOwnerForCapability("manage_animation_controller").source).toBe(
       "mcp/server/tools/animation-controller.ts"
     );
+
+    for (const capability of [
+      "manage_cubes",
+      "paint_with_brush",
+      "manage_animation_controller",
+      "switch_authoring_phase",
+    ]) {
+      const owner = sourceOwnerForCapability(capability);
+      expect(await Bun.file(new URL(`../../${owner.source}`, import.meta.url)).exists(), owner.source).toBe(true);
+      if (owner.specialist) {
+        expect(await Bun.file(new URL(`../../${owner.specialist}`, import.meta.url)).exists(), owner.specialist).toBe(true);
+      }
+      if (owner.test_owner) {
+        expect(await Bun.file(new URL(`../../${owner.test_owner}`, import.meta.url)).exists(), owner.test_owner).toBe(true);
+      }
+    }
   });
 
   test("capability search projection carries source ownership without schema duplication", () => {
