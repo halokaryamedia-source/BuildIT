@@ -18,6 +18,7 @@ USER REQUEST
 → CLEAN PRODUCTION BRIEF
 → FINAL CONFIRMATION
 → REFERENCE PLAN
+→ BUILD IMAGE-GENERATION PROMPT
 → GENERATE MINIMUM USEFUL VISUAL EVIDENCE
 → INTERNAL QA
 → USER VISUAL APPROVAL WHEN MATERIAL
@@ -39,6 +40,9 @@ Prompt normalization
 
 Visual reference layout / panel economy / anti-drift
 → docs/knowledge/image-reference-standard.md
+
+Image-generation prompting / identity lock / panel prompt construction
+→ docs/knowledge/image-generation-prompt-contract.md
 
 REFERENCE.json schema
 → docs/knowledge/reference-package-schema.md
@@ -67,6 +71,7 @@ ChatGPT owns:
 - requirement clarification;
 - prompt normalization;
 - reference planning;
+- image-generation prompt construction;
 - image generation/editing;
 - visual consistency QA;
 - technical extraction;
@@ -201,6 +206,25 @@ ANIMATION_KEYFRAME
 ```
 
 Do not generate every module by default.
+
+## Image-Generation Prompt Construction
+
+Before every image-generation call, build the prompt from the canonical contract:
+
+```text
+CONFIRMED USER INTENT
++ CLEAN COMPILED BRIEF
++ SHEET PURPOSE
++ PANEL PLAN
++ IDENTITY LOCK
+→ GENERATION PROMPT
+```
+
+Never use the uncontrolled full conversation as the generation prompt when a compiled brief exists.
+
+Use `docs/knowledge/image-generation-prompt-contract.md` for the exact prompt-layer order, panel-specific evidence, continuation-sheet rules, correction prompts and negative constraints.
+
+For Sheet 02+, use approved Sheet 01 as visual identity anchor whenever available. Do not regenerate later sheets from prose alone if doing so would weaken identity consistency.
 
 ## Unified Visual Reference Rule
 
