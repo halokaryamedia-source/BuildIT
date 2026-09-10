@@ -33,7 +33,7 @@ describe("BlockIT Gateway capability discovery hardening", () => {
     });
   });
 
-  test("exact capability lookup is case-insensitive but not fuzzy", () => {
+  test("exact matching is case-insensitive and near names fall back to ranked discovery", () => {
     expect(searchCapabilityCatalog(tools, "MANAGE_CUBES", 50)).toHaveLength(1);
     expect(searchCapabilityCatalog(tools, "manage_cube", 50)[0]?.capability_id)
       .toBe("manage_cubes");
