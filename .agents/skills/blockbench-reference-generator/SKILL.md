@@ -56,13 +56,15 @@ Visual information belongs in images. Technical facts/relationships belong in st
 
 Use exactly one primary profile unless a genuinely hybrid asset requires another as a secondary note.
 
+Profile names describe asset classes, not modelling techniques:
+
 ```text
 PROP_FURNITURE
 VEHICLE
 HUMANOID
 CREATURE
 MECHANICAL
-PLANT_CUTOUT
+PLANT_FOLIAGE
 GENERIC
 ```
 
@@ -83,8 +85,8 @@ Non-humanoid animals, monsters and fantasy creatures. Focus on body axis/spine, 
 ### MECHANICAL
 Machinery where mechanism/kinematics matters more than vehicle identity. Focus on rigid assemblies, linkage hierarchy, rotation/translation axes, contact, clearance, repeated components, service panels, handles and exposed mechanisms.
 
-### PLANT_CUTOUT
-Foliage, grass, flowers, crops and thin/alpha-dominant assets. Focus on alpha-owned silhouette, one-plane/crossed-plane carrier suitability, stem/root/contact relationships and avoiding unnecessary micro-cubes.
+### PLANT_FOLIAGE
+Plants, foliage, grass, flowers, crops, leaves, reeds and similar vegetation assets. Focus on overall growth silhouette, stem/root/branch relationships, cluster depth, material identity, and choosing the simplest suitable representation. Plane-like, crossed-cutout, layered-cutout or volumetric geometry are internal representation choices; the profile name does not imply one technique.
 
 Profiles add decision vocabulary only. They are not geometry presets.
 
@@ -286,7 +288,7 @@ Preferred package schema remains `lazydesigner-reference-package-v1`.
   "schema": "lazydesigner-reference-package-v1",
   "asset": {
     "name": "...",
-    "profile": "PROP_FURNITURE|VEHICLE|HUMANOID|CREATURE|MECHANICAL|PLANT_CUTOUT|GENERIC",
+    "profile": "PROP_FURNITURE|VEHICLE|HUMANOID|CREATURE|MECHANICAL|PLANT_FOLIAGE|GENERIC",
     "task": "NEW_ASSET|CONTINUE_ASSET|CORRECTION",
     "original_user_intent": "..."
   },
@@ -365,7 +367,7 @@ Images remain visual authority. Metadata records technical facts, relationships,
 
 ## 14. Control Handoff
 
-Control receives the package but forwards only the subset needed for the current Codex decision.
+Reference Preparation hands the package to LazyDesigner Control. Control forwards only the subset needed for the current Codex decision.
 
 ```text
 whole-model geometry
