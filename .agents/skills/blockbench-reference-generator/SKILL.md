@@ -44,11 +44,33 @@ NOT READY                  → clarify once
 still material             → NEEDS REVIEW
 ```
 
+## Buildable Evidence Handoff
+Before generation, account for the structural evidence that downstream Geometry must be able to read from the final image:
+```text
+required visible part count
+primary mass relationships
+attachment/contact direction
+intentional openings / negative spaces
+front-vs-side depth character
+asymmetry or orientation that changes construction
+identity-critical geometry landmarks
+motion-bearing parts when animation is requested or visually implied
+```
+The board does not need to display technical labels or metadata, but these relationships must remain visually readable. Do not simplify away a required rear attachment, side depth change, opening, articulated junction, or repeated part merely because the front view reads well.
+
+When source coverage is incomplete, preserve uncertainty instead of inventing hidden geometry. A generated board may normalize perspective, but it must not convert `unknown` into a confident structural claim. If one view cannot resolve a material relationship, use another supported board view; if no supported view resolves it and identity/buildability depends on it, return **NEEDS REVIEW**.
+
+**Cross-view completeness:** every identity-critical required part visible in the source set must remain accounted for across the board. A part hidden in one preview may remain visible in another; it may not silently disappear from all normalized views. Duplicated, merged, floating, relocated, or topology-changing substitutions are material failures.
+
+**Depth readability:** FRONT cannot be the sole authority for a form whose depth materially affects silhouette, attachment, negative space, or articulation. LEFT and/or TOP must preserve the source-supported depth relationship; FRONT-LEFT 3/4 may clarify volume but never override stronger orthographic/source evidence.
+
 ## Minecraft-First Geometry / Texture
 
 ### Geometry
 
 Choose the **simplest Blockbench-buildable representation that preserves the visible requirement**. Preserve recognizable silhouette, major masses, important part count, attachments, negative spaces, and defining features. Use few meaningful segments; never lazy-voxelize organic contour with unit-Cube clutter.
+
+For curved/organic forms, simplify curvature by **meaningful silhouette segments**, not uniform voxel noise. Preserve bend direction, taper, major convex/concave transitions, attachment base, and terminal shape. More segments are justified only where they materially improve recognizability, motion clearance, or cross-view silhouette.
 
 ### Texture
 
@@ -59,6 +81,8 @@ Texture supports geometry; it does not replace required form. Preserve base pale
 Choose the most structurally readable stable pose unless another state is required. Grounded load-bearing subjects default to a **stable natural neutral stance**. Do not force **bilateral alignment** merely because it is easier to generate.
 
 Preserve identity-bearing silhouette/major masses and visible root → direction/bend → terminal intent for identity-critical articulated features without inventing hidden joint precision. Duplicated, missing, merged, floating, relocated, or structurally redefined required parts are material failures.
+
+If animation is requested or the subject is clearly articulated, make joint neighborhoods readable enough for downstream rig planning: attachment center, neighboring volume overlap, bend direction, and plausible clearance must not be obscured by pose or perspective. Do not create exaggerated gaps at hips, knees, shoulders, elbows, neck, jaw, or waist merely to show separation.
 
 ## Five-Preview Coverage Board
 
@@ -88,12 +112,17 @@ Resolution may vary; slot identity stays fixed. Dimensions/technical constraints
 Review the actual board in this order:
 
 1. recognizability / source identity;
-2. geometry buildability;
-3. texture usability;
-4. major structural consistency;
-5. crop-safe presentation/readability.
+2. required part-count completeness;
+3. topology / attachment / negative-space correctness;
+4. cross-view proportion and depth consistency;
+5. geometry buildability;
+6. articulation / joint readability when relevant;
+7. texture usability;
+8. crop-safe presentation/readability.
 
-A defect is material only when it changes identity, primary mass/part count, topology/attachment, important negative space, buildability, or identity-critical material information.
+Correct the **largest structural difference first**. Do not spend the single automatic correction on minor presentation drift while a missing part, wrong attachment, depth error, broken opening, or articulation defect remains.
+
+A defect is material when it changes identity, primary mass/part count, topology/attachment, important negative space, buildability, motion-readiness, or identity-critical material information.
 
 ## Targeted Correction
 
@@ -113,6 +142,8 @@ structural defect affecting multiple views
 global identity / pose / layout / cross-view coherence failure
 → regenerate the full board
 ```
+
+A correction must not fix one view by materially breaking another. If FRONT improves but LEFT/TOP/BACK now contradict the source-supported structure, classify it as a failed correction rather than accepting the prettier panel.
 
 Never export a corrected panel separately; output remains one complete board. Use full-board regeneration only when a bounded edit cannot preserve cross-view consistency.
 
