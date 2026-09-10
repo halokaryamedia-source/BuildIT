@@ -10,6 +10,10 @@ export type {
   NavigatorDevelopmentResolution,
 } from "./developmentIntent";
 export {
+  NAVIGATOR_ROUTING_POLICY,
+} from "./routingPolicy";
+export type { NavigatorRoutingPolicy } from "./routingPolicy";
+export {
   authoringDomainForCapability,
   contextForAuthoringDomain,
   sourceOwnerForCapability,
