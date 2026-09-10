@@ -291,6 +291,19 @@ export function summarizeCapability(tool: BackendTool): CapabilitySummary {
   };
 }
 
+function normalizeCapabilityQuery(query: string): string {
+  return query.trim().toLowerCase();
+}
+
+function exactCapabilityMatch(
+  tools: readonly BackendTool[],
+  query: string
+): BackendTool | null {
+  const normalized = normalizeCapabilityQuery(query);
+  if (!normalized) return null;
+  return tools.find((tool) => tool.name.toLowerCase() === normalized) ?? null;
+}
+
 function lexicalCapabilityScore(tool: BackendTool, tokens: string[]): number {
   if (tokens.length === 0) return 1;
 
@@ -320,10 +333,11 @@ export function searchCapabilityCatalog(
   query: string,
   limit: number
 ): CapabilitySummary[] {
+  const exact = exactCapabilityMatch(tools, query);
+  if (exact) return [summarizeCapability(exact)];
+
   const boundedLimit = Math.max(1, Math.min(50, Math.trunc(limit)));
-  const tokens = query
-    .trim()
-    .toLowerCase()
+  const tokens = normalizeCapabilityQuery(query)
     .split(/\s+/)
     .filter(Boolean);
 
