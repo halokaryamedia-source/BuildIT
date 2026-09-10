@@ -19,6 +19,18 @@ Texture → Geometry APPROVED + UV Layout PASS
 Animation → Texturing APPROVED + checkpoint + Animation Readiness Preflight → HANDOFF_REQUIRED
 `HANDOFF_REQUIRED`: `target_phase`, `reason`, `readiness`, `resume_from`; Gateway `switch_authoring_phase` → same task/chat.
 `approved image`; normal Geometry uses the native BlockIT Group/Cube path. 1 Minecraft block = 16 Blockbench units; `front_direction`.
+
+## Cross-Phase Reference Authority
+Use one visual authority chain; each phase owns only its layer:
+```text
+approved reference + explicit constraints
+→ Geometry: mass / topology / part count / attachment / depth / pivot structure
+→ Texturing: mapped material regions / markings / seams / alpha appearance
+→ Animation: pose / timing / contact / joint behavior using the approved rig
+```
+A downstream phase must not compensate for an upstream defect. Missing/wrong mass, attachment, opening, pivot, or rig → Geometry owner. Texture cannot paint around it; Animation cannot key around it. When the first wrong owner is upstream, return only the bounded defect through the existing owner/handoff path, then resume the same task.
+Reference verification is difference-first and qualitative: `FAIL | UNVERIFIED | PASS`; no aggregate score, cube count, key count, or tool success can override a critical visual defect.
+
 ## Fast Routing Contract
 Asset work **must not begin by searching repository files**.
 **Authoring Context Firewall:** Authoring Codex uses `workspace/active/<asset>/` as cwd, not `mcp/`; deeper MCP development rules are not authoring plan. Do **not** inspect tests/CI/source or run Bun/build/verifiers/deploy.
