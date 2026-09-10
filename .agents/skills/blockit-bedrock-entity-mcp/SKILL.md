@@ -31,6 +31,22 @@ approved reference + explicit constraints
 A downstream phase must not compensate for an upstream defect. Missing/wrong mass, attachment, opening, pivot, or rig → Geometry owner. Texture cannot paint around it; Animation cannot key around it. When the first wrong owner is upstream, return only the bounded defect through the existing owner/handoff path, then resume the same task.
 Reference verification is difference-first and qualitative: `FAIL | UNVERIFIED | PASS`; no aggregate score, cube count, key count, or tool success can override a critical visual defect.
 
+## Correction Convergence Contract
+Every `FAIL` correction uses one bounded causal loop:
+```text
+largest material difference
+→ first wrong owner/cause
+→ reuse fresh state/evidence
+→ one smallest coherent correction
+→ recapture only evidence that can prove the intended change or a likely regression
+→ IMPROVED | UNCHANGED | REGRESSED
+```
+Do not start a second inspection/discovery cycle when the current mutation receipt, UUID/state, and affected-view evidence are still fresh. Do not re-run `status`, capability search/describe, hierarchy detail, bounds, texture diagnostics, or captures as reassurance.
+
+**Retry rule:** the same causal direction may be attempted at most twice. A second attempt requires new decision-changing evidence or a materially revised diagnosis. Two attempts with the same cause and no new evidence → `BLOCKED`, not a third variation.
+
+**Owner-change rule:** if verification shows the diagnosed cause belongs to another phase, stop correcting in the current phase and hand the bounded defect to the owning specialist. Downstream compensation is not convergence.
+
 ## Fast Routing Contract
 Asset work **must not begin by searching repository files**.
 **Authoring Context Firewall:** Authoring Codex uses `workspace/active/<asset>/` as cwd, not `mcp/`; deeper MCP development rules are not authoring plan. Do **not** inspect tests/CI/source or run Bun/build/verifiers/deploy.
