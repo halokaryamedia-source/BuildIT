@@ -63,6 +63,12 @@ Handoff names why the residue exceeds `REMOTE_GITHUB`, the first command/action,
 
 Do not optimize character count or tool count as a proxy for accepted quality. For context/usage work, first remove duplicated routing, unnecessary boot reads, and reassurance loops before deleting domain constraints.
 
+### Canonical quality benchmark
+
+When a development task claims to improve generated model quality, reference fidelity, rig/motion quality, or authoring efficiency across asset classes, use `mcp/docs/QUALITY_BENCHMARK.md` plus `mcp/tests/fixtures/quality-benchmark-cases.json` as the evaluation contract. Do not copy the benchmark into another Skill or add a parallel scoring system.
+
+The benchmark is development/evaluation context only; normal asset authoring does not load it. Quality uses per-dimension `PASS | FAIL | UNVERIFIED`; efficiency is recorded separately as cost to accepted result. No aggregate score, cube-count target, keyframe-count target, or minimum-tool-call metric may override a critical visual/structural failure.
+
 ## Evidence before optimization
 
 `current behavior/artifact → representative evidence → classify failure → first wrong owner → smallest complete change → matching proof`
