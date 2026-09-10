@@ -1,155 +1,286 @@
 ---
 name: blockbench-reference-generator
-description: Generate one canonical Minecraft / Blockbench reference image in ChatGPT from one or more source images.
+description: LazyDesigner reference-preparation specialist for ChatGPT. Produce the minimum sufficient visual reference plus decision-critical technical handoff for downstream Codex authoring.
 ---
 
-# Blockbench Reference Generator
+# LazyDesigner Reference Preparation
 
-Reference-generation specification for **ChatGPT**. Codex/BlockIT consumes the user-approved image.
-
-Create **one Minecraft / Blockbench reference image** optimized for recognizable, Blockbench-buildable Minecraft interpretation, not exact real-world reconstruction.
-
-A canonical board is optional and is used when stronger normalized cross-view coverage materially helps construction. Generation always requires a fresh explicit user instruction.
-
-## User Contract
-
-One or more source images are enough; extra facts are optional. Do not ask for Cube counts, pivots, UVs, animation, MCP details, or modelling method. Never infer numeric scale from pixels. Prefer zero clarification.
-
-With multiple sources, use each only for evidence it visibly supports: identity, depth, rear/side structure, attachment, asymmetry, material, or detail. Do not average conflicting views into invented structure or ask for another view when the current set already resolves the next material decision.
-
-Resolve: explicit user fact → visible source evidence → leave optional unknowns unset → one clarification round only for material ambiguity, at most three material items. Never invent identity-changing hidden structure. Remaining material ambiguity → **NEEDS REVIEW**.
-
-## Execution Consent Gate
-
-**Readiness is not permission to generate.** Repository/policy work, audit, CI, or `next-action.md` never authorizes image generation. Generate/edit only after a **fresh explicit user instruction**.
-
-## Pre-Generation Readiness
-
-**Generation is output, not discovery.** Lock only:
-
-- identity + identity-bearing silhouette;
-- primary masses / required parts / attachments / asymmetry / pose;
-- source-backed view evidence, including one **source-nearest orthographic anchor** when available;
-- simplest recognizable Blockbench-buildable geometry target;
-- Minecraft-readable palette/material regions/identity-critical markings.
-
-Keep nonvisual constraints outside image pixels. Original **Source Image(s)** govern reference preparation; the explicitly approved interpretation governs downstream modelling. Generated previews normalize projection instead of copying lens distortion.
-
-`READY` means no ambiguity remains that could materially change identity, primary geometry, attachment/topology, buildability, or identity-critical texture information.
+This Skill is the single ChatGPT-side reference-preparation authority for LazyDesigner asset authoring. It replaces the old image-only mental model with one modular system:
 
 ```text
-READY + fresh instruction → generate once
-READY without it           → STOP; wait for user
-NOT READY                  → clarify once
-still material             → NEEDS REVIEW
+CORE RULES
++ ASSET PROFILE
++ ONLY NECESSARY REFERENCE MODULES
+→ APPROVED VISUAL REFERENCE(S)
++ COMPACT TECHNICAL HANDOFF
+→ LazyDesigner Control
+→ Codex
 ```
 
-## Buildable Evidence Handoff
-Before generation, account for the structural evidence that downstream Geometry must be able to read from the final image:
+Do not split Character, Creature, Vehicle, Prop, or Material into independent reference workflows with duplicated rules. Select a profile and modules inside this one system.
+
+## 1. Boundary
+
+ChatGPT owns reference preparation. Codex owns modelling/coding. LazyDesigner Control owns intake, context projection, readiness and routing. Runtime/Blockbench own execution/live asset state.
+
+Do not create Blockbench models here.
+Do not prescribe Cube coordinates/counts as facts.
+Do not invent hidden structure, dimensions, materials, articulation or motion.
+Do not duplicate modelling Skills or Runtime ToolSpecs into the handoff.
+
+## 2. Input Authority
+
+Accept:
+- text prompt;
+- one or more user images;
+- text + images;
+- an already-approved visual reference.
+
+Resolve in this order:
+
 ```text
-required visible part count
-primary mass relationships
-attachment/contact direction
-intentional openings / negative spaces
-front-vs-side depth character
-asymmetry or orientation that changes construction
-identity-critical geometry landmarks
-motion-bearing parts when animation is requested or visually implied
+explicit user fact
+→ visible source evidence
+→ already-approved target decision
+→ optional unknown remains UNKNOWN
 ```
-The board does not need to display technical labels or metadata, but these relationships must remain visually readable. Do not simplify away a required rear attachment, side depth change, opening, articulated junction, or repeated part merely because the front view reads well.
 
-When source coverage is incomplete, preserve uncertainty instead of inventing hidden geometry. A generated board may normalize perspective, but it must not convert `unknown` into a confident structural claim. If one view cannot resolve a material relationship, use another supported board view; if no supported view resolves it and identity/buildability depends on it, return **NEEDS REVIEW**.
+Never infer numeric scale from pixels. Never average materially conflicting views into invented structure. Ask only for decision-changing missing information. One concise clarification round is preferred when required; otherwise preserve uncertainty explicitly.
 
-**Cross-view completeness:** every identity-critical required part visible in the source set must remain accounted for across the board. A part hidden in one preview may remain visible in another; it may not silently disappear from all normalized views. Duplicated, merged, floating, relocated, or topology-changing substitutions are material failures.
+## 3. Output Principle
 
-**Depth readability:** FRONT cannot be the sole authority for a form whose depth materially affects silhouette, attachment, negative space, or articulation. LEFT and/or TOP must preserve the source-supported depth relationship; FRONT-LEFT 3/4 may clarify volume but never override stronger orthographic/source evidence.
+The objective is not maximum documentation. The objective is the minimum package that lets Codex work without repeating avoidable interpretation.
 
-## Minecraft-First Geometry / Texture
+```text
+SIMPLE ASSET  → simple package
+COMPLEX ASSET → richer package
+SMALL REVISION → delta-only package
+```
 
-### Geometry
+Visual information belongs in images. Nonvisual technical facts belong in compact metadata. Markdown explanation is optional and only used when JSON-sized notes cannot express the relevant technical relationship clearly.
 
-Choose the **simplest Blockbench-buildable representation that preserves the visible requirement**. Preserve recognizable silhouette, major masses, important part count, attachments, negative spaces, and defining features. Use few meaningful segments; never lazy-voxelize organic contour with unit-Cube clutter.
+## 4. Core Visual Rules
 
-For curved/organic forms, simplify curvature by **meaningful silhouette segments**, not uniform voxel noise. Preserve bend direction, taper, major convex/concave transitions, attachment base, and terminal shape. More segments are justified only where they materially improve recognizability, motion clearance, or cross-view silhouette.
+Every generated reference must prioritize:
+- complete uncropped subject;
+- readable silhouette;
+- consistent proportions;
+- neutral/plain background;
+- primary masses and required visible part count;
+- attachment/contact relationships;
+- intentional openings / negative spaces;
+- source-supported asymmetry/orientation;
+- Minecraft/Blockbench-buildable form;
+- material regions and identity-critical markings;
+- motion-bearing parts when relevant.
 
-### Texture
+Prefer the simplest native Blockbench / Minecraft Bedrock representation that preserves the visible requirement. Useful representations include solid cuboids, segmented forms, plane-like geometry, planar cutout carriers and layered surfaces. Do not describe the target as a generic cube/mesh hybrid.
 
-Texture supports geometry; it does not replace required form. Preserve base palette, major color/material regions, part separation, and identity-critical markings. Prefer Minecraft-readable pixels over photoreal wrinkles, dense noise, baked lighting, or micro-detail.
+Texture supports geometry; it must not replace required silhouette, volume, openings or attachment structure.
 
-## Pose / Articulation
+## 5. Asset Profile Resolver
 
-Choose the most structurally readable stable pose unless another state is required. Grounded load-bearing subjects default to a **stable natural neutral stance**. Do not force **bilateral alignment** merely because it is easier to generate.
+Choose exactly one primary profile unless the user explicitly requests a hybrid asset whose modelling decisions genuinely span profiles.
 
-Preserve identity-bearing silhouette/major masses and visible root → direction/bend → terminal intent for identity-critical articulated features without inventing hidden joint precision. Duplicated, missing, merged, floating, relocated, or structurally redefined required parts are material failures.
+### PROP_FURNITURE
+Use for static or mostly rigid props, furniture, kiosks, racks, tables, containers and interactive objects.
+Focus on:
+- main body/masses;
+- supports/legs;
+- shelves, drawers, doors, panels, handles and hinges;
+- openings/negative space;
+- stable contact with the ground;
+- movable sections when present;
+- material breakdown.
 
-If animation is requested or the subject is clearly articulated, make joint neighborhoods readable enough for downstream rig planning: attachment center, neighboring volume overlap, bend direction, and plausible clearance must not be obscured by pose or perspective. Do not create exaggerated gaps at hips, knees, shoulders, elbows, neck, jaw, or waist merely to show separation.
+Optional subtype vocabulary:
+`STATIC_PROP | FURNITURE | CONTAINER | INTERACTIVE_PROP | MECHANICAL_PROP`.
 
-## Five-Preview Coverage Board
+### VEHICLE
+Use for cars, bikes, carts, trains, aircraft, boats and other vehicles.
+Focus on:
+- chassis/body mass;
+- wheel/track/landing/ground-contact cohort;
+- wheelbase/track spacing and ground clearance;
+- front/rear identity;
+- cockpit/cabin;
+- doors, bumpers, lights and exposed mechanisms;
+- repeated/symmetric assemblies;
+- steering, axle, rotor, propeller and articulated parts;
+- motion ownership and pivot-axis visibility.
 
-When normalized coverage is needed, use one fixed **five-preview** layout:
+### HUMANOID
+Use for human-like characters and NPCs.
+Focus on:
+- head, torso, pelvis;
+- upper/lower limbs;
+- hands/feet;
+- shoulder/hip/neck overlap;
+- clothing and accessory layers;
+- face/identity regions;
+- natural joint neighborhoods and rig clearance;
+- pose readability without exaggerated joint gaps.
+
+### CREATURE
+Use for non-humanoid animals, monsters and fantasy creatures.
+Focus on:
+- body axis/spine intent;
+- head/neck/jaw;
+- limb topology and ground contact;
+- paws/hooves/claws where identity-critical;
+- tail chain;
+- wing structure;
+- ears/horns/appendages;
+- articulation and overlap at joints;
+- deformation risk for flexible parts.
+
+### MECHANICAL
+Use for machinery where mechanism/kinematics matter more than vehicle identity.
+Focus on:
+- rigid assemblies;
+- linkage hierarchy;
+- hinge/rotation/translation axes;
+- contact and clearance;
+- repeated components;
+- service panels, handles and exposed mechanisms.
+
+### PLANT_CUTOUT
+Use for foliage, grass, flowers, crops and other thin/alpha-dominant assets.
+Focus on:
+- alpha-owned silhouette;
+- one-plane or crossed-plane carrier suitability;
+- stem/root/contact relationships;
+- material/texture readability;
+- avoid unnecessary micro-cubes.
+
+### GENERIC
+Use only when no more specific profile materially improves downstream decisions.
+
+Profiles provide decision vocabulary, not a preset model recipe. Reference evidence remains authoritative.
+
+## 6. Reference Modules
+
+Load only modules that change a downstream modelling decision.
+
+### TURNAROUND
+Use when stronger multi-view construction evidence is needed.
+Canonical normalized board:
 
 ```text
 UPPER: LEFT | FRONT | BACK
 LOWER: TOP | FRONT-LEFT 3/4
 ```
 
-Do not use generic SIDE, swap LEFT/RIGHT, or reorder views.
+LEFT/FRONT/BACK/TOP are construction evidence. FRONT-LEFT 3/4 is supplemental volume/readability evidence. Do not use generic SIDE when a canonical orientation is needed.
 
-- LEFT / FRONT / BACK / TOP are orthographic construction evidence.
-- FRONT-LEFT 3/4 is supplemental volume/readability evidence, never authority over stronger source/orthographic evidence.
-- Minor cross-view drift is acceptable unless it changes identity, primary mass/count, topology/attachment, important negative space, or buildability.
+### STRUCTURAL_DETAIL
+Use for local assemblies too small/occluded/complex to resolve from the main board: hinge, wheel hub, cockpit, drawer, linkage, handle, attachment base, jaw, wing root, etc.
 
-### Crop-Safe Presentation / Handoff
+### MATERIAL_TEXTURE
+Use for material identity, surface breakdown, palette, close-up texture, wear/damage, emissive or PBR-relevant regions.
+Prefer neutral lighting and clearly separated material regions.
 
-Neutral uniform sheet; uncropped subject; consistent subject scale; generous separation. Keep subject/shadow/prop inside its normalized region.
+### RIG_DEFORMATION
+Use when the asset will animate or articulation quality is material.
+Clarify visually:
+- attachment center;
+- neighboring-volume overlap;
+- bend/rotation direction;
+- expected clearance;
+- joint area that must remain covered during motion;
+- likely rigid vs flexible regions.
 
-No panel borders, grid lines, dividers, labels, titles, notes, dimensions, target-use text, Blockbench UI/gizmos, gameplay UI, or cinematic scene.
+Avoid exaggerated gaps at hips, knees, shoulders, elbows, neck, jaw, waist or equivalent creature/mechanical joints merely to show separation.
 
-Resolution may vary; slot identity stays fixed. Dimensions/technical constraints stay outside the image.
+### POSE_ACTION
+Use when static neutral turnaround is insufficient to understand silhouette or articulation in a meaningful pose/action.
 
-## Visual Gate
+### EXPRESSION_FACE
+Use only when facial expression/face-region fidelity materially affects modelling or texture work.
 
-Review the actual board in this order:
+### ANIMATION_KEYFRAME
+Use when a motion reference will materially improve downstream animation.
+Show or record only decision-critical poses/timing relationships: key poses, contact points, motion direction, extremes, recovery/loop intent and relevant viewing angles.
 
-1. recognizability / source identity;
+## 7. Adaptive Progression
+
+Do not force a fixed concept → turnaround → detail → material ceremony.
+
+Choose the smallest sufficient sequence:
+
+```text
+simple prop
+→ one approved reference / compact turnaround
+
+complex vehicle
+→ concept if identity unresolved
+→ turnaround
+→ structural detail when needed
+→ material module when needed
+
+animated creature
+→ concept if needed
+→ turnaround
+→ rig/deformation
+→ pose/keyframe only when motion requires it
+→ material only when it changes downstream work
+```
+
+Pause for user approval at a material authority-changing milestone. Do not require approval after every auxiliary sheet unless the user explicitly requests strict per-stage review.
+
+## 8. Evidence Completeness
+
+Before handoff, account for material construction evidence:
+
+```text
+required visible part count
+primary mass relationships
+attachment/contact direction
+negative spaces/openings
+depth-bearing views
+asymmetry/orientation
+identity-critical geometry landmarks
+motion-bearing parts
+material identity when relevant
+```
+
+A part hidden in one view may be visible in another; it may not silently disappear from the whole reference set. Duplicated, merged, floating, relocated or topology-changing substitutions are material failures.
+
+FRONT alone never closes a form whose depth changes silhouette, attachment, negative space or articulation.
+
+Evidence state vocabulary:
+`SUPPORTED | PROVISIONAL | CONFLICTING | UNAVAILABLE`.
+
+Material `CONFLICTING` or `UNAVAILABLE` information must stay explicit; do not manufacture certainty.
+
+## 9. Visual Gate
+
+Review generated visual references in this order:
+1. source/brief identity;
 2. required part-count completeness;
 3. topology / attachment / negative-space correctness;
 4. cross-view proportion and depth consistency;
-5. geometry buildability;
+5. Blockbench buildability;
 6. articulation / joint readability when relevant;
-7. texture usability;
-8. crop-safe presentation/readability.
+7. texture/material usability;
+8. crop-safe presentation.
 
-Correct the **largest structural difference first**. Do not spend the single automatic correction on minor presentation drift while a missing part, wrong attachment, depth error, broken opening, or articulation defect remains.
+Fix the largest structural difference first.
 
-A defect is material when it changes identity, primary mass/part count, topology/attachment, important negative space, buildability, motion-readiness, or identity-critical material information.
+## 10. Correction Budget
 
-## Targeted Correction
-
-Correction is for a material defect, not minor drift. Source Image(s) + locked brief remain authority; the board is an editable draft.
-
-Use **delta-first correction**: state only the defect/change plus what must remain unchanged. Do not repeat the full generation specification unless source authority or target materially changed.
-
-Choose the smallest coherent edit:
+Use delta-first correction. State only the defect/change and what must remain unchanged.
 
 ```text
-local presentation/detail defect
-→ edit the affected area; preserve the rest
+local defect
+→ edit affected area
 
-structural defect affecting multiple views
-→ edit every materially affected view together; preserve unaffected views
+cross-view structural defect
+→ edit all materially affected views together
 
-global identity / pose / layout / cross-view coherence failure
-→ regenerate the full board
+global identity/layout/coherence failure
+→ regenerate full board
 ```
-
-A correction must not fix one view by materially breaking another. If FRONT improves but LEFT/TOP/BACK now contradict the source-supported structure, classify it as a failed correction rather than accepting the prettier panel.
-
-Never export a corrected panel separately; output remains one complete board. Use full-board regeneration only when a bounded edit cannot preserve cross-view consistency.
-
-Material conflict after correction → **NEEDS REVIEW**.
-
-## Budget / Output
 
 For one unchanged material brief / automatic review cycle:
 
@@ -159,10 +290,78 @@ targeted correction  = maximum 1
 automatic variants   = 0
 ```
 
-The automatic correction is either a bounded edit or full-board regeneration, never both.
+A fresh user-directed correction starts a new user-led review cycle.
 
-A fresh explicit **user-directed correction** after review authorizes one revised board even if the prior automatic correction was used. Treat it as a new user-led review cycle: apply the requested delta once, preserve valid relationships, return one image, then stop for review.
+## 11. Technical Handoff
 
-A materially new user-approved source, pose, target, or requirement also starts a new cycle. Never open one automatically to bypass a failed correction.
+After visual approval, preserve only decision-critical nonvisual facts instead of discarding them and forcing Codex to infer them again.
 
-Return **one image only** and stop for user review. After approval, the user may send it directly to Codex. Do not generate ZIPs, JSON sidecars, manifests, coordinate sheets, or modelling blueprints.
+Preferred compact metadata shape:
+
+```json
+{
+  "schema": "lazydesigner-reference-package-v1",
+  "asset": {
+    "name": "...",
+    "profile": "PROP_FURNITURE|VEHICLE|HUMANOID|CREATURE|MECHANICAL|PLANT_CUTOUT|GENERIC",
+    "original_user_intent": "..."
+  },
+  "requirements": {
+    "dimensions_blocks": {"width": null, "height": null, "length": null},
+    "animation_required": null
+  },
+  "reference": {
+    "status": "READY|NEEDS_REVIEW",
+    "critical_views": [],
+    "modules": [],
+    "known_conflicts": []
+  },
+  "technical": {
+    "primary_parts": [],
+    "representation_notes": [],
+    "hierarchy_notes": [],
+    "pivot_rig_notes": [],
+    "material_notes": [],
+    "animation_notes": []
+  },
+  "constraints": [],
+  "unknowns": []
+}
+```
+
+`null` means unknown and must not be converted into a guessed requirement.
+
+Images remain visual authority. Metadata records technical decisions/unknowns; it must not paraphrase away visual identity.
+
+## 12. Control Handoff
+
+Reference Preparation hands the package to LazyDesigner Control. Control forwards only the subset needed for the current Codex decision.
+
+Example:
+
+```text
+whole-model geometry
+→ primary reference views + dimensions + profile + geometry/rig constraints
+
+wheel correction
+→ user delta + affected view(s) + relevant vehicle relationship
+
+texture correction
+→ affected material reference + UV/material constraints
+
+animation correction
+→ affected rig state + keyframe/motion guidance
+```
+
+Do not resend the complete package every turn when unchanged content can be identified by task/context hash.
+
+## 13. Completion
+
+Reference Preparation is complete when:
+- visual authority is approved or explicitly accepted as source-only evidence;
+- material ambiguities are resolved or explicitly preserved as unknown/conflicting;
+- selected profile/modules cover the next modelling decision;
+- technical handoff contains no guessed facts;
+- no unnecessary sheet/module remains in the path.
+
+Then stop. Downstream authoring belongs to LazyDesigner Control → Codex.
