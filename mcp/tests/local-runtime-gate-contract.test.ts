@@ -142,9 +142,8 @@ describe("local runtime gate source contract", () => {
   });
 
   test("operator docs point to the current artifact and handoff contract", async () => {
-    const [readme, about, runbook] = await Promise.all([
+    const [readme, runbook] = await Promise.all([
       source("README.md"),
-      source("about.md"),
       source("../docs/knowledge/operations/local-acceptance-runbook.md"),
     ]);
 
@@ -156,11 +155,6 @@ describe("local runtime gate source contract", () => {
     expect(readme).not.toContain(
       "runtime workflow prompt             < 7,000 characters"
     );
-
-    expect(about).toContain("BlockIT Gateway");
-    expect(about).toContain("shared AUTHORING Runtime surface");
-    expect(about).toContain("without a manual MCP reconnect");
-    expect(about).not.toContain("without restarting Blockbench");
 
     expect(runbook).toContain("cd mcp");
     expect(runbook).toContain("bun run deploy:local");

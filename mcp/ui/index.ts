@@ -2,7 +2,7 @@ import type { IMCPTool, IMCPPrompt, IMCPResource } from "@/types";
 import { VERSION } from "@/lib/constants";
 import type { McpRegistrationProfile } from "@/lib/registrationProfile";
 import type { McpAuthoringPhase } from "@/lib/authoringPhase";
-import { PRODUCT_REPOSITORY } from "@/lib/productIdentity";
+import { pluginBrowserSetup, pluginBrowserTeardown } from "@/ui/pluginBrowser";
 import {
   BLOCKIT_RUNTIME_STATUS_CHANGED,
   statusBarSetup,
@@ -19,10 +19,6 @@ import {
 } from "@/ui/promptOverrideDialog";
 import { hasPromptOverride } from "@/lib/promptLoader";
 import { formatArgumentCount } from "@/ui/i18n";
-import {
-  BLOCKIT_USER_GUIDE_TEMPLATES,
-  type BlockItGuideTemplateKey,
-} from "@/ui/userGuide";
 import panelCSS from "@/ui/panel.css";
 import template from "@/ui/panel.html";
 
@@ -53,6 +49,7 @@ export function uiSetup({
   // actionable Runtime readiness by default; transport/catalog details stay
   // behind Advanced details and add no background reads or polling.
   statusBarSetup();
+  pluginBrowserSetup();
 
   panel = new Panel("mcp_panel", {
     id: "mcp_panel",
@@ -91,7 +88,7 @@ export function uiSetup({
       data: () => ({
         server: {
           version: VERSION,
-          repositoryUrl: PRODUCT_REPOSITORY,
+
           endpoint: runtimeEndpoint,
         },
         runtime: {
@@ -181,20 +178,6 @@ export function uiSetup({
         isPromptOverridden(promptName: string): boolean {
           return hasPromptOverride(promptName);
         },
-        guideTemplate(key: BlockItGuideTemplateKey): string {
-          return BLOCKIT_USER_GUIDE_TEMPLATES[key];
-        },
-        copyGuideTemplate(key: BlockItGuideTemplateKey): void {
-          const content = BLOCKIT_USER_GUIDE_TEMPLATES[key];
-          navigator.clipboard.writeText(content).then(() => {
-            Blockbench.showQuickMessage("Prompt copied", 1500);
-          }).catch(() => {
-            Blockbench.showQuickMessage(
-              "Copy failed. Select the template text manually.",
-              2500
-            );
-          });
-        },
         formatArgumentCount,
         onToolsToggle(event: Event): void {
           const details = event.target as HTMLDetailsElement;
@@ -221,6 +204,7 @@ export function uiSetup({
 }
 
 export function uiTeardown(): void {
+  pluginBrowserTeardown();
   overrideListener?.();
   overrideListener = undefined;
   runtimeStatusListener?.();

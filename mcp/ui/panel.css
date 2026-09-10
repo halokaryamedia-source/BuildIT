@@ -4,6 +4,29 @@
     padding: 10px;
 }
 
+/* Native Blockbench places Settings and Features last in this tab bar. */
+body.blockit-plugin-page #plugin_browser_page_tab_bar > li:nth-last-child(-n+2) {
+    display: none;
+}
+
+.mcp-panel .guide-link {
+    display: block;
+    inline-size: 100%;
+    margin: 0;
+    padding: 9px 2px;
+    border: 0;
+    border-block-end: 1px solid var(--color-border);
+    background: transparent;
+    color: var(--color-subtle_text);
+    text-align: start;
+    font: inherit;
+    cursor: default;
+}
+
+.mcp-panel .advanced-details > details {
+    margin-inline-start: 10px;
+}
+
 .mcp-panel .blockit-overview {
     margin-block-end: 8px;
     padding: 10px 12px;
@@ -321,185 +344,4 @@
 
 .mcp-panel .advanced-note {
     margin: 0 0 10px;
-}
-
-.mcp-panel .guide-content {
-    padding: 2px 0 12px;
-}
-
-.mcp-panel .guide-intro {
-    margin-block-end: 12px;
-    padding: 10px;
-    border: 1px solid var(--color-border);
-    border-radius: 6px;
-    background: var(--color-back);
-}
-
-.mcp-panel .guide-heading {
-    margin-block-end: 4px;
-    font-size: 0.95em;
-    font-weight: 600;
-}
-
-.mcp-panel .guide-intro p,
-.mcp-panel .guide-step p,
-.mcp-panel .guide-secondary-template p,
-.mcp-panel .guide-footer-note {
-    margin: 4px 0 0;
-    color: var(--color-subtle_text);
-    font-size: 0.8em;
-    line-height: 1.45;
-}
-
-.mcp-panel .guide-step {
-    display: grid;
-    grid-template-columns: 24px minmax(0, 1fr);
-    gap: 8px;
-    padding: 9px 0;
-}
-
-.mcp-panel .guide-step-number {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    inline-size: 22px;
-    block-size: 22px;
-    border: 1px solid var(--color-border);
-    border-radius: 50%;
-    color: var(--color-text);
-    font-size: 0.75em;
-    font-weight: 600;
-}
-
-.mcp-panel .guide-step-title {
-    font-size: 0.88em;
-    font-weight: 600;
-}
-
-.mcp-panel .guide-template {
-    margin-block-start: 8px;
-    padding: 8px;
-    border: 1px solid var(--color-border);
-    border-radius: 5px;
-    background: var(--color-back);
-}
-
-.mcp-panel .guide-template pre {
-    margin: 0;
-    color: var(--color-text);
-    font-family: var(--font-custom, monospace);
-    font-size: 0.75em;
-    line-height: 1.45;
-    overflow-wrap: anywhere;
-    white-space: pre-wrap;
-    user-select: text;
-}
-
-.mcp-panel .guide-copy-button {
-    inline-size: 100%;
-    margin-block-start: 8px;
-    padding: 6px 8px;
-    border: 1px solid var(--color-border);
-    border-radius: 4px;
-    background: var(--color-button);
-    color: var(--color-text);
-    cursor: pointer;
-    font-size: 0.78em;
-    font-weight: 600;
-}
-
-.mcp-panel .guide-copy-button:hover {
-    border-color: var(--color-accent);
-}
-
-.mcp-panel .guide-note {
-    font-size: 0.76em !important;
-}
-
-.mcp-panel .guide-method-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 6px;
-    margin-block-start: 8px;
-}
-
-.mcp-panel .guide-method-card {
-    padding: 8px;
-    border: 1px solid var(--color-border);
-    border-inline-start: 3px solid var(--color-accent);
-    border-radius: 4px;
-}
-
-.mcp-panel .guide-method-card p {
-    margin-block-start: 3px;
-}
-
-.mcp-panel .guide-method-name {
-    font-size: 0.8em;
-    font-weight: 700;
-}
-
-.mcp-panel .guide-example-row {
-    display: grid;
-    grid-template-columns: 54px minmax(0, 1fr);
-    gap: 6px;
-    align-items: start;
-    margin-block-start: 6px;
-}
-
-.mcp-panel .guide-example-label {
-    color: var(--color-subtle_text);
-    font-size: 0.72em;
-    line-height: 1.5;
-}
-
-.mcp-panel .guide-example-row code {
-    padding: 4px 6px;
-    border-radius: 3px;
-    background: var(--color-back);
-    color: var(--color-text);
-    font-size: 0.73em;
-    overflow-wrap: anywhere;
-    white-space: normal;
-}
-
-.mcp-panel .guide-flow {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 3px;
-    margin-block: 8px 2px;
-}
-
-.mcp-panel .guide-flow span {
-    padding: 3px 5px;
-    border: 1px solid var(--color-border);
-    border-radius: 3px;
-    font-size: 0.7em;
-    font-weight: 600;
-}
-
-.mcp-panel .guide-flow i {
-    color: var(--color-subtle_text);
-    font-size: 14px;
-}
-
-.mcp-panel .guide-divider {
-    margin-block: 8px;
-    border-block-start: 1px solid var(--color-border);
-}
-
-.mcp-panel .guide-secondary-template {
-    padding: 8px 0;
-}
-
-.mcp-panel .guide-template.compact {
-    margin-block-start: 6px;
-}
-
-.mcp-panel .guide-footer-note {
-    margin-block-start: 8px;
-    padding-block-start: 8px;
-    border-block-start: 1px solid var(--color-border);
-    font-style: italic;
 }

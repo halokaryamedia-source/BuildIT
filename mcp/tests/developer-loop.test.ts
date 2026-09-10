@@ -1,4 +1,12 @@
 import { describe, expect, test } from "bun:test";
+
+test("plugin bundles tinycolor2 instead of requesting an unsupported native module", async () => {
+  const source = await Bun.file("build/index.ts").text();
+  const external = source.match(/external:\s*\[([\s\S]*?)\]/)?.[1];
+  expect(external).toBeDefined();
+  expect(external).not.toContain('"tinycolor2"');
+  expect(external).not.toContain('"three"');
+});
 import { mkdtempSync, mkdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";

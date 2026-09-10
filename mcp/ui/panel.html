@@ -12,252 +12,129 @@
         </div>
     </section>
 
-    <details name="blockit_panel_sections" class="guide-details">
-        <summary>
-            Guide
-            <span class="section-meta">Start here</span>
-        </summary>
-
-        <div class="guide-content">
-            <div class="guide-intro">
-                <div class="guide-heading">Build with Codex. Review in Blockbench.</div>
-                <p>BlockIT handles the internal tools and workflow. You only need to provide the reference, target size, geometry method, and whether animation is needed.</p>
-            </div>
-
-            <div class="guide-step">
-                <div class="guide-step-number">1</div>
-                <div class="guide-step-body">
-                    <div class="guide-step-title">Choose the quickest useful reference</div>
-                    <p>You do not have to convert every source image into a Minecraft reference board before starting.</p>
-                    <div class="guide-method-grid">
-                        <div class="guide-method-card">
-                            <div class="guide-method-name">Use the original image directly</div>
-                            <p>Fastest for DIRECT. Attach the original image in Codex. If it clearly shows the form, Codex can use it as the visual reference and ask only for evidence that is actually missing.</p>
-                        </div>
-                        <div class="guide-method-card">
-                            <div class="guide-method-name">Create a reference board</div>
-                            <p>Best when the subject is complex, asymmetric, or needs stronger multi-view coverage. The canonical five-view board is required for 3D_ASSISTED.</p>
-                        </div>
-                    </div>
-                    <p class="guide-note">Want the board? Copy this prompt into ChatGPT, attach your source image, and review the result before sending it to Codex.</p>
-                    <div class="guide-template compact">
-                        <pre>{{guideTemplate('reference_board')}}</pre>
-                        <button type="button" class="guide-copy-button" @click="copyGuideTemplate('reference_board')">Copy Reference Prompt</button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="guide-step">
-                <div class="guide-step-number">2</div>
-                <div class="guide-step-body">
-                    <div class="guide-step-title">Start a new model</div>
-                    <p>Copy this template, fill in the blanks, attach your original image or approved reference board, and send it to Codex.</p>
-                    <div class="guide-template">
-                        <pre>{{guideTemplate('new_model')}}</pre>
-                        <button type="button" class="guide-copy-button" @click="copyGuideTemplate('new_model')">Copy Prompt</button>
-                    </div>
-                    <p class="guide-note">Dimensions use <strong>Width × Height × Length</strong> in Minecraft blocks.</p>
-                </div>
-            </div>
-
-            <div class="guide-step">
-                <div class="guide-step-number">3</div>
-                <div class="guide-step-body">
-                    <div class="guide-step-title">Choose the geometry method</div>
-                    <div class="guide-method-grid">
-                        <div class="guide-method-card">
-                            <div class="guide-method-name">DIRECT</div>
-                            <p>Best starting point for most Minecraft-style props and hard-surface models. Codex builds editable Groups and Cubes directly in Blockbench. An original source image is accepted when it provides enough visual evidence.</p>
-                        </div>
-                        <div class="guide-method-card">
-                            <div class="guide-method-name">3D_ASSISTED</div>
-                            <p>Useful for more complex or organic forms. A 3D reconstruction helps create the starting geometry before Blockbench cleanup. This method requires the canonical five-view reference board.</p>
-                        </div>
-                    </div>
-                    <p class="guide-note">Not sure which one to use? Ask Codex for a recommendation, then choose the method you want.</p>
-                </div>
-            </div>
-
-            <div class="guide-step">
-                <div class="guide-step-number">4</div>
-                <div class="guide-step-body">
-                    <div class="guide-step-title">Review the result in Blockbench</div>
-                    <p>When Codex asks for review, inspect the model here. If it looks correct, reply <strong>Continue</strong>. If something is wrong, describe the change in normal language.</p>
-                    <div class="guide-example-row">
-                        <span class="guide-example-label">Approve</span>
-                        <code>Continue</code>
-                    </div>
-                    <div class="guide-example-row">
-                        <span class="guide-example-label">Revise</span>
-                        <code>The top is too wide. Make it narrower.</code>
-                    </div>
-                </div>
-            </div>
-
-            <div class="guide-step">
-                <div class="guide-step-number">5</div>
-                <div class="guide-step-body">
-                    <div class="guide-step-title">Follow the simple review flow</div>
-                    <div class="guide-flow" aria-label="BlockIT authoring flow">
-                        <span>Geometry</span>
-                        <i class="material-icons">chevron_right</i>
-                        <span>UV</span>
-                        <i class="material-icons">chevron_right</i>
-                        <span>Texture</span>
-                        <i class="material-icons">chevron_right</i>
-                        <span>Animation*</span>
-                        <i class="material-icons">chevron_right</i>
-                        <span>Final</span>
-                    </div>
-                    <p>Geometry, Texture, and Animation require your visual review. UV is handled between Geometry and Texture and does not need a separate user review. Animation is skipped when it is not required.</p>
-                </div>
-            </div>
-
-            <div class="guide-divider"></div>
-
-            <div class="guide-secondary-template">
-                <div>
-                    <div class="guide-step-title">Continue a saved project</div>
-                    <p>Use this when you want Codex to resume from the last saved stage.</p>
-                </div>
-                <div class="guide-template compact">
-                    <pre>{{guideTemplate('continue_project')}}</pre>
-                    <button type="button" class="guide-copy-button" @click="copyGuideTemplate('continue_project')">Copy Prompt</button>
-                </div>
-            </div>
-
-            <div class="guide-secondary-template">
-                <div>
-                    <div class="guide-step-title">Improve an existing model</div>
-                    <p>Open the model in Blockbench first, then tell Codex exactly what you want changed.</p>
-                </div>
-                <div class="guide-template compact">
-                    <pre>{{guideTemplate('improve_model')}}</pre>
-                    <button type="button" class="guide-copy-button" @click="copyGuideTemplate('improve_model')">Copy Prompt</button>
-                </div>
-            </div>
-
-            <p class="guide-footer-note">You do not need to manage internal tool names, workflow states, or technical routing yourself.</p>
-        </div>
-    </details>
-
-    <details name="blockit_panel_sections" @toggle="onToolsToggle">
-        <summary>
-            Tools
-            <span class="section-meta">{{availableToolCount}} available</span>
-        </summary>
-
-        <div class="filter-bar">
-            <input type="text" v-model="toolsFilter.search" :placeholder="tl('mcp.filter.tools_placeholder')"
-                :aria-label="tl('mcp.filter.tools_placeholder')"
-                class="filter-input" @input="toolsFilter.search = $event.target.value">
-            <div class="filter-options">
-                <label class="filter-switch">
-                    <input type="checkbox" v-model="toolsFilter.showExperimental">
-                    <span class="switch-slider"></span>
-                    <span class="switch-label">{{tl('mcp.filter.show_experimental')}}</span>
-                </label>
-                <label class="filter-switch">
-                    <input type="checkbox" v-model="toolsFilter.showDisabled">
-                    <span class="switch-slider"></span>
-                    <span class="switch-label">Show disabled</span>
-                </label>
-            </div>
-        </div>
-
-        <div v-if="filteredTools.length > 0">
-            <div v-for="tool in filteredTools" :key="tool.name" class="tool-toggle-row"
-                :class="{ clickable: tool.enabled, disabled: !tool.enabled }"
-                @click="tool.enabled && openToolTest(tool.name)"
-                :title="tool.enabled ? tl('mcp.tooltip.click_to_test', [getDisplayName(tool.name)]) : 'Disabled tools are not executable from the BlockIT panel.'">
-                <div class="tool-info">
-                    <div class="tool-name">
-                        {{getDisplayName(tool.name)}}
-                        <span v-if="tool.status === 'experimental'" class="tool-status experimental"
-                            :title="tl('mcp.status.experimental_tooltip')"></span>
-                        <span v-if="!tool.enabled" class="surface-badge disabled">disabled</span>
-                    </div>
-                    <div class="tool-description" :title="tool.description">{{tool.description}}</div>
-                </div>
-            </div>
-        </div>
-        <div v-else-if="tools.length > 0" class="no-results">
-            {{tl('mcp.tools.no_match')}}
-        </div>
-        <div v-else>
-            <p>{{tl('mcp.tools.none_available')}}</p>
-        </div>
-    </details>
-
-    <details name="blockit_panel_sections" @toggle="onResourcesToggle">
-        <summary>
-            Resources
-            <span class="section-meta">{{resources.length}}</span>
-        </summary>
-
-        <div class="filter-bar compact-filter">
-            <input type="text" v-model="resourcesFilter.search" :placeholder="tl('mcp.filter.resources_placeholder')"
-                :aria-label="tl('mcp.filter.resources_placeholder')"
-                class="filter-input" @input="resourcesFilter.search = $event.target.value">
-        </div>
-
-        <div v-if="filteredResources.length > 0">
-            <div v-for="resource in filteredResources" :key="resource.name" class="tool-toggle-row">
-                <div class="tool-info">
-                    <div class="tool-name">{{getDisplayName(resource.name)}}</div>
-                    <div class="tool-description" :title="resource.description">{{resource.description}}</div>
-                    <div class="tool-description resource-uri" :title="resource.uriTemplate">{{resource.uriTemplate}}</div>
-                </div>
-            </div>
-        </div>
-        <div v-else-if="resources.length > 0" class="no-results">
-            {{tl('mcp.resources.no_match')}}
-        </div>
-        <div v-else>
-            <p>{{tl('mcp.resources.none_available')}}</p>
-        </div>
-    </details>
-
-    <details name="blockit_panel_sections">
-        <summary>
-            Workflow
-            <span class="section-meta">{{availablePromptCount}} prompt{{availablePromptCount === 1 ? '' : 's'}}</span>
-        </summary>
-
-        <div v-if="availablePrompts.length > 0">
-            <div v-for="prompt in availablePrompts" :key="prompt.name" class="tool-toggle-row clickable"
-                @click="openPromptPreview(prompt.name)"
-                :title="tl('mcp.tooltip.click_to_preview', [getDisplayName(prompt.name)])">
-                <div class="tool-info">
-                    <div class="tool-name">
-                        {{getDisplayName(prompt.name)}}
-                        <span v-if="prompt.status === 'experimental'" class="tool-status experimental"
-                            :title="tl('mcp.status.experimental_tooltip')"></span>
-                        <span v-if="isPromptOverridden(prompt.name)" class="surface-badge custom">custom</span>
-                    </div>
-                    <div class="tool-description" :title="prompt.description">{{prompt.description}}</div>
-                    <div v-if="promptArgumentCount(prompt) > 0" class="tool-description prompt-arguments">
-                        {{formatArgumentCount(promptArgumentCount(prompt))}}
-                    </div>
-                </div>
-                <div @click.stop class="prompt-actions">
-                    <i class="material-icons prompt-edit" @click="openPromptOverride(prompt.name)"
-                        :title="tl('mcp.dialog.edit_override')">edit</i>
-                </div>
-            </div>
-        </div>
-        <div v-else>
-            <p>{{tl('mcp.prompts.none_available')}}</p>
-        </div>
-    </details>
+    <button type="button" class="guide-link" disabled title="Guide link will be added later">Guide <span class="section-meta">Coming soon</span></button>
 
     <details name="blockit_panel_sections" class="advanced-details">
         <summary>Advanced details</summary>
+        <p class="advanced-note">Technical tools, reference data, and AI instructions for troubleshooting.</p>
+        <details name="blockit_advanced_sections" @toggle="onToolsToggle">
+            <summary>
+                Tools
+                <span class="section-meta">{{availableToolCount}} available</span>
+            </summary>
+
+            <p class="advanced-note">Operations available to the AI. Select a tool to inspect or test it.</p>
+            <div class="filter-bar">
+                <input type="text" v-model="toolsFilter.search" :placeholder="tl('mcp.filter.tools_placeholder')"
+                    :aria-label="tl('mcp.filter.tools_placeholder')"
+                    class="filter-input" @input="toolsFilter.search = $event.target.value">
+                <div class="filter-options">
+                    <label class="filter-switch">
+                        <input type="checkbox" v-model="toolsFilter.showExperimental">
+                        <span class="switch-slider"></span>
+                        <span class="switch-label">{{tl('mcp.filter.show_experimental')}}</span>
+                    </label>
+                    <label class="filter-switch">
+                        <input type="checkbox" v-model="toolsFilter.showDisabled">
+                        <span class="switch-slider"></span>
+                        <span class="switch-label">Show disabled</span>
+                    </label>
+                </div>
+            </div>
+
+            <div v-if="filteredTools.length > 0">
+                <div v-for="tool in filteredTools" :key="tool.name" class="tool-toggle-row"
+                    :class="{ clickable: tool.enabled, disabled: !tool.enabled }"
+                    @click="tool.enabled && openToolTest(tool.name)"
+                    :title="tool.enabled ? tl('mcp.tooltip.click_to_test', [getDisplayName(tool.name)]) : 'Disabled tools are not executable from the BlockIT panel.'">
+                    <div class="tool-info">
+                        <div class="tool-name">
+                            {{getDisplayName(tool.name)}}
+                            <span v-if="tool.status === 'experimental'" class="tool-status experimental"
+                                :title="tl('mcp.status.experimental_tooltip')"></span>
+                            <span v-if="!tool.enabled" class="surface-badge disabled">disabled</span>
+                        </div>
+                        <div class="tool-description" :title="tool.description">{{tool.description}}</div>
+                    </div>
+                </div>
+            </div>
+            <div v-else-if="tools.length > 0" class="no-results">
+                {{tl('mcp.tools.no_match')}}
+            </div>
+            <div v-else>
+                <p>{{tl('mcp.tools.none_available')}}</p>
+            </div>
+        </details>
+
+        <details name="blockit_advanced_sections" @toggle="onResourcesToggle">
+            <summary>
+                Resources
+                <span class="section-meta">{{resources.length}}</span>
+            </summary>
+
+            <p class="advanced-note">Read-only project data exposed by the Runtime.</p>
+            <div class="filter-bar compact-filter">
+                <input type="text" v-model="resourcesFilter.search" :placeholder="tl('mcp.filter.resources_placeholder')"
+                    :aria-label="tl('mcp.filter.resources_placeholder')"
+                    class="filter-input" @input="resourcesFilter.search = $event.target.value">
+            </div>
+
+            <div v-if="filteredResources.length > 0">
+                <div v-for="resource in filteredResources" :key="resource.name" class="tool-toggle-row">
+                    <div class="tool-info">
+                        <div class="tool-name">{{getDisplayName(resource.name)}}</div>
+                        <div class="tool-description" :title="resource.description">{{resource.description}}</div>
+                        <div class="tool-description resource-uri" :title="resource.uriTemplate">{{resource.uriTemplate}}</div>
+                    </div>
+                </div>
+            </div>
+            <div v-else-if="resources.length > 0" class="no-results">
+                {{tl('mcp.resources.no_match')}}
+            </div>
+            <div v-else>
+                <p>{{tl('mcp.resources.none_available')}}</p>
+            </div>
+        </details>
+
+        <details name="blockit_advanced_sections">
+            <summary>
+                Workflow
+                <span class="section-meta">{{availablePromptCount}} prompt{{availablePromptCount === 1 ? '' : 's'}}</span>
+            </summary>
+
+            <p class="advanced-note">Instructions used by the AI to guide authoring.</p>
+            <div v-if="availablePrompts.length > 0">
+                <div v-for="prompt in availablePrompts" :key="prompt.name" class="tool-toggle-row clickable"
+                    @click="openPromptPreview(prompt.name)"
+                    :title="tl('mcp.tooltip.click_to_preview', [getDisplayName(prompt.name)])">
+                    <div class="tool-info">
+                        <div class="tool-name">
+                            {{getDisplayName(prompt.name)}}
+                            <span v-if="prompt.status === 'experimental'" class="tool-status experimental"
+                                :title="tl('mcp.status.experimental_tooltip')"></span>
+                            <span v-if="isPromptOverridden(prompt.name)" class="surface-badge custom">custom</span>
+                        </div>
+                        <div class="tool-description" :title="prompt.description">{{prompt.description}}</div>
+                        <div v-if="promptArgumentCount(prompt) > 0" class="tool-description prompt-arguments">
+                            {{formatArgumentCount(promptArgumentCount(prompt))}}
+                        </div>
+                    </div>
+                    <div @click.stop class="prompt-actions">
+                        <i class="material-icons prompt-edit" @click="openPromptOverride(prompt.name)"
+                            :title="tl('mcp.dialog.edit_override')">edit</i>
+                    </div>
+                </div>
+            </div>
+            <div v-else>
+                <p>{{tl('mcp.prompts.none_available')}}</p>
+            </div>
+        </details>
+
         <dl>
             <dt>Runtime endpoint</dt>
             <dd class="diagnostic-value monospace">{{server.endpoint}}</dd>
             <dt>Version</dt>
-            <dd><a :href="server.repositoryUrl" target="_blank" rel="noopener noreferrer">{{server.version}}</a></dd>
+            <dd>{{server.version}}</dd>
             <dt>Tool catalog</dt>
             <dd>{{tools.length}}</dd>
         </dl>

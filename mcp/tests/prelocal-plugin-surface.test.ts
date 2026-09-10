@@ -40,7 +40,8 @@ describe("pre-local BlockIT plugin surface hardening", () => {
     expect(PRODUCT_REPOSITORY).toBe("https://github.com/halokaryamedia-source/BuildIT");
     const [indexSource, readme] = await Promise.all([source("index.ts"), source("README.md")]);
     expect(indexSource).toContain("title: PRODUCT_NAME");
-    expect(indexSource).toContain("repository: PRODUCT_REPOSITORY");
+    expect(indexSource).not.toContain("repository: PRODUCT_REPOSITORY");
+    expect(indexSource).toContain('author: "Anonymous"');
     expect(indexSource).not.toContain("jasonjgardner.github.io/blockbench-mcp-plugin");
     expect(readme).toContain("runtime authority for this repository");
     expect(readme).toContain("BlockIT source/builds come from this repository");
@@ -56,7 +57,7 @@ describe("pre-local BlockIT plugin surface hardening", () => {
     expect(buildSource).not.toContain("GITHUB_SHA");
   });
 
-  test("panel keeps readiness and available capability counts primary while diagnostics stay progressive", async () => {
+  test("panel keeps readiness primary while capability counts stay in Advanced", async () => {
     const [panel, uiSource, identitySource] = await Promise.all([
       source("ui/panel.html"),
       source("ui/index.ts"),
@@ -82,26 +83,6 @@ describe("pre-local BlockIT plugin surface hardening", () => {
     expect(identitySource).toContain("authoring_phase: authoringPhase");
   });
 
-  test("plugin guide accepts direct source images and exposes optional reference-board help", async () => {
-    const [panel, guideSource] = await Promise.all([
-      source("ui/panel.html"),
-      source("ui/userGuide.ts"),
-    ]);
-
-    expect(panel).toContain("Use the original image directly");
-    expect(panel).toContain("Create a reference board");
-    expect(panel).toContain("required for 3D_ASSISTED");
-    expect(panel).toContain("Copy Reference Prompt");
-    expect(guideSource).toContain("reference_board");
-    expect(guideSource).toContain("source image(s)");
-    expect(guideSource).toContain("Use every useful image as evidence");
-    expect(guideSource).toContain("do not average conflicts or invent hidden structure");
-    expect(guideSource).toContain("LEFT | FRONT | BACK");
-    expect(guideSource).toContain("TOP | FRONT-LEFT 3/4");
-    expect(guideSource).not.toContain("READY_FOR_USER_REVIEW");
-    expect(guideSource).not.toContain("invoke_capability");
-  });
-
   test("status bar and plugin summary use user-facing BlockIT readiness language", async () => {
     const [statusSource, statusCss, identitySource] = await Promise.all([
       source("ui/statusBar.ts"),
@@ -119,7 +100,7 @@ describe("pre-local BlockIT plugin surface hardening", () => {
     expect(identitySource).toContain(
       '"AI-assisted Minecraft Bedrock Entity authoring for Blockbench."'
     );
-    expect(identitySource).toContain("Geometry & UV · Texturing & Materials · Animation & Controllers");
+    expect(identitySource).toContain("Create Minecraft Bedrock models, textures, and animations with AI in Blockbench.");
     expect(identitySource).not.toContain("Only the active authoring phase is exposed at a time");
   });
 

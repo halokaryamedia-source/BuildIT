@@ -1,5 +1,7 @@
+import { version } from "../package.json";
+
 export const GATEWAY_NAME = "blockit-gateway";
-export const GATEWAY_VERSION = "0.1.0";
+export const GATEWAY_VERSION = version;
 export const DEFAULT_RUNTIME_URL = "http://127.0.0.1:3000/bb-mcp";
 
 export const GATEWAY_TOOLS = {

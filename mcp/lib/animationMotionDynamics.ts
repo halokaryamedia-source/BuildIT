@@ -66,6 +66,20 @@ function magnitude(value: Vec3): number {
 }
 
 function analyzeTrack(track: AnimationMotionTrackInput) {
+  const unevaluatedKeyframes = track.keyframes.filter(
+    (keyframe) => !Number.isFinite(keyframe.time) || keyframe.time < 0 ||
+      finiteVec3(keyframe.value) === null
+  ).length;
+  if (unevaluatedKeyframes > 0) {
+    return {
+      state: "unavailable" as const,
+      reason: "non_numeric_or_invalid_keyframes" as const,
+      group_uuid: track.group_uuid,
+      group_name: track.group_name,
+      channel: track.channel,
+      numeric_keyframes: track.keyframes.length - unevaluatedKeyframes,
+    };
+  }
   const sorted = track.keyframes
     .map((keyframe) => ({
       time: Number(keyframe.time),
@@ -90,6 +104,7 @@ function analyzeTrack(track: AnimationMotionTrackInput) {
   if (samples.length < 2) {
     return {
       state: "unavailable" as const,
+      reason: "insufficient_distinct_numeric_times" as const,
       group_uuid: track.group_uuid,
       group_name: track.group_name,
       channel: track.channel,
@@ -125,6 +140,7 @@ function analyzeTrack(track: AnimationMotionTrackInput) {
   if (segments.length === 0) {
     return {
       state: "unavailable" as const,
+      reason: "insufficient_distinct_numeric_times" as const,
       group_uuid: track.group_uuid,
       group_name: track.group_name,
       channel: track.channel,
@@ -215,12 +231,19 @@ export function analyzeAnimationMotionDynamics(input: {
     (entry): entry is Extract<(typeof analyzed)[number], { state: "available" }> =>
       entry.state === "available"
   );
+  const unevaluated = analyzed.filter((entry) => entry.state === "unavailable");
+  const coverage = {
+    unevaluated_track_count: unevaluated.length,
+    unevaluated_examples: unevaluated.slice(0, exampleLimit),
+    unevaluated_examples_truncated: unevaluated.length > exampleLimit,
+  };
 
   if (available.length === 0) {
     return {
       state: "unavailable" as const,
       reason: "no_numeric_motion_tracks" as const,
       evaluated_tracks: input.tracks.length,
+      ...coverage,
     };
   }
 
@@ -245,10 +268,41 @@ export function analyzeAnimationMotionDynamics(input: {
         )
     : [];
 
+  // Count each moving bone once per exact interior key time, across channels.
+  // Shared timestamps are review evidence, not proof of rigid motion.
+  const movingBones = new Set<string>();
+  const bonesByTime = new Map<number, Set<string>>();
+  for (let index = 0; index < analyzed.length; index += 1) {
+    const analysis = analyzed[index];
+    if (analysis.state !== "available" || analysis.path_length <= EPSILON) continue;
+    const track = input.tracks[index];
+    movingBones.add(track.group_uuid);
+    const times = [...new Set(track.keyframes.map((keyframe) => keyframe.time))]
+      .sort((left, right) => left - right);
+    for (const time of times.slice(1, -1)) {
+      const bones = bonesByTime.get(time) ?? new Set<string>();
+      bones.add(track.group_uuid);
+      bonesByTime.set(time, bones);
+    }
+  }
+  const peak = [...bonesByTime.entries()].sort(
+    (left, right) => right[1].size - left[1].size || left[0] - right[0]
+  )[0];
+  const peakRatio = movingBones.size ? (peak?.[1].size ?? 0) / movingBones.size : 0;
+
   return {
     state: "available" as const,
     evaluated_tracks: input.tracks.length,
     numeric_track_count: available.length,
+    ...coverage,
+    key_timing: {
+      moving_bone_count: movingBones.size,
+      peak_shared_interior_time: peak?.[0] ?? null,
+      peak_shared_bone_count: peak?.[1].size ?? 0,
+      peak_shared_bone_ratio: round(peakRatio),
+      review_secondary_timing: movingBones.size >= 4 && peakRatio >= 0.8,
+      note: "Exact interior authored key times per track, across fully numeric moving tracks only. Shared timing may be intentional for contact; review secondary motion before staggering. This does not measure pose synchrony or certify playback.",
+    },
     examples: ranked.slice(0, exampleLimit),
     examples_truncated: ranked.length > exampleLimit,
     loop_boundary_velocity: {
@@ -262,6 +316,6 @@ export function analyzeAnimationMotionDynamics(input: {
       examples_truncated: boundary.length > exampleLimit,
     },
     note:
-      "Dynamics are quantitative review evidence only. Position uses Blockbench units, rotation uses degrees with shortest-angle deltas, and scale is unitless; no artistic PASS/FAIL is inferred.",
+      "Authored-key differences only, not interpolated playback. Tracks containing expressions or invalid keys are unevaluated, never bridged across missing values. Position uses Blockbench units, rotation uses shortest-angle degrees, and scale is unitless; no artistic PASS/FAIL is inferred.",
   };
 }

@@ -112,17 +112,6 @@ describe("pre-local plugin runtime cleanup", () => {
     expect(lifecycle).toContain("RuntimeGenerationRetiredError");
   });
 
-  test("manual MCP restart drains the old listener before rebinding the same generation", async () => {
-    const index = await source("index.ts");
-
-    expect(index).toContain('blockit_restart_mcp_server');
-    expect(index).toContain('setStatusBarState("starting", "restarting")');
-    expect(index).toContain("const current = httpServer;");
-    expect(index).toContain("if (current) await current.closeAndWait();");
-    expect(index).toContain("const started = await startMcpServer(generation);");
-    expect(index).not.toContain("Reconnect the Codex MCP client");
-  });
-
   test("dead prompt CDN and stateless session settings are removed", async () => {
     const promptLoader = await source("lib/promptLoader.ts");
     const settings = await source("ui/settings.ts");

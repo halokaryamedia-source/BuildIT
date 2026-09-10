@@ -174,6 +174,69 @@ describe("Bedrock animation native intelligence", () => {
     expect(head?.path_length).toBe(20);
   });
 
+  test("motion diagnostics never bridge expressions and report bounded omissions", () => {
+    const mixed = {
+      group_uuid: "arm", group_name: "arm", channel: "rotation" as const,
+      keyframes: [
+        { time: 0, value: [0, 0, 0] },
+        { time: 0.5, value: ["query.anim_time", 0, 0] },
+        { time: 1, value: [90, 0, 0] },
+      ],
+    };
+    const unavailable = analyzeAnimationMotionDynamics({ loop_mode: "loop", tracks: [mixed] });
+    expect(unavailable.state).toBe("unavailable");
+    expect(unavailable.unevaluated_track_count).toBe(1);
+    expect(unavailable.unevaluated_examples[0].reason).toBe("non_numeric_or_invalid_keyframes");
+
+    const result = analyzeAnimationMotionDynamics({
+      loop_mode: "loop", example_limit: 1,
+      tracks: [mixed, { ...mixed, group_uuid: "other" }, {
+        ...mixed, group_uuid: "root",
+        keyframes: [{ time: 0, value: [0, 0, 0] }, { time: 1, value: [10, 0, 0] }],
+      }],
+    });
+    expect(result.state).toBe("available");
+    if (result.state !== "available") throw new Error("expected partial dynamics");
+    expect(result.numeric_track_count).toBe(1);
+    expect(result.examples.map((entry) => entry.group_uuid)).toEqual(["root"]);
+    expect(result.unevaluated_track_count).toBe(2);
+    expect(result.unevaluated_examples).toHaveLength(1);
+    expect(result.unevaluated_examples_truncated).toBe(true);
+  });
+
+  test("shared key timing counts moving bones once and excludes static channels", () => {
+    const tracks = Array.from({ length: 4 }, (_, index) => ({
+      group_uuid: `bone-${index}`, group_name: `bone-${index}`, channel: "rotation" as const,
+      keyframes: [
+        { time: 0, value: [0, 0, 0] },
+        { time: 0.5, value: [20, 0, 0] },
+        { time: 1, value: [0, 0, 0] },
+      ],
+    }));
+    const result = analyzeAnimationMotionDynamics({ loop_mode: "loop", tracks: [
+      ...tracks, { ...tracks[0], channel: "position" },
+      { ...tracks[0], group_uuid: "static", keyframes: tracks[0].keyframes.map((key) => ({ ...key, value: [0, 0, 0] })) },
+    ] });
+    if (result.state !== "available") throw new Error("expected dynamics");
+    expect(result.key_timing).toMatchObject({
+      moving_bone_count: 4, peak_shared_bone_count: 4,
+      peak_shared_interior_time: 0.5, peak_shared_bone_ratio: 1, review_secondary_timing: true,
+    });
+    const staggered = analyzeAnimationMotionDynamics({ loop_mode: "loop", tracks: tracks.map((track, index) => ({
+      ...track, keyframes: track.keyframes.map((key, keyIndex) => ({ ...key, time: keyIndex === 1 ? 0.5 + index * 0.00001 : key.time })),
+    })) });
+    if (staggered.state !== "available") throw new Error("expected dynamics");
+    expect(staggered.key_timing.peak_shared_bone_count).toBe(1);
+    expect(staggered.key_timing.review_secondary_timing).toBe(false);
+
+    const endpoints = analyzeAnimationMotionDynamics({ loop_mode: "once", tracks: tracks.map((track) => ({
+      ...track, keyframes: [{ time: 0, value: [0, 0, 0] }, { time: 1, value: [10, 0, 0] }],
+    })) });
+    if (endpoints.state !== "available") throw new Error("expected dynamics");
+    expect(endpoints.key_timing.peak_shared_interior_time).toBeNull();
+    expect(endpoints.key_timing.review_secondary_timing).toBe(false);
+  });
+
   test("runtime wiring expands capability without adding another MCP tool", async () => {
     const [runtime, server, skill] = await Promise.all([
       Bun.file("server/tools/animation-native-intelligence.ts").text(),

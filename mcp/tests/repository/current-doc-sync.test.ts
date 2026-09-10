@@ -108,8 +108,8 @@ describe("current developer-facing documentation sync", () => {
     expect(gatewayReadme).toContain("client_reconnect_required=false");
     expect(gatewayReadme).toContain("without a manual AI-client reconnect");
 
-    expect(about).toContain("shared AUTHORING Runtime surface");
-    expect(about).toContain("without a manual MCP reconnect");
+    const { PRODUCT_ABOUT } = await import("@/lib/productIdentity");
+    expect(about.trim()).toBe(PRODUCT_ABOUT);
     expect(about).not.toContain("Only the active authoring phase is exposed at a time");
     expect(about).not.toContain("reloading/restarting BlockIT MCP");
 

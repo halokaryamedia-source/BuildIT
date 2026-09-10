@@ -162,8 +162,8 @@ describe("pre-local asset-authoring usage slimming", () => {
       source("lib/registrationProfile.ts"),
     ]);
 
-    expect(index).toContain('name: "Enable BlockIT Legacy UI Fallbacks"');
-    expect(index).toContain('name: "Disable BlockIT Legacy UI Fallbacks"');
+    expect(index).not.toContain('new Action("blockit_enable_extended"');
+    expect(index).not.toContain('new Action("blockit_disable_extended"');
     expect(index).not.toContain("Extended MCP Profile");
     expect(settings).toContain('name: "Legacy UI Fallbacks (Debug)"');
     expect(settings).toContain("not an authoring profile");

@@ -89,6 +89,15 @@ export const textFileLoaderPlugin: BunPlugin = {
 export const blockbenchCompatPlugin: BunPlugin = {
   name: "blockbench-compat",
   setup(build) {
+    // Blockbench exposes its own THREE instance, not a native "three" module.
+    build.onResolve({ filter: /^three$/ }, () => ({
+      path: "three", namespace: "blockbench-compat",
+    }));
+    build.onLoad({ filter: /^three$/, namespace: "blockbench-compat" }, () => ({
+      contents: "module.exports = THREE;",
+      loader: "js",
+    }));
+
     build.onResolve({ filter: /^process$/ }, (args) => {
       return { path: args.path, namespace: "blockbench-compat" };
     });

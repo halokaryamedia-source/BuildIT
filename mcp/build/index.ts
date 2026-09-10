@@ -132,8 +132,6 @@ async function buildPlugin(): Promise<boolean> {
     sourcemap: Bun.argv.includes("--sourcemap") ? "external" : "none",
     plugins: [blockbenchCompatPlugin, textFileLoaderPlugin],
     external: [
-      "three",
-      "tinycolor2",
       "node:module",
       "node:fs",
       "node:fs/promises",

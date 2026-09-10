@@ -6,6 +6,12 @@ This file owns **current proof interpretation**. Continuation belongs in `docs/k
 
 ## Current Source Proof
 
+### BlockIT 0.2.0 native startup correction — 2026-09-10
+
+Current local working-tree build `sha256:3588507c60b3645fc257cbdff62c53aa35213244db4526f609fe92c4de79267c` is active in Blockbench 5.1.6. Native console reproduced unsupported `tinycolor2` and `three` module requests before plugin registration. Build now bundles tinycolor2 and binds three imports to Blockbench's existing THREE instance. Registration reproduction and targeted regression pass; `mcp/.verify-bundle-fix-final.log` records successful `verify:mcp` on the corrected source.
+
+Gateway health confirmed version 0.2.0, matching build identity, Runtime online and 49 exposed AUTHORING tools. Native plugin browser shows Installed, Anonymous, concise About, and only About/Details tabs. This proves startup and observed plugin-browser UI, not model authoring, playback, or visual asset acceptance. Corrected bundle exists at `mcp/dist/blockit_mcp.js`, `.blockit/plugin/blockit_mcp.js`, and the local Blockbench plugins directory. No GitHub release or managed ZIP update is claimed.
+
 ### Final source verification and build — 2026-09-10
 
 SOURCE_READY for the implemented scope; native/visual acceptance NOT_RUN. verify:full was invoked once and failed first on continuation rules. Resumed failed/unrun stages: repository35 PASS; runtime689 PASS plus the one failed continuation test corrected and rerun in its18-test owner group; authoring158 PASS. This covers883 distinct tests across the final gate partitions, not a claim of one uninterrupted green verify:full invocation. Logs: mcp/.cache/plugin-audit/final-{repository,runtime-retry,continuation,authoring}.log. Typecheck, Gateway typecheck, docs freshness, surface and phase measurements PASS; build PASS.

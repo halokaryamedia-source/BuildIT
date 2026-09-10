@@ -7,11 +7,9 @@
 /// <reference types="blockbench-types" />
 import { VERSION } from "@/lib/constants";
 import {
-  PRODUCT_BUG_TRACKER,
   PRODUCT_ABOUT,
   PRODUCT_DESCRIPTION,
   PRODUCT_NAME,
-  PRODUCT_REPOSITORY,
 } from "@/lib/productIdentity";
 import {
   tools,
@@ -35,7 +33,7 @@ import { uiSetup, uiTeardown } from "@/ui";
 import { setStatusBarState } from "@/ui/statusBar";
 import {
   isExtendedMcpFamiliesEnabled,
-  setExtendedMcpFamiliesEnabled,
+
   setExtendedMcpProfileHandler,
   clearExtendedMcpProfileHandler,
   settingsSetup,
@@ -73,7 +71,7 @@ type ReloadableBlockItPlugin = {
 const SERVER_BIND_TIMEOUT_MS = 3_000;
 
 let httpServer: NetServer | null = null;
-let profileActions: Action[] = [];
+
 let nativeNet: Parameters<typeof createNetServer>[0] | null = null;
 let serverConfig: {
   port: number;
@@ -83,7 +81,7 @@ let serverConfig: {
 } | null = null;
 let runtimeGeneration: number | null = null;
 let initializationInProgress: Promise<void> | null = null;
-let restartInProgress: Promise<void> | null = null;
+
 let localDevFileWatcher: LocalDevFileWatcher | null = null;
 let localDevReloadTimer: ReturnType<typeof setTimeout> | null = null;
 let localDevReloadInProgress: Promise<void> | null = null;
@@ -199,41 +197,6 @@ async function startMcpServer(generation: number): Promise<boolean> {
   return true;
 }
 
-async function restartMcpServer(): Promise<void> {
-  const generation = runtimeGeneration;
-  if (
-    restartInProgress ||
-    generation === null ||
-    !isRuntimeGenerationCurrent(generation) ||
-    !nativeNet ||
-    !serverConfig
-  ) {
-    return;
-  }
-
-  restartInProgress = (async () => {
-    markRuntimeGenerationState(generation, "starting");
-    setStatusBarState("starting", "restarting");
-    const current = httpServer;
-    httpServer = null;
-    if (current) await current.closeAndWait();
-
-    if (!isRuntimeGenerationCurrent(generation)) return;
-
-    const started = await startMcpServer(generation);
-    if (started && isRuntimeGenerationCurrent(generation)) {
-      Blockbench.showQuickMessage(
-        "BlockIT MCP server restarted. Gateway-backed clients recover automatically; direct native MCP clients may need to refresh.",
-        4000
-      );
-    }
-  })().finally(() => {
-    restartInProgress = null;
-  });
-
-  await restartInProgress;
-}
-
 function beginBlockItRuntimeTeardown(
   generation: number | null = runtimeGeneration
 ): void {
@@ -250,11 +213,9 @@ function beginBlockItRuntimeTeardown(
   setMcpProfileSwitchHandler(() => undefined);
   clearExtendedMcpProfileHandler();
   uiTeardown();
-  teardownProfileActions();
+
   settingsTeardown();
 
-  const pendingRestart = restartInProgress;
-  restartInProgress = null;
   const current = httpServer;
   httpServer = null;
   const closePromise = current?.closeAndWait() ?? Promise.resolve();
@@ -270,13 +231,6 @@ function beginBlockItRuntimeTeardown(
   }
 
   void beginRuntimeGenerationTeardown(generation, async () => {
-    if (pendingRestart) {
-      try {
-        await pendingRestart;
-      } catch {
-        // Restart reports its own failure; teardown still owns final listener close.
-      }
-    }
     await closePromise;
   }).catch((error) => {
     console.error("[MCP] BlockIT runtime teardown failed", error);
@@ -411,38 +365,6 @@ function setupLocalDevAutoReload(generation: number): void {
   }
 }
 
-function setupProfileActions(): void {
-  profileActions = [
-    new Action("blockit_restart_mcp_server", {
-      name: "Restart BlockIT MCP Server",
-      description: "Safely drain native work, close MCP sockets and bind the local server again.",
-      icon: "refresh",
-      plugin: "blockit_mcp",
-      click: () => void restartMcpServer(),
-    }),
-    new Action("blockit_enable_extended", {
-      name: "Enable BlockIT Legacy UI Fallbacks",
-      description: "Enable generic Blockbench fallback families for debug/maintenance compatibility.",
-      icon: "extension",
-      plugin: "blockit_mcp",
-      click: () => setExtendedMcpFamiliesEnabled(true),
-    }),
-    new Action("blockit_disable_extended", {
-      name: "Disable BlockIT Legacy UI Fallbacks",
-      description: "Disable generic debug/maintenance fallback families and keep normal Bedrock authoring behavior.",
-      icon: "extension",
-      plugin: "blockit_mcp",
-      click: () => setExtendedMcpFamiliesEnabled(false),
-    }),
-  ];
-  for (const action of profileActions) MenuBar.addAction(action, "tools");
-}
-
-function teardownProfileActions(): void {
-  for (const action of profileActions) action.delete();
-  profileActions = [];
-}
-
 async function initializeBlockItRuntime(
   claim: RuntimeGenerationClaim
 ): Promise<void> {
@@ -467,7 +389,7 @@ async function initializeBlockItRuntime(
 
   setupI18n();
   settingsSetup();
-  setupProfileActions();
+
   setMcpProfileSwitchHandler((profile) => {
     if (!isRuntimeGenerationCurrent(generation)) return;
     if (serverConfig) serverConfig.profile = profile;
@@ -562,12 +484,13 @@ async function initializeBlockItRuntime(
 BBPlugin.register("blockit_mcp", {
   version: VERSION,
   title: PRODUCT_NAME,
-  author: "Halo Karya Media",
+  author: "Anonymous",
   description: PRODUCT_DESCRIPTION,
   about: PRODUCT_ABOUT,
   tags: ["MCP", "AI"],
-  repository: PRODUCT_REPOSITORY,
-  bug_tracker: PRODUCT_BUG_TRACKER,
+  // Explicitly clear old account links when reloading an existing install.
+  repository: "",
+  bug_tracker: "",
   icon: getIcon(),
   variant: "desktop",
   onload() {
