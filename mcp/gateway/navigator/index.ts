@@ -26,6 +26,7 @@ export type {
   NavigatorCapabilitySummary,
   NavigatorContextHandle,
   NavigatorDelta,
+  NavigatorReadiness,
   NavigatorSnapshot,
   NavigatorSourceOwner,
 } from "./types";
