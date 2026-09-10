@@ -36,7 +36,7 @@ A caller may return exact `known_context_ids` from the current task to `status`;
 
 ## Task Context
 
-Each navigation packet includes a deterministic `task_context_id` derived from the bound project, authoring phase, live Runtime identity, and current workspace fingerprint when available. The ID changes when one of those material context owners changes.
+Each navigation packet includes a deterministic `task_context_id`. Asset authoring derives it from project affinity, authoring phase, live Runtime identity, and current workspace fingerprint. MCP development additionally includes the resolved development domain and concrete task intent, so materially different source tasks cannot accidentally share one context identity.
 
 ## Workspace Projection
 
@@ -57,9 +57,9 @@ Known blocker(s)
 
 The parsed projection is cached by file size + modification time and content-addressed with SHA-256. The workspace text itself is not retransmitted to Codex.
 
-## Capability / Development Routing
+## Capability Routing
 
-Capability search results now carry deterministic `source_owner` metadata:
+Capability search results carry deterministic `source_owner` metadata:
 
 ```text
 source
@@ -69,9 +69,38 @@ test_owner
 
 This lets Codex move from a known runtime capability to its implementation owner without scanning the repository. Exact high-value capabilities have direct owners; unknown capabilities fall back to the semantic owner family. This metadata is navigation only and does not duplicate Tool schemas or alter Runtime execution.
 
+## Development Intent Resolver
+
+Source-development navigation uses the existing `status` tool rather than adding a fifth Gateway tool:
+
+```text
+status(
+  task_mode = MCP_DEVELOPMENT,
+  task_intent = "animation keyframe terlalu kaku"
+)
+```
+
+The resolver is deliberately deterministic and bounded. It performs lexical routing across current owner families such as Geometry, Texturing, Animation, Particle, Gateway, Project Affinity, Build/Sync, and Runtime. It returns:
+
+```text
+task_class
+domain
+confidence
+matched_terms
+source_owners
+required_context_paths
+avoid_context_classes
+```
+
+`source_owners` are exact current repository paths plus known regression owners. `required_context_paths` names only the minimum source-development instruction stack plus the matching specialist when one is known. Asset workspace history and unrelated foundation/runtime schema context are explicitly excluded from the normal development projection.
+
+If two domains tie, Navigator returns `AMBIGUOUS` + `UNRESOLVED` instead of inventing one owner. Unknown wording also stays `UNRESOLVED`; broad repository search is then a fallback, not the default path.
+
+In `MCP_DEVELOPMENT` mode Navigator does not parse the active asset workspace and does not retransmit asset-authoring Skill handles. This prevents source work from paying authoring-context overhead.
+
 ## Progressive Delivery
 
-Normal task flow is:
+Normal asset flow is:
 
 ```text
 status → compact full navigation packet
@@ -81,10 +110,19 @@ status → compact full navigation packet
 → continue without status reread
 ```
 
-Call `status` again only when `navigation_delta.requires_status_refresh=true`, project/workspace identity changed, Runtime state is stale, or the caller genuinely lost orientation.
+Normal source-development bootstrap is:
+
+```text
+status(task_mode=MCP_DEVELOPMENT, task_intent=<concrete problem>)
+→ exact bounded source/specialist/test owners
+→ inspect minimum owner set
+→ implement + targeted regression
+```
+
+Call `status` again only when `navigation_delta.requires_status_refresh=true`, project/workspace identity changed, Runtime state is stale, the development task materially changed, or the caller genuinely lost orientation.
 
 `describe_capability` remains the exact L2 schema projection path: use a known branch discriminator to receive only that branch's exact schema instead of unrelated fields.
 
 ## Evidence / Efficiency
 
-Static tests guard that a representative full packet remains bounded, cached context is omitted, stale context is invalidated, and source routing stays deterministic. `measure:navigator` measures payload footprint only; it is not a claim about whole-session model tokens. Authoring-efficiency proof still requires comparing cost to an accepted result under equivalent quality.
+Static tests guard that a representative full packet remains bounded, cached context is omitted, stale context is invalidated, source routing stays deterministic, and ambiguous development wording fails closed. `measure:navigator` measures payload footprint only; it is not a claim about whole-session model tokens. Authoring-efficiency proof still requires comparing cost to an accepted result under equivalent quality.
