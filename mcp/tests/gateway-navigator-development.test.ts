@@ -1,4 +1,6 @@
 import { describe, expect, test } from "bun:test";
+import { existsSync } from "node:fs";
+import { resolve } from "node:path";
 import { buildNavigatorPacket, resolveDevelopmentIntent } from "@/gateway/navigator";
 import type { GatewayRuntimeStatus } from "@/gateway/backend";
 
@@ -36,15 +38,31 @@ const status: GatewayRuntimeStatus = {
   last_error: null,
 };
 
+const representativeIntents = [
+  "animasi keyframe terlalu kaku",
+  "texture uv atlas bermasalah",
+  "geometry cube melayang",
+  "particle snowstorm semantics",
+  "project affinity salah project",
+  "dev:sync stale build setelah plugin reload",
+  "gateway capability catalog bermasalah",
+  "runtime plugin lifecycle error",
+] as const;
+
+function repoPath(path: string): string {
+  return resolve(process.cwd(), "..", path);
+}
+
 describe("BlockIT Navigator development intent", () => {
-  test("animation quality wording routes directly to animation owners", () => {
+  test("animation quality wording routes directly to animation quality owners", () => {
     const result = resolveDevelopmentIntent("animasi keyframe terlalu kaku");
     expect(result).toMatchObject({
       task_class: "MCP_DEVELOPMENT",
       domain: "ANIMATION",
       confidence: "STRONG",
     });
-    expect(result.source_owners.some((entry) => entry.source === "mcp/server/tools/animation-controller.ts")).toBe(true);
+    expect(result.source_owners.some((entry) => entry.source === "mcp/lib/animationMotionDynamics.ts")).toBe(true);
+    expect(result.source_owners.some((entry) => entry.source === "mcp/lib/animationQuality.ts")).toBe(true);
     expect(result.required_context_paths).toContain(".agents/skills/blockit-bedrock-animation/SKILL.md");
   });
 
@@ -76,6 +94,25 @@ describe("BlockIT Navigator development intent", () => {
       "mcp/AGENTS.md",
       ".agents/skills/development-brief/SKILL.md",
     ]);
+  });
+
+  test("every development owner and regression path returned by representative routing exists", () => {
+    for (const intent of representativeIntents) {
+      const result = resolveDevelopmentIntent(intent);
+      expect(result.confidence, intent).toBe("STRONG");
+      for (const entry of result.source_owners) {
+        expect(existsSync(repoPath(entry.source)), `${intent}: ${entry.source}`).toBe(true);
+        if (entry.test_owner) {
+          expect(existsSync(repoPath(entry.test_owner)), `${intent}: ${entry.test_owner}`).toBe(true);
+        }
+        if (entry.specialist) {
+          expect(existsSync(repoPath(entry.specialist)), `${intent}: ${entry.specialist}`).toBe(true);
+        }
+      }
+      for (const path of result.required_context_paths) {
+        expect(existsSync(repoPath(path)), `${intent}: context ${path}`).toBe(true);
+      }
+    }
   });
 
   test("development packet skips workspace parsing and authoring Skill retransmission", async () => {
