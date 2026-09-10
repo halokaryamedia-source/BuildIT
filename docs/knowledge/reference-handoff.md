@@ -2,17 +2,15 @@
 
 Updated: 2026-09-11
 
-This file owns the **reference-preparation handoff contract** between ChatGPT and Codex. The operational reference Skill is `.agents/skills/blockbench-reference-generator/SKILL.md`. The canonical product flow remains in `docs/knowledge/flow.md`.
+This file owns the reference-preparation handoff contract between ChatGPT and Codex. Operational reference behavior is owned by `.agents/skills/blockbench-reference-generator/SKILL.md`. Durable reference policy is owned by `docs/foundation/04-reference-guide.md`. Product flow remains in `docs/knowledge/flow.md`.
 
 ## Purpose
 
-ChatGPT prepares enough visual and technical reference information for Codex to work without repeating avoidable interpretation.
+ChatGPT prepares enough visual and structured technical reference information for Codex to work without repeating avoidable interpretation.
 
 ```text
 MAKE AMBIGUITY EXPLICIT BEFORE CODEX PAYS TO RESOLVE IT
 ```
-
-Reference Preparation is one modular system, not separate Character/Creature/Vehicle/Material directors.
 
 ## Canonical Front-Door Flow
 
@@ -33,11 +31,9 @@ USER REQUEST
 → VERIFY / REVIEW / CONTINUE
 ```
 
-Every Codex asset-authoring request enters through LazyDesigner Control. Control must preserve the original user intent and must not replace Codex creative/technical reasoning.
+Every Codex asset-authoring request enters through LazyDesigner Control. Control preserves original user intent and projects only the context required for the current decision.
 
-## Asset Profiles
-
-Reference Preparation chooses one primary profile:
+## Canonical Asset Profiles
 
 ```text
 PROP_FURNITURE
@@ -49,11 +45,9 @@ PLANT_CUTOUT
 GENERIC
 ```
 
-A profile adds only domain-specific decision vocabulary. It is not a preset model recipe and does not dictate Cube counts, coordinates or topology unsupported by evidence.
+`GENERIC` is fallback only. Profiles provide decision vocabulary, not geometry presets.
 
 ## Optional Reference Modules
-
-Load only modules that materially improve the next modelling decision:
 
 ```text
 TURNAROUND
@@ -65,81 +59,91 @@ EXPRESSION_FACE
 ANIMATION_KEYFRAME
 ```
 
-Do not force every asset through every module.
+Do not force all modules on every asset.
 
-Examples:
-
-```text
-simple static prop
-→ PROP_FURNITURE + TURNAROUND (only if needed)
-
-complex vehicle
-→ VEHICLE + TURNAROUND + STRUCTURAL_DETAIL + MATERIAL_TEXTURE when useful
-
-animated creature
-→ CREATURE + TURNAROUND + RIG_DEFORMATION + ANIMATION_KEYFRAME when useful
-```
-
-## ChatGPT Responsibilities
-
-ChatGPT should preserve and package only decision-critical information:
-
-```text
-asset identity
-original user intent
-approved visual reference(s)
-requested dimensions / scale authority
-animation required: yes/no/unknown
-important silhouette / primary masses
-required visible part count
-negative spaces / openings
-attachment and contact relationships
-symmetry / asymmetry
-material identity when relevant
-moving parts / articulation expectations when relevant
-known constraints / exclusions
-unknowns/conflicts that must not be guessed
-```
-
-Conditional guidance may include:
-
-```text
-representation notes
-hierarchy suggestions
-pivot / rigging guidance
-joint-clearance / deformation guidance
-material / PBR notes
-animation/keyframe guidance
-critical viewing angles
-```
-
-ChatGPT must not invent unavailable dimensions, hidden geometry, articulation, materials or motion as facts.
-
-## Visual vs Technical Information
-
-Keep the two surfaces distinct:
+## Visual vs Technical Authority
 
 ```text
 IMAGE
 = visual authority
 
 METADATA
-= technical facts, constraints, relationships and unknowns
+= technical facts, relationships, evidence, constraints and unknowns
 ```
 
-Do not overload the image with labels, dimensions, pivots, JSON-like notes or implementation instructions when those belong in metadata.
+Metadata must never override explicit user requirements or stronger visual/source authority.
 
-## Reference Package Shape
+## Semantic Part Identity
 
-Preferred package:
+Decision-critical parts receive stable semantic IDs when useful. These IDs allow ChatGPT, Control, Codex, correction logic and animation guidance to refer to the same part without defining Cube coordinates.
+
+Recommended part fields:
 
 ```text
-1. approved visual evidence
-2. compact JSON metadata
-3. optional Markdown only when a relationship cannot be expressed clearly in compact fields
+id
+role: GEOMETRY | TEXTURE | ANIMATION_ONLY | EFFECT | OMIT | UNRESOLVED
+parent
+contact
+symmetry
+motion
+evidence
 ```
 
-Recommended JSON:
+Only material parts need entries. Do not build a per-Cube inventory.
+
+## Unknown Classification
+
+Unknowns are split into:
+
+```text
+blocking
+non_blocking
+```
+
+A blocking unknown can change the next stage's part count, topology, primary silhouette/depth, articulation, required attachment/contact, numeric requirement or identity-critical material decision.
+
+A non-blocking unknown does not change the next legal decision.
+
+Neither class may be silently guessed.
+
+## Reference Readiness
+
+Overall status:
+
+```text
+READY
+NEEDS_REVIEW
+BLOCKED
+```
+
+Stage-relevant readiness dimensions:
+
+```text
+identity
+part_completeness
+topology_attachment
+depth
+articulation
+material
+```
+
+Each dimension is:
+
+```text
+PASS
+NOT_REQUIRED
+NEEDS_REVIEW
+BLOCKED
+```
+
+Rules:
+- required `BLOCKED` dimension → overall `BLOCKED`;
+- unresolved material user choice without a hard blocker → `NEEDS_REVIEW`;
+- all required dimensions `PASS`/`NOT_REQUIRED` and blocking unknowns empty → `READY`.
+
+Readiness is stage-specific. Missing material detail should not block Geometry if Geometry is otherwise fully resolvable.
+
+## Canonical Reference Package v1
 
 ```json
 {
@@ -160,121 +164,141 @@ Recommended JSON:
   },
   "reference": {
     "status": "READY",
+    "readiness": {
+      "identity": "PASS",
+      "part_completeness": "PASS",
+      "topology_attachment": "PASS",
+      "depth": "NOT_REQUIRED",
+      "articulation": "NOT_REQUIRED",
+      "material": "NOT_REQUIRED"
+    },
     "images": [],
     "critical_views": [],
     "modules": [],
     "known_conflicts": []
   },
-  "technical": {
-    "primary_parts": [],
-    "representation_notes": [],
-    "hierarchy_notes": [],
-    "pivot_rig_notes": [],
-    "material_notes": [],
-    "animation_notes": []
-  },
+  "parts": [
+    {
+      "id": "example_part",
+      "role": "GEOMETRY",
+      "parent": null,
+      "contact": null,
+      "symmetry": "NONE",
+      "motion": "STATIC",
+      "evidence": "SUPPORTED"
+    }
+  ],
+  "articulation": [],
+  "materials": [],
+  "animation_guidance": [],
   "constraints": [],
-  "unknowns": []
+  "unknowns": {
+    "blocking": [],
+    "non_blocking": []
+  }
 }
 ```
 
-`null` means unknown and must never be silently converted into an inferred requirement.
+`null` means unknown and is never permission to infer.
 
-## Canonical View Naming
+## Structured Articulation
 
-When normalized turnaround coverage is needed, use:
+When articulation materially affects modelling/animation, entries may use:
 
-```text
-LEFT
-FRONT
-BACK
-TOP
-FRONT-LEFT 3/4
+```json
+{
+  "joint": "knee",
+  "parent_part": "upper_leg",
+  "child_part": "lower_leg",
+  "motion": "HINGE_LIKE",
+  "axis_intent": null,
+  "pivot_region": "knee_center",
+  "coverage": "maintain_overlap",
+  "clearance": "avoid_visible_gap",
+  "risk": "deep_bend_gap"
+}
 ```
 
-Do not use generic `SIDE` when orientation matters.
+This describes intent/relationship, not final Blockbench coordinates.
 
-A direct source image can still be the Approved Reference if it already resolves the next material decision; turnaround generation is not mandatory.
+## Structured Materials
+
+When material identity matters, entries may use:
+
+```json
+{
+  "id": "dark_wood",
+  "applies_to": ["frame", "shelf"],
+  "base_color": null,
+  "surface": "matte",
+  "emissive": false,
+  "pbr_relevant": false
+}
+```
+
+Only include fields supported by user intent or visible evidence.
+
+## Animation Guidance
+
+When `ANIMATION_KEYFRAME` is selected, guidance should cover only decision-critical motion information:
+
+```text
+animation_name
+purpose
+loop | one_shot
+key poses
+relative timing
+contact events
+motion direction
+extremes
+recovery / loop intent
+relevant reference angles
+```
+
+Do not convert reference preparation into a frame-by-frame animation implementation plan unless explicitly required.
 
 ## Adaptive Review
 
 Do not force concept → turnaround → detail → material approval for every asset.
 
-Pause for approval when an output materially changes visual authority or identity. Auxiliary sheets that only elaborate an already-approved target do not automatically require a separate approval unless the user explicitly requests strict stage-by-stage review.
+Pause for approval when an output materially changes visual authority or identity. Auxiliary sheets that only elaborate an already-approved target do not automatically require separate approval unless strict stage review is requested.
 
-## What Control Receives
+## Minimum-Context Delivery
 
-Control receives the package and resolves only:
+Control does not resend the entire package on every turn.
 
-```text
-task class
-asset identity/profile
-current project/workspace
-current stage/domain
-requirement readiness
-reference readiness
-canonical context handles
-semantic owner
-legal capability route
-dependency blockers
-```
-
-Control must preserve `original_user_intent` unchanged.
-
-Control does not resend the entire package on every turn. Unchanged reference/context should be referenced by stable content/task identity where possible.
-
-## What Codex Receives
-
-Codex receives only what is relevant to the current decision:
-
-```text
-original user intent
-current modelling target
-relevant approved image(s)
-selected asset profile
-relevant reference modules/technical constraints
-current stage/gates
-required semantic Skill context
-known capability route when available
-explicit unknowns/blockers
-```
-
-Codex remains responsible for 3D interpretation, modelling strategy, Group/Cube decomposition, visual comparison, correction reasoning, texture design, rig/animation construction and source implementation for system-development tasks.
-
-## Minimum-Context Examples
+Examples:
 
 ```text
 whole-model initial geometry
-→ primary views + dimensions + profile + geometry/rig constraints
+→ primary views + dimensions + profile + relevant semantic parts + geometry/rig constraints
 
 wheel correction
-→ user delta + affected view(s) + relevant VEHICLE relationships
+→ user delta + affected view(s) + relevant VEHICLE part relationships
 
 texture correction
-→ affected material reference + current UV/material constraints
+→ affected material entries + UV/material constraints
 
 animation correction
-→ relevant rig state + ANIMATION_KEYFRAME guidance + affected clip
+→ relevant articulation + keyframe guidance + affected clip
 ```
 
-The objective is **Cost to Accepted Result**, not merely the smallest packet.
+The objective is Cost to Accepted Result, not minimum packet size at the expense of correctness.
 
 ## Existing Asset / Update
 
-For an existing model:
-
 ```text
 USER CHANGE REQUEST
-→ ChatGPT adds new reference/technical clarification only when needed
+→ ChatGPT adds reference/technical clarification only when needed
 → Control recovers current asset/workspace state
-→ preserve existing accepted information
+→ preserve accepted information
 → classify affected owner/dependencies
 → deliver minimum changed intent/reference context to Codex
 → Codex edits
 → Control invalidates only affected evidence/gates
 ```
 
-Do not regenerate a complete reference package for every correction.
+Do not regenerate a complete package for every correction.
 
 ## System Development Boundary
 
@@ -292,11 +316,11 @@ USER MCP / PLUGIN / BUILD REQUEST
 
 The Reference Package must not become:
 - a giant duplicate design document;
-- a replacement for the actual images;
-- a copy of every Skill or Tool schema;
+- a replacement for actual images;
+- a copy of Skills or Tool schemas;
 - a hidden source of guessed requirements;
 - a mandatory turnaround/detail/material set for trivial assets;
 - a second asset-state database;
 - a Cube-by-Cube modelling blueprint.
 
-The package exists only to make the next Codex decision better, faster and less ambiguous.
+Its only purpose is to make the next Codex decision more correct, efficient and explicit.
