@@ -50,9 +50,33 @@ Execution owner: ChatGPT.
 
 | Current path | Current name | Target semantic name | Role |
 | --- | --- | --- | --- |
-| `.agents/skills/blockbench-reference-generator/SKILL.md` | `blockbench-reference-generator` | `lazydesigner-reference-preparation` | visual reference + technical handoff preparation |
+| `.agents/skills/blockbench-reference-generator/SKILL.md` | `blockbench-reference-generator` | `lazydesigner-reference-preparation` | single ChatGPT-side reference workflow authority: requirements, reference planning, generation, QA and handoff |
+| `.agents/skills/lazydesigner-prompt-compiler/SKILL.md` | `lazydesigner-prompt-compiler` | `lazydesigner-prompt-compiler` | internal prompt normalization helper; converts confirmed intent into a clean production brief without adding creative authority |
+
+Canonical ChatGPT-side operational flow is owned by:
+
+```text
+docs/knowledge/chatgpt-reference-flow.md
+```
 
 Reference Preparation uses:
+
+```text
+UNDERSTAND
+→ REQUIREMENT GATE
+→ PROMPT COMPILER
+→ FINAL USER CONFIRMATION
+→ REFERENCE PLAN
+→ GENERATE
+→ QA / REVIEW
+→ PACKAGE
+```
+
+The final confirmation before artifact generation is a hard gate. If vital information is missing, ChatGPT must ask the fewest simple user-facing questions needed before compilation or generation.
+
+The Prompt Compiler is **not** a second workflow authority and must never generate images/files, invent requirements, or replace the original user intent.
+
+Reference Preparation then uses:
 
 ```text
 CORE RULES
@@ -158,6 +182,7 @@ Target Skill names use prefix `lazydesigner-` plus a direct responsibility noun:
 
 ```text
 lazydesigner-reference-preparation
+lazydesigner-prompt-compiler
 lazydesigner-modelling
 lazydesigner-texturing
 lazydesigner-animation
@@ -183,7 +208,9 @@ PRODUCT_DEVELOPMENT task
 → do not load ASSET_AUTHORING Skills unless explicitly required by changed authoring semantics
 ```
 
-This is required for predictable context cost and to prevent development rules contaminating modelling decisions.
+The Prompt Compiler receives only current intent, confirmed answers and still-valid approved decisions. Rejected/superseded chat directions are not active production context.
+
+This is required for predictable context cost and to prevent development rules or stale conversation history contaminating reference/modelling decisions.
 
 ## Migration Rule
 
@@ -191,10 +218,11 @@ Do not bulk-rename physical Skill paths before Control and routing references ar
 
 ```text
 1. semantic taxonomy documented
-2. Control becomes canonical router
-3. references/tests/docs updated to target semantic names
-4. physical Skill folders/frontmatter renamed coherently
-5. legacy blockit-* aliases removed
+2. ChatGPT-side Reference Preparation gates stabilized
+3. Control becomes canonical router
+4. references/tests/docs updated to target semantic names
+5. physical Skill folders/frontmatter renamed coherently
+6. legacy blockit-* aliases removed
 ```
 
 Temporary legacy paths are compatibility residue only and must not become permanent parallel authorities.
