@@ -39,7 +39,7 @@ const server = new McpServer(
   },
   {
     instructions:
-      "Stable BlockIT client boundary with BlockIT Navigator. Start/resume with status only when orientation is unknown or materially stale; reuse its compact navigation packet. Known Runtime capability → invoke directly; search only when unknown/stale and describe only for real schema uncertainty. Gateway exposes tools only; Runtime resources and prompts are not proxied. Geometry/Texturing share AUTHORING; Animation is the only runtime handoff. Project/phase affinity remain local to this Gateway. invoke_capability never auto-retries an interrupted mutation.",
+      "Stable BlockIT client boundary with BlockIT Navigator. Start/resume with status only when orientation is unknown or materially stale; reuse its compact navigation packet. For source work, call status with task_mode=MCP_DEVELOPMENT plus the concrete task_intent to receive bounded source/specialist/test ownership instead of scanning the repo. Known Runtime capability → invoke directly; search only when unknown/stale and describe only for real schema uncertainty. Gateway exposes tools only; Runtime resources and prompts are not proxied. Geometry/Texturing share AUTHORING; Animation is the only runtime handoff. Project/phase affinity remain local to this Gateway. invoke_capability never auto-retries an interrupted mutation.",
   }
 );
 
@@ -125,6 +125,19 @@ const statusInput = z.object({
     .describe(
       "Optional Active Workspace directory or README.md path. Supply once when Runtime does not expose a saved project path; Navigator remembers it for this bound project."
     ),
+  task_mode: z
+    .enum(["ASSET_AUTHORING", "MCP_DEVELOPMENT"])
+    .default("ASSET_AUTHORING")
+    .describe(
+      "Navigator projection mode. Use MCP_DEVELOPMENT only for BlockIT source/tool/Gateway/runtime/build work; normal model creation remains ASSET_AUTHORING."
+    ),
+  task_intent: z
+    .string()
+    .max(500)
+    .optional()
+    .describe(
+      "Concrete development problem to route when task_mode=MCP_DEVELOPMENT, for example 'animation terlalu kaku' or 'dev:sync stale build'."
+    ),
 });
 
 const searchInput = z.object({
@@ -156,7 +169,7 @@ registerGatewayTool(
   {
     title: "BlockIT Status",
     description:
-      "Reports Gateway health plus a compact BlockIT Navigator packet. Pass known_context_ids to suppress exact Skill handles already loaded in this task. workspace_path is only a one-time hint when the Runtime cannot expose the current saved project path.",
+      "Reports Gateway health plus a compact BlockIT Navigator packet. For source development, task_mode=MCP_DEVELOPMENT with task_intent returns bounded source/specialist/test ownership without scanning unrelated repo context. Pass known_context_ids to suppress exact Skill handles already loaded in an authoring task.",
     inputSchema: statusInput.shape,
     annotations: {
       readOnlyHint: true,
@@ -167,23 +180,33 @@ registerGatewayTool(
   },
   async (rawArgs) => {
     try {
-      const { adopt_active_project, known_context_ids, workspace_path } = statusInput.parse(rawArgs);
+      const {
+        adopt_active_project,
+        known_context_ids,
+        workspace_path,
+        task_mode,
+        task_intent,
+      } = statusInput.parse(rawArgs);
       const status = adopt_active_project
         ? await backend.adoptActiveProject()
         : await backend.getStatus();
       const navigation = await buildNavigatorPacket(status, {
         knownContextIds: known_context_ids,
         workspacePath: workspace_path,
+        taskMode: task_mode,
+        taskIntent: task_intent,
       });
       return {
         content: [
           {
             type: "text" as const,
-            text: status.runtime.online
-              ? status.affinity.project_uuid
-                ? `BlockIT Gateway is ready; Navigator task ${navigation.task_context_id} is bound to project ${status.affinity.project_uuid}.`
-                : "BlockIT Gateway is ready and Runtime is online; Navigator has no project binding yet."
-              : "BlockIT Gateway is ready; the Blockbench Runtime is currently offline.",
+            text: task_mode === "MCP_DEVELOPMENT"
+              ? `BlockIT Navigator routed development task ${navigation.task_context_id} to ${navigation.development?.domain ?? "UNRESOLVED"}.`
+              : status.runtime.online
+                ? status.affinity.project_uuid
+                  ? `BlockIT Gateway is ready; Navigator task ${navigation.task_context_id} is bound to project ${status.affinity.project_uuid}.`
+                  : "BlockIT Gateway is ready and Runtime is online; Navigator has no project binding yet."
+                : "BlockIT Gateway is ready; the Blockbench Runtime is currently offline.",
           },
         ],
         structuredContent: {
