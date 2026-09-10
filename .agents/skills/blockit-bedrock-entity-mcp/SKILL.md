@@ -47,6 +47,59 @@ Do not start a second inspection/discovery cycle when the current mutation recei
 
 **Owner-change rule:** if verification shows the diagnosed cause belongs to another phase, stop correcting in the current phase and hand the bounded defect to the owning specialist. Downstream compensation is not convergence.
 
+## Minimum Necessary Call Paths
+Calls are justified only when they establish missing state for a safe mutation, execute the intended mutation, provide decision-changing evidence, recover stale/lost context, or perform a required handoff/deliverable. Everything else is a redundant-call candidate.
+
+```text
+NEW GEOMETRY
+known orientation/context
+→ reference evidence reasoning
+→ create project only when needed
+→ coherent Groups/Bones + primary Cube batch
+→ one Core View Triad
+→ conditional bounds only for diagnosed contact/surface/envelope question
+→ bounded correction + affected-view recapture
+
+GEOMETRY CORRECTION
+fresh UUID/state/evidence
+→ inspect detail only if exact target state is missing
+→ one coherent correction
+→ reuse geometry_effect
+→ affected-view verification only
+
+EXISTING GEOMETRY EDIT
+known target → mutate directly
+unknown target → one focused identity inspection → mutate
+
+NEW TEXTURE
+one atlas discovery
+→ diagnostics only when readiness is unknown
+→ target texture activation/creation when required
+→ representative identity-critical patch
+→ mapped-model evidence
+→ coherent propagation
+→ bounded verification
+
+TEXTURE CORRECTION / EXISTING EDIT
+known atlas + target → direct coherent paint mutation
+→ refresh only affected mapped/atlas evidence
+face mapping inspection only when target cannot be located safely
+
+NEW ANIMATION
+required AUTHORING→ANIMATION handoff
+→ create_animation
+→ reuse returned UUID
+→ smallest judgeable key cohort
+→ one representative time/view batch
+→ causal correction only if needed
+
+ANIMATION CORRECTION / EXISTING EDIT
+known animation UUID + cohort → mutate directly
+unknown/stale clip state → inspect_animation once
+→ refresh affected pose/time or loop segment only
+```
+Do not turn these into fixed numeric quotas; complex assets may need more justified calls. The canonical development/evaluation contract is `mcp/docs/TOOL_CALL_EFFICIENCY.md`. It must not be loaded as a second authoring workflow.
+
 ## Fast Routing Contract
 Asset work **must not begin by searching repository files**.
 **Authoring Context Firewall:** Authoring Codex uses `workspace/active/<asset>/` as cwd, not `mcp/`; deeper MCP development rules are not authoring plan. Do **not** inspect tests/CI/source or run Bun/build/verifiers/deploy.
