@@ -2,7 +2,7 @@
 
 Updated: 2026-09-11
 
-This file owns the reference-preparation handoff contract between ChatGPT and Codex. Operational reference behavior is owned by `.agents/skills/blockbench-reference-generator/SKILL.md`. Durable reference policy is owned by `docs/foundation/04-reference-guide.md`. Product flow remains in `docs/knowledge/flow.md`.
+This file owns the reference-preparation handoff contract between ChatGPT and Codex. Operational reference behavior is owned by `.agents/skills/blockbench-reference-generator/SKILL.md`. Durable reference policy is owned by `docs/foundation/04-reference-guide.md`. The canonical machine-readable package schema is owned by `docs/knowledge/reference-package-schema.md`. Product flow remains in `docs/knowledge/flow.md`.
 
 ## Purpose
 
@@ -12,30 +12,58 @@ ChatGPT prepares enough visual and structured technical reference information fo
 MAKE AMBIGUITY EXPLICIT BEFORE CODEX PAYS TO RESOLVE IT
 ```
 
-## Canonical Front-Door Flow
+## Canonical ChatGPT-Side Flow
 
 ```text
 USER REQUEST
-→ CHATGPT REFERENCE PREPARATION
-   ├─ CORE RULES
-   ├─ ONE PRIMARY ASSET PROFILE
-   └─ ONLY NECESSARY REFERENCE MODULES
+→ UNDERSTAND
+→ REQUIREMENT GATE
+→ ASK SIMPLE QUESTIONS IF BLOCKING INFO IS MISSING
+→ PROMPT COMPILER
+→ CLEAN PRODUCTION BRIEF
+→ FINAL CONFIRMATION
+→ REFERENCE PLAN
+→ GENERATE REQUIRED IMAGE(S)
+→ INTERNAL QA
+→ USER VISUAL REVIEW WHEN MATERIAL
+→ PACKAGE GENERATION CONFIRMATION WHEN REQUIRED
 → REFERENCE PACKAGE
-→ LAZYDESIGNER CONTROL
 → CODEX
-→ GATEWAY
-→ RUNTIME
-→ BLOCKBENCH
-→ RESULT
-→ CONTROL DELTA
-→ VERIFY / REVIEW / CONTINUE
 ```
 
-Every Codex asset-authoring request enters through LazyDesigner Control. Control preserves original user intent and projects only the context required for the current decision.
+No user-facing image or handoff file is generated before the relevant explicit confirmation gate.
+
+## Handoff Package
+
+Default package is intentionally small:
+
+```text
+asset_reference/
+├── REFERENCE.json
+├── GEOMETRY.md
+├── TEXTURE.md      ← only when required
+├── ANIMATION.md    ← only when required
+└── images/
+    └── approved/supporting reference images
+```
+
+Do not add `README.md`, `CODEX_START.md`, transcripts, or giant prompt files by default when they only duplicate the same information.
+
+## Authority Model
+
+```text
+explicit current user requirement
+→ approved visual reference
+→ REFERENCE.json structured facts
+→ stage-specific Markdown projection
+→ downstream Codex interpretation
+```
+
+`REFERENCE.json` is the canonical structured index. Stage Markdown files are projections for the relevant authoring stage, not independent truth sources.
+
+Images remain visual authority for visible design.
 
 ## Canonical Asset Profiles
-
-Profile names describe asset classes, not modelling techniques:
 
 ```text
 PROP_FURNITURE
@@ -47,13 +75,12 @@ PLANT_FOLIAGE
 GENERIC
 ```
 
-`PLANT_FOLIAGE` covers vegetation and foliage assets. Plane/cutout terminology belongs to representation choices inside that profile and is not exposed as the profile name.
-
-`GENERIC` is fallback only. Profiles provide decision vocabulary, not geometry presets.
+Profiles provide decision vocabulary, not geometry presets.
 
 ## Optional Reference Modules
 
 ```text
+CONCEPT
 TURNAROUND
 STRUCTURAL_DETAIL
 MATERIAL_TEXTURE
@@ -63,248 +90,150 @@ EXPRESSION_FACE
 ANIMATION_KEYFRAME
 ```
 
-Do not force all modules on every asset.
+Do not force every module on every asset.
 
-## Visual vs Technical Authority
+## Machine-Readable Contract
 
-```text
-IMAGE
-= visual authority
-
-METADATA
-= technical facts, relationships, evidence, constraints and unknowns
-```
-
-Metadata must never override explicit user requirements or stronger visual/source authority.
-
-## Semantic Part Identity
-
-Decision-critical parts receive stable semantic IDs when useful. These IDs allow ChatGPT, Control, Codex, correction logic and animation guidance to refer to the same part without defining Cube coordinates.
-
-Recommended part fields:
+The canonical file is:
 
 ```text
-id
-role: GEOMETRY | TEXTURE | ANIMATION_ONLY | EFFECT | OMIT | UNRESOLVED
-parent
-contact
-symmetry
-motion
-evidence
+REFERENCE.json
 ```
 
-Only material parts need entries. Do not build a per-Cube inventory.
+Schema identifier:
+
+```text
+lazydesigner-reference-v1
+```
+
+Exact field ownership and vocabulary are defined only in:
+
+```text
+docs/knowledge/reference-package-schema.md
+```
+
+Do not maintain another full JSON schema in this document or in the Reference Preparation Skill.
+
+## Stage Documents
+
+### `GEOMETRY.md`
+
+Only Geometry-relevant interpretation should appear here, such as:
+
+```text
+target and scale
+primary semantic structure
+proportion relationships
+attachment/contact
+negative spaces
+representation guidance
+rig-readiness constraints
+relevant image IDs
+```
+
+Do not include Cube coordinates, fixed Cube counts, exact pivots, Tool call plans, or UV implementation.
+
+### `TEXTURE.md`
+
+Create only when material/texturing guidance is materially useful.
+
+Typical content:
+
+```text
+material regions
+palette/value relationships
+surface character
+identity markings
+alpha/cutout requirement
+emissive/PBR requirement
+relevant image IDs
+```
+
+### `ANIMATION.md`
+
+Create only when animation is required and motion guidance is useful.
+
+Typical content:
+
+```text
+animation goal
+participating semantic parts
+motion relationships
+contacts/attachments
+key poses
+relative timing
+joint/deformation risks
+secondary motion
+relevant image IDs
+```
+
+Do not convert it into compulsory frame-by-frame implementation unless explicitly requested.
+
+## Image Identity
+
+Every packaged image receives a stable semantic ID in `REFERENCE.json`.
+
+Example:
+
+```text
+IMG_GEO_01 → PRIMARY_GEOMETRY → images/turnaround.png
+IMG_ANIM_01 → ANIMATION_KEYFRAME → images/keyframe-guide.png
+```
+
+Stage Markdown should refer to image IDs rather than forcing Codex to infer which image owns which decision.
 
 ## Unknown Classification
 
-Unknowns are split into:
+Unknowns remain:
 
 ```text
 blocking
 non_blocking
 ```
 
-A blocking unknown can change the next stage's part count, topology, primary silhouette/depth, articulation, required attachment/contact, numeric requirement or identity-critical material decision.
-
-A non-blocking unknown does not change the next legal decision.
-
 Neither class may be silently guessed.
 
-## Reference Readiness
+Blocking unknowns prevent the affected stage from becoming `READY`. Non-blocking unknowns remain visible without stopping unrelated work.
 
-Overall status:
+## Stage Readiness
+
+Canonical values:
 
 ```text
 READY
-NEEDS_REVIEW
-BLOCKED
-```
-
-Stage-relevant readiness dimensions:
-
-```text
-identity
-part_completeness
-topology_attachment
-depth
-articulation
-material
-```
-
-Each dimension is:
-
-```text
-PASS
 NOT_REQUIRED
 NEEDS_REVIEW
 BLOCKED
 ```
 
-Rules:
-- required `BLOCKED` dimension → overall `BLOCKED`;
-- unresolved material user choice without a hard blocker → `NEEDS_REVIEW`;
-- all required dimensions `PASS`/`NOT_REQUIRED` and blocking unknowns empty → `READY`.
+Readiness is stage-specific. Missing texture information does not automatically block Geometry. Animation may be `NOT_REQUIRED`.
 
-Readiness is stage-specific. Missing material detail should not block Geometry if Geometry is otherwise fully resolvable.
+## Correction Behavior
 
-## Canonical Reference Package v1
-
-```json
-{
-  "schema": "lazydesigner-reference-package-v1",
-  "asset": {
-    "name": "example_asset",
-    "profile": "PROP_FURNITURE",
-    "task": "NEW_ASSET",
-    "original_user_intent": "..."
-  },
-  "requirements": {
-    "dimensions_blocks": {
-      "width": null,
-      "height": null,
-      "length": null
-    },
-    "animation_required": null
-  },
-  "reference": {
-    "status": "READY",
-    "readiness": {
-      "identity": "PASS",
-      "part_completeness": "PASS",
-      "topology_attachment": "PASS",
-      "depth": "NOT_REQUIRED",
-      "articulation": "NOT_REQUIRED",
-      "material": "NOT_REQUIRED"
-    },
-    "images": [],
-    "critical_views": [],
-    "modules": [],
-    "known_conflicts": []
-  },
-  "parts": [
-    {
-      "id": "example_part",
-      "role": "GEOMETRY",
-      "parent": null,
-      "contact": null,
-      "symmetry": "NONE",
-      "motion": "STATIC",
-      "evidence": "SUPPORTED"
-    }
-  ],
-  "articulation": [],
-  "materials": [],
-  "animation_guidance": [],
-  "constraints": [],
-  "unknowns": {
-    "blocking": [],
-    "non_blocking": []
-  }
-}
-```
-
-`asset.profile` uses one of `PROP_FURNITURE | VEHICLE | HUMANOID | CREATURE | MECHANICAL | PLANT_FOLIAGE | GENERIC`.
-
-`null` means unknown and is never permission to infer.
-
-## Structured Articulation
-
-When articulation materially affects modelling/animation, entries may use:
-
-```json
-{
-  "joint": "knee",
-  "parent_part": "upper_leg",
-  "child_part": "lower_leg",
-  "motion": "HINGE_LIKE",
-  "axis_intent": null,
-  "pivot_region": "knee_center",
-  "coverage": "maintain_overlap",
-  "clearance": "avoid_visible_gap",
-  "risk": "deep_bend_gap"
-}
-```
-
-This describes intent/relationship, not final Blockbench coordinates.
-
-## Structured Materials
-
-When material identity matters, entries may use:
-
-```json
-{
-  "id": "dark_wood",
-  "applies_to": ["frame", "shelf"],
-  "base_color": null,
-  "surface": "matte",
-  "emissive": false,
-  "pbr_relevant": false
-}
-```
-
-Only include fields supported by user intent or visible evidence.
-
-## Animation Guidance
-
-When `ANIMATION_KEYFRAME` is selected, guidance should cover only decision-critical motion information:
+For bounded user changes:
 
 ```text
-animation_name
-purpose
-loop | one_shot
-key poses
-relative timing
-contact events
-motion direction
-extremes
-recovery / loop intent
-relevant reference angles
+USER DELTA
+→ compile CHANGE + PRESERVE
+→ ask only if the new target is materially ambiguous
+→ concise confirmation before revised artifact generation
+→ update affected image/document/REFERENCE.json entries
+→ preserve unaffected accepted information
 ```
 
-Do not convert reference preparation into a frame-by-frame animation implementation plan unless explicitly required.
-
-## Adaptive Review
-
-Do not force concept → turnaround → detail → material approval for every asset.
-
-Pause for approval when an output materially changes visual authority or identity. Auxiliary sheets that only elaborate an already-approved target do not automatically require separate approval unless strict stage review is requested.
-
-## Minimum-Context Delivery
-
-Control does not resend the entire package on every turn.
-
-Examples:
-
-```text
-whole-model initial geometry
-→ primary views + dimensions + profile + relevant semantic parts + geometry/rig constraints
-
-wheel correction
-→ user delta + affected view(s) + relevant VEHICLE part relationships
-
-texture correction
-→ affected material entries + UV/material constraints
-
-animation correction
-→ relevant articulation + keyframe guidance + affected clip
-```
-
-The objective is Cost to Accepted Result, not minimum packet size at the expense of correctness.
+Do not regenerate an entire package for a local change.
 
 ## Existing Asset / Update
 
 ```text
 USER CHANGE REQUEST
-→ ChatGPT adds reference/technical clarification only when needed
-→ Control recovers current asset/workspace state
-→ preserve accepted information
-→ classify affected owner/dependencies
-→ deliver minimum changed intent/reference context to Codex
-→ Codex edits
-→ Control invalidates only affected evidence/gates
+→ ChatGPT resolves only missing reference/technical facts
+→ preserve accepted visual/technical authority
+→ update affected package content
+→ hand revised package to Codex
 ```
 
-Do not regenerate a complete package for every correction.
+The package should remain self-contained so Codex does not need the original ChatGPT transcript to understand current authority.
 
 ## System Development Boundary
 
@@ -312,21 +241,21 @@ System-development work does not require an asset reference package by default.
 
 ```text
 USER MCP / PLUGIN / BUILD REQUEST
-→ optional ChatGPT research/reference preparation
-→ Control: SYSTEM_DEVELOPMENT
-→ source owner + affected layers + minimum context
-→ Codex implementation
+→ product-development workflow
 ```
+
+Do not misuse the reference package as a general development brief format.
 
 ## Non-Goals
 
 The Reference Package must not become:
-- a giant duplicate design document;
-- a replacement for actual images;
+- a conversation transcript;
+- a giant master prompt;
 - a copy of Skills or Tool schemas;
 - a hidden source of guessed requirements;
-- a mandatory turnaround/detail/material set for trivial assets;
+- a mandatory full set of stage documents for trivial assets;
 - a second asset-state database;
-- a Cube-by-Cube modelling blueprint.
+- a Cube-by-Cube modelling blueprint;
+- a duplicate authority system across JSON and Markdown.
 
-Its only purpose is to make the next Codex decision more correct, efficient and explicit.
+Its purpose is to make the next Codex authoring decision correct, explicit and efficient.
