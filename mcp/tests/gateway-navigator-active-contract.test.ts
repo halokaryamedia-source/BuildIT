@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import {
+  NAVIGATOR_ROUTING_POLICY,
   buildNavigatorDelta,
   buildNavigatorPacket,
   buildNavigatorSnapshot,
@@ -77,6 +78,21 @@ describe("BlockIT Navigator active naming contract", () => {
     });
     expect(delta.authoring_domain).toBe("GEOMETRY");
     expect(delta).not.toHaveProperty("owner");
+  });
+
+  test("routing priority is direct-first and keeps every fallback bounded", async () => {
+    const packet = await buildNavigatorPacket(status);
+    expect(packet.routing).toEqual(NAVIGATOR_ROUTING_POLICY);
+    expect(packet.routing.strategy).toBe("DIRECT_FIRST");
+    expect(packet.routing.known_capability).toBe("INVOKE_CAPABILITY");
+    expect(packet.routing.unknown_capability).toBe("SEARCH_CAPABILITIES");
+    expect(packet.routing.schema_uncertain).toBe("DESCRIBE_CAPABILITY");
+    expect(packet.routing.stale_or_lost_context).toBe("STATUS");
+    expect(packet.routing.development_unresolved).toBe(
+      "BOUNDED_CONTEXT_THEN_TARGETED_SEARCH"
+    );
+    expect(packet.routing.search_limit).toBe(4);
+    expect(JSON.stringify(packet).length).toBeLessThan(5200);
   });
 
   test("development task identity ignores unrelated asset affinity and authoring phase", async () => {
