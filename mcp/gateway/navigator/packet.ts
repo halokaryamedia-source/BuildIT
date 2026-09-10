@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import type { GatewayRuntimeStatus } from "../backend";
 import { resolveDevelopmentIntent, type NavigatorDevelopmentResolution } from "./developmentIntent";
+import { NAVIGATOR_ROUTING_POLICY, type NavigatorRoutingPolicy } from "./routingPolicy";
 import { buildNavigatorSnapshot } from "./snapshot";
 import { readWorkspaceProjection, type NavigatorWorkspaceProjection } from "./workspace";
 import type { NavigatorContextHandle, NavigatorSnapshot } from "./types";
@@ -17,6 +18,7 @@ export type NavigatorContextDelivery = {
 export type NavigatorPacket = Omit<NavigatorSnapshot, "context" | "mode"> & {
   mode: NavigatorTaskMode;
   task_context_id: string;
+  routing: NavigatorRoutingPolicy;
   workspace: NavigatorWorkspaceProjection;
   development: NavigatorDevelopmentResolution | null;
   context: NavigatorContextDelivery;
@@ -119,6 +121,7 @@ export async function buildNavigatorPacket(
     mode,
     system: snapshot.system === "READY" && workspaceBlockers.length > 0 ? "DEGRADED" : snapshot.system,
     task_context_id: taskContextId(snapshot, workspace, mode, development),
+    routing: NAVIGATOR_ROUTING_POLICY,
     workspace,
     development,
     context: filterContext(snapshot, options.knownContextIds ?? [], mode),
