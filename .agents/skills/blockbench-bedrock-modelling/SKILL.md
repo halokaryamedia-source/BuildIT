@@ -4,7 +4,6 @@ description: Mandatory BlockIT Bedrock Geometry and UV Layout specialist.
 ---
 # Blockbench Bedrock Modelling
 
-
 User-authorized autonomy replaces approval waits with verified checkpoints; never claim user approval.
 
 ## Minimum Necessary Evidence
@@ -15,12 +14,11 @@ User-authorized autonomy replaces approval waits with verified checkpoints; neve
 
 ## Reference Grounding
 For reference-driven visual work, the **actual approved reference image** must be in **active multimodal context**; path/prose/memory is not visual evidence. Unavailable → `BLOCKED`. Bounded nonvisual edits use explicit intent and current authored state.
-approved image owns visuals; dimensions own numeric scale; strategy is user-selected `DIRECT | 3D_ASSISTED`.
+approved image owns visuals; dimensions own numeric scale; Geometry uses the native BlockIT Group/Cube authoring path.
 Do not silently change agreed dimensions to improve resemblance. Resolve a material proportion/scale conflict with the user before dependent construction.
 Evidence: `SUPPORTED | PROVISIONAL | CONFLICTING | UNAVAILABLE`. View Pair Map only for material front/back, depth, attachment, or 3/4 ambiguity.
-`DIRECT` uses Groups/Cubes; `3D_ASSISTED` keeps its pipeline; no auto-switch.
 
-## DIRECT Hot Path
+## Geometry Hot Path
 `semantic form → representation choice → primary batch → Core View Triad → conditional surface integrity → causal correction → Geometry PASS → UV preflight → user review`.
 
 Nontrivial form: **transient Primary Mass Contract**:
@@ -73,8 +71,6 @@ Detail-only span/thickness `<= 4 Blockbench units` is an **anti-overcube guardra
 
 ## Primary Build / Difference-First Reference Fidelity Verdict
 `requirement → source evidence → simplest recognizable Blockbench-buildable interpretation → PRIMARY BLOCKOUT + required hierarchy/pivots → primary PASS → identity-weighted secondary geometry`.
-
-`3D_ASSISTED`: PrimitiveAnything is scaffold, not final Cube authority; cleanup removes parts without 3D/transform/motion purpose.
 
 Verdict requires approved reference + fresh current-revision model evidence:
 `claim | matching reference view | current view | observed difference | FAIL | UNVERIFIED | PASS`.

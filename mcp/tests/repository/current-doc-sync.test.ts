@@ -36,10 +36,6 @@ describe("current developer-facing documentation sync", () => {
       text("scripts/measure-phase-surfaces.ts"),
     ]);
 
-    // Repository Verify intentionally runs without package installation. Read the
-    // stable measurement constants rather than importing Runtime modules that need
-    // zod/Blockbench dependencies; measure:phases separately proves these counts
-    // against the real source-owned tools/list surface in MCP Verify.
     const callableToolCount = sourceCount(
       phaseMeasureSource,
       /const CATALOG_TOOL_COUNT = (\d+);/,
@@ -61,7 +57,10 @@ describe("current developer-facing documentation sync", () => {
       "Animation surface count"
     );
 
+    expect(callableToolCount).toBe(54);
+    expect(geometryToolCount).toBe(47);
     expect(geometryToolCount).toBe(texturingToolCount);
+    expect(animationToolCount).toBe(20);
     expect(flow).toContain("current proof state        → docs/knowledge/current-validation.md");
     expect(flow).not.toContain("docs/foundation/validation-report.md");
 
@@ -79,7 +78,7 @@ describe("current developer-facing documentation sync", () => {
       "scripts/        verification/measurement/preparation/local-deploy utilities"
     );
     expect(implementation).toContain(
-      "developer loop: `dev:watch`, prompt watch regeneration, `deploy:local`"
+      "Developer loop: `dev:watch`, prompt watch regeneration, `deploy:local`"
     );
     expect(implementation).toContain("`mcp/tests/developer-loop.test.ts`");
     expect(implementation).toContain(`${api.tools.length} declared source ToolSpecs`);
@@ -88,23 +87,18 @@ describe("current developer-facing documentation sync", () => {
     expect(implementation).toContain(`Animation exposes **${animationToolCount}**`);
     expect(implementation).toContain("blend-transition curves are available");
 
-    expect(rootReadme).toContain(`Source callable union        ${callableToolCount} tools`);
+    expect(rootReadme).toContain(`Active phase-union catalog   ${callableToolCount} tools`);
     expect(rootReadme).toContain(`AUTHORING source surface     ${geometryToolCount} tools`);
     expect(rootReadme).toContain(`Animation source surface     ${animationToolCount} tools`);
-    expect(rootReadme).not.toContain("Runtime callable union          51 tools");
-    expect(rootReadme).not.toContain("not yet production-implemented end-to-end");
 
-    expect(mcpReadme).toContain(`Source callable union        ${callableToolCount} tools`);
+    expect(mcpReadme).toContain(`Active phase-union catalog   ${callableToolCount} tools`);
     expect(mcpReadme).toContain(`AUTHORING surface            ${geometryToolCount} tools`);
     expect(mcpReadme).toContain(`Animation surface            ${animationToolCount} tools`);
-    expect(mcpReadme).toContain("materialize_3d_assisted_scaffold");
-    expect(mcpReadme).not.toContain(
-      "Remaining implementation is the thin public materializer ToolSpec binding"
-    );
+    expect(mcpReadme).not.toContain("materialize_3d_assisted_scaffold");
 
-    expect(gatewayReadme).toContain(`Runtime callable union  ${callableToolCount}`);
-    expect(gatewayReadme).toContain(`AUTHORING surface       ${geometryToolCount}`);
-    expect(gatewayReadme).toContain(`Animation surface       ${animationToolCount}`);
+    expect(gatewayReadme).toContain(`Runtime callable union   ${callableToolCount}`);
+    expect(gatewayReadme).toContain(`AUTHORING surface        ${geometryToolCount}`);
+    expect(gatewayReadme).toContain(`Animation surface        ${animationToolCount}`);
     expect(gatewayReadme).toContain("client_reconnect_required=false");
     expect(gatewayReadme).toContain("without a manual AI-client reconnect");
 
@@ -166,7 +160,7 @@ describe("current developer-facing documentation sync", () => {
     expect(runbook).toMatch(/targeted live debugging[\s\S]*formal Local Acceptance/i);
   });
 
-  test("canonical authoring taxonomy keeps explicit user strategy, shared AUTHORING, and Gateway Animation handoff", async () => {
+  test("canonical authoring taxonomy has one native Geometry path, shared AUTHORING, and Gateway Animation handoff", async () => {
     const [root, context, flow, implementation, router, texturing, animation, settings] = await Promise.all([
       text("../AGENTS.md"),
       text("../CONTEXT.md"),
@@ -178,16 +172,12 @@ describe("current developer-facing documentation sync", () => {
       text("ui/settings.ts"),
     ]);
 
-    for (const owner of [root, context, flow, implementation]) {
-      expect(owner).toContain("Geometry Strategy");
-    }
-    expect(router).toMatch(/Strategy:\s*user-selected\s*`DIRECT \| 3D_ASSISTED`/i);
-
     for (const owner of [root, context, flow, implementation, router]) {
-      expect(owner).toContain("DIRECT");
-      expect(owner).toContain("3D_ASSISTED");
+      expect(owner).not.toContain("Geometry Strategy");
+      expect(owner).not.toContain("DIRECT | 3D_ASSISTED");
+      expect(owner).not.toContain("Shape Reconstruction");
+      expect(owner).not.toContain("PrimitiveAnything");
       expect(owner).toContain("AUTHORING");
-      expect(owner).not.toContain("optional 3D Evidence");
     }
 
     for (const owner of [root, flow, router, texturing, animation]) {
@@ -206,8 +196,6 @@ describe("current developer-facing documentation sync", () => {
       expect(owner).not.toContain("Extended MCP Profile");
     }
 
-    expect(router).toContain("Shape Reconstruction");
-    expect(router).toContain("PrimitiveAnything");
     expect(settings).toContain('name: "Legacy UI Fallbacks (Debug)"');
     expect(settings).toContain("not an authoring profile");
     expect(texturing).toContain("manage_material");
@@ -231,6 +219,8 @@ describe("current developer-facing documentation sync", () => {
       "list_outline",
       "find_elements_by_criteria",
       "inspect_element",
+      "materialize_3d_assisted_scaffold",
+      "manage_geometry_reference",
     ];
     for (const file of files) {
       for (const name of retiredPublicNames) {

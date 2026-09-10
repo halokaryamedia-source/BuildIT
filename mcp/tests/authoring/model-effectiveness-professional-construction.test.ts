@@ -47,8 +47,8 @@ describe("model creation effectiveness — professional construction without pre
     }
 
     expect(geometry).toContain("minimum geometry required to preserve correct 3D form");
-    expect(geometry).toContain("PrimitiveAnything output is an editable scaffold");
-    expect(flow).toContain("Primitive count is not final Cube authority");
+    expect(geometry).not.toContain("PrimitiveAnything");
+    expect(flow).not.toContain("Primitive count is not final Cube authority");
   });
 
   test("surface integrity distinguishes required closure from intentional openings and intersections", async () => {
@@ -78,7 +78,7 @@ describe("model creation effectiveness — professional construction without pre
     );
     expect(modelling).toContain("do not force universal watertight geometry");
     expect(geometry).toContain("not that every model is universally watertight");
-    expect(flow).toContain("surface_quality_summary");
+    expect(flow).toContain("inspect_model_bounds");
   });
 
   test("transform ownership distinguishes local Cube transforms from shared Group/Bone transforms", async () => {
@@ -115,7 +115,7 @@ describe("model creation effectiveness — professional construction without pre
     }
 
     expect(geometry).toContain("Primary hierarchy timing");
-    expect(flow).toContain("REQUIRED PRIMARY GROUPS/PIVOTS");
+    expect(flow).toContain("required primary hierarchy/pivots");
     expect(lower(flow)).toContain("neutral organization");
   });
 

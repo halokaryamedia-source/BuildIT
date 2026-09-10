@@ -12,10 +12,6 @@ workspace/
 │     ├─ <asset>.bbmodel          # only after baseline/checkpoint save
 │     ├─ references/
 │     │  └─ approved-reference.png
-│     ├─ 3d-assisted/             # only when strategy = 3D_ASSISTED
-│     │  ├─ state.json
-│     │  ├─ shape.glb
-│     │  └─ primitive-decomposition.json
 │     ├─ assets/
 │     ├─ exports/
 │     └─ .cache/
@@ -33,7 +29,7 @@ Approved Reference handed to Codex
 → store reference + continuity
 → Requirement Gate
 → no .bbmodel yet
-→ user-selected Geometry Strategy + all mandatory intake complete
+→ all mandatory intake complete
 → create Blockbench project
 → author Geometry
 ```
@@ -48,7 +44,6 @@ Each active project has one compact README owning current asset continuity:
 Asset / Goal
 Approved Reference
 Requested Dimensions
-Geometry Strategy: UNSPECIFIED | DIRECT | 3D_ASSISTED
 Animation Required: YES | NO | UNSPECIFIED
 Current Stage + stage states
 UV Layout gate
@@ -59,7 +54,7 @@ Known blocker(s), if any
 Current handoff state — only when phase reload/resume is pending
 ```
 
-`Geometry Strategy` is a user decision. `UNSPECIFIED` blocks Geometry authoring; Codex must not infer/default it.
+BlockIT uses one native Geometry authoring path; no modelling-strategy state is required.
 
 ## Current Stage State
 
@@ -122,58 +117,17 @@ For an untracked user-supplied `.bbmodel`:
 create Active Workspace
 → store supplied file as the single current editable baseline
 → persist baseline before first mutation
-→ inspect model
+→ minimum targeted baseline inspection
 → determine affected stage(s)
 ```
 
 Do not create `original`, `backup`, `v2`, `final-final`, or duplicate historical model files. Git history owns prior baselines/checkpoints.
 
-Tracked models reuse stored Geometry Strategy. An untracked external model may keep strategy unknown if update does not touch Geometry; Geometry authoring with unknown strategy must ask the user first.
-
 ## Reference Persistence
 
 Persist the actual approved modelling reference under `references/`. An image explicitly handed to Codex for modelling is approved unless marked draft/not ready. Stored path/prose is continuity only; fidelity judgement still requires the actual image visible in active multimodal context.
 
-If Approved Reference changes:
-
-- Geometry Strategy stays unchanged;
-- replace canonical approved reference;
-- remove derived current 3D-Assisted GLB/decomposition/state tied to old reference;
-- Git history owns old versions.
-
-## 3D-Assisted Persistence
-
-Canonical persistent artifacts:
-
-```text
-3d-assisted/state.json
-3d-assisted/shape.glb
-3d-assisted/primitive-decomposition.json
-```
-
-`state.json` is machine-readable external-pipeline state only: schema version, current reference hash, extraction/Shape Reconstruction/decomposition gate state, artifact hashes, last valid external resume point.
-
-It must not duplicate stage approvals, Blockbench hierarchy, UUID registry, conversation, retries, or screenshot history.
-
-`shape.glb` becomes canonical only after Shape GLB Gate PASS; decomposition only after Primitive Decomposition Gate PASS. There is no separate canonical Cuboid Scaffold file.
-
-Temporary crops/contact sheets/intermediate meshes/logs/previews/internal captures belong in `.cache/`.
-
-## Strategy Changes
-
-Only the user changes strategy.
-
-Before current Geometry approval:
-
-```text
-keep Active Workspace/intake/reference
-→ discard all unapproved Geometry
-→ remove 3D-Assisted canonical state/artifacts when leaving 3D_ASSISTED
-→ recreate Blockbench project from clean state
-→ start Geometry with new strategy
-```
-
-After Geometry approval, keep approved production Geometry and persist the new strategy for future Geometry work. A material Geometry change that changes mapped surfaces invalidates `UV Layout` and only the materially dependent downstream Texture state.
+If Approved Reference changes, replace the canonical approved reference and invalidate only the accepted stage/gate state whose assumptions materially changed. Git history owns old versions.
 
 ## Downstream Invalidation
 
@@ -191,7 +145,6 @@ user names/continues asset
 → workspace/active/<asset>/README.md
 → current .bbmodel only if it exists
 → only files needed for next decision
-→ 3d-assisted/state.json only when that external pipeline is pending
 → current-worktree BlockIT asset router
 → current-worktree active specialist
 → verify persisted prerequisite gate before mutation
@@ -205,7 +158,7 @@ Reference Generator output remains image-only. Workspace persistence does not ma
 
 ## What Not To Store
 
-Do not retain tool-call transcripts, screenshot histories, speculative geometry plans, persistent per-element UUID registries, duplicate historical `.bbmodel` files, failed/stale canonical 3D-Assisted artifacts, model weights, external environments, or generic provider caches.
+Do not retain tool-call transcripts, screenshot histories, speculative geometry plans, persistent per-element UUID registries, duplicate historical `.bbmodel` files, model weights, external environments, or generic provider caches.
 
 Use `.cache/` for transient working output. Git history owns old revisions.
 

@@ -25,11 +25,11 @@ describe("model creation effectiveness — semantic form, rotation, pivot and co
     expect(geometry).toContain("Every material Cuboid must have a modelling purpose in the **whole form**");
   });
 
-  test("DIRECT stays quality-first without per-Cube planning or five-view capture ceremony", async () => {
+  test("native Geometry stays quality-first without per-Cube planning or five-view capture ceremony", async () => {
     const modelling = await source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md");
 
     for (const term of [
-      "DIRECT Hot Path",
+      "Geometry Hot Path",
       "transient Primary Mass Contract",
       "Core View Triad",
       "`front + left + top`",
@@ -59,7 +59,7 @@ describe("model creation effectiveness — semantic form, rotation, pivot and co
     expect(modelling).toContain("PLANAR_CUTOUT_CARRIER");
     expect(modelling).toContain("2 crossed planes (~90°) in one batch");
     expect(geometry).toContain("### Planar cutout carrier");
-    expect(geometry).toContain("not a new Geometry Strategy or object preset");
+    expect(geometry).toContain("not a new modelling strategy or object preset");
     expect(geometry).toContain("Small-detail thresholds measure the visible feature, not incidental carrier thickness");
     expect(textureStandard).toContain("### Alpha-owned silhouette carrier");
     expect(textureStandard).toContain("alpha intentionally owns only the 2D silhouette/holes");

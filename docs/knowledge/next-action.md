@@ -1,18 +1,30 @@
 # Next Action
 Updated: 2026-09-10
-Branch Local; checkout D:/Work/AI Stuff/BuildIT-refresh. No push/main changes.
+Branch: `Local` only.
 
 ## Source closure
-SOURCE_READY: final gate partitions passed after bounded corrections. User requests completion through build/package. Named-plugin source increments and bounded full-surface audit are recorded in current-validation.md; native behavior and visual quality are not accepted by source tests.
 
-AUTHORING TAXONOMY: Geometry/rig/UV; Texture; Animation. DIRECT | 3D_ASSISTED remain user-selected. Mesh UV Locker, image-format centering and bedrock_block collision are outside accepted Entity/Cube scope. Brush Tuna stylus pressure requires its native plugin; UI parity is not an AI requirement.
+SOURCE_READY for the remote retirement partition: obsolete Experimental work and the active 3D-assisted authoring route are retired from current product semantics.
+
+AUTHORING TAXONOMY: Geometry/rig/UV; Texture; Animation. BlockIT now uses one native Geometry authoring path. The previous 3D-assisted/Hunyuan/PrimitiveAnything route is retired and must not be used or revived by routing/discovery.
 
 ## Current work
-Build3734e293 and Windows managed package completed (source8f50a459). Installer/Gateway smoke PASS; package mcp/dist/managed/blockit-windows-x64.zip. Next: activate this local package, then native proof. verify:full invoked once; fix failed owners and resume failed/unrun stages without repeating green suites. Record exact artifact identity and measured results in current-validation.md. Do not infer session-token savings or full native branch proof.
 
-Implemented scope: Cube simplify/translation; rename reference integrity; noise/copy/palette/preview sampler/AO; capture sizing/highlight/byte receipts; nine Bedrock Easings/timeline expansion; animation target and effect/history result fixes; paint lifecycle/settings recovery; autonomous readiness and resource URI fixes. Detailed coverage/limits live in current-validation.md, not duplicated here.
+Finish the minimum `LOCAL_CODE` generator residue before treating the retirement as fully generated-source clean:
 
-## Delivery boundary
-Build/package within repository; no automatic activation/hot swap. Managed installation path is .blockit/plugin/blockit_mcp.js. Installed1e842557 and staged506b79ea are historical identities, not current source proof. Do not publish Stable or start background polling. Prior AppData deletion policy-blocked; do not retry.
+```text
+remove the two retired compatibility ToolSpec descriptors
+remove retired text from mcp/prompts/bedrock_entity_workflow.md
+→ bun run prompts:build
+→ bun run docs:build
+→ bun run verify:full
+→ commit generated output with its canonical source
+```
 
-After activation: validate native Undo/persistence, rotated Geometry, AO/UV/material mapping, capture readability and Molang/playback. Whole-request paint rollback and post-commit exceptions have documented limits. Preserve user assets. No elephant/new-model retest: elephant TEST CLOSED, texture/animation rejected. Whole-session tokens UNKNOWN.
+Do not redo the already-completed Experimental/source retirement or reintroduce a second modelling route merely to preserve old generated docs.
+
+After the retirement source/generator gate is green, resume the separate `Experimental/blockit-navigator/` design/implementation discussion. Navigator remains Experimental until its context/usage benefit is measured without changing canonical meaning.
+
+## Proof boundary
+
+Current remote cleanup does not prove installed Blockbench activation, native authoring behavior, visual quality, or token savings. Do not run old 3D-assisted tests or historical asset experiments. Git history owns retired evidence.

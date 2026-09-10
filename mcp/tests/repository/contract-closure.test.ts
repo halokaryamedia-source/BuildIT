@@ -24,6 +24,9 @@ describe("MCP dependency closure", () => {
     expect(packageJson.scripts["verify:full"]).not.toContain("verify:closure");
     expect(packageJson.scripts["verify:release"]).toBe("bun run verify:full");
     expect(packageJson.scripts["verify:mcp"]).toContain("bun run docs:check");
+    expect(packageJson.scripts["three-d-assisted:run"]).toBeUndefined();
+    expect(packageJson.scripts["three-d-assisted:prepare"]).toBeUndefined();
+    expect(packageJson.scripts["three-d-assisted:package"]).toBeUndefined();
   });
 
   test("generated docs and runtime prompt manifest share the same freshness gate", async () => {
@@ -90,9 +93,6 @@ describe("MCP dependency closure", () => {
     expect(runbook).toMatch(
       /Texture APPROVED[\s\S]*Animation readiness preflight[\s\S]*AUTHORING→Animation handoff/
     );
-    expect(runbook).toMatch(
-      /3D_ASSISTED[\s\S]*UV readiness preflight[\s\S]*user Geometry APPROVED[\s\S]*UV Layout PASS[\s\S]*Texture APPROVED/
-    );
     expect(phaseContract).toContain("UV Readiness Preflight");
     expect(phaseContract).toContain("Animation Readiness Preflight");
     expect(runbook).toContain("only a representative test fixture");
@@ -111,13 +111,15 @@ describe("MCP dependency closure", () => {
       ]);
 
     for (const invariant of [
-      "Geometry Strategy",
-      "DIRECT",
-      "3D_ASSISTED",
+      "one native Geometry path",
       "AUTHORING",
+      "switch_authoring_phase",
+      "UV Layout",
     ]) {
       expect(docSync).toContain(invariant);
     }
+    expect(docSync).toContain("DIRECT | 3D_ASSISTED");
+    expect(docSync).toMatch(/not\.toContain\("DIRECT \| 3D_ASSISTED"\)/);
 
     for (const routedPath of [
       '"mcp/AGENTS.md"',
@@ -148,5 +150,7 @@ describe("MCP dependency closure", () => {
     expect(mcpWorkflow).not.toContain(
       '!mcp/prompts/bedrock_entity_workflow.md'
     );
+    expect(mcpWorkflow).not.toContain("Experimental/three-d-assisted-hunyuan-poc");
+    expect(mcpWorkflow).not.toContain("Experimental/primitiveanything-poc");
   });
 });

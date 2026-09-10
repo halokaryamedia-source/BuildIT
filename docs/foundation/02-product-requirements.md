@@ -1,15 +1,15 @@
 # BlockIT — Product Requirements
 
 **Status:** Active Policy  
-**Version:** 2.1  
-**Updated:** 2026-09-09  
+**Version:** 2.2  
+**Updated:** 2026-09-10  
 **Primary Output:** editable Minecraft Bedrock Entity `.bbmodel`
 
 ## 1. Product Objective
 
-A user can hand an original source image directly to Codex for `DIRECT`, or create an approved Minecraft/Blockbench reference board in ChatGPT for stronger coverage and `3D_ASSISTED`, then choose the modelling strategy and have BlockIT create or revise a clean Bedrock model through explicit stage approval without requiring the user to specify MCP/tool details.
+A user can hand an original source image directly to Codex, or create an approved Minecraft/Blockbench reference board in ChatGPT for stronger coverage, then have BlockIT create or revise a clean Bedrock model through explicit stage approval without requiring the user to specify MCP/tool details.
 
-The system must prefer evidence-backed modelling decisions over assumptions, must not force unnecessary reference conversion, and must not silently change user-selected modelling strategy.
+The system must prefer evidence-backed modelling decisions over assumptions and must not force unnecessary reference conversion. BlockIT uses one native Geometry authoring path.
 
 ## 2. New-Model Required Input
 
@@ -19,13 +19,10 @@ Before Blockbench project authoring begins, a new model requires:
 Asset
 Approved Reference Image
 Requested Dimensions: width × height × length in Minecraft blocks
-Geometry Strategy: DIRECT | 3D_ASSISTED
 Animation Required: YES | NO
 ```
 
-`Approved Reference Image` may be the original source image itself for `DIRECT`, or a canonical five-view board. `3D_ASSISTED` requires the canonical five-view board.
-
-The user owns `Geometry Strategy`. Codex must not infer/default/auto-switch it.
+`Approved Reference Image` may be the original source image itself or an optional canonical five-view board.
 
 If mandatory values are missing, ask for all missing values in one batch. Ask additional questions only when a material ambiguity would change the asset. Complete, non-conflicting intake authorizes Blockbench project creation without another confirmation step.
 
@@ -38,9 +35,7 @@ UPPER: LEFT | FRONT | BACK
 LOWER: TOP  | FRONT-LEFT 3/4
 ```
 
-For `DIRECT`, do not require board generation when the actual original image provides enough evidence for the next material modelling decisions. If evidence is insufficient, request only the smallest decision-changing extra source image/detail first; recommend the canonical board only when stronger normalized coverage is still needed.
-
-For `3D_ASSISTED`, the canonical board is required because deterministic extraction depends on fixed normalized view regions.
+Do not require board generation when the actual original image provides enough evidence for the next material modelling decisions. If evidence is insufficient, request only the smallest decision-changing extra source image/detail first; recommend the canonical board only when stronger normalized coverage is still needed.
 
 Normal handoff is only:
 
@@ -61,7 +56,7 @@ Requirement Gate
 ↓
 create Blockbench project
 ↓
-Geometry using user-selected DIRECT or 3D_ASSISTED
+native BlockIT Geometry
 ↓
 Codex internal verify
 ↓
@@ -70,6 +65,8 @@ READY_FOR_USER_REVIEW
 user inspects live Blockbench and explicitly approves
 ↓
 checkpoint save
+↓
+production UV Layout PASS
 ↓
 Texturing
 ↓
@@ -86,44 +83,11 @@ final save → COMPLETE
 
 A completed asset remains active until the user explicitly archives it.
 
-## 5. Geometry Strategies
+## 5. Geometry Authoring
 
-### DIRECT
+Normal reference-guided semantic Geometry uses native Blockbench Groups/Cubes through BlockIT. The Approved Reference may be an original source image or canonical board; only material evidence gaps justify requesting more reference coverage.
 
-Normal reference-guided semantic Geometry using native Blockbench Groups/Cubes. The Approved Reference may be an original source image or canonical board; only material evidence gaps justify requesting more reference coverage.
-
-### 3D_ASSISTED
-
-One indivisible package:
-
-```text
-Approved Reference Board
-→ deterministic LEFT/FRONT/BACK extraction
-→ Shape Reconstruction
-→ Shape GLB Gate
-→ PrimitiveAnything
-→ Primitive Decomposition Gate
-→ deterministic Cuboid Materialization
-→ Cuboid Materialization Gate
-→ Semantic Geometry Cleanup
-→ final Geometry internal verify
-```
-
-There is no normal GLB-only, PrimitiveAnything-only, user-supplied-GLB, provider-selection, or automatic fallback route.
-
-Architecture term: `Shape Reconstruction`. Hunyuan3D is the single v1 implementation; do not add a provider framework until another real implementation is required.
-
-### 3D-Assisted authority
-
-```text
-Approved Reference Board → visual authority
-Requested Dimensions      → numeric authority
-Shape GLB                 → intermediate reconstructed shape
-PrimitiveAnything         → intermediate decomposition
-Cuboid Scaffold           → editable starting hypothesis
-```
-
-Neither GLB nor scaffold is final model authority.
+There is one modelling path. External shape reconstruction, Hunyuan, PrimitiveAnything, GLB scaffolding, or provider selection are not current product routes.
 
 ## 6. Internal Readiness vs User Approval
 
@@ -137,7 +101,7 @@ same causal correction fails twice without new evidence → BLOCKED
 no material blocker remains → READY_FOR_USER_REVIEW
 ```
 
-Only explicit user approval advances the stage. User reviews the live Blockbench result directly.
+Only explicit user approval advances the stage unless the user explicitly authorized autonomous execution, in which case verified current-revision checkpoints replace intermediate waits without being labelled user approval.
 
 ## 7. Geometry Quality / Editability
 
@@ -145,11 +109,11 @@ Geometry must preserve recognizable whole form/proportions, requested dimensions
 
 Naturally movable, structurally distinct parts should remain separately transformable even for a static model, without speculative full rigging.
 
-When `Animation Required = YES`, participating hierarchy/Bones/pivots/attachments must be animation-ready before Geometry user approval.
+When `Animation Required = YES`, participating hierarchy/Bones/pivots/attachments must be animation-ready before Geometry approval.
 
-## 8. Texturing
+## 8. UV / Texturing
 
-Texturing starts only after Geometry is explicitly approved and checkpointed. Texture must not conceal unresolved Geometry. Codex internally verifies UV/atlas/material/identity readability before user review; user approval is required before advancing.
+Production UV Layout starts only after Geometry approval. Texture authoring starts only after `Geometry APPROVED + UV Layout PASS`. Texture must not conceal unresolved Geometry. Codex internally verifies UV/atlas/material/identity readability before user review.
 
 ## 9. Animation
 
@@ -168,16 +132,16 @@ affected downstream stage   → INVALIDATED → repair → user approval again
 
 Stage approval triggers checkpoint save. After the last required authored stage is approved, run one technical Finalization gate.
 
-Finalization checks format/current dimensions/references/hierarchy/UV/textures/animation references and absence of unintended temporary/debug state. It must not silently change an approved visual result.
+Finalization checks format/current dimensions/hierarchy/UV/textures/animation references and absence of unintended temporary/debug state. It must not silently change an approved visual result.
 
-A material Finalization defect reopens its exact owner stage and requires user approval again. If Finalization passes without material change, final save happens automatically; no extra user approval is needed.
+A material Finalization defect reopens its exact owner stage and requires acceptance again. If Finalization passes without material change, final save happens automatically; no extra user approval is needed.
 
 ## 12. Existing Model Update
 
 ```text
 recover/create Active Workspace
 → if untracked, persist supplied .bbmodel as current baseline before mutation
-→ inspect current model
+→ minimum targeted baseline inspection
 → determine affected stage(s)
 → ask only material missing information
 → update smallest owning stage(s)
@@ -186,39 +150,21 @@ recover/create Active Workspace
 → Finalization
 ```
 
-Reference is required only when success depends on visual/fidelity judgement. A tracked model reuses its stored Geometry Strategy. An untracked external model needs strategy only if Geometry authoring is required. Only the user may change strategy.
+Reference is required only when success depends on visual/fidelity judgement.
 
-## 13. 3D-Assisted Production Requirements
+## 13. Efficiency / Anti-Overdevelopment
 
-External Shape Reconstruction + PrimitiveAnything belong to local tooling controlled by Codex. Target normal use is one thin resumable orchestrator, not a workflow engine/provider router.
-
-```text
-workspace/active/<asset>/3d-assisted/
-├─ state.json
-├─ shape.glb
-└─ primitive-decomposition.json
-```
-
-Passed artifacts persist gate-by-gate. A changed Approved Reference removes derived current GLB/decomposition while preserving user-selected strategy.
-
-Target Blockbench materializer is one dedicated Geometry capability behind the existing Gateway. It validates canonical workspace state before mutation and materializes complete scaffold as one atomic Undo transaction. Do not use generic `from_geo_json` or arbitrary primitive payloads.
-
-## 14. Efficiency / Anti-Overdevelopment
-
-- accept the actual original image first for `DIRECT` when evidence is sufficient;
+- accept the actual original image first when evidence is sufficient;
 - escalate reference coverage only when it can change a material decision;
 - one Gateway;
-- two Geometry strategies only;
-- no automatic strategy classifier;
+- one Geometry authoring path;
 - one current editable `.bbmodel` per asset;
 - Git history owns old revisions;
 - targeted internal captures, not screenshot-per-mutation;
 - deferred focused capability discovery;
-- no provider framework with one provider;
-- no generic importer for a dedicated scaffold contract;
 - same causal failure twice without new evidence → stop;
 - invalidate smallest downstream scope.
 
-## 15. Proof Boundary
+## 14. Proof Boundary
 
-Static source/docs/CI cannot prove live Blockbench behavior, visual quality, external GPU pipeline quality, materializer Undo behavior, or Gateway lifecycle stability. Those remain local/live proof until deliberately tested.
+Static source/docs/CI cannot prove live Blockbench behavior, visual quality, native Undo/playback/persistence, or Gateway lifecycle stability. Those remain local/live proof until deliberately tested.

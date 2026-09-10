@@ -19,6 +19,11 @@ export const BEDROCK_AUTHORING_COORDINATE_CONTRACT =
 
 let activeAuthoringPhase: McpAuthoringPhase = DEFAULT_MCP_AUTHORING_PHASE;
 
+const RETIRED_CAPABILITIES = new Set([
+  "materialize_3d_assisted_scaffold",
+  "manage_geometry_reference",
+]);
+
 const CORE_FAMILIES = new Set<McpRegistrationFamily>([
   "camera",
   "element_inspection",
@@ -32,7 +37,6 @@ const CORE_FAMILIES = new Set<McpRegistrationFamily>([
 
 const CORE_ELEMENT_TOOLS = new Set(["inspect_elements"]);
 const GEOMETRY_ELEMENT_TOOLS = new Set([
-  "materialize_3d_assisted_scaffold",
   "modify_group",
   "remove_element",
   "rename_element",
@@ -44,7 +48,6 @@ const GEOMETRY_MAINTENANCE_TOOLS = new Set([
   "reparent_element",
   "manage_locator",
   "manage_null_object",
-  "manage_geometry_reference",
 ]);
 const CORE_TEXTURE_TOOLS = new Set(["list_textures"]);
 const ANIMATION_EXCLUDED_CORE_TOOLS = new Set(["create_project"]);
@@ -157,6 +160,7 @@ export function classifyMcpToolPhase(
   toolName: string,
   family: McpRegistrationFamily
 ): McpToolPhaseCategory | null {
+  if (RETIRED_CAPABILITIES.has(toolName)) return null;
   if (family === "phase_control") return "core";
   if (
     toolName === "capture_screenshot" ||

@@ -13,12 +13,12 @@ Asset-only: BP/gameplay/pack OUT; RP visual/export; controllers/preview. `resour
 Load router + matching current worktree specialist before mutation:
 `router_loaded=YES | active_owner=GEOMETRY|TEXTURING|ANIMATION | specialist_loaded=YES | gate_satisfied=YES`.
 Any `NO` → **DO NOT MUTATE**.
-New reference Geometry → approved image + Dimensions + user-selected strategy + Animation Required; bounded nonvisual edits follow the specialist.
+New reference Geometry → approved image + Dimensions + Animation Required; bounded nonvisual edits follow the specialist.
 UV → user Geometry APPROVED
 Texture → Geometry APPROVED + UV Layout PASS
 Animation → Texturing APPROVED + checkpoint + Animation Readiness Preflight → HANDOFF_REQUIRED
 `HANDOFF_REQUIRED`: `target_phase`, `reason`, `readiness`, `resume_from`; Gateway `switch_authoring_phase` → same task/chat.
-`approved image`; Strategy: user-selected `DIRECT | 3D_ASSISTED`. `3D_ASSISTED` → Shape Reconstruction → PrimitiveAnything → cleanup. 1 Minecraft block = 16 Blockbench units; `front_direction`.
+`approved image`; normal Geometry uses the native BlockIT Group/Cube path. 1 Minecraft block = 16 Blockbench units; `front_direction`.
 ## Fast Routing Contract
 Asset work **must not begin by searching repository files**.
 **Authoring Context Firewall:** Authoring Codex uses `workspace/active/<asset>/` as cwd, not `mcp/`; deeper MCP development rules are not authoring plan. Do **not** inspect tests/CI/source or run Bun/build/verifiers/deploy.
@@ -40,7 +40,6 @@ file deliverable → export_model
 Animation boundary → switch_authoring_phase
 
 GEOMETRY OWNER
-3D-Assisted GLB → manage_geometry_reference
 create normal bone/Group       → add_group
 create/update Cubes            → manage_cubes(operation=create|update|batch_update)
 Group/bone parent move         → reparent_element

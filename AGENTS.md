@@ -1,6 +1,5 @@
 # Workspace Agent Routing
 
-
 User-authorized autonomy replaces approval waits with verified checkpoints; never claim user approval.
 
 ## Instruction priority
@@ -103,7 +102,7 @@ Use `.agents/skills/development-brief/SKILL.md` only when architecture, cross-ow
 
 Image/reference generation belongs in **ChatGPT** using `.agents/skills/blockbench-reference-generator/SKILL.md`. Codex authoring consumes the actual user-approved reference image; it does not recreate the reference workflow.
 
-For `DIRECT`, an actual source image is Approved Reference unless marked draft/not ready; do not force board generation when sufficient. `3D_ASSISTED` requires the canonical five-view board.
+An actual source image is an Approved Reference unless marked draft/not ready; do not force board generation when the supplied evidence is sufficient. A canonical five-view board remains an optional stronger-coverage reference for complex/asymmetric assets.
 
 ### Asset Authoring
 
@@ -139,7 +138,7 @@ approved image + explicit asset requirements
 → minimum evidence that can change the verdict
 ```
 
-`Geometry Strategy` is user-selected `DIRECT | 3D_ASSISTED`; never infer, default, or silently switch it. AUTHORING↔Animation handoff uses Gateway `switch_authoring_phase` in the same task; Geometry↔Texturing correction stays in AUTHORING.
+Geometry uses the single native BlockIT authoring path. AUTHORING↔Animation handoff uses Gateway `switch_authoring_phase` in the same task; Geometry↔Texturing correction stays in AUTHORING.
 
 For normal asset authoring, do not automatically load repository continuation/history/foundation docs, scan source/tests/CI, or run development verifiers. Asset authoring is not software **Development**; do not route it through `development-brief` unless repository/plugin behavior changes.
 

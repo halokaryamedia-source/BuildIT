@@ -1,13 +1,13 @@
 # BlockIT Workspace Context
 
-Last verified stable facts: 2026-09-09  
+Last verified stable facts: 2026-09-10  
 Stability: stable design contract; implementation/proof tracked separately
 
-This file owns **stable project facts only**. Continuation → `docs/knowledge/next-action.md`; proof → `current-validation.md`; ownership → `implementation-map.md`; asset continuity → `workspace/active/<asset>/README.md`; routing → `AGENTS.md`.
+This file owns **stable project facts only**. Continuation → `docs/knowledge/next-action.md`; proof → `docs/knowledge/current-validation.md`; ownership → `docs/knowledge/implementation-map.md`; asset continuity → `workspace/active/<asset>/README.md`; routing → `AGENTS.md`.
 
 ## Product
 
-BlockIT is a local MCP workflow for AI-assisted **Minecraft Bedrock Entity** authoring in desktop Blockbench. Normal AI-client boundary is the stable **BlockIT Gateway**; Blockbench plugin is the execution Runtime behind it.
+BlockIT is a local MCP workflow for AI-assisted **Minecraft Bedrock Entity** authoring in desktop Blockbench. Normal AI-client boundary is the stable **BlockIT Gateway**; the Blockbench plugin is the execution Runtime behind it.
 
 Primary editable output is `.bbmodel`. Tool/file/coordinate success is not proof of visual resemblance.
 
@@ -23,7 +23,7 @@ Resource-Pack semantics are retained only where they affect the Blockbench-autho
 
 ## Reference-Grounded Authoring
 
-Reference image creation belongs in ChatGPT. Canonical approved board:
+Reference image creation belongs in ChatGPT. A source image may be used directly as the Approved Reference when its evidence is sufficient. When stronger normalized coverage is useful, the optional canonical board is:
 
 ```text
 UPPER: LEFT | FRONT | BACK
@@ -36,42 +36,10 @@ For a new model, Codex requires before Blockbench authoring:
 Asset
 Approved Reference Image
 Dimensions
-Geometry Strategy: DIRECT | 3D_ASSISTED
 Animation Required: YES | NO
 ```
 
-The **Approved Reference Image** is visual authority and requested dimensions are numeric envelope authority (`1 block = 16 Blockbench units`). Geometry Strategy is always chosen by the user; Codex never infers/defaults/auto-switches it.
-
-### Geometry Strategies
-
-```text
-DIRECT
-→ normal reference-guided Geometry
-
-3D_ASSISTED
-→ Approved Reference
-→ Shape Reconstruction
-→ Shape GLB
-→ PrimitiveAnything decomposition
-→ deterministic Cuboid Scaffold
-→ semantic Geometry cleanup
-```
-
-`3D_ASSISTED` is one indivisible package. There is no normal GLB-only, PrimitiveAnything-only, user-provided-GLB v1, provider-selection, or automatic fallback mode.
-
-Authority inside 3D-Assisted:
-
-```text
-Approved Reference → visual authority
-Dimensions         → numeric authority
-Shape GLB          → intermediate reconstructed shape
-PrimitiveAnything  → intermediate decomposition
-Cuboid Scaffold    → temporary editable starting hypothesis
-```
-
-Shape GLB may remain locked/non-export during semantic cleanup but must be removed from live Blockbench before final Geometry verification/user review.
-
-Architecture term is `Shape Reconstruction`; Hunyuan3D is the single v1 implementation. Do not build provider abstraction until another real implementation is required.
+The **Approved Reference Image** is visual authority and requested dimensions are numeric envelope authority (`1 block = 16 Blockbench units`). BlockIT uses one native Geometry authoring path; there is no modelling-strategy selection gate.
 
 ### Shared AUTHORING surface and stage ownership
 
@@ -86,7 +54,7 @@ ANIMATION Runtime surface
 
 Geometry and Texturing retain distinct semantic owners, but both tool families are callable in the same AUTHORING Runtime surface. Geometry↔Texturing correction therefore does not require `switch_authoring_phase`; the setting remains a startup/guidance focus. `HANDOFF_REQUIRED` is reserved for crossing AUTHORING↔Animation through the Gateway.
 
-Codex internally verifies meaningful stage checkpoints. Internal PASS means `READY_FOR_USER_REVIEW`; user inspects live Blockbench and explicitly approves before checkpointing. Same material causal correction failing twice without new evidence → `BLOCKED`.
+Codex internally verifies meaningful stage checkpoints. Internal PASS means `READY_FOR_USER_REVIEW`; user inspects live Blockbench and explicitly approves before checkpointing unless autonomous execution was explicitly authorized. Same material causal correction failing twice without new evidence → `BLOCKED`.
 
 Naturally movable structurally distinct parts remain meaningfully transformable even when Animation is not currently required. When Animation is required, needed hierarchy/pivots/attachments must already be animation-ready before Geometry approval.
 
@@ -101,17 +69,9 @@ New Bedrock projects use logical UV resolution **128 by default**, 256 opt-in.
 
 ## Persistence
 
-Persistent Asset Model state lives in `workspace/active/<asset>/`. Workspace is created before Blockbench project creation; a new authoritative `.bbmodel` checkpoint first appears after Geometry user approval.
+Persistent Asset Model state lives in `workspace/active/<asset>/`. Workspace is created before Blockbench project creation; a new authoritative `.bbmodel` checkpoint first appears after Geometry user approval or the corresponding explicitly authorized autonomous verification boundary.
 
-README owns current intake/stage/next-step/blocker state. `3d-assisted/state.json` owns only external pipeline gate/artifact hashes. Git history owns older revisions. Completed assets remain `active/` until user explicitly archives them.
-
-## 3D-Assisted implementation boundary
-
-External local tooling controlled by Codex owns view extraction + Shape Reconstruction + PrimitiveAnything. The resumable external orchestrator and canonical state/decomposition contracts are source-implemented.
-
-BlockIT Geometry Runtime contains the dedicated fail-closed atomic Cuboid materializer engine, exposed as `materialize_3d_assisted_scaffold(workspace_path)` through the existing Gateway. Setup and public integration precede GPU/live testing. Source readiness does not establish installed Runtime, native Undo, or production-quality proof.
-
-Do not revive generic `from_geo_json` or add a provider router to implement this target.
+README owns current intake/stage/next-step/blocker state. Git history owns older revisions. Completed assets remain `active/` until the user explicitly archives them.
 
 ## No normal Standard / Extended profiles
 
@@ -138,7 +98,7 @@ describe_capability
 invoke_capability
 ```
 
-Current source retains **56 callable Bedrock tools**. Geometry and Texturing startup stages expose the same shared AUTHORING surface; Animation remains a separate runtime surface. Installed evidence is tracked separately in `current-validation.md`. Direct Runtime MCP remains for Inspector/conformance/debugging, not normal AI-client authoring.
+Current semantic phase union retains **54 callable Bedrock tools** after retirement of the two legacy 3D-assisted capabilities. Geometry and Texturing startup stages expose the same shared AUTHORING surface; Animation remains a separate runtime surface. Installed evidence is tracked separately in `current-validation.md`. Direct Runtime MCP remains for Inspector/conformance/debugging, not normal AI-client authoring.
 
 Gateway handoff keeps the same task/chat alive and refreshes backend catalog only when crossing AUTHORING↔Animation.
 

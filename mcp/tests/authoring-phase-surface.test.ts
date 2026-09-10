@@ -20,6 +20,11 @@ import {
   tools,
 } from "@/server/tools";
 
+const RETIRED_3D_CAPABILITIES = [
+  "materialize_3d_assisted_scaffold",
+  "manage_geometry_reference",
+] as const;
+
 const phaseSurface = (phase: (typeof MCP_AUTHORING_PHASES)[number]) =>
   new Set(getMcpSurfaceToolNames("bedrock_entity", phase));
 
@@ -41,13 +46,11 @@ describe("authoring stage MCP surface", () => {
     const geometry = phaseSurface("geometry");
     const texturing = phaseSurface("texturing");
     expect([...geometry].sort()).toEqual([...texturing].sort());
-    expect(geometry.size).toBeGreaterThan(35);
+    expect(geometry.size).toBe(47);
 
     for (const tool of [
       "manage_cubes",
-      "materialize_3d_assisted_scaffold",
       "add_group",
-      "manage_geometry_reference",
       "bone_rigging",
       "create_texture",
       "paint_with_brush",
@@ -57,6 +60,10 @@ describe("authoring stage MCP surface", () => {
     ]) {
       expect(geometry.has(tool), tool).toBe(true);
     }
+    for (const retired of RETIRED_3D_CAPABILITIES) {
+      expect(geometry.has(retired), retired).toBe(false);
+      expect(texturing.has(retired), retired).toBe(false);
+    }
     expect(geometry.has("create_animation")).toBe(false);
 
     const animation = phaseSurface("animation");
@@ -65,6 +72,9 @@ describe("authoring stage MCP surface", () => {
     expect(animation.has("create_project")).toBe(false);
     expect(animation.has("manage_cubes")).toBe(false);
     expect(animation.has("create_texture")).toBe(false);
+    for (const retired of RETIRED_3D_CAPABILITIES) {
+      expect(animation.has(retired), retired).toBe(false);
+    }
   });
 
   test("applying a stage surface controls the exact production definitions", () => {
@@ -93,8 +103,16 @@ describe("authoring stage MCP surface", () => {
     }
   });
 
-  test("legacy-risk tools stay outside active authoring surfaces", () => {
-    const legacyRiskTools = ["from_geo_json", "risky_eval", "filter_by_material", "capture_app_screenshot", "set_camera_angle", "apply_texture"];
+  test("legacy-risk and retired tools stay outside active authoring surfaces", () => {
+    const legacyRiskTools = [
+      "from_geo_json",
+      "risky_eval",
+      "filter_by_material",
+      "capture_app_screenshot",
+      "set_camera_angle",
+      "apply_texture",
+      ...RETIRED_3D_CAPABILITIES,
+    ];
     try {
       for (const profile of ["bedrock_entity", "extended"] as const) {
         for (const phase of MCP_AUTHORING_PHASES) {
@@ -113,6 +131,10 @@ describe("authoring stage MCP surface", () => {
       if (!isCatalogToolEnabled(toolName)) continue;
       const family = getToolRegistrationFamily(toolName);
       expect(family, `${toolName} family`).toBeDefined();
+      if (RETIRED_3D_CAPABILITIES.includes(toolName as any)) {
+        expect(classifyMcpToolPhase(toolName, family!), `${toolName} category`).toBeNull();
+        continue;
+      }
       expect(classifyMcpToolPhase(toolName, family!), `${toolName} category`).not.toBeNull();
     }
   });

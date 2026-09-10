@@ -10,11 +10,7 @@ Only one experiment is active:
 
 ## Retired work
 
-All other Experimental work is retired as of 2026-09-10 and must not be resumed or treated as current BlockIT capability.
-
-Independent retired experiments are removed from the current tree. Legacy 3D-Assisted research files and the historical usage-audit file may remain temporarily only while the production `3D_ASSISTED` path is retired atomically with its source, tests, generated prompt/API output, and active documentation in a `LOCAL_CODE` workspace. Their presence during that bounded transition is historical/dependency residue only; **do not use them for authoring, routing, proof, or continuation**.
-
-Git history owns removed experiments and their historical evidence. Do not create a parallel archive.
+All earlier Experimental work is retired and removed from the current tree. Git history owns that historical evidence; do not recreate a parallel archive and do not route authoring, proof, or continuation through retired experiments.
 
 ## Production boundary
 

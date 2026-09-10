@@ -3,22 +3,14 @@
 import { z } from "zod";
 import { createTool, type ToolSpec } from "@/lib/factories";
 import { STATUS_EXPERIMENTAL, STATUS_STABLE } from "@/lib/constants";
-import { readRenderedModelBounds, type Vec3 } from "@/lib/renderedModelBounds";
+import { readRenderedModelBounds } from "@/lib/renderedModelBounds";
 import { isAbsoluteFilesystemPath } from "@/lib/util";
 
 export const DEFAULT_BEDROCK_UV_RESOLUTION = 128;
-export const BLOCKIT_THREE_D_ASSISTED_REFERENCE_PREFIX = "blockit_3d_assisted__";
 
-const finiteReferenceVec3Schema = z.tuple([
-  z.number().finite(),
-  z.number().finite(),
-  z.number().finite(),
-]);
-
-export const threeDAssistedFrontDirectionSchema = z.enum(["+z", "-z"]);
-export type ThreeDAssistedFrontDirection = z.infer<typeof threeDAssistedFrontDirectionSchema>;
-
-const localGlbPathSchema = z
+// Compatibility-only schema retained until the next LOCAL_CODE docs generation.
+// The capability is retired and never exposed by the active phase surface.
+const retiredLocalGlbPathSchema = z
   .string()
   .min(1)
   .refine(isAbsoluteFilesystemPath, {
@@ -28,6 +20,14 @@ const localGlbPathSchema = z
   .refine((path) => /\.glb$/i.test(path), {
     message: "3D-Assisted Evidence supports local .glb files only.",
   });
+
+const retiredReferenceVec3Schema = z.tuple([
+  z.number().finite(),
+  z.number().finite(),
+  z.number().finite(),
+]);
+
+const retiredFrontDirectionSchema = z.enum(["+z", "-z"]);
 
 export const createProjectParameters = z
   .object({
@@ -53,7 +53,7 @@ export const manageGeometryReferenceParameters = z
     action: z
       .enum(["load", "update", "remove"])
       .describe("3D-Assisted Evidence reference lifecycle action."),
-    path: localGlbPathSchema
+    path: retiredLocalGlbPathSchema
       .optional()
       .describe("Absolute local .glb path; required only for load."),
     id: z
@@ -63,12 +63,12 @@ export const manageGeometryReferenceParameters = z
       .describe(
         "Tool-owned 3D-Assisted Evidence reference UUID or unique exact name; required for update/remove."
       ),
-    source_front_direction: threeDAssistedFrontDirectionSchema
+    source_front_direction: retiredFrontDirectionSchema
       .optional()
       .describe(
         "Required load-time front direction encoded by the approved 3D-Assisted Evidence GLB."
       ),
-    origin: finiteReferenceVec3Schema
+    origin: retiredReferenceVec3Schema
       .optional()
       .describe("Reference origin [x,y,z]. Load default is [0,0,0]."),
     uniform_scale: z
@@ -242,415 +242,6 @@ function currentProjectLifecycle() {
   };
 }
 
-type ReferenceFilesystem = {
-  existsSync(path: string): boolean;
-  statSync(path: string): { isFile(): boolean };
-};
-
-export type ReferenceModelRuntime = OutlinerElement & {
-  path?: string;
-  origin: number[];
-  rotation: number[];
-  scale: number[];
-  visibility: boolean;
-  wireframe?: boolean;
-  locked?: boolean;
-  export?: boolean;
-  three_d_assisted_owned?: boolean;
-  mesh?: THREE.Object3D;
-  preview_controller?: {
-    updateTransform?: (element: ReferenceModelRuntime) => void;
-    updateVisibility?: (element: ReferenceModelRuntime) => void;
-    updateSelection?: (element: ReferenceModelRuntime) => void;
-  };
-  extend?: (data: Record<string, unknown>) => ReferenceModelRuntime;
-};
-
-type ReferenceModelConstructor = new (
-  data?: Record<string, unknown>,
-  uuid?: string
-) => ReferenceModelRuntime;
-
-export type ThreeDAssistedReferenceBoundsSummary = {
-  bounds_basis: "raw_reference_world_aabb";
-  blockbench_units_per_block: number;
-  world_bounds: {
-    min: Vec3;
-    max: Vec3;
-    center: Vec3;
-    size_xyz: Vec3;
-  };
-  dimensions_blockbench_units: {
-    width: number;
-    height: number;
-    length: number;
-  };
-  dimensions_blocks: {
-    width: number;
-    height: number;
-    length: number;
-  };
-};
-
-export type ThreeDAssistedReferenceEvidence = ThreeDAssistedReferenceBoundsSummary & {
-  scene_stats: {
-    mesh_count: number;
-    vertex_count: number;
-    triangle_count: number;
-  };
-};
-
-function requireBedrockReferenceProject(): void {
-  if (!Project) {
-    throw new Error(
-      "Open or create the intended Bedrock project before managing 3D-Assisted Evidence."
-    );
-  }
-  const format = Format as
-    | { id?: string; forward_direction?: string }
-    | undefined;
-  if (format?.id !== "bedrock") {
-    throw new Error(
-      `3D-Assisted Evidence requires bedrock format; current format is ${format?.id ?? "unknown"}.`
-    );
-  }
-  const direction = format.forward_direction ?? "-z";
-  if (direction !== "+z" && direction !== "-z") {
-    throw new Error(
-      `3D-Assisted Evidence v1 supports Bedrock project front +z/-z only; current forward direction is ${String(direction)}.`
-    );
-  }
-}
-
-function projectFrontDirection(): ThreeDAssistedFrontDirection {
-  const direction =
-    (Format as { forward_direction?: string } | undefined)?.forward_direction ??
-    "-z";
-  const parsed = threeDAssistedFrontDirectionSchema.safeParse(direction);
-  if (!parsed.success) {
-    throw new Error(
-      `Unsupported Blockbench forward direction ${direction} for 3D-Assisted Evidence v1.`
-    );
-  }
-  return parsed.data;
-}
-
-export function threeDAssistedReferenceYawDegrees(
-  source: ThreeDAssistedFrontDirection,
-  target: ThreeDAssistedFrontDirection
-): number {
-  return source === target ? 0 : 180;
-}
-
-export function summarizeThreeDAssistedWorldBounds(
-  min: Vec3,
-  max: Vec3,
-  blockSize: number
-): ThreeDAssistedReferenceBoundsSummary {
-  if (!Number.isFinite(blockSize) || blockSize <= 0) {
-    throw new Error("3D-Assisted Evidence reference block size must be finite and positive.");
-  }
-  if (![...min, ...max].every(Number.isFinite)) {
-    throw new Error("3D-Assisted Evidence reference world bounds must be finite.");
-  }
-
-  const size: Vec3 = [
-    max[0] - min[0],
-    max[1] - min[1],
-    max[2] - min[2],
-  ];
-  if (size.some((value) => !Number.isFinite(value) || value <= 0)) {
-    throw new Error(
-      "3D-Assisted Evidence reference must have positive finite 3D span on X, Y, and Z."
-    );
-  }
-
-  const center: Vec3 = [
-    min[0] + size[0] / 2,
-    min[1] + size[1] / 2,
-    min[2] + size[2] / 2,
-  ];
-  const dimensionsBlockbenchUnits = {
-    width: size[0],
-    height: size[1],
-    length: size[2],
-  };
-
-  return {
-    bounds_basis: "raw_reference_world_aabb",
-    blockbench_units_per_block: blockSize,
-    world_bounds: {
-      min: [min[0], min[1], min[2]],
-      max: [max[0], max[1], max[2]],
-      center,
-      size_xyz: size,
-    },
-    dimensions_blockbench_units: dimensionsBlockbenchUnits,
-    dimensions_blocks: {
-      width: dimensionsBlockbenchUnits.width / blockSize,
-      height: dimensionsBlockbenchUnits.height / blockSize,
-      length: dimensionsBlockbenchUnits.length / blockSize,
-    },
-  };
-}
-
-export function isBlockItThreeDAssistedReference(
-  element: unknown
-): element is ReferenceModelRuntime {
-  if (!element || typeof element !== "object") return false;
-  const value = element as {
-    type?: unknown;
-    name?: unknown;
-    three_d_assisted_owned?: unknown;
-  };
-  return (
-    value.type === "reference_model" &&
-    (value.three_d_assisted_owned === true ||
-      (typeof value.name === "string" &&
-        value.name.startsWith(BLOCKIT_THREE_D_ASSISTED_REFERENCE_PREFIX)))
-  );
-}
-
-export function listBlockItThreeDAssistedReferences(): ReferenceModelRuntime[] {
-  if (typeof Outliner === "undefined") return [];
-  return (Outliner.elements ?? []).filter(isBlockItThreeDAssistedReference);
-}
-
-function isLoadedReference(reference: ReferenceModelRuntime): boolean {
-  return Boolean(reference.mesh && reference.mesh.children.length > 0);
-}
-
-export function assertThreeDAssistedReferenceInvariant(
-  reference: ReferenceModelRuntime
-): void {
-  if (reference.parent !== "root") {
-    throw new Error(
-      `3D-Assisted Evidence reference ${reference.name || reference.uuid} must remain at the outliner root. Remove and reload it with manage_geometry_reference.`
-    );
-  }
-  if (reference.locked !== true) {
-    throw new Error(
-      `3D-Assisted Evidence reference ${reference.name || reference.uuid} must remain locked. Remove and reload it with manage_geometry_reference.`
-    );
-  }
-  if (reference.export !== false) {
-    throw new Error(
-      `3D-Assisted Evidence reference ${reference.name || reference.uuid} must remain export=false. Remove and reload it with manage_geometry_reference.`
-    );
-  }
-
-  const [sx, sy, sz] = reference.scale ?? [];
-  if (
-    ![sx, sy, sz].every(
-      (value) => typeof value === "number" && Number.isFinite(value) && value > 0
-    ) ||
-    Math.abs(sx - sy) > 1e-9 ||
-    Math.abs(sx - sz) > 1e-9
-  ) {
-    throw new Error(
-      `3D-Assisted Evidence reference ${reference.name || reference.uuid} must keep uniform positive scale. Remove and reload it with manage_geometry_reference.`
-    );
-  }
-}
-
-export function readThreeDAssistedReferenceEvidence(
-  reference: ReferenceModelRuntime
-): ThreeDAssistedReferenceEvidence {
-  assertThreeDAssistedReferenceInvariant(reference);
-  if (!reference.mesh || !isLoadedReference(reference)) {
-    throw new Error(
-      `3D-Assisted Evidence reference ${reference.name || reference.uuid} is not fully loaded.`
-    );
-  }
-
-  reference.mesh.updateMatrixWorld(true);
-  // @ts-expect-error Blockbench provides THREE as a runtime global; current runtime accepts the precise Box3 flag even when installed typings lag it.
-  const box = new THREE.Box3().setFromObject(reference.mesh, true);
-  if (box.isEmpty()) {
-    throw new Error(
-      `3D-Assisted Evidence reference ${reference.name || reference.uuid} has no measurable 3D bounds.`
-    );
-  }
-
-  const rawBlockSize = (Format as { block_size?: number } | undefined)?.block_size;
-  const blockSize =
-    typeof rawBlockSize === "number" &&
-    Number.isFinite(rawBlockSize) &&
-    rawBlockSize > 0
-      ? rawBlockSize
-      : 16;
-  const summary = summarizeThreeDAssistedWorldBounds(
-    [box.min.x, box.min.y, box.min.z],
-    [box.max.x, box.max.y, box.max.z],
-    blockSize
-  );
-
-  let meshCount = 0;
-  let vertexCount = 0;
-  let triangleCount = 0;
-  reference.mesh.traverse((object) => {
-    const candidate = object as THREE.Object3D & {
-      isMesh?: boolean;
-      geometry?: {
-        attributes?: { position?: { count?: number } };
-        index?: { count?: number } | null;
-      };
-    };
-    if (candidate.isMesh !== true) return;
-    meshCount += 1;
-
-    const rawVertexCount = candidate.geometry?.attributes?.position?.count;
-    const vertices =
-      typeof rawVertexCount === "number" &&
-      Number.isFinite(rawVertexCount) &&
-      rawVertexCount > 0
-        ? Math.floor(rawVertexCount)
-        : 0;
-    vertexCount += vertices;
-
-    const rawIndexCount = candidate.geometry?.index?.count;
-    const indices =
-      typeof rawIndexCount === "number" &&
-      Number.isFinite(rawIndexCount) &&
-      rawIndexCount > 0
-        ? Math.floor(rawIndexCount)
-        : 0;
-    triangleCount += Math.floor((indices > 0 ? indices : vertices) / 3);
-  });
-
-  if (meshCount === 0 || vertexCount === 0 || triangleCount === 0) {
-    throw new Error(
-      `3D-Assisted Evidence reference ${reference.name || reference.uuid} loaded without usable triangle-mesh evidence.`
-    );
-  }
-
-  return {
-    ...summary,
-    scene_stats: {
-      mesh_count: meshCount,
-      vertex_count: vertexCount,
-      triangle_count: triangleCount,
-    },
-  };
-}
-
-export function hasVisibleLoadedBlockItThreeDAssistedReference(): boolean {
-  return listBlockItThreeDAssistedReferences().some((reference) => {
-    if (reference.visibility === false || !isLoadedReference(reference)) {
-      return false;
-    }
-    assertThreeDAssistedReferenceInvariant(reference);
-    return true;
-  });
-}
-
-function resolveBlockItThreeDAssistedReference(id: string): ReferenceModelRuntime {
-  const references = listBlockItThreeDAssistedReferences();
-  const uuidMatch = references.find((reference) => reference.uuid === id);
-  if (uuidMatch) return uuidMatch;
-
-  const nameMatches = references.filter((reference) => reference.name === id);
-  if (nameMatches.length === 1) return nameMatches[0];
-  if (nameMatches.length > 1) {
-    throw new Error(
-      `3D-Assisted Evidence reference name "${id}" is ambiguous. Use the UUID.`
-    );
-  }
-  throw new Error(`3D-Assisted Evidence reference "${id}" not found.`);
-}
-
-function referenceConstructor(): ReferenceModelConstructor {
-  const types = (
-    OutlinerElement as unknown as {
-      types?: Record<string, ReferenceModelConstructor>;
-    }
-  ).types;
-  const ReferenceModel = types?.reference_model;
-  if (!ReferenceModel) {
-    throw new Error(
-      "Blockbench Reference Models plugin is not active. Enable it, reload BlockIT, then retry manage_geometry_reference."
-    );
-  }
-  return ReferenceModel;
-}
-
-function localReferenceFilesystem(): ReferenceFilesystem {
-  // @ts-ignore - requireNativeModule is a Blockbench desktop global.
-  const fs = requireNativeModule("fs", {
-    message: "BlockIT needs read access to the approved local 3D-Assisted Evidence GLB",
-  }) as ReferenceFilesystem | null;
-  if (!fs) {
-    throw new Error(
-      "File system access was denied for the approved local 3D-Assisted Evidence GLB."
-    );
-  }
-  return fs;
-}
-
-function referenceName(path: string): string {
-  const file = path.replace(/\\/g, "/").split("/").pop() ?? "reference.glb";
-  const stem =
-    file
-      .replace(/\.glb$/i, "")
-      .replace(/[^A-Za-z0-9._-]+/g, "_")
-      .slice(0, 80) || "reference";
-  return `${BLOCKIT_THREE_D_ASSISTED_REFERENCE_PREFIX}${stem}`;
-}
-
-function sameVec3(a: readonly number[], b: readonly number[]): boolean {
-  return (
-    a.length >= 3 &&
-    b.length >= 3 &&
-    a.slice(0, 3).every((value, axis) => value === b[axis])
-  );
-}
-
-function refreshReference(reference: ReferenceModelRuntime): void {
-  reference.preview_controller?.updateTransform?.(reference);
-  reference.preview_controller?.updateVisibility?.(reference);
-  reference.preview_controller?.updateSelection?.(reference);
-  reference.mesh?.updateMatrixWorld(true);
-}
-
-async function waitForReferenceLoad(
-  reference: ReferenceModelRuntime,
-  timeoutMs = 20_000
-): Promise<void> {
-  const deadline = Date.now() + timeoutMs;
-  while (Date.now() < deadline) {
-    if (isLoadedReference(reference)) return;
-    await new Promise((resolve) => setTimeout(resolve, 50));
-  }
-  throw new Error(
-    `Timed out waiting for Blockbench Reference Models to load ${reference.path ?? "the GLB"}.`
-  );
-}
-
-function referenceState(reference: ReferenceModelRuntime) {
-  return {
-    uuid: reference.uuid,
-    name: reference.name,
-    path: reference.path ?? null,
-    three_d_assisted_owned: true,
-    reference_only: true,
-    production_geometry: false,
-    loaded: isLoadedReference(reference),
-    origin: [...reference.origin],
-    rotation: [...reference.rotation],
-    scale: [...reference.scale],
-    visibility: reference.visibility !== false,
-    wireframe: reference.wireframe === true,
-    locked: reference.locked === true,
-    export: reference.export !== false,
-    parent: reference.parent === "root" ? "root" : "non_root",
-    evidence: isLoadedReference(reference)
-      ? readThreeDAssistedReferenceEvidence(reference)
-      : null,
-    warning:
-      "GLB is depth/volume/attachment evidence only. evidence.world_bounds includes every loaded mesh fragment; requested dimensions and the approved Minecraft reference remain authoritative, and raw reconstruction bounds must not define target size.",
-  };
-}
-
 export function registerProjectTools() {
   createTool(projectToolDocs[0].name, {
     ...projectToolDocs[0],
@@ -662,10 +253,7 @@ export function registerProjectTools() {
       }
 
       const created = newProject(Formats.bedrock);
-
-      if (!created) {
-        throw new Error("Failed to create project.");
-      }
+      if (!created) throw new Error("Failed to create project.");
 
       Project!.name = name;
       Project!.texture_width = resolution ?? DEFAULT_BEDROCK_UV_RESOLUTION;
@@ -681,12 +269,10 @@ export function registerProjectTools() {
       };
 
       return {
-        content: [
-          {
-            type: "text" as const,
-            text: `Created Bedrock project "${result.project.name}" (${result.project.uuid}) with ${result.resolution.texture_width}×${result.resolution.texture_height} logical UV canvas.`,
-          },
-        ],
+        content: [{
+          type: "text" as const,
+          text: `Created Bedrock project "${result.project.name}" (${result.project.uuid}) with ${result.resolution.texture_width}×${result.resolution.texture_height} logical UV canvas.`,
+        }],
         structuredContent: result,
       };
     },
@@ -729,12 +315,10 @@ export function registerProjectTools() {
       };
 
       return {
-        content: [
-          {
-            type: "text" as const,
-            text: `Project ${result.project.name}: ${result.counts.cubes} Cubes, ${result.counts.groups} Groups, ${result.counts.textures} Textures.`,
-          },
-        ],
+        content: [{
+          type: "text" as const,
+          text: `Project ${result.project.name}: ${result.counts.cubes} Cubes, ${result.counts.groups} Groups, ${result.counts.textures} Textures.`,
+        }],
         structuredContent: result,
       };
     },
@@ -773,180 +357,21 @@ export function registerProjectTools() {
       };
 
       return {
-        content: [
-          {
-            type: "text" as const,
-            text: JSON.stringify(result),
-          },
-        ],
+        content: [{ type: "text" as const, text: JSON.stringify(result) }],
         structuredContent: result,
       };
     },
   }, projectToolDocs[2].status);
 
+  // Retained only as a generated-doc compatibility descriptor until the next
+  // LOCAL_CODE generator pass. It is excluded from every active phase surface.
   createTool(projectToolDocs[3].name, {
     ...projectToolDocs[3],
     parameters: manageGeometryReferenceParameters,
-    async execute(input) {
-      requireBedrockReferenceProject();
-      const parsed = manageGeometryReferenceParameters.parse(input);
-
-      if (parsed.action === "load") {
-        if (listBlockItThreeDAssistedReferences().length > 0) {
-          throw new Error(
-            "A BlockIT 3D-Assisted Evidence reference is already active. Update or remove it before loading another."
-          );
-        }
-
-        const path = parsed.path!;
-        const fs = localReferenceFilesystem();
-        if (!fs.existsSync(path) || !fs.statSync(path).isFile()) {
-          throw new Error(`3D-Assisted Evidence GLB file not found: ${path}`);
-        }
-
-        const sourceFront = parsed.source_front_direction!;
-        const targetFront = projectFrontDirection();
-        const yaw = threeDAssistedReferenceYawDegrees(sourceFront, targetFront);
-        const uniformScale = parsed.uniform_scale ?? 1;
-        const ReferenceModel = referenceConstructor();
-        let reference: ReferenceModelRuntime | null = null;
-
-        Undo.initEdit({ outliner: true, elements: [], selection: true });
-        try {
-          reference = new ReferenceModel({
-            name: referenceName(path),
-            path,
-            origin: parsed.origin ?? [0, 0, 0],
-            rotation: [0, yaw, 0],
-            scale: [uniformScale, uniformScale, uniformScale],
-            visibility: parsed.visibility ?? true,
-            wireframe: parsed.wireframe ?? false,
-            locked: true,
-            export: false,
-          }).init() as ReferenceModelRuntime;
-          reference.three_d_assisted_owned = true;
-          reference.addTo("root");
-          await waitForReferenceLoad(reference);
-          reference.locked = true;
-          reference.export = false;
-          refreshReference(reference);
-          readThreeDAssistedReferenceEvidence(reference);
-          Undo.finishEdit("Load 3D-Assisted Evidence reference", {
-            outliner: true,
-            elements: [reference],
-            selection: true,
-          });
-        } catch (error) {
-          try {
-            Undo.cancelEdit(true);
-          } finally {
-            if (
-              reference &&
-              (Outliner.elements ?? []).some(
-                (element) => element.uuid === reference!.uuid
-              )
-            ) {
-              reference.remove();
-            }
-          }
-          throw error;
-        }
-
-        const result = {
-          action: "load" as const,
-          reference: referenceState(reference),
-          alignment: {
-            source_front_direction: sourceFront,
-            project_front_direction: targetFront,
-            applied_yaw_degrees: yaw,
-            y_up_required: true,
-            uniform_scale_only: true,
-          },
-        };
-        return {
-          content: [
-            {
-              type: "text" as const,
-              text: `Loaded transient 3D-Assisted Evidence GLB reference ${reference.name} (${reference.uuid}); source ${sourceFront} aligned to project ${targetFront} with Y yaw ${yaw}°.`,
-            },
-          ],
-          structuredContent: result,
-        };
-      }
-
-      const reference = resolveBlockItThreeDAssistedReference(parsed.id!);
-      if (parsed.action === "remove") {
-        const removed = {
-          uuid: reference.uuid,
-          name: reference.name,
-          path: reference.path ?? null,
-        };
-        Undo.initEdit({ outliner: true, elements: [reference], selection: true });
-        reference.remove();
-        Undo.finishEdit("Remove 3D-Assisted Evidence reference", {
-          outliner: true,
-          elements: [reference],
-          selection: true,
-        });
-        return {
-          content: [
-            {
-              type: "text" as const,
-              text: `Removed transient 3D-Assisted Evidence reference ${removed.name} (${removed.uuid}).`,
-            },
-          ],
-          structuredContent: { action: "remove" as const, removed },
-        };
-      }
-
-      const nextOrigin = parsed.origin ?? [...reference.origin];
-      const nextScale =
-        parsed.uniform_scale === undefined
-          ? [...reference.scale]
-          : [parsed.uniform_scale, parsed.uniform_scale, parsed.uniform_scale];
-      const nextVisibility = parsed.visibility ?? reference.visibility;
-      const nextWireframe = parsed.wireframe ?? reference.wireframe ?? false;
-      if (
-        sameVec3(reference.origin, nextOrigin) &&
-        sameVec3(reference.scale, nextScale) &&
-        reference.visibility === nextVisibility &&
-        (reference.wireframe ?? false) === nextWireframe
-      ) {
-        throw new Error(
-          "3D-Assisted Evidence reference update is an exact no-op."
-        );
-      }
-
-      readThreeDAssistedReferenceEvidence(reference);
-      Undo.initEdit({ elements: [reference] });
-      const patch = {
-        origin: nextOrigin,
-        scale: nextScale,
-        visibility: nextVisibility,
-        wireframe: nextWireframe,
-      };
-      if (typeof reference.extend === "function") reference.extend(patch);
-      else Object.assign(reference, patch);
-      reference.three_d_assisted_owned = true;
-      reference.locked = true;
-      reference.export = false;
-      refreshReference(reference);
-      Undo.finishEdit("Update 3D-Assisted Evidence reference", {
-        elements: [reference],
-      });
-
-      return {
-        content: [
-          {
-            type: "text" as const,
-            text: `Updated transient 3D-Assisted Evidence reference ${reference.name} (${reference.uuid}).`,
-          },
-        ],
-        structuredContent: {
-          action: "update" as const,
-          reference: referenceState(reference),
-        },
-      };
+    async execute() {
+      throw new Error(
+        "manage_geometry_reference is retired. Use the normal native BlockIT Geometry path."
+      );
     },
   }, projectToolDocs[3].status);
 }

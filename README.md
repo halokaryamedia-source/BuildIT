@@ -18,8 +18,7 @@ Routine repository development uses `Local`. Repository behavior is routed by `A
 ```text
 ChatGPT reference
 → Active Workspace + Requirement Gate
-→ user selects Geometry Strategy: DIRECT | 3D_ASSISTED
-→ Geometry
+→ native BlockIT Geometry
 → user approve + checkpoint
 → UV Layout PASS
 → Texturing
@@ -30,38 +29,14 @@ ChatGPT reference
 → final .bbmodel save
 ```
 
-The approved image is visual authority. Requested dimensions are numeric authority. The AI authoring client never infers, defaults, or auto-switches Geometry Strategy.
-
-### DIRECT
-
-Normal reference-guided Blockbench Geometry using the Geometry specialist and Runtime capabilities.
-
-### 3D_ASSISTED
-
-One production package:
-
-```text
-Approved Reference
-→ deterministic LEFT/FRONT/BACK extraction
-→ Shape Reconstruction (Hunyuan3D v1)
-→ Shape GLB Gate
-→ PrimitiveAnything
-→ Primitive Decomposition Gate
-→ dedicated atomic Cuboid Materialization
-→ Semantic Geometry Cleanup
-→ normal UV Layout / Texturing / optional Animation
-```
-
-The external orchestrator, canonical state/decomposition contracts, and dedicated materializer capability are source-implemented. GPU inference quality, installed materializer identity/native Undo behavior, and end-to-end 3D-Assisted asset quality remain separate local/live proof.
-
-There is no normal GLB-only, PrimitiveAnything-only, provider-selection, or automatic fallback route.
+The approved image is visual authority. Requested dimensions are numeric authority. BlockIT now has **one native modelling path**; the retired 3D-assisted/Hunyuan/PrimitiveAnything path is not part of current authoring.
 
 ## Current Product Surface
 
 ```text
 Gateway client surface        4 fixed tools
-Source callable union        56 tools
-AUTHORING source surface     49 tools
+Active phase-union catalog   54 tools
+AUTHORING source surface     47 tools
 Animation source surface     20 tools
 ```
 
@@ -82,7 +57,7 @@ Installed Runtime counts and lifecycle behavior are proof results, not hand-main
 
 ## Evidence Boundary
 
-Static source/CI proof can establish routing, contracts, schemas, deterministic build output, and fail-closed source behavior. It does **not** prove installed Blockbench state, live Gateway survival, visual fidelity, native Undo/playback/persistence, external GPU quality, or end-to-end 3D-Assisted quality.
+Static source/CI proof can establish routing, contracts, schemas, deterministic build output, and fail-closed source behavior. It does **not** prove installed Blockbench state, live Gateway survival, visual fidelity, native Undo/playback/persistence, or accepted asset quality.
 
 Current state owners:
 
@@ -101,12 +76,14 @@ docs/foundation/  durable authoring policy
 docs/knowledge/   current flow, continuation, source ownership, proof, local procedure
 mcp/              Blockbench MCP plugin/runtime/Gateway/build/tests/generated API docs
 workspace/        persistent active/saved asset packages
-Experimental/     bounded implementation evidence and proof harnesses only
+Experimental/     bounded research; currently BlockIT Navigator only
 ```
 
 Historical audits, retired product paths, obsolete continuation, and old roadmaps belong in Git history rather than parallel current-state owners.
 
 ## Development
+
+BlockIT source/builds come from this repository; do not use an upstream hosted plugin as runtime authority for this repository. Production plugin: `dist/blockit_mcp.js`.
 
 From `mcp/`:
 

@@ -1,16 +1,60 @@
-# Installed BlockIT authoring workspace
+# BlockIT Authoring Workspace
 
-This workspace contains user assets and a managed BlockIT skill package, not the MCP development repository. Do not scan Runtime source, run build/test/deploy, or ask the user to replace installation files during authoring.
+This workspace is for **Minecraft Bedrock Entity asset authoring through BlockIT Gateway**.
 
-Before any asset mutation, load `.agents/skills/blockit-bedrock-entity-mcp/SKILL.md` and exactly the current specialist:
-- Geometry, hierarchy, rig or UV: `.agents/skills/blockbench-bedrock-modelling/SKILL.md`.
-- Texture, pixels or PBR: `.agents/skills/blockit-bedrock-texturing/SKILL.md`.
-- Animation: `.agents/skills/blockit-bedrock-animation/SKILL.md`.
+## Boot
 
-Use `workspace/active/<asset>/` for asset continuity and `workspace/README.md` for workspace conventions. New-model intake requires actual approved image, dimensions, user-selected `DIRECT | 3D_ASSISTED`, and Animation Required. Bounded nonvisual edits follow the specialist using explicit intent and current state. Geometry approval precedes production UV; UV PASS precedes Texturing; approved Texturing and a checkpoint precede optional Animation. Follow the specialist's quality and approval gates.
+Before any mutation:
 
-Known capability → direct invocation through the existing four-tool Gateway. Discovery is conditional; no status polling or confirmation rereads. Never guess unavailable tool schemas or bypass permissions through eval/UI automation. Installed distribution does not by itself install optional 3D_ASSISTED GPU providers; a missing external backend is a setup blocker, not permission to switch strategy.
+```text
+current workspace instructions
+→ blockit-bedrock-entity-mcp router
+→ exactly one matching specialist
+```
 
-Load `docs/foundation/09-finalization-standard.md` only during Finalization. Application update/rollback never restores or deletes user models.
+Specialists:
 
-For an explicit maintenance request, run the installed `blockit.cmd update`, `status`, `rollback`, or `recover` command using the normal approved terminal. Do not edit binaries, plugin files, skills, or Codex TOML by hand. Active sessions keep their current package; a staged update activates only at a safe boundary. Native plugin trust and application permissions are never bypassed.
+```text
+Geometry / rig / pivots / UV Layout → blockbench-bedrock-modelling
+Texture / Painter / PBR             → blockit-bedrock-texturing
+Animation / motion                  → blockit-bedrock-animation
+```
+
+No mutation until the router + matching specialist are loaded and prerequisite gates are satisfied.
+
+## New Model Intake
+
+Require:
+
+```text
+Asset
+Approved Reference Image
+Dimensions: width × height × length in Minecraft blocks
+Animation Required: YES | NO
+```
+
+BlockIT uses one native Geometry authoring path. Do not ask the user to choose a modelling strategy and do not revive retired 3D-assisted/Hunyuan/PrimitiveAnything routes.
+
+## Gateway
+
+Use the installed BlockIT Gateway. Normal client surface is exactly:
+
+```text
+status
+search_capabilities
+describe_capability
+invoke_capability
+```
+
+Known capability → invoke directly. Unknown/stale → one bounded search; describe only when schema detail is needed. Reuse fresh mutation results instead of confirmation reads.
+
+Geometry↔Texturing stays on shared AUTHORING. AUTHORING↔Animation uses `switch_authoring_phase` through Gateway and continues the same task/chat.
+
+## Evidence / Safety
+
+- Actual approved image is required for reference-driven visual PASS.
+- Dimensions are numeric authority (`1 block = 16 Blockbench units`).
+- Tool success is not visual approval.
+- Same causal correction failing twice without new evidence → `BLOCKED`.
+- Preserve user assets and current project state.
+- Do not scan repository source/tests/CI during normal asset authoring.

@@ -12,7 +12,7 @@ Default endpoint:
 
 Transport is loopback-only, stateless Streamable HTTP with JSON responses.
 
-The normal `bedrock_entity` source profile retains **56 callable tools**. Installed proof is tracked separately in `current-validation.md`. Runtime exposure is organized as:
+The active source phase union retains **54 callable tools**. Installed proof is tracked separately in `current-validation.md`. Runtime exposure is organized as:
 
 ```text
 MCP CORE + AUTHORING
@@ -25,7 +25,7 @@ MCP CORE + ANIMATION
 
 Geometry and Texturing startup focus values expose the same AUTHORING capability set. They remain separate semantic stages/owners, but a Geometry↔Texturing correction does not require a Runtime phase switch. `HANDOFF_REQUIRED` + `switch_authoring_phase` is reserved for crossing AUTHORING↔Animation through the Gateway.
 
-Generated API documentation enumerates **68 declared source ToolSpecs**, including disabled/source-preserved definitions and phase control. That documentation count is not the normal callable catalog and is not the installed surface count.
+Generated API documentation currently enumerates **68 declared source ToolSpecs**, including disabled/source-preserved definitions and phase control. The current generated snapshot may temporarily retain two retired 3D-assistance compatibility descriptors until the next canonical local generator pass; they are excluded from active Runtime phase surfaces.
 
 ## Bedrock Authoring Invariants
 - 1 Minecraft block = 16 Blockbench units.
@@ -60,7 +60,7 @@ Protected gaps remain TextureMesh direct authoring/inspection, native visible bo
 - Do not broaden network exposure beyond loopback without a separately reviewed authentication design.
 
 ## Prompt / Agent Contract
-The bundled `bedrock_entity_workflow` renders full AUTHORING guidance for Geometry/Texturing focus and Animation-only guidance on the Animation surface. Persisted prompt overrides are compatibility-checked against the current canonical workflow.
+The bundled `bedrock_entity_workflow` renders AUTHORING guidance for Geometry/Texturing focus and Animation-only guidance on the Animation surface. Persisted prompt overrides are compatibility-checked against the current canonical workflow.
 
 Codex should route from:
 `ACTIVE STAGE + intent + known state/UUID → exact exposed capability → execute → reuse returned state`.
@@ -77,11 +77,9 @@ bun run verify:full
 
 Use the smallest targeted test during iteration. `test:runtime`, `verify:authoring`, and `verify:repository` are separate ownership layers; `verify:mcp` covers executable/public MCP plus authoring compatibility, while `verify:full` adds repository contracts without rerunning those layers twice.
 
-`measure:surface` guards the retained callable catalog/static payload. `measure:phases` measures the source-owned Runtime surfaces over the real loopback transport. Neither measurement is installed-client token usage or Authoring Efficiency proof.
+`measure:surface` guards the registered static payload. `measure:phases` measures the active source-owned Runtime surfaces over the real loopback transport. Neither measurement is installed-client token usage or Authoring Efficiency proof.
 
 Production artifact: `mcp/dist/blockit_mcp.js`.
-
-For installed-runtime freshness use `bun run verify:stateless-local`; it compares the installed profile + active stage + `tools/list` against current source. With an explicitly disposable Blockbench project, `bun run verify:geometry-live -- --confirm-disposable` additionally proves Geometry create/mutate/readback/fixed-frame-render/Undo/Redo effects. The live verifier does not score reference fidelity or accepted model quality.
 
 Static source/CI proof cannot establish live Blockbench rendering, installed-plugin freshness, visual quality, UV quality, or Authoring Efficiency.
 

@@ -21,8 +21,6 @@ on:
       - ".agents/skills/blockit-bedrock-texturing/**"
       - ".agents/skills/blockit-bedrock-animation/**"
       - "docs/knowledge/next-action.md"
-      - "Experimental/three-d-assisted-hunyuan-poc/**"
-      - "Experimental/primitiveanything-poc/**"
       - ".bun-version"
       - ".github/workflows/mcp-verify.yml"
   workflow_dispatch:

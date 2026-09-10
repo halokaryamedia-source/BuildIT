@@ -1,8 +1,0 @@
-# Compatibility baseline for the pinned Hunyuan3D-2 shape-only source.
-torch==2.5.1
-torchvision==0.20.1
-diffusers==0.32.2
-transformers==4.48.3
-numpy<2
-huggingface-hub<1
-rembg==2.0.61

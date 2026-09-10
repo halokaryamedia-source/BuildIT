@@ -9,7 +9,7 @@ Reference-generation specification for **ChatGPT**. Codex/BlockIT consumes the u
 
 Create **one Minecraft / Blockbench reference image** optimized for recognizable, Blockbench-buildable Minecraft interpretation, not exact real-world reconstruction.
 
-A canonical board is optional for `DIRECT` and required for `3D_ASSISTED`. Generation always requires a fresh explicit user instruction.
+A canonical board is optional and is used when stronger normalized cross-view coverage materially helps construction. Generation always requires a fresh explicit user instruction.
 
 ## User Contract
 
@@ -62,7 +62,7 @@ Preserve identity-bearing silhouette/major masses and visible root → direction
 
 ## Five-Preview Coverage Board
 
-Use one fixed **five-preview** layout for deterministic downstream 3D-Assisted extraction:
+When normalized coverage is needed, use one fixed **five-preview** layout:
 
 ```text
 UPPER: LEFT | FRONT | BACK

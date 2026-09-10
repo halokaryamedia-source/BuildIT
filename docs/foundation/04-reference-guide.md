@@ -1,8 +1,8 @@
 # BlockIT — Reference Guide
 
 **Status:** Active Policy  
-**Version:** 3.2  
-**Updated:** 2026-09-09
+**Version:** 3.3  
+**Updated:** 2026-09-10
 
 ## Purpose
 
@@ -10,7 +10,7 @@ Own durable Source Image → Approved Reference semantics. Operational image gen
 
 The goal is a recognizable, Minecraft-appropriate, Blockbench-buildable interpretation, not exact real-world reconstruction. A generated reference **does not need to be 100% identical** to the source when a simpler Minecraft interpretation preserves identity and buildability.
 
-A canonical five-view board is **preferred for stronger coverage**, not mandatory for every asset. `DIRECT` may use the original source image itself as the Approved Reference when its visible evidence is sufficient. `3D_ASSISTED` requires the canonical five-view board.
+A canonical five-view board is **optional stronger coverage**, not mandatory for every asset. The original source image itself may be the Approved Reference when its visible evidence is sufficient.
 
 ## Authority / Evidence
 
@@ -26,7 +26,7 @@ The **actual Approved Reference Image** must be available as multimodal input wh
 
 When multiple source images are available during reference preparation, treat them as a small evidence set for the same intended subject. Use each only for what it visibly proves—such as identity, depth, rear structure, asymmetry, material, or detail. Do not average conflicting evidence into invented geometry.
 
-When the original Source Image is used directly for `DIRECT`, it serves as both source-visible evidence and the Approved Reference Image. Do not invent a second authority layer merely because no generated board exists.
+When the original Source Image is used directly, it serves as both source-visible evidence and the Approved Reference Image. Do not invent a second authority layer merely because no generated board exists.
 
 ## Execution Boundary
 
@@ -46,19 +46,11 @@ Accept the user's actual image first. Do not force reference-board generation as
 
 ```text
 actual image supplied
-→ user selects DIRECT
-   → evidence sufficient for material modelling decisions
-      → use image directly as Approved Reference
-   → material evidence missing/conflicting
-      → request only the smallest decision-changing extra source image/detail
-      → if still materially insufficient, recommend canonical board or mark BLOCKED
-
-actual image supplied
-→ user selects 3D_ASSISTED
-   → canonical five-view board present and crop-safe
-      → continue
-   → otherwise
-      → request board preparation in ChatGPT; do not improvise extraction
+→ evidence sufficient for material modelling decisions
+   → use image directly as Approved Reference
+→ material evidence missing/conflicting
+   → request only the smallest decision-changing extra source image/detail
+   → if still materially insufficient, recommend canonical board or mark BLOCKED
 ```
 
 The preferred escalation order is:
@@ -71,7 +63,7 @@ current supplied image
 
 If the user already supplied multiple useful source images, consume that evidence before asking for another image or recommending board generation.
 
-Do not automatically regenerate a board, open a new strategy, add a reference mode, or ask for extra views that cannot change the next decision.
+Do not automatically regenerate a board, add a reference mode, or ask for extra views that cannot change the next decision.
 
 ## Minecraft-First Fidelity
 
@@ -104,22 +96,14 @@ Do not dynamically choose RIGHT, use generic `SIDE`, or reorder views per asset.
 
 - `LEFT`, `FRONT`, `BACK`, `TOP` are orthographic construction evidence.
 - `FRONT-LEFT 3/4` is supplemental volume/readability evidence and never overrides stronger orthographic/source evidence.
-- five views describe one intended Minecraft model, not five exact engineering drawings.
+- five views describe one intended Minecraft model, **not five exact engineering drawings**.
 - image resolution may vary; normalized region identity remains fixed.
 
-The board is crop-safe for later 3D-Assisted use. Keep each subject fully inside its region with neutral uniform background, consistent scale, and generous separation. Do not allow subject/shadow/prop content to cross into another region.
+Keep each subject fully inside its region with neutral uniform background, consistent scale, and generous separation. Do not allow subject/shadow/prop content to cross into another region.
 
 Default board contains no panel border, divider, label, title, header, note, dimensions, target-use text, Blockbench UI/gizmos, gameplay UI, or cinematic scene.
 
 If identity-critical structure exists on a side not sufficiently visible in the canonical five views, do not invent it. Ask for one additional source image/detail or mark the unresolved material claim `UNAVAILABLE` / `CONFLICTING`.
-
-## 3D-Assisted Derived Views
-
-`3D_ASSISTED` requires the canonical five-view board. Codex/local tooling deterministically derives `LEFT`, `FRONT`, and `BACK` from known normalized regions. `TOP` and `FRONT-LEFT 3/4` remain additional validation evidence.
-
-Derived crops are **not new authority**. The full actual Approved Reference Image and original Source Image evidence remain authority.
-
-If deterministic extraction is unusable because subject crosses slots, is materially cropped, or required view is wrong, 3D-Assisted becomes `BLOCKED`. Do not improvise a crop, substitute another view, or create an automatic layout detector; ask user to repair/regenerate the board in ChatGPT.
 
 ## Material Consistency
 
@@ -172,7 +156,7 @@ A generated Draft is acceptable only when it is recognizable, geometry-buildable
 
 Use the current board as the edit target when possible. Correction should be **delta-first**: describe the defect/change and what must stay unchanged instead of restating the whole generation prompt.
 
-Choose the smallest coherent correction:
+Choose the **smallest coherent** correction:
 
 ```text
 local presentation/detail defect
@@ -185,7 +169,7 @@ global identity / pose / layout / cross-view coherence failure
 → regenerate the full board
 ```
 
-Do not create a separate corrected-panel deliverable. The result remains one complete canonical board. Full-board regeneration is a fallback for global/cross-view failure or when a bounded edit cannot preserve consistency—not the default correction path.
+Do not create a separate corrected-panel deliverable. The result remains one complete canonical board. **Full-board regeneration is a fallback** for global/cross-view failure or when a bounded edit cannot preserve consistency—not the default correction path.
 
 For one unchanged material brief / automatic review cycle:
 
@@ -197,7 +181,7 @@ automatic alternatives = 0
 
 The one automatic correction may be a bounded edit or a full-board regeneration, not both.
 
-A fresh explicit **user-directed correction** after review starts a new user-led review cycle and permits one revised board even when the previous automatic correction budget was used. Apply the requested delta once, preserve still-valid relationships, then stop for user review again.
+A fresh explicit **user-directed correction** after review starts a **new user-led review cycle** and permits one revised board even when the previous automatic correction budget was used. Apply the requested delta once, preserve still-valid relationships, then stop for user review again.
 
 A materially new user-approved source, pose, target, or requirement also begins a new review cycle. Do not open a new cycle automatically to bypass a failed correction.
 

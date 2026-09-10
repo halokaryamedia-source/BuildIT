@@ -1,193 +1,100 @@
-# Implementation Map
+# BlockIT Implementation Map
 
-Updated: 2026-09-09
+Updated: 2026-09-10
 
-Current `Local` source/ownership only. This map contains **no active task status**; continuation belongs in `next-action.md`, proof in `current-validation.md`, asset continuity in `workspace/active/<asset>/README.md`.
+This file maps **current source ownership**. It contains no active task status, roadmap, or proof interpretation. Continuation belongs in `next-action.md`; proof belongs in `current-validation.md`.
 
-## Primary Owners
-
-| Boundary | Owner |
-|---|---|
-| task routing / proof discipline | root `AGENTS.md` |
-| GitHub execution/history/CI/security | `GITHUB_RULES.md` |
-| stable project facts | `CONTEXT.md` |
-| detailed product flow | `docs/knowledge/flow.md` |
-| continuation | `docs/knowledge/next-action.md` |
-| proof state | `docs/knowledge/current-validation.md` |
-| active asset continuity | `workspace/README.md` + `workspace/active/<asset>/README.md` |
-| reference-generation spec | `.agents/skills/blockbench-reference-generator/` |
-| actual reference generation / approval | ChatGPT |
-| asset/Gateway orchestration | `.agents/skills/blockit-bedrock-entity-mcp/` |
-| modelling judgement | `.agents/skills/blockbench-bedrock-modelling/` |
-| texture/PBR judgement | `.agents/skills/blockit-bedrock-texturing/` |
-| animation judgement | `.agents/skills/blockit-bedrock-animation/` |
-| architecture/redesign contract | `.agents/skills/development-brief/` |
-| MCP public/schema/result/transport | `.agents/skills/mcp-server-development/` |
-| Blockbench API/lifecycle/UI/Undo | `.agents/skills/blockbench-runtime-development/` |
-| MCP TypeScript/Bun implementation mechanics | `mcp/AGENTS.md` + exact source/build owner |
-
-## Canonical Authoring Taxonomy
+## Runtime Architecture
 
 ```text
-REFERENCE
-  Approved Reference Image = visual authority
-  Requested Dimensions     = numeric authority
-
-GEOMETRY STRATEGY — user selected
-  DIRECT
-  3D_ASSISTED
-
-AUTHORING — one Runtime surface, distinct semantic owners
-  Geometry / rig / UV Layout
-  ↔ bounded upstream/downstream correction
-  Texture Atlas / Styling / PBR / Texture Verify
-
-ANIMATION — separate Runtime surface when required
-
-APPROVAL
-  Codex internal readiness → user explicit meaningful-stage approval
-
-CONNECTION
-  AI client → BlockIT Gateway → BlockIT Runtime → Blockbench
-
-CAPABILITY TIER — internal only
-  PRIMARY | SUPPORT | EXPERIMENTAL | MAINTENANCE
+Codex / AI client
+→ mcp/gateway/index.ts
+→ mcp/gateway/backend.ts
+→ loopback Runtime transport
+→ mcp/server/**
+→ Blockbench native APIs
 ```
 
-There is no automatic strategy classifier. Object category, complexity, generated GLB, or failed modelling never changes strategy without explicit user choice.
+Gateway client surface remains four tools: `status`, `search_capabilities`, `describe_capability`, `invoke_capability`.
 
-## MCP Source Areas
+Active source surfaces after retirement of the old 3D-assisted route:
 
 ```text
-mcp/gateway/                   stable client boundary + Runtime adapter
-mcp/index.ts                   plugin lifecycle
-mcp/server/                    Runtime transport/resources/prompts
-mcp/server/tools/              authored public operations
-mcp/server/threeDAssistedMaterializer.ts
-                               internal atomic 3D-Assisted Blockbench materializer engine
-mcp/lib/threeDAssistedProduction.ts
-                               canonical external state/decomposition/materialization-plan schemas
-mcp/lib/                       other schemas/factories/runtime helpers
-mcp/lib/authoringPhase.ts      semantic stage + shared AUTHORING/Animation exposure + handoff contract
-mcp/lib/registrationProfile.ts internal Runtime compatibility
-mcp/ui/                        Blockbench panel/settings
-mcp/prompts/                   canonical workflow + generated manifest
-mcp/build/                     build/docs/manifest generation + developer watch policy
-mcp/scripts/three-d-assisted-run.ts
-                               production external 3D-Assisted orchestrator
-mcp/scripts/three-d-assisted/  deterministic reference extraction + operator contract
-mcp/scripts/                   other verification/measurement/deploy utilities
-mcp/tests/                     contract/integration regressions
-mcp/docs/                      generated API docs; secondary to source
-Experimental/                  pinned external implementation backends/research
+callable union has **54 tools**
+Geometry/Texturing share **47** AUTHORING tools
+Animation exposes **20** tools
 ```
 
-Developer-loop owner remains: **developer loop: `dev:watch`, prompt watch regeneration, `deploy:local`** → `mcp/build/`, `mcp/scripts/` with regression `mcp/tests/developer-loop.test.ts`.
+The generated API snapshot still has **68 declared source ToolSpecs** until the next canonical `LOCAL_CODE` generator pass removes the two retired compatibility descriptors. Those descriptors are excluded from every active phase surface and are not current authoring capabilities.
 
-## Geometry Strategy Ownership
+## Authoring Ownership
 
-### DIRECT
+| Domain | Semantic owner | Runtime/source owner |
+| --- | --- | --- |
+| Geometry / rig / pivots / UV Layout | `.agents/skills/blockbench-bedrock-modelling/SKILL.md` | `mcp/server/tools/cubes.ts`, `mcp/server/tools/element.ts`, `mcp/server/tools/locators.ts`, animation rig subset |
+| Texture / Painter / PBR | `.agents/skills/blockit-bedrock-texturing/SKILL.md` | `mcp/server/tools/texture.ts`, `paint.ts`, material owners |
+| Animation / motion / effects/controllers | `.agents/skills/blockit-bedrock-animation/SKILL.md` | `mcp/server/tools/animation*.ts`, particle/controller owners |
+| Asset routing / phase gate | `.agents/skills/blockit-bedrock-entity-mcp/SKILL.md` | `mcp/lib/authoringPhase.ts`, `mcp/server/tools.ts` |
+| Reference image generation | `.agents/skills/blockbench-reference-generator/SKILL.md` | ChatGPT image generation; no Runtime authoring owner |
 
-Current production path uses normal Geometry specialists + Runtime capabilities.
+Normal Geometry is the native Group/Cube path. Retired Hunyuan/PrimitiveAnything/materialization source is not an active owner.
 
-### 3D_ASSISTED
+## Gateway Owners
+
+| Concern | Owner |
+| --- | --- |
+| stable four-tool stdio boundary | `mcp/gateway/index.ts` |
+| Runtime connection/catalog/queue/project affinity | `mcp/gateway/backend.ts` |
+| capability priority/result compaction/runtime signature | `mcp/gateway/contract.ts` |
+| project/phase affinity headers | `mcp/gateway/projectAffinity.ts` |
+| branch-specific schema reduction | `mcp/gateway/schemaProjection.ts` |
+| local vanilla entity support reference | `mcp/gateway/vanillaEntityReference.ts` |
+
+## Build / Generated Ownership
+
+MCP TypeScript/Bun implementation mechanics are owned by `mcp/AGENTS.md` + the actual build/test source, not separate generic Skills.
+
+Developer loop: `dev:watch`, prompt watch regeneration, `deploy:local`, and `dev:sync` are owned by:
 
 ```text
-Approved Board
-→ deterministic LEFT/FRONT/BACK extraction
-→ Hunyuan3D v1 Shape Reconstruction
-→ Shape GLB Gate
-→ PrimitiveAnything
-→ Primitive Decomposition Gate
-→ atomic Cuboid Materialization
-→ Cuboid Materialization Gate
-→ Semantic Geometry Cleanup
-→ final Geometry internal verify
+mcp/build/index.ts
+mcp/build/watch-policy.ts
+mcp/scripts/deploy-local.ts
+mcp/tests/developer-loop.test.ts
 ```
 
-External production owner is `mcp/scripts/three-d-assisted-run.ts`. It consumes only an absolute Active Workspace, persists accepted artifacts under `workspace/active/<asset>/3d-assisted/`, is resumable from validated hashes, and stops for explicit Shape/Decomposition gates. Hunyuan/PrimitiveAnything scripts remain pinned implementation backends under `Experimental/`; do not add a provider router until a second real implementation is required.
-
-Canonical state/data semantics are owned by `mcp/lib/threeDAssistedProduction.ts`. Canonical persistent files are `state.json`, `shape.glb`, and `primitive-decomposition.json`; candidates/previews stay in `.cache/`.
-
-Blockbench conversion engine is `mcp/server/threeDAssistedMaterializer.ts`: Active Workspace only, strict schema/provenance/hash/dimension validation, full preflight before mutation, one native Undo transaction, one temporary `pa_<id>` Group/Bone + Cube per accepted primitive, rollback on exception.
-
-**Public materializer ToolSpec binding:** `mcp/server/tools/element.ts` exposes `materialize_3d_assisted_scaffold` with only absolute `workspace_path`, using the existing engine and four-tool Gateway. `mcp/lib/authoringPhase.ts` owns Geometry classification. Canonical `docs:build`/`docs:check` own generated output; installed/native proof remains separate.
-
-Environment setup/preflight: `Experimental/three-d-assisted-hunyuan-poc/environment.py` owns pinned Windows Hunyuan source/model setup and checksum checks; the existing PrimitiveAnything setup/runner owns WSL Ubuntu dependencies and weights. `three-d-assisted-run.ts preflight` checks both without state writes or inference.
-
-## Authoring / Approval Ownership
-
-```text
-Core       lifecycle, focused inspection, recovery, capture, export, stage control
-AUTHORING Runtime surface
-  Geometry owner   shape/hierarchy/rig foundation/pivots/UV Layout/future editability
-  Texturing owner  Texture Atlas/Painter/PBR/materials/Texture Verify
-Animation Runtime  motion/keyframes/effects/controllers
-```
-
-Geometry and Texturing capabilities are available together during AUTHORING. This removes the old Runtime bounce while preserving semantic ownership: a texture-discovered Geometry/UV defect is judged and corrected by the Geometry owner, then only affected texture evidence is revalidated.
-
-Internal stage PASS means ready for user review, not approval. Forward Animation handoff waits for explicit user approval + checkpoint. Reopen upstream only for a material owner defect and invalidate only materially dependent downstream approvals.
-
-## Gateway / Runtime Boundary
-
-Gateway remains exactly:
-
-```text
-status
-search_capabilities
-describe_capability
-invoke_capability
-```
-
-The source Bedrock Runtime callable union has **56 tools**: Geometry and Texturing share **49** AUTHORING tools; Animation exposes **20**. Installed proof remains separate and belongs in `current-validation.md`. Generated API inventory contains **68 declared source ToolSpecs**, including disabled/source-preserved definitions and phase control; that inventory is not the active client surface. A materializer is a Runtime capability behind the existing Gateway, never a fifth Gateway tool.
+Generated API docs are owned by canonical ToolSpecs + `mcp/build/docs.ts`; runtime prompt manifest is owned by `mcp/prompts/*.md` + `mcp/build/generate-manifest.ts`. Never hand-edit generated output.
 
 ## Hot-Path Defect Index
 
-| Tool(s) / boundary | Source owner | Primary regression owner |
-|---|---|---|
-| Gateway stable surface / ranking | `mcp/gateway/contract.ts`, `mcp/gateway/backend.ts` | `mcp/tests/gateway-contract.test.ts` |
-| shared AUTHORING exposure / Animation `HANDOFF_REQUIRED` | `mcp/lib/authoringPhase.ts`, active Skills | `mcp/tests/authoring-phase-surface.test.ts` |
-| developer loop | `mcp/build/`, `mcp/scripts/` | `mcp/tests/developer-loop.test.ts` |
+Use this table before broad search for named MCP defects.
+
+| Capability / symptom | Primary source owner | Primary regression owner |
+| --- | --- | --- |
 | `create_project` | `mcp/server/tools/project.ts` | `mcp/tests/p1-core-ownership.test.ts` |
 | `inspect_model_bounds` | `mcp/server/tools/project.ts` | `mcp/tests/rendered-model-bounds-numeric-safety.test.ts` |
-| `manage_geometry_reference` | `mcp/server/tools/project.ts` | `mcp/tests/geometry-reference-contract.test.ts` |
-| `manage_cubes` | `mcp/server/tools/cubes.ts` | `mcp/tests/model-effectiveness-correction-accuracy.test.ts` |
-| `inspect_elements` | `mcp/server/tools.ts` | `mcp/tests/model-effectiveness-correction-accuracy.test.ts` |
+| `manage_cubes` geometry create/update/correction | `mcp/server/tools/cubes.ts` | `mcp/tests/model-effectiveness-correction-accuracy.test.ts` |
+| `inspect_elements` routing/detail | `mcp/server/tools.ts` | `mcp/tests/model-effectiveness-correction-accuracy.test.ts` |
 | `capture_model_views` | `mcp/server/tools/camera.ts` | `mcp/tests/camera-framing-contract.test.ts` |
-| `manage_locator`, `manage_null_object` | `mcp/server/tools/locators.ts` | `mcp/tests/bedrock-locator-coverage.test.ts` |
-| `manage_render_profile` | `mcp/server/tools/render-profile.ts` | `mcp/tests/render-profile-binding.test.ts` |
-| `manage_animation_controller` | `mcp/server/tools/animation-controller.ts` | `mcp/tests/animation-controller-mutation-contract.test.ts` |
 | `export_model` | `mcp/server/tools/export.ts` | `mcp/tests/prelocal-generic-semantics.test.ts` |
-| external 3D-Assisted state/orchestration | `mcp/lib/threeDAssistedProduction.ts`, `mcp/scripts/three-d-assisted-run.ts` | `mcp/tests/three-d-assisted-production-contract.test.ts` |
-| atomic scaffold materializer engine | `mcp/server/threeDAssistedMaterializer.ts` | `mcp/tests/three-d-assisted-production-contract.test.ts` + later live Undo proof |
+| project/tab affinity | `mcp/gateway/backend.ts`, `mcp/server/net.ts` | `mcp/tests/project-affinity-*.test.ts` |
+| phase surface / handoff | `mcp/lib/authoringPhase.ts`, `mcp/server/tools.ts` | `mcp/tests/authoring-phase-surface.test.ts` |
+| UV atlas/template | `mcp/server/tools/texture.ts`, `mcp/lib/boxUvLayout.ts` | texture/UV contract tests |
+| native Painter lifecycle | `mcp/server/tools/paint.ts` | paint executor/runtime tests |
+| Animation timeline | `mcp/server/tools/animation.ts`, `mcp/server/tools.ts` | animation timeline/mutation tests |
+| Animation controller composition | `mcp/server/tools/animation-controller.ts` | controller contract tests |
+| Particle document/preview | `mcp/server/tools/particle.ts` | particle contract tests |
 
-## Quality-Gate Ownership
+## Current Capability Notes
 
-Recurring Elevator evidence reopens two judgement gates without inventing a new generic framework:
+`manage_animation_timeline` consolidates keyframe/graph/timeline/batch/copy/property authoring. Animation Controller blend-transition curves are available through the controller composition owner.
 
-- **Surface/cohort quality** → modelling skill + Geometry policy: positive-volume overlap success is insufficient; inspect coplanar visible surfaces, gaps, seams, layer offsets, and whole semantic assembly relationships.
-- **UV mapping quality** → Texture policy + Texturing skill: technical bounds/overlap success is insufficient; inspect face aspect, texel density, orientation, padding/seams, and semantic exact-reuse intent.
+`paint_texture_transaction` is the exact bounded pixel/transaction route. Native brush/stroke tools remain separate and should not be inferred from transaction success.
 
-Runtime-enforced generalized surface/UV metrics remain a LOCAL_CODE/LIVE_BLOCKBENCH follow-up only if representative asset proof shows instruction-level gates are insufficient. Do not invent a universal geometry/UV scorer from one Elevator sample.
+`manage_render_profile` owns visual render-profile integration only when that file-backed integration is explicitly requested; normal preview does not require an RP graph.
 
-## Protected Capability Map
+## Proof / Efficiency Boundary
 
-Protected gaps remain explicit and must not be bypassed through generic UI/eval fallback:
+**Static Footprint** is a source/schema guardrail and cannot upgrade static evidence into live/native/visual proof. **Authoring Efficiency** means Cost to Accepted Result after quality passes.
 
-- TextureMesh direct authoring/inspection;
-- native visible bounding-box fields;
-- animated textures;
-- bone-binding expressions.
-
-Locator/Null is available through `manage_locator` / `manage_null_object`; material instances are available through `manage_material_instances`; animation controller lifecycle, nested-controller links, and blend-transition curves are available through `manage_animation_controller`.
-
-## Protected Boundary
-
-`risky_eval` and `from_geo_json` remain disabled. Generic UI/eval fallback does not become normal authoring or scaffold import. Internal `extended` remains Legacy UI Fallback compatibility, not an authoring profile.
-
-## Effectiveness / Proof Ownership
-
-**Authoring Quality** = accepted result quality. **Authoring Efficiency** = Cost to Accepted Result. **Static Footprint** = instruction/schema/surface guardrail only.
-
-**Static Footprint cannot upgrade** Authoring Efficiency or visual-quality claims. Source/static proof cannot establish installed shared AUTHORING lifecycle, final surface/UV quality, external GPU quality, PrimitiveAnything quality, native materializer Undo behavior, or final visual fidelity.
+Source/tests can prove contracts and deterministic routing. Installed build identity, native Undo/playback/persistence, actual visual fidelity, and whole-task model usage require the matching higher execution context.

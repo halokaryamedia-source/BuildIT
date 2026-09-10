@@ -18,7 +18,7 @@ describe("reference Minecraft-first coverage", () => {
     expect(flow).toContain("user approves");
   });
 
-  test("original source image is accepted for DIRECT while 3D_ASSISTED keeps deterministic board input", async () => {
+  test("original source image is accepted while canonical board stays optional stronger coverage", async () => {
     const [agents, skill, guide, product, flow] = await Promise.all([
       read("../AGENTS.md"),
       read("../.agents/skills/blockbench-reference-generator/SKILL.md"),
@@ -31,15 +31,16 @@ describe("reference Minecraft-first coverage", () => {
     for (const text of [guide, product, flow]) {
       expect(text).toContain("original source image");
     }
-    for (const text of [agents, guide, product, flow]) {
-      expect(text).toContain("direct");
-      expect(text).toContain("3d_assisted");
-    }
     expect(agents).toContain("do not force board generation");
     expect(guide).toContain("accept the user's actual image first");
     expect(product).toContain("do not require board generation");
-    expect(flow).toContain("do not force board generation for direct");
-    expect(skill).toContain("canonical board is optional for `direct`");
+    expect(flow).toContain("do not force board generation");
+    expect(skill).toContain("canonical board is optional");
+    for (const text of [agents, skill, guide, product, flow]) {
+      expect(text).not.toContain("direct | 3d_assisted");
+      expect(text).not.toContain("shape reconstruction");
+      expect(text).not.toContain("primitiveanything");
+    }
   });
 
   test("multiple source images are first-class evidence without adding mandatory intake", async () => {
@@ -63,7 +64,7 @@ describe("reference Minecraft-first coverage", () => {
     ]);
     for (const text of [skill, guide, flow]) {
       expect(text).toContain("left | front | back");
-      expect(text).toContain("top | front-left 3/4");
+      expect(text).toContain("top  | front-left 3/4");
     }
     expect(skill).toContain("five-preview");
     expect(flow).toContain("five-preview");
