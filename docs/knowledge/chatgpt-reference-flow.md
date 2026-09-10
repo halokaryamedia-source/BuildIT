@@ -31,6 +31,7 @@ USER REQUEST
 → USER VISUAL REVIEW / CORRECTION WHEN MATERIAL
 → PACKAGE GENERATION CONFIRMATION WHEN REQUIRED
 → PACKAGE BUILD
+→ PACKAGE CONSISTENCY GATE
 → HANDOFF TO CODEX
 ```
 
@@ -227,11 +228,65 @@ Exact schema is owned by:
 docs/knowledge/reference-package-schema.md
 ```
 
+Stage documents are owned by:
+
+```text
+GEOMETRY.md
+→ docs/knowledge/geometry-reference-contract.md
+
+TEXTURE.md
+→ docs/knowledge/texture-reference-contract.md
+
+ANIMATION.md
+→ docs/knowledge/animation-reference-contract.md
+```
+
 Stage Markdown files are stage-specific projections. They must not become independent competing authorities.
 
 Do not export the compiled production prompt, conversation transcript, or duplicate README/bootstrap files by default.
 
-## 11. Authority Order
+## 11. Package Consistency Gate
+
+Before handoff to Codex, verify all of the following:
+
+```text
+all documents listed in REFERENCE.json actually exist
+all referenced image IDs actually exist
+all image paths resolve inside the package
+stage documents agree with REFERENCE.json
+stage documents introduce no unsupported facts
+Geometry document contains no Texture/Animation implementation plan
+Texture document contains no Geometry workaround or Animation plan
+Animation document contains no Geometry workaround or Texture brief
+readiness values agree with blocking unknowns
+optional omitted files are not referenced
+```
+
+If any check fails, correct the package before handoff.
+
+This gate is internal. Do not make the user review package plumbing unless a real requirement conflict requires their decision.
+
+## 12. Codex Handoff / Load Contract
+
+Package consumption is owned by:
+
+```text
+docs/knowledge/reference-package-load-contract.md
+```
+
+Expected downstream behavior:
+
+```text
+REFERENCE.json
+→ identify active stage and readiness
+→ load only the active stage document
+→ inspect only image IDs referenced by that stage
+→ work
+```
+
+The package is self-contained. Codex should not need the original ChatGPT transcript or compiled prompt.
+
+## 13. Authority Order
 
 ```text
 explicit current user requirement
@@ -243,7 +298,7 @@ explicit current user requirement
 
 The compiled brief organizes generation but is not a higher authority than approved user/reference facts.
 
-## 12. Stop Conditions
+## 14. Stop Conditions
 
 Do not generate when:
 - a blocking requirement is missing;
@@ -252,6 +307,11 @@ Do not generate when:
 - package generation is pending explicit approval;
 - a correction would require guessing what must remain unchanged;
 - a requested reference would not materially help the downstream decision.
+
+Do not hand off when:
+- package consistency checks fail;
+- referenced files/images are missing;
+- a blocking unknown contradicts a `READY` stage.
 
 ## User Experience Goal
 
@@ -266,4 +326,4 @@ The user should only need to:
 6. receive the completed handoff package for Codex
 ```
 
-Prompt quality is the responsibility of the ChatGPT-side system, not the user.
+Prompt quality and package consistency are responsibilities of the ChatGPT-side system, not the user.
