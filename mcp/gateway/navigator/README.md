@@ -37,6 +37,20 @@ source owner      = exact source path + optional specialist path + regression te
 
 `authoring_domain` describes where a capability belongs in the authoring surface. `source_owner` describes which repository implementation owns it. These terms are intentionally not interchangeable, and Navigator does not expose a second legacy `owner` alias.
 
+## Routing Priority
+
+Navigator uses one direct-first routing contract, delivered once in the `status` bootstrap:
+
+```text
+known capability        → INVOKE_CAPABILITY
+unknown capability      → SEARCH_CAPABILITIES (bounded to 4 results)
+schema uncertainty      → DESCRIBE_CAPABILITY
+stale/lost orientation  → STATUS
+unresolved source task  → bounded base context, then targeted search
+```
+
+`search_capabilities` is a discovery fallback, not a mandatory step before every invocation. `describe_capability` is a schema fallback, not a mandatory step after search. A known capability with known arguments should invoke directly. Normal successful continuation should use `navigation_delta` instead of rereading `status`.
+
 ## Context Projection
 
 Navigator follows `SELECT, DON'T SUMMARIZE`.
@@ -47,7 +61,7 @@ A caller may return exact `known_context_ids` from the current task to `status`;
 
 ## Task Context
 
-Each navigation packet includes a deterministic `task_context_id`. Asset authoring derives it from project affinity, authoring phase, live Runtime identity, and current workspace fingerprint. MCP development additionally includes the resolved development domain and concrete task intent, so materially different source tasks cannot accidentally share one context identity.
+Each navigation packet includes a deterministic `task_context_id`. Asset authoring derives it from project affinity, authoring phase, live Runtime identity, and current workspace fingerprint. MCP development derives it from Runtime/build identity plus the resolved development domain and concrete task intent, so unrelated asset tab or authoring-phase changes do not reset source-development identity.
 
 ## Workspace Projection
 
@@ -105,7 +119,7 @@ avoid_context_classes
 
 `source_owners` are exact current repository paths plus known regression owners. `required_context_paths` names only the minimum source-development instruction stack plus the matching specialist when one is known. Asset workspace history and unrelated foundation/runtime schema context are explicitly excluded from the normal development projection.
 
-If two domains tie, Navigator returns `AMBIGUOUS` + `UNRESOLVED` instead of inventing one owner. Unknown wording also stays `UNRESOLVED`; broad repository search is then a fallback, not the default path.
+If two domains tie, Navigator returns `AMBIGUOUS` + `UNRESOLVED` instead of inventing one owner. Unknown wording also stays `UNRESOLVED`; the caller reads only the bounded base context first, then performs a targeted search if the task is still unresolved. Broad repository scanning is not the default path.
 
 In `MCP_DEVELOPMENT` mode Navigator does not parse the active asset workspace and does not retransmit asset-authoring Skill handles. This prevents source work from paying authoring-context overhead.
 
@@ -136,4 +150,4 @@ Call `status` again only when `navigation_delta.requires_status_refresh=true`, p
 
 ## Evidence / Efficiency
 
-Static tests guard that a representative full packet remains bounded, cached context is omitted, stale context is invalidated, source routing stays deterministic, and ambiguous development wording fails closed. `measure:navigator` measures payload footprint only; it is not a claim about whole-session model tokens. Authoring-efficiency proof still requires comparing cost to an accepted result under equivalent quality.
+Static tests guard that a representative full packet remains bounded, cached context is omitted, stale context is invalidated, source routing stays deterministic, routing priority stays direct-first, and ambiguous development wording fails closed. `measure:navigator` measures payload footprint only; it is not a claim about whole-session model tokens. Authoring-efficiency proof still requires comparing cost to an accepted result under equivalent quality.
