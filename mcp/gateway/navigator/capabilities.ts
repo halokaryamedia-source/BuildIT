@@ -1,21 +1,27 @@
 import type { CapabilitySummary } from "../contract";
-import { ownerForCapability, sourceOwnerForCapability } from "./registry";
-import type { NavigatorCapabilitySummary, NavigatorOwner } from "./types";
+import {
+  authoringDomainForCapability,
+  sourceOwnerForCapability,
+} from "./registry";
+import type {
+  NavigatorAuthoringDomain,
+  NavigatorCapabilitySummary,
+} from "./types";
 
 export function decorateCapabilities(
   capabilities: readonly CapabilitySummary[],
-  currentOwner: NavigatorOwner | null
+  currentDomain: NavigatorAuthoringDomain | null
 ): NavigatorCapabilitySummary[] {
   return capabilities.map((capability) => {
-    const owner = ownerForCapability(capability.capability_id);
-    const current = owner === "CORE" || owner === currentOwner;
+    const authoringDomain = authoringDomainForCapability(capability.capability_id);
+    const current = authoringDomain === "CORE" || authoringDomain === currentDomain;
     return {
       ...capability,
       navigation: {
-        owner,
-        current_owner: current,
+        authoring_domain: authoringDomain,
+        current_domain: current,
         eligibility: current
-          ? owner === "CORE"
+          ? authoringDomain === "CORE"
             ? "AVAILABLE"
             : "RECOMMENDED"
           : "FOREIGN_PHASE",

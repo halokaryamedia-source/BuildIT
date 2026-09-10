@@ -1,6 +1,6 @@
 import type {
+  NavigatorAuthoringDomain,
   NavigatorContextHandle,
-  NavigatorOwner,
   NavigatorSourceOwner,
 } from "./types";
 
@@ -38,11 +38,11 @@ export const NAVIGATOR_CONTEXT_HANDLES = {
   workflow: WORKFLOW,
 } as const;
 
-export function contextForOwner(owner: NavigatorOwner | null) {
+export function contextForAuthoringDomain(domain: NavigatorAuthoringDomain | null) {
   const required = [ROUTER];
-  if (owner === "GEOMETRY") required.push(MODELLING);
-  else if (owner === "TEXTURING") required.push(TEXTURING);
-  else if (owner === "ANIMATION") required.push(ANIMATION);
+  if (domain === "GEOMETRY") required.push(MODELLING);
+  else if (domain === "TEXTURING") required.push(TEXTURING);
+  else if (domain === "ANIMATION") required.push(ANIMATION);
   return { required, optional: [WORKFLOW] };
 }
 
@@ -80,7 +80,7 @@ const ANIMATION_CAPABILITIES = new Set([
   "manage_animation_controller",
 ]);
 
-export function ownerForCapability(capability: string): NavigatorOwner {
+export function authoringDomainForCapability(capability: string): NavigatorAuthoringDomain {
   if (GEOMETRY_CAPABILITIES.has(capability)) return "GEOMETRY";
   if (TEXTURING_CAPABILITIES.has(capability)) return "TEXTURING";
   if (ANIMATION_CAPABILITIES.has(capability)) return "ANIMATION";
@@ -175,7 +175,7 @@ const SOURCE_BY_CAPABILITY: Record<string, NavigatorSourceOwner> = {
   },
 };
 
-const DEFAULT_SOURCE_BY_OWNER: Record<NavigatorOwner, NavigatorSourceOwner> = {
+const DEFAULT_SOURCE_BY_DOMAIN: Record<NavigatorAuthoringDomain, NavigatorSourceOwner> = {
   GEOMETRY: {
     source: "mcp/server/tools.ts",
     specialist: MODELLING.path,
@@ -199,5 +199,5 @@ const DEFAULT_SOURCE_BY_OWNER: Record<NavigatorOwner, NavigatorSourceOwner> = {
 };
 
 export function sourceOwnerForCapability(capability: string): NavigatorSourceOwner {
-  return SOURCE_BY_CAPABILITY[capability] ?? DEFAULT_SOURCE_BY_OWNER[ownerForCapability(capability)];
+  return SOURCE_BY_CAPABILITY[capability] ?? DEFAULT_SOURCE_BY_DOMAIN[authoringDomainForCapability(capability)];
 }

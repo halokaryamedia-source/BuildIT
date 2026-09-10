@@ -26,6 +26,17 @@ invoke_capability
 
 `status` carries the compact Navigator bootstrap. Search/describe add ownership/navigation metadata only when those fallback calls are already needed. `invoke_capability` preserves the existing Runtime result and adds `navigation_delta`; normal successful operations do not require a status reread.
 
+## Naming Contract
+
+Navigator uses one term for one concept:
+
+```text
+authoring domain = capability/phase family: GEOMETRY | TEXTURING | ANIMATION | CORE
+source owner      = exact source path + optional specialist path + regression test path
+```
+
+`authoring_domain` describes where a capability belongs in the authoring surface. `source_owner` describes which repository implementation owns it. These terms are intentionally not interchangeable, and Navigator does not expose a second legacy `owner` alias.
+
 ## Context Projection
 
 Navigator follows `SELECT, DON'T SUMMARIZE`.
@@ -67,7 +78,7 @@ specialist
 test_owner
 ```
 
-This lets Codex move from a known runtime capability to its implementation owner without scanning the repository. Exact high-value capabilities have direct owners; unknown capabilities fall back to the semantic owner family. This metadata is navigation only and does not duplicate Tool schemas or alter Runtime execution.
+They also carry `authoring_domain` and `current_domain`, keeping phase-family routing distinct from repository ownership. This lets Codex move from a known runtime capability to its implementation owner without scanning the repository. Exact high-value capabilities have direct source owners; unknown capabilities fall back to the semantic authoring domain. This metadata is navigation only and does not duplicate Tool schemas or alter Runtime execution.
 
 ## Development Intent Resolver
 

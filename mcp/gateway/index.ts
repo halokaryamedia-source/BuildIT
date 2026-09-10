@@ -15,11 +15,11 @@ import {
 } from "./contract";
 import { projectCapabilityInputSchema } from "./schemaProjection";
 import {
+  authoringDomainForCapability,
   buildNavigatorDelta,
   buildNavigatorPacket,
   buildNavigatorSnapshot,
   decorateCapabilities,
-  ownerForCapability,
 } from "./navigator";
 import {
   VANILLA_ENTITY_REFERENCE_CAPABILITY,
@@ -225,7 +225,7 @@ registerGatewayTool(
   {
     title: "Search BlockIT Capabilities",
     description:
-      "Searches the live BlockIT capability catalog and decorates results with Navigator ownership/eligibility. Primary authoring capabilities rank ahead of support, experimental, and maintenance fallbacks when relevance is comparable.",
+      "Searches the live BlockIT capability catalog and decorates results with Navigator authoring-domain eligibility plus exact source ownership. Primary authoring capabilities rank ahead of support, experimental, and maintenance fallbacks when relevance is comparable.",
     inputSchema: searchInput.shape,
     annotations: {
       readOnlyHint: true,
@@ -251,8 +251,8 @@ registerGatewayTool(
           ].slice(0, limit)
         : runtimeCapabilities;
       const navigationStatus = await backend.getStatus();
-      const currentOwner = buildNavigatorSnapshot(navigationStatus).authoring.owner;
-      const capabilities = decorateCapabilities(rawCapabilities, currentOwner);
+      const currentDomain = buildNavigatorSnapshot(navigationStatus).authoring.domain;
+      const capabilities = decorateCapabilities(rawCapabilities, currentDomain);
       return {
         content: [
           {
@@ -315,7 +315,7 @@ registerGatewayTool(
               branch: projection.branch,
             },
             navigation: {
-              owner: ownerForCapability(capability),
+              authoring_domain: authoringDomainForCapability(capability),
               current_phase: (await backend.getStatus()).affinity.authoring_phase,
             },
           },

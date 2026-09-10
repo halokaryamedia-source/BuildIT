@@ -1,7 +1,7 @@
 import type { CapabilitySummary, JsonRecord } from "../contract";
 import type { BlockitAuthoringPhaseAffinity } from "../projectAffinity";
 
-export type NavigatorOwner = "GEOMETRY" | "TEXTURING" | "ANIMATION" | "CORE";
+export type NavigatorAuthoringDomain = "GEOMETRY" | "TEXTURING" | "ANIMATION" | "CORE";
 
 export type NavigatorContextHandle = {
   id: string;
@@ -29,7 +29,7 @@ export type NavigatorSnapshot = {
   };
   authoring: {
     phase: BlockitAuthoringPhaseAffinity | null;
-    owner: NavigatorOwner | null;
+    domain: NavigatorAuthoringDomain | null;
     next_intent: string;
   };
   runtime: {
@@ -48,8 +48,8 @@ export type NavigatorSnapshot = {
 
 export type NavigatorCapabilitySummary = CapabilitySummary & {
   navigation: {
-    owner: NavigatorOwner;
-    current_owner: boolean;
+    authoring_domain: NavigatorAuthoringDomain;
+    current_domain: boolean;
     eligibility: "RECOMMENDED" | "AVAILABLE" | "FOREIGN_PHASE";
     source_owner: NavigatorSourceOwner;
   };
@@ -58,7 +58,7 @@ export type NavigatorCapabilitySummary = CapabilitySummary & {
 export type NavigatorDelta = {
   protocol: "blockit-navigator-v1";
   capability: string;
-  owner: NavigatorOwner;
+  authoring_domain: NavigatorAuthoringDomain;
   source_owner: NavigatorSourceOwner;
   phase_before: BlockitAuthoringPhaseAffinity | null;
   phase_after: BlockitAuthoringPhaseAffinity | null;

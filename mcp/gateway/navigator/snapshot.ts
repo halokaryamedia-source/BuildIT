@@ -1,8 +1,12 @@
 import type { GatewayRuntimeStatus } from "../backend";
 import type { JsonRecord } from "../contract";
 import { readRuntimeProjectHealth } from "../projectAffinity";
-import { contextForOwner } from "./registry";
-import type { NavigatorOwner, NavigatorSnapshot, RuntimeHealthLike } from "./types";
+import { contextForAuthoringDomain } from "./registry";
+import type {
+  NavigatorAuthoringDomain,
+  NavigatorSnapshot,
+  RuntimeHealthLike,
+} from "./types";
 
 function record(value: unknown): JsonRecord | null {
   return value && typeof value === "object" && !Array.isArray(value)
@@ -14,27 +18,29 @@ function stringValue(value: unknown): string | null {
   return typeof value === "string" && value.length > 0 ? value : null;
 }
 
-function ownerForPhase(phase: GatewayRuntimeStatus["affinity"]["authoring_phase"]): NavigatorOwner | null {
+function authoringDomainForPhase(
+  phase: GatewayRuntimeStatus["affinity"]["authoring_phase"]
+): NavigatorAuthoringDomain | null {
   if (phase === "geometry") return "GEOMETRY";
   if (phase === "texturing") return "TEXTURING";
   if (phase === "animation") return "ANIMATION";
   return null;
 }
 
-function nextIntent(owner: NavigatorOwner | null, online: boolean): string {
+function nextIntent(domain: NavigatorAuthoringDomain | null, online: boolean): string {
   if (!online) return "RESTORE_RUNTIME";
-  if (owner === "GEOMETRY") return "CONTINUE_GEOMETRY_OR_UV";
-  if (owner === "TEXTURING") return "CONTINUE_TEXTURE_AUTHORING";
-  if (owner === "ANIMATION") return "CONTINUE_ANIMATION";
-  return "RESOLVE_ACTIVE_AUTHORING_OWNER";
+  if (domain === "GEOMETRY") return "CONTINUE_GEOMETRY_OR_UV";
+  if (domain === "TEXTURING") return "CONTINUE_TEXTURE_AUTHORING";
+  if (domain === "ANIMATION") return "CONTINUE_ANIMATION";
+  return "RESOLVE_ACTIVE_AUTHORING_DOMAIN";
 }
 
 export function buildNavigatorSnapshot(status: GatewayRuntimeStatus): NavigatorSnapshot {
   const health = record(status.runtime.health) as RuntimeHealthLike | null;
   const project = health ? readRuntimeProjectHealth(health) : null;
   const phase = status.affinity.authoring_phase;
-  const owner = ownerForPhase(phase);
-  const context = contextForOwner(owner);
+  const domain = authoringDomainForPhase(phase);
+  const context = contextForAuthoringDomain(domain);
   const blockers: string[] = [];
 
   let binding: NavigatorSnapshot["project"]["binding"] = "UNKNOWN";
@@ -69,8 +75,8 @@ export function buildNavigatorSnapshot(status: GatewayRuntimeStatus): NavigatorS
     },
     authoring: {
       phase,
-      owner,
-      next_intent: nextIntent(owner, status.runtime.online),
+      domain,
+      next_intent: nextIntent(domain, status.runtime.online),
     },
     runtime: {
       online: status.runtime.online,

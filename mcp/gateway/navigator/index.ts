@@ -10,18 +10,18 @@ export type {
   NavigatorDevelopmentResolution,
 } from "./developmentIntent";
 export {
-  contextForOwner,
-  ownerForCapability,
+  authoringDomainForCapability,
+  contextForAuthoringDomain,
   sourceOwnerForCapability,
   NAVIGATOR_CONTEXT_HANDLES,
 } from "./registry";
 export type { NavigatorPacket, NavigatorContextDelivery } from "./packet";
 export type { NavigatorWorkspaceProjection } from "./workspace";
 export type {
+  NavigatorAuthoringDomain,
   NavigatorCapabilitySummary,
   NavigatorContextHandle,
   NavigatorDelta,
-  NavigatorOwner,
   NavigatorSnapshot,
   NavigatorSourceOwner,
 } from "./types";

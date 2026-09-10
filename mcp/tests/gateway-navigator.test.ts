@@ -2,12 +2,12 @@ import { describe, expect, test } from "bun:test";
 import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import {
+  authoringDomainForCapability,
   buildNavigatorDelta,
   buildNavigatorPacket,
   buildNavigatorSnapshot,
   decorateCapabilities,
   NAVIGATOR_CONTEXT_HANDLES,
-  ownerForCapability,
 } from "@/gateway/navigator";
 import type { GatewayRuntimeStatus } from "@/gateway/backend";
 
@@ -43,7 +43,7 @@ describe("BlockIT Navigator", () => {
     expect(nav.protocol).toBe("blockit-navigator-v1");
     expect(nav.system).toBe("READY");
     expect(nav.project).toMatchObject({ affinity_uuid: "project-a", binding: "BOUND" });
-    expect(nav.authoring).toMatchObject({ phase: "geometry", owner: "GEOMETRY" });
+    expect(nav.authoring).toMatchObject({ phase: "geometry", domain: "GEOMETRY" });
     expect(nav.runtime.build_identity).toBe("sha256:build-a");
     expect(nav.context.required.map((entry) => entry.path)).toEqual([
       ".agents/skills/blockit-bedrock-entity-mcp/SKILL.md",
@@ -67,22 +67,26 @@ describe("BlockIT Navigator", () => {
     expect(offline.blockers).toContain("RUNTIME_OFFLINE");
   });
 
-  test("capability ownership decorates search results without duplicating schemas", () => {
-    expect(ownerForCapability("manage_cubes")).toBe("GEOMETRY");
-    expect(ownerForCapability("paint_with_brush")).toBe("TEXTURING");
-    expect(ownerForCapability("manage_animation_timeline")).toBe("ANIMATION");
-    expect(ownerForCapability("get_project_info")).toBe("CORE");
+  test("capability authoring domains decorate search results without duplicating schemas", () => {
+    expect(authoringDomainForCapability("manage_cubes")).toBe("GEOMETRY");
+    expect(authoringDomainForCapability("paint_with_brush")).toBe("TEXTURING");
+    expect(authoringDomainForCapability("manage_animation_timeline")).toBe("ANIMATION");
+    expect(authoringDomainForCapability("get_project_info")).toBe("CORE");
 
     const decorated = decorateCapabilities([
       { capability_id: "manage_cubes", description: "", tier: "primary", read_only: false, destructive: true, idempotent: false },
       { capability_id: "paint_with_brush", description: "", tier: "primary", read_only: false, destructive: true, idempotent: false },
     ], "GEOMETRY");
+    expect(decorated[0]?.navigation.authoring_domain).toBe("GEOMETRY");
+    expect(decorated[0]?.navigation.current_domain).toBe(true);
     expect(decorated[0]?.navigation.eligibility).toBe("RECOMMENDED");
+    expect(decorated[1]?.navigation.current_domain).toBe(false);
     expect(decorated[1]?.navigation.eligibility).toBe("FOREIGN_PHASE");
   });
 
   test("mutation continuation emits delta instead of requiring a full status packet", () => {
     const delta = buildNavigatorDelta({ capability: "manage_cubes", phaseBefore: "geometry", phaseAfter: "geometry", projectUuid: "project-a", succeeded: true });
+    expect(delta.authoring_domain).toBe("GEOMETRY");
     expect(delta.requires_status_refresh).toBe(false);
     expect(delta.changed).toEqual([]);
     expect(delta.next_intent).toBe("VERIFY_OR_CONTINUE_GEOMETRY");
