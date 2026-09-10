@@ -35,15 +35,19 @@ Every Codex asset-authoring request enters through LazyDesigner Control. Control
 
 ## Canonical Asset Profiles
 
+Profile names describe asset classes, not modelling techniques:
+
 ```text
 PROP_FURNITURE
 VEHICLE
 HUMANOID
 CREATURE
 MECHANICAL
-PLANT_CUTOUT
+PLANT_FOLIAGE
 GENERIC
 ```
+
+`PLANT_FOLIAGE` covers vegetation and foliage assets. Plane/cutout terminology belongs to representation choices inside that profile and is not exposed as the profile name.
 
 `GENERIC` is fallback only. Profiles provide decision vocabulary, not geometry presets.
 
@@ -198,6 +202,8 @@ Readiness is stage-specific. Missing material detail should not block Geometry i
   }
 }
 ```
+
+`asset.profile` uses one of `PROP_FURNITURE | VEHICLE | HUMANOID | CREATURE | MECHANICAL | PLANT_FOLIAGE | GENERIC`.
 
 `null` means unknown and is never permission to infer.
 
