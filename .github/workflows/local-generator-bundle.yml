@@ -20,9 +20,6 @@ jobs:
   bundle:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
-    defaults:
-      run:
-        working-directory: mcp
 
     steps:
       - name: Checkout
@@ -36,19 +33,20 @@ jobs:
           bun-version-file: ".bun-version"
 
       - name: Install exact dependencies
+        working-directory: mcp
         run: bun install --frozen-lockfile
 
       - name: Stage generator runtime
         run: |
-          mkdir -p .generator-bin
-          cp "$(command -v bun)" .generator-bin/bun
-          chmod +x .generator-bin/bun
+          mkdir -p mcp/.generator-bin
+          cp "$(command -v bun)" mcp/.generator-bin/bun
+          chmod +x mcp/.generator-bin/bun
 
       - name: Upload disposable generator checkout
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: blockit-local-generator-bundle
-          path: mcp
+          path: .
           include-hidden-files: true
           if-no-files-found: error
           retention-days: 1
