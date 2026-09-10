@@ -35,11 +35,11 @@ const BASE_CONTEXT = [
   ".agents/skills/development-brief/SKILL.md",
 ] as const;
 
-const owner = (source: string, test_owner: string | null = null): NavigatorSourceOwner => ({
-  source,
-  specialist: null,
-  test_owner,
-});
+const owner = (
+  source: string,
+  test_owner: string | null = null,
+  specialist: string | null = null
+): NavigatorSourceOwner => ({ source, specialist, test_owner });
 
 const uniqueOwners = (owners: readonly NavigatorSourceOwner[]): NavigatorSourceOwner[] => {
   const seen = new Set<string>();
@@ -54,16 +54,32 @@ const uniqueOwners = (owners: readonly NavigatorSourceOwner[]): NavigatorSourceO
 const RULES: readonly Rule[] = [
   {
     domain: "ANIMATION",
-    terms: ["animation", "animasi", "keyframe", "timeline", "motion", "gerak", "stiff", "kaku", "controller", "rigging"],
+    terms: [
+      "animation", "animasi", "keyframe", "timeline", "motion", "gerak",
+      "stiff", "kaku", "controller", "rigging", "easing", "playback",
+    ],
     owners: () => [
       sourceOwnerForCapability("manage_animation_timeline"),
+      owner(
+        "mcp/lib/animationMotionDynamics.ts",
+        "mcp/tests/animation-native-intelligence.test.ts",
+        ".agents/skills/blockit-bedrock-animation/SKILL.md"
+      ),
+      owner(
+        "mcp/lib/animationQuality.ts",
+        "mcp/tests/quality-intelligence.test.ts",
+        ".agents/skills/blockit-bedrock-animation/SKILL.md"
+      ),
       sourceOwnerForCapability("manage_animation_controller"),
       sourceOwnerForCapability("manage_animation_effects"),
     ],
   },
   {
     domain: "TEXTURING",
-    terms: ["texture", "texturing", "tekstur", "paint", "painter", "uv", "atlas", "material", "pbr", "pixel"],
+    terms: [
+      "texture", "texturing", "tekstur", "paint", "painter", "uv", "atlas",
+      "material", "pbr", "pixel", "alpha", "seam", "palette",
+    ],
     owners: () => [
       sourceOwnerForCapability("create_texture"),
       sourceOwnerForCapability("paint_with_brush"),
@@ -72,7 +88,10 @@ const RULES: readonly Rule[] = [
   },
   {
     domain: "GEOMETRY",
-    terms: ["geometry", "geometri", "cube", "cuboid", "shape", "bentuk", "model shape", "floating", "melayang", "pivot", "hierarchy", "bone"],
+    terms: [
+      "geometry", "geometri", "cube", "cuboid", "shape", "bentuk", "model shape",
+      "floating", "melayang", "pivot", "hierarchy", "bone", "silhouette", "proportion",
+    ],
     owners: () => [
       sourceOwnerForCapability("manage_cubes"),
       sourceOwnerForCapability("capture_model_views"),
@@ -83,12 +102,16 @@ const RULES: readonly Rule[] = [
     domain: "PARTICLE",
     terms: ["particle", "particles", "partikel", "snowstorm"],
     owners: () => [
-      owner("mcp/server/tools/particle.ts", "mcp/tests/particle-contract.test.ts"),
+      owner("mcp/server/tools/particle.ts", "mcp/tests/particle-tool-contract.test.ts"),
+      owner("mcp/lib/bedrockParticleSemantics.ts", "mcp/tests/particle-advanced-semantics.test.ts"),
     ],
   },
   {
     domain: "PROJECT_AFFINITY",
-    terms: ["affinity", "project binding", "project tab", "tab blockbench", "wrong project", "salah project", "project context"],
+    terms: [
+      "affinity", "project binding", "project tab", "tab blockbench", "wrong project",
+      "salah project", "project context",
+    ],
     owners: () => [
       owner("mcp/gateway/backend.ts", "mcp/tests/project-affinity-gateway.test.ts"),
       owner("mcp/server/net.ts", "mcp/tests/project-affinity-runtime.test.ts"),
@@ -96,7 +119,10 @@ const RULES: readonly Rule[] = [
   },
   {
     domain: "BUILD_SYNC",
-    terms: ["dev:sync", "hot reload", "live sync", "stale build", "build identity", "deploy", "rebuild", "plugin reload"],
+    terms: [
+      "dev:sync", "hot reload", "live sync", "stale build", "build identity",
+      "deploy", "rebuild", "plugin reload",
+    ],
     owners: () => [
       owner("mcp/build/index.ts", "mcp/tests/developer-loop.test.ts"),
       owner("mcp/build/watch-policy.ts", "mcp/tests/developer-loop.test.ts"),
@@ -105,19 +131,26 @@ const RULES: readonly Rule[] = [
   },
   {
     domain: "GATEWAY",
-    terms: ["gateway", "stdio", "capability catalog", "search_capabilities", "describe_capability", "invoke_capability", "navigator"],
+    terms: [
+      "gateway", "stdio", "capability catalog", "search_capabilities",
+      "describe_capability", "invoke_capability", "navigator",
+    ],
     owners: () => [
       owner("mcp/gateway/index.ts", "mcp/tests/gateway-contract.test.ts"),
-      owner("mcp/gateway/backend.ts", "mcp/tests/gateway-backend.test.ts"),
+      owner("mcp/gateway/backend.ts", "mcp/tests/gateway-reliability-hardening.test.ts"),
       owner("mcp/gateway/contract.ts", "mcp/tests/gateway-contract.test.ts"),
     ],
   },
   {
     domain: "RUNTIME",
-    terms: ["runtime", "blockbench api", "plugin lifecycle", "undo", "persistence", "native blockbench", "runtime error"],
+    terms: [
+      "runtime", "blockbench api", "plugin lifecycle", "undo", "persistence",
+      "native blockbench", "runtime error", "onload", "onunload",
+    ],
     owners: () => [
-      owner("mcp/index.ts", "mcp/tests/plugin-runtime-contract.test.ts"),
-      owner("mcp/server/server.ts", "mcp/tests/server-instructions.test.ts"),
+      owner("mcp/index.ts", "mcp/tests/plugin-runtime-cleanup.test.ts"),
+      owner("mcp/lib/runtimeLifecycle.ts", "mcp/tests/runtime-lifecycle.test.ts"),
+      owner("mcp/server/server.ts", "mcp/tests/authoring-phase-surface.test.ts"),
     ],
   },
 ];
@@ -141,7 +174,11 @@ export function resolveDevelopmentIntent(intent: string): NavigatorDevelopmentRe
       matched_terms: [],
       source_owners: [],
       required_context_paths: [...BASE_CONTEXT],
-      avoid_context_classes: ["asset workspace history", "unrelated foundation docs", "unrelated Runtime schemas"],
+      avoid_context_classes: [
+        "asset workspace history",
+        "unrelated foundation docs",
+        "unrelated Runtime schemas",
+      ],
     };
   }
 
@@ -161,7 +198,11 @@ export function resolveDevelopmentIntent(intent: string): NavigatorDevelopmentRe
       matched_terms: [],
       source_owners: [],
       required_context_paths: [...BASE_CONTEXT],
-      avoid_context_classes: ["asset workspace history", "unrelated foundation docs", "unrelated Runtime schemas"],
+      avoid_context_classes: [
+        "asset workspace history",
+        "unrelated foundation docs",
+        "unrelated Runtime schemas",
+      ],
     };
   }
 
@@ -180,8 +221,8 @@ export function resolveDevelopmentIntent(intent: string): NavigatorDevelopmentRe
     };
   }
 
-  const specialistPaths = best.rule
-    .owners()
+  const owners = uniqueOwners(best.rule.owners()).slice(0, 6);
+  const specialistPaths = owners
     .map((entry) => entry.specialist)
     .filter((value): value is string => Boolean(value));
 
@@ -191,8 +232,12 @@ export function resolveDevelopmentIntent(intent: string): NavigatorDevelopmentRe
     domain: best.rule.domain,
     confidence: "STRONG",
     matched_terms: best.matched,
-    source_owners: uniqueOwners(best.rule.owners()).slice(0, 6),
+    source_owners: owners,
     required_context_paths: [...new Set([...BASE_CONTEXT, ...specialistPaths])],
-    avoid_context_classes: ["asset workspace history", "unrelated foundation docs", "unrelated Runtime schemas"],
+    avoid_context_classes: [
+      "asset workspace history",
+      "unrelated foundation docs",
+      "unrelated Runtime schemas",
+    ],
   };
 }
