@@ -17,6 +17,16 @@ export type NavigatorSourceOwner = {
 
 export type NavigatorSystemState = "READY" | "DEGRADED" | "OFFLINE";
 
+export type NavigatorReadiness = {
+  modelling_start: "READY" | "NEEDS_ORIENTATION" | "BLOCKED";
+  runtime_ready: boolean;
+  project_ready: boolean;
+  domain_ready: boolean;
+  context_ready: boolean;
+  workspace_state: "AVAILABLE" | "UNAVAILABLE" | "NOT_REQUIRED";
+  reasons: string[];
+};
+
 export type NavigatorSnapshot = {
   protocol: "blockit-navigator-v1";
   system: NavigatorSystemState;
@@ -64,6 +74,11 @@ export type NavigatorDelta = {
   phase_after: BlockitAuthoringPhaseAffinity | null;
   project_uuid: string | null;
   changed: string[];
+  invalidates: {
+    authoring_domains: NavigatorAuthoringDomain[];
+    workspace_projection: boolean;
+    acceptance_gates: boolean;
+  };
   next_intent: string;
   requires_status_refresh: boolean;
 };
