@@ -6,6 +6,7 @@ on:
     paths:
       - ".github/workflows/finalize-retirement-v2.yml"
       - "mcp/scripts/finalize-retirement.py"
+      - "mcp/scripts/finalize-repo-sync.py"
 
 permissions:
   contents: write
@@ -28,7 +29,9 @@ jobs:
         working-directory: mcp
         run: bun install --frozen-lockfile
       - name: Apply deterministic retirement cleanup
-        run: python3 mcp/scripts/finalize-retirement.py
+        run: |
+          python3 mcp/scripts/finalize-retirement.py
+          python3 mcp/scripts/finalize-repo-sync.py
       - name: Reject active retired route residue
         run: |
           if grep -RniE '3D_ASSISTED|3D-Assisted|threeDAssisted|Hunyuan|PrimitiveAnything|materialize_3d_assisted|manage_geometry_reference' \
@@ -50,6 +53,7 @@ jobs:
           rm -f .github/workflows/finalize-3d-retirement.yml
           rm -f .github/workflows/finalize-retirement-v2.yml
           rm -f mcp/scripts/finalize-retirement.py
+          rm -f mcp/scripts/finalize-repo-sync.py
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
