@@ -32,7 +32,7 @@ Navigator follows `SELECT, DON'T SUMMARIZE`.
 
 Canonical Skill/Prompt contents are not copied into Navigator. `registry.ts` stores logical IDs, canonical paths, and SHA-256 identities. Regression tests fail when those owners change without refreshing their handles.
 
-A caller may return exact `known_context_ids` from the current task to `status`; matching hashes are omitted from the next delivery. This suppresses retransmission without weakening authority. A changed canonical file gets a new handle and therefore cannot be mistaken for cached context.
+A caller may return exact `known_context_ids` from the current task to `status`; matching hashes are omitted from the next delivery. When the same context family now has a different content hash, Navigator returns that old handle under `invalidated_ids` and delivers the current handle. Unrelated historical context is ignored rather than creating invalidation noise.
 
 ## Task Context
 
@@ -57,6 +57,18 @@ Known blocker(s)
 
 The parsed projection is cached by file size + modification time and content-addressed with SHA-256. The workspace text itself is not retransmitted to Codex.
 
+## Capability / Development Routing
+
+Capability search results now carry deterministic `source_owner` metadata:
+
+```text
+source
+specialist
+test_owner
+```
+
+This lets Codex move from a known runtime capability to its implementation owner without scanning the repository. Exact high-value capabilities have direct owners; unknown capabilities fall back to the semantic owner family. This metadata is navigation only and does not duplicate Tool schemas or alter Runtime execution.
+
 ## Progressive Delivery
 
 Normal task flow is:
@@ -75,4 +87,4 @@ Call `status` again only when `navigation_delta.requires_status_refresh=true`, p
 
 ## Evidence / Efficiency
 
-Static tests guard that a representative full packet remains bounded and that cached context is omitted. This is a footprint guard, not a claim about whole-session model tokens. Authoring-efficiency proof still requires comparing cost to an accepted result under equivalent quality.
+Static tests guard that a representative full packet remains bounded, cached context is omitted, stale context is invalidated, and source routing stays deterministic. `measure:navigator` measures payload footprint only; it is not a claim about whole-session model tokens. Authoring-efficiency proof still requires comparing cost to an accepted result under equivalent quality.
