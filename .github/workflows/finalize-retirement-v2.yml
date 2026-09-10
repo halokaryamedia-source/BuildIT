@@ -1,0 +1,57 @@
+name: Finalize Retirement V2
+
+on:
+  push:
+    branches: [Local]
+    paths:
+      - ".github/workflows/finalize-retirement-v2.yml"
+      - "mcp/scripts/finalize-retirement.py"
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: true
+          fetch-depth: 1
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6
+        with:
+          bun-version-file: .bun-version
+      - name: Install exact dependencies
+        working-directory: mcp
+        run: bun install --frozen-lockfile
+      - name: Apply deterministic retirement cleanup
+        run: python3 mcp/scripts/finalize-retirement.py
+      - name: Reject active retired route residue
+        run: |
+          if grep -RniE '3D_ASSISTED|3D-Assisted|threeDAssisted|Hunyuan|PrimitiveAnything|materialize_3d_assisted|manage_geometry_reference' \
+            mcp/server mcp/lib mcp/gateway .agents/skills mcp/prompts \
+            --exclude='README.md' --exclude='manifest.json' --exclude='*.test.ts'; then
+            echo 'Retired authoring-route residue remains.' >&2
+            exit 1
+          fi
+      - name: Regenerate canonical outputs
+        working-directory: mcp
+        run: |
+          bun run prompts:build
+          bun run docs:build
+      - name: Verify full repository
+        working-directory: mcp
+        run: bun run verify:full
+      - name: Remove temporary finalizers and commit
+        run: |
+          rm -f .github/workflows/finalize-3d-retirement.yml
+          rm -f .github/workflows/finalize-retirement-v2.yml
+          rm -f mcp/scripts/finalize-retirement.py
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "refactor(blockit): complete retired modelling cleanup"
+          git push origin HEAD:Local
