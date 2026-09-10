@@ -1,4 +1,4 @@
-import { ownerForCapability } from "./registry";
+import { ownerForCapability, sourceOwnerForCapability } from "./registry";
 import type { NavigatorDelta } from "./types";
 import type { BlockitAuthoringPhaseAffinity } from "../projectAffinity";
 
@@ -30,6 +30,7 @@ export function buildNavigatorDelta(input: {
     protocol: "blockit-navigator-v1",
     capability: input.capability,
     owner,
+    source_owner: sourceOwnerForCapability(input.capability),
     phase_before: input.phaseBefore,
     phase_after: input.phaseAfter,
     project_uuid: input.projectUuid,
