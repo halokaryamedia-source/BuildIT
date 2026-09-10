@@ -1,0 +1,141 @@
+# BlockIT Authoring Quality Benchmark
+
+This is an evaluation contract for comparing authoring quality and efficiency across representative asset classes. It is **not** a new Runtime tool, authoring workflow, score engine, or acceptance authority.
+
+Canonical machine-readable cases live in `mcp/tests/fixtures/quality-benchmark-cases.json`.
+
+## Purpose
+
+Use the same evidence vocabulary across Geometry, Texturing, and Animation so improvements can be judged against accepted output rather than proxy metrics.
+
+```text
+approved reference + explicit dimensions/constraints
+→ authored result
+→ comparable visual/runtime evidence
+→ PASS | FAIL | UNVERIFIED per applicable dimension
+→ causal correction
+→ accepted result
+→ measure authoring cost separately
+```
+
+There is no aggregate quality score. A critical visual/structural failure cannot be averaged away by good results elsewhere, and fewer tool calls cannot compensate for lower quality.
+
+## Representative Profiles
+
+The benchmark set intentionally spans four materially different construction problems:
+
+1. `PROP_FURNITURE` — rigid structure, attachment/contact, negative space, material identity.
+2. `VEHICLE` — multi-part rigid structure, depth, repeated/mechanical forms, optional articulation.
+3. `CHARACTER_MOB` — articulated hierarchy, joint closure, deformation readability, pose/motion fidelity.
+4. `ORGANIC_CURVED` — non-boxy silhouette, segmentation quality, depth continuity, curve interpretation.
+
+These are evaluation profiles, not geometry presets. They must not force a modelling method or cube count.
+
+## Evidence Authority
+
+For reference-driven work:
+
+```text
+explicit user facts / dimensions
+→ approved reference image(s)
+→ current authored state
+→ fresh comparable capture / texture / playback evidence
+```
+
+Paths, memory, tool success, coordinates, bounds, hierarchy, cube count, keyframe count, or a generated similarity number are not visual proof by themselves.
+
+A dimension is:
+
+- `PASS` only when current evidence supports it and no material defect remains;
+- `FAIL` when current evidence shows a material defect;
+- `UNVERIFIED` when the required evidence is absent, stale, obstructed, or technically unavailable.
+
+`UNVERIFIED` is not failure and is not permission to invent a result.
+
+## Geometry Dimensions
+
+Every profile checks at least:
+
+- silhouette;
+- cross-view proportion;
+- required part completeness;
+- attachment/contact;
+- depth/layering;
+- intentional negative space.
+
+Profile-specific dimensions extend this list. Examples include motion-ready structure and curve segmentation quality.
+
+Critical geometry defects include missing/floating required parts, wrong required part count, broken attachment, and reference-unsupported invented structure. These remain `FAIL` regardless of technical validator success.
+
+## Texture Dimensions
+
+When Texturing applies, evaluate:
+
+- palette/material-region correspondence;
+- identity-critical markings;
+- mapped-surface continuity;
+- seam control.
+
+Texture cannot hide a required Geometry defect. Dark pixels, shading, or alpha are not substitutes for missing required surfaces unless the approved representation explicitly calls for a planar/cutout carrier.
+
+## Animation Dimensions
+
+When Animation applies, evaluate only relevant motion requirements. The Character/Mob case explicitly checks:
+
+- pivot/rig suitability;
+- reference-pose fidelity;
+- joint-gap control;
+- clearance/contact;
+- weight transfer;
+- timing/motion readability;
+- loop or handoff continuity.
+
+Excessive joint gaps, invalid pivots, unintended foot slide, floor penetration, or broken required contact are critical defects. Animation uses categorical evidence verdicts, not a numeric quality score.
+
+## Difference-First Review
+
+Review the largest identity-bearing difference first:
+
+```text
+reference requirement
+→ matching reference view/time
+→ current model view/time
+→ observed difference
+→ owning phase/cause
+→ smallest coherent correction
+→ recapture only affected evidence
+```
+
+Do not correct downstream styling when the first wrong owner is Geometry or rig structure. Do not add filler cubes or extra keyframes merely to improve a proxy count.
+
+## Efficiency Measurement
+
+Measure efficiency only after or alongside quality evidence. Record:
+
+- status calls;
+- capability-search calls;
+- capability-describe calls;
+- redundant readbacks;
+- visual capture batches;
+- correction rounds;
+- repeated same-cause failures;
+- total tool calls to accepted result.
+
+The target is **Cost to Accepted Result**, not minimum tool calls in isolation.
+
+## Future Local Benchmark Run
+
+When local testing is authorized, run all four profiles with fixed reference/constraint inputs and retain:
+
+```text
+input reference revision
+model artifact revision
+phase verdicts
+critical defects
+correction history
+accepted/not accepted
+usage/tool-call observations
+runtime/environment notes
+```
+
+Compare implementation changes only against equivalent inputs and acceptance criteria. A prepared fixture or passing static test is not live visual/runtime proof.
