@@ -2,7 +2,7 @@
 
 Updated: 2026-09-11
 
-This file owns the reference-preparation handoff contract between ChatGPT and Codex. Operational reference behavior is owned by `.agents/skills/blockbench-reference-generator/SKILL.md`. Durable reference policy is owned by `docs/foundation/04-reference-guide.md`. The canonical machine-readable package schema is owned by `docs/knowledge/reference-package-schema.md`. Product flow remains in `docs/knowledge/flow.md`.
+This file owns the reference-preparation handoff contract between ChatGPT and Codex. Operational reference behavior is owned by `.agents/skills/blockbench-reference-generator/SKILL.md`. Durable reference policy is owned by `docs/foundation/04-reference-guide.md`. The canonical machine-readable package schema is owned by `docs/knowledge/reference-package-schema.md`. `GEOMETRY.md` content is owned by `docs/knowledge/geometry-reference-contract.md`. Product flow remains in `docs/knowledge/flow.md`.
 
 ## Purpose
 
@@ -118,20 +118,17 @@ Do not maintain another full JSON schema in this document or in the Reference Pr
 
 ### `GEOMETRY.md`
 
-Only Geometry-relevant interpretation should appear here, such as:
+Canonical content/order is owned only by:
 
 ```text
-target and scale
-primary semantic structure
-proportion relationships
-attachment/contact
-negative spaces
-representation guidance
-rig-readiness constraints
-relevant image IDs
+docs/knowledge/geometry-reference-contract.md
 ```
 
-Do not include Cube coordinates, fixed Cube counts, exact pivots, Tool call plans, or UV implementation.
+This handoff document does not repeat that full contract.
+
+At minimum, `GEOMETRY.md` explains only the asset-specific Geometry conclusions already supported by stronger authority, including applicable target/scale, primary structure, proportion/silhouette, attachment/contact/openings, representation guidance, rig-readiness constraints, relevant image IDs, and Geometry-stage unknowns.
+
+It must not become a Cube plan, UV plan, animation plan, or tool-call plan.
 
 ### `TEXTURE.md`
 
@@ -148,6 +145,8 @@ alpha/cutout requirement
 emissive/PBR requirement
 relevant image IDs
 ```
+
+A dedicated canonical content contract should own this file rather than duplicating Texturing Skill prose here.
 
 ### `ANIMATION.md`
 
@@ -167,7 +166,7 @@ secondary motion
 relevant image IDs
 ```
 
-Do not convert it into compulsory frame-by-frame implementation unless explicitly requested.
+Do not convert it into compulsory frame-by-frame implementation unless explicitly requested. A dedicated canonical content contract should own this file.
 
 ## Image Identity
 
