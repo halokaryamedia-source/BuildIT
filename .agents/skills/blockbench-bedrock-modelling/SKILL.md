@@ -1,10 +1,52 @@
 ---
 name: blockbench-bedrock-modelling
-description: Mandatory BlockIT Bedrock Geometry and UV Layout specialist.
+description: Mandatory LazyDesigner Bedrock Geometry and UV Layout specialist. Use with exactly one Control-selected modelling profile when profile guidance materially improves the task.
 ---
-# Blockbench Bedrock Modelling
+# LazyDesigner Bedrock Modelling
 
 User-authorized autonomy replaces approval waits with verified checkpoints; never claim user approval.
+
+## Modelling Core / Profile Contract
+
+This Skill is the **technical modelling core**. It owns universal Geometry, hierarchy, pivot/rig-readiness, surface, UV Layout, correction, and verification rules. Asset-class knowledge belongs in `docs/knowledge/modelling-profiles/` and must not be duplicated here.
+
+Canonical profile vocabulary:
+
+```text
+PROP_FURNITURE
+VEHICLE
+HUMANOID
+CREATURE
+MECHANICAL
+PLANT_FOLIAGE
+GENERIC
+```
+
+Profile selection is owned by LazyDesigner Control using the resolver in `docs/knowledge/modelling-profiles/README.md`.
+
+Normal modelling context is:
+
+```text
+Control
+→ original user intent + current target + reference readiness
+→ selected_profile
+→ this modelling core
+→ exactly one selected profile
+→ Codex
+```
+
+Rules:
+
+- accept `selected_profile` from Control when supplied; do not independently re-run broad profile discovery;
+- load only the selected profile for normal work;
+- do not stack full profiles by default;
+- narrowly scoped secondary guidance may be supplied by Control for one relationship without loading a second full profile;
+- `GENERIC` is fallback only when no specific profile materially improves the current decision;
+- if fresh evidence makes the selected profile materially wrong, report `PROFILE_RECLASSIFICATION_REQUIRED` with the better profile and reason; preserve valid reference/workspace/approval state;
+- profile change is context classification, not asset-state reset and not automatic downstream invalidation;
+- profile rules never override approved reference evidence, explicit dimensions, user requirements, or this core's safety/verification gates.
+
+If no profile is supplied during migration, use the smallest evidence-backed classification needed for the current decision and prefer a specific profile over `GENERIC`; do not load all profile files to decide.
 
 ## Minimum Necessary Evidence
 - **No per-Cube inspection ceremony** without a diagnosed problem.
@@ -14,9 +56,11 @@ User-authorized autonomy replaces approval waits with verified checkpoints; neve
 
 ## Reference Grounding
 For reference-driven visual work, the **actual approved reference image** must be in **active multimodal context**; path/prose/memory is not visual evidence. Unavailable → `BLOCKED`. Bounded nonvisual edits use explicit intent and current authored state.
-approved image owns visuals; dimensions own numeric scale; Geometry uses the native BlockIT Group/Cube authoring path.
+approved image owns visuals; dimensions own numeric scale; Geometry uses the native LazyDesigner Group/Cube authoring path.
 Do not silently change agreed dimensions to improve resemblance. Resolve a material proportion/scale conflict with the user before dependent construction.
 Evidence: `SUPPORTED | PROVISIONAL | CONFLICTING | UNAVAILABLE`. View Pair Map only for material front/back, depth, attachment, or 3/4 ambiguity.
+
+When a `lazydesigner-reference-package-v1` package is available, consume its decision-critical semantic parts, profile, blocking/non-blocking unknowns, articulation/material hints, and stage-specific readiness as context. The package is not a Cube plan and does not replace the actual approved image.
 
 ### Reference Evidence Contract
 Before the first primary Geometry batch, resolve only the structure that can materially change construction:
@@ -38,7 +82,7 @@ Each item is `SUPPORTED | PROVISIONAL | CONFLICTING | UNAVAILABLE`. `PROVISIONAL
 **Depth rule:** front agreement never closes a mass whose depth remains material. For each primary mass, record depth as `OBSERVED | INFERRED | UNRESOLVED` and identify the view that constrains it. `UNRESOLVED` depth that changes silhouette, attachment, collision/contact, or motion clearance blocks dependent construction.
 
 ## Geometry Hot Path
-`reference evidence contract → semantic form → representation choice → primary batch → Core View Triad → conditional surface integrity → causal correction → Geometry PASS → UV preflight → user review`.
+`reference evidence contract → selected profile guidance → semantic form → representation choice → primary batch → Core View Triad → conditional surface integrity → causal correction → Geometry PASS → UV preflight → user review`.
 
 Nontrivial form: **transient Primary Mass Contract**:
 ```text
@@ -86,10 +130,10 @@ Decide representation **before** counting Cubes.
 `TEXTURE` → surface pattern/color/seam/panel line/marking.
 `OMIT` → unsupported/immaterial.
 
-Detail-only span/thickness `<= 4 Blockbench units` is an **anti-overcube guardrail, not a classifier**. Challenge 3D need. `PLANAR_CUTOUT_CARRIER`: 1 plane or 2 crossed planes (~90°) in one batch carries alpha silhouette instead of micro-Cubes. One zero-span axis may be plane-like Geometry; 2+ collapsed axes are unusable.
+Detail-only span/thickness `<= 4 Blockbench units` is an **anti-overcube guardrail, not a classifier**. Challenge 3D need. `PLANAR_CUTOUT_CARRIER`: 1 plane or 2 crossed planes when alpha owns the silhouette; exact arrangement follows the selected profile/reference rather than a fixed ritual angle. One zero-span axis may be plane-like Geometry; 2+ collapsed axes are unusable.
 
 ## Primary Build / Difference-First Reference Fidelity Verdict
-`requirement → source evidence → simplest recognizable Blockbench-buildable interpretation → PRIMARY BLOCKOUT + required hierarchy/pivots → primary PASS → identity-weighted secondary geometry`.
+`requirement → source evidence → selected profile guidance → simplest recognizable Blockbench-buildable interpretation → PRIMARY BLOCKOUT + required hierarchy/pivots → primary PASS → identity-weighted secondary geometry`.
 
 Verdict requires approved reference + fresh current-revision model evidence:
 `claim | matching reference view | current view | observed difference | severity | owning cause | FAIL | UNVERIFIED | PASS`.
