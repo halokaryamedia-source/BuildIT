@@ -338,6 +338,9 @@ registerGatewayTool(
   async (rawArgs) => {
     try {
       const { capability, arguments: args } = invokeInput.parse(rawArgs);
+      const phaseBefore = capability === "switch_authoring_phase"
+        ? (await backend.getStatus()).affinity.authoring_phase
+        : null;
       const result =
         capability === VANILLA_ENTITY_REFERENCE_CAPABILITY
           ? await vanillaReferenceProvider.invoke(args)
@@ -345,18 +348,22 @@ registerGatewayTool(
       const structured = result.structuredContent && typeof result.structuredContent === "object" && !Array.isArray(result.structuredContent)
         ? result.structuredContent as JsonRecord
         : null;
+      const succeeded = result.isError !== true;
       const targetPhase = capability === "switch_authoring_phase" && typeof structured?.phase === "string"
         ? structured.phase as "geometry" | "texturing" | "animation"
         : null;
+      const phaseAfter = capability === "switch_authoring_phase" && succeeded
+        ? targetPhase
+        : phaseBefore;
       const projectUuid = capability === "create_project" && structured?.project && typeof structured.project === "object" && !Array.isArray(structured.project)
         ? typeof (structured.project as JsonRecord).uuid === "string" ? (structured.project as JsonRecord).uuid as string : null
         : null;
       const navigationDelta = buildNavigatorDelta({
         capability,
-        phaseBefore: null,
-        phaseAfter: targetPhase,
+        phaseBefore,
+        phaseAfter,
         projectUuid,
-        succeeded: result.isError !== true,
+        succeeded,
       });
       if (result.structuredContent === undefined) {
         return { ...result, structuredContent: { navigation_delta: navigationDelta } };
