@@ -121,12 +121,12 @@ const SOURCE_BY_CAPABILITY: Record<string, NavigatorSourceOwner> = {
   paint_with_brush: {
     source: "mcp/server/tools/paint.ts",
     specialist: TEXTURING.path,
-    test_owner: "mcp/tests/paint-runtime-contract.test.ts",
+    test_owner: "mcp/tests/paint-stroke.test.ts",
   },
   paint_texture_transaction: {
     source: "mcp/server/tools/prelocal-wiring.ts",
     specialist: TEXTURING.path,
-    test_owner: "mcp/tests/prelocal-runtime-contract.test.ts",
+    test_owner: "mcp/tests/prelocal-wiring-policy.test.ts",
   },
   manage_material: {
     source: "mcp/server/tools.ts",
@@ -136,32 +136,32 @@ const SOURCE_BY_CAPABILITY: Record<string, NavigatorSourceOwner> = {
   manage_material_instances: {
     source: "mcp/server/tools/material-instances.ts",
     specialist: TEXTURING.path,
-    test_owner: "mcp/tests/material-instances.test.ts",
+    test_owner: "mcp/tests/material-instance-mutation-result.test.ts",
   },
   create_animation: {
     source: "mcp/server/tools/animation.ts",
     specialist: ANIMATION.path,
-    test_owner: "mcp/tests/animation-runtime-contract.test.ts",
+    test_owner: "mcp/tests/create-animation-contract.test.ts",
   },
   inspect_animation: {
     source: "mcp/server/tools/animation-inspection.ts",
     specialist: ANIMATION.path,
-    test_owner: "mcp/tests/animation-inspection.test.ts",
+    test_owner: "mcp/tests/animation-native-intelligence.test.ts",
   },
   manage_animation_timeline: {
     source: "mcp/server/tools.ts",
     specialist: ANIMATION.path,
-    test_owner: "mcp/tests/gateway-contract.test.ts",
+    test_owner: "mcp/tests/animation-timeline-batch-ownership.test.ts",
   },
   manage_animation_effects: {
     source: "mcp/server/tools/animation-effects.ts",
     specialist: ANIMATION.path,
-    test_owner: "mcp/tests/animation-effects.test.ts",
+    test_owner: "mcp/tests/animation-effect-mutation-contract.test.ts",
   },
   manage_animation_controller: {
     source: "mcp/server/tools/animation-controller.ts",
     specialist: ANIMATION.path,
-    test_owner: "mcp/tests/animation-controller.test.ts",
+    test_owner: "mcp/tests/animation-controller-mutation-contract.test.ts",
   },
   switch_authoring_phase: {
     source: "mcp/server/tools.ts",
