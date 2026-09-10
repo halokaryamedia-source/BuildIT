@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import {
   buildNavigatorDelta,
+  buildNavigatorPacket,
   buildNavigatorSnapshot,
   decorateCapabilities,
   NAVIGATOR_CONTEXT_HANDLES,
@@ -98,5 +99,31 @@ describe("BlockIT Navigator", () => {
       expect(digest, handle.path).toBe(handle.sha256);
       expect(handle.id).toContain(handle.sha256.slice(0, 12));
     }
+  });
+
+  test("workspace projection and task context are lossless, bounded, and cache-aware", async () => {
+    const { mkdtemp, writeFile } = await import("node:fs/promises");
+    const { tmpdir } = await import("node:os");
+    const { join } = await import("node:path");
+    const directory = await mkdtemp(join(tmpdir(), "blockit-nav-"));
+    await writeFile(join(directory, "test.bbmodel"), "{}");
+    await writeFile(join(directory, "README.md"), `# Test Asset\n\nCurrent Stage: TEXTURING\n\nGeometry: APPROVED\n\nUV Layout: PASS\n\nTexturing: IN_PROGRESS\n\nAnimation: NOT_STARTED\n\nCurrent next step: Complete identity pass\n\nKnown blocker(s): None\n`);
+
+    const first = await buildNavigatorPacket(onlineStatus, { workspacePath: directory });
+    expect(first.workspace).toMatchObject({
+      available: true,
+      asset: "Test Asset",
+      current_stage: "TEXTURING",
+      gates: { geometry: "APPROVED", uv_layout: "PASS", texturing: "IN_PROGRESS", animation: "NOT_STARTED" },
+      next_step: "Complete identity pass",
+    });
+    expect(first.task_context_id).toMatch(/^task:[a-f0-9]{20}$/);
+    expect(JSON.stringify(first).length).toBeLessThan(5000);
+
+    const known = first.context.required.map((entry) => entry.id);
+    const second = await buildNavigatorPacket(onlineStatus, { knownContextIds: known });
+    expect(second.task_context_id).toBe(first.task_context_id);
+    expect(second.context.required).toEqual([]);
+    expect(second.context.cached_ids).toEqual(known);
   });
 });
