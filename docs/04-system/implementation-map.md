@@ -47,11 +47,7 @@ invoke_capability
 
 ## Control Ownership
 
-Canonical source path:
-
-```text
-mcp/gateway/control/
-```
+Canonical source path: `mcp/gateway/control/`.
 
 The former `mcp/gateway/navigator/` source path has been removed. No compatibility wrapper or parallel Navigator routing layer remains.
 
@@ -103,15 +99,21 @@ Control does not own Skill prose, Tool schemas, full reference content, live mod
 | Runtime phase/capability classification | `mcp/lib/authoringPhase.ts` | shared by Runtime + Control |
 | Reference preparation | `.agents/skills/blockbench-reference-generator/SKILL.md` + `docs/02-reference/` | ChatGPT |
 
-The former `.agents/skills/blockit-bedrock-entity-mcp/SKILL.md` router has been removed. Its routing responsibility is now exclusively Control-owned; do not recreate it as an alias or parallel Skill.
+The former asset-router Skill has been removed. Its routing responsibility is exclusively Control-owned.
+
+## Product Development Ownership
+
+| Concern | Canonical Skill |
+| --- | --- |
+| MCP public/schema/result/transport contract | `.agents/skills/lazydesigner-mcp-development/SKILL.md` |
+| Blockbench plugin/runtime/API/lifecycle mechanics | `.agents/skills/lazydesigner-blockbench-development/SKILL.md` |
+| complex/ambiguous cross-owner development design | `.agents/skills/lazydesigner-development-brief/SKILL.md` |
+
+Clear bounded changes go directly to the exact source owner; `lazydesigner-development-brief` is not a mandatory preamble.
 
 ## Canonical Phase / Capability Classification
 
-Single canonical owner:
-
-```text
-mcp/lib/authoringPhase.ts
-```
+Single canonical owner: `mcp/lib/authoringPhase.ts`.
 
 ```text
 classifyMcpToolPhaseByName() → import-safe public capability classification
@@ -171,9 +173,9 @@ Gateway is not Control. Gateway remains the stable MCP transport boundary; Contr
 ## Runtime / Workspace / Build Owners
 
 ```text
-Runtime execution          → mcp/server/** + mcp/lib/**
-Persistent asset continuity→ workspace/active/<asset>/README.md
-Build/generated mechanics  → mcp/build/** + mcp/scripts/** + mcp/distribution/** + mcp/prompts/**
+Runtime execution           → mcp/server/** + mcp/lib/**
+Persistent asset continuity → workspace/active/<asset>/README.md
+Build/generated mechanics   → mcp/build/** + mcp/scripts/** + mcp/distribution/** + mcp/prompts/**
 ```
 
 Control may project identities/owners from these sources but must not duplicate their persistent state or execution responsibility.
@@ -196,8 +198,8 @@ Unknown or tied intent remains `UNRESOLVED`; Control does not replace uncertaint
 
 ```text
 legacy BlockIT package/protocol/plugin/environment identifiers outside the Control public contract
-remaining PRODUCT_DEVELOPMENT Skill names that have not yet migrated to lazydesigner-* identities
-remaining product-facing/runtime strings that can be migrated without compatibility breakage
+blockbench-reference-generator naming not yet migrated to lazydesigner-reference-preparation
+remaining product-facing/runtime strings that can migrate without compatibility breakage
 generated outputs/docs that may encode legacy identifiers until canonical generators run
 Experimental Navigator history that must remain explicitly non-authoritative
 ```
@@ -207,7 +209,8 @@ Completed source migrations:
 ```text
 navigator/ → control/
 legacy asset-router Skill → removed
-ASSET_AUTHORING specialist canonical files → lazydesigner-modelling/texturing/animation
+ASSET_AUTHORING specialists → lazydesigner-modelling/texturing/animation
+PRODUCT_DEVELOPMENT specialists → lazydesigner-mcp-development/blockbench-development/development-brief
 Control capability-domain duplication → removed
 metadata-only search/describe status rereads → removed
 ```
