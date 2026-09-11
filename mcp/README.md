@@ -85,7 +85,7 @@ Animation surface            20 tools
 
 The current generated source-doc snapshot may temporarily retain two retired compatibility descriptors until its next `LOCAL_CODE` generator pass. They are excluded from all active Runtime phase surfaces and are not current authoring capabilities.
 
-Installed Runtime counts and lifecycle state are proof results; see `../docs/knowledge/current-validation.md`.
+Installed Runtime counts and lifecycle state are proof results; see `../docs/05-operations/current-validation.md`.
 
 ## Capability Priority
 
@@ -177,4 +177,4 @@ Generated API/prompt artifacts follow canonical source + generator output and mu
 
 ## Proof Boundary
 
-Continuation → `../docs/knowledge/next-action.md`. Proof interpretation → `../docs/knowledge/current-validation.md`. Static source/CI success cannot prove installed Runtime freshness, live Gateway survival, final surface/UV quality, native Undo/playback/persistence, or visual fidelity unless those surfaces actually ran.
+Continuation → `../docs/05-operations/next-action.md`. Proof interpretation → `../docs/05-operations/current-validation.md`. Static source/CI success cannot prove installed Runtime freshness, live Gateway survival, final surface/UV quality, native Undo/playback/persistence, or visual fidelity unless those surfaces actually ran.
