@@ -8,11 +8,12 @@ USER REQUEST / REFERENCE
 → CLASSIFY EXECUTION: DIRECT / COMPOSED / REACTIVE / AUDIT-REVISION
 → SELECT MINIMAL PHYSICAL PATTERN
 → CHOOSE LOWEST VIABLE COMPLEXITY TIER
+→ RESOLVE OUTPUT IDENTITY
 → LOAD MINIMUM KNOWLEDGE BUNDLE
 → DECOMPOSE ONLY IF PHYSICALLY NECESSARY
 → AUTHOR JSON + TEXTURE ASSETS
 → RUN ONLY RELEVANT STATIC QA GATES
-→ CLEAN PACKAGE
+→ ASSEMBLE DETERMINISTIC CLEAN PACKAGE
 → USER REVIEW IN TARGET ENVIRONMENT
 → TARGETED REVISION OR APPROVAL
 → OPTIONAL CODEX / MCP HANDOFF
@@ -90,13 +91,41 @@ complexity        = lowest viable tier
 physics role      = buoyant/upward flame
 texture strategy  = simple static or minimal flipbook only if needed
 Molang            = only age/random progression required for natural variation
+output identity   = one normalized slug drives identifier/files/README
 Snowstorm rules   = only if Snowstorm is a target
 QA                = document + texture + relevant motion/render checks
 ```
 
 Do not create multiple emitters, event graphs, curves, atlas systems, or advanced Molang unless the requested visual behavior requires them.
 
-## 4. Decompose once
+## 4. Resolve output identity once
+
+Before authoring filenames, establish:
+
+```text
+namespace
+package_slug
+effect_slug
+root identifier
+child role slugs, if any
+texture basename/shared mapping
+delivery mode: standalone Resource Pack or downstream handoff
+```
+
+Then derive all package names/paths from that identity. Do not rename files independently during packaging.
+
+Example:
+
+```text
+mivubi:blue_flame
+→ particles/blue_flame.particle.json
+→ textures/particle/blue_flame.png
+→ textures/particle/blue_flame
+```
+
+For composed effects, suffixes describe physical roles (`_debris`, `_plume`, `_flash`), never revisions.
+
+## 5. Decompose once
 
 Perform one physical/visual decomposition before authoring.
 
@@ -126,7 +155,7 @@ magic explosion
 
 After decomposition, do not repeatedly redesign architecture while authoring unless a contradiction is discovered.
 
-## 5. Choose the knowledge bundle after pattern selection
+## 6. Choose the knowledge bundle after pattern selection
 
 Start from the owner implied by the selected physical problem.
 
@@ -159,7 +188,7 @@ Add secondary owners only when the execution packet shows a real cross-domain de
 
 Do not browse knowledge speculatively.
 
-## 6. Author the simplest valid representation
+## 7. Author the simplest valid representation
 
 Preference order:
 
@@ -210,7 +239,7 @@ particle_initial_speed = scalar magnitude
 
 Treat this as editor-targeted compatibility guidance, not generic Bedrock syntax law.
 
-## 7. Texture execution
+## 8. Texture execution
 
 Do not invoke the whole texture stack automatically.
 
@@ -230,7 +259,9 @@ blend/additive/alpha design issue
 
 Prefer one production texture over an atlas when only one sprite is needed. Prefer an atlas/flipbook only when it reduces complexity or is visually required.
 
-## 8. Molang execution
+Do not duplicate identical PNGs solely to mirror child particle filenames.
+
+## 9. Molang execution
 
 Do not add Molang unless behavior needs variation/progression/reactivity.
 
@@ -250,7 +281,7 @@ external/entity reactivity
 
 If a formula becomes hard to audit, prefer a curve or smaller staged expression rather than expanding nested math indefinitely.
 
-## 9. Single-pass static QA
+## 10. Single-pass static QA
 
 Near finalization, run `qa.md` once using only applicable gates.
 
@@ -263,7 +294,28 @@ Examples:
 
 Do not repeatedly rerun unrelated QA after a small revision. Re-run the causal gate plus package-integrity checks.
 
-## 10. Snowstorm round-trip only when relevant
+## 11. Deterministic package assembly
+
+Use `delivery.md` only after resource identity and graph are stable.
+
+Assembly order:
+
+```text
+1. confirm root/main identifier
+2. confirm child identifiers/references
+3. confirm texture references and PNG mappings
+4. write/generate one Resource Pack manifest
+5. add only required resource files
+6. add concise README for standalone delivery
+7. include REFERENCE.json only for explicit downstream handoff
+8. verify package root shape and remove scratch/orphan files
+```
+
+Packaging must not invent new names, duplicate textures, or introduce version suffixes.
+
+A standalone ZIP should open directly onto the Resource Pack root containing `manifest.json`; avoid accidental double-wrapper folders.
+
+## 12. Snowstorm round-trip only when relevant
 
 For advanced/external JSON actually edited through Snowstorm:
 
@@ -278,7 +330,7 @@ preserve original
 
 Do not require this for assets never round-tripped through Snowstorm.
 
-## 11. Revision policy
+## 13. Revision policy
 
 User feedback changes only the causal layer by default:
 
@@ -294,15 +346,16 @@ wrong timing           → event/lifetime owner
 editor mismatch        → Snowstorm compatibility/version
 ```
 
-Preserve approved layers, selected physical families, and package structure unless they are causally involved.
+Preserve approved layers, selected physical families, output identity, and package structure unless they are causally involved.
 
-## 12. Stop rule
+## 14. Stop rule
 
 Stop expanding the design when:
 - requested visual roles are represented;
 - the selected physical pattern(s) explain the effect coherently;
-- the JSON/texture package is structurally coherent;
+- identifiers/paths/resource graph are coherent;
 - relevant static QA is complete;
+- clean package contract is satisfied;
 - remaining uncertainty is visual/runtime-only.
 
 At that point hand off to user review instead of consuming more context or adding speculative complexity.
