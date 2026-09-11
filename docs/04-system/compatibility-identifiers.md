@@ -31,6 +31,8 @@ These values remain stable until a dedicated migration explicitly updates every 
 | authoring stage setting id | `mcp_authoring_phase` | `mcp/lib/authoringPhase.ts` | persisted Blockbench setting continuity |
 | extended-family setting id | `mcp_extended_families_enabled` | `mcp/lib/registrationProfile.ts` | persisted Blockbench setting continuity |
 
+ASSET_AUTHORING Skill paths are **not** compatibility-bound identifiers. Their migration to `lazydesigner-modelling`, `lazydesigner-texturing`, and `lazydesigner-animation` is complete in source; do not recreate the removed legacy paths as aliases.
+
 A compatibility-bound identifier may have an internal TypeScript symbol whose name still contains `Blockit`/`BLOCKIT`. Renaming the symbol alone is optional and lower priority than eliminating user-facing stale branding; never change the serialized/string value accidentally while doing symbol cleanup.
 
 ## Presentation Identity
@@ -77,7 +79,7 @@ For persisted/install identifiers, migration must define whether old state is re
 ```text
 1. migrate safe user-facing BlockIT strings to LazyDesigner
 2. keep compatibility-bound serialized values stable
-3. map remaining legacy specialist Skill path consumers
+3. audit PRODUCT_DEVELOPMENT Skill names/consumers separately from install/runtime IDs
 4. rename a compatibility-bound value only as an atomic dedicated migration
 5. regenerate generated artifacts through canonical generators when LOCAL_CODE is active
 ```
