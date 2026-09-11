@@ -1,174 +1,295 @@
 # Particle Entity Integration Knowledge
 
 Provenance labels:
-- **OFFICIAL BEDROCK** — Microsoft Bedrock particle documentation.
+- **OFFICIAL BEDROCK** — Microsoft Bedrock particle/entity documentation.
 - **SNOWSTORM / WINTERSKY** — editor/preview-specific behavior.
-- **EMPIRICALLY VERIFIED** — reproduced in accepted authoring work.
+- **EMPIRICALLY VERIFIED** — reproduced project behavior.
 - **HEURISTIC** — authoring guidance.
 
 ## Ownership boundary
 
-Particle Reference Authoring may prepare the particle asset and document its expected attachment behavior, but active client-entity, animation, controller, or Blockbench runtime mutation belongs downstream.
+Particle Reference Authoring may prepare the particle asset and document expected attachment behavior, but active client-entity, animation-controller, locator, or Blockbench mutation belongs downstream.
 
-This file exists so the particle asset is authored with correct assumptions about how Bedrock entities bind and place particle effects.
+This file exists so standalone particle authoring uses correct assumptions about entity transforms and binding.
 
-## Effect list
+## Effect mapping
 
-**OFFICIAL BEDROCK**
-
-Entity resource definitions can expose particle effects through a local shorthand mapping.
+Client entity resource definitions can map a local particle-effect shorthand to a particle identifier.
 
 Conceptually:
 
 ```text
-entity-local short name
+entity-local effect name
 → particle identifier
 ```
 
-Animations and animation controllers then refer to the local shorthand rather than repeating the full particle identifier.
+Animations/controllers then reference the local shorthand.
 
 ## Locators
 
-**OFFICIAL BEDROCK**
+Locators are geometry attachment points that can be parented to bones and therefore inherit animated transforms.
 
-Locators are defined in geometry and can be attached to bones, so the particle emitter follows the animated bone transform.
-
-Use locators for:
-- muzzle flashes;
-- exhaust pipes;
-- hand-held magic;
-- eye glow sources;
-- footstep effects;
+Typical uses:
+- muzzle;
+- exhaust;
+- hand magic;
+- eyes;
+- footsteps;
 - engine vents;
 - weapon sockets.
 
-If no locator is specified, the effect may originate from the entity origin depending on the downstream binding.
+Do not invent an exact locator name unless the target geometry defines it.
 
-## Orientation
+## Transform stack mental model
 
-**OFFICIAL BEDROCK + HEURISTIC**
+For an attached effect, think through the transform stack explicitly:
 
-A locator can carry orientation as well as position. This matters when emitter direction should follow an animated part.
+```text
+entity transform
+→ animated bone transform
+→ locator transform
+→ particle emitter transform
+→ emitter local-space rules
+→ particle spawn position/direction
+→ particle post-spawn simulation
+```
 
-Therefore, standalone Snowstorm preview cannot always prove final attached direction.
+A visually wrong direction can originate at any earlier layer. Do not immediately rewrite particle motion.
 
-Author the particle so its local launch direction has a clear meaning, then validate attachment in the actual entity context downstream.
+## Position ownership
+
+A locator contributes attachment position. `minecraft:emitter_local_space.position` then determines whether living particles continue simulating with emitter-local positional ownership or become world-independent after spawn according to the component semantics.
+
+Debug questions:
+- should existing particles follow the moving locator?
+- or only be born at the locator and then remain in world space?
+
+Smoke from a moving exhaust and a glowing orb fixed to a hand can require different ownership.
+
+## Rotation ownership
+
+A locator/bone can carry rotation. `minecraft:emitter_local_space.rotation` controls whether emitter rotation remains part of particle simulation.
+
+Important constraint:
+
+```text
+rotation=true
+requires
+position=true
+```
+
+Do not compensate for wrong bone/locator orientation by rotating the source texture or rewriting launch math until transform ownership is confirmed.
+
+## Velocity inheritance
+
+`minecraft:emitter_local_space.velocity=true` adds emitter velocity to initial particle velocity.
+
+Use only when inherited host motion is desired.
+
+Examples:
+
+```text
+moving vehicle exhaust
+→ inherited velocity may matter
+
+magic aura bound to hand
+→ inherited translational velocity may not be visually desirable
+```
+
+Do not confuse emitter velocity inheritance with child-event `particle_with_velocity`; they are different ownership mechanisms.
+
+## Orientation contract
+
+For entity-bound authoring, document expected local axes:
+
+```text
+local +X
+local +Y
+local +Z
+```
+
+and identify which axis is intended as forward/up for the effect.
+
+Standalone Snowstorm preview cannot fully prove this because final bone/locator transforms are absent.
+
+## Billboard emitter-transform modes
+
+Billboard modes such as:
+
+```text
+emitter_transform_xy
+emitter_transform_xz
+emitter_transform_yz
+```
+
+bind billboard orientation to emitter transform planes.
+
+For attached effects, these modes make the entity/bone/locator transform part of appearance semantics, not just spawn placement.
+
+If appearance is wrong, inspect:
+
+```text
+bone rotation
+→ locator rotation
+→ emitter local-space settings
+→ emitter-transform billboard plane
+→ source texture axis
+```
 
 ## Animation-driven effects
 
-**OFFICIAL BEDROCK**
+Particle effects can be triggered from animation particle-effect keyframes after registration in the client entity resource definition.
 
-Particle effects can be triggered from entity animations through particle effect keyframes after the effect is registered in the client entity resource definition.
-
-Good for:
-- footstep burst at a known animation frame;
-- attack spark;
+Good for discrete beats:
+- footstep;
+- impact spark;
+- attack flash;
 - reload smoke;
-- timed muzzle flash.
+- muzzle flash.
 
 ## Animation-controller-driven effects
 
-**OFFICIAL BEDROCK**
-
-Animation controllers can trigger particle effects from controller states.
+Animation controllers can own sustained/stateful triggering.
 
 Good for:
-- sustained status aura while a state is active;
-- charge effect while charging;
-- fire/smoke while an entity condition remains true.
+- charge aura;
+- burning state;
+- engine smoke while active;
+- status effect while a condition is true.
 
-The particle asset should not duplicate controller state logic internally when the controller already owns the gameplay/state condition.
+Do not duplicate the same state machine inside particle JSON when the controller already owns it.
 
-## pre_effect_script
+## `pre_effect_script`
 
-**OFFICIAL BEDROCK**
+Entity particle bindings may provide Molang before emitter startup.
 
-Entity particle bindings can provide a pre-effect Molang script before emitter startup.
+Use for compact configuration:
+- color scalar;
+- scale scalar;
+- effect variant;
+- bounded entity-specific values.
 
-Use it to initialize effect variables that the particle JSON reads.
-
-Good uses:
-- color selection;
-- size scalar;
-- bounded entity-specific configuration.
-
-Do not use it to hide a large second behavior system inside the particle handoff.
+If a value should remain stable for a fire-and-forget particle, prefer sampling it before/at effect creation rather than continuously querying entity state afterward.
 
 ## Entity scale
 
-**OFFICIAL BEDROCK CONTEXT + HEURISTIC**
+`variable.entity_scale` is available in relevant particle contexts.
 
-`variable.entity_scale` is available to particle Molang in relevant contexts.
+Use it only when the effect should intentionally scale with entity scale.
 
-Use entity scale only when the effect genuinely should scale with the entity. Avoid accidentally coupling world-sized VFX to an entity's render scale.
+Avoid accidental coupling where a world-scale VFX shrinks/grows simply because the model render scale changes.
 
-## Bound vs fire-and-forget behavior
+## Fire-and-forget versus bound
 
-**OFFICIAL BEDROCK CONTEXT**
-
-Downstream animation/controller bindings can create sustained/bound effects or fire-and-forget effects depending on how the effect is authored and triggered.
-
-Particle package notes should state intended behavior:
+Package notes should explicitly state one of:
 
 ```text
 fire-and-forget
 bound to locator
-bound while state active
+bound while controller/state is active
 ```
 
-This makes downstream integration deterministic.
+### Fire-and-forget
+The host creates the effect, then the effect should remain visually coherent even if the source moves away.
+
+### Bound
+The effect intentionally remains tied to the attachment transform.
+
+This distinction affects local-space, query lifetime, event type, and child-effect behavior.
+
+## Child effects and binding
+
+Event child types have different relationship semantics. When entity attachment matters, decide whether the child should:
+- detach as its own emitter;
+- remain emitter-bound;
+- attach to a parent particle;
+- inherit particle velocity.
+
+Do not assume parent entity binding automatically propagates to every child event in the desired way.
+
+## Query/reference lifetime
+
+Continuous entity queries are only safe while the relevant entity/reference context exists and is exposed to the expression host.
+
+For a fire-and-forget effect:
+
+```text
+entity query needed once
+→ sample/pass value before spawn
+```
+
+is usually safer than:
+
+```text
+living particles continuously dereference entity state
+```
+
+unless that coupling is intentional and supported.
 
 ## Attachment design checklist
 
-When authoring a particle intended for entity use, capture:
+Capture:
 
 ```text
 intended locator role
-expected local forward/up direction
-fire-and-forget or sustained
-whether emitter should follow locator motion
-whether child effects should inherit binding
+expected local forward/up axis
+fire-and-forget vs bound
+should particles follow locator position after birth?
+should particles follow locator rotation after birth?
+should host velocity be inherited?
+should child effects inherit binding/velocity?
 required pre_effect variables
-expected scale behavior
+expected entity-scale behavior
+billboard emitter-transform plane if used
 ```
 
-Do not invent an exact locator name unless the user or downstream asset defines one.
+## Common mistakes
 
-## Common integration mistakes
+- effect spawns at entity origin because locator mapping is missing;
+- local launch axis disagrees with locator/bone orientation;
+- `rotation=true` used without local position ownership;
+- particles follow a moving limb when they should detach into world space;
+- particles detach when they should remain glued to the locator;
+- host velocity is inherited unexpectedly;
+- sustained emitter is retriggered every animation frame;
+- particle JSON duplicates animation-controller state logic;
+- entity query is read after a fire-and-forget effect lost the required context;
+- emitter-transform billboard plane is debugged as a texture problem;
+- assumed locator does not exist.
 
-- effect works standalone but spawns at entity origin because locator binding is missing;
-- local launch axis is wrong for the target bone orientation;
-- particle effect duplicates animation-controller state logic;
-- sustained emitter is triggered repeatedly every animation frame;
-- fire-and-forget effect is authored as a permanently bound loop;
-- pre-effect variable expected by the particle is never initialized;
-- entity scale changes a world-space effect unexpectedly;
-- reference package assumes a locator that does not exist.
+## Debug order
+
+```text
+particle works standalone?
+→ client entity effect mapping
+→ locator exists?
+→ bone/locator position
+→ bone/locator rotation
+→ local-space position/rotation/velocity
+→ animation/controller trigger
+→ pre_effect values
+→ billboard emitter-transform mode if used
+→ child binding/inheritance
+→ Snowstorm standalone vs actual entity runtime
+```
 
 ## Reference package handoff
 
-When entity integration is relevant, particle delivery notes should include only downstream facts that are known:
+When entity integration is relevant, include only known downstream facts:
 
 ```text
-suggested attachment role: exhaust / hand / muzzle / etc.
-expected local direction
+attachment role
+expected local axis
 binding mode intent
-required variables
+local-space intent
+velocity inheritance intent
+required pre_effect variables
+scale behavior
 ```
 
-Do not include client-entity mutation files unless the user explicitly requested that downstream integration work as part of a separate task.
+Do not include client-entity mutation files unless explicitly requested as separate downstream work.
 
-## Debug order for attached particles
+## Sources
 
-If an effect works standalone but fails on an entity:
-
-```text
-particle effect still valid alone?
-→ client entity effect mapping
-→ locator exists?
-→ locator/bone transform correct?
-→ animation/controller trigger fires?
-→ local direction/orientation correct?
-→ pre_effect variables initialized?
-→ sustained effect ownership correct?
-```
+- https://learn.microsoft.com/en-us/minecraft/creator/reference/content/particlesreference/particlecomponents/minecraftemitter_local_space?view=minecraft-bedrock-stable
+- https://learn.microsoft.com/en-us/minecraft/creator/reference/content/particlesreference/examples/particlecomponents/particle_visual_effect_event?view=minecraft-bedrock-stable
