@@ -126,7 +126,7 @@ function normalizeRuntimeCallResult(result: unknown): GatewayRuntimeCallResult {
     content: [
       {
         type: "text",
-        text: "BlockIT runtime returned a non-standard deferred tool result.",
+        text: "LazyDesigner Runtime returned a non-standard deferred tool result.",
       },
     ],
     structuredContent: { runtime_result: result },
@@ -146,7 +146,7 @@ function normalizeGatewayManagedResult(
     content: [
       {
         type: "text",
-        text: "This BlockIT Gateway authoring phase switched. Continue the same task; its Runtime catalog will refresh automatically on the next capability request.",
+        text: "This LazyDesigner Gateway authoring phase switched. Continue the same task; its Runtime catalog will refresh automatically on the next capability request.",
       },
     ],
     structuredContent: {
@@ -230,7 +230,7 @@ export class BlockitRuntimeBackend {
       return Promise.reject(
         new GatewayBackendError(
           "GATEWAY_BUSY",
-          `BlockIT Gateway queue is full (${this.maxQueueDepth} waiting operations maximum). Retry after the current authoring operation completes.`,
+          `LazyDesigner Gateway queue is full (${this.maxQueueDepth} waiting operations maximum). Retry after the current authoring operation completes.`,
           true,
           { max_queue_depth: this.maxQueueDepth }
         )
@@ -318,7 +318,7 @@ export class BlockitRuntimeBackend {
     if (!runtimePhase) {
       throw new GatewayBackendError(
         "BACKEND_UNAVAILABLE",
-        "The connected BlockIT Runtime does not expose a valid authoring phase. Deploy/reload the matching BlockIT build before authoring.",
+        "The connected LazyDesigner Runtime does not expose a valid authoring phase. Deploy/reload the matching LazyDesigner build before authoring.",
         false
       );
     }
@@ -331,7 +331,7 @@ export class BlockitRuntimeBackend {
     if (runtimePhase !== this.authoringPhase) {
       throw new GatewayBackendError(
         "BACKEND_UNAVAILABLE",
-        `BlockIT Runtime did not honor this Gateway's ${this.authoringPhase} authoring phase affinity (reported ${runtimePhase}). Deploy/reload the matching BlockIT build before continuing.`,
+        `LazyDesigner Runtime did not honor this Gateway's ${this.authoringPhase} authoring phase affinity (reported ${runtimePhase}). Deploy/reload the matching LazyDesigner build before continuing.`,
         false,
         {
           requested_authoring_phase: this.authoringPhase,
@@ -353,7 +353,7 @@ export class BlockitRuntimeBackend {
       if (bindIfUnset || this.projectUuid) {
         throw new GatewayBackendError(
           "PROJECT_CONTEXT_LOST",
-          "The connected BlockIT Runtime does not expose project-affinity health. Deploy/reload the matching BlockIT build before authoring mutations.",
+          "The connected LazyDesigner Runtime does not expose project-affinity health. Deploy/reload the matching LazyDesigner build before authoring mutations.",
           false
         );
       }
@@ -390,8 +390,8 @@ export class BlockitRuntimeBackend {
       !projectHealth.active_project_uuid
     ) {
       const message = projectHealth.open_project_count > 1
-        ? `BlockIT Gateway is not bound and ${projectHealth.open_project_count} Blockbench projects are open. Select the intended tab and explicitly bind this chat before authoring.`
-        : "BlockIT Gateway is not bound and there is no single active Blockbench project to bind safely.";
+        ? `LazyDesigner Gateway is not bound and ${projectHealth.open_project_count} Blockbench projects are open. Select the intended tab and explicitly bind this chat before authoring.`
+        : "LazyDesigner Gateway is not bound and there is no single active Blockbench project to bind safely.";
       throw new GatewayBackendError(
         "PROJECT_CONTEXT_LOST",
         message,
@@ -481,7 +481,7 @@ export class BlockitRuntimeBackend {
       this.lastError = message;
       throw new GatewayBackendError(
         "BACKEND_UNAVAILABLE",
-        `BlockIT runtime MCP connection failed: ${message}`,
+        `LazyDesigner Runtime MCP connection failed: ${message}`,
         true,
         timedOut ? { timeout_ms: this.connectTimeoutMs } : {}
       );
@@ -498,7 +498,7 @@ export class BlockitRuntimeBackend {
       this.lastError = probe.error;
       throw new GatewayBackendError(
         "BACKEND_UNAVAILABLE",
-        `BlockIT runtime is unavailable: ${probe.error}`,
+        `LazyDesigner Runtime is unavailable: ${probe.error}`,
         true
       );
     }
@@ -597,7 +597,7 @@ export class BlockitRuntimeBackend {
       if (!projectHealth) {
         throw new GatewayBackendError(
           "PROJECT_CONTEXT_LOST",
-          "The connected BlockIT Runtime does not expose project-affinity health. Deploy/reload the matching BlockIT build before rebinding.",
+          "The connected LazyDesigner Runtime does not expose project-affinity health. Deploy/reload the matching LazyDesigner build before rebinding.",
           false
         );
       }
@@ -639,7 +639,7 @@ export class BlockitRuntimeBackend {
       if (!tool) {
         throw new GatewayBackendError(
           "CAPABILITY_NOT_FOUND",
-          `Runtime capability "${capability}" is not exposed by the current BlockIT surface.`,
+          `Runtime capability "${capability}" is not exposed by the current LazyDesigner surface.`,
           true,
           { capability }
         );
@@ -659,7 +659,7 @@ export class BlockitRuntimeBackend {
       if (!tool) {
         throw new GatewayBackendError(
           "CAPABILITY_NOT_FOUND",
-          `Runtime capability "${capability}" is not exposed by the current BlockIT surface.`,
+          `Runtime capability "${capability}" is not exposed by the current LazyDesigner surface.`,
           true,
           { capability }
         );
@@ -708,7 +708,7 @@ export class BlockitRuntimeBackend {
             await this.closeConnectionUnsafe();
             throw new GatewayBackendError(
               "BACKEND_UNAVAILABLE",
-              "BlockIT Runtime returned an invalid authoring phase handoff receipt.",
+              "LazyDesigner Runtime returned an invalid authoring phase handoff receipt.",
               false
             );
           }
@@ -738,7 +738,7 @@ export class BlockitRuntimeBackend {
           this.lastError = message;
           throw new GatewayBackendError(
             "PROJECT_CONTEXT_LOST",
-            `BlockIT refused "${capability}" because this Gateway's bound project tab is no longer safely available. Select the intended open tab and explicitly rebind before continuing.`,
+            `LazyDesigner refused "${capability}" because this Gateway's bound project tab is no longer safely available. Select the intended open tab and explicitly rebind before continuing.`,
             false,
             {
               capability,
@@ -760,8 +760,8 @@ export class BlockitRuntimeBackend {
         throw new GatewayBackendError(
           classification.code,
           classification.code === "OUTCOME_UNKNOWN"
-            ? `BlockIT runtime connection was interrupted while invoking "${capability}". The mutation may already have executed; inspect current model state before retrying.`
-            : `BlockIT runtime connection was interrupted while invoking read-only capability "${capability}".`,
+            ? `LazyDesigner Runtime connection was interrupted while invoking "${capability}". The mutation may already have executed; inspect current model state before retrying.`
+            : `LazyDesigner Runtime connection was interrupted while invoking read-only capability "${capability}".`,
           classification.safe_to_retry,
           {
             capability,
