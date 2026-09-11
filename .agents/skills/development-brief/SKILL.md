@@ -110,7 +110,7 @@ Fix the first wrong owner, not the easiest downstream file.
 ```text
 MCP public/schema/result/transport → `mcp-server-development`
 Blockbench API/lifecycle/UI/Undo  → `blockbench-runtime-development`
-model/visual judgement            → `blockbench-bedrock-modelling`
+model/visual judgement            → `lazydesigner-modelling`
 TypeScript/Bun mechanics          → exact affected source/build owner + mcp/AGENTS.md
 ```
 
