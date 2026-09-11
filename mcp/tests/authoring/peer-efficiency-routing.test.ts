@@ -6,7 +6,7 @@ async function source(path: string): Promise<string> {
 
 describe("peer-inspired authoring efficiency routing", () => {
   test("Geometry reuses fresh cohort state and batches deterministic corrections", async () => {
-    const modelling = await source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md");
+    const modelling = await source("../.agents/skills/lazydesigner-modelling/SKILL.md");
     expect(modelling).toMatch(/deterministic.*TRANSLATE|TRANSLATE.*deterministic/i);
     expect(modelling).toMatch(/fresh state/i);
     expect(modelling).toContain("manage_cubes");
@@ -15,7 +15,7 @@ describe("peer-inspired authoring efficiency routing", () => {
   });
 
   test("Texturing keeps atlas lifecycle idempotent and avoids the provisional blank default", async () => {
-    const skill = await source("../.agents/skills/blockit-bedrock-texturing/SKILL.md");
+    const skill = await source("../.agents/skills/lazydesigner-texturing/SKILL.md");
     expect(skill).toMatch(/blank atlas resolution unknown\s+→ get_project_info once/i);
     expect(skill).toMatch(/Pin atlas UUID[^\n]*texture_id/i);
     expect(skill).toMatch(/\breuse (?:existing atlas|its) UUID\b/i);
@@ -25,7 +25,7 @@ describe("peer-inspired authoring efficiency routing", () => {
   });
 
   test("Animation uses one coherent batch transform instead of per-key loops", async () => {
-    const skill = await source("../.agents/skills/blockit-bedrock-animation/SKILL.md");
+    const skill = await source("../.agents/skills/lazydesigner-animation/SKILL.md");
     expect(skill).toMatch(/manage_animation_timeline \(operation: keyframes\|graph\|timeline\|batch\|copy_paste\)/i);
     expect(skill).toMatch(/`batch`.*coherent cohort.*not loops per key/i);
     expect(skill).toMatch(/Controller\/effect\/graph\/copy-paste.*conditional/i);
