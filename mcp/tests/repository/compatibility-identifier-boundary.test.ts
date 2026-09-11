@@ -6,7 +6,7 @@ async function source(path: string): Promise<string> {
 
 describe("LazyDesigner compatibility identifier boundary", () => {
   test("install, protocol and persisted identifiers remain stable during presentation rename", async () => {
-    const [pkgText, contract, affinity, settings, authoringPhase, profile, plugin] = await Promise.all([
+    const [pkgText, contract, affinity, settings, authoringPhase, profile, plugin, statusBar] = await Promise.all([
       source("package.json"),
       source("gateway/contract.ts"),
       source("gateway/projectAffinity.ts"),
@@ -14,6 +14,7 @@ describe("LazyDesigner compatibility identifier boundary", () => {
       source("lib/authoringPhase.ts"),
       source("lib/registrationProfile.ts"),
       source("index.ts"),
+      source("ui/statusBar.ts"),
     ]);
     const pkg = JSON.parse(pkgText) as { name: string; main: string };
 
@@ -27,14 +28,16 @@ describe("LazyDesigner compatibility identifier boundary", () => {
     expect(profile).toContain('"mcp_extended_families_enabled"');
     expect(plugin).toContain('BBPlugin.register("blockit_mcp"');
     expect(plugin).toContain("__BLOCKIT_BUILD_ID__");
+    expect(statusBar).toContain('BLOCKIT_RUNTIME_STATUS_CHANGED = "blockit-runtime-status-changed"');
   });
 
-  test("human-facing Runtime, affinity and settings language uses LazyDesigner", async () => {
-    const [affinity, settings, plugin, server, readme] = await Promise.all([
+  test("human-facing Runtime, affinity, settings and status language uses LazyDesigner", async () => {
+    const [affinity, settings, plugin, server, statusBar, readme] = await Promise.all([
       source("gateway/projectAffinity.ts"),
       source("ui/settings.ts"),
       source("index.ts"),
       source("server/server.ts"),
+      source("ui/statusBar.ts"),
       source("README.md"),
     ]);
 
@@ -45,6 +48,10 @@ describe("LazyDesigner compatibility identifier boundary", () => {
     expect(plugin).toContain("Installed LazyDesigner Bedrock Entity MCP");
     expect(plugin).toContain("Uninstalled LazyDesigner Bedrock Entity MCP");
     expect(plugin).toContain("LazyDesigner MCP initialization failed");
+    expect(statusBar).toContain('return "LazyDesigner Starting"');
+    expect(statusBar).toContain('return "LazyDesigner Error"');
+    expect(statusBar).toContain('return "LazyDesigner Ready"');
+    expect(statusBar).toContain("Click to open LazyDesigner panel");
     expect(readme).toContain("LazyDesigner");
 
     expect(affinity).not.toContain('throw new Error("BlockIT');
@@ -52,6 +59,7 @@ describe("LazyDesigner compatibility identifier boundary", () => {
     expect(server).not.toContain("BlockIT Bedrock Entity authoring");
     expect(plugin).not.toContain("Installed BlockIT Bedrock Entity MCP");
     expect(plugin).not.toContain("Uninstalled BlockIT Bedrock Entity MCP");
+    expect(statusBar).not.toContain('return "BlockIT');
   });
 
   test("compatibility policy explicitly forbids blind bulk rename", async () => {
