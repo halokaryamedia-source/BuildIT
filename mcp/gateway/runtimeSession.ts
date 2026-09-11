@@ -24,15 +24,11 @@ export class RuntimeSessionState {
 
   transition(next: GatewayConnectionState): void {
     if (next === this.state) return;
-    const previous = this.state;
     this.state = next;
     this.generation += 1;
     this.lastTransitionAt = new Date().toISOString();
     if (next === "ready") {
       this.lastReadyAt = this.lastTransitionAt;
-      if (previous !== "connecting" && previous !== "probing") {
-        this.reconnectCount += 1;
-      }
     }
   }
 
@@ -42,6 +38,10 @@ export class RuntimeSessionState {
 
   markCatalogRefresh(): void {
     this.catalogRefreshCount += 1;
+  }
+
+  hasBeenReady(): boolean {
+    return this.lastReadyAt !== null;
   }
 
   snapshot(): RuntimeSessionSnapshot {
