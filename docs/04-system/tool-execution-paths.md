@@ -36,6 +36,8 @@ DIRECT_API
 
 `UI_FALLBACK` is maintenance/debug compatibility only. It must not become a required step in a normal authoring workflow when a semantic capability exists.
 
+The normal `bedrock_entity` registration profile excludes the generic `ui` and `import` fallback families entirely. Those families are available only through explicit extended/developer compatibility mode.
+
 ## Current representative map
 
 | Area | Capability / owner | Class | Notes |
@@ -57,6 +59,44 @@ DIRECT_API
 | Maintenance | `emulate_clicks` | UI_FALLBACK | Synthetic MouseEvent dispatch. |
 | Maintenance | `fill_dialog` | UI_FALLBACK | Generic Dialog form mutation. |
 | Maintenance | `risky_eval`, `from_geo_json` | UI_FALLBACK | Disabled/de-prioritized compatibility/debug path. |
+
+## Specialist routing policy
+
+The specialist Skills now choose execution paths explicitly rather than treating every available tool as equally appropriate.
+
+### Geometry
+
+```text
+coherent Cube creation       → manage_cubes create batch
+known multi-Cube correction  → manage_cubes batch_update
+related Group/bone creation  → add_group groups batch
+known hierarchy change       → reparent_element
+```
+
+Explicit identity is preferred over editor selection. Selection state is support context, not normal targeting authority.
+
+### Texturing
+
+```text
+known exact pixel/RGBA work  → paint_texture_transaction
+native brush/fill/shape need → native Painter capability
+unknown existing pixel value → color_picker_tool
+known palette/reference color→ pass color directly
+```
+
+Do not use the color picker merely to re-enter a color already known to the model. Prefer one coherent transaction over many one-pixel Painter calls when deterministic operations can express the intended result.
+
+### Animation
+
+```text
+coherent new clip            → create_animation
+related key cohort            → manage_animation_timeline keyframes/batch
+playback/time/native props    → manage_animation_timeline timeline/properties
+effects                       → manage_animation_effects
+controller composition        → manage_animation_controller
+```
+
+Native Timeline/Animator state is used directly; generic editor actions/clicks are not a normal animation path.
 
 ## Texturing distinction
 
@@ -90,10 +130,14 @@ Do not force exact pixels through simulated brush motion, and do not replace exp
 - Do not select or alter native tool state when an EXACT_DATA branch can complete without it.
 - Keep UI fallbacks discoverable only for maintenance/debug compatibility.
 - Do not remove native subsystem usage merely to reduce source lines; native Painter/Timeline/Undo semantics are capability, not overhead.
+- Do not re-discover identities/schemas after a successful deterministic mutation when the returned receipt already provides the state needed for continuation.
+- Verify at coherent cohort boundaries rather than after every Cube, pixel, or keyframe.
 
-## Known optimization candidate
+## Known runtime micro-optimization
 
-`paint_with_brush` currently configures native Brush state before deciding whether a request qualifies for its exact-pixel branch. The preferred implementation order is:
+`paint_with_brush` currently configures native Brush state before deciding whether a request qualifies for its exact-pixel branch. Model-side routing has already been hardened so deterministic pixel work prefers `paint_texture_transaction`, reducing how often this path is reached.
+
+The preferred Runtime implementation order remains:
 
 ```text
 resolve request + read required Painter guard state
@@ -102,7 +146,7 @@ resolve request + read required Painter guard state
 → else: select/configure Brush and run native Painter stroke
 ```
 
-This is a micro-optimization only. Apply it when local typecheck/targeted paint tests are available; do not risk a large remote rewrite of `paint.ts` solely for this change.
+This is a micro-optimization only. Apply it with local typecheck + targeted paint tests; do not risk a large remote rewrite of `paint.ts` solely for this change.
 
 ## Boundary
 
