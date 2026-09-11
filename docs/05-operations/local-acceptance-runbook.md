@@ -1,10 +1,10 @@
 # Local Acceptance Runbook
 
-Updated: 2026-09-10  
+Updated: 2026-09-11  
 Owner: `LIVE_BLOCKBENCH` formal acceptance procedure  
-Current state: native BlockIT authoring path only.
+Current state: native LazyDesigner authoring path only.
 
-This procedure activates only when `docs/knowledge/next-action.md` explicitly reactivates local testing. `LIVE_BLOCKBENCH` is an execution capability; it does not activate this procedure by itself. Targeted live debugging may use that capability without formal Local Acceptance.
+This procedure activates only when `docs/05-operations/next-action.md` explicitly reactivates local testing. `LIVE_BLOCKBENCH` is an execution capability; it does not activate this procedure by itself. Targeted live debugging may use that capability without formal Local Acceptance.
 
 Use only for native residue; prepare source proof and deterministic fixtures first.
 
@@ -99,7 +99,7 @@ Synthetic readiness never proves user asset approval. Tool/export success, low c
 
 ## 7. Representative quality fixture
 
-A committed sample asset is **only a representative test fixture** for BlockIT/MCP workflow quality. It is not a product target and **must not create LIFT-specific tool behavior**, schema, thresholds, workflow law, or acceptance rules. Another suitable fixture may replace it without changing production Runtime semantics.
+A committed sample asset is **only a representative test fixture** for LazyDesigner/MCP workflow quality. It is not a product target and **must not create fixture-specific tool behavior**, schema, thresholds, workflow law, or acceptance rules. Another suitable fixture may replace it without changing production Runtime semantics.
 
 Never mutate the approved fixture source for system testing. Use a disposable copy.
 
@@ -127,8 +127,8 @@ Targeted quality work uses disposable face/contact, adjoining texture and limb-c
 Classify the first wrong owner before correction. If a live verifier exposes a source defect, return only that defect to the appropriate development context; do not restart the entire GitHub audit.
 
 Update only changed owners:
-- `docs/knowledge/current-validation.md` — proof interpretation;
-- `docs/knowledge/next-action.md` — continuation;
-- `docs/knowledge/implementation-map.md` — source ownership.
+- `docs/05-operations/current-validation.md` — proof interpretation;
+- `docs/05-operations/next-action.md` — continuation;
+- `docs/04-system/implementation-map.md` — source ownership.
 
 When requested proof criteria are satisfied, **STOP**.
