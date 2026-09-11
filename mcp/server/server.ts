@@ -42,7 +42,7 @@ export function buildMcpServerInstructions(
 ): string {
   // Keep initialize capability-oriented; detailed routed specs load only after selection.
   describeMcpSurfaceToolNames(profile, phase);
-  return `BlockIT Bedrock Entity authoring. ${buildMcpPhaseRuntimeContract(
+  return `LazyDesigner Bedrock Entity authoring. ${buildMcpPhaseRuntimeContract(
     phase
   )} Capability nouns: cube, texture/PBR, locator; Animation uses keyframe tooling. Core routes are lifecycle and read operations; selection, history, camera, and export are conditional support routes.`;
 }
