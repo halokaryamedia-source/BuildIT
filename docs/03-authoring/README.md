@@ -1,6 +1,6 @@
 # 03 — Asset Authoring
 
-Owns the durable rules used after reference handoff during actual Minecraft Bedrock / Blockbench asset authoring.
+Owns the durable semantic rules used after reference handoff during actual Minecraft Bedrock / Blockbench asset authoring.
 
 ```text
 workflow.md
@@ -11,4 +11,48 @@ validation/
 finalization/
 ```
 
-AI load rule: choose the active authoring stage first. Load only that stage standard plus the selected modelling profile when relevant. Do not preload all authoring standards.
+## Authority Boundary
+
+```text
+03-authoring docs = durable authoring policy
+matching Skill     = execution procedure
+Control projection = current task/reference/workspace subset
+```
+
+Do not load every authoring document together.
+
+## Stage Routing
+
+### Geometry / rig / pivots / UV
+
+```text
+GEOMETRY_CONTEXT
++ blockbench-bedrock-modelling Skill
++ exactly one modelling profile
+```
+
+Conditionally read `modelling/standard.md`, `workflow.md`, or `validation/visual.md` only when a material policy question remains unresolved.
+
+### Texturing / material / PBR
+
+```text
+TEXTURE_CONTEXT
++ blockit-bedrock-texturing Skill
+```
+
+Load only the relevant file under `texture/` when its specific material/render/pattern policy can change the decision.
+
+### Animation / motion
+
+```text
+ANIMATION_CONTEXT
++ blockit-bedrock-animation Skill
+```
+
+Load `animation/standard.md` or `validation/visual.md` only when a durable motion/verification rule is materially needed.
+
+### Finalization
+
+Load `finalization/standard.md` only at finalization.
+
+Full REQUIRED / CONDITIONAL / EXCLUDED bundles are owned by `../04-system/ai-context-loading.md`.
