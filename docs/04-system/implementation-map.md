@@ -2,7 +2,17 @@
 
 Updated: 2026-09-11
 
-This file maps **current source ownership only**. Product workflow belongs in `flow.md`; reference preparation in `reference-handoff.md`; current implementation continuation in `next-action.md`; proof interpretation in `current-validation.md`.
+This file maps **current source ownership only**.
+
+Canonical neighboring owners:
+
+```text
+product workflow          → docs/01-product/flow.md
+reference preparation     → docs/02-reference/README.md
+reference handoff         → docs/02-reference/package/handoff.md
+current continuation      → docs/05-operations/next-action.md
+proof interpretation      → docs/05-operations/current-validation.md
+```
 
 ## Product Identity
 
@@ -57,24 +67,7 @@ The current implementation is still physically located under the legacy path:
 mcp/gateway/navigator/
 ```
 
-This path is **temporary migration state**, not a separate Navigator architecture.
-
-Current files:
-
-```text
-mcp/gateway/navigator/packet.ts
-mcp/gateway/navigator/snapshot.ts
-mcp/gateway/navigator/workspace.ts
-mcp/gateway/navigator/registry.ts
-mcp/gateway/navigator/capabilities.ts
-mcp/gateway/navigator/developmentIntent.ts
-mcp/gateway/navigator/delta.ts
-mcp/gateway/navigator/routingPolicy.ts
-mcp/gateway/navigator/contextCache.ts
-mcp/gateway/navigator/types.ts
-```
-
-Planned cleanup is to migrate these responsibilities into a `Control` naming surface without keeping permanent duplicate aliases.
+This path is temporary migration state, not a separate Navigator architecture.
 
 Control owns only:
 
@@ -88,13 +81,11 @@ capability routing metadata
 post-operation invalidation/delta
 ```
 
-Canonical stage-specific authoring projection contract:
+Canonical stage-specific context projection:
 
 ```text
-docs/knowledge/control-context-projection.md
+docs/04-system/control/context-projection.md
 ```
-
-This contract defines `GEOMETRY_CONTEXT`, `TEXTURE_CONTEXT`, and `ANIMATION_CONTEXT`. Control owns selecting/projecting these subsets. Domain Skills consume them but must not rebuild parallel projection contracts.
 
 Control does not own canonical Skill prose, Tool schemas, live model data, persistent asset state, build execution, or Codex creative reasoning.
 
@@ -102,13 +93,19 @@ Control does not own canonical Skill prose, Tool schemas, live model data, persi
 
 ChatGPT owns reference preparation before Codex when it reduces ambiguity.
 
+Canonical domain index:
+
+```text
+docs/02-reference/README.md
+```
+
 Canonical handoff contract:
 
 ```text
-docs/knowledge/reference-handoff.md
+docs/02-reference/package/handoff.md
 ```
 
-Reference package data may include images, compact JSON metadata, and conditional Markdown guidance. Images remain visual authority. Control consumes/projects the package; it does not author the reference content itself.
+Images remain visual authority. Control consumes/projects the package; it does not author reference content itself.
 
 ## Authoring Semantic Ownership
 
@@ -118,14 +115,14 @@ Reference package data may include images, compact JSON metadata, and conditiona
 | Texture / Painter / PBR | `.agents/skills/blockit-bedrock-texturing/SKILL.md` | `mcp/server/tools/texture.ts`, `mcp/server/tools/paint.ts`, material owners |
 | Animation / motion / effects/controllers | `.agents/skills/blockit-bedrock-animation/SKILL.md` | `mcp/server/tools/animation*.ts`, particle/controller owners |
 | Current asset routing / phase classification | `.agents/skills/blockit-bedrock-entity-mcp/SKILL.md` | `mcp/lib/authoringPhase.ts`, `mcp/server/tools.ts` |
-| Reference generation/preparation | `.agents/skills/blockbench-reference-generator/SKILL.md` + `reference-handoff.md` | ChatGPT; no Runtime authoring owner |
-| Stage-specific Codex context projection | `docs/knowledge/control-context-projection.md` | LazyDesigner Control (`mcp/gateway/navigator/**` during migration) |
+| Reference generation/preparation | `.agents/skills/blockbench-reference-generator/SKILL.md` + `docs/02-reference/` | ChatGPT; no Runtime authoring owner |
+| Stage-specific Codex context projection | `docs/04-system/control/context-projection.md` | LazyDesigner Control (`mcp/gateway/navigator/**` during migration) |
 
 Legacy Skill package names will be migrated separately. Do not duplicate their content into Control during the rename.
 
 ## Canonical Phase / Capability Classification
 
-The canonical Runtime phase classification already exists in:
+Canonical Runtime phase classification lives in:
 
 ```text
 mcp/lib/authoringPhase.ts
@@ -133,7 +130,7 @@ mcp/lib/authoringPhase.ts
 
 `classifyMcpToolPhase()` owns Runtime classification semantics.
 
-Current `mcp/gateway/navigator/registry.ts` still contains manual capability-domain sets. This is migration debt because it creates a second classification table. The Control implementation should derive or generate routing metadata from canonical owners instead of maintaining a parallel hand-written catalog.
+Current `mcp/gateway/navigator/registry.ts` still contains manual capability-domain sets. This is migration debt because it creates a second classification table. Control should derive or generate routing metadata from canonical owners instead of maintaining a parallel hand-written catalog.
 
 ## Gateway Owners
 
@@ -181,20 +178,9 @@ mcp/distribution/**
 mcp/prompts/**
 ```
 
-Developer loop currently includes:
-
-```text
-dev:watch
-prompt regeneration
-deploy:local
-dev:sync
-```
-
 Control may resolve which build/generate/deploy path is needed for a system-development task, but the build system performs the work.
 
 ## System Development Routing
-
-For MCP/plugin/build/runtime changes:
 
 ```text
 User request
@@ -207,18 +193,13 @@ User request
 → build/generate/deploy owner
 ```
 
-The current `developmentIntent.ts` is an initial implementation of this routing idea and should be evolved under the Control architecture rather than expanded into a separate development navigator.
-
 ## Known Migration Debt
-
-Current architecture work should explicitly remove these sources of ambiguity:
 
 ```text
 legacy BlockIT product labels
 legacy Navigator naming/path
 manual duplicate capability-domain tables
 Experimental Navigator documentation that could be mistaken for current authority
-old flow/proof documents that describe superseded architecture
 generated output/tests that still encode retired names or paths
 ```
 
