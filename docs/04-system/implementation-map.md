@@ -144,6 +144,62 @@ Animation change                   → ANIMATION
 ambiguous structural evidence      → conservative downstream invalidation
 ```
 
+## Particle Workflow Ownership
+
+Particle remains **Animation-specialist support**, not a fourth authoring phase and not a second texture system.
+
+Canonical source ownership:
+
+```text
+inspect_particle / manage_particle
+→ mcp/server/tools/particle.ts
+→ Bedrock particle JSON inspect/create/patch/write/native preview
+
+canonical particle resource layout
+→ mcp/lib/particleResourceLayout.ts
+→ particles/*.particle.json
+→ textures/particle/*.png
+
+particle texture canvas / painting
+→ existing Texturing capabilities
+→ create_texture + paint tools
+
+final external PNG persistence
+→ existing paint_texture_transaction optional output
+→ mcp/lib/paintTransaction.ts + mcp/server/tools/prelocal-wiring.ts
+→ verified temporary write / replace / rollback
+
+particle animation timing + locator attachment
+→ manage_animation_effects
+→ mcp/server/tools/animation-effects.ts
+```
+
+Generated particle texture continuation is explicit:
+
+```text
+manage_particle texture_dependency.state=missing
+→ REQUIRES_TEXTURING
+→ create_texture
+→ existing paint capabilities
+→ paint_texture_transaction with canonical textures/particle/... PNG output
+→ resume manage_particle with texture_dependency.state=ready
+→ Runtime verifies PNG exists and is non-empty
+→ particle JSON write / preview may proceed
+→ manage_animation_effects owns explicit time/effect/locator binding
+```
+
+Failure/recovery rules:
+
+```text
+texture missing / PNG save failure → remain in Texturing; do not write/bind particle
+particle validation error          → no particle write or preview
+generated state=ready but no PNG  → fail; return to Texturing
+particle asset ready               → binding still requires manage_animation_effects
+outcome-unknown mutation           → no automatic retry
+```
+
+Do not add `create_particle_texture`, `save_particle_texture`, a Particle phase, or a parallel particle painting system.
+
 ## Animation Controller Source Ownership
 
 Animation Controller support is one public capability surface, not parallel controller systems:
