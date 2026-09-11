@@ -2,16 +2,15 @@
 
 Updated: 2026-09-11
 
-This document owns the canonical structure of `REFERENCE.json`, the machine-readable index handed from ChatGPT Reference Preparation to Codex.
+This document owns the canonical base structure of `REFERENCE.json`, the machine-readable index handed from ChatGPT Reference Preparation to Codex.
 
-It does not own visual-sheet design, stage prose, authoring procedure, or Control implementation.
+It does not own visual-sheet design, authoring procedure, Runtime implementation semantics, or full Particle resource content.
 
-Stage document owners:
+Specializations:
 
 ```text
-GEOMETRY.md  → geometry.md
-TEXTURE.md   → texture.md
-ANIMATION.md → animation.md
+MODEL stage documents → geometry.md / texture.md / animation.md
+PARTICLE handoff       → particle-handoff.md
 ```
 
 ## Objective
@@ -19,26 +18,26 @@ ANIMATION.md → animation.md
 `REFERENCE.json` answers only:
 
 ```text
-what asset is being made
+what kind of asset/reference is being handed off
 what stable requirements are confirmed
-what scale authority exists
-what visual authority exists
-what stage documents exist
+what scale/resource authority exists
+what visual/resource authority exists
+what documents/resources exist
 what decision-critical relationships are known
 what remains unknown/blocking
-which stages are ready
+which downstream decisions are ready
 ```
 
-It is an index and structured fact contract, not a modelling blueprint.
+It is an index and structured fact contract, not a modelling blueprint or a copy of authored resource files.
 
 ## Authority Order
 
 ```text
 1. explicit current user requirement
-2. approved visual reference
-3. confirmed numeric / player-relative scale requirement
+2. approved visual/resource reference
+3. confirmed numeric / player-relative / resource-path requirement
 4. REFERENCE.json structured facts
-5. active stage Markdown projection
+5. active stage/resource projection
 6. downstream interpretation
 ```
 
@@ -50,6 +49,8 @@ Material conflicts between stronger authorities must remain explicit and block o
 file:   REFERENCE.json
 schema: lazydesigner-reference-v1
 ```
+
+The v1 schema supports both model-oriented and Particle-oriented handoffs through `asset.kind` while keeping backward compatibility with older model packages that omit it.
 
 ## Canonical Shape
 
@@ -65,6 +66,7 @@ schema: lazydesigner-reference-v1
   "articulation": [],
   "materials": [],
   "animation_guidance": [],
+  "particle": {},
   "constraints": [],
   "unknowns": {},
   "readiness": {}
@@ -75,31 +77,63 @@ Omit empty optional arrays/objects when they add no downstream value.
 
 ## `asset` — required
 
+Model example:
+
 ```json
 {
   "name": "farmer_npc",
+  "kind": "MODEL",
   "profile": "HUMANOID",
   "task": "NEW_ASSET",
   "intent": "Farmer NPC harvesting cinnamon"
 }
 ```
 
-Required fields:
+Particle example:
+
+```json
+{
+  "name": "dust_hit",
+  "kind": "PARTICLE",
+  "task": "NEW_ASSET",
+  "intent": "Short dust burst when a hoe contacts the ground"
+}
+```
+
+Required fields for every package:
 
 ```text
 name
-profile
 task
 intent
 ```
 
-`profile`:
+`kind`:
+
+```text
+MODEL | PARTICLE
+```
+
+Backward compatibility:
+
+```text
+recognized MODEL profile + asset.kind omitted
+→ downstream Control may treat the package as MODEL
+```
+
+New packages should write `kind` explicitly.
+
+### MODEL profile
+
+`profile` is required only when `kind=MODEL`:
 
 ```text
 PROP_FURNITURE | VEHICLE | HUMANOID | CREATURE | MECHANICAL | PLANT_FOLIAGE | GENERIC
 ```
 
-`task`:
+Do not use `GENERIC` as a placeholder for Particle.
+
+### Task
 
 ```text
 NEW_ASSET | CONTINUE_ASSET | CORRECTION
@@ -107,11 +141,9 @@ NEW_ASSET | CONTINUE_ASSET | CORRECTION
 
 `intent` is one short normalized statement of the approved current goal. Never store conversation history or a generation prompt here.
 
-## `requirements` — required
+## `requirements` — required for MODEL, optional/minimal for PARTICLE
 
-Contains only explicit or confirmed stable cross-stage requirements.
-
-Recommended shape:
+MODEL recommended shape:
 
 ```json
 {
@@ -125,19 +157,14 @@ Recommended shape:
 }
 ```
 
-### Numeric dimensions
-
-`dimensions_blocks` stores confirmed numeric envelope values only.
-
 Rules:
 - `null` means unknown;
 - never infer block values from image pixels;
 - explicit user dimensions remain authoritative unless changed by the user;
-- do not invent per-part dimensions.
+- do not invent per-part dimensions;
+- `animation_required` is boolean only when confirmed.
 
-### Player-relative scale
-
-`player_relative_scale` is optional when exact dimensions or context already make scale unambiguous. When useful, use one of:
+`player_relative_scale` may use:
 
 ```text
 HANDHELD
@@ -155,22 +182,9 @@ ROOM_SCALE
 CUSTOM
 ```
 
-This is a semantic world-scale anchor, not a numeric conversion table.
+For Particle-only packages, `requirements` may contain only facts that materially constrain downstream integration, such as `animation_required` when confirmed. Do not invent model dimensions for Particle.
 
-If both numeric dimensions and `player_relative_scale` exist:
-
-```text
-numeric dimensions = numeric authority
-player_relative_scale = semantic interaction/world-scale anchor
-```
-
-They must not materially contradict. If they do, record the conflict as blocking instead of silently choosing one.
-
-`animation_required` is `true` or `false` only when confirmed. If still unresolved and materially relevant, keep the uncertainty in `unknowns.blocking` rather than guessing.
-
-Additional requirement fields are allowed only for stable cross-stage facts such as required occupancy, required identity-critical part count, or a user-supplied tool that must be preserved.
-
-## `approval` — required for generated packages
+## `approval` — required for generated packages when approval state matters
 
 ```json
 {
@@ -186,7 +200,7 @@ Allowed values:
 APPROVED | NOT_REQUIRED | PENDING
 ```
 
-Never infer approval from silence.
+Never infer approval from silence. Particle resource review may additionally use `particle.review_state`; that state does not claim live Blockbench/Minecraft approval.
 
 ## `documents` — optional
 
@@ -200,9 +214,9 @@ List only files that actually exist:
 }
 ```
 
-Do not create entries for omitted/not-required documents. Stage Markdown is a projection of the same authority, not a competing source of truth.
+MODEL packages may use these stage projections. Particle packages normally do not need them when actual `.particle.json`/`.png` resources plus the `particle` block are sufficient.
 
-## `images` — required when visual evidence is packaged
+## `images` — required only when visual evidence is packaged
 
 ```json
 {
@@ -224,7 +238,7 @@ used_by
 status
 ```
 
-`role`:
+`role` examples:
 
 ```text
 CONCEPT
@@ -238,32 +252,36 @@ ANIMATION_KEYFRAME
 SOURCE_REFERENCE
 ```
 
-`used_by` uses semantic stages rather than filenames:
+`used_by`:
 
 ```text
 GEOMETRY | TEXTURE | ANIMATION
 ```
 
-This keeps image relevance stable even when an optional stage Markdown file is omitted.
+Particle resource PNGs should normally be referenced through `particle.texture_png`, not duplicated as generic image entries unless they also serve as review/reference evidence.
 
-`status`:
+## MODEL semantic sections
+
+The following sections are MODEL-oriented and optional:
 
 ```text
-APPROVED | SOURCE_ONLY | SUPPORTING
+parts
+articulation
+materials
+animation_guidance
 ```
 
-Do not duplicate visible image description inside the image object.
+Use only decision-critical supported facts. Do not include Cube inventories, final pivot coordinates, hidden anatomy guesses, pixel-paint instructions, or frame-by-frame implementation unless explicitly required.
 
-## `parts` — optional
+### `parts`
 
-Include only decision-critical semantic parts.
+Example:
 
 ```json
 {
   "id": "right_hand",
   "role": "GEOMETRY",
   "parent": "right_lower_arm",
-  "contact": null,
   "symmetry": "PAIRED",
   "motion": "ARTICULATED",
   "evidence": "SUPPORTED"
@@ -279,49 +297,17 @@ motion:   STATIC | RIGID | ARTICULATED | FLEXIBLE | UNKNOWN
 evidence: SUPPORTED | PROVISIONAL | CONFLICTING | UNAVAILABLE
 ```
 
-No Cube inventory, exact coordinates, or invented hidden anatomy/mechanisms.
+### `articulation`
 
-## `articulation` — optional
+Use only when Geometry/Animation decisions depend on a joint/relationship. Record motion intent, pivot region, overlap/clearance constraints and risk; never invent final pivot coordinates.
 
-Use only when Geometry/Animation decisions depend on it.
+### `materials`
 
-```json
-{
-  "joint": "knee",
-  "parent_part": "right_upper_leg",
-  "child_part": "right_lower_leg",
-  "motion": "HINGE_LIKE",
-  "axis_intent": null,
-  "pivot_region": "knee_center",
-  "coverage": "maintain_overlap",
-  "clearance": "avoid_visible_gap",
-  "risk": "deep_bend_gap"
-}
-```
+Use only supported material facts such as base color, surface character, emissive/PBR relevance and affected semantic parts.
 
-This records relationship and intent, never final pivot coordinates.
+### `animation_guidance`
 
-## `materials` — optional
-
-Use only for decision-critical supported material facts.
-
-```json
-{
-  "id": "straw_hat",
-  "applies_to": ["hat"],
-  "base_color": "warm straw",
-  "surface": "woven/matte",
-  "emissive": false,
-  "pbr_relevant": false,
-  "evidence": "SUPPORTED"
-}
-```
-
-Do not guess hidden surfaces or encode pixel-paint instructions.
-
-## `animation_guidance` — optional
-
-Include only when motion guidance materially improves authoring.
+Example:
 
 ```json
 {
@@ -330,12 +316,55 @@ Include only when motion guidance materially improves authoring.
   "purpose": "harvest cinnamon with the held tool",
   "participants": ["torso", "right_upper_arm", "right_lower_arm", "tool"],
   "key_poses": ["ready", "anticipation", "contact", "follow_through", "recovery"],
-  "contact_events": ["tool_to_target"],
-  "reference_images": ["IMG_ANIM_01"]
+  "contact_events": ["tool_to_target"]
 }
 ```
 
-Do not turn this into frame-by-frame implementation unless explicitly required.
+This is guidance, not final implementation timing unless explicitly confirmed.
+
+## `particle` — optional; used when `asset.kind=PARTICLE`
+
+Canonical detailed owner: `particle-handoff.md`.
+
+Compact shape:
+
+```json
+{
+  "identifier": "mivubi:dust_hit",
+  "particle_json": "particles/dust_hit.particle.json",
+  "texture_reference": "textures/particle/dust_hit",
+  "texture_png": "textures/particle/dust_hit.png",
+  "texture_state": "READY",
+  "recommended_locator": "hoe_tip",
+  "recommended_animation": "harvest_cinnamon",
+  "trigger": {
+    "intent": "tool contact with ground",
+    "time_seconds": 0.42
+  },
+  "bind_to_actor": true,
+  "review_state": "APPROVED"
+}
+```
+
+Rules:
+- resource paths are package-relative, never user-machine absolute paths;
+- `texture_reference` omits `.png`;
+- custom generated textures use `textures/particle/<name>` + `textures/particle/<name>.png`;
+- `recommended_locator`, `recommended_animation`, and trigger fields are integration recommendations, not proof of live runtime existence;
+- `review_state` is reference-review authority only;
+- do not embed Particle JSON or PNG bytes inside `REFERENCE.json`.
+
+`texture_state`:
+
+```text
+READY | MISSING | NOT_REQUIRED
+```
+
+`review_state`:
+
+```text
+APPROVED | NEEDS_REVIEW | SOURCE_ONLY
+```
 
 ## `constraints` — optional
 
@@ -347,9 +376,10 @@ Examples:
 supplied tool replaces a generic pickaxe
 preserve backpack silhouette
 do not expose large hip/knee gaps during intended motion
+particle must attach at tool-contact locator, not entity origin
 ```
 
-Do not store generic tutorial advice or repeat whole stage sections.
+Do not store generic tutorial advice or repeat whole stage/resource sections.
 
 ## `unknowns` — required
 
@@ -362,7 +392,13 @@ Do not store generic tutorial advice or repeat whole stage sections.
 
 `blocking` means the missing/conflicting fact can materially change the next required decision.
 
-`non_blocking` remains visible but does not stop unrelated work.
+For Particle, examples include:
+
+```text
+missing custom PNG required by the authored particle
+unknown target locator when attachment position materially matters
+unresolved visual review that changes particle behavior/appearance
+```
 
 Do not guess unknowns away to make the package appear complete.
 
@@ -383,29 +419,31 @@ Allowed values:
 READY | NOT_REQUIRED | NEEDS_REVIEW | BLOCKED
 ```
 
-Rules:
+MODEL rules:
 - readiness is stage-specific;
 - a relevant blocking unknown makes that stage `BLOCKED`;
 - missing Texture detail does not block Geometry unless it changes Geometry;
 - static assets use `animation: NOT_REQUIRED`.
 
-## Compact Example
+PARTICLE rules:
+- `geometry` is normally `NOT_REQUIRED` unless the downstream task explicitly requires Locator/geometry correction;
+- `texture` reflects whether required custom bitmap/reference work is ready;
+- `animation` reflects whether integration intent is sufficiently specified, not whether the runtime animation already exists;
+- `overall` must agree with blocking unknowns and resource readiness.
+
+## Compact MODEL Example
 
 ```json
 {
   "schema": "lazydesigner-reference-v1",
   "asset": {
     "name": "farmer_npc",
+    "kind": "MODEL",
     "profile": "HUMANOID",
     "task": "NEW_ASSET",
     "intent": "Farmer NPC harvesting cinnamon"
   },
   "requirements": {
-    "dimensions_blocks": {
-      "width": null,
-      "height": null,
-      "length": null
-    },
     "player_relative_scale": "PLAYER_HEIGHT",
     "animation_required": true
   },
@@ -418,34 +456,6 @@ Rules:
     "geometry": "GEOMETRY.md",
     "animation": "ANIMATION.md"
   },
-  "images": [
-    {
-      "id": "IMG_GEO_01",
-      "file": "images/01-main-reference.png",
-      "role": "PRIMARY_GEOMETRY",
-      "used_by": ["GEOMETRY"],
-      "status": "APPROVED"
-    },
-    {
-      "id": "IMG_ANIM_01",
-      "file": "images/02-motion-reference.png",
-      "role": "ANIMATION_KEYFRAME",
-      "used_by": ["ANIMATION"],
-      "status": "APPROVED"
-    }
-  ],
-  "parts": [
-    {
-      "id": "tool",
-      "role": "GEOMETRY",
-      "parent": "right_hand",
-      "contact": "right_hand",
-      "symmetry": "NONE",
-      "motion": "RIGID",
-      "evidence": "SUPPORTED"
-    }
-  ],
-  "constraints": ["supplied tool replaces a generic pickaxe"],
   "unknowns": {
     "blocking": [],
     "non_blocking": []
@@ -453,6 +463,48 @@ Rules:
   "readiness": {
     "overall": "READY",
     "geometry": "READY",
+    "texture": "READY",
+    "animation": "READY"
+  }
+}
+```
+
+## Compact PARTICLE Example
+
+```json
+{
+  "schema": "lazydesigner-reference-v1",
+  "asset": {
+    "name": "dust_hit",
+    "kind": "PARTICLE",
+    "task": "NEW_ASSET",
+    "intent": "Short dust burst when a hoe contacts the ground"
+  },
+  "requirements": {
+    "animation_required": true
+  },
+  "particle": {
+    "identifier": "mivubi:dust_hit",
+    "particle_json": "particles/dust_hit.particle.json",
+    "texture_reference": "textures/particle/dust_hit",
+    "texture_png": "textures/particle/dust_hit.png",
+    "texture_state": "READY",
+    "recommended_locator": "hoe_tip",
+    "recommended_animation": "harvest_cinnamon",
+    "trigger": {
+      "intent": "tool contact with ground",
+      "time_seconds": 0.42
+    },
+    "bind_to_actor": true,
+    "review_state": "APPROVED"
+  },
+  "unknowns": {
+    "blocking": [],
+    "non_blocking": []
+  },
+  "readiness": {
+    "overall": "READY",
+    "geometry": "NOT_REQUIRED",
     "texture": "READY",
     "animation": "READY"
   }
@@ -471,18 +523,14 @@ Tool schemas
 Cube-by-Cube plans
 exact implementation coordinates
 generic tutorials
-repeated prose already owned by stage documents
+repeated prose already owned by stage/resource files
+embedded Particle JSON/PNG copies
+parallel Particle handoff manifests
 ```
 
 ## Correction Rule
 
-A bounded user correction updates only affected facts, image references, readiness, and stage documents.
-
-```text
-hat: straw_hat → beanie
-```
-
-may affect Geometry silhouette and Texture material, but should not rebuild unrelated Animation guidance.
+A bounded user correction updates only affected facts, resource/image references, readiness, and stage/resource files.
 
 Preserve unaffected accepted authority.
 
@@ -491,12 +539,14 @@ Preserve unaffected accepted authority.
 `REFERENCE.json` is ready when:
 
 ```text
-blocking requirements for the intended next stage are resolved
-required approvals are explicit
-numeric and player-relative scale facts do not conflict
-all listed documents/images exist
-image stage relevance is unambiguous
+asset kind is unambiguous
+blocking requirements for the intended next decision are resolved
+required approvals/review states are explicit where needed
+MODEL scale facts do not materially conflict
+PARTICLE identifier/resource paths agree with packaged files
+all listed documents/images/resources exist
 unknowns remain explicit
 no field contains unsupported invented facts
-stage readiness is accurate
+readiness is accurate
+package is understandable without the original ChatGPT transcript
 ```
