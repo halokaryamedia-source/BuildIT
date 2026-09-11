@@ -6,7 +6,7 @@ This file owns **current implementation continuation only**. Product architectur
 
 ## Current Objective
 
-The REMOTE_GITHUB pre-local hardening phase is now complete enough to freeze safely. Source ownership, routing policy, tool-surface boundaries, context ownership, recovery ownership, and Bedrock-first constraints are aligned in current source. Further optimization that would change the stable Gateway status contract or depend on measured Runtime behavior is deferred to `LOCAL_CODE`; installed/native/visual proof remains deferred to `LIVE_BLOCKBENCH`.
+The REMOTE_GITHUB pre-local hardening phase is complete enough to freeze safely. A bounded controller consistency defect discovered after the initial freeze was corrected without reopening a general cleanup phase: controller inspection schema/docs now match, zero/null semantics are guarded, and controller source ownership is explicit. Further optimization that would change the stable Gateway status contract or depend on measured Runtime behavior is deferred to `LOCAL_CODE`; installed/native/visual proof remains deferred to `LIVE_BLOCKBENCH`.
 
 ## Completed Baseline
 
@@ -41,6 +41,11 @@ The REMOTE_GITHUB pre-local hardening phase is now complete enough to freeze saf
 ✓ Bedrock-first authoring contract regression guard added
 ✓ compatibility-bound BlockIT identifiers intentionally preserved
 ✓ no speculative receipt/result compaction without execution evidence
+✓ inspect_animation controller selectors/docs aligned to actual schema
+✓ controller numeric zero / explicit null semantics regression-guarded
+✓ manage_animation_controller remains the single controller mutation surface
+✓ controller native/resource intelligence remains extension wiring, not extra tools
+✓ controller source ownership documented in implementation-map.md
 ```
 
 ## Remote Freeze State
@@ -48,6 +53,9 @@ The REMOTE_GITHUB pre-local hardening phase is now complete enough to freeze saf
 ```text
 Control / Gateway policy ownership     COMPLETE IN SOURCE
 Tool-routing / source ownership        COMPLETE IN SOURCE
+Animation Controller ownership         COMPLETE IN SOURCE
+Controller inspection contract         HARDENED IN SOURCE
+Controller nullish/zero semantics      REGRESSION-GUARDED
 Dead-code / obsolete helper sweep      COMPLETE ENOUGH TO FREEZE
 Context economy source audit           COMPLETE ENOUGH FOR LOCAL MEASUREMENT
 Error/recovery ownership               COMPLETE IN SOURCE
@@ -64,6 +72,7 @@ Do not add another remote-only cleanup phase merely to keep changing source. Reo
 ```text
 LOCAL_CODE
 → run bun/typecheck/repository verification
+→ run controller inspection/mutation/native-composition tests
 → run docs:build + docs:check from canonical generators
 → run measure:control
 → compare full Gateway envelope vs cached-context envelope
@@ -74,6 +83,8 @@ LIVE_BLOCKBENCH
 → deploy/reload the matching current LazyDesigner build
 → verify Gateway/Runtime project affinity
 → verify Geometry/Texturing/Animation surfaces live
+→ exercise inspect_animation → manage_animation_controller → focused re-inspection
+→ verify controller Undo/persistence/native blend/nested composition behavior
 → exercise Reference Package + Control continuation
 → verify interrupted/recovery behavior where safely reproducible
 → run representative Bedrock model quality/efficiency acceptance
@@ -110,6 +121,8 @@ Compatibility-bound identifier migration is a separate future task and must be d
 - No duplicate capability-domain table outside `mcp/lib/authoringPhase.ts`.
 - No duplicate Gateway search default outside `CONTROL_ROUTING_POLICY`.
 - No new authoring phase merely to classify Particle or another supporting capability.
+- No second Animation Controller mutation tool/profile; extend `manage_animation_controller` only when ownership is coherent.
+- No mutation behavior inside `inspect_animation`; it remains read-only.
 - No all-profile/all-stage loading as reassurance.
 - No full downstream reset for a bounded dependency.
 - No blind package/protocol/plugin/environment rename.
@@ -121,4 +134,4 @@ Compatibility-bound identifier migration is a separate future task and must be d
 
 ## Proof Boundary
 
-Current remote work establishes source contracts, ownership, and regression intent only. No Bun/typecheck/CI/local Runtime/Blockbench execution was performed in this phase. Generated freshness, installed LazyDesigner activation, live behavior, visual quality, and measured whole-task savings remain unverified until their corresponding proof contexts are activated.
+Current remote work establishes source contracts, ownership, and regression intent only. No Bun/typecheck/CI/local Runtime/Blockbench execution was performed in this phase. Generated freshness, installed LazyDesigner activation, live controller behavior, visual quality, and measured whole-task savings remain unverified until their corresponding proof contexts are activated.
