@@ -2,7 +2,7 @@
 
 Updated: 2026-09-11
 
-This document owns how Astra/Codex consumes a ChatGPT-generated LazyDesigner reference package. It does not define Geometry, Texture, Animation, image-generation, or Runtime implementation semantics.
+This document owns how Astra/Codex consumes a ChatGPT-generated LazyDesigner reference package. It does not define Geometry, Texture, Animation, Particle authoring, image-generation, or Runtime implementation semantics.
 
 ## Objective
 
@@ -10,20 +10,19 @@ Keep package consumption deterministic and small:
 
 ```text
 REFERENCE.json
-→ identify task / active stage / readiness
-→ load active stage Markdown when present
-→ load only stage-relevant image IDs
+→ identify asset kind / task / readiness
+→ load only the active stage or referenced resource needed next
 → load current downstream authoring state
 → work
 ```
 
-Do not read every Markdown file or every image by default.
+Do not read every Markdown file, image, particle JSON, or texture by default.
 
 ## Entry Point
 
-`REFERENCE.json` is always the package entry point.
+`REFERENCE.json` is always the LazyDesigner downstream package entry point.
 
-Canonical package:
+Model package example:
 
 ```text
 asset_reference/
@@ -34,20 +33,51 @@ asset_reference/
 └── images/
 ```
 
+Particle package example:
+
+```text
+asset_reference/
+├── REFERENCE.json
+├── particles/
+│   └── <name>.particle.json
+└── textures/
+    └── particle/
+        └── <name>.png
+```
+
+`PARTICLE_HANDOFF.json` or another parallel manifest is not used.
+
+## Asset Kind Dispatch
+
+Read `REFERENCE.json.asset` first.
+
+```text
+recognized model profile + no asset.kind
+→ MODEL for backward compatibility
+
+asset.kind = MODEL
+→ model/stage workflow
+
+asset.kind = PARTICLE
+→ particle/resource handoff workflow
+```
+
+A Particle package does not need a fake modelling profile.
+
 ## Authority Order
 
 ```text
 explicit current user requirement
-→ approved visual reference
-→ confirmed scale requirement
+→ approved visual/resource reference
+→ confirmed scale/resource requirement
 → REFERENCE.json structured facts
-→ active stage Markdown
+→ active stage/resource file
 → downstream interpretation
 ```
 
 A lower authority never silently overrides a higher authority. Block only the dependent decision when a material conflict exists.
 
-## Stage Load Order
+## Model Stage Load Order
 
 ### Geometry
 
@@ -60,8 +90,6 @@ A lower authority never silently overrides a higher authority. Block only the de
 5. LazyDesigner Modelling Skill + exactly one selected profile when useful
 ```
 
-Do not load `TEXTURE.md` or `ANIMATION.md` merely because they exist.
-
 ### Texture
 
 ```text
@@ -72,8 +100,6 @@ Do not load `TEXTURE.md` or `ANIMATION.md` merely because they exist.
 4. current approved Geometry/UV state
 5. LazyDesigner Texturing Skill
 ```
-
-Do not reload full Geometry prose. Stable Geometry facts needed by Texture should arrive through semantic IDs/current mapped state.
 
 ### Animation
 
@@ -86,34 +112,57 @@ Do not reload full Geometry prose. Stable Geometry facts needed by Texture shoul
 5. LazyDesigner Animation Skill
 ```
 
-Do not load unrelated Texture or full modelling-profile prose.
+Do not reload unrelated stage prose.
 
-## Optional Stage Document Rule
+## Particle Load Order
 
-A stage Markdown file may be absent when it would not materially improve correctness.
-
-Examples:
+For `asset.kind=PARTICLE`, use the specialization in `particle-handoff.md`.
 
 ```text
-simple prop with obvious material
-→ TEXTURE.md may be absent
-
-simple explicit rigid mechanical loop
-→ ANIMATION.md may be absent
-
-static asset
-→ ANIMATION.md absent + readiness.animation = NOT_REQUIRED
+1. REFERENCE.json
+2. read particle block only
+3. inspect referenced particle JSON only when needed for the next decision
+4. inspect referenced PNG only when needed for visual/texture work
+5. inspect current Blockbench/MCP runtime state before destructive integration
+6. route the smallest unresolved dependency
 ```
 
-When a stage file is absent, `REFERENCE.json` remains sufficient orientation through stable facts, `images.used_by`, unknowns, and readiness.
+Decision routing:
+
+```text
+texture_state = MISSING
+→ existing Texturing pipeline
+
+particle asset needs create/patch/preview
+→ inspect_particle / manage_particle
+
+recommended_locator supplied
+→ verify locator exists; create/fix through manage_locator only if needed
+
+recommended_animation / trigger supplied
+→ verify target animation; bind through manage_animation_effects
+
+controller state binding required
+→ manage_animation_controller
+```
+
+`recommended_locator`, `recommended_animation`, trigger time, and review state are handoff intent, not proof of live runtime existence or approval.
+
+Do not load modelling profile context for a particle-only package.
+
+## Optional Stage / Resource Rule
+
+A stage Markdown file may be absent when it would not materially improve correctness. A Particle handoff may contain no stage Markdown at all when `REFERENCE.json` plus actual Bedrock resources are sufficient.
 
 Missing optional Markdown is not an error.
+
+A missing resource that `REFERENCE.json` marks `READY` is a package-consistency error; do not silently substitute another file.
 
 ## Image Loading Rule
 
 Never scan `images/` blindly.
 
-Preferred image resolution:
+Preferred model image resolution:
 
 ```text
 stage Markdown image IDs
@@ -121,28 +170,30 @@ stage Markdown image IDs
 → additional image only for a specific unresolved decision
 ```
 
-`images.used_by` vocabulary:
+Particle textures/resources are loaded by explicit path from the particle block, not by browsing every image/resource.
 
-```text
-GEOMETRY | TEXTURE | ANIMATION
-```
+## Scale / Resource Loading Rule
 
-An image may support multiple stages without being duplicated.
-
-## Scale Loading Rule
-
-Use scale directly from `REFERENCE.json.requirements`:
+Model scale comes from `REFERENCE.json.requirements`:
 
 ```text
 dimensions_blocks
 player_relative_scale
 ```
 
-Numeric dimensions are numeric authority. Player-relative scale communicates world/interactivity relationship. If they materially conflict, block the dependent stage instead of inventing a reconciliation.
+Particle resource identity comes from the particle block:
 
-Do not infer world scale from image size when package scale authority already exists.
+```text
+identifier
+particle_json
+texture_reference
+texture_png
+texture_state
+```
 
-## Cross-Stage Leakage Rule
+Do not infer either from filenames when structured authority already exists.
+
+## Cross-Stage / Cross-System Leakage Rule
 
 ```text
 GEOMETRY.md
@@ -153,30 +204,16 @@ TEXTURE.md
 
 ANIMATION.md
 → participants / motion / poses / timing / contact / deformation
+
+particle block
+→ resource identity/path + downstream integration recommendation only
 ```
 
-Stable facts shared across stages belong in `REFERENCE.json`; Markdown contains only stage-specific consequences.
-
-Example:
-
-```text
-REFERENCE.json
-→ right_hand owns tool
-
-GEOMETRY.md
-→ tool structurally attaches to right_hand
-
-ANIMATION.md
-→ tool remains attached during motion
-```
-
-This is one fact with separate stage consequences, not duplicate authority.
+Do not copy MCP schemas, Particle JSON contents, or Texturing instructions into `REFERENCE.json`.
 
 ## Unknown / Blocker Rule
 
 `REFERENCE.json` owns the canonical unknown inventory.
-
-Stage Markdown repeats only stage-relevant consequences.
 
 ```text
 Texture-only unknown
@@ -184,9 +221,13 @@ Texture-only unknown
 
 rig blocker
 → may block Animation while Texture remains READY
+
+missing custom particle PNG
+→ blocks particle texture dependency only
+→ does not invent a second Particle authoring system
 ```
 
-Do not promote a non-blocking unknown simply because a stage document mentions it.
+Do not promote a non-blocking unknown simply because another file mentions it.
 
 ## Correction / Delta Load
 
@@ -194,28 +235,27 @@ For bounded corrections:
 
 ```text
 REFERENCE.json
-→ identify changed fact + affected stage(s)
-→ load affected stage Markdown only
-→ load affected image IDs only
-→ load current affected asset state
+→ identify changed fact + affected stage/resource
+→ load affected stage/resource only
+→ load current affected runtime state
 → preserve unaffected accepted context
 ```
 
-Do not reread the entire package unless the change invalidates whole-asset identity, scale, or multiple stage authorities.
+Do not reread the entire package unless the change invalidates whole-asset identity, scale/resource identity, or multiple authorities.
 
 ## Package Consistency Gate
 
 Before handoff, ChatGPT verifies:
 
 ```text
-all listed documents exist
-all image IDs/paths resolve
+all listed documents/images/resources exist
 images.used_by uses valid stages
 stage files agree with REFERENCE.json
-no stage file introduces unsupported facts
-no stage file compensates for another stage's defect
-numeric/player-relative scale do not conflict
-readiness matches blockers
+particle identifier/path/texture metadata agree when asset.kind=PARTICLE
+custom particle texture reference matches the packaged PNG path
+no stage/resource metadata introduces unsupported facts
+numeric/player-relative scale do not conflict for models
+readiness matches blockers/resource state
 omitted optional files are not referenced
 ```
 
@@ -225,8 +265,8 @@ A failing package is not ready for Codex.
 
 ```text
 ORIENT ONCE
-→ LOAD ACTIVE STAGE
-→ LOAD RELEVANT EVIDENCE
+→ LOAD ONLY THE NEXT AUTHORITY NEEDED
+→ INSPECT CURRENT RUNTIME STATE
 → WORK
 ```
 
@@ -242,4 +282,15 @@ The goal is minimum sufficient context, not minimum context at the expense of fi
 
 ## Completion
 
-This contract is satisfied when Astra/Codex can determine where to start, which stage file is relevant, which images matter even when a stage file is omitted, what scale authority exists, what can be ignored, and how corrections remain bounded—without using the original ChatGPT transcript.
+This contract is satisfied when Astra/Codex can determine:
+
+```text
+what kind of asset/reference was handed off
+where to start
+which model stage or Particle resource matters next
+what can be ignored
+what is recommendation versus runtime proof
+how corrections remain bounded
+```
+
+without using the original ChatGPT transcript.
