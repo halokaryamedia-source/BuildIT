@@ -1,30 +1,10 @@
 # LazyDesigner Implementation Map
 
-Updated: 2026-09-11
+Updated: 2026-09-12
 
-This file maps **current source ownership only**.
+This file maps **current source ownership only**. Product workflow belongs in `docs/01-product/flow.md`; AI context loading in `docs/04-system/ai-context-loading.md`; continuation/proof in `docs/05-operations/`.
 
-Canonical neighboring owners:
-
-```text
-product workflow          → docs/01-product/flow.md
-reference preparation     → docs/02-reference/README.md
-reference handoff         → docs/02-reference/package/handoff.md
-AI context loading        → docs/04-system/ai-context-loading.md
-current continuation      → docs/05-operations/next-action.md
-proof interpretation      → docs/05-operations/current-validation.md
-```
-
-## Product Identity
-
-```text
-Current product name: LazyDesigner
-Former product name: BlockIT
-```
-
-Internal package/runtime identifiers may still contain legacy `BlockIT` / `blockit-*` values only where `docs/04-system/compatibility-identifiers.md` retains them.
-
-## Runtime Architecture
+## Architecture
 
 ```text
 ChatGPT Reference Preparation
@@ -33,10 +13,63 @@ ChatGPT Reference Preparation
 → Codex
 → Gateway
 → Runtime
+→ Plugin
 → Blockbench native APIs
 ```
 
-Gateway client surface remains exactly:
+There is one authoring system. Supporting docs/Skills/QA may project or interpret state; they do not create alternate Runtime, routing, or authored-state systems.
+
+## Canonical Skills
+
+### Reference Preparation
+
+```text
+.agents/skills/lazydesigner-reference-preparation/SKILL.md
+.agents/skills/lazydesigner-prompt-compiler/SKILL.md
+.agents/skills/lazydesigner-particle-reference-authoring/SKILL.md
+```
+
+### Asset Authoring
+
+```text
+Geometry / hierarchy / pivots / UV → lazydesigner-modelling
+Texture / Painter / PBR            → lazydesigner-texturing
+Animation / effects/controllers    → lazydesigner-animation
+routing/context selection          → LazyDesigner Control
+```
+
+### Product Development
+
+```text
+MCP public/protocol contracts       → lazydesigner-mcp-development
+Blockbench/runtime/plugin mechanics → lazydesigner-blockbench-development
+complex cross-owner design          → lazydesigner-development-brief
+```
+
+Clear bounded development changes go directly to the exact source owner.
+
+## Control
+
+Canonical source: `mcp/gateway/control/`.
+
+```text
+referencePackage.ts   compact Reference Package projection
+workspace.ts          Active Workspace projection
+contextProjection.ts  GEOMETRY/TEXTURE/ANIMATION stage projection
+packet.ts             task packet/readiness/context delivery
+registry.ts           content-addressed context handles + source ownership
+delta.ts              post-operation invalidation/control delta
+developmentIntent.ts  bounded SYSTEM_DEVELOPMENT routing
+snapshot.ts           Gateway/Runtime orientation
+capabilities.ts       capability decoration
+index.ts              canonical Control exports
+```
+
+Control owns selection, projection and lifecycle orientation. It does not own Tool schemas, Runtime execution, live authored state, Skill prose or build execution.
+
+## Gateway
+
+Public AI-client surface is fixed:
 
 ```text
 status
@@ -45,290 +78,221 @@ describe_capability
 invoke_capability
 ```
 
-## Canonical Skill Ownership
-
-### Reference Preparation
+Owners:
 
 ```text
-Reference Preparation → .agents/skills/lazydesigner-reference-preparation/SKILL.md
-Prompt normalization  → .agents/skills/lazydesigner-prompt-compiler/SKILL.md
-Particle reference    → .agents/skills/lazydesigner-particle-reference-authoring/SKILL.md
+mcp/gateway/index.ts              stable public boundary + Control wiring
+mcp/gateway/backend.ts            Runtime adapter/catalog/queue/project affinity
+mcp/gateway/connectionManager.ts  demand-driven Runtime connection lifecycle
+mcp/gateway/runtimeSession.ts     Runtime session/generation counters
+mcp/gateway/reconnectPolicy.ts    bounded reconnect backoff
+mcp/gateway/contract.ts           capability/search/result public projections
+mcp/gateway/capabilityEffects.ts  declarative effect application
+mcp/gateway/controlReceipt.ts     project/phase receipt derivation
+mcp/gateway/recovery.ts           structured recovery semantics
+mcp/gateway/statusProjection.ts   normalized public status
+mcp/gateway/localCapabilities.ts  bounded read-only local provider registry
+mcp/gateway/projectAffinity.ts    project/phase affinity headers/contracts
 ```
 
-The Particle reference Skill is ChatGPT-side preparation only. It does not own MCP runtime mutation.
+Gateway owns client stability and Runtime recovery. It does not own Blockbench mutation implementations or authoring workflow reasoning.
 
-### Asset Authoring
+## Runtime
 
-| Domain | Semantic owner |
-| --- | --- |
-| Geometry / rig / pivots / UV Layout | `.agents/skills/lazydesigner-modelling/SKILL.md` |
-| Texture / Painter / PBR | `.agents/skills/lazydesigner-texturing/SKILL.md` |
-| Animation / motion / effects/controllers | `.agents/skills/lazydesigner-animation/SKILL.md` |
-| Task/stage/context routing | LazyDesigner Control |
-
-### Product Development
-
-| Concern | Canonical Skill |
-| --- | --- |
-| MCP public/schema/result/transport contract | `.agents/skills/lazydesigner-mcp-development/SKILL.md` |
-| Blockbench plugin/runtime/API/lifecycle mechanics | `.agents/skills/lazydesigner-blockbench-development/SKILL.md` |
-| complex/ambiguous cross-owner development design | `.agents/skills/lazydesigner-development-brief/SKILL.md` |
-
-Clear bounded changes go directly to the exact source owner; `lazydesigner-development-brief` is not a mandatory preamble.
-
-## Control Ownership
-
-Canonical source path: `mcp/gateway/control/`.
-
-Control owns:
+Runtime is the capability registry/validator/executor boundary.
 
 ```text
-ASSET_AUTHORING / SYSTEM_DEVELOPMENT intake
-Runtime/project/phase orientation
-Reference Package projection
-Active Workspace projection
-GEOMETRY_CONTEXT / TEXTURE_CONTEXT / ANIMATION_CONTEXT
-content-addressed Skill/profile context handles
-bounded source/specialist/test routing metadata
-stage-scoped readiness/blockers
-post-operation control_delta / invalidation
+mcp/server/net.ts
+→ stateless HTTP/MCP transport
+→ request serialization / runtime-generation safety
+→ project + phase affinity enforcement
+
+mcp/server/runtime/registration.ts
+→ registration profile
+→ family ownership
+→ canonical phase surface descriptor/cache
+
+mcp/server/runtime/consolidatedRoutes.ts
+→ family + discriminator + branch→executor descriptors
+
+mcp/server/runtime/consolidatedTools.ts
+→ routing-only public wrappers
+→ retained original executors remain canonical implementation
+
+mcp/server/runtime/phaseControl.ts
+→ AUTHORING↔Animation control capability
+
+mcp/server/runtime/bootstrap.ts
+→ exactly-once Runtime intelligence wiring
+
+mcp/server/tools/**
+→ authored Geometry / Texture / Animation / Particle / inspection / export implementations
 ```
 
-Canonical source owners:
+`mcp/server/tools.ts` remains a thin compatibility facade/bootstrap boundary; it is not the owner of Runtime state anymore.
+
+## Shared Runtime Libraries
 
 ```text
-mcp/gateway/control/referencePackage.ts   Reference Package projection
-mcp/gateway/control/contextProjection.ts stage-specific authoring projection
-mcp/gateway/control/packet.ts            task packet/readiness/context selection
-mcp/gateway/control/registry.ts          context handles + source-owner mapping
-mcp/gateway/control/delta.ts             effect-aware invalidation/delta
-mcp/gateway/control/developmentIntent.ts SYSTEM_DEVELOPMENT routing
-mcp/gateway/control/snapshot.ts          live Gateway/Runtime orientation
-mcp/gateway/control/capabilities.ts      capability decoration
-mcp/gateway/control/index.ts             canonical module exports
+mcp/lib/capabilityMetadata.ts  canonical tier/search aliases/declarative effects
+mcp/lib/authoringPhase.ts      canonical capability semantic phase classification
+mcp/lib/authoringReadiness.ts  canonical Animation handoff readiness
+mcp/lib/validationVerdict.ts   conservative Validator gate projection
+mcp/lib/factories.ts           Tool/Resource/Prompt registration + canonical validation/result compaction
+mcp/lib/runtimeLifecycle.ts    runtime generation/lifecycle safety helpers
 ```
 
-Control does not own Skill prose, Tool schemas, full reference content, live model data, persistent asset state, build execution, or Codex creative reasoning.
+Domain intelligence helpers under `mcp/lib/**` remain supporting implementation for the owning Tool family; they are not alternate public capabilities.
 
-## Reference Package / Particle Handoff Ownership
+## Plugin / Blockbench Integration
 
-One canonical package entry point is used for both model and Particle handoff:
+```text
+mcp/index.ts
+→ plugin orchestration only
+
+mcp/plugin/runtimeHost.ts
+→ native network permission
+→ Runtime listener bind/start/close/config ownership
+
+mcp/plugin/blockbenchIntegration.ts
+→ i18n/settings/UI/prompts/reference-resource integration
+→ corresponding teardown
+
+mcp/plugin/devSync.ts
+→ development file watcher/build identity/reload only
+```
+
+Native network/listener/UI/settings/reload ownership must not migrate back into `mcp/index.ts`.
+
+## Tool Capability Rule
+
+Consolidation means:
+
+```text
+public capability
+→ declarative route
+→ original retained executor
+→ original validation/native intelligence
+```
+
+It does **not** mean replacing several implementations with a weaker generic implementation. Capability/intelligence reduction is not an efficiency strategy.
+
+## Validation / QA / Gates
+
+```text
+quality intelligence
+→ bounded diagnostic evidence only
+
+Blockbench Validator
+→ BLOCKED | REVIEW_REQUIRED | VALIDATOR_CLEAR
+→ never visual/user approval
+
+Control readiness
+→ workspace/reference lifecycle orientation
+→ never handoff authorization by itself
+
+mcp/lib/authoringReadiness.ts
+→ USER_APPROVED | AUTONOMOUS_VERIFIED
+→ actual AUTHORING↔Animation readiness contract
+```
+
+Visual/reference PASS remains evidence-based and separate from technical success.
+
+## Context / Knowledge
+
+Canonical context owners:
+
+```text
+docs/04-system/ai-context-loading.md
+docs/04-system/authoring-stage-context.md
+docs/04-system/control/context-projection.md
+docs/04-system/skill-taxonomy.md
+```
+
+Normal asset work loads one active specialist. Geometry may additionally load exactly one selected primary modelling profile. Shared Stage Context is a reusable semantic contract, not a Skill/router/manager.
+
+## Reference Package
+
+One canonical machine-readable package:
 
 ```text
 REFERENCE.json
 schema = lazydesigner-reference-v1
+asset.kind = MODEL | PARTICLE
 ```
 
-Base package authority:
+Reference Preparation owns reference facts; Control projects the compact active-stage subset. The package never becomes a live Runtime-state database.
 
-```text
-docs/02-reference/package/schema.md
-```
+## Particle Ownership
 
-Particle specialization:
-
-```text
-docs/02-reference/package/particle-handoff.md
-```
-
-Model package:
-
-```text
-asset.kind = MODEL
-asset.profile = modelling profile
-```
-
-Legacy model packages with a recognized profile and no `asset.kind` remain backward compatible.
-
-Particle package:
-
-```text
-asset.kind = PARTICLE
-asset.profile = omitted
-particle.identifier
-particle.particle_json
-particle.texture_reference
-particle.texture_png
-particle.texture_state
-particle.recommended_locator
-particle.recommended_animation
-particle.trigger
-particle.bind_to_actor
-particle.review_state
-```
-
-Control projection:
-
-```text
-mcp/gateway/control/referencePackage.ts
-→ projects asset_kind + particle handoff metadata
-
-mcp/gateway/control/packet.ts
-→ exposes the compact particle projection in ControlPacket.reference
-→ Codex receives handoff intent without rereading the ChatGPT transcript
-```
-
-The handoff metadata is recommendation/reference authority, not live runtime proof. Codex/MCP must inspect current model/animation/locator state before destructive integration.
-
-Do not add a `PARTICLE` modelling profile, `PARTICLE_HANDOFF.json`, second Reference Package schema, or direct runtime-state database inside the reference package.
-
-## Canonical Phase / Capability Classification
-
-Single canonical owner: `mcp/lib/authoringPhase.ts`.
-
-```text
-classifyMcpToolPhaseByName() → import-safe capability classification
-classifyMcpToolPhase()       → Runtime family-aware classification
-```
-
-Control consumes this owner and does not maintain a parallel Geometry/Texturing/Animation catalog.
-
-## Context Loading
-
-```text
-Geometry  → lazydesigner-modelling + exactly one selected profile when known
-Texturing → lazydesigner-texturing
-Animation → lazydesigner-animation
-```
-
-Particle-only Reference Packages do not load a fake modelling profile. Particle resource/integration intent arrives through the Reference Package projection, while actual authoring continues through the existing Texturing/Animation owners.
-
-Context handles are SHA-256 identities calculated from current canonical files. `known_context_ids` suppresses unchanged content and invalidates changed members of the same context family.
-
-## Readiness / Invalidation
-
-```text
-TEXTURING → Geometry APPROVED + UV Layout PASS
-ANIMATION → Geometry APPROVED + UV Layout PASS + Texturing APPROVED
-```
-
-```text
-known local Geometry transform      → GEOMETRY
-shape/UV-sensitive Geometry change → GEOMETRY + TEXTURING + ANIMATION
-hierarchy/pivot structure change   → GEOMETRY + ANIMATION
-Texture/material change            → TEXTURING
-Animation change                   → ANIMATION
-ambiguous structural evidence      → conservative downstream invalidation
-```
-
-## Particle Workflow Ownership
-
-Particle remains **Animation-specialist support**, not a fourth authoring phase and not a second texture system.
-
-Canonical source ownership:
+Particle is Animation-specialist asset support, not a fourth authoring phase.
 
 ```text
 inspect_particle / manage_particle
 → mcp/server/tools/particle.ts
-→ Bedrock particle JSON inspect/create/patch/write/native preview
 
-canonical particle resource layout
-→ mcp/lib/particleResourceLayout.ts
-→ particles/*.particle.json
-→ textures/particle/*.png
-
-particle texture canvas / painting
+particle bitmap authoring
 → existing Texturing capabilities
-→ create_texture + paint tools
 
-final external PNG persistence
-→ existing paint_texture_transaction optional output
-→ mcp/lib/paintTransaction.ts + mcp/server/tools/prelocal-wiring.ts
-→ verified temporary write / replace / rollback
-
-particle animation timing + locator attachment
+particle timing/locator binding
 → manage_animation_effects
-→ mcp/server/tools/animation-effects.ts
 ```
 
-Generated particle texture continuation is explicit:
+No parallel Particle paint/save pipeline is allowed.
 
-```text
-manage_particle texture_dependency.state=missing
-→ REQUIRES_TEXTURING
-→ create_texture
-→ existing paint capabilities
-→ paint_texture_transaction with canonical textures/particle/... PNG output
-→ resume manage_particle with texture_dependency.state=ready
-→ Runtime verifies PNG exists and is non-empty
-→ particle JSON write / preview may proceed
-→ manage_animation_effects owns explicit time/effect/locator binding
-```
-
-Failure/recovery rules:
-
-```text
-texture missing / PNG save failure → remain in Texturing; do not write/bind particle
-particle validation error          → no particle write or preview
-generated state=ready but no PNG  → fail; return to Texturing
-particle asset ready               → binding still requires manage_animation_effects
-outcome-unknown mutation           → no automatic retry
-```
-
-Do not add `create_particle_texture`, `save_particle_texture`, a Particle phase, or a parallel particle painting system.
-
-## Animation Controller Source Ownership
-
-Animation Controller support is one public capability surface, not parallel controller systems:
+## Animation Controller Ownership
 
 ```text
 inspect_animation
-→ mcp/server/tools/animation-inspection.ts
-→ read-only Animation / AnimationController inspection
+→ read-only Animation/Controller inspection
 
 manage_animation_controller
-→ mcp/server/tools/animation-controller.ts
-→ core controller/state/transition/animation-link/sound/particle mutation
+→ one controller mutation surface
 
-same manage_animation_controller tool
-→ mcp/server/tools/animation-controller-native-intelligence.ts
-→ nested AnimationController links + native blend curves
-
-same manage_animation_controller / inspect_animation tools
-→ mcp/server/tools/animation-runtime-resource-intelligence.ts
-→ bounded file-backed runtime-resource compatibility/diagnostics branch
+animation-controller-native-intelligence.ts
+animation-runtime-resource-intelligence.ts
+→ bounded intelligence extensions wired by server/runtime/bootstrap.ts
 ```
 
-`mcp/server/server.ts` wires the native/resource intelligence into the already-registered controller capability; these extensions must not create another public MCP tool or registration profile. `inspect_animation` remains read-only and focused; mutation ownership remains `manage_animation_controller`.
+These extensions do not create additional controller tools/profiles.
 
-## Gateway / Runtime / Workspace Owners
-
-| Concern | Owner |
-| --- | --- |
-| stable four-tool boundary + Control wiring | `mcp/gateway/index.ts` |
-| Control routing/context/delta | `mcp/gateway/control/**` |
-| Runtime connection/catalog/queue/project affinity | `mcp/gateway/backend.ts` |
-| capability/result/runtime signature | `mcp/gateway/contract.ts` |
-| project/phase affinity headers | `mcp/gateway/projectAffinity.ts` |
-| Runtime execution | `mcp/server/**` + `mcp/lib/**` |
-| persistent asset continuity | `workspace/active/<asset>/README.md` |
-| build/generated mechanics | `mcp/build/**` + `mcp/scripts/**` + `mcp/distribution/**` + `mcp/prompts/**` |
-
-## Remaining Migration Debt
+## Workspace / Persistence
 
 ```text
-compatibility-bound BlockIT package/protocol/plugin/environment identifiers
-remaining safe user-facing Runtime/Gateway BlockIT strings
-generated outputs/docs until canonical generators run
-Experimental Navigator history, explicitly non-authoritative
+workspace/active/<asset>/README.md
+→ durable human-readable current asset continuation
 ```
 
-Completed source migrations:
+Workspace state is not Runtime connection/session state and is not duplicated inside Control.
+
+## Build / Verification / Distribution
 
 ```text
-navigator/ → control/
-legacy asset-router Skill → removed
-REFERENCE_PREPARATION Skill → lazydesigner-reference-preparation
-ASSET_AUTHORING specialists → lazydesigner-modelling/texturing/animation
-PRODUCT_DEVELOPMENT specialists → lazydesigner-mcp-development/blockbench-development/development-brief
-Control capability-domain duplication → removed
-metadata-only search/describe status rereads → removed
+mcp/build/**         generated docs/prompt/build tooling
+mcp/scripts/**       verification/measurement/deploy harnesses
+mcp/distribution/**  managed distribution
+mcp/prompts/**       canonical Runtime prompt source + manifest
+mcp/tests/**         contract/integration regressions
 ```
 
-Do not solve remaining debt with permanent aliases or a second routing layer.
+Generated API/prompt outputs are generator-owned and must not be hand-edited.
 
-## Proof / Efficiency Boundary
+## Compatibility Boundary
 
-Current repository state can establish source ownership and deterministic routing/contracts. It does not prove installed Blockbench activation, live Gateway/Runtime behavior, visual fidelity, native playback/persistence, filesystem behavior, or measured whole-task usage savings.
+Compatibility-bound BlockIT identifiers remain intentionally stable until separately dependency-mapped:
 
-Efficiency target remains **Cost to Accepted Result**: reduce broad context scans, repeated delivery, discovery/readback loops, wrong-route recovery and unnecessary resets without reducing accepted result quality.
+```text
+package/server/plugin IDs
+bundle filename blockit_mcp.js
+BBPlugin id blockit_mcp
+BLOCKIT_* environment variables
+x-blockit-* affinity headers
+persisted setting IDs
+build/provenance identities coupled to them
+```
+
+Do not interpret these as a second product architecture and do not bulk-rename them.
+
+## Proof Boundary
+
+Source ownership and contracts can be established remotely. Installed Runtime freshness, persistent-Gateway recovery, native Blockbench mutation behavior, playback/persistence, visual fidelity and measured whole-task efficiency require matching local/live evidence.
