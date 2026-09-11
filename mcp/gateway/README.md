@@ -1,26 +1,15 @@
-# BlockIT MCP Gateway
+# LazyDesigner MCP Gateway
 
-BlockIT Gateway is the stable MCP client boundary in front of the volatile Blockbench Runtime.
+LazyDesigner Gateway is the stable four-tool MCP client boundary in front of the volatile Blockbench Runtime. LazyDesigner Control provides intake/context/readiness/routing through this boundary; Gateway itself does not become a second workflow engine.
 
 ```text
-AI client
-   ↓ stdio — stable for client lifetime
-BlockIT Gateway
+AI client / Codex
+   ↓ stdio
+LazyDesigner Gateway
+   ↓ Control status/routing metadata
    ↓ loopback Streamable HTTP
-BlockIT Runtime inside Blockbench
+LazyDesigner Runtime inside Blockbench
 ```
-
-## Canonical Authoring Model
-
-```text
-Approved Reference + Dimensions + Requirements
-→ native BlockIT Geometry/UV on shared AUTHORING
-→ Texturing/PBR on shared AUTHORING
-→ Animation surface when required
-→ Finalization
-```
-
-Gateway does not choose a modelling strategy. BlockIT has one current native Geometry authoring path.
 
 ## Stable Client Surface
 
@@ -31,37 +20,81 @@ describe_capability
 invoke_capability
 ```
 
-Blockbench/plugin reload and Runtime stage changes do not change this client-facing `tools/list`.
+Blockbench/plugin reload and Runtime stage changes do not change the client-facing Gateway tool surface.
 
-The Gateway intentionally exposes **tools only**. Runtime MCP resources and prompts are not proxied through the Gateway. `validator://*`, broad Runtime resources, and the Runtime prompt surface remain Direct Runtime/Inspector/conformance surfaces; normal Gateway authoring must not search for or emulate those names as capabilities.
+## Control Bootstrap
+
+When orientation is unknown or materially stale:
+
+```text
+status
+→ control.task_context_id
+→ control.readiness
+→ control.stage_context
+→ control.context
+→ control.blockers
+```
+
+Asset authoring may provide:
+
+```text
+reference_package_path
+workspace_path
+current_user_delta
+known_context_ids
+```
+
+Control consumes compact `REFERENCE.json` + Active Workspace state and projects only the active authoring context:
+
+```text
+GEOMETRY_CONTEXT
+TEXTURE_CONTEXT
+ANIMATION_CONTEXT
+```
+
+Geometry receives the Modelling Skill plus exactly one selected profile when available. Texturing and Animation do not reload the full modelling profile by default.
+
+For LazyDesigner source/product development:
+
+```text
+status(task_mode=SYSTEM_DEVELOPMENT, task_intent=<concrete problem>)
+```
+
+returns bounded source/specialist/test ownership without loading asset reference/workspace context.
 
 ## Capability Discovery
 
-The live Runtime catalog is surface-filtered. Geometry and Texturing startup focus values expose the same shared AUTHORING capabilities; Animation has its own surface. Gateway search assigns internal priority only for discovery:
+Known capability → invoke directly. Search is fallback for unknown/stale names; describe is fallback for real schema uncertainty.
 
 ```text
 PRIMARY      normal authoring hot path
 SUPPORT      valid conditional capability
 EXPERIMENTAL explicit matching intent only
-MAINTENANCE  legacy/debug fallback; de-prioritized
+MAINTENANCE  legacy/debug fallback
 ```
 
-Known hot-path capabilities should be invoked directly. Search is for unknown/stale capability names, not progress confirmation. `search_capabilities` returns at most **4 results by default**; `describe_capability` is for actual schema uncertainty, not reassurance before every call.
+`search_capabilities` defaults to at most four results. Search results carry Control domain/source-owner metadata but not duplicate full schemas.
 
-Tiering never deletes capability. Exact intent may still discover an exposed support/experimental/maintenance capability.
+Canonical capability phase classification is owned by:
+
+```text
+mcp/lib/authoringPhase.ts
+```
+
+Control does not maintain a second Geometry/Texturing/Animation capability table.
 
 ## Project / Tab Affinity
 
-One Gateway process represents one authoring task and retains only:
+One Gateway process retains only:
 
 ```text
 project UUID affinity
-+ authoring phase affinity (geometry | texturing | animation)
++ authoring phase affinity
 ```
 
 It does not cache model objects, selections, textures, animations, Undo state, or other authored project data.
 
-Project binding is conservative:
+Project binding remains conservative:
 
 ```text
 0 open projects → no binding
@@ -69,64 +102,70 @@ Project binding is conservative:
 2+ projects     → select intended tab and call status(adopt_active_project=true) once
 ```
 
-After binding, Runtime requests carry passive local affinity headers. Project-sensitive calls temporarily select and lock the bound Blockbench project for native dispatch, then restore the previous tab when appropriate. Runtime calls are serialized because Blockbench project globals are process-wide.
-
-`create_project` is the intentional exception: the new project stays active and the Gateway adopts its returned UUID. If a bound project closes, normal tool execution fails closed with `PROJECT_CONTEXT_LOST` rather than editing another tab.
-
-Do not poll `status` for affinity. Rebinding is exceptional.
+Bound-project loss fails closed with `PROJECT_CONTEXT_LOST`.
 
 ## Authoring / Animation Handoff
 
-Geometry↔Texturing is **not** a Gateway handoff. Both capability families remain present on the AUTHORING Runtime surface; semantic ownership decides which specialist governs the correction.
+Geometry↔Texturing stays on the shared AUTHORING Runtime surface. Semantic ownership changes without client/runtime phase bounce.
 
-A successful `switch_authoring_phase` call is reserved for AUTHORING↔Animation:
+`switch_authoring_phase` is reserved for AUTHORING↔Animation:
 
 ```text
-invoke switch_authoring_phase through Gateway
-→ Gateway changes its own phase affinity
-→ backend client/catalog invalidates
-→ next request reconnects and refetches the requested surface
-→ AI client continues the same task/chat
+invoke through Gateway
+→ phase affinity changes
+→ backend Runtime catalog invalidates
+→ next request reconnects/refetches requested Runtime surface
+→ same AI task/chat continues
 ```
 
-Gateway normalizes the result with `client_reconnect_required=false` and `new_chat_required=false`; normal AI-client use continues **without a manual AI-client reconnect**.
+No manual AI-client reconnect is required.
+
+## Control Delta
+
+Every normal invocation receives a compact post-operation `control_delta`.
+
+```text
+ordinary mutation
+→ affected knowledge marked stale
+→ no automatic full status reread
+
+phase/project authority change
+→ requires_status_refresh=true
+```
+
+Dependency direction currently distinguishes:
+
+```text
+Geometry → Geometry + potentially dependent Texture/Animation
+Texture  → Texture + potentially dependent Animation
+Animation→ Animation
+```
+
+This is affected-knowledge metadata, not a forced full downstream reset.
 
 ## Context / Result Economy
 
-The Runtime remains the complete native/debug evidence owner. The Gateway may present a smaller continuation-oriented result when omitted material is redundant for normal authoring; it must preserve failure/uncertainty evidence needed for safe recovery.
+Context handles use SHA-256 identities of current canonical repository files. `known_context_ids` suppresses unchanged Skill/profile content and invalidates changed members of the same family.
 
-Normal authoring does not use `status`, search, describe, repository tests, or Runtime resources as confirmation ceremonies after successful mutation.
+The former asset-router Skill is not mandatory authoring context.
 
-Reliability hardening is failure-path only. The Gateway does not add heartbeat chatter, background catalog polling, automatic confirmation reads, or mutation retries.
+The Runtime remains complete native/debug evidence owner. Gateway may compact normal continuation receipts when omitted data is redundant, while preserving failure/uncertainty evidence needed for recovery.
+
+No heartbeat chatter, background catalog polling, automatic confirmation reads, or automatic mutation retries are introduced.
 
 ## Reliability Invariants
 
 - Gateway startup does not require Blockbench to be open.
 - Blockbench/plugin reload does not terminate the Gateway process.
-- Runtime health is checked before catalog-dependent operations.
 - Changed Runtime build/profile/stage invalidates cached backend catalog.
 - Each Gateway owns one project UUID affinity and one authoring-phase affinity.
-- Automatic first-bind is allowed only with exactly one Blockbench project open.
-- Active UI selection is not durable authority after binding.
-- Cross-Gateway Runtime calls are serialized before project-tab switching.
+- Cross-Gateway Runtime calls remain serialized around Blockbench process-wide project globals.
 - Bound project loss fails closed.
-- Backend calls and queue depth are bounded.
-- Runtime connect/catalog/capability calls have finite deadlines.
-- `tools/call` is never automatically retried after transport interruption or timeout.
-- Interrupted non-read-only operations return `OUTCOME_UNKNOWN`; inspect state before retrying.
-- Gateway owns no authored model state.
+- Runtime calls and queue depth are bounded.
+- `tools/call` is never automatically retried after transport interruption/timeout.
+- Interrupted mutation may return `OUTCOME_UNKNOWN`; inspect state before retrying.
+- Gateway owns no authored model state or persistent Control database.
 - Gateway connects only to loopback Runtime URLs.
-- Native Runtime MCP remains available for Inspector/conformance/debugging.
-
-Default reliability settings:
-
-```text
-BLOCKIT_RUNTIME_TIMEOUT_MS=1500
-BLOCKIT_RUNTIME_CONNECT_TIMEOUT_MS=5000
-BLOCKIT_RUNTIME_CALL_TIMEOUT_MS=120000
-BLOCKIT_RUNTIME_CLOSE_TIMEOUT_MS=2000
-BLOCKIT_GATEWAY_MAX_QUEUE_DEPTH=8
-```
 
 ## Run Locally
 
@@ -142,17 +181,7 @@ Runtime endpoint default:
 http://127.0.0.1:3000/bb-mcp
 ```
 
-## AI Client Configuration
-
-Use the Gateway instead of pointing a normal client directly at Blockbench:
-
-```toml
-[mcp_servers.blockit]
-command = "bun"
-args = ["run", "C:/absolute/path/to/BuildIT/mcp/gateway/index.ts"]
-```
-
-The AI client owns the Gateway process lifecycle; reloading/closing Blockbench does not replace the client-facing MCP process.
+Internal package/server identifiers may still contain legacy `blockit-*` names during migration. Do not treat them as a second product.
 
 ## Current Source Surface
 
@@ -163,8 +192,14 @@ AUTHORING surface        47
 Animation surface        20
 ```
 
-These are active source-owned phase counts. Exact installed Runtime identity and lifecycle behavior remain verification results in `../docs/knowledge/current-validation.md`.
+These are source-era counts, not installed Runtime proof.
+
+Current proof interpretation:
+
+```text
+../../docs/05-operations/current-validation.md
+```
 
 ## Proof Boundary
 
-Source/static tests can prove the fixed Gateway surface, request-scoped phase filtering, shared AUTHORING routing contract, loopback containment, capability priority, catalog invalidation, bounded queue/deadline semantics, retry semantics, result compaction, project-affinity state machine, and fail-closed multi-tab binding contracts. They do not prove live client-process ownership, native Blockbench tab switching/locking, persistence, visual fidelity, or reduced model usage.
+Source/static contracts can establish Gateway/Control structure, context selection, bounded routing, affinity/retry semantics and invalidation intent. They do not prove installed Runtime freshness, native Blockbench behavior, visual fidelity, persistence/playback, or measured end-to-end usage reduction.
