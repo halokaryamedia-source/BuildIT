@@ -41,8 +41,14 @@ Prompt normalization
 Visual reference layout / panel economy / anti-drift
 → docs/knowledge/image-reference-standard.md
 
+Minecraft player scale + sheet escalation
+→ docs/knowledge/player-scale-and-sheet-escalation.md
+
 Image-generation prompting / identity lock / panel prompt construction
 → docs/knowledge/image-generation-prompt-contract.md
+
+Reusable Sheet 01 / Sheet 02+ / Correction master templates
+→ docs/knowledge/image-generation-master-templates.md
 
 REFERENCE.json schema
 → docs/knowledge/reference-package-schema.md
@@ -127,6 +133,8 @@ When blocking information is missing:
 
 `OPTIONAL` remains unspecified and does not create a questionnaire.
 
+Scale follows `player-scale-and-sheet-escalation.md`: explicit dimensions remain authoritative; otherwise use a Minecraft player-relative anchor when appropriate, and ask only when materially different scale would change the result.
+
 ## Prompt Compiler
 
 After blocking information is resolved, compile one clean internal production brief using `lazydesigner-prompt-compiler`.
@@ -163,6 +171,8 @@ Konfirmasi sebelum dibuat:
 
 Sudah sesuai?
 ```
+
+Include scale in the confirmation only when it is material to the target.
 
 Keep it short. Do not expose internal profile/module jargon unless useful.
 
@@ -217,14 +227,35 @@ CONFIRMED USER INTENT
 + SHEET PURPOSE
 + PANEL PLAN
 + IDENTITY LOCK
++ SCALE LOCK when material
 → GENERATION PROMPT
 ```
 
 Never use the uncontrolled full conversation as the generation prompt when a compiled brief exists.
 
-Use `docs/knowledge/image-generation-prompt-contract.md` for the exact prompt-layer order, panel-specific evidence, continuation-sheet rules, correction prompts and negative constraints.
+Use:
 
-For Sheet 02+, use approved Sheet 01 as visual identity anchor whenever available. Do not regenerate later sheets from prose alone if doing so would weaken identity consistency.
+```text
+docs/knowledge/image-generation-prompt-contract.md
+```
+
+for the general prompt-layer order, consistency rules, panel-specific evidence and negative constraints.
+
+Then use exactly one reusable generation mode from:
+
+```text
+docs/knowledge/image-generation-master-templates.md
+
+TEMPLATE A → Sheet 01 / MAIN_REFERENCE
+TEMPLATE B → Sheet 02+ / continuation or overflow
+TEMPLATE C → correction / revision
+```
+
+Do not copy the template verbatim when sections are empty. Compress it to the minimum clauses that preserve current authority.
+
+For Sheet 02+, use approved Sheet 01 as visual identity and scale anchor whenever available. Do not regenerate later sheets from prose alone if doing so would weaken consistency.
+
+For corrections, prefer bounded editing from the currently approved visual using `CHANGE + PRESERVE`; update all affected views coherently when the changed feature appears more than once.
 
 ## Unified Visual Reference Rule
 
@@ -241,7 +272,7 @@ That sheet may carry useful Geometry, Texture and Animation evidence together.
 Add Sheet 02+ only when useful information would otherwise become crowded or too small.
 
 ```text
-Sheet 01 = canonical visual identity + core construction
+Sheet 01 = canonical visual identity + core construction + scale anchor
 Sheet 02+ = elaboration / overflow only
 ```
 
@@ -289,6 +320,22 @@ GEOMETRY > TEXTURE > ANIMATION
 ```
 
 Do not sacrifice readable form/depth/topology to fit extra support content.
+
+## Sheet Escalation
+
+Follow `player-scale-and-sheet-escalation.md`.
+
+Before adding another sheet:
+
+```text
+remove P3
+→ remove lowest-value P2
+→ remove redundant view
+→ restore useful size to P1
+→ if required P1/P2 evidence still does not fit, create Sheet 02+
+```
+
+Sheet 03+ is allowed only when additional P1/P2 evidence still has a clear bounded purpose.
 
 ## Universal Layout Grammar
 
@@ -401,6 +448,18 @@ RETURN
 
 The image owns pose silhouette/direction/contact. Timing detail belongs in `ANIMATION.md`.
 
+## Minecraft Player Scale
+
+All asset sizing is anchored to Minecraft player scale unless stronger explicit dimensions or user requirements exist.
+
+Use the canonical vocabulary and rules from `player-scale-and-sheet-escalation.md`.
+
+Do not invent exact block values from a relative category.
+
+Do not add a scale panel by default. Visual scale evidence is only included when it materially reduces ambiguity, such as vehicle occupancy, stalls, large machinery, large environment props, or identity-critical creature scale.
+
+Sheet 01 establishes the Scale Lock. Sheet 02+ must preserve it.
+
 ## Minecraft Target Rule
 
 When starting from a real-world or non-Minecraft source, final production sheets normally show the **Minecraft/Blockbench target interpretation only**.
@@ -428,13 +487,14 @@ Image text is limited to:
 
 Do not place paragraphs, long technical notes, JSON-like annotations, or implementation instructions inside the image.
 
-## Anti-Drift / Identity Lock
+## Anti-Drift / Identity + Scale Lock
 
 After Sheet 01 becomes approved visual authority, every later sheet must preserve:
 
 ```text
 same asset identity
 same whole-model proportions
+same player/world scale relationship
 same required part count
 same major silhouette
 same approved materials/colors
@@ -443,11 +503,11 @@ same asymmetry/orientation
 same construction logic
 ```
 
-Additional sheets elaborate; they do not redesign.
+Additional sheets elaborate; they do not redesign or rescale.
 
-If the user changes a locked identity element, treat it as a revision and update all materially affected visual evidence coherently.
+If the user changes a locked identity or scale element, treat it as a revision and update all materially affected visual evidence coherently.
 
-If the same view appears again, preserve orientation, proportion, material identity and camera convention.
+If the same view appears again, preserve orientation, proportion, material identity, camera convention and apparent underlying scale.
 
 ## Internal Visual QA
 
@@ -455,6 +515,7 @@ Before user review, check:
 
 ```text
 identity matches confirmed brief
+player/world scale matches current Scale Lock
 required parts are present
 hero and construction views agree
 proportions do not drift
@@ -467,7 +528,7 @@ no panel is redundant
 critical evidence remains large enough to interpret
 ```
 
-For Sheet 02+, compare against the Sheet 01 identity lock.
+For Sheet 02+, compare against Sheet 01 identity and scale locks.
 
 Fix the largest structural inconsistency first.
 
@@ -483,7 +544,7 @@ USER DELTA
 → ask only if materially ambiguous
 → concise confirmation
 → bounded visual correction
-→ QA against existing identity lock
+→ QA against existing identity + scale locks
 → user review
 ```
 
@@ -540,7 +601,7 @@ Reference Preparation is complete only when:
 - required confirmations/approvals are explicit;
 - the visual set uses the minimum useful panels;
 - additional sheets exist only for real overflow;
-- all sheets remain identity-locked;
+- all sheets remain identity-locked and scale-locked where material;
 - package consistency passes;
 - no unsupported fact was invented.
 
