@@ -20,24 +20,31 @@ describe("active routing integrity", () => {
         .map((entry) => entry.name)
     );
 
-    const [root, developmentBrief, mcpDevelopment] = await Promise.all([
+    const [root, developmentBrief, mcpDevelopment, blockbenchDevelopment] = await Promise.all([
       source("../AGENTS.md"),
-      source("../.agents/skills/development-brief/SKILL.md"),
-      source("../.agents/skills/mcp-server-development/SKILL.md"),
+      source("../.agents/skills/lazydesigner-development-brief/SKILL.md"),
+      source("../.agents/skills/lazydesigner-mcp-development/SKILL.md"),
+      source("../.agents/skills/lazydesigner-blockbench-development/SKILL.md"),
     ]);
 
     const referenced = new Set([
       ...backtickedSkillLikeNames(root),
       ...backtickedSkillLikeNames(developmentBrief),
       ...backtickedSkillLikeNames(mcpDevelopment),
+      ...backtickedSkillLikeNames(blockbenchDevelopment),
     ]);
 
     for (const name of referenced) {
-      expect(canonical.has(name)).toBe(true);
-      expect(await Bun.file(`../.agents/skills/${name}/SKILL.md`).exists()).toBe(true);
+      expect(canonical.has(name), name).toBe(true);
+      expect(await Bun.file(`../.agents/skills/${name}/SKILL.md`).exists(), name).toBe(true);
     }
 
-    expect(root).not.toContain(".agents/skills/blockit-bedrock-entity-mcp/SKILL.md");
+    for (const retired of [
+      ".agents/skills/blockit-bedrock-entity-mcp/SKILL.md",
+      ".agents/skills/blockbench-bedrock-modelling/SKILL.md",
+      ".agents/skills/blockit-bedrock-texturing/SKILL.md",
+      ".agents/skills/blockit-bedrock-animation/SKILL.md",
+    ]) expect(root).not.toContain(retired);
   });
 
   test("MCP Verify tracks canonical non-mcp specialist owners without legacy router trigger", async () => {
