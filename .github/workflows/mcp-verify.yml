@@ -16,7 +16,6 @@ on:
       - "!mcp/prompts/blockbench_code_eval_safety.md"
       - "!mcp/prompts/blockbench_native_apis.md"
       # Executable contract tests read these non-mcp owners directly.
-      - ".agents/skills/blockit-bedrock-entity-mcp/**"
       - ".agents/skills/blockbench-bedrock-modelling/**"
       - ".agents/skills/blockit-bedrock-texturing/**"
       - ".agents/skills/blockit-bedrock-animation/**"
@@ -60,7 +59,7 @@ jobs:
       - name: Record exact-SHA build provenance
         run: bun run ./scripts/verified-build-artifact.ts write-ci
 
-      - name: Upload verified BlockIT bundle
+      - name: Upload verified compatibility bundle
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: blockit-mcp-verified
