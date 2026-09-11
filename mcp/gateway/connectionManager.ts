@@ -17,7 +17,9 @@ export class GatewayConnectionManager {
   }
 
   beginProbe(): void {
-    this.session.transition("probing");
+    if (this.session.snapshot().state !== "ready") {
+      this.session.transition("probing");
+    }
   }
 
   beginConnect(): void {
