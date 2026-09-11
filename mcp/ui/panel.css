@@ -9,11 +9,16 @@ body.blockit-plugin-page #plugin_browser_page_tab_bar > li:nth-last-child(-n+2) 
     display: none;
 }
 
-.mcp-panel .lazydesigner-card {
+.mcp-panel .lazydesigner-card,
+.mcp-panel .project-section {
     padding: 14px;
     border: 1px solid var(--color-border);
     border-radius: 8px;
     background: var(--color-back);
+}
+
+.mcp-panel .project-section {
+    margin-block-start: 10px;
 }
 
 .mcp-panel .runtime-summary {
@@ -66,17 +71,77 @@ body.blockit-plugin-page #plugin_browser_page_tab_bar > li:nth-last-child(-n+2) 
     border-block-start: 1px solid var(--color-border);
 }
 
-.mcp-panel .runtime-help-title {
-    margin-block-end: 3px;
-    font-size: 0.82em;
+.mcp-panel .runtime-help-title,
+.mcp-panel .section-label {
+    margin-block-end: 4px;
+    color: var(--color-subtle_text);
+    font-size: 0.76em;
     font-weight: 600;
+    letter-spacing: 0.01em;
+    text-transform: uppercase;
 }
 
 .mcp-panel .runtime-help-text,
+.mcp-panel .section-hint,
 .mcp-panel .panel-note {
     color: var(--color-subtle_text);
     font-size: 0.8em;
     line-height: 1.45;
+}
+
+.mcp-panel .project-name {
+    overflow: hidden;
+    font-size: 0.95em;
+    font-weight: 600;
+    line-height: 1.35;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.mcp-panel .project-name.muted {
+    color: var(--color-subtle_text);
+    font-weight: 500;
+}
+
+.mcp-panel .section-hint {
+    margin-block-start: 5px;
+}
+
+.mcp-panel .action-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-block-start: 10px;
+}
+
+.mcp-panel .quick-access {
+    margin-block-start: 10px;
+}
+
+.mcp-panel .user-action {
+    min-block-size: 30px;
+    padding: 6px 10px;
+    border: 1px solid var(--color-border);
+    border-radius: 5px;
+    background: var(--color-button);
+    color: var(--color-text);
+    font: inherit;
+    font-size: 0.82em;
+    cursor: pointer;
+}
+
+.mcp-panel .user-action:hover:not(:disabled) {
+    background: var(--color-accent);
+    color: var(--color-accent_text, var(--color-text));
+}
+
+.mcp-panel .user-action.primary {
+    border-color: var(--color-accent);
+}
+
+.mcp-panel .user-action:disabled {
+    cursor: default;
+    opacity: 0.45;
 }
 
 .mcp-panel .panel-note {
