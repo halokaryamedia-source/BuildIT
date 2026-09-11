@@ -52,7 +52,10 @@ invoke_capability
 ```text
 Reference Preparation → .agents/skills/lazydesigner-reference-preparation/SKILL.md
 Prompt normalization  → .agents/skills/lazydesigner-prompt-compiler/SKILL.md
+Particle reference    → .agents/skills/lazydesigner-particle-reference-authoring/SKILL.md
 ```
+
+The Particle reference Skill is ChatGPT-side preparation only. It does not own MCP runtime mutation.
 
 ### Asset Authoring
 
@@ -107,6 +110,68 @@ mcp/gateway/control/index.ts             canonical module exports
 
 Control does not own Skill prose, Tool schemas, full reference content, live model data, persistent asset state, build execution, or Codex creative reasoning.
 
+## Reference Package / Particle Handoff Ownership
+
+One canonical package entry point is used for both model and Particle handoff:
+
+```text
+REFERENCE.json
+schema = lazydesigner-reference-v1
+```
+
+Base package authority:
+
+```text
+docs/02-reference/package/schema.md
+```
+
+Particle specialization:
+
+```text
+docs/02-reference/package/particle-handoff.md
+```
+
+Model package:
+
+```text
+asset.kind = MODEL
+asset.profile = modelling profile
+```
+
+Legacy model packages with a recognized profile and no `asset.kind` remain backward compatible.
+
+Particle package:
+
+```text
+asset.kind = PARTICLE
+asset.profile = omitted
+particle.identifier
+particle.particle_json
+particle.texture_reference
+particle.texture_png
+particle.texture_state
+particle.recommended_locator
+particle.recommended_animation
+particle.trigger
+particle.bind_to_actor
+particle.review_state
+```
+
+Control projection:
+
+```text
+mcp/gateway/control/referencePackage.ts
+→ projects asset_kind + particle handoff metadata
+
+mcp/gateway/control/packet.ts
+→ exposes the compact particle projection in ControlPacket.reference
+→ Codex receives handoff intent without rereading the ChatGPT transcript
+```
+
+The handoff metadata is recommendation/reference authority, not live runtime proof. Codex/MCP must inspect current model/animation/locator state before destructive integration.
+
+Do not add a `PARTICLE` modelling profile, `PARTICLE_HANDOFF.json`, second Reference Package schema, or direct runtime-state database inside the reference package.
+
 ## Canonical Phase / Capability Classification
 
 Single canonical owner: `mcp/lib/authoringPhase.ts`.
@@ -125,6 +190,8 @@ Geometry  → lazydesigner-modelling + exactly one selected profile when known
 Texturing → lazydesigner-texturing
 Animation → lazydesigner-animation
 ```
+
+Particle-only Reference Packages do not load a fake modelling profile. Particle resource/integration intent arrives through the Reference Package projection, while actual authoring continues through the existing Texturing/Animation owners.
 
 Context handles are SHA-256 identities calculated from current canonical files. `known_context_ids` suppresses unchanged content and invalidates changed members of the same context family.
 
@@ -262,6 +329,6 @@ Do not solve remaining debt with permanent aliases or a second routing layer.
 
 ## Proof / Efficiency Boundary
 
-Current repository state can establish source ownership and deterministic routing contracts. It does not prove installed Blockbench activation, live Gateway/Runtime behavior, visual fidelity, native playback/persistence, or measured whole-task usage savings.
+Current repository state can establish source ownership and deterministic routing/contracts. It does not prove installed Blockbench activation, live Gateway/Runtime behavior, visual fidelity, native playback/persistence, filesystem behavior, or measured whole-task usage savings.
 
 Efficiency target remains **Cost to Accepted Result**: reduce broad context scans, repeated delivery, discovery/readback loops, wrong-route recovery and unnecessary resets without reducing accepted result quality.
