@@ -178,14 +178,18 @@ Generated API/prompt artifacts follow canonical source + generator output and mu
 
 ## Identity Migration Boundary
 
-Current product-facing identity is LazyDesigner. These compatibility identifiers remain intentionally unchanged until their dependency boundary is mapped:
+Current product-facing identity is LazyDesigner. Primary LazyDesigner Skill identities are already migrated; do not recreate the removed legacy Skill paths.
+
+The following compatibility-bound identifiers remain intentionally unchanged until their dependency boundary is mapped:
 
 ```text
 package name / MCP server IDs
 bundle filename `blockit_mcp.js`
+BBPlugin id `blockit_mcp`
 BLOCKIT_* environment variables
-persisted setting / affinity header identifiers
-legacy `blockit-*` Skill package paths
+x-blockit-* affinity headers
+persisted setting identifiers
+build/provenance identities coupled to the above
 ```
 
 Do not bulk-rename them.
