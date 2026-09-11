@@ -6,7 +6,7 @@ This file owns **current implementation continuation only**. Product architectur
 
 ## Current Objective
 
-Finish the AI-first documentation hierarchy migration and stale-path cleanup before resuming Control/source implementation.
+Documentation hierarchy cleanup is complete enough to be the active AI navigation baseline. Do **not** automatically resume Control/source implementation or local/live testing. Both remain deferred until the user explicitly requests the next development phase.
 
 Canonical documentation entry point:
 
@@ -100,24 +100,18 @@ ANIMATION_CONTEXT
 ✓ grouped Authoring standards and modelling profiles
 ✓ grouped System ownership/Control docs
 ✓ grouped Operations continuation/proof/runbook docs
-✓ updated primary root routing files
-✓ updated Reference Preparation Skill to new owners
-✓ compressed top-level Product Flow and Reference Policy
+✓ updated root README / AGENTS / CONTEXT / GITHUB_RULES routing
+✓ updated Reference, Modelling, Runtime and Development Skills to new owners
+✓ updated MCP README / install / package rules to new owners
+✓ updated repository/authoring/MCP workflow path routing
+✓ updated static documentation/reference regression owners away from removed paths
+✓ removed fixed-five-view Reference test authority in favor of Unified Reference System
+✓ compressed top-level Product Flow and Reference Policy to avoid duplicate domain rules
 ```
 
-## Immediate Next Work
+## Deferred Development Work
 
-Before any further Control implementation:
-
-```text
-1. remove remaining active references to docs/knowledge/** and docs/foundation/**
-2. update AI-facing Skills and MCP operational docs first
-3. update static tests/fixtures that intentionally read canonical docs
-4. leave generated documentation to its generator owner rather than hand-editing generated output
-5. audit that no active owner points at a removed path
-```
-
-After stale-path cleanup, resume source implementation in this order:
+When the user explicitly resumes Control/source development, continue from the current source rather than redoing documentation architecture:
 
 ```text
 1. migrate current Navigator module/concepts to Control without permanent aliases
@@ -129,8 +123,8 @@ After stale-path cleanup, resume source implementation in this order:
 7. implement minimum-context/content-addressed continuation
 8. hard-bound discovery and avoid status/context rereads
 9. migrate remaining BlockIT identifiers only after dependency mapping is stable
-10. restore generated-output/tests/CI closure
-11. run local/live acceptance later
+10. regenerate generated artifacts through their canonical generator owners when LOCAL_CODE is available
+11. run local/live acceptance only when explicitly reactivated
 ```
 
 ## Stop Rules
@@ -142,8 +136,9 @@ After stale-path cleanup, resume source implementation in this order:
 - Do not load PRODUCT_DEVELOPMENT Skills during normal asset authoring.
 - Do not send all stage contexts when one owner is known.
 - Do not rename protocol/package identifiers blindly before dependency mapping.
-- Do not spend effort on local/live testing while the user has explicitly postponed testing.
+- Do not automatically resume Control/source work after documentation cleanup.
+- Do not run local/live acceptance while the user has explicitly postponed testing.
 
 ## Proof Boundary
 
-Documentation/source cleanup can prove path/ownership consistency in repository source. It does not prove installed LazyDesigner activation, live Blockbench behavior, visual quality, or end-to-end usage reduction. Those require later local/live validation.
+This cleanup establishes the intended source/documentation ownership and routing baseline on `Local`. No local/runtime/visual verification was executed in this phase. Installed LazyDesigner activation, live Blockbench behavior, generated-output freshness, end-to-end visual quality, and whole-task usage reduction remain separate future proof tasks.
