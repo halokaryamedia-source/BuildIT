@@ -8,7 +8,7 @@ User-authorized autonomy replaces approval waits with verified checkpoints; neve
 
 ## Modelling Core / Profile Contract
 
-This Skill is the **technical modelling core**. It owns universal Geometry, hierarchy, pivot/rig-readiness, surface, UV Layout, correction, and verification rules. Asset-class knowledge belongs in `docs/knowledge/modelling-profiles/` and must not be duplicated here.
+This Skill is the **technical modelling core**. It owns universal Geometry, hierarchy, pivot/rig-readiness, surface, UV Layout, correction, and verification rules. Asset-class knowledge belongs in `docs/03-authoring/modelling/profiles/` and must not be duplicated here.
 
 Canonical profile vocabulary:
 
@@ -22,7 +22,7 @@ PLANT_FOLIAGE
 GENERIC
 ```
 
-Profile selection is owned by LazyDesigner Control using the resolver in `docs/knowledge/modelling-profiles/README.md`.
+Profile selection is owned by LazyDesigner Control using the resolver in `docs/03-authoring/modelling/profiles/README.md`.
 
 Normal modelling context is:
 
