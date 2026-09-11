@@ -76,22 +76,7 @@ async function initializeBlockItRuntime(
   const { generation, priorTeardown } = claim;
   await priorTeardown;
   if (!isRuntimeGenerationCurrent(generation)) return;
-
-  // @ts-ignore - requireNativeModule is a Blockbench desktop global.
-  const net = requireNativeModule("net", {
-    message: "Network access is required for the MCP server to accept connections.",
-    detail:
-      "The MCP plugin needs to create a local server that AI assistants can connect to.",
-    optional: false,
-  });
-
-  if (!net) {
-    markRuntimeGenerationState(generation, "failed");
-    console.error("[MCP] Failed to get net module - server will not start");
-    Blockbench.showQuickMessage("MCP Server requires network permission", 3000);
-    return;
-  }
-  runtimeHost.setNativeNet(net);
+  if (!runtimeHost.acquireNativeNetwork(generation)) return;
 
   const registrationProfile = blockbenchIntegration.setupBase({
     generation,
@@ -168,15 +153,12 @@ BBPlugin.register("blockit_mcp", {
   description: PRODUCT_DESCRIPTION,
   about: PRODUCT_ABOUT,
   tags: ["MCP", "AI"],
-  // Explicitly clear old account links when reloading an existing install.
   repository: "",
   bug_tracker: "",
   icon: getIcon(),
   variant: "desktop",
 
   onload() {
-    // Blockbench does not await plugin lifecycle callbacks. Keep this callback
-    // synchronous and let the coordinator-owned generation serialize async boot.
     if (
       initializationInProgress ||
       (runtimeGeneration !== null &&
