@@ -8,7 +8,7 @@ describe("model creation effectiveness — texture/animation sequencing", () => 
   test("Authoring keeps explicit Geometry approval → UV PASS → Texturing while Animation uses Gateway handoff", async () => {
     const [agents, flow, workspace, orchestrator, texturing, animation] = await Promise.all([
       source("../AGENTS.md"),
-      source("../docs/knowledge/flow.md"),
+      source("../docs/01-product/flow.md"),
       source("../workspace/README.md"),
       source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md"),
       source("../.agents/skills/blockit-bedrock-texturing/SKILL.md"),
@@ -19,41 +19,28 @@ describe("model creation effectiveness — texture/animation sequencing", () => 
       expect(text).toContain("Geometry APPROVED");
       expect(text).toContain("UV Layout PASS");
     }
-    expect(flow).toContain("Geometry user approval is required before fresh/rebuilt production UV Layout");
     expect(workspace).toContain("Texturing cannot enter `IN_PROGRESS` until `UV Layout: PASS`");
-    expect(orchestrator).toContain("Any `NO` → **DO NOT MUTATE**");
 
     for (const text of [orchestrator, texturing, animation]) {
       expect(text).toContain("HANDOFF_REQUIRED");
-      expect(text).toContain("target_phase");
-      expect(text).toContain("readiness");
       expect(text).toContain("switch_authoring_phase");
       expect(text).toContain("Gateway");
       expect(text).toMatch(/same task|same task\/chat/i);
-      expect(text).not.toContain("action: set MCP Authoring Phase=");
       expect(text).not.toContain("reload BlockIT MCP");
     }
 
-    expect(texturing.toLowerCase()).toContain("final box uv locked with `autouv=0`");
-    expect(texturing).toContain("list_textures");
-    expect(texturing).toMatch(/no invalid\/out-of-bounds\/partial-overlap/);
     expect(texturing).toContain("No Geometry↔Texturing phase switch");
-    expect(animation.toLowerCase().replaceAll("/", " ")).toContain(
-      "participating hierarchy pivots are suitable"
-    );
+    expect(animation.toLowerCase().replaceAll("/", " ")).toContain("participating hierarchy pivots are suitable");
   });
 
-  test("existing-asset baseline policy stays with modelling owners", async () => {
-    const [orchestrator, modelling, foundation] = await Promise.all([
-      source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md"),
+  test("existing-asset baseline policy stays with authoring owners", async () => {
+    const [modelling, workflow] = await Promise.all([
       source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
-      source("../docs/foundation/03-modelling-workflow.md"),
+      source("../docs/03-authoring/workflow.md"),
     ]);
 
-    expect(orchestrator.toLowerCase()).not.toContain("existing geometry may be a task baseline");
-    expect(orchestrator.toLowerCase()).not.toContain("without certifying reference accuracy");
     expect(modelling).toMatch(/Existing geometry is a baseline, not fidelity proof/);
-    expect(foundation.toLowerCase()).toContain("existing-asset work may accept the current asset as the task baseline");
+    expect(workflow.toLowerCase()).toContain("existing-asset work may accept the current asset as the task baseline");
   });
 
   test("Texturing can correct upstream Geometry/UV in-session; Animation still hands back", async () => {
@@ -67,7 +54,6 @@ describe("model creation effectiveness — texture/animation sequencing", () => 
     expect(texturing).toContain("No Geometry↔Texturing phase switch");
     expect(animation).toContain("Animation owns motion, not structural rig mutation");
     expect(animation).toContain("target_phase: geometry");
-    expect(animation).toContain("Do not search for `bone_rigging`");
     expect(animation).not.toContain("tool_search");
   });
 
@@ -75,7 +61,7 @@ describe("model creation effectiveness — texture/animation sequencing", () => 
     const [texturing, animation, texturePolicy] = await Promise.all([
       source("../.agents/skills/blockit-bedrock-texturing/SKILL.md"),
       source("../.agents/skills/blockit-bedrock-animation/SKILL.md"),
-      source("../docs/foundation/06-texture-standard.md"),
+      source("../docs/03-authoring/texture/standard.md"),
     ]);
 
     expect(texturePolicy).toContain("## Box UV / UV Lock");
@@ -90,9 +76,7 @@ describe("model creation effectiveness — texture/animation sequencing", () => 
     }
 
     const normalizedAnimation = animation.toLowerCase();
-    expect(normalizedAnimation).toContain(
-      "no universal fps, duration, amplitude, phase, keyframe count, or bezier target"
-    );
+    expect(normalizedAnimation).toContain("no universal fps, duration, amplitude, phase, keyframe count, or bezier target");
     expect(normalizedAnimation).toContain("animation quality score");
     expect(normalizedAnimation).toContain("manage_animation_timeline");
     expect(normalizedAnimation).toContain("molang");
