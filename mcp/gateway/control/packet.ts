@@ -12,6 +12,7 @@ import {
 import { readReferencePackageProjection, type ControlReferenceProjection } from "./referencePackage";
 import { readWorkspaceProjection, type ControlWorkspaceProjection } from "./workspace";
 import type {
+  ControlAuthoringDomain,
   ControlContextHandle,
   ControlReadiness,
   ControlSnapshot,
@@ -37,6 +38,13 @@ export type ControlPacket = Omit<ControlSnapshot, "context" | "mode"> & {
   stage_context: ControlStageContext | null;
   development: ControlDevelopmentResolution | null;
   context: ControlContextDelivery;
+};
+
+type LifecycleProjection = {
+  ready: boolean;
+  blocked: boolean;
+  orientation_required: boolean;
+  reasons: string[];
 };
 
 function emptyWorkspace(): ControlWorkspaceProjection {
@@ -113,6 +121,50 @@ function filterContext(
   };
 }
 
+function normalizedGate(value: string | null): string | null {
+  return value?.trim().toUpperCase() || null;
+}
+
+function lifecycleForDomain(
+  domain: ControlAuthoringDomain | null,
+  workspace: ControlWorkspaceProjection
+): LifecycleProjection {
+  if (!domain || domain === "CORE") {
+    return { ready: false, blocked: false, orientation_required: true, reasons: ["AUTHORING_DOMAIN_UNRESOLVED"] };
+  }
+
+  if (domain === "GEOMETRY") {
+    return { ready: true, blocked: false, orientation_required: false, reasons: [] };
+  }
+
+  if (!workspace.available) {
+    return {
+      ready: false,
+      blocked: false,
+      orientation_required: true,
+      reasons: ["WORKSPACE_LIFECYCLE_UNAVAILABLE"],
+    };
+  }
+
+  const geometry = normalizedGate(workspace.gates.geometry);
+  const uv = normalizedGate(workspace.gates.uv_layout);
+  const texturing = normalizedGate(workspace.gates.texturing);
+  const reasons: string[] = [];
+
+  if (geometry !== "APPROVED") reasons.push("GEOMETRY_APPROVAL_REQUIRED");
+  if (uv !== "PASS") reasons.push("UV_LAYOUT_PASS_REQUIRED");
+  if (domain === "ANIMATION" && texturing !== "APPROVED") {
+    reasons.push("TEXTURE_APPROVAL_REQUIRED");
+  }
+
+  return {
+    ready: reasons.length === 0,
+    blocked: reasons.length > 0,
+    orientation_required: false,
+    reasons,
+  };
+}
+
 function buildReadiness(
   snapshot: ControlSnapshot,
   workspace: ControlWorkspaceProjection,
@@ -137,6 +189,7 @@ function buildReadiness(
   const contextReady = snapshot.context.required.length > 0;
   const activeReferenceReadiness = readinessForAuthoringDomain(snapshot.authoring.domain, reference);
   const activeReferenceBlocked = activeReferenceReadiness === "BLOCKED";
+  const lifecycle = lifecycleForDomain(snapshot.authoring.domain, workspace);
   const reasons: string[] = [];
 
   if (!snapshot.runtime.online) reasons.push("RUNTIME_OFFLINE");
@@ -146,12 +199,19 @@ function buildReadiness(
   if (!contextReady) reasons.push("REQUIRED_CONTEXT_UNRESOLVED");
   if (!reference.available) reasons.push("REFERENCE_PACKAGE_UNAVAILABLE");
   if (activeReferenceBlocked) reasons.push("REFERENCE_STAGE_BLOCKED");
+  reasons.push(...lifecycle.reasons.filter((reason) => !reasons.includes(reason)));
 
-  const blocked = !runtimeReady || snapshot.project.binding === "LOST" || activeReferenceBlocked;
+  const blocked =
+    !runtimeReady ||
+    snapshot.project.binding === "LOST" ||
+    activeReferenceBlocked ||
+    lifecycle.blocked;
+  const orientationRequired = lifecycle.orientation_required;
+
   return {
     modelling_start: blocked
       ? "BLOCKED"
-      : projectReady && domainReady && contextReady
+      : projectReady && domainReady && contextReady && !orientationRequired
         ? "READY"
         : "NEEDS_ORIENTATION",
     runtime_ready: runtimeReady,
@@ -203,7 +263,16 @@ export async function buildControlPacket(
   const referenceBlockers = mode === "ASSET_AUTHORING" && stageContext?.stage_readiness === "BLOCKED"
     ? ["REFERENCE_STAGE_BLOCKED"]
     : [];
-  const blockers = [...snapshot.blockers, ...workspaceBlockers, ...referenceBlockers];
+  const lifecycle = mode === "ASSET_AUTHORING"
+    ? lifecycleForDomain(snapshot.authoring.domain, workspace)
+    : { ready: true, blocked: false, orientation_required: false, reasons: [] };
+  const lifecycleBlockers = lifecycle.blocked ? lifecycle.reasons : [];
+  const blockers = [
+    ...snapshot.blockers,
+    ...workspaceBlockers,
+    ...referenceBlockers,
+    ...lifecycleBlockers.filter((reason) => !snapshot.blockers.includes(reason)),
+  ];
 
   return {
     ...snapshot,
