@@ -1,28 +1,31 @@
 # Particle Reference Workflow
 
-## Canonical flow
+## Canonical execution flow
 
 ```text
 USER REQUEST / REFERENCE
-→ REQUIREMENT GATE
-→ NORMALIZED PARTICLE BRIEF
-→ PHYSICAL / VISUAL DECOMPOSITION
-→ AUTHOR PARTICLE JSON + TEXTURES
-→ BEDROCK STATIC QA
-→ TARGET-SPECIFIC QA ONLY WHEN RELEVANT
-   └─ Snowstorm/Wintersky compatibility + release check when Snowstorm is a target
-→ MOTION / BUNDLE / ATLAS / SPATIAL / READABILITY / BUDGET PREFLIGHT AS NEEDED
+→ NORMALIZE INTENT
+→ CLASSIFY EXECUTION: DIRECT / COMPOSED / REACTIVE / AUDIT-REVISION
+→ CHOOSE LOWEST VIABLE COMPLEXITY TIER
+→ LOAD MINIMUM KNOWLEDGE BUNDLE
+→ DECOMPOSE ONLY IF PHYSICALLY NECESSARY
+→ AUTHOR JSON + TEXTURE ASSETS
+→ RUN ONLY RELEVANT STATIC QA GATES
 → CLEAN PACKAGE
 → USER REVIEW IN TARGET ENVIRONMENT
 → TARGETED REVISION OR APPROVAL
 → OPTIONAL CODEX / MCP HANDOFF
 ```
 
+The workflow optimizes for the fewest decisions, reads, and authoring passes that still preserve quality.
+
 ## 1. Requirement gate
 
-Resolve only decision-changing unknowns. Do not turn a particle request into a questionnaire.
+Use `authoring-spec.md` to resolve only decision-changing unknowns.
 
-The normalized brief should identify the target explicitly:
+If no BLOCKING ambiguity exists, do not stop for confirmation. Record reversible unknowns as provisional internal choices and proceed.
+
+The target must be explicit internally:
 
 ```text
 Bedrock runtime
@@ -30,117 +33,218 @@ Snowstorm preview
 both
 ```
 
-Do not load or run Snowstorm-specific knowledge when Snowstorm is irrelevant to the request.
+Do not load Snowstorm-specific knowledge when Snowstorm is irrelevant.
 
-## 2. Decompose by physical function
+## 2. Fast path for ordinary text requests
 
-Prefer one emitter per materially distinct physics role. Avoid monolithic emitters when layers have different launch direction, drag, gravity, lifetime, spatial role, render behavior, or texture class.
-
-## 3. Author motion from the intended physical cause
-
-For eruptive or ballistic motion, establish launch impulse before using acceleration/drag to shape the path.
-
-Conceptually:
+A short request such as:
 
 ```text
-launch direction + launch magnitude
-→ initial velocity
-→ gravity / drag / bounded acceleration shape the trajectory
+"buat particle api biru"
 ```
 
-When Snowstorm/Wintersky preview fidelity is a target and authored launch magnitude matters, prefer the compatibility pattern:
+should normally resolve in one planning pass:
 
 ```text
-emitter shape direction = launch vector
-minecraft:particle_initial_speed = scalar magnitude
+intent            = blue flame
+execution_class   = DIRECT
+complexity        = lowest viable tier
+physics role      = buoyant/upward flame
+texture strategy  = simple static or minimal flipbook only if needed
+Molang            = only age/random progression required for natural variation
+Snowstorm rules   = only if Snowstorm is a target
+QA                = document + texture + relevant motion/render checks
 ```
 
-This is a Snowstorm-targeted compatibility pattern, not a generic prohibition on Bedrock vector forms.
+Do not create multiple emitters, event graphs, curves, atlas systems, or advanced Molang unless the requested visual behavior requires them.
 
-Do not use positive acceleration as a substitute for missing launch impulse unless sustained acceleration is the actual intended behavior.
+## 3. Decompose once
 
-## 4. Keep particle class stable
+Perform one physical/visual decomposition before authoring.
 
-Use particle-owned values for persistent living-particle decisions:
+Split only when layers differ materially in:
+- physics;
+- timing;
+- spawn region;
+- material/render behavior;
+- texture class;
+- event/attachment ownership.
 
-```text
-variable.particle_random_1..4
-variable.particle_age
-variable.particle_lifetime
-```
+After decomposition, do not repeatedly redesign architecture while authoring unless a contradiction is discovered.
 
-Use emitter age for emitter-level timing, not for switching a living particle between motion/UV/size/tint classes mid-life unless synchronized switching is explicitly intended.
+## 4. Choose the knowledge bundle before deep reading
 
-## 5. Author textures as production assets
-
-Use real RGBA transparency. Do not crop production sprites from presentation sheets. Normalize visible bounds, keep safe gutters, and make atlas/flipbook mapping intentional.
-
-Load only the texture knowledge needed by the task:
-
-```text
-basic PNG / atlas / UV / flipbook
-→ texture-authoring.md
-
-resolution / resampling / frame stability
-→ texture-resolution-sampling.md
-
-halo / bleed / hidden RGB
-→ texture-filtering-bleeding.md
-
-alpha / value / blend / additive color behavior
-→ texture-color-science.md
-```
-
-## 6. Design around the environment only when relevant
-
-Existing blocks/models may supply part of the effect silhouette. When environment geometry is known, use spawn regions, keep-out zones, and lateral/upward motion to avoid wasting particles inside known occluding geometry.
-
-Do not invent hidden geometry when none is provided.
-
-## 7. Validate before packaging
-
-Run `qa.md` in order, but skip conditional gates that do not apply to the target or effect.
+Start from one primary owner.
 
 Examples:
-- no Snowstorm target → skip Snowstorm compatibility/release checks;
-- no atlas/flipbook → skip atlas-specific checks;
-- no collision → skip collision-specific checks;
-- no entity attachment → skip locator/transform checks.
-
-Static checks are advisory where the rule is heuristic; never convert them into false visual/runtime proof.
-
-## 8. Snowstorm round-trip only when Snowstorm edits are involved
-
-For externally authored advanced JSON or high-value assets edited through Snowstorm:
 
 ```text
-preserve original JSON
+spawn/lifetime effect
+→ emitter.md
+
+trajectory
+→ motion.md
+
+texture-driven effect
+→ texture-authoring.md
+
+Molang-driven behavior
+→ molang.md OR molang-language-math.md
+
+entity-attached effect
+→ entity-integration.md
+
+event-driven effect
+→ events.md
+```
+
+Add secondary owners only when the execution packet shows a real cross-domain dependency.
+
+Do not browse knowledge speculatively.
+
+## 5. Author the simplest valid representation
+
+Preference order:
+
+```text
+constant
+→ simple stable Molang
+→ curve / atlas / flipbook
+→ multiple effect layers
+→ events / reactive architecture
+```
+
+Use the first level that satisfies the requested behavior cleanly.
+
+### Motion
+
+Author from intended physical cause:
+
+```text
+spawn position
+→ launch direction
+→ launch magnitude
+→ acceleration / gravity / drag
+→ lifetime
+```
+
+Do not use sustained acceleration to fake missing initial impulse unless sustained acceleration is the intended behavior.
+
+### Particle identity
+
+Persistent living-particle decisions belong to particle-owned state:
+
+```text
+particle_random_N
+particle_age
+particle_lifetime
+```
+
+Emitter age belongs to emitter timing unless synchronized living-particle changes are explicitly desired.
+
+### Snowstorm launch compatibility
+
+When Snowstorm/Wintersky preview is a target and launch magnitude must remain predictable:
+
+```text
+shape.direction = launch vector
+particle_initial_speed = scalar magnitude
+```
+
+Treat this as editor-targeted compatibility guidance, not generic Bedrock syntax law.
+
+## 6. Texture execution
+
+Do not invoke the whole texture stack automatically.
+
+```text
+static sprite
+→ texture-authoring.md
+
+resolution/downscale issue
+→ + texture-resolution-sampling.md
+
+halo/bleed issue
+→ + texture-filtering-bleeding.md
+
+blend/additive/alpha design issue
+→ + texture-color-science.md
+```
+
+Prefer one production texture over an atlas when only one sprite is needed. Prefer an atlas/flipbook only when it reduces complexity or is visually required.
+
+## 7. Molang execution
+
+Do not add Molang unless behavior needs variation/progression/reactivity.
+
+```text
+no changing behavior
+→ constants
+
+stable variation
+→ particle_random_N
+
+lifetime progression
+→ normalized particle age + simple expression/easing/curve
+
+external/entity reactivity
+→ query/context only in a verified host
+```
+
+If a formula becomes hard to audit, prefer a curve or smaller staged expression rather than expanding nested math indefinitely.
+
+## 8. Single-pass static QA
+
+Near finalization, run `qa.md` once using only applicable gates.
+
+Examples:
+- no Snowstorm target → skip Snowstorm gates;
+- no events → skip event graph checks;
+- no collision → skip collision checks;
+- no atlas/flipbook → skip those checks;
+- no entity attachment → skip locator/transform checks.
+
+Do not repeatedly rerun unrelated QA after a small revision. Re-run the causal gate plus package-integrity checks.
+
+## 9. Snowstorm round-trip only when relevant
+
+For advanced/external JSON actually edited through Snowstorm:
+
+```text
+preserve original
 → import
 → edit
 → export
 → structural diff
-→ target Bedrock schema review
+→ target-schema review
 ```
 
-Do not require this round trip for a package that was never imported/exported through Snowstorm.
+Do not require this for assets never round-tripped through Snowstorm.
 
-## 9. Deliver cleanly
+## 10. Revision policy
 
-Follow `delivery.md`. Final user-facing packages contain only required production files and concise usage notes.
-
-## 10. Revise causally
-
-When user review finds a problem, change only the causal layer:
+User feedback changes only the causal layer by default:
 
 ```text
-wrong trajectory        → motion parameters
-wrong density           → spawn / lifetime / budget
-wrong silhouette        → decomposition / spawn region / size
-wrong sprite            → texture / atlas
-halo / bleed            → source alpha / hidden RGB / gutter
-flicker/class switching → ownership expressions
-wrong event timing      → event owner / timeline
-editor-only mismatch    → Snowstorm compatibility/version diagnosis
+trajectory             → motion
+spawn density          → rate/lifetime/cap
+silhouette             → decomposition/spawn/size
+texture look           → texture asset
+halo/bleed             → alpha/hidden RGB/gutter
+flicker/class switching→ state ownership
+color/brightness       → tint/material/texture color
+wrong timing           → event/lifetime owner
+editor mismatch        → Snowstorm compatibility/version
 ```
 
-Do not regenerate unrelated layers by default.
+Preserve approved layers and package structure unless they are causally involved.
+
+## 11. Stop rule
+
+Stop expanding the design when:
+- requested visual roles are represented;
+- the JSON/texture package is structurally coherent;
+- relevant static QA is complete;
+- remaining uncertainty is visual/runtime-only.
+
+At that point hand off to user review instead of consuming more context or adding speculative complexity.
