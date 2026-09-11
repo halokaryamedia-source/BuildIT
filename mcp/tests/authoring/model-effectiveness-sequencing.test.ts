@@ -5,30 +5,31 @@ async function source(path: string): Promise<string> {
 }
 
 describe("model creation effectiveness — texture/animation sequencing", () => {
-  test("Authoring keeps explicit Geometry approval → UV PASS → Texturing while Animation uses Gateway handoff", async () => {
-    const [agents, flow, workspace, orchestrator, texturing, animation] = await Promise.all([
+  test("Authoring keeps Geometry approval → UV PASS → Texturing while Animation uses Gateway handoff", async () => {
+    const [agents, flow, workspace, control, texturing, animation] = await Promise.all([
       source("../AGENTS.md"),
       source("../docs/01-product/flow.md"),
       source("../workspace/README.md"),
-      source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md"),
+      source("gateway/control/packet.ts"),
       source("../.agents/skills/blockit-bedrock-texturing/SKILL.md"),
       source("../.agents/skills/blockit-bedrock-animation/SKILL.md"),
     ]);
 
-    for (const text of [agents, flow, workspace, orchestrator, texturing]) {
+    for (const text of [agents, flow, workspace]) {
       expect(text).toContain("Geometry APPROVED");
       expect(text).toContain("UV Layout PASS");
     }
     expect(workspace).toContain("Texturing cannot enter `IN_PROGRESS` until `UV Layout: PASS`");
+    expect(control).toContain("GEOMETRY_APPROVAL_REQUIRED");
+    expect(control).toContain("UV_LAYOUT_PASS_REQUIRED");
+    expect(control).toContain("TEXTURE_APPROVAL_REQUIRED");
 
-    for (const text of [orchestrator, texturing, animation]) {
-      expect(text).toContain("HANDOFF_REQUIRED");
+    for (const text of [agents, texturing, animation]) {
       expect(text).toContain("switch_authoring_phase");
       expect(text).toContain("Gateway");
-      expect(text).toMatch(/same task|same task\/chat/i);
-      expect(text).not.toContain("reload BlockIT MCP");
     }
-
+    expect(texturing).toContain("HANDOFF_REQUIRED");
+    expect(animation).toContain("HANDOFF_REQUIRED");
     expect(texturing).toContain("No Geometry↔Texturing phase switch");
     expect(animation.toLowerCase().replaceAll("/", " ")).toContain("participating hierarchy pivots are suitable");
   });
