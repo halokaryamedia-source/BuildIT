@@ -2,9 +2,7 @@
 
 Updated: 2026-09-11
 
-This file owns the current migration boundary for identifiers that still contain `BlockIT` / `blockit` after the product rename.
-
-Rule:
+This file owns the migration boundary for identifiers that still contain `BlockIT` / `blockit` after the product rename.
 
 ```text
 presentation identity may migrate independently
@@ -15,13 +13,13 @@ Do not bulk-replace `blockit` across the repository.
 
 ## Compatibility-Bound Identifiers
 
-These values remain stable until a dedicated migration explicitly updates every producer, consumer, persisted value and recovery path.
+These values remain stable until a dedicated migration updates every producer, consumer, persisted value and recovery path.
 
 | Identifier | Current value | Canonical owner | Why retained |
 | --- | --- | --- | --- |
 | npm/package identity | `blockit-bedrock-entity-mcp` | `mcp/package.json` | package/build/dependency identity |
-| production bundle path | `dist/blockit_mcp.js` | `mcp/package.json`, build/deploy/distribution owners | installed file/update continuity |
-| Blockbench plugin id | `blockit_mcp` | `mcp/index.ts` | installed plugin identity and reload/update continuity |
+| production bundle path | `dist/blockit_mcp.js` | package/build/deploy owners | installed file/update continuity |
+| Blockbench plugin id | `blockit_mcp` | `mcp/index.ts` | installed plugin identity/reload continuity |
 | Gateway MCP server name | `blockit-gateway` | `mcp/gateway/contract.ts` | client/server identity continuity |
 | Runtime URL env prefix | `BLOCKIT_RUNTIME_*` | `mcp/gateway/backend.ts` | deployment/config compatibility |
 | Gateway queue env key | `BLOCKIT_GATEWAY_MAX_QUEUE_DEPTH` | `mcp/gateway/backend.ts` | deployment/config compatibility |
@@ -31,33 +29,22 @@ These values remain stable until a dedicated migration explicitly updates every 
 | authoring stage setting id | `mcp_authoring_phase` | `mcp/lib/authoringPhase.ts` | persisted Blockbench setting continuity |
 | extended-family setting id | `mcp_extended_families_enabled` | `mcp/lib/registrationProfile.ts` | persisted Blockbench setting continuity |
 
-ASSET_AUTHORING Skill paths are **not** compatibility-bound identifiers. Their migration to `lazydesigner-modelling`, `lazydesigner-texturing`, and `lazydesigner-animation` is complete in source; do not recreate the removed legacy paths as aliases.
+Primary LazyDesigner Skill paths are **not** compatibility-bound. REFERENCE_PREPARATION, ASSET_AUTHORING, and PRODUCT_DEVELOPMENT primary Skills now use canonical `lazydesigner-*` identities; removed legacy paths must not return as aliases.
 
-A compatibility-bound identifier may have an internal TypeScript symbol whose name still contains `Blockit`/`BLOCKIT`. Renaming the symbol alone is optional and lower priority than eliminating user-facing stale branding; never change the serialized/string value accidentally while doing symbol cleanup.
+Internal TypeScript symbols may still contain `Blockit`/`BLOCKIT` where renaming them provides little value. Never change a serialized/string compatibility value accidentally during symbol cleanup.
 
 ## Presentation Identity
 
-User-visible product language should use **LazyDesigner** when it does not change a serialized identifier or external contract.
-
-Examples:
-
-```text
-LazyDesigner Gateway
-LazyDesigner Runtime
-LazyDesigner project affinity
-LazyDesigner authoring stage
-LazyDesigner Legacy UI Fallbacks
-```
+Human-visible product language should use **LazyDesigner** when it does not change a serialized identifier or external contract.
 
 Safe presentation migration includes:
-
 - docs/headings/descriptions;
-- quick messages;
+- QuickMessages and logs;
 - human-readable errors;
-- comments that describe the current product;
-- MCP tool titles/descriptions where the protocol/tool name itself is unchanged.
+- comments describing the current product;
+- MCP titles/descriptions where protocol names remain unchanged.
 
-Do not expose compatibility implementation residue as a second product name.
+Do not expose compatibility residue as a second product name.
 
 ## Migration Preconditions
 
@@ -77,13 +64,13 @@ For persisted/install identifiers, migration must define whether old state is re
 ## Current Priority
 
 ```text
-1. migrate safe user-facing BlockIT strings to LazyDesigner
+1. continue bounded human-readable BlockIT → LazyDesigner cleanup
 2. keep compatibility-bound serialized values stable
-3. audit PRODUCT_DEVELOPMENT Skill names/consumers separately from install/runtime IDs
+3. do not rename internal Blockit/BLOCKIT symbols merely for cosmetics
 4. rename a compatibility-bound value only as an atomic dedicated migration
 5. regenerate generated artifacts through canonical generators when LOCAL_CODE is active
 ```
 
 ## Proof Boundary
 
-This document and its source regressions can prove repository intent and string ownership. They do not prove an installed migration, persisted-setting upgrade, live Gateway compatibility, or Blockbench plugin replacement behavior until those paths are exercised in the appropriate local/live context.
+This document and source regressions can prove repository intent and string ownership. They do not prove installed migration, persisted-setting upgrade, live Gateway compatibility, or Blockbench plugin replacement behavior until exercised in the appropriate local/live context.
