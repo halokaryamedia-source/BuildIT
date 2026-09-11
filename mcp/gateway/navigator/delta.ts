@@ -37,8 +37,16 @@ function mutationInvalidation(
   succeeded: boolean
 ): NavigatorDelta["invalidates"] {
   const mutates = succeeded && STATE_MUTATIONS.has(capability);
+  const affectedDomains: NavigatorAuthoringDomain[] = [];
+
+  if (mutates) {
+    affectedDomains.push(domain);
+    if (domain === "GEOMETRY") affectedDomains.push("TEXTURING", "ANIMATION");
+    else if (domain === "TEXTURING") affectedDomains.push("ANIMATION");
+  }
+
   return {
-    authoring_domains: mutates ? [domain] : [],
+    authoring_domains: [...new Set(affectedDomains)],
     workspace_projection: mutates,
     acceptance_gates: mutates,
   };
@@ -78,7 +86,7 @@ export function buildNavigatorDelta(input: {
             : "CONTINUE_CURRENT_TASK";
 
   return {
-    protocol: "blockit-navigator-v1",
+    protocol: "lazydesigner-control-v1",
     capability: input.capability,
     authoring_domain: authoringDomain,
     source_owner: sourceOwnerForCapability(input.capability),
@@ -88,9 +96,6 @@ export function buildNavigatorDelta(input: {
     changed,
     invalidates,
     next_intent: nextIntent,
-    // A normal authoring mutation invalidates acceptance/workspace knowledge but does
-    // not require an immediate full status round-trip. Refresh status only when
-    // Gateway/Runtime authority itself changed.
     requires_status_refresh: changed.length > 0,
   };
 }
