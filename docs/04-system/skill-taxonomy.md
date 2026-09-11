@@ -6,6 +6,16 @@ This file is the canonical classification for LazyDesigner Skills. It defines wh
 
 It does not replace the Skill contents themselves, `AGENTS.md` routing, or Control implementation. Physical folder names may remain legacy during migration; this document owns semantic category and target naming.
 
+## Authority Boundary
+
+```text
+Docs   = durable semantic policy / contracts
+Skills = execution procedure and specialist operating instructions
+Control= task/stage/context selection and projection
+```
+
+A Skill may summarize the operational trigger for a durable rule, but it must not become a competing policy owner. AI context selection is owned by `docs/04-system/ai-context-loading.md`.
+
 ## Top-Level Categories
 
 LazyDesigner uses exactly three Skill categories:
@@ -50,13 +60,13 @@ Execution owner: ChatGPT.
 
 | Current path | Current name | Target semantic name | Role |
 | --- | --- | --- | --- |
-| `.agents/skills/blockbench-reference-generator/SKILL.md` | `blockbench-reference-generator` | `lazydesigner-reference-preparation` | single ChatGPT-side reference workflow authority: requirements, reference planning, generation, QA and handoff |
+| `.agents/skills/blockbench-reference-generator/SKILL.md` | `blockbench-reference-generator` | `lazydesigner-reference-preparation` | single ChatGPT-side execution procedure for requirements, reference planning, generation, QA and handoff |
 | `.agents/skills/lazydesigner-prompt-compiler/SKILL.md` | `lazydesigner-prompt-compiler` | `lazydesigner-prompt-compiler` | internal prompt normalization helper; converts confirmed intent into a clean production brief without adding creative authority |
 
 Canonical ChatGPT-side operational flow is owned by:
 
 ```text
-docs/knowledge/chatgpt-reference-flow.md
+docs/02-reference/flow.md
 ```
 
 Reference Preparation uses:
@@ -106,14 +116,16 @@ Execution owner: Codex for reasoning; Runtime/Blockbench for mutation.
 
 | Current path | Current name | Target semantic name | Role |
 | --- | --- | --- | --- |
-| `.agents/skills/blockbench-bedrock-modelling/SKILL.md` | `blockbench-bedrock-modelling` | `lazydesigner-modelling` | Geometry, hierarchy, pivots/rig-readiness, surfaces, UV Layout, correction and geometry verification |
-| `.agents/skills/blockit-bedrock-texturing/SKILL.md` | `blockit-bedrock-texturing` | `lazydesigner-texturing` | Texture Atlas, pixel styling, materials/PBR and texture verification |
-| `.agents/skills/blockit-bedrock-animation/SKILL.md` | `blockit-bedrock-animation` | `lazydesigner-animation` | rig usage, keyframes, motion, controllers, animation effects and playback verification |
+| `.agents/skills/blockbench-bedrock-modelling/SKILL.md` | `blockbench-bedrock-modelling` | `lazydesigner-modelling` | Geometry, hierarchy, pivots/rig-readiness, surfaces, UV Layout, correction and geometry verification execution procedure |
+| `.agents/skills/blockit-bedrock-texturing/SKILL.md` | `blockit-bedrock-texturing` | `lazydesigner-texturing` | Texture Atlas, pixel styling, materials/PBR and texture verification execution procedure |
+| `.agents/skills/blockit-bedrock-animation/SKILL.md` | `blockit-bedrock-animation` | `lazydesigner-animation` | rig usage, keyframes, motion, controllers, animation effects and playback verification execution procedure |
 | `.agents/skills/blockit-bedrock-entity-mcp/SKILL.md` | `blockit-bedrock-entity-mcp` | migration-only routing responsibility | legacy asset router; routing responsibility moves to LazyDesigner Control |
+
+Durable authoring policy belongs under `docs/03-authoring/`. Skills consume those policies operationally; they do not create parallel durable standards.
 
 ### Modelling Core vs Modelling Profiles
 
-`lazydesigner-modelling` is the technical modelling core. It owns how to construct and verify Geometry safely and efficiently.
+`lazydesigner-modelling` is the technical modelling execution specialist. Durable Geometry rules are owned by `docs/03-authoring/modelling/standard.md` and selected profile knowledge by `docs/03-authoring/modelling/profiles/`.
 
 The same canonical profile vocabulary is used downstream to add asset-class reasoning without becoming a preset:
 
@@ -193,16 +205,20 @@ lazydesigner-development-brief
 
 Avoid ambiguous names such as `core`, `manager`, `director`, `helper`, `builder`, `toolkit`, bare `runtime`, or `router` when Control owns routing.
 
-A Skill name should answer: what semantic decision does this Skill own?
+A Skill name should answer: what semantic decision does this Skill execute?
 
 ## Context Isolation Rule
+
+Canonical loading bundles are owned by `docs/04-system/ai-context-loading.md`.
+
+At minimum:
 
 ```text
 REFERENCE_PREPARATION task
 → do not load PRODUCT_DEVELOPMENT Skills
 
 ASSET_AUTHORING task
-→ do not load PRODUCT_DEVELOPMENT Skills
+→ load one active specialist; do not load PRODUCT_DEVELOPMENT Skills
 
 PRODUCT_DEVELOPMENT task
 → do not load ASSET_AUTHORING Skills unless explicitly required by changed authoring semantics
