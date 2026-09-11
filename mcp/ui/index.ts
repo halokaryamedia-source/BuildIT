@@ -54,7 +54,7 @@ export function uiSetup({
   panel = new Panel("mcp_panel", {
     id: "mcp_panel",
     icon: "robot",
-    name: "BlockIT",
+    name: "LazyDesigner",
     default_side: "right",
     resizable: true,
     component: {
