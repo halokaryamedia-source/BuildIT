@@ -11,7 +11,7 @@ function lower(text: string): string {
 describe("model creation effectiveness — professional construction without presets", () => {
   test("professional construction stays reasoning-based rather than preset-based", async () => {
     const [modelling, workflow, geometry] = await Promise.all([
-      source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
+      source("../.agents/skills/lazydesigner-modelling/SKILL.md"),
       source("prompts/bedrock_entity_workflow.md"),
       source("../docs/03-authoring/modelling/standard.md"),
     ]);
@@ -33,7 +33,7 @@ describe("model creation effectiveness — professional construction without pre
 
   test("representation stays 3D-need-first while the small-detail threshold remains a guardrail", async () => {
     const [modelling, geometry] = await Promise.all([
-      source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
+      source("../.agents/skills/lazydesigner-modelling/SKILL.md"),
       source("../docs/03-authoring/modelling/standard.md"),
     ]);
 
@@ -50,7 +50,7 @@ describe("model creation effectiveness — professional construction without pre
 
   test("surface integrity distinguishes required closure from intentional openings and intersections", async () => {
     const [modelling, geometry] = await Promise.all([
-      source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
+      source("../.agents/skills/lazydesigner-modelling/SKILL.md"),
       source("../docs/03-authoring/modelling/standard.md"),
     ]);
 
@@ -66,7 +66,7 @@ describe("model creation effectiveness — professional construction without pre
 
   test("transform ownership distinguishes local Cube transforms from shared Group/Bone transforms", async () => {
     const [modelling, workflow, geometry] = await Promise.all([
-      source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
+      source("../.agents/skills/lazydesigner-modelling/SKILL.md"),
       source("prompts/bedrock_entity_workflow.md"),
       source("../docs/03-authoring/modelling/standard.md"),
     ]);
@@ -85,7 +85,7 @@ describe("model creation effectiveness — professional construction without pre
       source("lib/registrationProfile.ts"),
       source("server/tools/cubes.ts"),
       source("server/tools/element.ts"),
-      source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
+      source("../.agents/skills/lazydesigner-modelling/SKILL.md"),
       source("prompts/bedrock_entity_workflow.md"),
     ]);
 
