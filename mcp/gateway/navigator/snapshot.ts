@@ -1,7 +1,6 @@
 import type { GatewayRuntimeStatus } from "../backend";
 import type { JsonRecord } from "../contract";
 import { readRuntimeProjectHealth } from "../projectAffinity";
-import { contextForAuthoringDomain } from "./registry";
 import type {
   NavigatorAuthoringDomain,
   NavigatorSnapshot,
@@ -40,7 +39,6 @@ export function buildNavigatorSnapshot(status: GatewayRuntimeStatus): NavigatorS
   const project = health ? readRuntimeProjectHealth(health) : null;
   const phase = status.affinity.authoring_phase;
   const domain = authoringDomainForPhase(phase);
-  const context = contextForAuthoringDomain(domain);
   const blockers: string[] = [];
 
   let binding: NavigatorSnapshot["project"]["binding"] = "UNKNOWN";
@@ -64,7 +62,7 @@ export function buildNavigatorSnapshot(status: GatewayRuntimeStatus): NavigatorS
       : "READY";
 
   return {
-    protocol: "blockit-navigator-v1",
+    protocol: "lazydesigner-control-v1",
     system,
     mode: "ASSET_AUTHORING",
     project: {
@@ -85,7 +83,9 @@ export function buildNavigatorSnapshot(status: GatewayRuntimeStatus): NavigatorS
       catalog_count: status.runtime.catalog_count,
       catalog_stale: status.runtime.catalog_stale,
     },
-    context,
+    // Runtime orientation stays pure. Stage-specific file context is resolved later,
+    // after Reference Package/profile information is available to Control.
+    context: { required: [], optional: [] },
     blockers,
   };
 }
