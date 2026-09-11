@@ -38,11 +38,14 @@ export function uiSetup({
   profile: McpRegistrationProfile;
   phase: McpAuthoringPhase;
 }) {
+  // Blockbench reload order is not guaranteed to be perfectly serialized.
+  // Make setup idempotent by clearing every UI/listener owner before rebuilding.
+  uiTeardown();
+
   const port = Settings.get("mcp_port") || 3000;
   const endpoint = Settings.get("mcp_endpoint") || "/bb-mcp";
   const runtimeEndpoint = `127.0.0.1:${port}${endpoint}`;
 
-  panelCssHandle?.delete();
   panelCssHandle = Blockbench.addCSS(panelCSS);
 
   // Stateless HTTP has no durable client session. The panel presents only
@@ -88,7 +91,6 @@ export function uiSetup({
       data: () => ({
         server: {
           version: VERSION,
-
           endpoint: runtimeEndpoint,
         },
         runtime: {
