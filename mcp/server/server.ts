@@ -8,29 +8,15 @@ import {
   getActiveMcpAuthoringPhase,
   type McpAuthoringPhase,
 } from "@/lib/authoringPhase";
-import { describeMcpSurfaceToolNames } from "@/server/tools";
-import { wireAuthoringQualityIntelligence } from "@/server/tools/quality-intelligence";
-import { wireTextureQualityRuntime } from "@/server/tools/texture-quality-runtime";
-import { wireTextureAuthoringRuntime } from "@/server/tools/texture-authoring-runtime";
-import { wireTextureAlphaRuntime } from "@/server/tools/texture-alpha-runtime";
-import { wireAnimationNativeIntelligence } from "@/server/tools/animation-native-intelligence";
-import { wireAnimationControllerNativeIntelligence } from "@/server/tools/animation-controller-native-intelligence";
-import { wireAnimationRuntimeResourceIntelligence } from "@/server/tools/animation-runtime-resource-intelligence";
 import {
   DEFAULT_MCP_REGISTRATION_PROFILE,
   type McpRegistrationProfile,
 } from "@/lib/registrationProfile";
+import { initializeRuntimeCapabilityWiring } from "./runtime/bootstrap";
 
-// Existing tools gain bounded intelligence/capability without expanding the MCP
-// catalog. server/tools has already registered the default catalog and canonical
-// Animation routing before this module body executes.
-wireAuthoringQualityIntelligence();
-wireTextureQualityRuntime();
-wireTextureAuthoringRuntime();
-wireTextureAlphaRuntime();
-wireAnimationNativeIntelligence();
-wireAnimationControllerNativeIntelligence();
-wireAnimationRuntimeResourceIntelligence();
+// Existing canonical tools gain bounded runtime intelligence once per module
+// load. The bootstrap mutates definitions only; it does not own a second catalog.
+initializeRuntimeCapabilityWiring();
 
 /**
  * Phase-aware server instructions are part of the agent contract: Codex must
@@ -38,10 +24,8 @@ wireAnimationRuntimeResourceIntelligence();
  */
 export function buildMcpServerInstructions(
   phase: McpAuthoringPhase,
-  profile: McpRegistrationProfile = DEFAULT_MCP_REGISTRATION_PROFILE
+  _profile: McpRegistrationProfile = DEFAULT_MCP_REGISTRATION_PROFILE
 ): string {
-  // Keep initialize capability-oriented; detailed routed specs load only after selection.
-  describeMcpSurfaceToolNames(profile, phase);
   return `LazyDesigner Bedrock Entity authoring. ${buildMcpPhaseRuntimeContract(
     phase
   )} Capability nouns: cube, texture/PBR, locator; Animation uses keyframe tooling. Core routes are lifecycle and read operations; selection, history, camera, and export are conditional support routes.`;
