@@ -19,7 +19,8 @@ const status: GatewayRuntimeStatus = {
 const representativeIntents = [
   "animasi keyframe terlalu kaku", "texture uv atlas bermasalah", "geometry cube melayang",
   "particle snowstorm semantics", "project affinity salah project", "dev:sync stale build setelah plugin reload",
-  "gateway capability catalog bermasalah", "runtime plugin lifecycle error",
+  "gateway capability catalog bermasalah", "control continuation routing bermasalah", "navigator routing perlu diaudit",
+  "runtime plugin lifecycle error",
 ] as const;
 
 function repoPath(path: string): string { return resolve(process.cwd(), "..", path); }
@@ -40,6 +41,25 @@ describe("LazyDesigner Control system-development intent", () => {
       "mcp/build/index.ts", "mcp/build/watch-policy.ts", "mcp/scripts/deploy-local.ts",
     ]);
     expect(result.required_context_paths).not.toContain(".agents/skills/lazydesigner-modelling/SKILL.md");
+  });
+
+  test("control and retired navigator wording route to canonical active Control owners", () => {
+    for (const intent of ["control continuation routing bermasalah", "navigator routing perlu diaudit"]) {
+      const result = resolveDevelopmentIntent(intent);
+      expect(result.domain, intent).toBe("GATEWAY");
+      expect(result.confidence, intent).toBe("STRONG");
+      expect(result.source_owners.some((entry) => entry.source === "mcp/gateway/control/packet.ts"), intent).toBe(true);
+      expect(result.source_owners.some((entry) => entry.source === "mcp/gateway/control/routingPolicy.ts"), intent).toBe(true);
+      expect(result.source_owners.some((entry) => entry.source === "mcp/gateway/control/delta.ts"), intent).toBe(true);
+      expect(result.source_owners.some((entry) => entry.source.includes("gateway/navigator")), intent).toBe(false);
+    }
+  });
+
+  test("particle development uses the focused particle capability owner", () => {
+    const result = resolveDevelopmentIntent("particle snowstorm semantics");
+    expect(result.domain).toBe("PARTICLE");
+    expect(result.source_owners[0]?.source).toBe("mcp/server/tools/particle.ts");
+    expect(result.source_owners[0]?.specialist).toBe(".agents/skills/lazydesigner-animation/SKILL.md");
   });
 
   test("ambiguous equal-score wording refuses to invent a single domain", () => {
