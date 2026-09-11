@@ -120,6 +120,10 @@ describe("LazyDesigner Control", () => {
       currentUserDelta: "preserve basket and adjust tool grip",
     });
     expect(packet.reference).toMatchObject({ available: true, asset_name: "farmer_npc", selected_profile: "HUMANOID" });
+    expect(packet.reference).not.toHaveProperty("requirements");
+    expect(packet.reference).not.toHaveProperty("readiness");
+    expect(packet.reference).not.toHaveProperty("documents");
+    expect(packet.reference).not.toHaveProperty("images");
     expect(packet.stage_context).toMatchObject({
       context_type: "GEOMETRY_CONTEXT",
       original_user_intent: "Farmer NPC harvesting cinnamon",
@@ -136,7 +140,7 @@ describe("LazyDesigner Control", () => {
     ]);
   });
 
-  test("workspace projection and task context remain bounded and cache-aware", async () => {
+  test("workspace projection keeps top-level summary while stage context owns active detail", async () => {
     const { mkdtemp, writeFile } = await import("node:fs/promises");
     const { tmpdir } = await import("node:os");
     const { join } = await import("node:path");
@@ -145,9 +149,18 @@ describe("LazyDesigner Control", () => {
     await writeFile(join(directory, "README.md"), `# Test Asset\n\nCurrent Stage: TEXTURING\n\nGeometry: APPROVED\n\nUV Layout: PASS\n\nTexturing: IN_PROGRESS\n\nAnimation: NOT_STARTED\n\nCurrent next step: Complete identity pass\n\nKnown blocker(s): None\n`);
 
     const first = await buildControlPacket(onlineStatus, { workspacePath: directory });
-    expect(first.workspace).toMatchObject({ available: true, asset: "Test Asset", current_stage: "TEXTURING", gates: { geometry: "APPROVED", uv_layout: "PASS", texturing: "IN_PROGRESS", animation: "NOT_STARTED" }, next_step: "Complete identity pass" });
+    expect(first.workspace).toMatchObject({ available: true, asset: "Test Asset" });
+    expect(first.workspace).not.toHaveProperty("current_stage");
+    expect(first.workspace).not.toHaveProperty("gates");
+    expect(first.workspace).not.toHaveProperty("next_step");
+    expect(first.stage_context?.workspace).toEqual({
+      asset: "Test Asset",
+      current_stage: "TEXTURING",
+      gates: { geometry: "APPROVED", uv_layout: "PASS", texturing: "IN_PROGRESS", animation: "NOT_STARTED" },
+      next_step: "Complete identity pass",
+    });
     expect(first.task_context_id).toMatch(/^task:[a-f0-9]{20}$/);
-    expect(JSON.stringify(first).length).toBeLessThan(8000);
+    expect(JSON.stringify(first).length).toBeLessThan(7500);
 
     const known = first.context.required.map((entry) => entry.id);
     const second = await buildControlPacket(onlineStatus, { knownContextIds: known });
