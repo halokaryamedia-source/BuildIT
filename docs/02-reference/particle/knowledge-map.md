@@ -4,8 +4,6 @@ Canonical knowledge map for ChatGPT-side Minecraft Bedrock / Snowstorm particle 
 
 ## Provenance labels
 
-Every durable rule should be understood through one of these evidence classes:
-
 ```text
 OFFICIAL BEDROCK
 SNOWSTORM / WINTERSKY
@@ -13,134 +11,92 @@ EMPIRICALLY VERIFIED
 HEURISTIC
 ```
 
-### OFFICIAL BEDROCK
-Use for behavior documented by Microsoft Minecraft Creator particle/Molang/entity references.
-
-### SNOWSTORM / WINTERSKY
-Use for editor/preview-specific behavior, UI behavior, compatibility differences, release-specific limitations, or Wintersky rendering semantics.
-
-### EMPIRICALLY VERIFIED
-Use for behavior reproduced during an accepted real authoring case. This does not automatically make it a universal Bedrock rule.
-
-### HEURISTIC
-Use for bounded authoring guidance such as readability thresholds, conservative particle budgets, keep-out reasoning, and decomposition advice.
-
-Never present a heuristic as exact Minecraft runtime truth.
-
----
+Official Bedrock semantics outrank editor workarounds; Snowstorm-specific behavior must not redefine generic Bedrock validity; heuristics must not be presented as live runtime/FPS truth.
 
 ## Core knowledge domains
 
-### Foundation
-`fundamentals.md`
+```text
+fundamentals.md
+→ document mental model, component families, emitter-vs-particle responsibility
 
-Owns document mental model, component families, emitter-vs-particle responsibility, decomposition and Bedrock-validity boundaries.
+component-catalog.md
+→ complete component inventory
 
-### Complete component inventory
-`component-catalog.md`
+component-field-reference.md
+→ field-by-field semantics, defaults/ownership concerns and failure modes
 
-Owns the component checklist across emitter initialization/rate/lifetime/shape, particle initialization/motion/appearance/lifetime, curves and events.
+lifecycle-space.md
+→ creation/update/render timing, emitter-vs-particle lifetime, local/world simulation
 
-### Lifecycle / simulation space
-`lifecycle-space.md`
+emitter.md
+→ rate, lifetime, initialization, built-in shapes, density
 
-Owns evaluation timing, emitter vs particle lifetime, creation/update/render ownership, local/world simulation, inherited velocity and attachment implications.
+emitter-shape-math.md
+→ direction vectors, normalization, custom shape/ring/cone/fan math
 
-### Emitter
-`emitter.md`
+motion.md
+→ initial impulse, acceleration, drag, parametric motion, kill planes
 
-Owns emitter rates, lifetimes, initialization, point/sphere/disc/box/entity-AABB/custom shapes, offsets, surface-only behavior and density reasoning.
+collision-advanced.md
+→ restitution, drag, contact events, repeated contact, high-speed caveats
 
-### Motion
-`motion.md`
+appearance-rendering.md
+→ material, billboard, UV/flipbook/tint/lighting, overdraw
 
-Owns initial impulse, dynamic acceleration/drag, parametric motion, collision, kill planes/environment expiration, ballistic/buoyant/drift/jet motion classes and motion-envelope reasoning.
+billboard-direction.md
+→ direction_x/y/z, velocity alignment and near-zero direction edge cases
 
-### Advanced collision
-`collision-advanced.md`
+texture-authoring.md
+→ PNG/RGBA, atlas layout, gutters, UV/flipbook, tint-compatible source art
 
-Owns collision radius, restitution, collision drag, enabled expressions, expire-on-contact, contact events, min-speed gating, repeated-contact fan-out and high-speed contact caveats.
+texture-filtering-bleeding.md
+→ hidden RGB, atlas bleed, matte/halo, minification/filtering edge cases
 
-### Appearance / Rendering
-`appearance-rendering.md`
+texture-color-science.md
+→ practical alpha/value/color design for opaque/alpha/blend/add materials
 
-Owns materials, billboard geometry/facing, UV/flipbook/tint/lighting, transparency, overdraw and target-distance readability.
+molang.md
+→ emitter/particle variable ownership, stable state, age/lifetime usage
 
-### Directional billboards
-`billboard-direction.md`
+particle-variable-inventory.md
+→ documented particle-system built-in variables and owner matrix
 
-Owns `direction_x`/`direction_y`, sprite-axis alignment, near-zero direction behavior, ballistic apex edge cases, velocity-aligned streaks and Snowstorm-vs-Minecraft orientation diagnosis.
+molang-language-math.md
+→ syntax/operators/math/easing/interpolation/random/trigonometry
 
-### Texture production
-`texture-authoring.md`
+molang-formula-cookbook.md
+→ normalized age, fades, stable ranges/classes, oscillation, orbit/spiral,
+  ballistic estimates, remapping and safe math
 
-Owns PNG/RGBA production, atlas layout, cell mapping, transparent gutters, matte/halo risk, UV/flipbook mapping, tint-compatible source art, pixel-art rules and texture QA.
+molang-queries-context.md
+→ query/context host availability, entity state, continuous external reads
 
-### Texture filtering / bleeding
-`texture-filtering-bleeding.md`
+curves.md
+→ linear/Bezier/Bezier-chain/Catmull-Rom, ranges and normalized progression
 
-Owns hidden RGB under transparency, atlas bleed, cell-vs-visible bounds, flipbook seams, minification, generated-texture cleanup and edge-quality diagnosis.
+events.md
+→ emitter/particle/collision events, child effects, relationships, fan-out
 
-### Particle Molang ownership
-`molang.md`
+event-timing.md
+→ emitter time vs particle time, birth-relative timing, nested ordering
 
-Owns emitter-owned vs particle-owned variables, stable random state, age/lifetime expressions, ownership stability and expression-cost guidance.
+snowstorm.md
+→ generic Snowstorm/Wintersky compatibility boundary
 
-### Full Molang language + math
-`molang-language-math.md`
+snowstorm-version-quirks.md
+→ release-specific preview quirks/regressions and minimal reproduction
 
-Owns syntax/operators, variable namespaces, conditionals, loops, official math-function families, easing/interpolation and reusable particle formula patterns.
+performance.md
+→ population, lifetime/rate/cap, overdraw, Molang/collision/event cost guidance
 
-### Molang queries / context
-`molang-queries-context.md`
+entity-integration.md
+→ mapping, locators, animation/controller triggering, attached context
 
-Owns `query.*`, `context.*`, host-specific query availability, changing external state, entity-coupled particle logic, sampling-vs-continuous reads and query stability risks.
-
-### Curves
-`curves.md`
-
-Owns linear, Bezier, Bezier-chain, Catmull-Rom curves, curve inputs/ranges, normalized lifetime progression and curve reuse.
-
-### Events
-`events.md`
-
-Owns emitter/particle lifetime events, collision events, child visual-effect events, relationship types, pre-effect expressions, master/child architecture and fan-out.
-
-### Event timing
-`event-timing.md`
-
-Owns emitter-time vs particle-time ownership, birth-relative timing, looping emitter timing, collision-event timing, nested-effect sequencing, deterministic-vs-random beats and timing anti-patterns.
-
-### Snowstorm / Wintersky
-`snowstorm.md`
-
-Owns editor/preview boundary, Quick Setup/release awareness, target-specific compatibility, vector initial-speed finding, emitter-age instability finding and editor-vs-content bug classification.
-
-### Snowstorm version quirks
-`snowstorm-version-quirks.md`
-
-Owns release-aware preview differences, version-specific regressions, minimal-reproduction strategy, nested preview changes, editor texture/material caveats and the rule that preview bugs must not become generic Bedrock restrictions.
-
-### Performance
-`performance.md`
-
-Owns visible-population estimation, spawn/lifetime/max-particle interaction, translucent overdraw, collision/Molang/parametric cost guidance, event fan-out and static proof limits.
-
-### Entity Integration
-`entity-integration.md`
-
-Owns entity particle mapping, locators, animation/controller triggering, pre-effect scripts, local orientation expectations and fire-and-forget vs sustained binding intent.
-
-### Troubleshooting
-`troubleshooting.md`
-
-Owns symptom-first causal diagnosis for missing effects, wrong trajectory/density, texture/alpha/flipbook issues, class switching, events/collision, Snowstorm-vs-Minecraft mismatch and performance regressions.
-
----
+troubleshooting.md
+→ symptom-first causal diagnosis
+```
 
 ## Workflow and delivery owners
-
-Knowledge is separate from execution workflow.
 
 ```text
 authoring-spec.md → normalize requested effect
@@ -150,68 +106,84 @@ delivery.md       → final package contract
 patterns.md       → reusable physical starting patterns
 ```
 
-Do not duplicate deep knowledge into workflow files.
-
----
+Knowledge and workflow stay separate. Do not duplicate deep technical rules into workflow files.
 
 ## Lazy-read routing
 
 ```text
-basic particle task
+basic task
 → authoring-spec.md + workflow.md
 
-unknown component / need full inventory
+unknown component
 → component-catalog.md
 
-emitter creation/lifetime/local-space timing
-→ lifecycle-space.md + emitter.md
+specific JSON field/default/failure
+→ component-field-reference.md
 
-trajectory/physics issue
+spawn/lifetime/shape
+→ emitter.md
+
+custom distribution/direction/cone/ring math
+→ emitter-shape-math.md
+
+creation/update/render or local/world-space question
+→ lifecycle-space.md
+
+trajectory/physics
 → motion.md
 
-contact/bounce/collision-event issue
+contact/bounce/collision event
 → collision-advanced.md
 
-visual material/billboard issue
+material/billboard/tint
 → appearance-rendering.md
 
-velocity/direction-aligned sprite issue
+directional sprite issue
 → billboard-direction.md
 
-texture/PNG/atlas/UV/flipbook production issue
+PNG/atlas/UV/flipbook production
 → texture-authoring.md
 
-halo/bleeding/filtering/minification issue
+bleed/halo/filtering/minification
 → texture-filtering-bleeding.md
 
-particle-specific variable ownership issue
+brightness/alpha/additive/blend color design
+→ texture-color-science.md
+
+particle variable ownership
 → molang.md
 
-generic Molang syntax/math/formula issue
+which built-in particle/emitter variable exists
+→ particle-variable-inventory.md
+
+Molang language/math
 → molang-language-math.md
 
-query/context/entity-state expression issue
+need a reusable expression/formula
+→ molang-formula-cookbook.md
+
+query/context/entity-state dependency
 → molang-queries-context.md
 
-lifetime progression/curve issue
+curve issue
 → curves.md
 
-nested/child effect issue
+child effect/event graph
 → events.md
 
-event order / birth-relative timing issue
+event ordering/time ownership
 → event-timing.md
 
-Snowstorm preview/compatibility issue
+Snowstorm compatibility
 → snowstorm.md
 
 release-specific Snowstorm anomaly
 → snowstorm-version-quirks.md
 
-performance/density issue
+performance/density
 → performance.md
 
-entity attachment issue
+entity attachment
 → entity-integration.md
 
 unclear failure
@@ -220,50 +192,45 @@ unclear failure
 
 Load multiple files only when the task genuinely crosses boundaries.
 
----
-
 ## Confidence hierarchy
-
-When rules conflict, prefer:
 
 ```text
 current explicit user requirement
-→ current official Bedrock documentation for Bedrock semantics
-→ reproduced target-editor behavior for Snowstorm-specific compatibility
+→ current official Bedrock documentation
+→ reproduced Snowstorm/Wintersky target behavior for editor-specific issues
 → accepted empirical project evidence
 → conservative heuristic
 ```
 
-Never let a Snowstorm-specific workaround redefine generic Bedrock validity.
-Never let static preflight claim live rendering or FPS truth.
-
----
-
-## Current coverage state
+## Coverage state
 
 ```text
-Bedrock document fundamentals        STRONG
-Complete component catalog           STRONG
-Lifecycle / evaluation / local space STRONG
-Emitter lifecycle + shapes           STRONG
-Dynamic/parametric motion            STRONG
-Advanced collision                   STRONG
-Appearance / billboard / material    STRONG
-Directional billboard edge cases     STRONG
-Texture / RGBA / atlas / UV          STRONG
-Texture filtering / bleeding         STRONG
-Particle Molang ownership            STRONG
-Molang language + math               STRONG
-Molang query/context reasoning       STRONG
-Curves                               STRONG
-Events / child effects               STRONG
-Event timing                         STRONG
-Snowstorm / Wintersky                STRONG BASELINE
-Snowstorm version quirks             STRONG VERSION-AWARE
-Performance reasoning                STRONG STATIC
-Entity integration                   STRONG REFERENCE BOUNDARY
-Troubleshooting                      STRONG CAUSAL GUIDE
-Real multi-family visual cases       DEFERRED BY USER
+Bedrock architecture/components        STRONG
+Field-level component reference        STRONG
+Lifecycle/evaluation/local space       STRONG
+Emitter lifecycle/shapes               STRONG
+Emitter direction/custom-shape math    STRONG
+Dynamic/parametric motion              STRONG
+Advanced collision                     STRONG
+Appearance/material/billboards         STRONG
+Directional billboard edge cases       STRONG
+Texture/RGBA/atlas/UV/flipbook         STRONG
+Texture filtering/bleeding             STRONG
+Texture color/alpha/blend reasoning     STRONG PRACTICAL
+Particle Molang ownership              STRONG
+Particle built-in variable inventory   STRONG
+Molang language/math                   STRONG
+Molang formula cookbook                STRONG
+Molang query/context reasoning         STRONG
+Curves                                 STRONG
+Events/child effects                   STRONG
+Event timing                           STRONG
+Snowstorm/Wintersky                    STRONG BASELINE
+Snowstorm version quirks               STRONG VERSION-AWARE
+Performance reasoning                  STRONG STATIC
+Entity integration                     STRONG REFERENCE BOUNDARY
+Troubleshooting                        STRONG CAUSAL GUIDE
+Real multi-family visual cases         DEFERRED BY USER
 ```
 
-Further work should deepen newly documented Bedrock capabilities, current query/context exposure, texture/render edge cases, and reproduced Snowstorm version-specific behavior without creating a parallel particle framework.
+Further work should close newly discovered official fields/version-specific behavior and empirical visual evidence, not create another particle framework.
