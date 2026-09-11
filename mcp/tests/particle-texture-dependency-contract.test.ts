@@ -41,7 +41,7 @@ describe("particle texture dependency contract", () => {
     }
   });
 
-  test("routes generated particle bitmaps through existing Texturing capabilities", () => {
+  test("routes missing generated particle bitmaps through existing Texturing capabilities", () => {
     const parsed = manageParticleParameters.safeParse({
       create: {
         identifier: "blockit:generated_dust",
@@ -49,7 +49,9 @@ describe("particle texture dependency contract", () => {
       },
       texture_dependency: {
         source: "generated",
+        state: "missing",
         texture: "textures/particle/generated_dust",
+        output_path: "C:\\packs\\demo\\textures\\particle\\generated_dust.png",
         name: "generated_dust.png",
         width: 32,
         height: 32,
@@ -66,6 +68,7 @@ describe("particle texture dependency contract", () => {
     expect(plan).toEqual({
       source: "generated",
       texture: "textures/particle/generated_dust",
+      output_path: "C:\\packs\\demo\\textures\\particle\\generated_dust.png",
       status: "REQUIRES_TEXTURING",
       authoring_domain: "TEXTURING",
       entry_capability: "create_texture",
@@ -81,11 +84,63 @@ describe("particle texture dependency contract", () => {
         "gradient_tool",
         "paint_with_brush",
         "eraser_tool",
+        "paint_texture_transaction",
       ],
+      finalize: {
+        capability: "paint_texture_transaction",
+        output: {
+          path: "C:\\packs\\demo\\textures\\particle\\generated_dust.png",
+          overwrite: false,
+        },
+      },
       description: "Small transparent brown dust fragments for an impact burst.",
       transparent: true,
       resume_capability: "manage_particle",
+      resume_state: "ready",
     });
+  });
+
+  test("ready generated texture resumes without another Texturing handoff", () => {
+    const parsed = manageParticleParameters.safeParse({
+      create: {
+        identifier: "blockit:generated_dust",
+        texture: "textures/particle/generated_dust",
+      },
+      texture_dependency: {
+        source: "generated",
+        state: "ready",
+        texture: "textures/particle/generated_dust",
+        output_path: "/packs/demo/textures/particle/generated_dust.png",
+        name: "generated_dust.png",
+        description: "Already authored sprite.",
+      },
+    });
+    expect(parsed.success).toBe(true);
+    if (!parsed.success) return;
+    expect(buildParticleTextureDependencyPlan(parsed.data.texture_dependency)).toEqual({
+      source: "generated",
+      texture: "textures/particle/generated_dust",
+      output_path: "/packs/demo/textures/particle/generated_dust.png",
+      status: "SATISFIED",
+    });
+  });
+
+  test("generated path/reference mismatch is rejected before authoring", () => {
+    expect(
+      manageParticleParameters.safeParse({
+        create: {
+          identifier: "blockit:mismatch",
+          texture: "textures/particle/a",
+        },
+        texture_dependency: {
+          source: "generated",
+          texture: "textures/particle/a",
+          output_path: "/packs/demo/textures/particle/b.png",
+          name: "a.png",
+          description: "Mismatch should fail before authoring.",
+        },
+      }).success
+    ).toBe(false);
   });
 
   test("dependency metadata cannot silently disagree with authored particle JSON", () => {
@@ -98,6 +153,7 @@ describe("particle texture dependency contract", () => {
         texture_dependency: {
           source: "generated",
           texture: "textures/particle/b",
+          output_path: "/packs/demo/textures/particle/b.png",
           name: "b.png",
           description: "Mismatch should fail before authoring.",
         },
@@ -110,6 +166,7 @@ describe("particle texture dependency contract", () => {
         texture_dependency: {
           source: "generated",
           texture: "textures/particle/generated",
+          output_path: "/packs/demo/textures/particle/generated.png",
           name: "generated.png",
           description: "Dependency metadata must not mutate particle JSON implicitly.",
         },
