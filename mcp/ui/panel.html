@@ -1,5 +1,5 @@
 <div class="mcp-panel">
-    <section class="blockit-overview" aria-label="BlockIT Runtime status">
+    <section class="blockit-overview" aria-label="LazyDesigner Runtime status">
         <div class="runtime-summary">
             <span class="runtime-dot" :class="runtime.state"></span>
             <div class="runtime-copy">
@@ -46,7 +46,7 @@
                 <div v-for="tool in filteredTools" :key="tool.name" class="tool-toggle-row"
                     :class="{ clickable: tool.enabled, disabled: !tool.enabled }"
                     @click="tool.enabled && openToolTest(tool.name)"
-                    :title="tool.enabled ? tl('mcp.tooltip.click_to_test', [getDisplayName(tool.name)]) : 'Disabled tools are not executable from the BlockIT panel.'">
+                    :title="tool.enabled ? tl('mcp.tooltip.click_to_test', [getDisplayName(tool.name)]) : 'Disabled tools are not executable from the LazyDesigner panel.'">
                     <div class="tool-info">
                         <div class="tool-name">
                             {{getDisplayName(tool.name)}}
