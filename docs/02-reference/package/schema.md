@@ -2,58 +2,56 @@
 
 Updated: 2026-09-11
 
-This document owns the canonical structure of `REFERENCE.json`, the machine-readable reference index handed from ChatGPT Reference Preparation to Codex.
+This document owns the canonical structure of `REFERENCE.json`, the machine-readable index handed from ChatGPT Reference Preparation to Codex.
 
-It does not own visual-reference design, stage-document prose, Geometry/Texturing/Animation authoring rules, or Control implementation.
+It does not own visual-sheet design, stage prose, authoring procedure, or Control implementation.
 
-Canonical stage-document content is owned separately by:
+Stage document owners:
 
 ```text
-docs/knowledge/geometry-reference-contract.md
-docs/knowledge/texture-reference-contract.md
-docs/knowledge/animation-reference-contract.md
+GEOMETRY.md  → geometry.md
+TEXTURE.md   → texture.md
+ANIMATION.md → animation.md
 ```
 
 ## Objective
 
-`REFERENCE.json` must answer, with minimal duplication:
+`REFERENCE.json` answers only:
 
 ```text
 what asset is being made
-what the user explicitly requires
+what stable requirements are confirmed
+what scale authority exists
 what visual authority exists
 what stage documents exist
-what information is confirmed vs unknown
-what remains blocking
+what decision-critical relationships are known
+what remains unknown/blocking
+which stages are ready
 ```
 
-It is a compact index and structured fact contract, not a giant modelling blueprint.
+It is an index and structured fact contract, not a modelling blueprint.
 
 ## Authority Order
 
 ```text
 1. explicit current user requirement
 2. approved visual reference
-3. REFERENCE.json structured facts
-4. stage-specific Markdown projection
-5. downstream Codex interpretation
+3. confirmed numeric / player-relative scale requirement
+4. REFERENCE.json structured facts
+5. active stage Markdown projection
+6. downstream interpretation
 ```
 
-If two higher-order authorities materially conflict, record the conflict and stop the affected dependent decision. Do not silently normalize the conflict.
+Material conflicts between stronger authorities must remain explicit and block only dependent decisions.
 
-## Canonical File Name
+## Schema Identity
 
 ```text
-REFERENCE.json
+file:   REFERENCE.json
+schema: lazydesigner-reference-v1
 ```
 
-Schema identifier:
-
-```text
-lazydesigner-reference-v1
-```
-
-## Top-Level Shape
+## Canonical Shape
 
 ```json
 {
@@ -73,21 +71,9 @@ lazydesigner-reference-v1
 }
 ```
 
-Only include fields that materially help downstream work. Empty optional arrays may be omitted when they add no value.
+Omit empty optional arrays/objects when they add no downstream value.
 
-## 1. `schema`
-
-Required string.
-
-```json
-"schema": "lazydesigner-reference-v1"
-```
-
-Purpose: allow downstream consumers to distinguish package versions without guessing field meaning.
-
-## 2. `asset`
-
-Required object.
+## `asset` — required
 
 ```json
 {
@@ -98,7 +84,7 @@ Required object.
 }
 ```
 
-### Required fields
+Required fields:
 
 ```text
 name
@@ -107,41 +93,23 @@ task
 intent
 ```
 
-### `profile`
-
-One of:
+`profile`:
 
 ```text
-PROP_FURNITURE
-VEHICLE
-HUMANOID
-CREATURE
-MECHANICAL
-PLANT_FOLIAGE
-GENERIC
+PROP_FURNITURE | VEHICLE | HUMANOID | CREATURE | MECHANICAL | PLANT_FOLIAGE | GENERIC
 ```
 
-Profile is classification, not visual authority and not a preset.
-
-### `task`
-
-One of:
+`task`:
 
 ```text
-NEW_ASSET
-CONTINUE_ASSET
-CORRECTION
+NEW_ASSET | CONTINUE_ASSET | CORRECTION
 ```
 
-### `intent`
+`intent` is one short normalized statement of the approved current goal. Never store conversation history or a generation prompt here.
 
-Short normalized statement of the current approved user goal.
+## `requirements` — required
 
-Do not paste conversation history or a giant compiled prompt here.
-
-## 3. `requirements`
-
-Required object containing only explicit or confirmed requirements.
+Contains only explicit or confirmed stable cross-stage requirements.
 
 Recommended shape:
 
@@ -149,28 +117,60 @@ Recommended shape:
 {
   "dimensions_blocks": {
     "width": null,
-    "height": 2,
+    "height": null,
     "length": null
   },
+  "player_relative_scale": "PLAYER_HEIGHT",
   "animation_required": true
 }
 ```
 
+### Numeric dimensions
+
+`dimensions_blocks` stores confirmed numeric envelope values only.
+
 Rules:
-- `null` means unknown, never permission to infer;
-- do not derive numeric dimensions from image pixels;
-- omit dimensions that are genuinely irrelevant only when downstream scale is already owned elsewhere;
-- preserve explicit user dimensions exactly unless the user changes them.
+- `null` means unknown;
+- never infer block values from image pixels;
+- explicit user dimensions remain authoritative unless changed by the user;
+- do not invent per-part dimensions.
 
-Additional requirement fields may be added only when they are stable cross-stage facts, such as a required held tool or required count of identity-critical parts.
+### Player-relative scale
 
-Do not put stage implementation instructions here.
+`player_relative_scale` is optional when exact dimensions or context already make scale unambiguous. When useful, use one of:
 
-## 4. `approval`
+```text
+HANDHELD
+WEARABLE
+BELOW_KNEE
+KNEE_HEIGHT
+WAIST_HEIGHT
+CHEST_HEIGHT
+PLAYER_HEIGHT
+ABOVE_PLAYER_HEIGHT
+RIDEABLE_1P
+RIDEABLE_2P
+STALL_SCALE
+ROOM_SCALE
+CUSTOM
+```
 
-Required object describing whether the target used for package generation was explicitly confirmed.
+This is a semantic world-scale anchor, not a numeric conversion table.
 
-Recommended shape:
+If both numeric dimensions and `player_relative_scale` exist:
+
+```text
+numeric dimensions = numeric authority
+player_relative_scale = semantic interaction/world-scale anchor
+```
+
+They must not materially contradict. If they do, record the conflict as blocking instead of silently choosing one.
+
+`animation_required` is `true` or `false` only when confirmed. If still unresolved and materially relevant, keep the uncertainty in `unknowns.blocking` rather than guessing.
+
+Additional requirement fields are allowed only for stable cross-stage facts such as required occupancy, required identity-critical part count, or a user-supplied tool that must be preserved.
+
+## `approval` — required for generated packages
 
 ```json
 {
@@ -183,20 +183,14 @@ Recommended shape:
 Allowed values:
 
 ```text
-APPROVED
-NOT_REQUIRED
-PENDING
+APPROVED | NOT_REQUIRED | PENDING
 ```
 
-Rules:
-- never infer approval from silence;
-- `brief` refers to the concise pre-generation confirmation;
-- `visual_authority` refers to required reference visuals being accepted when visual approval is material;
-- `package_generation` records the final permission to create the handoff files.
+Never infer approval from silence.
 
-## 5. `documents`
+## `documents` — optional
 
-Optional object mapping stage documents that actually exist.
+List only files that actually exist:
 
 ```json
 {
@@ -206,31 +200,21 @@ Optional object mapping stage documents that actually exist.
 }
 ```
 
-Rules:
-- do not create entries for missing/not-required documents;
-- file path is relative to the package root;
-- these documents are projections derived from the same authority, not independent truth sources;
-- `GEOMETRY.md` content must conform to `docs/knowledge/geometry-reference-contract.md`;
-- `TEXTURE.md` content must conform to `docs/knowledge/texture-reference-contract.md`;
-- `ANIMATION.md` content must conform to `docs/knowledge/animation-reference-contract.md`.
+Do not create entries for omitted/not-required documents. Stage Markdown is a projection of the same authority, not a competing source of truth.
 
-## 6. `images`
-
-Required when visual reference exists.
-
-Each image gets a stable semantic ID.
+## `images` — required when visual evidence is packaged
 
 ```json
 {
   "id": "IMG_GEO_01",
-  "file": "images/turnaround.png",
+  "file": "images/01-main-reference.png",
   "role": "PRIMARY_GEOMETRY",
-  "used_by": ["GEOMETRY.md"],
+  "used_by": ["GEOMETRY"],
   "status": "APPROVED"
 }
 ```
 
-### Recommended fields
+Recommended fields:
 
 ```text
 id
@@ -240,9 +224,7 @@ used_by
 status
 ```
 
-### Image role vocabulary
-
-Use only when applicable:
+`role`:
 
 ```text
 CONCEPT
@@ -256,21 +238,25 @@ ANIMATION_KEYFRAME
 SOURCE_REFERENCE
 ```
 
-### Image status
+`used_by` uses semantic stages rather than filenames:
 
 ```text
-APPROVED
-SOURCE_ONLY
-SUPPORTING
+GEOMETRY | TEXTURE | ANIMATION
 ```
 
-Do not use the image object to duplicate visual description already visible in the image. Record only the image's purpose and authority relationship.
+This keeps image relevance stable even when an optional stage Markdown file is omitted.
 
-## 7. `parts`
+`status`:
 
-Optional structured list of decision-critical semantic parts.
+```text
+APPROVED | SOURCE_ONLY | SUPPORTING
+```
 
-Example:
+Do not duplicate visible image description inside the image object.
+
+## `parts` — optional
+
+Include only decision-critical semantic parts.
 
 ```json
 {
@@ -284,33 +270,20 @@ Example:
 }
 ```
 
-Recommended vocabulary:
+Vocabulary:
 
 ```text
-role:
-GEOMETRY | TEXTURE | ANIMATION_ONLY | EFFECT | OMIT | UNRESOLVED
-
-symmetry:
-NONE | MIRRORED | PAIRED | REPEATED | ASYMMETRIC | UNKNOWN
-
-motion:
-STATIC | RIGID | ARTICULATED | FLEXIBLE | UNKNOWN
-
-evidence:
-SUPPORTED | PROVISIONAL | CONFLICTING | UNAVAILABLE
+role:     GEOMETRY | TEXTURE | ANIMATION_ONLY | EFFECT | OMIT | UNRESOLVED
+symmetry: NONE | MIRRORED | PAIRED | REPEATED | ASYMMETRIC | UNKNOWN
+motion:   STATIC | RIGID | ARTICULATED | FLEXIBLE | UNKNOWN
+evidence: SUPPORTED | PROVISIONAL | CONFLICTING | UNAVAILABLE
 ```
 
-Rules:
-- only decision-critical semantic parts belong here;
-- no per-Cube inventory;
-- no exact Blockbench coordinates;
-- do not invent hidden anatomy/mechanisms.
+No Cube inventory, exact coordinates, or invented hidden anatomy/mechanisms.
 
-## 8. `articulation`
+## `articulation` — optional
 
-Optional. Include only when Geometry or Animation decisions materially depend on articulation.
-
-Example:
+Use only when Geometry/Animation decisions depend on it.
 
 ```json
 {
@@ -326,13 +299,11 @@ Example:
 }
 ```
 
-This records relationship and intent, not final rig coordinates.
+This records relationship and intent, never final pivot coordinates.
 
-## 9. `materials`
+## `materials` — optional
 
-Optional. Include only decision-critical material facts.
-
-Example:
+Use only for decision-critical supported material facts.
 
 ```json
 {
@@ -346,16 +317,11 @@ Example:
 }
 ```
 
-Rules:
-- use descriptive color/material facts only when explicit or visually supported;
-- do not guess hidden-surface material;
-- do not encode pixel-paint implementation here.
+Do not guess hidden surfaces or encode pixel-paint instructions.
 
-## 10. `animation_guidance`
+## `animation_guidance` — optional
 
-Optional and only present when motion reference is materially useful.
-
-Recommended entry:
+Include only when motion guidance materially improves authoring.
 
 ```json
 {
@@ -363,70 +329,44 @@ Recommended entry:
   "type": "ONE_SHOT",
   "purpose": "harvest cinnamon with the held tool",
   "participants": ["torso", "right_upper_arm", "right_lower_arm", "tool"],
-  "key_poses": ["ready", "anticipation", "swing", "contact", "follow_through", "recovery"],
+  "key_poses": ["ready", "anticipation", "contact", "follow_through", "recovery"],
   "contact_events": ["tool_to_target"],
   "reference_images": ["IMG_ANIM_01"]
 }
 ```
 
-Do not turn this into frame-by-frame implementation unless the user specifically requires that precision.
+Do not turn this into frame-by-frame implementation unless explicitly required.
 
-## 11. `constraints`
+## `constraints` — optional
 
-Optional array for stable constraints that do not belong cleanly elsewhere.
-
-Examples:
-
-```json
-[
-  "supplied tool replaces a generic pickaxe",
-  "preserve backpack silhouette",
-  "do not expose large hip or knee gaps during intended motion"
-]
-```
-
-Rules:
-- only include constraints that affect accepted-result correctness;
-- avoid generic tutorial advice;
-- avoid duplicating entire sections from stage Markdown files.
-
-## 12. `unknowns`
-
-Required object.
-
-```json
-{
-  "blocking": [],
-  "non_blocking": [
-    "exact underside color of basket"
-  ]
-}
-```
-
-### `blocking`
-
-A missing/conflicting fact that can change the next required decision materially.
+Short list of stable correctness constraints that do not fit more cleanly elsewhere.
 
 Examples:
 
 ```text
-unknown vehicle type
-unknown limb count
-conflicting front/back attachment
-unknown animation requirement when rig design depends on it
+supplied tool replaces a generic pickaxe
+preserve backpack silhouette
+do not expose large hip/knee gaps during intended motion
 ```
 
-### `non_blocking`
+Do not store generic tutorial advice or repeat whole stage sections.
 
-An unresolved fact that does not stop the current legal stage.
+## `unknowns` — required
 
-Do not convert unknowns into guessed values merely to make the package look complete.
+```json
+{
+  "blocking": [],
+  "non_blocking": ["exact underside color of basket"]
+}
+```
 
-## 13. `readiness`
+`blocking` means the missing/conflicting fact can materially change the next required decision.
 
-Required object.
+`non_blocking` remains visible but does not stop unrelated work.
 
-Recommended shape:
+Do not guess unknowns away to make the package appear complete.
+
+## `readiness` — required
 
 ```json
 {
@@ -440,17 +380,14 @@ Recommended shape:
 Allowed values:
 
 ```text
-READY
-NOT_REQUIRED
-NEEDS_REVIEW
-BLOCKED
+READY | NOT_REQUIRED | NEEDS_REVIEW | BLOCKED
 ```
 
 Rules:
 - readiness is stage-specific;
-- missing texture detail does not block Geometry when Geometry is otherwise resolvable;
-- Animation may be `NOT_REQUIRED`;
-- any stage with a relevant blocking unknown is `BLOCKED`.
+- a relevant blocking unknown makes that stage `BLOCKED`;
+- missing Texture detail does not block Geometry unless it changes Geometry;
+- static assets use `animation: NOT_REQUIRED`.
 
 ## Compact Example
 
@@ -466,9 +403,10 @@ Rules:
   "requirements": {
     "dimensions_blocks": {
       "width": null,
-      "height": 2,
+      "height": null,
       "length": null
     },
+    "player_relative_scale": "PLAYER_HEIGHT",
     "animation_required": true
   },
   "approval": {
@@ -478,22 +416,21 @@ Rules:
   },
   "documents": {
     "geometry": "GEOMETRY.md",
-    "texture": "TEXTURE.md",
     "animation": "ANIMATION.md"
   },
   "images": [
     {
       "id": "IMG_GEO_01",
-      "file": "images/turnaround.png",
+      "file": "images/01-main-reference.png",
       "role": "PRIMARY_GEOMETRY",
-      "used_by": ["GEOMETRY.md"],
+      "used_by": ["GEOMETRY"],
       "status": "APPROVED"
     },
     {
       "id": "IMG_ANIM_01",
-      "file": "images/keyframe-guide.png",
+      "file": "images/02-motion-reference.png",
       "role": "ANIMATION_KEYFRAME",
-      "used_by": ["ANIMATION.md"],
+      "used_by": ["ANIMATION"],
       "status": "APPROVED"
     }
   ],
@@ -508,9 +445,7 @@ Rules:
       "evidence": "SUPPORTED"
     }
   ],
-  "constraints": [
-    "supplied tool replaces a generic pickaxe"
-  ],
+  "constraints": ["supplied tool replaces a generic pickaxe"],
   "unknowns": {
     "blocking": [],
     "non_blocking": []
@@ -524,52 +459,44 @@ Rules:
 }
 ```
 
-## Package Economy Rules
+## Package Economy
 
-`REFERENCE.json` must stay compact.
-
-Do not include:
+Never include:
 
 ```text
 conversation transcript
 compiled-prompt history
-full Skill instructions
+full Skills
 Tool schemas
-Cube-by-Cube plan
+Cube-by-Cube plans
 exact implementation coordinates
-generic Minecraft/Blockbench tutorials
+generic tutorials
 repeated prose already owned by stage documents
 ```
 
-## Change / Correction Rule
+## Correction Rule
 
-For a user correction, update only affected facts and relationships.
-
-Example:
+A bounded user correction updates only affected facts, image references, readiness, and stage documents.
 
 ```text
 hat: straw_hat → beanie
 ```
 
-Expected effect:
+may affect Geometry silhouette and Texture material, but should not rebuild unrelated Animation guidance.
+
+Preserve unaffected accepted authority.
+
+## Completion
+
+`REFERENCE.json` is ready when:
 
 ```text
-REFERENCE.json affected part/material/image refs update
-GEOMETRY.md only if silhouette/attachment changes
-TEXTURE.md if material/color changes
-ANIMATION.md only if motion/clearance changes
-unaffected accepted information remains valid
+blocking requirements for the intended next stage are resolved
+required approvals are explicit
+numeric and player-relative scale facts do not conflict
+all listed documents/images exist
+image stage relevance is unambiguous
+unknowns remain explicit
+no field contains unsupported invented facts
+stage readiness is accurate
 ```
-
-Do not regenerate a full package merely because one bounded fact changed.
-
-## Completion Condition
-
-`REFERENCE.json` is ready for handoff when:
-- all blocking requirements for the intended next stage are resolved;
-- required user approvals are explicit;
-- every listed document/image actually exists;
-- image roles and stage use are unambiguous;
-- unknowns remain explicit;
-- no field contains unsupported invented facts;
-- stage readiness is accurate.
