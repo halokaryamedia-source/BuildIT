@@ -3,6 +3,8 @@ import { readdir } from "node:fs/promises";
 import { join } from "node:path";
 
 const RETIRED_ROUTER_PATH = ".agents/skills/blockit-bedrock-entity-mcp/SKILL.md";
+const RETIRED_REFERENCE_PATH = ".agents/skills/blockbench-reference-generator/SKILL.md";
+const CANONICAL_REFERENCE_PATH = ".agents/skills/lazydesigner-reference-preparation/SKILL.md";
 const RETIRED_SPECIALIST_PATHS = [
   ".agents/skills/blockbench-bedrock-modelling/SKILL.md",
   ".agents/skills/blockit-bedrock-texturing/SKILL.md",
@@ -39,12 +41,11 @@ async function collectTextFiles(root: string): Promise<string[]> {
 }
 
 describe("canonical LazyDesigner Skill identity", () => {
-  test("retired authoring and development Skill files stay physically absent", async () => {
-    expect(await Bun.file(`../${RETIRED_ROUTER_PATH}`).exists()).toBe(false);
-    for (const path of [...RETIRED_SPECIALIST_PATHS, ...RETIRED_DEVELOPMENT_PATHS]) {
+  test("retired Skill files stay physically absent while canonical identities exist", async () => {
+    for (const path of [RETIRED_ROUTER_PATH, RETIRED_REFERENCE_PATH, ...RETIRED_SPECIALIST_PATHS, ...RETIRED_DEVELOPMENT_PATHS]) {
       expect(await Bun.file(`../${path}`).exists(), path).toBe(false);
     }
-    for (const path of [...CANONICAL_SPECIALIST_PATHS, ...CANONICAL_DEVELOPMENT_PATHS]) {
+    for (const path of [CANONICAL_REFERENCE_PATH, ...CANONICAL_SPECIALIST_PATHS, ...CANONICAL_DEVELOPMENT_PATHS]) {
       expect(await Bun.file(`../${path}`).exists(), path).toBe(true);
     }
   });
@@ -53,6 +54,7 @@ describe("canonical LazyDesigner Skill identity", () => {
     const roots = [
       "../AGENTS.md",
       "../workspace/README.md",
+      "../docs/02-reference",
       "../docs/03-authoring",
       "../docs/04-system",
       "../docs/05-operations",
@@ -67,17 +69,15 @@ describe("canonical LazyDesigner Skill identity", () => {
       else files.push(...await collectTextFiles(root));
     }
 
+    const retiredPaths = [RETIRED_ROUTER_PATH, RETIRED_REFERENCE_PATH, ...RETIRED_SPECIALIST_PATHS, ...RETIRED_DEVELOPMENT_PATHS];
     for (const path of files) {
       if (path.endsWith("legacy-router-retirement.test.ts")) continue;
       const text = await Bun.file(path).text();
-      expect(text, path).not.toContain(RETIRED_ROUTER_PATH);
-      for (const retired of [...RETIRED_SPECIALIST_PATHS, ...RETIRED_DEVELOPMENT_PATHS]) {
-        expect(text, path).not.toContain(retired);
-      }
+      for (const retired of retiredPaths) expect(text, path).not.toContain(retired);
     }
   });
 
-  test("Control and canonical LazyDesigner specialist identities remain authoritative", async () => {
+  test("canonical LazyDesigner routing identities remain authoritative", async () => {
     const [agents, taxonomy, control, registry] = await Promise.all([
       Bun.file("../AGENTS.md").text(),
       Bun.file("../docs/04-system/skill-taxonomy.md").text(),
@@ -85,14 +85,13 @@ describe("canonical LazyDesigner Skill identity", () => {
       Bun.file("gateway/control/registry.ts").text(),
     ]);
 
+    expect(agents).toContain(CANONICAL_REFERENCE_PATH);
     expect(agents).toContain("LazyDesigner Control");
-    expect(agents).toContain("exactly one active specialist");
+    expect(taxonomy).toContain("lazydesigner-reference-preparation");
     expect(taxonomy).toContain("lazydesigner-development-brief");
     expect(taxonomy).toContain("lazydesigner-mcp-development");
     expect(taxonomy).toContain("lazydesigner-blockbench-development");
     expect(control).toContain("contextForAuthoringDomain");
-    for (const canonical of CANONICAL_SPECIALIST_PATHS) {
-      expect(registry).toContain(canonical);
-    }
+    for (const canonical of CANONICAL_SPECIALIST_PATHS) expect(registry).toContain(canonical);
   });
 });
