@@ -14,6 +14,14 @@ SYSTEM / CONTROL    → 04-system/
 CURRENT OPERATIONS  → 05-operations/
 ```
 
+Canonical AI context-loading contract:
+
+```text
+04-system/ai-context-loading.md
+```
+
+Use it when deciding which Docs, Skills, reference fields, or current-state evidence belong in the active context.
+
 ## Canonical Hierarchy
 
 ```text
@@ -21,8 +29,34 @@ docs/
 ├── 01-product/      product identity, requirements, end-to-end flow
 ├── 02-reference/    ChatGPT reference preparation, image rules, handoff package
 ├── 03-authoring/    modelling, texture, animation, validation, finalization
-├── 04-system/       Control, source ownership, Skill taxonomy
+├── 04-system/       Control, AI context loading, source ownership, Skill taxonomy
 └── 05-operations/   current status, next action, local acceptance
+```
+
+## Fast Task Routing
+
+```text
+prepare/generate reference
+→ 02-reference/README.md
+
+model / geometry / rig / UV
+→ 03-authoring/README.md
+→ modelling owner only
+
+texture / material / PBR
+→ 03-authoring/README.md
+→ texture owner only
+
+animation / motion
+→ 03-authoring/README.md
+→ animation owner only
+
+change LazyDesigner source/system
+→ 04-system/README.md
+→ exact source owner
+
+continue prior repository work / interpret proof
+→ 05-operations/README.md
 ```
 
 ## AI Context Policy
@@ -30,9 +64,22 @@ docs/
 1. Start here only when the task domain is not already known.
 2. Read the README of the selected domain.
 3. Load only the canonical owner needed for the current decision.
-4. Do not load sibling domains unless the task crosses that boundary.
-5. `05-operations/` is current-state context, not durable design authority.
-6. Git history owns retired architecture and rationale; do not keep duplicate active docs for history.
+4. Use `04-system/ai-context-loading.md` for REQUIRED / CONDITIONAL / EXCLUDED context bundles.
+5. Do not load sibling domains unless the task crosses that boundary.
+6. `05-operations/` is current-state context, not durable design authority.
+7. Git history owns retired architecture and rationale; do not keep duplicate active docs for history.
+
+## Authority Roles
+
+```text
+Docs     = durable semantic policy / contracts
+Skills   = execution procedure
+Control  = task/stage/context selection and projection
+Source   = current implementation/runtime truth
+Ops docs = current continuation/proof only
+```
+
+One concern must have one canonical semantic owner. Link to that owner instead of copying the full rule into another document.
 
 ## Authority Order
 
@@ -40,8 +87,7 @@ docs/
 explicit current user requirement
 → repository execution rules (AGENTS.md / GITHUB_RULES.md)
 → domain canonical documentation under docs/
-→ active operation state under 05-operations/
-→ implementation/source evidence
+→ matching execution Skill when applicable
+→ active operation state under 05-operations/ when material
+→ implementation/source evidence for implementation questions
 ```
-
-One concern must have one canonical owner. Link to an owner instead of copying its rules into another document.
