@@ -14,6 +14,10 @@ import {
   type JsonValue,
 } from "@/lib/bedrockParticleDocument";
 import {
+  isCanonicalParticleTextureReference,
+  particleTextureOutputMatchesReference,
+} from "@/lib/particleResourceLayout";
+import {
   assertParticleSourceSnapshotMatches,
   assertParticleWriteRevisionUnchanged,
   captureParticleWriteRevision,
@@ -29,6 +33,11 @@ const absoluteJsonPathSchema = z
 const particlePathSchema = absoluteJsonPathSchema.refine(
   (value) => value.toLowerCase().endsWith(".particle.json"),
   { message: "Particle files must use the .particle.json suffix." }
+);
+
+const pngPathSchema = absoluteJsonPathSchema.refine(
+  (value) => value.toLowerCase().endsWith(".png"),
+  { message: "Generated particle texture output must use the .png suffix." }
 );
 
 const particleIdentifierSchema = z
@@ -196,10 +205,17 @@ export const particleTextureDependencySchema = z.discriminatedUnion("source", [
   z
     .object({
       source: z.literal("generated"),
+      state: z.enum(["missing", "ready"]).optional().default("missing"),
       texture: z
         .string()
-        .min(1)
-        .describe("Final Bedrock texture reference that the particle JSON will use."),
+        .refine(isCanonicalParticleTextureReference, {
+          message:
+            "Generated particle texture references must stay under textures/particle/ and omit the .png suffix.",
+        }),
+      output_path: pngPathSchema.describe(
+        "Absolute final PNG path. It must end with the same textures/particle/... path declared by texture."
+      ),
+      overwrite: z.boolean().optional().default(false),
       name: z
         .string()
         .min(1)
@@ -237,6 +253,13 @@ export type ParticleTextureDependencyPlan =
   | {
       source: "generated";
       texture: string;
+      output_path: string;
+      status: "SATISFIED";
+    }
+  | {
+      source: "generated";
+      texture: string;
+      output_path: string;
       status: "REQUIRES_TEXTURING";
       authoring_domain: "TEXTURING";
       entry_capability: "create_texture";
@@ -251,11 +274,20 @@ export type ParticleTextureDependencyPlan =
         "draw_shape_tool",
         "gradient_tool",
         "paint_with_brush",
-        "eraser_tool"
+        "eraser_tool",
+        "paint_texture_transaction"
       ];
+      finalize: {
+        capability: "paint_texture_transaction";
+        output: {
+          path: string;
+          overwrite: boolean;
+        };
+      };
       description: string;
       transparent: true;
       resume_capability: "manage_particle";
+      resume_state: "ready";
     };
 
 export function buildParticleTextureDependencyPlan(
@@ -269,9 +301,18 @@ export function buildParticleTextureDependencyPlan(
       status: "SATISFIED",
     };
   }
+  if (dependency.state === "ready") {
+    return {
+      source: "generated",
+      texture: dependency.texture,
+      output_path: dependency.output_path,
+      status: "SATISFIED",
+    };
+  }
   return {
     source: "generated",
     texture: dependency.texture,
+    output_path: dependency.output_path,
     status: "REQUIRES_TEXTURING",
     authoring_domain: "TEXTURING",
     entry_capability: "create_texture",
@@ -287,10 +328,19 @@ export function buildParticleTextureDependencyPlan(
       "gradient_tool",
       "paint_with_brush",
       "eraser_tool",
+      "paint_texture_transaction",
     ],
+    finalize: {
+      capability: "paint_texture_transaction",
+      output: {
+        path: dependency.output_path,
+        overwrite: dependency.overwrite,
+      },
+    },
     description: dependency.description,
     transparent: true,
     resume_capability: "manage_particle",
+    resume_state: "ready",
   };
 }
 
@@ -334,7 +384,7 @@ export const manageParticleParameters = z
     texture_dependency: particleTextureDependencySchema
       .optional()
       .describe(
-        "Optional particle-texture provenance. generated routes to the existing Texturing pipeline; manage_particle never creates a bitmap itself."
+        "Optional particle-texture provenance. generated state=missing routes to existing Texturing; resume with state=ready only after the verified PNG output exists."
       ),
     output: outputPathSchema(particlePathSchema).optional(),
     preview: z
@@ -374,6 +424,20 @@ export const manageParticleParameters = z
             "texture_dependency.texture must match the final explicit particle texture reference.",
         });
       }
+      if (
+        value.texture_dependency.source === "generated" &&
+        !particleTextureOutputMatchesReference(
+          value.texture_dependency.texture,
+          value.texture_dependency.output_path
+        )
+      ) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["texture_dependency", "output_path"],
+          message:
+            "Generated particle texture output_path must end with the declared textures/particle/... reference plus .png.",
+        });
+      }
     }
   });
 
@@ -393,7 +457,7 @@ export const particleToolDocs: ToolSpec[] = [
   {
     name: "manage_particle",
     description:
-      "Creates or losslessly patches a Bedrock .particle.json document, preserves unknown JSON fields, validates final particle semantics, optionally performs a verified transactional file write, and can load the particle into Blockbench's native preview. Missing custom particle bitmaps route through the existing create_texture + paint pipeline via texture_dependency; manage_particle does not duplicate texture authoring. Animation/controller timing and downstream runtime binding remain owned by existing animation/controller tools.",
+      "Creates or losslessly patches a Bedrock .particle.json document, preserves unknown JSON fields, validates final particle semantics, optionally performs a verified transactional file write, and can load the particle into Blockbench's native preview. Missing custom particle bitmaps route through existing create_texture + paint tools and finalize through paint_texture_transaction PNG output; manage_particle never duplicates texture authoring. Animation timing/locator binding remains owned by manage_animation_effects.",
     annotations: {
       title: "Manage Bedrock Particle",
       destructiveHint: true,
@@ -439,6 +503,24 @@ function requireParticleFilesystem(reason: string): ParticleFilesystem {
     );
   }
   return fs;
+}
+
+function assertGeneratedTextureReady(plan: ParticleTextureDependencyPlan | null): void {
+  if (!plan || plan.source !== "generated" || plan.status !== "SATISFIED") return;
+  const fs = requireParticleFilesystem(
+    `BlockIT requested read access to verify generated particle texture ${plan.output_path}`
+  );
+  if (!fs.existsSync(plan.output_path)) {
+    throw new Error(
+      `Generated particle texture is marked ready but the PNG does not exist: ${plan.output_path}. Return to Texturing; do not write or bind the particle yet.`
+    );
+  }
+  const stat = fs.statSync(plan.output_path);
+  if (!stat.isFile() || stat.size <= 0) {
+    throw new Error(
+      `Generated particle texture is marked ready but is not a non-empty PNG file: ${plan.output_path}. Return to Texturing before resuming manage_particle.`
+    );
+  }
 }
 
 function readParticleSource(
@@ -783,6 +865,9 @@ export function registerParticleTools(): void {
         );
         const textureDependencyPending =
           textureDependency?.status === "REQUIRES_TEXTURING";
+        if (valid && !textureDependencyPending) {
+          assertGeneratedTextureReady(textureDependency);
+        }
         const artifactReady = valid && !textureDependencyPending;
         const serialized = serializeParticleDocument(document);
         const byteLength = Buffer.byteLength(serialized, "utf8");
@@ -844,7 +929,7 @@ export function registerParticleTools(): void {
               text: !valid
                 ? `Particle ${summary.identifier ?? "<missing identifier>"} has validation errors; no file write or preview was performed.`
                 : textureDependencyPending
-                  ? `Particle ${summary.identifier} requires generated texture ${textureDependency.texture}; route through existing Texturing tools beginning with create_texture, then resume manage_particle. No particle write or preview was performed yet.`
+                  ? `Particle ${summary.identifier} requires generated texture ${textureDependency.texture}; author it through existing Texturing tools, finalize the PNG with paint_texture_transaction, then resume manage_particle with texture_dependency.state=ready. No particle write or preview was performed yet.`
                   : `Prepared particle ${summary.identifier}: ${summary.component_count} components${particleWrite ? "; particle write verified" : ""}${previewPath && !previewError ? "; native preview loaded" : ""}${previewError ? "; native preview failed after artifact preparation" : ""}.`,
             },
           ],
@@ -858,6 +943,15 @@ export function registerParticleTools(): void {
             byte_length: byteLength,
             operation_count: operations.length,
             texture_dependency: textureDependency,
+            animation_binding: artifactReady && summary.identifier
+              ? {
+                  capability: "manage_animation_effects",
+                  channel: "particle",
+                  effect: summary.identifier,
+                  requires_explicit_time: true,
+                  locator: "caller-owned explicit locator when attachment is required",
+                }
+              : null,
             summary,
             writes,
             ...particleContent,
