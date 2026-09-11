@@ -13,7 +13,7 @@ export type NavigatorDevelopmentDomain =
   | "UNRESOLVED";
 
 export type NavigatorDevelopmentResolution = {
-  task_class: "MCP_DEVELOPMENT";
+  task_class: "SYSTEM_DEVELOPMENT";
   intent: string;
   domain: NavigatorDevelopmentDomain;
   confidence: "STRONG" | "AMBIGUOUS" | "UNRESOLVED";
@@ -32,7 +32,6 @@ type Rule = {
 const BASE_CONTEXT = [
   "AGENTS.md",
   "mcp/AGENTS.md",
-  ".agents/skills/development-brief/SKILL.md",
 ] as const;
 
 const owner = (
@@ -133,7 +132,7 @@ const RULES: readonly Rule[] = [
     domain: "GATEWAY",
     terms: [
       "gateway", "stdio", "capability catalog", "search_capabilities",
-      "describe_capability", "invoke_capability", "navigator",
+      "describe_capability", "invoke_capability", "control", "navigator",
     ],
     owners: () => [
       owner("mcp/gateway/index.ts", "mcp/tests/gateway-contract.test.ts"),
@@ -163,24 +162,26 @@ function matches(text: string, term: string): boolean {
   return text.includes(term.toLocaleLowerCase());
 }
 
+function baseResolution(intent: string): NavigatorDevelopmentResolution {
+  return {
+    task_class: "SYSTEM_DEVELOPMENT",
+    intent,
+    domain: "UNRESOLVED",
+    confidence: "UNRESOLVED",
+    matched_terms: [],
+    source_owners: [],
+    required_context_paths: [...BASE_CONTEXT],
+    avoid_context_classes: [
+      "asset workspace history",
+      "unrelated authoring docs",
+      "unrelated Runtime schemas",
+    ],
+  };
+}
+
 export function resolveDevelopmentIntent(intent: string): NavigatorDevelopmentResolution {
   const normalized = normalizedIntent(intent);
-  if (!normalized) {
-    return {
-      task_class: "MCP_DEVELOPMENT",
-      intent: "",
-      domain: "UNRESOLVED",
-      confidence: "UNRESOLVED",
-      matched_terms: [],
-      source_owners: [],
-      required_context_paths: [...BASE_CONTEXT],
-      avoid_context_classes: [
-        "asset workspace history",
-        "unrelated foundation docs",
-        "unrelated Runtime schemas",
-      ],
-    };
-  }
+  if (!normalized) return baseResolution("");
 
   const scored = RULES.map((rule) => {
     const matched = rule.terms.filter((term) => matches(normalized, term));
@@ -189,35 +190,20 @@ export function resolveDevelopmentIntent(intent: string): NavigatorDevelopmentRe
     .filter((entry) => entry.score > 0)
     .sort((a, b) => b.score - a.score);
 
-  if (scored.length === 0) {
-    return {
-      task_class: "MCP_DEVELOPMENT",
-      intent: intent.trim(),
-      domain: "UNRESOLVED",
-      confidence: "UNRESOLVED",
-      matched_terms: [],
-      source_owners: [],
-      required_context_paths: [...BASE_CONTEXT],
-      avoid_context_classes: [
-        "asset workspace history",
-        "unrelated foundation docs",
-        "unrelated Runtime schemas",
-      ],
-    };
-  }
+  if (scored.length === 0) return baseResolution(intent.trim());
 
   const best = scored[0];
   const tied = scored.filter((entry) => entry.score === best.score);
   if (tied.length > 1) {
     return {
-      task_class: "MCP_DEVELOPMENT",
+      task_class: "SYSTEM_DEVELOPMENT",
       intent: intent.trim(),
       domain: "UNRESOLVED",
       confidence: "AMBIGUOUS",
       matched_terms: [...new Set(tied.flatMap((entry) => entry.matched))],
       source_owners: uniqueOwners(tied.flatMap((entry) => entry.rule.owners())).slice(0, 8),
       required_context_paths: [...BASE_CONTEXT],
-      avoid_context_classes: ["asset workspace history", "unrelated foundation docs"],
+      avoid_context_classes: ["asset workspace history", "unrelated authoring docs"],
     };
   }
 
@@ -227,7 +213,7 @@ export function resolveDevelopmentIntent(intent: string): NavigatorDevelopmentRe
     .filter((value): value is string => Boolean(value));
 
   return {
-    task_class: "MCP_DEVELOPMENT",
+    task_class: "SYSTEM_DEVELOPMENT",
     intent: intent.trim(),
     domain: best.rule.domain,
     confidence: "STRONG",
@@ -236,7 +222,7 @@ export function resolveDevelopmentIntent(intent: string): NavigatorDevelopmentRe
     required_context_paths: [...new Set([...BASE_CONTEXT, ...specialistPaths])],
     avoid_context_classes: [
       "asset workspace history",
-      "unrelated foundation docs",
+      "unrelated authoring docs",
       "unrelated Runtime schemas",
     ],
   };
