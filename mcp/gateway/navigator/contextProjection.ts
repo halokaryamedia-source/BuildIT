@@ -52,7 +52,7 @@ function referenceStage(domain: NavigatorAuthoringDomain | null): ControlReferen
   return null;
 }
 
-function readinessForStage(
+export function readinessForAuthoringDomain(
   domain: NavigatorAuthoringDomain | null,
   reference: ControlReferenceProjection
 ): string | null {
@@ -80,9 +80,18 @@ export function buildControlStageContext(input: {
 }): ControlStageContext {
   const stage = referenceStage(input.domain);
   const type = contextType(input.domain);
+  const stageReadiness = readinessForAuthoringDomain(input.domain, input.reference);
   const referenceDocument = stage ? input.reference.documents[stage] ?? null : null;
   const referenceImageIds = imagesForStage(stage, input.reference);
-  const blockingUnknowns = [...input.reference.blocking_unknowns];
+
+  // REFERENCE.json currently owns one compact global unknown inventory while
+  // readiness is stage-specific. Do not project a blocker from another stage
+  // into the active stage. If the active stage is BLOCKED, preserve the global
+  // blocking evidence so Codex can resolve it; otherwise keep it out of the
+  // active stage context.
+  const blockingUnknowns = stageReadiness === "BLOCKED"
+    ? [...input.reference.blocking_unknowns]
+    : [];
   const relevantNonBlocking = [...input.reference.non_blocking_unknowns];
 
   const hashPayload = JSON.stringify({
@@ -92,7 +101,7 @@ export function buildControlStageContext(input: {
     profile: input.reference.selected_profile,
     reference: input.reference.fingerprint,
     workspace: input.workspace.fingerprint,
-    readiness: readinessForStage(input.domain, input.reference),
+    readiness: stageReadiness,
     blockingUnknowns,
     referenceDocument,
     referenceImageIds,
@@ -106,7 +115,7 @@ export function buildControlStageContext(input: {
     selected_profile: input.reference.selected_profile,
     reference_package_id_or_hash: input.reference.fingerprint,
     workspace_revision_or_hash: input.workspace.fingerprint,
-    stage_readiness: readinessForStage(input.domain, input.reference),
+    stage_readiness: stageReadiness,
     blocking_unknowns: blockingUnknowns,
     non_blocking_unknowns_relevant_to_stage: relevantNonBlocking,
     requirements: input.reference.requirements,
