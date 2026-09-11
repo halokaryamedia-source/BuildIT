@@ -9,9 +9,35 @@
         </div>
 
         <div v-if="runtime.state === 'failed'" class="runtime-help">
-            <div class="runtime-help-title">What you can do</div>
-            <div class="runtime-help-text">Keep Blockbench open. If the problem continues, reload LazyDesigner or restart Blockbench.</div>
+            <div class="runtime-help-title">Try this</div>
+            <div class="runtime-help-text">Reload LazyDesigner. If the problem continues, restart Blockbench.</div>
+            <div class="action-row">
+                <button v-if="canReload" type="button" class="user-action primary" @click="reloadLazyDesigner">
+                    Reload LazyDesigner
+                </button>
+                <button type="button" class="user-action" @click="copyErrorDetails">
+                    Copy Error Details
+                </button>
+            </div>
         </div>
+    </section>
+
+    <section class="project-section" aria-label="Current project">
+        <div class="section-label">Current project</div>
+        <template v-if="project.open">
+            <div class="project-name" :title="project.name">{{project.name}}</div>
+            <div class="action-row quick-access">
+                <button type="button" class="user-action" :disabled="!project.hasFolder" @click="openProjectFolder"
+                    :title="project.hasFolder ? 'Open the folder containing this project.' : 'Save this project once to enable this shortcut.'">
+                    Open Project Folder
+                </button>
+            </div>
+            <div v-if="!project.hasFolder" class="section-hint">Save the project once to enable folder access.</div>
+        </template>
+        <template v-else>
+            <div class="project-name muted">No project open</div>
+            <div class="section-hint">Open or create a Blockbench project to begin.</div>
+        </template>
     </section>
 
     <p class="panel-note">AI handles the technical authoring workflow in the background.</p>
