@@ -1,5 +1,8 @@
+import type { McpRegistrationFamily } from "@/lib/registrationProfile";
+
 export const CONSOLIDATED_EXECUTOR_ROUTES = {
   inspect_elements: {
+    family: "element_inspection",
     discriminator: "mode",
     routes: {
       outline: "list_outline",
@@ -8,6 +11,7 @@ export const CONSOLIDATED_EXECUTOR_ROUTES = {
     },
   },
   manage_material: {
+    family: "textures",
     discriminator: "operation",
     routes: {
       create: "create_pbr_material",
@@ -17,6 +21,7 @@ export const CONSOLIDATED_EXECUTOR_ROUTES = {
     },
   },
   manage_animation_timeline: {
+    family: "animation",
     discriminator: "operation",
     routes: {
       keyframes: "manage_keyframes",
@@ -27,6 +32,7 @@ export const CONSOLIDATED_EXECUTOR_ROUTES = {
     },
   },
   manage_material_instances: {
+    family: "material_instances",
     discriminator: "operation",
     routes: {
       list: "list_material_instances",
@@ -36,7 +42,14 @@ export const CONSOLIDATED_EXECUTOR_ROUTES = {
       clear: "clear_material_instances",
     },
   },
-} as const;
+} as const satisfies Record<
+  string,
+  {
+    family: McpRegistrationFamily;
+    discriminator: string;
+    routes: Record<string, string>;
+  }
+>;
 
 export type ConsolidatedCapability = keyof typeof CONSOLIDATED_EXECUTOR_ROUTES;
 
@@ -58,4 +71,10 @@ export function getConsolidatedExecutors(
   capability: ConsolidatedCapability
 ): readonly string[] {
   return Object.freeze(Object.values(CONSOLIDATED_EXECUTOR_ROUTES[capability].routes));
+}
+
+export function getConsolidatedFamily(
+  capability: ConsolidatedCapability
+): McpRegistrationFamily {
+  return CONSOLIDATED_EXECUTOR_ROUTES[capability].family;
 }
