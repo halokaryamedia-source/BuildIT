@@ -87,7 +87,7 @@ STOP Condition
 
 ### Bounded Maintenance
 
-Concrete bug, stale rule/test, CI routing defect, or behavior-preserving cleanup starts at the exact owner. Do not load `development-brief` merely because source code is involved.
+Concrete bug, stale rule/test, CI routing defect, or behavior-preserving cleanup starts at the exact owner. Do not load `lazydesigner-development-brief` merely because source code is involved.
 
 ### Standard Development
 
@@ -95,7 +95,7 @@ Use when requirement and owner are clear but work exceeds bounded maintenance. F
 
 ### Complex / Ambiguous Development
 
-Use `.agents/skills/development-brief/SKILL.md` only when architecture, cross-owner ambiguity, unresolved success criteria, or a material unknown prevents a reliable standard contract. A clear optimization request does not become Complex merely because quality or efficiency matters.
+Use `.agents/skills/lazydesigner-development-brief/SKILL.md` only when architecture, cross-owner ambiguity, unresolved success criteria, or a material unknown prevents a reliable standard contract. A clear optimization request does not become Complex merely because quality or efficiency matters.
 
 ## Task Class After Context
 
@@ -163,7 +163,7 @@ approved Reference Package + current user delta
 
 Use `status` only when orientation is unknown/materially stale, after project/phase authority changes, or when Control explicitly requires reorientation. Search is fallback for unknown/stale capability identity; describe is fallback for real schema uncertainty. Do not use status/search/describe as progress-confirmation ceremony.
 
-For normal asset authoring, do not automatically load repository continuation/history/all docs, scan source/tests/CI, or run development verifiers. Asset authoring is not software **Development**; do not route it through `development-brief` unless repository/plugin behavior changes.
+For normal asset authoring, do not automatically load repository continuation/history/all docs, scan source/tests/CI, or run development verifiers. Asset authoring is not software **Development**; do not route it through `lazydesigner-development-brief` unless repository/plugin behavior changes.
 
 At `FINALIZATION`, load only `docs/03-authoring/finalization/standard.md`; do not load it during earlier authoring stages.
 
