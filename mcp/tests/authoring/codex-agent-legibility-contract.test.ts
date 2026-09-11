@@ -40,47 +40,48 @@ describe("Codex Bedrock agent legibility contract", () => {
     }
   });
 
-  test("root authoring boot deterministically loads router and matching current-worktree specialist", async () => {
-    const [agents, router, modelling, texturing, animation] = await Promise.all([
+  test("root authoring boot deterministically routes through Control then one current-worktree specialist", async () => {
+    const [agents, control, modelling, texturing, animation] = await Promise.all([
       source("../AGENTS.md"),
-      source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md"),
+      source("gateway/control/packet.ts"),
       source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
       source("../.agents/skills/blockit-bedrock-texturing/SKILL.md"),
       source("../.agents/skills/blockit-bedrock-animation/SKILL.md"),
     ]);
 
+    expect(agents).toContain("LazyDesigner Control");
+    expect(agents).toContain("exactly one matching current-worktree specialist");
+    expect(agents).not.toContain(".agents/skills/blockit-bedrock-entity-mcp/SKILL.md");
     for (const path of [
-      ".agents/skills/blockit-bedrock-entity-mcp/SKILL.md",
       ".agents/skills/blockbench-bedrock-modelling/SKILL.md",
       ".agents/skills/blockit-bedrock-texturing/SKILL.md",
       ".agents/skills/blockit-bedrock-animation/SKILL.md",
     ]) expect(agents).toContain(path);
 
-    expect(agents).toContain("No authoring mutation is allowed until the router + matching specialist are loaded from the current worktree");
-    expect(router).toContain("## Mandatory Authoring Latch");
-    expect(router).toContain("Any `NO` → **DO NOT MUTATE**");
-    expect(router).toContain("current worktree");
-    expect(router).toContain("Geometry APPROVED + UV Layout PASS");
+    expect(control).toContain('mode: ControlTaskMode');
+    expect(control).toContain('control_protocol: "lazydesigner-control-v1"');
+    expect(control).toContain("buildControlStageContext");
+    expect(control).toContain("contextForAuthoringDomain");
 
-    expect(router).toMatch(/description: Mandatory router for .*BlockIT Bedrock Entity.*asset author/i);
-    expect(modelling).toMatch(/description: Mandatory BlockIT Bedrock Geometry and UV Layout specialist/);
-    expect(texturing).toMatch(/description: Mandatory BlockIT Bedrock Texture specialist/);
-    expect(animation).toMatch(/description: Minecraft Bedrock Entity animation specialist/);
+    expect(modelling).toMatch(/Bedrock Geometry|modelling/i);
+    expect(texturing).toMatch(/Bedrock Texture|texturing/i);
+    expect(animation).toMatch(/Bedrock Entity animation|animation/i);
   });
 
-  test("asset router makes common Geometry choices and first-call rules explicit", async () => {
-    const router = await source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md");
+  test("common Geometry choices remain explicit in the modelling specialist while Control owns routing", async () => {
+    const [control, modelling] = await Promise.all([
+      source("gateway/control/packet.ts"),
+      source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
+    ]);
 
-    expect(router).toContain("1 Minecraft block = 16 Blockbench units");
-    expect(router).toContain("front_direction");
-    expect(router).toContain("create normal bone/Group       → add_group");
-    expect(router).toContain("Group/bone parent move         → reparent_element");
-    expect(router).toContain("Group pivot/rotation/visible   → modify_group");
-    expect(router).toContain("rig IK/mirror                  → bone_rigging");
-    expect(router).toContain("pass name OR groups, never both");
-    expect(router).toContain("manage_cubes update       → id + at least one authored field change");
-    expect(router).toContain("`describe_capability` once before mutation");
-    expect(router).toContain("repairs arguments for the **same capability**");
+    expect(control).toContain("contextForAuthoringDomain");
+    expect(modelling).toContain("1 Minecraft block = 16 Blockbench units");
+    expect(modelling).toContain("front_direction");
+    expect(modelling).toContain("add_group");
+    expect(modelling).toContain("reparent_element");
+    expect(modelling).toContain("modify_group");
+    expect(modelling).toContain("bone_rigging");
+    expect(modelling).toContain("manage_cubes");
   });
 
   test("Texturing exposes hard entry gate, UV gate, Painter intent, and blank-atlas guard", async () => {
@@ -95,12 +96,12 @@ describe("Codex Bedrock agent legibility contract", () => {
     expect(texturing).toMatch(/`gradient_tool`.*reference-supported continuous transition/);
   });
 
-  test("persistent workspace preserves resume-critical UV gate, scale, and front orientation", async () => {
+  test("persistent workspace preserves resume-critical UV gate, scale, front orientation, and Control resume route", async () => {
     const workspace = await source("../workspace/README.md");
     expect(workspace).toContain("UV Layout:");
     expect(workspace).toContain("NOT_STARTED | IN_PROGRESS | PASS | INVALIDATED | BLOCKED");
     expect(workspace).toContain("Texturing cannot enter `IN_PROGRESS` until `UV Layout: PASS`");
-    expect(workspace).toContain("current-worktree BlockIT asset router");
+    expect(workspace).toContain("LazyDesigner Control");
     expect(workspace).toContain("current-worktree active specialist");
     expect(workspace).toContain(
       "Material handoff constraints (scale/front_direction/pose override when material)"
