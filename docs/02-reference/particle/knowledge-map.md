@@ -92,10 +92,13 @@ event-timing.md
 → emitter time vs particle time, birth-relative timing and nested ordering
 
 snowstorm.md
-→ generic Snowstorm/Wintersky compatibility boundary
+→ generic Snowstorm/Wintersky editor/preview compatibility boundary
+
+snowstorm-compatibility-matrix.md
+→ version-by-version Snowstorm/Wintersky capabilities, fixes, source mapping and round-trip risks
 
 snowstorm-version-quirks.md
-→ release-specific preview quirks/regressions and minimal reproduction
+→ release-specific anomalies, regressions and minimal-reproduction rules
 
 performance.md
 → population, lifetime/rate/cap, overdraw and expression/collision/event cost guidance
@@ -197,10 +200,13 @@ child effect/event graph
 event ordering/time ownership
 → event-timing.md
 
-Snowstorm compatibility
+Snowstorm generic editor/preview compatibility
 → snowstorm.md
 
-release-specific Snowstorm anomaly
+which Snowstorm/Wintersky release supports or fixes this behavior?
+→ snowstorm-compatibility-matrix.md
+
+release-specific Snowstorm anomaly / regression diagnosis
 → snowstorm-version-quirks.md
 
 performance/density
@@ -221,12 +227,15 @@ Load multiple files only when the task genuinely crosses boundaries.
 current explicit user requirement
 → target-version official Bedrock generated schema/reference
 → official semantic/component documentation
-→ reproduced Snowstorm/Wintersky behavior for editor-specific issues
+→ documented Snowstorm/Wintersky release/source behavior for editor-specific issues
+→ reproduced Snowstorm/Wintersky project behavior
 → accepted empirical project evidence
 → conservative heuristic
 ```
 
-When newer generated schema and older hand-written documentation differ, use the target-version schema for JSON shape/defaults and retain older prose only when it remains semantically compatible.
+When newer generated Bedrock schema and older hand-written documentation differ, use the target-version schema for JSON shape/defaults and retain older prose only when it remains semantically compatible.
+
+For Snowstorm, published release notes outrank unreleased `master` package metadata when describing stable capability. Source-head evidence may explain implementation but must be labeled development state.
 
 ## Coverage state
 
@@ -255,7 +264,8 @@ Molang query/context reasoning           STRONG
 Curves                                   STRONG
 Events/child effects                     STRONG
 Event timing                             STRONG
-Snowstorm/Wintersky                      STRONG BASELINE
+Snowstorm/Wintersky generic compatibility STRONG
+Snowstorm compatibility matrix           STRONG RELEASE-MAPPED
 Snowstorm version quirks                 STRONG VERSION-AWARE
 Performance reasoning                    STRONG STATIC
 Entity integration                       STRONG REFERENCE BOUNDARY
@@ -263,4 +273,4 @@ Troubleshooting                          STRONG CAUSAL GUIDE
 Real multi-family visual cases           DEFERRED BY USER
 ```
 
-Further work should close only newly discovered official fields/defaults/version-specific behavior and later empirical visual evidence. Do not create another parallel particle framework.
+Further work should close only newly discovered official fields/defaults, Snowstorm/Wintersky version-specific behavior, and later empirical visual evidence. Do not create another parallel particle framework.
