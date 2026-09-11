@@ -21,8 +21,8 @@ export function setExtendedMcpFamiliesEnabled(enabled: boolean): void {
   }
   Settings.save();
   Blockbench.showQuickMessage(
-    `LazyDesigner Legacy UI Fallbacks ${enabled ? "enabled" : "disabled"}. Runtime surface updated for debug/maintenance use.`,
-    3000
+    `Legacy compatibility ${enabled ? "enabled" : "disabled"}.`,
+    2500
   );
   extendedProfileHandler?.(enabled);
 }
@@ -55,39 +55,41 @@ export function settingsSetup(): void {
 
   settings.push(
     new Setting("mcp_port", {
-      name: tl("mcp.settings.port_name"),
-      description: tl("mcp.settings.port_desc"),
+      name: "Connection Port (Advanced)",
+      description:
+        "Internal connection setting. Leave this at the default unless troubleshooting requires a different port.",
       type: "number",
       value: 3000,
       category,
       icon: "numbers",
     }),
     new Setting("mcp_endpoint", {
-      name: tl("mcp.settings.endpoint_name"),
-      description: tl("mcp.settings.endpoint_desc"),
+      name: "Connection Path (Advanced)",
+      description:
+        "Internal connection setting. Leave this at the default for normal use.",
       type: "text",
       value: "/bb-mcp",
       category,
       icon: "webhook",
     }),
     new Setting(MCP_AUTHORING_PHASE_SETTING_ID, {
-      name: "Default Authoring Stage",
+      name: "Startup Focus (Advanced)",
       description:
-        "Startup/reload focus. Geometry and Texturing use the same shared AUTHORING tool surface; switch_authoring_phase is only needed when crossing AUTHORING and Animation through the Gateway.",
+        "Used only when LazyDesigner starts or reloads. AI switches between authoring and animation automatically during normal use.",
       type: "select",
       value: DEFAULT_MCP_AUTHORING_PHASE,
       options: {
-        geometry: "Geometry focus (shared Authoring tools)",
-        texturing: "Texturing focus (shared Authoring tools)",
+        geometry: "Geometry",
+        texturing: "Texturing",
         animation: "Animation",
       },
       requires_restart: true,
       category,
     }),
     new Setting(MCP_EXTENDED_FAMILIES_SETTING_ID, {
-      name: "Legacy UI Fallbacks (Debug)",
+      name: "Legacy Compatibility (Developer)",
       description:
-        "Debug/maintenance compatibility only. Enables generic import/UI fallback families; this is not an authoring profile. risky_eval and from_geo_json remain disabled.",
+        "Troubleshooting support for older or generic Blockbench workflows. Leave this off for normal use.",
       type: "toggle",
       value: false,
       category,
