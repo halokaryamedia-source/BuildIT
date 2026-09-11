@@ -15,7 +15,7 @@ Do **not** load this Skill for bounded maintenance, a clear standard change, a s
 
 ## Mandatory Development continuity
 
-Reuse current in-session boot. Read `CONTEXT.md` and `docs/knowledge/next-action.md` only when the current request depends on unfinished prior state or current source leaves a material owner/acceptance unknown. Self-contained tasks do not load continuity by default. Current source outranks stale continuation.
+Reuse current in-session boot. Read `CONTEXT.md` and `docs/05-operations/next-action.md` only when the current request depends on unfinished prior state or current source leaves a material owner/acceptance unknown. Self-contained tasks do not load continuity by default. Current source outranks stale continuation.
 
 ## Development Contract
 
