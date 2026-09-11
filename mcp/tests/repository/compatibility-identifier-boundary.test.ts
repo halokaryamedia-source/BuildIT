@@ -26,22 +26,32 @@ describe("LazyDesigner compatibility identifier boundary", () => {
     expect(authoringPhase).toContain('MCP_AUTHORING_PHASE_SETTING_ID = "mcp_authoring_phase"');
     expect(profile).toContain('"mcp_extended_families_enabled"');
     expect(plugin).toContain('BBPlugin.register("blockit_mcp"');
+    expect(plugin).toContain("__BLOCKIT_BUILD_ID__");
   });
 
-  test("human-facing affinity and settings language uses LazyDesigner", async () => {
-    const [affinity, settings, readme] = await Promise.all([
+  test("human-facing Runtime, affinity and settings language uses LazyDesigner", async () => {
+    const [affinity, settings, plugin, server, readme] = await Promise.all([
       source("gateway/projectAffinity.ts"),
       source("ui/settings.ts"),
+      source("index.ts"),
+      source("server/server.ts"),
       source("README.md"),
     ]);
 
     expect(affinity).toContain("LazyDesigner project affinity");
     expect(affinity).toContain("LazyDesigner authoring phase affinity");
     expect(settings).toContain("LazyDesigner Legacy UI Fallbacks");
+    expect(server).toContain("LazyDesigner Bedrock Entity authoring");
+    expect(plugin).toContain("Installed LazyDesigner Bedrock Entity MCP");
+    expect(plugin).toContain("Uninstalled LazyDesigner Bedrock Entity MCP");
+    expect(plugin).toContain("LazyDesigner MCP initialization failed");
     expect(readme).toContain("LazyDesigner");
 
     expect(affinity).not.toContain('throw new Error("BlockIT');
     expect(settings).not.toContain("BlockIT Legacy UI Fallbacks");
+    expect(server).not.toContain("BlockIT Bedrock Entity authoring");
+    expect(plugin).not.toContain("Installed BlockIT Bedrock Entity MCP");
+    expect(plugin).not.toContain("Uninstalled BlockIT Bedrock Entity MCP");
   });
 
   test("compatibility policy explicitly forbids blind bulk rename", async () => {
