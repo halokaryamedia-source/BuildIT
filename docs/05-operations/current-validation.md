@@ -98,11 +98,14 @@ REFERENCE_PREPARATION SKILL NAMING: COMPLETE IN SOURCE
 ASSET_AUTHORING SKILL NAMING: COMPLETE IN SOURCE
 PRODUCT_DEVELOPMENT SKILL NAMING: COMPLETE IN SOURCE
 SAFE PRESENTATION BRANDING: MIGRATED IN CURRENT SOURCE
+ACTIVE REPOSITORY REGRESSION OWNERSHIP: SYNCHRONIZED TO CURRENT ARCHITECTURE
 CONTROL PACKET COMPACTION: IMPLEMENTED IN SOURCE
 SOURCE EXECUTION PROOF: NOT RUN IN THIS PHASE
 CONTROL LIVE PROOF: NOT ESTABLISHED
 LAZYDESIGNER INSTALLED PROOF: NOT ESTABLISHED
 ```
+
+Current stale-regression cleanup included `current-doc-sync`, `repository-github-discipline`, `repository-supply-chain`, and `control-source-migration`. Their current source contracts use the hierarchical docs owners, canonical LazyDesigner Skills, Control, and deferred-local proof model rather than retired `docs/knowledge`, `docs/foundation`, old Skill paths, or `3D_ASSISTED` expectations.
 
 ## Lifecycle Source Contract
 
@@ -193,6 +196,7 @@ legacy asset-router Skill: removed
 canonical lazydesigner-* primary Skills: implemented in source
 legacy primary Skill paths: removed
 safe Gateway/Runtime/UI presentation strings: migrated to LazyDesigner in source
+active repository regressions audited and aligned to current owners in source
 stage-specific + lifecycle readiness projection: implemented in source
 canonical phase classification sharing: implemented in source
 effect-aware invalidation: implemented with conservative fallback
