@@ -1,17 +1,19 @@
 # Experimental
 
-Isolated workspace for bounded research that is **not** part of the active BlockIT production boundary.
+Isolated workspace for bounded research and historical proposals that are **not** part of the active LazyDesigner production boundary.
 
-## Active research
+## Current state
 
-Only one experiment is active:
+There is no active production authority under `Experimental/`.
 
-- `blockit-navigator/` — machine-first BlockIT Navigator / Canonical Context Projection research for reducing Codex context overhead while preserving exact canonical information.
+- `blockit-navigator/` is retained only as historical design context for the superseded Navigator concept.
+- The former active `mcp/gateway/navigator/` production path has been removed.
+- Canonical routing/context ownership now lives under `mcp/gateway/control/` with shared phase classification in `mcp/lib/authoringPhase.ts`.
 
 ## Retired work
 
-All earlier Experimental work is retired and removed from the current tree. Git history owns that historical evidence; do not recreate a parallel archive and do not route authoring, proof, or continuation through retired experiments.
+Earlier Experimental work is retired from production authority. Git history owns historical evidence; do not recreate parallel routing, state, authoring, proof, or continuation systems from experimental material.
 
 ## Production boundary
 
-Production BlockIT remains under `mcp/`, current authoring policy under `.agents/` and `docs/`, and active asset continuity under `workspace/`. Nothing in `Experimental/` becomes production capability without separate promotion evidence and explicit authority.
+Production LazyDesigner implementation remains under `mcp/`, current authoring policy under `.agents/` and `docs/`, and active asset continuity under `workspace/`. Nothing in `Experimental/` becomes production capability without separate promotion evidence and explicit authority.
