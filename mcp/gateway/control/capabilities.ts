@@ -10,21 +10,27 @@ import type {
 
 export function decorateCapabilities(
   capabilities: readonly CapabilitySummary[],
-  currentDomain: ControlAuthoringDomain | null
+  currentDomain: ControlAuthoringDomain | null = null
 ): ControlCapabilitySummary[] {
   return capabilities.map((capability) => {
     const authoringDomain = authoringDomainForCapability(capability.capability_id);
-    const current = authoringDomain === "CORE" || authoringDomain === currentDomain;
+    const domainKnown = currentDomain !== null;
+    const current = domainKnown && (
+      authoringDomain === "CORE" || authoringDomain === currentDomain
+    );
+
     return {
       ...capability,
       control: {
         authoring_domain: authoringDomain,
         current_domain: current,
-        eligibility: current
-          ? authoringDomain === "CORE"
-            ? "AVAILABLE"
-            : "RECOMMENDED"
-          : "FOREIGN_PHASE",
+        eligibility: !domainKnown
+          ? "AVAILABLE"
+          : current
+            ? authoringDomain === "CORE"
+              ? "AVAILABLE"
+              : "RECOMMENDED"
+            : "FOREIGN_PHASE",
         source_owner: sourceOwnerForCapability(capability.capability_id),
       },
     };
