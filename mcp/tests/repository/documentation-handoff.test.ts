@@ -98,7 +98,7 @@ describe("AI-first documentation hierarchy", () => {
       text("../AGENTS.md"),
       text("../CONTEXT.md"),
       text("../.agents/skills/blockbench-reference-generator/SKILL.md"),
-      text("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
+      text("../.agents/skills/lazydesigner-modelling/SKILL.md"),
     ]);
 
     for (const owner of [root, context, referenceSkill, modellingSkill]) {
