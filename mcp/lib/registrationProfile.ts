@@ -22,10 +22,10 @@ export const MCP_EXTENDED_FAMILIES_SETTING_ID =
   "mcp_extended_families_enabled";
 
 /**
- * The normal BlockIT MCP product profile.
+ * The normal LazyDesigner Bedrock Entity registration profile.
  *
  * Keep every family that is native/relevant to the Bedrock Entity workflow
- * available here. P1 registration reduction is not permission to delete or
+ * available here. Registration reduction is not permission to delete or
  * silently gate native Bedrock capability merely because it is optional in a
  * particular modelling pass.
  */
@@ -50,9 +50,9 @@ export const BEDROCK_ENTITY_REGISTRATION_FAMILIES = [
  * Generic Blockbench fallback families retained in source but not exposed by
  * the normal Bedrock Entity profile.
  *
- * P0.2 containment remains authoritative inside these families: selecting the
- * extended profile does not re-enable `risky_eval` or `from_geo_json` because
- * those tools remain individually disabled at their createTool() boundary.
+ * Extended compatibility does not re-enable `risky_eval` or `from_geo_json`
+ * because those tools remain individually disabled at their createTool()
+ * boundary.
  */
 export const EXTENDED_LEGACY_REGISTRATION_FAMILIES = [
   "import",
