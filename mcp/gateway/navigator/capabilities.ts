@@ -17,7 +17,7 @@ export function decorateCapabilities(
     const current = authoringDomain === "CORE" || authoringDomain === currentDomain;
     return {
       ...capability,
-      navigation: {
+      control: {
         authoring_domain: authoringDomain,
         current_domain: current,
         eligibility: current
