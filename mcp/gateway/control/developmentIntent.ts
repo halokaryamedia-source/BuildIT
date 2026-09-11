@@ -53,8 +53,8 @@ const RULES: readonly Rule[] = [
     terms: ["animation", "animasi", "keyframe", "timeline", "motion", "gerak", "stiff", "kaku", "controller", "rigging", "easing", "playback"],
     owners: () => [
       sourceOwnerForCapability("manage_animation_timeline"),
-      owner("mcp/lib/animationMotionDynamics.ts", "mcp/tests/animation-native-intelligence.test.ts", ".agents/skills/blockit-bedrock-animation/SKILL.md"),
-      owner("mcp/lib/animationQuality.ts", "mcp/tests/quality-intelligence.test.ts", ".agents/skills/blockit-bedrock-animation/SKILL.md"),
+      owner("mcp/lib/animationMotionDynamics.ts", "mcp/tests/animation-native-intelligence.test.ts", ".agents/skills/lazydesigner-animation/SKILL.md"),
+      owner("mcp/lib/animationQuality.ts", "mcp/tests/quality-intelligence.test.ts", ".agents/skills/lazydesigner-animation/SKILL.md"),
       sourceOwnerForCapability("manage_animation_controller"),
       sourceOwnerForCapability("manage_animation_effects"),
     ],
