@@ -4,7 +4,7 @@ Updated: 2026-09-11
 
 This file is the canonical classification for LazyDesigner Skills. It defines what kind of work each Skill belongs to and prevents asset-authoring instructions from being mixed with product-development instructions.
 
-It does not replace Skill contents, `AGENTS.md` routing, or Control implementation. Some remaining physical Skill folder names are still legacy compatibility names; this document owns semantic category and target naming.
+It does not replace Skill contents, `AGENTS.md` routing, or Control implementation. This document owns semantic category and canonical Skill naming.
 
 ## Authority Boundary
 
@@ -114,11 +114,11 @@ Purpose: create, modify, verify and finalize Minecraft Bedrock assets through Co
 
 Execution owner: Codex for reasoning; Runtime/Blockbench for mutation.
 
-| Current path | Current name | Target semantic name | Role |
-| --- | --- | --- | --- |
-| `.agents/skills/blockbench-bedrock-modelling/SKILL.md` | `blockbench-bedrock-modelling` | `lazydesigner-modelling` | Geometry, hierarchy, pivots/rig-readiness, surfaces, UV Layout, correction and geometry verification execution procedure |
-| `.agents/skills/blockit-bedrock-texturing/SKILL.md` | `blockit-bedrock-texturing` | `lazydesigner-texturing` | Texture Atlas, pixel styling, materials/PBR and texture verification execution procedure |
-| `.agents/skills/blockit-bedrock-animation/SKILL.md` | `blockit-bedrock-animation` | `lazydesigner-animation` | rig usage, keyframes, motion, controllers, animation effects and playback verification execution procedure |
+| Canonical path | Canonical name | Role |
+| --- | --- | --- |
+| `.agents/skills/lazydesigner-modelling/SKILL.md` | `lazydesigner-modelling` | Geometry, hierarchy, pivots/rig-readiness, surfaces, UV Layout, correction and geometry verification execution procedure |
+| `.agents/skills/lazydesigner-texturing/SKILL.md` | `lazydesigner-texturing` | Texture Atlas, pixel styling, materials/PBR and texture verification execution procedure |
+| `.agents/skills/lazydesigner-animation/SKILL.md` | `lazydesigner-animation` | rig usage, keyframes, motion, controllers, animation effects and playback verification execution procedure |
 
 The former `.agents/skills/blockit-bedrock-entity-mcp/SKILL.md` asset-router Skill is **retired and removed**. Its valid routing responsibilities are owned by LazyDesigner Control; durable authoring policy belongs under `docs/03-authoring/`; specialist procedures remain in the three active authoring Skills above.
 
@@ -234,15 +234,6 @@ This is required for predictable context cost and to prevent development rules o
 
 ## Migration Rule
 
-Router retirement is complete. Remaining physical Skill-name migration must still be dependency-mapped and atomic:
+Asset-router retirement is complete and the three ASSET_AUTHORING specialists now have canonical `lazydesigner-*` identities. During the current path migration, all direct consumers must move before the old specialist files are deleted; no compatibility aliases remain afterward.
 
-```text
-1. Control remains canonical router
-2. active references/tests/docs use Control + specialists only
-3. retired asset-router Skill must stay absent
-4. rename remaining legacy specialist/development Skill folders/frontmatter coherently
-5. update every direct consumer in the same migration
-6. remove legacy blockit-* Skill names only when no active consumer depends on them
-```
-
-Temporary legacy specialist paths are compatibility residue only and must not become permanent parallel authorities.
+Remaining PRODUCT_DEVELOPMENT Skill renames are a separate bounded migration and must not be coupled to runtime/package identifiers.
