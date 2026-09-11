@@ -6,7 +6,7 @@ This file owns **current implementation continuation only**. Product architectur
 
 ## Current Objective
 
-LazyDesigner Control source implementation is active. Documentation/Reference architecture plus ASSET_AUTHORING and PRODUCT_DEVELOPMENT Skill naming are source baselines. Local/live Blockbench testing remains deferred until explicitly reactivated.
+LazyDesigner Control source implementation is active. Documentation/Reference architecture and all primary LazyDesigner Skill naming are now source baselines. Local/live Blockbench testing remains deferred until explicitly reactivated.
 
 ## Completed Baseline
 
@@ -14,69 +14,36 @@ LazyDesigner Control source implementation is active. Documentation/Reference ar
 ✓ AI-first docs + minimum-context contract
 ✓ Reference Preparation / typed authority / package contracts
 ✓ canonical LazyDesigner Control source at mcp/gateway/control/
-✓ former active navigator/ source removed with no permanent alias
-✓ migration-only asset-router Skill retired and removed
+✓ former navigator/ source removed with no alias
+✓ legacy asset-router Skill removed
 ✓ ASSET_AUTHORING / SYSTEM_DEVELOPMENT routing
 ✓ GEOMETRY_CONTEXT / TEXTURE_CONTEXT / ANIMATION_CONTEXT
 ✓ exactly-one-profile Geometry loading
 ✓ dynamic content-addressed context reuse
 ✓ canonical capability classification in mcp/lib/authoringPhase.ts
-✓ effect-aware downstream invalidation with conservative fallback
-✓ Workspace lifecycle readiness for Texturing / Animation
+✓ effect-aware downstream invalidation
+✓ Workspace lifecycle readiness
 ✓ metadata-only search/describe status rereads removed
-✓ summary-only top-level Workspace/Reference projections
-✓ self-contained active-stage stage_context
-✓ canonical ASSET_AUTHORING Skills:
+✓ compact Control packet with self-contained stage_context
+✓ canonical REFERENCE_PREPARATION:
+  - lazydesigner-reference-preparation
+  - lazydesigner-prompt-compiler
+✓ canonical ASSET_AUTHORING:
   - lazydesigner-modelling
   - lazydesigner-texturing
   - lazydesigner-animation
-✓ canonical PRODUCT_DEVELOPMENT Skills:
+✓ canonical PRODUCT_DEVELOPMENT:
   - lazydesigner-mcp-development
   - lazydesigner-blockbench-development
   - lazydesigner-development-brief
-✓ old authoring/development Skill paths physically removed
-✓ root/docs/CI/regressions route to canonical Skill names
-✓ compatibility identifier boundary documented + regression guarded
+✓ old primary Skill paths physically removed
+✓ root/docs/CI/regressions route to canonical Skill identities
+✓ compatibility identifier boundary documented + guarded
 ```
-
-## Lifecycle Readiness
-
-```text
-GEOMETRY
-→ no downstream prerequisite gate
-
-TEXTURING
-→ Geometry APPROVED
-→ UV Layout PASS
-
-ANIMATION
-→ Geometry APPROVED
-→ UV Layout PASS
-→ Texturing APPROVED
-```
-
-Missing Workspace state requests orientation instead of inventing downstream failure. Reference readiness remains separately stage-scoped.
-
-## Control Packet Economy
-
-```text
-workspace top-level
-→ availability / fingerprint / asset summary
-
-reference top-level
-→ availability / fingerprint / asset/profile summary
-
-stage_context
-→ one self-contained active-stage decision projection
-```
-
-Full Workspace/Reference projections remain internal Control inputs for readiness, lifecycle and context identity.
 
 ## Identifier Migration Boundary
 
-Current product-facing identity is LazyDesigner. Do **not** bulk-replace `blockit`.
-
-Compatibility-bound identifiers intentionally retained:
+Do **not** bulk-replace `blockit`. Compatibility-bound identifiers intentionally retained:
 
 ```text
 package name / MCP server IDs
@@ -94,20 +61,19 @@ Canonical boundary: `docs/04-system/compatibility-identifiers.md`.
 ## Immediate Next Source Work
 
 ```text
-1. migrate blockbench-reference-generator → lazydesigner-reference-preparation as a bounded Skill identity change
-2. update Reference Preparation direct consumers/tests/CI/docs in the same migration
-3. continue bounded user-facing Runtime/Gateway BlockIT → LazyDesigner string cleanup
-4. keep package/plugin/env/header/persisted identifiers stable until a dedicated migration exists
-5. audit remaining active regressions for retired docs/symbols only when concrete evidence appears
-6. regenerate generated artifacts only when LOCAL_CODE/generator execution is reactivated
-7. run local/live acceptance only when explicitly reactivated
+1. audit user-facing Runtime/Gateway messages for stale BlockIT presentation language
+2. migrate only human-readable strings that do not alter compatibility-bound values
+3. keep package/plugin/env/header/persisted identifiers stable until a dedicated migration exists
+4. audit remaining active regressions for retired docs/symbols only when concrete evidence appears
+5. regenerate generated artifacts only when LOCAL_CODE/generator execution is reactivated
+6. run local/live acceptance only when explicitly reactivated
 ```
 
 ## Stop Rules
 
 - No Navigator compatibility alias or second Control path.
 - No replacement asset-router Skill.
-- No legacy ASSET_AUTHORING or PRODUCT_DEVELOPMENT Skill aliases.
+- No legacy primary Skill aliases.
 - No second persistent state DB inside Control.
 - No duplicate capability-domain table outside `mcp/lib/authoringPhase.ts`.
 - No all-profile/all-stage loading as reassurance.
