@@ -1,5 +1,9 @@
 import { describe, expect, test } from "bun:test";
-import { inspectAnimationParameters, resolveUniqueControllerState } from "@/server/tools/animation-inspection";
+import {
+  animationInspectionToolDocs,
+  inspectAnimationParameters,
+  resolveUniqueControllerState,
+} from "@/server/tools/animation-inspection";
 
 describe("AnimationController inspection closure", () => {
   test("adds a focused controller-state selector without a new tool", async () => {
@@ -11,7 +15,16 @@ describe("AnimationController inspection closure", () => {
     expect(source).toContain("animation_key");
     expect(source).toContain("target_name");
     expect(source).not.toContain("create_animation_controller");
-    expect(source).not.toContain("manage_animation_controller");
+    expect(source).not.toContain('name: "manage_animation_controller"');
+  });
+
+  test("tool description only advertises supported focused selectors", () => {
+    const description = animationInspectionToolDocs[0].description;
+    expect(description).toContain("bone");
+    expect(description).toContain("state");
+    expect(description).toContain("include_effect_keyframes");
+    expect(description).not.toContain("channel/time_range");
+    expect(description).not.toContain("time_range");
   });
 
   test("state identity is UUID-first then unique exact name", () => {
@@ -32,7 +45,7 @@ describe("AnimationController inspection closure", () => {
     const end = source.indexOf("function inspectKeyframe", start);
     const controllerInspection = source.slice(start, end);
     const focusedStart = controllerInspection.indexOf("if (stateReference)");
-    const summaryReturn = controllerInspection.indexOf("states: (controller.states as ControllerStateView[]).map(summarizeControllerState)");
+    const summaryReturn = controllerInspection.indexOf("states: (controller.states as ControllerStateView[]).map(");
     expect(focusedStart).toBeGreaterThan(-1);
     expect(summaryReturn).toBeGreaterThan(focusedStart);
     const focusedBranch = controllerInspection.slice(focusedStart, summaryReturn);
@@ -40,7 +53,7 @@ describe("AnimationController inspection closure", () => {
     expect(focusedBranch).not.toContain("states: (controller.states");
   });
 
-  test("focused state exposes exact effect UUIDs for identity reuse", async () => {
+  test("focused state exposes exact identities and preserves numeric zero", async () => {
     const source = await Bun.file("server/tools/animation-inspection.ts").text();
     const start = source.indexOf("function inspectControllerState");
     const end = source.indexOf("function inspectAnimationController", start);
@@ -49,6 +62,9 @@ describe("AnimationController inspection closure", () => {
     expect(focusedState).toContain("uuid: particle.uuid || null");
     expect(focusedState).toContain("uuid: transition.uuid");
     expect(focusedState).toContain("uuid: link.uuid");
+    expect(focusedState).toContain("blend_value: link.blend_value ?? null");
+    expect(focusedState).toContain("blend_transition: state.blend_transition ?? 0");
+    expect(focusedState).not.toContain("blend_value: link.blend_value || null");
   });
 
   test("authored effect inspection exposes D1 target identity and timeline channel", async () => {
