@@ -1,5 +1,5 @@
 // Blockbench shows Settings and Features for every installed plugin, even
-// when empty. Scope the presentation change to BlockIT's selected page only.
+// when empty. Scope the presentation change to LazyDesigner's selected page only.
 type PluginBrowser = {
   selected_plugin: { id: string; installed: boolean } | null;
   page_tab: string;
