@@ -2,9 +2,9 @@
 
 Updated: 2026-09-11
 
-This document owns the canonical visual-sheet standard for ChatGPT-generated LazyDesigner reference images.
+This document owns the canonical **visual-sheet composition** for ChatGPT-generated LazyDesigner reference images.
 
-The goal is not to make presentation boards. The goal is to provide the **minimum visual evidence that materially reduces downstream Astra/Codex uncertainty** across Geometry, Texture and Animation.
+It does not own scale semantics (`scale-and-escalation.md`) or generation prompt construction (`prompt-contract.md`).
 
 ## Core Principle
 
@@ -12,7 +12,7 @@ The goal is not to make presentation boards. The goal is to provide the **minimu
 EVERY VISIBLE PANEL MUST REDUCE DOWNSTREAM UNCERTAINTY
 ```
 
-A panel is included only when it materially helps one or more of:
+A panel exists only when it materially helps one or more of:
 
 ```text
 GEOMETRY_AMBIGUITY
@@ -20,11 +20,11 @@ TEXTURE_AMBIGUITY
 ANIMATION_AMBIGUITY
 ```
 
-If a panel is decorative, redundant, already obvious from another panel, or does not change a downstream decision, remove it.
+Decorative, redundant, already-obvious, or decision-neutral panels are removed.
 
 ## One Unified Visual System
 
-All asset profiles use the same layout language:
+All profiles use the same visual grammar:
 
 ```text
 PROP_FURNITURE
@@ -36,26 +36,22 @@ PLANT_FOLIAGE
 GENERIC
 ```
 
-Do not maintain separate visual design systems for each asset class.
+Content adapts by asset; the reference-sheet language does not split into separate template systems.
 
-The content adapts to the asset; the visual grammar remains consistent.
-
-## Default Rule
+## Default
 
 ```text
-1 PRIMARY REFERENCE SHEET PER ASSET BY DEFAULT
+1 PRIMARY REFERENCE SHEET PER ASSET
 ```
 
-The primary sheet should carry as much useful Geometry, Texture and Animation information as can remain clearly readable.
-
-Additional sheets are allowed only when useful information would otherwise become too dense or too small.
+Sheet 01 carries the maximum useful non-crowded evidence.
 
 ```text
-Sheet 01 = canonical visual identity + core construction
-Sheet 02+ = elaboration / overflow only
+Sheet 01 = canonical identity + scale impression + core construction
+Sheet 02+ = bounded elaboration / overflow only
 ```
 
-Additional sheets must never redesign the asset.
+Additional sheets never redesign or rescale the asset.
 
 ## Information Priority
 
@@ -65,13 +61,13 @@ When space is constrained:
 GEOMETRY > TEXTURE > ANIMATION
 ```
 
-This does not mean Animation is unimportant. It means the primary reference must never sacrifice readable form, proportion, topology or depth merely to fit more support information.
+This is a space/readability priority, not a statement that downstream stages are less important.
 
-Drop lower-value support information before shrinking critical Geometry views below useful readability.
+Never shrink critical form/proportion/depth evidence merely to fit lower-value support content.
 
 ## Information Budget
 
-Default maximum target for one standard sheet:
+Default upper guidance for one sheet:
 
 ```text
 HERO                 1
@@ -80,40 +76,34 @@ CRITICAL DETAILS     0–3
 KEY POSES            0–5
 ```
 
-These are upper guidance bounds, not quotas.
-
-A simple asset may use substantially less.
-
-Never add a panel just to fill the layout.
+These are not quotas. Simple assets may use far less.
 
 ## Panel Priority
 
-Internally classify each candidate panel:
-
 ```text
 P1 — REQUIRED
-Without this panel Astra/Codex may materially misread the asset.
+Without it, Astra/Codex may materially misread the asset.
 
 P2 — USEFUL
-This materially improves accuracy but is not required to understand the asset.
+Improves accuracy but is not essential.
 
 P3 — REDUNDANT / DECORATIVE
-This does not materially change a downstream decision.
+Does not materially change a downstream decision.
 ```
 
-Rules:
+Use:
 
 ```text
 include P1
-include P2 only while readability remains strong
+include P2 while readability remains strong
 remove P3
 ```
 
-If a sheet becomes crowded, remove the lowest-value P2 panel first.
+If crowded, remove the lowest-value P2 before shrinking P1.
 
 ## Universal Layout Grammar
 
-The preferred standard composition is:
+Preferred adaptive composition:
 
 ```text
 ┌──────────────────────────────────────────────────────┐
@@ -130,27 +120,20 @@ The preferred standard composition is:
 └──────────────────────────────────────────────────────┘
 ```
 
-The layout is adaptive:
-
 ```text
-no animation      → remove motion row
-no critical detail→ remove detail row
-no useful BACK/TOP→ enlarge remaining useful views
-simple asset      → fewer panels, larger visual evidence
-complex asset     → extend to additional sheet instead of overpacking
+no animation       → no motion row
+no critical detail → no detail row
+no useful BACK/TOP → enlarge useful views
+simple asset       → fewer/larger panels
+complex overflow   → additional sheet instead of overpacking
 ```
-
-Core rule:
 
 ```text
 CONTENT DECIDES LAYOUT
-NOT
-LAYOUT FORCES CONTENT
+NOT LAYOUT FORCES CONTENT
 ```
 
 ## Header
-
-Keep the header minimal.
 
 Required:
 
@@ -158,19 +141,13 @@ Required:
 ASSET NAME
 ```
 
-Optional small subtitle only when it materially helps orientation, for example:
+Optional small subtitle only when it materially helps orientation.
 
-```text
-Minecraft Bedrock / Blockbench Reference
-```
-
-Do not add decorative quotes, slogans, long model-info blocks, or explanatory paragraphs to the image.
-
-Technical prose belongs in `REFERENCE.json` and stage Markdown files.
+Do not add quotes, slogans, model-info paragraphs, or technical prose inside the image.
 
 ## Hero View
 
-Use one dominant hero view whenever it materially improves whole-form understanding.
+Use one dominant hero when it improves whole-form understanding.
 
 Preferred default:
 
@@ -178,7 +155,7 @@ Preferred default:
 FRONT-LEFT 3/4
 ```
 
-The hero should communicate:
+Hero communicates:
 
 ```text
 identity
@@ -189,103 +166,65 @@ primary attachment relationships
 major material separation
 ```
 
-The hero is not a cinematic beauty render. Use neutral, readable presentation.
+It is a production reference, not a cinematic beauty render.
 
 ## Construction Views
 
-Use the minimum sufficient views.
-
-Typical decision value:
+Use minimum sufficient views.
 
 ```text
-FRONT → width, height, part count, major silhouette
-LEFT  → depth, profile, attachment, body axis
-BACK  → rear topology/asymmetry only when materially different
-TOP   → footprint/depth/layout only when materially useful
+FRONT → width / height / visible part count / primary silhouette
+LEFT  → depth / profile / attachment / body axis
+BACK  → only when rear topology/asymmetry matters
+TOP   → only when footprint/depth/layout matters
 RIGHT → only when left/right asymmetry matters
 ```
 
-Do not require FRONT + LEFT + BACK + TOP + RIGHT on every asset.
+Do not require all sides ceremonially.
 
-A view must earn its space by constraining a material downstream decision.
-
-Orthographic/construction views must use consistent scale, orientation and subject proportions.
+Orthographic/construction views preserve consistent orientation, apparent scale, and proportions.
 
 ## Critical Detail Panels
 
-A detail panel exists only to resolve a high-risk interpretation not already clear in the hero/construction views.
+Create a detail panel only when a high-risk relationship is not already clear.
 
-Examples of useful details:
-
-```text
-PROP_FURNITURE
-- shelf angle
-- drawer/door relationship
-- support joint
-
-VEHICLE
-- wheel mounting
-- cockpit opening
-- hinge/axle relationship
-
-HUMANOID
-- hand/tool attachment
-- backpack attachment
-- shoulder/hip overlap
-
-CREATURE
-- wing root
-- jaw connection
-- tail base
-
-MECHANICAL
-- linkage
-- slider/guide
-- pivot/axis connection
-
-PLANT_FOLIAGE
-- branch/stem attachment
-- layered/crossed carrier relationship when visually ambiguous
-```
-
-Do not create close-ups merely because an element looks interesting.
-
-## Texture Information
-
-Do not reserve a mandatory separate texture area.
-
-Texture information should primarily be readable directly from:
+Typical useful examples:
 
 ```text
-hero
-construction views
-critical details
+PROP_FURNITURE → shelf angle, drawer/door relation, support joint
+VEHICLE        → wheel mounting, cockpit opening, hinge/axle
+HUMANOID       → hand/tool attachment, backpack attachment, shoulder/hip overlap
+CREATURE       → wing root, jaw, tail base
+MECHANICAL     → linkage, slider/guide, pivot/axis relation
+PLANT_FOLIAGE  → stem/branch or carrier relationship when ambiguous
 ```
 
-Add a dedicated material/detail panel only when it materially resolves:
+No decorative close-ups.
+
+## Texture Evidence
+
+Do not reserve a mandatory texture panel.
+
+Prefer material/color/marking evidence to remain readable in hero, construction, and detail panels.
+
+Add dedicated material evidence only when needed for:
 
 ```text
 identity-critical marking
-special emissive region
+emissive region
 alpha/cutout silhouette
 important asymmetric material
-specific pattern/surface direction
+directional pattern/surface
 source-specific material distinction
 ```
 
-Do not add palette boxes by default. Numeric or descriptive material facts belong in the package documents unless they require visual evidence.
+Do not add palette boxes by default.
 
-## Motion Strip
+## Motion Evidence
 
-Include only when animation is required **and** visible pose evidence materially improves downstream motion interpretation.
+Include only when animation is required and pose evidence materially helps.
 
-Preferred default:
-
-```text
-3–5 key poses maximum
-```
-
-Common action structure:
+Common action pattern:
 
 ```text
 READY
@@ -295,7 +234,7 @@ FOLLOW_THROUGH
 RECOVERY
 ```
 
-Simpler motion may use only:
+Simpler motion may use:
 
 ```text
 START
@@ -303,95 +242,88 @@ EXTREME
 RETURN
 ```
 
-The image communicates pose silhouette, direction and contact. Detailed timing belongs in `ANIMATION.md`.
+The image owns pose silhouette, direction, and contact. Detailed timing belongs in `ANIMATION.md`.
 
-Do not shrink key poses until they are visually useless just to keep everything on one sheet.
+If poses become unreadable, move them to Sheet 02 rather than shrinking Geometry evidence.
 
 ## Multi-Sheet Escalation
 
-Use additional sheets only when one sheet can no longer preserve useful readability.
+Detailed escalation thresholds are owned by `scale-and-escalation.md`.
 
-Recommended semantic order:
+Semantic naming examples:
 
 ```text
 01-main-reference.png
-02-detail-motion.png
-03-extra-reference.png
+02-detail-rig.png
+02-motion-reference.png
+02-mechanical-detail.png
+03-variants.png        ← only when required
 ```
 
-Names may adapt, but Sheet 01 remains the identity anchor.
+Every added sheet has one bounded purpose.
 
-Additional sheets may contain:
+## Identity + Scale Lock / Anti-Drift
 
-```text
-high-value structural overflow
-rig/deformation detail
-key-pose expansion
-complex mechanical linkage
-necessary variants
-```
-
-Do not create an extra sheet for low-value decoration.
-
-## Identity Lock / Anti-Drift
-
-Once Sheet 01 establishes the approved target, every later generated sheet must preserve:
+Once Sheet 01 establishes approved authority, later sheets preserve:
 
 ```text
 same asset identity
+same player/world scale relationship
 same whole-model proportions
 same required part count
 same major silhouette
-same materials/colors where already approved
+same approved materials/colors
 same accessories/props
 same asymmetry/orientation
 same construction logic
 ```
 
-A later sheet may reveal more detail but may not silently redesign existing authority.
+A later sheet may reveal more detail but may not redesign or rescale existing authority.
 
-If a requested change modifies any locked identity element, treat it as a revision and update all materially affected sheet evidence coherently.
+A user-approved material change to any locked element is a revision and must update affected evidence coherently.
 
 ## Repeated View Consistency
 
-If the same view appears across multiple sheets:
+When a view repeats across sheets, preserve:
 
 ```text
-same orientation
-same subject proportions
-same visible part identity
-same material identity
-same camera convention
+orientation
+subject proportions
+apparent underlying scale
+visible part identity
+material identity
+camera convention
 ```
 
-A repeated FRONT view that changes proportions or accessories is a drift defect.
+An enlarged detail panel may change presentation size without changing underlying asset proportion/scale.
 
 ## Visual Language
 
-Use a consistent production-reference look:
-
 ```text
-clean light or neutral background
+clean light/neutral background
 neutral studio-like lighting
-clear Minecraft/Blockbench target form
-readable voxel/block construction
+clear Minecraft/Blockbench target construction
+readable voxel/block form
 high edge/silhouette clarity
 low visual noise
 consistent scale within related views
 minimal decorative styling
 ```
 
-Do not use cinematic environments for orthographic evidence.
+Do not use cinematic environments for construction evidence.
 
-A small contextual hero presentation is acceptable only when context materially helps understand attachment/function; construction views must remain clean.
+Small contextual hero presentation is acceptable only when context materially helps function/attachment understanding.
 
 ## Minecraft Target Only
 
-When the user supplies a real-world or non-Minecraft source, the final generated reference sheet should normally show the **approved Minecraft/Blockbench interpretation only**.
+When starting from real-world/non-Minecraft evidence:
 
-Do not include the original real image inside the final production sheet merely for comparison.
+```text
+source image = evidence
+final production sheet = approved Minecraft/Blockbench interpretation
+```
 
-The source may remain separately available as `SOURCE_REFERENCE` when needed for authority.
+Do not place the real source inside the final production sheet merely for comparison. It may remain separately packaged as `SOURCE_REFERENCE` when needed.
 
 ## Text Policy
 
@@ -404,16 +336,7 @@ short panel labels
 short pose labels
 ```
 
-Avoid paragraphs, long technical notes, JSON-like annotations, numeric implementation detail, or decorative prose.
-
-Technical explanation belongs in:
-
-```text
-REFERENCE.json
-GEOMETRY.md
-TEXTURE.md
-ANIMATION.md
-```
+No paragraphs, JSON-like annotations, implementation instructions, or long technical notes.
 
 ## Default Removals
 
@@ -423,64 +346,63 @@ Do not include by default:
 color palette box
 generic model-info block
 decorative quote/tagline
-scale illustration when numeric scale is already documented
+scale illustration unless decision-critical
 RIGHT when identical to LEFT
 TOP when it constrains nothing
-repeated props already clear in main views
-close-up detail already clear in construction views
+repeated props already clear
+close-up already clear
 long explanatory text
 real-image comparison panel
 ```
 
-Any of these may appear only when it materially changes a downstream decision.
-
 ## Internal Visual QA
 
-Before presenting a generated sheet, verify:
+Before user review verify:
 
 ```text
 identity matches confirmed brief
+player/world scale matches current Scale Lock
 required parts are present
 hero and construction views agree
-proportions do not drift across views
-attachments/openings agree across views
-approved materials/colors remain consistent
+proportions do not drift
+attachments/openings agree
+approved materials/colors remain stable
 support panels describe the same asset
-motion poses preserve the same geometry identity
-labels are correct and minimal
-no panel is obviously redundant
-no important panel is too small to interpret
+motion poses preserve geometry identity + scale
+labels are minimal/correct
+no panel is redundant
+critical evidence remains large enough to interpret
 ```
 
-For multi-sheet packages, also compare every new sheet against Sheet 01 identity lock.
+For Sheet 02+, compare directly against Sheet 01 identity and scale locks.
 
 ## Failure Rules
 
-A sheet fails when any material condition is true:
+A sheet fails on any material condition:
 
 ```text
 cross-view structural contradiction
-same part changes shape without approved reason
-part count changes across views
-material identity drifts across panels
-additional sheet redesigns the asset
-critical view is too small to interpret
-panel density reduces overall usefulness
-motion pose compensates for incorrect geometry
+part shape/count changes without approved reason
+player/world scale drifts across views/sheets
+material identity drifts
+later sheet redesigns or rescales asset
+critical view becomes unreadably small
+panel density reduces usefulness
+motion compensates for incorrect Geometry
 visual decoration displaces decision-critical evidence
 ```
 
 Fix the owning issue before approval.
 
-## Completion Condition
+## Completion
 
 A visual reference set is efficient when:
 
 ```text
 every panel has a decision purpose
-one primary sheet carries the maximum useful non-crowded evidence
+one primary sheet carries maximum useful non-crowded evidence
 additional sheets exist only for real overflow
-all sheets remain identity-locked
-Geometry/Texture/Animation information is visually available where useful
-Astra/Codex can interpret the asset without decorative or redundant panels
+all sheets remain identity-locked + scale-locked
+Geometry/Texture/Animation evidence appears only where useful
+Astra/Codex can interpret the asset without redundant presentation content
 ```
