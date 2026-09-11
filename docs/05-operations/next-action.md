@@ -38,6 +38,8 @@ The broad REMOTE_GITHUB source-cleanup phase is complete. The active remote-only
   - lazydesigner-development-brief
 ✓ old primary Skill paths physically removed
 ✓ root/docs/CI/regressions route to canonical Skill identities
+✓ authoring-phase regression now reads canonical modelling/texturing/animation Skills
+✓ authoring Skill owner regression guard added
 ✓ safe presentation branding migrated to LazyDesigner in:
   - MCP initialize/server instructions
   - Gateway backend human-readable errors/status
@@ -52,30 +54,50 @@ The broad REMOTE_GITHUB source-cleanup phase is complete. The active remote-only
   - control-source-migration
 ✓ Experimental Navigator history no longer advertises removed production ownership
 ✓ regression guard covers Experimental Navigator authority pointers
+✓ Control routing policy owns the Gateway search fallback limit
+✓ routing-policy ownership regression guard added
+✓ Bedrock Entity registration profile keeps import/ui outside the normal surface
+✓ Geometry + Texturing remain one shared AUTHORING surface
+✓ Animation remains the only foreign authoring surface
+✓ particle authoring remains intentionally bounded to the Animation specialist route
 ✓ no speculative Texture/Animation result compaction added without evidence
 ```
 
 ## Active Remote Hardening Order
 
 ```text
-1. Control / Gateway policy ownership
-   → remove duplicate routing/search defaults where one canonical Control owner already exists
-   → preserve the stable four-tool Gateway surface
+1. Control / Gateway policy ownership                         COMPLETE IN SOURCE
+   → search fallback default now comes from CONTROL_ROUTING_POLICY
+   → stable four-tool Gateway surface preserved
 
-2. Tool-routing / source ownership
-   → verify high-frequency capabilities resolve to one semantic phase owner
-   → detect overlapping public tools, obsolete wrappers, and unnecessary discovery paths
+2. Tool-routing / source ownership                           COMPLETE ENOUGH FOR NEXT PHASE
+   → high-frequency capabilities retain one semantic phase owner
+   → legacy consolidated executors stay hidden behind focused public tools
+   → normal Bedrock profile excludes import/ui fallback families
+   → Particle remains an Animation-specialist asset route; no extra phase added
 
-3. Context economy
+3. Dead-code / obsolete helper sweep                         CURRENT
+   → verify contextCache helpers and other post-Navigator helpers still have callers
+   → remove only proven orphan exports/wrappers
+   → do not remove compatibility identifiers merely because names are old
+
+4. Context economy                                           NEXT
+   → inspect ControlPacket/stage_context for duplicated facts
    → keep Geometry to Modelling Skill + exactly one profile
    → keep Texturing/Animation specialist-only by default
-   → do not trim receipts or stage context without recovery-state evidence
+   → trim only facts that can be safely reconstructed or are already represented by identity/hash
+   → do not trim mutation receipts or recovery state without evidence
 
-4. Repository contract guards
+5. Error/recovery ownership
+   → ensure runtime offline, project loss, stale catalog, failed mutation, interrupted mutation, workspace/reference staleness each have one deterministic owner
+
+6. Bedrock-first contract audit
+   → ensure abstraction never weakens Bedrock geometry/UV/texture/animation/controller/particle/export constraints
+
+7. Repository contract guards + remote freeze
    → prevent retired Navigator/Skill/docs ownership from reappearing
    → keep compatibility identifiers separate from human-facing branding
-
-5. Freeze for LOCAL_CODE / LIVE_BLOCKBENCH proof
+   → freeze for LOCAL_CODE / LIVE_BLOCKBENCH proof
 ```
 
 ## Identifier Migration Boundary
@@ -121,6 +143,7 @@ Compatibility-bound identifier migration is a separate future task and must be d
 - No legacy primary Skill aliases.
 - No second persistent state DB inside Control.
 - No duplicate capability-domain table outside `mcp/lib/authoringPhase.ts`.
+- No new authoring phase merely to classify a supporting capability such as Particle.
 - No all-profile/all-stage loading as reassurance.
 - No full downstream reset for a bounded dependency.
 - No blind package/protocol/plugin/environment rename.
