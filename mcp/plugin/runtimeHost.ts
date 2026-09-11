@@ -23,8 +23,26 @@ export class RuntimeHost {
   private nativeNet: Parameters<typeof createNetServer>[0] | null = null;
   private config: RuntimeHostConfig | null = null;
 
-  setNativeNet(net: Parameters<typeof createNetServer>[0]): void {
+  acquireNativeNetwork(generation: number): boolean {
+    if (!isRuntimeGenerationCurrent(generation)) return false;
+
+    // @ts-ignore - requireNativeModule is a Blockbench desktop global.
+    const net = requireNativeModule("net", {
+      message: "Network access is required for the MCP server to accept connections.",
+      detail:
+        "The MCP plugin needs to create a local server that AI assistants can connect to.",
+      optional: false,
+    }) as Parameters<typeof createNetServer>[0] | null;
+
+    if (!net) {
+      markRuntimeGenerationState(generation, "failed");
+      console.error("[MCP] Failed to get net module - server will not start");
+      Blockbench.showQuickMessage("MCP Server requires network permission", 3000);
+      return false;
+    }
+
     this.nativeNet = net;
+    return true;
   }
 
   setConfig(config: RuntimeHostConfig): void {
