@@ -1,0 +1,117 @@
+# Persistent Gateway Connection Architecture
+
+## Goal
+
+Keep the AI client connected to one long-lived Gateway process while allowing the Blockbench Runtime/plugin to reload, rebuild, change phase, or temporarily disappear without requiring a Codex restart or a Blockbench restart.
+
+```text
+Codex / AI client
+      │ stable stdio session
+      ▼
+LazyDesigner Gateway (long-lived)
+      │ reconnectable loopback session
+      ▼
+LazyDesigner Runtime / Blockbench plugin
+      │
+      ▼
+Blockbench
+```
+
+The Gateway is the persistence boundary. Runtime connectivity is disposable and recoverable.
+
+## Invariants
+
+1. The Gateway process survives Runtime/plugin reloads.
+2. Runtime transport objects and capability catalogs are disposable.
+3. Runtime build/signature changes invalidate only the backend connection/catalog, not the AI-client session.
+4. Mutations are never automatically replayed after an interrupted call.
+5. Read-only discovery may recover on the next explicit request.
+6. Project affinity fails closed and is never silently moved to another Blockbench tab.
+7. Authoring-phase affinity is preserved across reconnects when Runtime still honors it.
+8. Reconnect attempts use bounded exponential backoff; no heartbeat or background polling is required.
+9. Cached authored model state never lives in Gateway.
+10. The public MCP surface remains exactly four tools.
+
+## Connection state
+
+```text
+offline
+  ↓ explicit request
+probing
+  ↓ health valid
+connecting
+  ↓ MCP handshake + catalog
+ready
+
+failure at probe/connect/call
+  ↓
+degraded/offline
+  ↓ bounded backoff
+next explicit request retries
+```
+
+There is intentionally no background reconnect loop. Recovery is demand-driven, which avoids idle traffic and keeps token/network/runtime overhead negligible.
+
+## Hot Runtime replacement
+
+On every backend operation that needs Runtime authority:
+
+1. Probe `/health` with current affinity headers.
+2. Build a stable Runtime signature.
+3. If signature matches the connected signature, reuse the MCP client and cached catalog.
+4. If signature differs, close only the old backend client.
+5. Connect to the new Runtime instance.
+6. Refresh the catalog once.
+7. Continue the same Gateway/Codex session.
+
+Expected examples:
+
+```text
+plugin reload      → signature changes → backend reconnect only
+Runtime rebuild    → signature changes → backend reconnect only
+phase handoff      → catalog invalidated → reconnect on next request
+Blockbench closed  → Gateway remains alive/offline
+Blockbench reopened→ next request reconnects automatically
+```
+
+## Backoff
+
+Repeated unavailable probes must not create a tight retry loop.
+
+Default policy:
+
+```text
+250ms → 500ms → 1s → 2s → 4s → 5s cap
+```
+
+The backoff controls Gateway→Runtime attempts only. It never shuts down the Gateway and never asks the AI client to reconnect.
+
+## Mutation interruption
+
+A transport failure after `tools/call` may occur after Blockbench already applied a mutation. Therefore:
+
+```text
+read-only interrupted → safe_to_retry=true
+mutation interrupted  → OUTCOME_UNKNOWN, safe_to_retry=false
+```
+
+The next step for `OUTCOME_UNKNOWN` is inspection/reconciliation, not automatic replay.
+
+## Control-plane efficiency
+
+The capability catalog should be treated as local Gateway cache after one successful Runtime handshake. Search and description should use that cache while its Runtime signature is current. Runtime mutations remain serialized because Blockbench has process-global active-project state.
+
+No background heartbeat, automatic confirmation read, duplicate catalog fetch, or mutation retry should be introduced.
+
+## Ownership boundary
+
+Gateway owns only:
+
+- stable MCP boundary;
+- Runtime transport/reconnect;
+- capability catalog cache;
+- project/phase affinity;
+- bounded scheduling/reliability;
+- compact connection observability.
+
+Gateway does not own modelling, texturing, animation, particle, or other authoring knowledge. Capability semantics should progressively move to canonical Runtime metadata rather than capability-name special cases in Gateway.
