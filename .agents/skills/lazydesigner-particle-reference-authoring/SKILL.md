@@ -35,8 +35,11 @@ knowledge navigation / evidence classes
 Bedrock fundamentals
 → docs/02-reference/particle/fundamentals.md
 
-complete Bedrock particle component catalog
+complete component catalog
 → docs/02-reference/particle/component-catalog.md
+
+field-level component reference
+→ docs/02-reference/particle/component-field-reference.md
 
 lifecycle/evaluation/local-space timing
 → docs/02-reference/particle/lifecycle-space.md
@@ -44,7 +47,10 @@ lifecycle/evaluation/local-space timing
 emitter lifecycle/rates/shapes
 → docs/02-reference/particle/emitter.md
 
-motion/collision/parametric paths
+advanced emitter shape/direction math
+→ docs/02-reference/particle/emitter-shape-math.md
+
+motion/parametric paths
 → docs/02-reference/particle/motion.md
 
 advanced collision/contact/bounce/event behavior
@@ -62,11 +68,20 @@ production PNG/RGBA/atlas/UV/flipbook textures
 texture filtering/bleeding/matte/minification
 → docs/02-reference/particle/texture-filtering-bleeding.md
 
+texture color/alpha/additive/blend reasoning
+→ docs/02-reference/particle/texture-color-science.md
+
 particle-specific Molang ownership
 → docs/02-reference/particle/molang.md
 
-full Molang language/math/easing/formulas
+particle built-in variable inventory
+→ docs/02-reference/particle/particle-variable-inventory.md
+
+full Molang language/math/easing
 → docs/02-reference/particle/molang-language-math.md
+
+reusable Molang formula cookbook
+→ docs/02-reference/particle/molang-formula-cookbook.md
 
 Molang queries/context/external state
 → docs/02-reference/particle/molang-queries-context.md
@@ -77,7 +92,7 @@ curves
 events/nested effects
 → docs/02-reference/particle/events.md
 
-event timing and time ownership
+event timing/time ownership
 → docs/02-reference/particle/event-timing.md
 
 Snowstorm/Wintersky compatibility
@@ -110,38 +125,53 @@ Do not maintain parallel copies of these rules in this Skill.
 Do not preload the entire particle domain.
 
 ```text
-unknown component or schema family
+unknown component/schema family
 → component-catalog.md
+
+specific property/default/failure mode
+→ component-field-reference.md
 
 spawn/lifetime/shape
 → emitter.md
 
-creation/update/render or local/world-space question
+custom shape/ring/cone/fan/vector math
+→ emitter-shape-math.md
+
+creation/update/render or local/world-space
 → lifecycle-space.md
 
 trajectory/physics
 → motion.md
 
-contact/bounce/collision-event issue
+contact/bounce/collision-event
 → collision-advanced.md
 
 material/billboard/tint/rendering
 → appearance-rendering.md
 
-velocity/direction-aligned sprite issue
+velocity/direction-aligned sprite
 → billboard-direction.md
 
 texture/alpha/atlas/UV/flipbook
 → texture-authoring.md
 
-halo/bleeding/filtering/minification issue
+halo/bleeding/filtering/minification
 → texture-filtering-bleeding.md
+
+alpha/value/additive/blend color design
+→ texture-color-science.md
 
 particle variable ownership
 → molang.md
 
-generic Molang syntax/math/easing/formula
+which built-in particle/emitter variable exists
+→ particle-variable-inventory.md
+
+Molang language/math/easing
 → molang-language-math.md
+
+need a reusable formula
+→ molang-formula-cookbook.md
 
 query/context/entity-state dependency
 → molang-queries-context.md
@@ -184,36 +214,13 @@ Never present Snowstorm-specific behavior as Bedrock validity, or a heuristic as
 
 ## Boundary
 
-This Skill owns ChatGPT-side particle reference generation. It may produce:
-- Bedrock `.particle.json` files;
-- particle textures/atlases;
-- resource-pack structure;
-- static/preflight diagnostics;
-- concise usage notes;
-- a clean package ready for user review or downstream handoff.
+This Skill owns ChatGPT-side particle reference generation. It may produce Bedrock `.particle.json`, textures/atlases, resource-pack structure, static/preflight diagnostics, concise usage notes, and a clean package ready for review/handoff.
 
-It does not own:
-- image/model reference generation unless separately requested;
-- MCP tool implementation;
-- Blockbench runtime mutation;
-- animation/controller binding;
-- live Snowstorm/Minecraft visual truth;
-- FPS/device benchmarking;
-- generic runtime claims unsupported by target evidence.
+It does not own image/model reference generation unless separately requested, MCP implementation, Blockbench runtime mutation, animation/controller binding, live Snowstorm/Minecraft visual truth, or device/FPS benchmarking.
 
 ## Input rule
 
-Particle authoring may start from any sufficient combination of:
-
-```text
-text-only effect request
-existing user image/reference
-existing world/object context
-previously approved particle behavior
-existing Bedrock particle package
-```
-
-A newly generated reference image is optional evidence, not a prerequisite.
+Particle authoring may start from text-only intent, user images/references, world/object context, previously approved particle behavior, or an existing Bedrock particle package. A newly generated reference image is optional evidence, not a prerequisite.
 
 ## Runtime compatibility rule
 
@@ -228,74 +235,61 @@ Treat Bedrock validity, Snowstorm compatibility, and visual approval as separate
 
 ## Stable ownership rule
 
-Keep emitter timing emitter-owned. Keep living-particle classes particle-owned using stable particle random/age/lifetime values. Do not use emitter-age thresholds to switch existing particles between motion, UV, size, or tint classes unless that instability is explicitly desired.
+Keep emitter timing emitter-owned. Keep persistent living-particle classes particle-owned using stable particle random/age/lifetime values. Do not use emitter-age thresholds to reclassify living particles unless that instability is explicitly desired.
 
 ## Texture rule
 
-Texture is a first-class authored asset. When texture work is required, load both texture owners as needed:
+Texture is first-class authored data. Load the texture owners as needed:
 
 ```text
 texture-authoring.md
-→ RGBA transparency
-→ material/blend target
-→ sprite bounds
-→ atlas cell mapping
-→ transparent gutter
-→ UV/flipbook mapping
-→ tint compatibility
-→ pixel-art production
+→ RGBA, sprite bounds, atlas mapping, gutter, UV/flipbook, tint compatibility
 
 texture-filtering-bleeding.md
-→ hidden RGB under transparent pixels
-→ matte/halo risk
-→ atlas bleed
-→ frame-bound jitter
-→ minification/filtering edge cases
+→ hidden RGB, matte/halo, atlas bleed, minification/filtering
+
+texture-color-science.md
+→ value/alpha/saturation decisions for opaque/alpha/blend/additive behavior
 ```
 
-Do not pass presentation sheets or generated-background images directly as production particle textures.
+Do not pass presentation sheets or generated-background images directly as production textures.
 
 ## Molang/math rule
 
-When expressions are non-trivial, use the correct layer:
-
 ```text
-particle ownership/stability decision
+ownership/stability
 → molang.md
 
-language/operator/function/formula decision
+built-in particle/emitter variables
+→ particle-variable-inventory.md
+
+language/operator/function semantics
 → molang-language-math.md
 
-query/context/external-state decision
+reusable expression pattern
+→ molang-formula-cookbook.md
+
+query/context/external-state dependency
 → molang-queries-context.md
 ```
 
 Do not use changing external queries or frame-random math where stable per-particle state is required.
 
-## Collision and event timing rule
+## Shape/math rule
 
-When contact or nested timing is material:
+Use built-in emitter shapes when sufficient. Use `emitter-shape-math.md` only when custom position/direction math is materially required. Keep spawn position, launch direction, speed magnitude, and post-spawn motion as separate responsibilities.
 
-```text
-trajectory/contact physics
-→ motion.md + collision-advanced.md
+## Collision/event timing rule
 
-event graph
-→ events.md
-
-event order / emitter-vs-particle time ownership
-→ event-timing.md
-```
-
-Do not let collision-event fan-out or time-owner mistakes create accidental density explosions or synchronized class changes.
+Use `motion.md + collision-advanced.md` for contact physics, `events.md` for event graph, and `event-timing.md` for ownership/order. Prevent repeated-contact fan-out and emitter-time/particle-time confusion.
 
 ## Snowstorm version rule
 
-Use `snowstorm.md` for generic editor compatibility and `snowstorm-version-quirks.md` for release-specific anomalies. A preview regression must not be promoted into a generic Bedrock restriction without runtime evidence.
+Use `snowstorm.md` for generic editor compatibility and `snowstorm-version-quirks.md` for release-specific anomalies. Never turn a preview regression into a generic Bedrock restriction without stronger evidence.
 
 ## Quality rule
 
-Never package immediately after authoring. Follow the canonical QA sequence first. Static heuristics may warn about motion, keep-out overlap, readability, atlas hygiene, or particle count, but they never substitute for user visual review.
+Never package immediately after authoring. Follow canonical QA first. Static heuristics may warn about motion, readability, atlas hygiene, or particle count, but never substitute for user visual review.
 
 Run only particle-relevant QA. Do not require image-reference QA when no image-reference artifact exists.
 
