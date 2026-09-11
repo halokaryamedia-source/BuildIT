@@ -235,10 +235,10 @@ export function normalizeRuntimeUrl(
 ): string {
   const parsed = new URL(value);
   if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
-    throw new Error("BlockIT runtime URL must use http or https.");
+    throw new Error("LazyDesigner Runtime URL must use http or https.");
   }
   if (parsed.username || parsed.password) {
-    throw new Error("BlockIT runtime URL must not contain credentials.");
+    throw new Error("LazyDesigner Runtime URL must not contain credentials.");
   }
 
   const hostname = parsed.hostname.toLowerCase();
@@ -248,7 +248,7 @@ export function normalizeRuntimeUrl(
     hostname !== "::1" &&
     hostname !== "[::1]"
   ) {
-    throw new Error("BlockIT Gateway only connects to a loopback runtime.");
+    throw new Error("LazyDesigner Gateway only connects to a loopback Runtime.");
   }
 
   parsed.search = "";
