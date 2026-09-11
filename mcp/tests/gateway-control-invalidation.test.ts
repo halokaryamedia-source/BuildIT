@@ -1,9 +1,9 @@
 import { describe, expect, test } from "bun:test";
-import { buildNavigatorDelta } from "@/gateway/navigator";
+import { buildControlDelta } from "@/gateway/control";
 
 describe("LazyDesigner Control minimum invalidation", () => {
   test("local cube transform does not reset unrelated Texture or Animation", () => {
-    const delta = buildNavigatorDelta({
+    const delta = buildControlDelta({
       capability: "manage_cubes",
       phaseBefore: null,
       phaseAfter: null,
@@ -20,7 +20,7 @@ describe("LazyDesigner Control minimum invalidation", () => {
   });
 
   test("shape or UV-sensitive cube changes invalidate dependent Texture and Animation knowledge", () => {
-    const delta = buildNavigatorDelta({
+    const delta = buildControlDelta({
       capability: "manage_cubes",
       phaseBefore: null,
       phaseAfter: null,
@@ -45,7 +45,7 @@ describe("LazyDesigner Control minimum invalidation", () => {
   });
 
   test("hierarchy changes invalidate Geometry and Animation but preserve Texture by default", () => {
-    const delta = buildNavigatorDelta({
+    const delta = buildControlDelta({
       capability: "reparent_element",
       phaseBefore: null,
       phaseAfter: null,
@@ -61,7 +61,7 @@ describe("LazyDesigner Control minimum invalidation", () => {
 
   test("paint/material changes invalidate only Texture knowledge", () => {
     for (const capability of ["paint_with_brush", "manage_material"] as const) {
-      const delta = buildNavigatorDelta({
+      const delta = buildControlDelta({
         capability,
         phaseBefore: null,
         phaseAfter: null,
@@ -73,7 +73,7 @@ describe("LazyDesigner Control minimum invalidation", () => {
   });
 
   test("animation changes invalidate only Animation knowledge", () => {
-    const delta = buildNavigatorDelta({
+    const delta = buildControlDelta({
       capability: "manage_animation_timeline",
       phaseBefore: null,
       phaseAfter: null,
@@ -84,7 +84,7 @@ describe("LazyDesigner Control minimum invalidation", () => {
   });
 
   test("unknown Geometry mutation receipt fails safe instead of pretending precision", () => {
-    const delta = buildNavigatorDelta({
+    const delta = buildControlDelta({
       capability: "manage_cubes",
       phaseBefore: null,
       phaseAfter: null,
