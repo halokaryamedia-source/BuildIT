@@ -8,22 +8,27 @@ import {
 
 const REQUIRED_GEOMETRY_TOOLS = [
   "create_project",
-  "manage_geometry_reference",
   "add_group",
   "manage_cubes",
   "modify_group",
   "reparent_element",
+  "manage_locator",
   "capture_model_views",
   "bone_rigging",
   "export_model",
 ] as const;
 
 const PLAN_FREE_GEOMETRY_TOOLS = [
-  "manage_geometry_reference",
   "add_group",
   "manage_cubes",
   "modify_group",
   "reparent_element",
+  "manage_locator",
+] as const;
+
+const RETIRED_GEOMETRY_TOOLS = [
+  "manage_geometry_reference",
+  "materialize_3d_assisted_scaffold",
 ] as const;
 
 async function source(path: string): Promise<string> {
@@ -41,6 +46,10 @@ describe("local runtime gate source contract", () => {
     for (const toolName of REQUIRED_GEOMETRY_TOOLS) {
       expect(names, toolName).toContain(toolName);
       expect(definitions[toolName], toolName).toBeDefined();
+    }
+
+    for (const toolName of RETIRED_GEOMETRY_TOOLS) {
+      expect(names, toolName).not.toContain(toolName);
     }
 
     for (const toolName of PLAN_FREE_GEOMETRY_TOOLS) {
@@ -144,21 +153,18 @@ describe("local runtime gate source contract", () => {
   test("operator docs point to the current artifact and handoff contract", async () => {
     const [readme, runbook] = await Promise.all([
       source("README.md"),
-      source("../docs/knowledge/operations/local-acceptance-runbook.md"),
+      source("../docs/05-operations/local-acceptance-runbook.md"),
     ]);
 
     expect(readme).toContain("dist/blockit_mcp.js");
     expect(readme).toContain("build_identity");
-    expect(readme).toContain(
-      "runtime workflow prompt             < 9,000 characters"
-    );
-    expect(readme).not.toContain(
-      "runtime workflow prompt             < 7,000 characters"
-    );
+    expect(readme).toContain("HANDOFF_REQUIRED");
+    expect(readme).toContain("previous 3D-assisted/Hunyuan/PrimitiveAnything modelling path is retired");
 
     expect(runbook).toContain("cd mcp");
     expect(runbook).toContain("bun run deploy:local");
-    expect(runbook).not.toContain("mcp/dist/mcp.js");
     expect(runbook).toContain("bun run verify:stateless-local");
+    expect(runbook).toContain("UV Layout PASS");
+    expect(runbook).toContain("Synthetic readiness never proves user asset approval");
   });
 });
