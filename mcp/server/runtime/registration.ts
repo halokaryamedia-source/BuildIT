@@ -95,6 +95,10 @@ const toolRegistrationFamily = new Map<string, McpRegistrationFamily>();
 const catalogToolEnabled = new Map<string, boolean>();
 const phaseSurfaceCache = new Map<string, readonly string[]>();
 
+function invalidatePhaseSurfaceCache(): void {
+  phaseSurfaceCache.clear();
+}
+
 function updateCatalogTool(
   toolName: string,
   family: McpRegistrationFamily,
@@ -102,11 +106,11 @@ function updateCatalogTool(
 ): void {
   toolRegistrationFamily.set(toolName, family);
   catalogToolEnabled.set(toolName, enabled);
-  phaseSurfaceCache.clear();
+  invalidatePhaseSurfaceCache();
 }
 
-function registerFamily(family: McpRegistrationFamily): void {
-  if (registeredFamilies.has(family)) return;
+function registerFamily(family: McpRegistrationFamily): boolean {
+  if (registeredFamilies.has(family)) return false;
 
   const before = new Set(Object.keys(tools));
   registrationFunctions[family]();
@@ -116,6 +120,7 @@ function registerFamily(family: McpRegistrationFamily): void {
     if (before.has(name)) continue;
     updateCatalogTool(name, family, tool.enabled);
   }
+  return true;
 }
 
 function surfaceCacheKey(
@@ -136,16 +141,19 @@ export function registerMcpProfile(
   profile: McpRegistrationProfile = DEFAULT_MCP_REGISTRATION_PROFILE
 ): void {
   activeRegistrationProfile = profile;
+  let catalogChanged = false;
   for (const family of getRegistrationFamilies(profile)) {
-    registerFamily(family);
+    catalogChanged = registerFamily(family) || catalogChanged;
   }
 
   if (profile === DEFAULT_MCP_REGISTRATION_PROFILE) {
+    const before = Object.keys(tools).length;
     registerConsolidatedTools(updateCatalogTool);
     wireAnimationRuntimeContracts();
+    catalogChanged = Object.keys(tools).length !== before || catalogChanged;
   }
 
-  phaseSurfaceCache.clear();
+  if (catalogChanged) invalidatePhaseSurfaceCache();
 }
 
 export function getActiveMcpRegistrationProfile(): McpRegistrationProfile {
@@ -176,32 +184,39 @@ export function isCatalogToolEnabled(toolName: string): boolean {
   return catalogToolEnabled.get(toolName) === true;
 }
 
+/**
+ * Return the immutable tool-name descriptor for one profile + phase. The same
+ * frozen array is reused across health checks, request construction and tools/list
+ * until catalog registration actually changes.
+ */
 export function getMcpSurfaceToolNames(
   profile: McpRegistrationProfile,
   phase: McpAuthoringPhase
-): string[] {
+): readonly string[] {
   const cacheKey = surfaceCacheKey(profile, phase);
   const cached = phaseSurfaceCache.get(cacheKey);
-  if (cached) return [...cached];
+  if (cached) return cached;
 
   const allowedFamilies = new Set(getRegistrationFamilies(profile));
-  const names = Array.from(catalogToolEnabled.entries())
-    .map(([toolName]) => toolName)
-    .filter((toolName) => {
-      const authoredEnabled = catalogToolEnabled.get(toolName);
-      if (!authoredEnabled) return false;
+  const names = Object.freeze(
+    Array.from(catalogToolEnabled.entries())
+      .map(([toolName]) => toolName)
+      .filter((toolName) => {
+        const authoredEnabled = catalogToolEnabled.get(toolName);
+        if (!authoredEnabled) return false;
 
-      const family = toolRegistrationFamily.get(toolName);
-      return Boolean(
-        family &&
-          allowedFamilies.has(family) &&
-          isMcpToolExposedForPhase(toolName, family, phase)
-      );
-    })
-    .sort((a, b) => a.localeCompare(b));
+        const family = toolRegistrationFamily.get(toolName);
+        return Boolean(
+          family &&
+            allowedFamilies.has(family) &&
+            isMcpToolExposedForPhase(toolName, family, phase)
+        );
+      })
+      .sort((a, b) => a.localeCompare(b))
+  );
 
   phaseSurfaceCache.set(cacheKey, names);
-  return [...names];
+  return names;
 }
 
 export function applyMcpToolSurface(
@@ -217,7 +232,9 @@ export function applyMcpToolSurface(
     tool.enabled = authoredEnabled && exposed.has(toolName);
   }
 
-  phaseSurfaceCache.clear();
+  // Applying a phase/profile changes enabled-tool projection, not the canonical
+  // catalog descriptor. Keep phaseSurfaceCache warm and invalidate only the
+  // enabled registration view consumed by direct Runtime clients.
   invalidateToolRegistrationRuntimeCaches();
 }
 
