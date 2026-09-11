@@ -38,13 +38,19 @@ export class GatewayConnectionManager {
   }
 
   markOffline(): number {
+    const alreadyOffline = this.session.snapshot().state === "offline";
     this.session.transition("offline");
-    return this.reconnect.markFailure();
+    return alreadyOffline
+      ? this.reconnect.retryAfterMs()
+      : this.reconnect.markFailure();
   }
 
   markDegraded(): number {
+    const alreadyDegraded = this.session.snapshot().state === "degraded";
     this.session.transition("degraded");
-    return this.reconnect.markFailure();
+    return alreadyDegraded
+      ? this.reconnect.retryAfterMs()
+      : this.reconnect.markFailure();
   }
 
   snapshot() {
