@@ -122,6 +122,15 @@ Typical fields include radius, plane orientation/normal, offset, surface-only/ri
 ### `minecraft:emitter_shape_custom`
 Custom Molang-authored spawn offset/direction.
 
+Current official schema describes:
+
+```text
+offset    [x,y,z]
+direction [x,y,z]
+```
+
+Use only when built-in shapes cannot express the intended distribution.
+
 ### `minecraft:emitter_shape_entity_aabb`
 Entity AABB-based spawn region for attached effects.
 
@@ -164,13 +173,15 @@ rotation_drag_coefficient
 ### `minecraft:particle_motion_parametric`
 Molang-authored relative motion.
 
-Typical fields:
+Current official fields include:
 
 ```text
 relative_position
-relative_direction
+direction
 rotation
 ```
+
+`relative_position` controls authored position offset relative to the emitter origin. `direction` controls authored particle direction. Do not rename `direction` to `relative_direction`; use the schema field name.
 
 ### `minecraft:particle_motion_collision`
 Collision against world geometry.
@@ -184,6 +195,8 @@ coefficient_of_restitution
 expire_on_contact
 events
 ```
+
+Additional version/schema-specific contact controls may exist; see `collision-advanced.md` and current official schema when an exact field matters.
 
 ## Particle appearance
 
@@ -199,7 +212,23 @@ direction
 uv
 ```
 
-UV may contain static UV or flipbook data.
+Current official facing-camera choices include:
+
+```text
+lookat_xyz
+lookat_y
+lookat_direction
+rotate_xyz
+rotate_y
+direction_x
+direction_y
+direction_z
+emitter_transform_xy
+emitter_transform_xz
+emitter_transform_yz
+```
+
+Use `billboard-direction.md` for axis/direction/transform edge cases. UV may contain static UV or flipbook data.
 
 ### `minecraft:particle_appearance_tinting`
 Direct color, RGBA Molang, or gradient/interpolant tint.
@@ -265,6 +294,8 @@ sound_effect
 particle_effect
 ```
 
+Some current schemas expose additional event-node forms such as logging/debug-oriented fields. Verify the exact target schema before depending on less-common event fields.
+
 Particle visual-effect relationship types include:
 
 ```text
@@ -304,4 +335,5 @@ Examples:
 
 - https://learn.microsoft.com/en-us/minecraft/creator/reference/content/particlesreference/particlecomponentlist?view=minecraft-bedrock-stable
 - https://learn.microsoft.com/en-us/minecraft/creator/reference/content/particlesreference/examples/particlecomponents/particle_effect_component?view=minecraft-bedrock-stable
+- https://learn.microsoft.com/en-us/minecraft/creator/reference/content/particlesreference/examples/particlecomponents/particle_document?view=minecraft-bedrock-stable
 - https://learn.microsoft.com/en-us/minecraft/creator/reference/content/particlesreference/examples/particlelist?view=minecraft-bedrock-stable
