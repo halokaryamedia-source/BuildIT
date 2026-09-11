@@ -27,14 +27,24 @@ export type ControlContextDelivery = {
   invalidated_ids: string[];
 };
 
+export type ControlWorkspaceSummary = Pick<
+  ControlWorkspaceProjection,
+  "available" | "fingerprint" | "asset" | "unavailable_reason"
+>;
+
+export type ControlReferenceSummary = Pick<
+  ControlReferenceProjection,
+  "available" | "fingerprint" | "asset_name" | "selected_profile" | "unavailable_reason"
+>;
+
 export type ControlPacket = Omit<ControlSnapshot, "context" | "mode"> & {
   mode: ControlTaskMode;
   control_protocol: "lazydesigner-control-v1";
   task_context_id: string;
   readiness: ControlReadiness;
   routing: ControlRoutingPolicy;
-  workspace: ControlWorkspaceProjection;
-  reference: ControlReferenceProjection;
+  workspace: ControlWorkspaceSummary;
+  reference: ControlReferenceSummary;
   stage_context: ControlStageContext | null;
   development: ControlDevelopmentResolution | null;
   context: ControlContextDelivery;
@@ -58,6 +68,25 @@ function emptyWorkspace(): ControlWorkspaceProjection {
     next_step: null,
     blockers: [],
     unavailable_reason: "PROJECT_PATH_UNAVAILABLE",
+  };
+}
+
+function workspaceSummary(workspace: ControlWorkspaceProjection): ControlWorkspaceSummary {
+  return {
+    available: workspace.available,
+    fingerprint: workspace.fingerprint,
+    asset: workspace.asset,
+    ...(workspace.unavailable_reason ? { unavailable_reason: workspace.unavailable_reason } : {}),
+  };
+}
+
+function referenceSummary(reference: ControlReferenceProjection): ControlReferenceSummary {
+  return {
+    available: reference.available,
+    fingerprint: reference.fingerprint,
+    asset_name: reference.asset_name,
+    selected_profile: reference.selected_profile,
+    ...(reference.unavailable_reason ? { unavailable_reason: reference.unavailable_reason } : {}),
   };
 }
 
@@ -289,8 +318,8 @@ export async function buildControlPacket(
     ),
     readiness: buildReadiness(snapshot, workspace, reference, mode),
     routing: CONTROL_ROUTING_POLICY,
-    workspace,
-    reference,
+    workspace: workspaceSummary(workspace),
+    reference: referenceSummary(reference),
     stage_context: stageContext,
     development,
     context: filterContext(snapshot, options.knownContextIds ?? [], mode),
