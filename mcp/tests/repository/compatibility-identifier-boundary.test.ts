@@ -6,9 +6,10 @@ async function source(path: string): Promise<string> {
 
 describe("LazyDesigner compatibility identifier boundary", () => {
   test("install, protocol and persisted identifiers remain stable during presentation rename", async () => {
-    const [pkgText, contract, affinity, settings, authoringPhase, profile, plugin, statusBar] = await Promise.all([
+    const [pkgText, contract, backend, affinity, settings, authoringPhase, profile, plugin, statusBar] = await Promise.all([
       source("package.json"),
       source("gateway/contract.ts"),
+      source("gateway/backend.ts"),
       source("gateway/projectAffinity.ts"),
       source("ui/settings.ts"),
       source("lib/authoringPhase.ts"),
@@ -21,6 +22,9 @@ describe("LazyDesigner compatibility identifier boundary", () => {
     expect(pkg.name).toBe("blockit-bedrock-entity-mcp");
     expect(pkg.main).toBe("dist/blockit_mcp.js");
     expect(contract).toContain('GATEWAY_NAME = "blockit-gateway"');
+    expect(backend).toContain("process.env.BLOCKIT_RUNTIME_URL");
+    expect(backend).toContain("process.env.BLOCKIT_GATEWAY_MAX_QUEUE_DEPTH");
+    expect(backend).toContain('name: "blockit-gateway-runtime-client"');
     expect(affinity).toContain('"x-blockit-project-uuid"');
     expect(affinity).toContain('"x-blockit-authoring-phase"');
     expect(settings).toContain('"blockit_mcp.extended_families_enabled"');
@@ -31,16 +35,22 @@ describe("LazyDesigner compatibility identifier boundary", () => {
     expect(statusBar).toContain('BLOCKIT_RUNTIME_STATUS_CHANGED = "blockit-runtime-status-changed"');
   });
 
-  test("human-facing Runtime, affinity, settings and status language uses LazyDesigner", async () => {
-    const [affinity, settings, plugin, server, statusBar, readme] = await Promise.all([
+  test("human-facing Runtime, Gateway and UI language uses LazyDesigner", async () => {
+    const [backend, affinity, settings, plugin, server, ui, panel, statusBar, readme] = await Promise.all([
+      source("gateway/backend.ts"),
       source("gateway/projectAffinity.ts"),
       source("ui/settings.ts"),
       source("index.ts"),
       source("server/server.ts"),
+      source("ui/index.ts"),
+      source("ui/panel.html"),
       source("ui/statusBar.ts"),
       source("README.md"),
     ]);
 
+    expect(backend).toContain("LazyDesigner Gateway queue is full");
+    expect(backend).toContain("The connected LazyDesigner Runtime");
+    expect(backend).toContain("current LazyDesigner surface");
     expect(affinity).toContain("LazyDesigner project affinity");
     expect(affinity).toContain("LazyDesigner authoring phase affinity");
     expect(settings).toContain("LazyDesigner Legacy UI Fallbacks");
@@ -48,17 +58,25 @@ describe("LazyDesigner compatibility identifier boundary", () => {
     expect(plugin).toContain("Installed LazyDesigner Bedrock Entity MCP");
     expect(plugin).toContain("Uninstalled LazyDesigner Bedrock Entity MCP");
     expect(plugin).toContain("LazyDesigner MCP initialization failed");
+    expect(ui).toContain('name: "LazyDesigner"');
+    expect(panel).toContain('aria-label="LazyDesigner Runtime status"');
+    expect(panel).toContain("LazyDesigner panel");
     expect(statusBar).toContain('return "LazyDesigner Starting"');
     expect(statusBar).toContain('return "LazyDesigner Error"');
     expect(statusBar).toContain('return "LazyDesigner Ready"');
     expect(statusBar).toContain("Click to open LazyDesigner panel");
     expect(readme).toContain("LazyDesigner");
 
+    expect(backend).not.toContain("BlockIT Gateway queue is full");
+    expect(backend).not.toContain("connected BlockIT Runtime");
+    expect(backend).not.toContain("current BlockIT surface");
     expect(affinity).not.toContain('throw new Error("BlockIT');
     expect(settings).not.toContain("BlockIT Legacy UI Fallbacks");
     expect(server).not.toContain("BlockIT Bedrock Entity authoring");
     expect(plugin).not.toContain("Installed BlockIT Bedrock Entity MCP");
     expect(plugin).not.toContain("Uninstalled BlockIT Bedrock Entity MCP");
+    expect(ui).not.toContain('name: "BlockIT"');
+    expect(panel).not.toContain('aria-label="BlockIT Runtime status"');
     expect(statusBar).not.toContain('return "BlockIT');
   });
 
