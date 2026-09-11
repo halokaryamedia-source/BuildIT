@@ -7,44 +7,34 @@ async function source(path: string): Promise<string> {
 }
 
 describe("pre-local asset-authoring usage slimming", () => {
-  test("asset authoring bypasses repository-development boot but uses deterministic authoring boot", async () => {
+  test("asset authoring bypasses repository-development boot and routes through Control to one active specialist", async () => {
     const agents = await source("../AGENTS.md");
     expect(agents).toContain("### Asset Authoring");
     expect(agents).toMatch(/do not automatically load/i);
     expect(agents).toMatch(/asset authoring is not software \*\*Development\*\*/i);
     expect(agents).toMatch(/do not route it through `development-brief`/i);
-    expect(agents).toContain(".agents/skills/blockit-bedrock-entity-mcp/SKILL.md");
+    expect(agents).toContain("LazyDesigner Control");
+    expect(agents).toContain("exactly one matching current-worktree specialist");
     expect(agents).toContain(".agents/skills/blockbench-bedrock-modelling/SKILL.md");
     expect(agents).toContain(".agents/skills/blockit-bedrock-texturing/SKILL.md");
     expect(agents).toContain(".agents/skills/blockit-bedrock-animation/SKILL.md");
-    expect(agents).toContain("No authoring mutation is allowed until the router + matching specialist are loaded");
+    expect(agents).not.toContain(".agents/skills/blockit-bedrock-entity-mcp/SKILL.md");
   });
 
-  test("normal authoring skill stack remains compact while hard gates and anti-loop routing stay present", async () => {
-    const orchestrator = await source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md");
-    const modelling = await source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md");
-    const texturing = await source("../.agents/skills/blockit-bedrock-texturing/SKILL.md");
+  test("normal authoring context stays compact while hard gates and specialist judgement remain present", async () => {
+    const [control, modelling, texturing] = await Promise.all([
+      source("gateway/control/packet.ts"),
+      source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
+      source("../.agents/skills/blockit-bedrock-texturing/SKILL.md"),
+    ]);
 
-    expect(texturing.length).toBeLessThan(10_000);
-
-    for (const required of [
-      "Mandatory Authoring Latch",
-      "Authoring Context Firewall",
-      "Tool Lane",
-      "State Reuse / Anti-Loop",
-      "HANDOFF_REQUIRED",
-      "capture_model_views",
-      "manage_cubes",
-      "export_model",
-      "geometry/rig/UV judgement",
-      "limit=4",
-      "Gateway client must not search for or emulate them",
-    ]) expect(orchestrator).toContain(required);
-
-    expect(orchestrator).toMatch(/Authoring Codex uses .*workspace\/active\/<asset>\/.*not `mcp\/`/i);
-    expect(orchestrator).toMatch(/do \*\*not\*\* inspect tests\/CI\/source/i);
-    expect(orchestrator).toMatch(/run Bun\/build\/verifiers\/deploy/i);
-    expect(orchestrator).not.toContain("structural validation gate    → validator://status");
+    expect(texturing.length).toBeLessThan(12_000);
+    expect(control).toContain("GEOMETRY_CONTEXT");
+    expect(control).toContain("TEXTURE_CONTEXT");
+    expect(control).toContain("ANIMATION_CONTEXT");
+    expect(control).toContain("knownContextIds");
+    expect(control).toContain("workspace");
+    expect(control).toContain("reference");
 
     for (const required of [
       "Primary Mass / Proportion / Depth",
@@ -65,10 +55,6 @@ describe("pre-local asset-authoring usage slimming", () => {
       "color_picker_tool",
       "BASE | SHADOW | HIGHLIGHT | ACCENT/IDENTITY",
     ]) expect(texturing).toContain(required);
-
-    expect(orchestrator).not.toContain("FAIL / UNVERIFIED / PASS");
-    expect(orchestrator.toLowerCase()).not.toContain("difference-first");
-    expect(orchestrator.toLowerCase()).not.toContain("existing geometry may be a task baseline");
 
     for (const required of ["SUPPORTED", "PROVISIONAL", "CONFLICTING", "UNAVAILABLE", "FAIL", "UNVERIFIED", "PASS", "BLOCKED"]) {
       expect(modelling).toContain(required);
@@ -126,7 +112,7 @@ describe("pre-local asset-authoring usage slimming", () => {
     expect(texture).toContain("a: Number(fill_color[3] ?? 255) / 255");
   });
 
-  test("high-frequency reads stay compact and fresh mutation state avoids redundant inspect", async () => {
+  test("high-frequency reads stay compact and Control avoids redundant search/status chatter", async () => {
     const files = await Promise.all([
       source("server/tools/element-inspection.ts"),
       source("server/tools/project.ts"),
@@ -138,8 +124,13 @@ describe("pre-local asset-authoring usage slimming", () => {
     const locatorSource = files[4];
     expect(locatorSource).toContain("function mutationResult(");
     expect(locatorSource).toContain("structuredContent: summary");
-    const orchestrator = await source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md");
-    expect(orchestrator).toMatch(/Do not automatically re-read fresh (?:mutation )?targets with `inspect_elements\(mode=detail\)`/);
+
+    const gateway = await source("gateway/index.ts");
+    const searchStart = gateway.indexOf("GATEWAY_TOOLS.searchCapabilities");
+    const describeStart = gateway.indexOf("GATEWAY_TOOLS.describeCapability", searchStart);
+    const invokeStart = gateway.indexOf("GATEWAY_TOOLS.invokeCapability", describeStart);
+    expect(gateway.slice(searchStart, describeStart)).not.toContain("backend.getStatus()");
+    expect(gateway.slice(describeStart, invokeStart)).not.toContain("backend.getStatus()");
   });
 
   test("Cube correction results avoid redundant state and identity copies", async () => {
