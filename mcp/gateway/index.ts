@@ -18,6 +18,7 @@ import {
   authoringDomainForCapability,
   buildControlDelta,
   buildControlPacket,
+  CONTROL_ROUTING_POLICY,
   decorateCapabilities,
 } from "./control";
 import {
@@ -155,7 +156,7 @@ const statusInput = z.object({
 
 const searchInput = z.object({
   query: z.string().default(""),
-  limit: z.number().int().min(1).max(50).default(4),
+  limit: z.number().int().min(1).max(50).default(CONTROL_ROUTING_POLICY.search_limit),
 });
 
 const describeInput = z.object({
