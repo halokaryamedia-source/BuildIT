@@ -2,7 +2,9 @@
 
 Deliver a normal Minecraft Bedrock Resource Pack folder or ZIP unless the user explicitly requests another form.
 
-## Canonical package
+This file owns **user-facing Particle delivery**. When the same authored particle is intentionally handed to Codex / BuildIT MCP, add the canonical LazyDesigner `REFERENCE.json` described by `../package/particle-handoff.md`; do not invent a separate Particle handoff manifest.
+
+## Canonical user delivery
 
 ```text
 <ParticleName>/
@@ -19,6 +21,35 @@ Deliver a normal Minecraft Bedrock Resource Pack folder or ZIP unless the user e
 ```
 
 Only include folders actually required by the effect.
+
+## LazyDesigner downstream handoff
+
+When the package is meant for Codex / MCP implementation or integration, the same resource files may be wrapped by the canonical Reference Package entry point:
+
+```text
+asset_reference/
+├── REFERENCE.json
+├── particles/
+│   └── <name>.particle.json
+└── textures/
+    └── particle/
+        └── <name>.png
+```
+
+`REFERENCE.json` carries only compact handoff metadata such as:
+
+```text
+asset.kind = PARTICLE
+particle identifier
+particle JSON relative path
+texture reference + PNG relative path
+texture readiness
+recommended locator / animation / trigger intent
+review state
+blocking unknowns / readiness
+```
+
+The actual `.particle.json` and `.png` remain authoritative for authored resource content. `REFERENCE.json` must not duplicate their full contents.
 
 ## Naming
 
@@ -37,7 +68,7 @@ Avoid:
 - duplicate source exports;
 - `.mcpack` conversion unless explicitly requested.
 
-## README minimum
+## README minimum for user delivery
 
 State:
 - main effect identifier;
@@ -49,25 +80,41 @@ State:
 
 Do not export the ChatGPT transcript, internal reasoning, or temporary authoring notes.
 
+A README is not required merely for Codex handoff when `REFERENCE.json` plus resource files are sufficient.
+
 ## Snowstorm compatibility
 
 The delivered package must use ordinary Bedrock paths and JSON so the same authored assets can be inspected in Snowstorm and copied into a Bedrock resource/development resource pack.
 
 ## Handoff to Codex / MCP
 
-The package itself is the handoff artifact. Downstream tooling may inspect, copy, patch, bind, or preview it according to its own authority.
+Particle Reference Authoring and BuildIT MCP remain separate authorities:
 
-Particle Reference Authoring does not require MCP to create the package and does not require the package to be registered into MCP before delivery.
+```text
+ChatGPT Particle Reference Authoring
+→ creates/reviews reference resource package
+
+Codex / BuildIT MCP
+→ consumes package when requested
+→ inspects current runtime state
+→ copies/patches/previews/binds through existing MCP capabilities
+```
+
+Do not run both authoring systems in parallel on the same revision without an explicit correction/handoff boundary.
+
+Particle Reference Authoring does not require MCP to create the package and does not require the package to be registered into MCP before user delivery.
 
 ## Delivery gate
 
-Before final delivery:
+Before final delivery or downstream handoff:
 
 ```text
 all referenced files exist
 all identifiers/paths agree
+custom texture reference matches textures/particle/<name>.png
 no stale experimental artifacts
 no unresolved blocking requirement
 static warnings disclosed when material
 package structure is clean
+REFERENCE.json included only when LazyDesigner downstream handoff is intended
 ```
