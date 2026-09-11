@@ -38,6 +38,26 @@ DIRECT_API
 
 The normal `bedrock_entity` registration profile excludes the generic `ui` and `import` fallback families entirely. Those families are available only through explicit extended/developer compatibility mode.
 
+## Efficiency metric rule
+
+Source line count, file count, and retained executor count are **not** LazyDesigner efficiency KPIs.
+
+Do not remove validation, rollback, Undo safety, detailed schemas, domain intelligence, native integration, compatibility protection, or quality gates merely to make the implementation smaller.
+
+Measure practical efficiency instead through:
+
+```text
+public decisions exposed to the AI
+MCP calls needed for one coherent user intent
+implicit mutable editor-state dependencies
+parallel/duplicate public routes for one responsibility
+unnecessary discovery or confirmation readbacks
+unnecessary native/UI state mutations
+context/payload delivered without decision value
+```
+
+A long retained executor behind one semantic public capability can be efficient. A short implementation that forces extra discovery, calls, UI state, or weaker validation is not.
+
 ## Current representative map
 
 | Area | Capability / owner | Class | Notes |
@@ -75,6 +95,8 @@ known hierarchy change       → reparent_element
 
 Explicit identity is preferred over editor selection. Selection state is support context, not normal targeting authority.
 
+`select_all_of_type` and `get_selection` remain available on the shared AUTHORING surface for workflows that genuinely require editor selection, but they are intentionally excluded from Animation.
+
 ### Texturing
 
 ```text
@@ -85,6 +107,8 @@ known palette/reference color→ pass color directly
 ```
 
 Do not use the color picker merely to re-enter a color already known to the model. Prefer one coherent transaction over many one-pixel Painter calls when deterministic operations can express the intended result.
+
+`activate_texture` is a support state helper, not a preferred authoring step when the chosen capability already accepts explicit `texture_id`. Legacy `apply_texture` is also support-only discovery; its implementation remains available where compatibility requires it.
 
 ### Animation
 
@@ -132,6 +156,8 @@ Do not force exact pixels through simulated brush motion, and do not replace exp
 - Do not remove native subsystem usage merely to reduce source lines; native Painter/Timeline/Undo semantics are capability, not overhead.
 - Do not re-discover identities/schemas after a successful deterministic mutation when the returned receipt already provides the state needed for continuation.
 - Verify at coherent cohort boundaries rather than after every Cube, pixel, or keyframe.
+- Prefer explicit UUID/identity targeting over selected/current editor state for normal AI work; retain selection fallback only as conditional human/editor convenience.
+- Discovery tier is routing preference, not capability deletion: state helpers and legacy compatibility paths may remain callable without competing with semantic hot-path tools.
 
 ## Known runtime micro-optimization
 
@@ -148,6 +174,17 @@ resolve request + read required Painter guard state
 
 This is a micro-optimization only. Apply it with local typecheck + targeted paint tests; do not risk a large remote rewrite of `paint.ts` solely for this change.
 
+## Next bounded capability candidates
+
+These are additive/batching improvements, not simplification targets:
+
+```text
+reparent_element → consider bounded multi-target updates + one Undo
+remove_element   → consider bounded multi-target cleanup only with strict destructive preflight
+```
+
+Keep existing single-target behavior for compatibility. Do not add batching until the mutation can preflight every target and preserve rollback/Undo semantics as one coherent transaction.
+
 ## Boundary
 
-UI appearance changes do not improve Runtime execution unless they alter a real execution dependency. Improve the semantic/native adapter path, batching, evidence policy, or state setup—not the visual position of Blockbench controls.
+UI appearance changes do not improve Runtime execution unless they alter a real execution dependency. Improve the semantic/native adapter path, batching, evidence policy, discovery preference, or state setup—not the visual position of Blockbench controls.
