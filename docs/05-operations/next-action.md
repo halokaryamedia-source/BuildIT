@@ -6,7 +6,7 @@ This file owns **current implementation continuation only**. Product architectur
 
 ## Current Objective
 
-The REMOTE_GITHUB pre-local hardening phase is complete enough to freeze safely. Bounded source defects found after the initial freeze were corrected without reopening a general cleanup phase: controller inspection schema/docs match, zero/null semantics are guarded, Particle is classified and invalidated through its Animation ownership, direct capability source ownership is more precise, `duplicate_element` invalidates its dependent authoring evidence, canonical name-only phase coverage matches Runtime classification for exposed non-Core tools, Texture invalidation distinguishes authored mutations from focus-only state, and the Particle workflow now has one explicit generated-texture handoff, canonical resource layout, transactional PNG finalization, recovery semantics, and Animation/Locator continuation without adding tools or a fourth phase.
+The REMOTE_GITHUB pre-local hardening phase is complete enough to freeze safely. Bounded source defects found after the initial freeze were corrected without reopening a general cleanup phase: controller inspection schema/docs match, zero/null semantics are guarded, Particle is classified and invalidated through its Animation ownership, direct capability source ownership is more precise, `duplicate_element` invalidates dependent authoring evidence, canonical name-only phase coverage matches Runtime classification for exposed non-Core tools, Texture invalidation distinguishes authored mutations from focus-only state, and the Particle workflow now has one explicit generated-texture handoff, canonical resource layout, transactional PNG finalization, recovery semantics, Animation/Locator continuation, and a unified ChatGPT Reference → Codex/MCP handoff through the canonical `REFERENCE.json` package.
 
 The user has explicitly chosen **not to enter `LOCAL_CODE` yet**. Do not run local/Bun/typecheck/live Blockbench work until that boundary is changed explicitly.
 
@@ -40,6 +40,15 @@ The user has explicitly chosen **not to enter `LOCAL_CODE` yet**. Do not run loc
 ✓ particle binding remains owned by manage_animation_effects with explicit effect/time and locator when needed
 ✓ no create_particle_texture / save_particle_texture / fourth Particle phase
 ✓ manage_particle invalidates Animation evidence only after an actual completed particle mutation
+✓ ChatGPT Particle Reference Authoring remains upstream Reference Preparation, not MCP Runtime
+✓ Particle downstream handoff reuses canonical REFERENCE.json; no PARTICLE_HANDOFF.json
+✓ REFERENCE.json asset.kind supports MODEL | PARTICLE
+✓ MODEL profile remains model-only; no fake PARTICLE modelling profile
+✓ Particle handoff block carries resource paths/readiness + locator/animation/trigger recommendations only
+✓ Control referencePackage.ts projects Particle handoff metadata
+✓ Control packet exposes asset_kind + particle metadata directly to Codex
+✓ legacy model packages without asset.kind remain backward compatible when profile is recognized
+✓ Particle handoff recommendations do not claim live locator/animation/runtime existence
 ✓ generic import/ui fallback remains extended opt-in only
 ✓ focused consolidated public tools keep legacy executors hidden
 ✓ canonical lazydesigner-* primary Skills
@@ -63,6 +72,7 @@ The user has explicitly chosen **not to enter `LOCAL_CODE` yet**. Do not run loc
 ✓ activate_texture no longer invalidates authored Texture evidence because it only changes active focus
 ✓ Control phase-name coverage and Texture-mutation precision regression guards added
 ✓ Particle texture dependency / handoff / end-to-end static regression guards added
+✓ Particle Reference projection + packet delivery regression guards added
 ✓ deterministic recovery ownership regression guard added
 ✓ Bedrock-first authoring contract regression guard added
 ✓ compatibility-bound BlockIT identifiers intentionally preserved
@@ -72,7 +82,7 @@ The user has explicitly chosen **not to enter `LOCAL_CODE` yet**. Do not run loc
 ✓ manage_animation_controller remains the single controller mutation surface
 ✓ controller native/resource intelligence remains extension wiring, not extra tools
 ✓ controller source ownership documented in implementation-map.md
-✓ Particle workflow ownership documented in implementation-map.md and particle reference workflow
+✓ Particle workflow + Reference handoff ownership documented in implementation-map.md
 ```
 
 ## Remote Freeze State
@@ -87,6 +97,8 @@ Particle texture dependency flow       COMPLETE / FROZEN IN SOURCE
 Particle resource path contract        COMPLETE / FROZEN IN SOURCE
 Particle error/recovery contract       COMPLETE / FROZEN IN SOURCE
 Particle Animation/Locator binding     COMPLETE / FROZEN IN SOURCE
+Particle Reference→MCP handoff         COMPLETE / FROZEN IN SOURCE
+Reference package kind projection      COMPLETE / FROZEN IN SOURCE
 Element mutation invalidation          HARDENED IN SOURCE
 Texture mutation invalidation          HARDENED / MINIMIZED IN SOURCE
 Controller inspection contract         HARDENED IN SOURCE
@@ -108,13 +120,15 @@ Do not add another remote-only cleanup phase merely to keep changing source. Reo
 
 ```text
 REMOTE_GITHUB
-→ no open Particle task remains after 01–06 closure
+→ no open Particle Runtime or Particle Reference-handoff task remains
 → only reopen for a newly identified bounded source defect
-→ do not add a new Particle tool, save tool, phase, or parallel texture pipeline
+→ keep ChatGPT Reference Authoring and MCP Runtime as separate authorities connected by REFERENCE.json
+→ do not add a new Particle tool, save tool, phase, modelling profile, handoff manifest, or parallel texture pipeline
 
 LOCAL_CODE — DEFERRED UNTIL USER EXPLICITLY REQUESTS IT
 → run bun/typecheck/repository verification
 → run Particle texture dependency/path/output/recovery tests
+→ run Particle Reference projection + packet delivery tests
 → run Control particle handoff/invalidation tests
 → run Animation effect binding tests
 → run Control phase-name coverage regression test
@@ -130,6 +144,7 @@ LIVE_BLOCKBENCH — DEFERRED UNTIL AFTER LOCAL_CODE / USER REQUEST
 → deploy/reload the matching current LazyDesigner build
 → verify generated particle texture create → paint → PNG save → ready resume
 → verify particle JSON write + native preview
+→ verify REFERENCE.json Particle handoff reaches the intended runtime task without transcript dependence
 → verify manage_animation_effects particle keyframe with explicit locator
 → verify Gateway/Runtime project affinity
 → verify Geometry/Texturing/Animation surfaces live
@@ -172,6 +187,9 @@ Compatibility-bound identifier migration is a separate future task and must be d
 - No new authoring phase merely to classify Particle or another supporting capability.
 - No `create_particle_texture` or `save_particle_texture`; generated Particle bitmaps reuse existing Texturing tools.
 - No second Particle painting or PNG persistence system outside the existing Texturing pipeline.
+- No `PARTICLE` modelling profile; Particle is an asset kind / reference specialization, not Geometry profile ownership.
+- No `PARTICLE_HANDOFF.json`; downstream handoff reuses canonical `REFERENCE.json`.
+- No concurrent ChatGPT-reference and MCP-runtime authoring on the same Particle revision without an explicit handoff/correction boundary.
 - No second Animation Controller mutation tool/profile; extend `manage_animation_controller` only when ownership is coherent.
 - No mutation behavior inside `inspect_animation`; it remains read-only.
 - No all-profile/all-stage loading as reassurance.
@@ -185,4 +203,4 @@ Compatibility-bound identifier migration is a separate future task and must be d
 
 ## Proof Boundary
 
-Current remote work establishes source contracts, ownership, path/recovery policy, and regression intent only. No Bun/typecheck/CI/local Runtime/Blockbench execution was performed in this phase. Generated freshness, installed LazyDesigner activation, actual filesystem write behavior in Blockbench, native particle preview, live locator attachment, visual quality, and measured whole-task savings remain unverified until their corresponding proof contexts are activated.
+Current remote work establishes source contracts, ownership, path/recovery policy, Reference handoff projection, packet delivery, and regression intent only. No Bun/typecheck/CI/local Runtime/Blockbench execution was performed in this phase. Generated freshness, installed LazyDesigner activation, actual filesystem write behavior in Blockbench, native particle preview, live locator attachment, live Reference-package consumption, visual quality, and measured whole-task savings remain unverified until their corresponding proof contexts are activated.
