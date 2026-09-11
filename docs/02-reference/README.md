@@ -25,7 +25,9 @@ need to build/validate/consume Codex package
 
 `policy.md`, `image/`, `particle/`, and `package/` are conditional owners, not mandatory boot context for every reference request.
 
-## Capability branches
+## Independent capability branches
+
+Reference capabilities are independent. Select only the branch required by the current request.
 
 ```text
 VISUAL / MODEL REFERENCE
@@ -37,6 +39,12 @@ PARTICLE / VFX REFERENCE
 → clean Bedrock/Snowstorm particle package
 → optional Codex / MCP handoff
 ```
+
+Rules:
+- a particle-only request does not require image reference generation;
+- an image/model-reference request does not require particle authoring;
+- use both branches only when the user explicitly needs both or one materially depends on the other;
+- do not create cross-branch artifacts merely to complete a template.
 
 The particle branch is a ChatGPT-side reference-authoring capability. It is not part of MCP runtime implementation.
 
