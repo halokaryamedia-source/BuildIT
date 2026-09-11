@@ -6,7 +6,7 @@ This file owns **current implementation continuation only**. Product architectur
 
 ## Current Objective
 
-LazyDesigner Control source implementation is active. Documentation/Reference architecture, primary Skill naming, and safe human-facing Runtime/Gateway branding are source baselines. Local/live Blockbench testing remains deferred until explicitly reactivated.
+The current REMOTE_GITHUB source-cleanup phase is complete enough to stop safely. Documentation/Reference architecture, Control, primary Skill naming, safe human-facing branding, and active repository routing regressions are source baselines. Local/live Blockbench testing remains deferred until explicitly reactivated.
 
 ## Completed Baseline
 
@@ -45,6 +45,12 @@ LazyDesigner Control source implementation is active. Documentation/Reference ar
   - Blockbench panel + status bar
   - local install docs + mcp/llms.txt
 ✓ compatibility identifier boundary documented + guarded
+✓ stale repository regressions repaired:
+  - current-doc-sync
+  - repository-github-discipline
+  - repository-supply-chain
+  - control-source-migration
+✓ no speculative Texture/Animation result compaction added without evidence
 ```
 
 ## Identifier Migration Boundary
@@ -65,16 +71,23 @@ internal compatibility symbols/DOM/event keys where rename has no current value
 
 Canonical boundary: `docs/04-system/compatibility-identifiers.md`.
 
-## Immediate Next Source Work
+## Deferred Higher-Context Residue
+
+No further REMOTE_GITHUB mutation is required merely to continue the rename/cleanup. The next meaningful residue needs a context that can execute canonical generators and tests:
 
 ```text
-1. audit generated-documentation source for stale presentation branding
-2. do not mutate generated docs until LOCAL_CODE can run the canonical generator
-3. keep package/plugin/env/header/persisted identifiers stable until a dedicated atomic migration exists
-4. audit active regressions for retired docs/symbols only when concrete evidence appears
-5. regenerate generated docs/prompts only when LOCAL_CODE/generator execution is reactivated
-6. run local/live acceptance only when explicitly reactivated
+LOCAL_CODE
+→ update generated API-doc presentation source where still stale
+→ bun run docs:build
+→ bun run docs:check
+→ run the relevant source verifier(s)
+→ commit canonical source + generated output together
+
+LIVE_BLOCKBENCH
+→ only when installed/runtime/native/visual proof is explicitly reactivated
 ```
+
+Compatibility-bound identifier migration is a separate future task and must be dependency-mapped atomically before any serialized value changes.
 
 ## Stop Rules
 
@@ -86,6 +99,7 @@ Canonical boundary: `docs/04-system/compatibility-identifiers.md`.
 - No all-profile/all-stage loading as reassurance.
 - No full downstream reset for a bounded dependency.
 - No blind package/protocol/plugin/environment rename.
+- No speculative receipt compaction without recovery-state evidence.
 - No hand-editing generated docs/output.
 - No local/live acceptance while user testing remains deferred.
 
