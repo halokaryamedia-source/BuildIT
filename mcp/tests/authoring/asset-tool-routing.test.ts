@@ -4,145 +4,96 @@ async function source(path: string): Promise<string> {
   return Bun.file(path).text();
 }
 
-describe("asset tool routing", () => {
-  test("orchestrator uses Gateway + active stage before repository discovery", async () => {
-    const skill = await source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md");
+describe("LazyDesigner asset routing", () => {
+  test("root routing delegates authoring orientation to Control, not a router Skill", async () => {
+    const root = await source("../AGENTS.md");
 
-    expect(skill).toContain("## Fast Routing Contract");
-    expect(skill).toContain("must not begin by searching repository files");
-    expect(skill).toContain("ACTIVE STAGE + intent + known state/UUIDs");
-    expect(skill).toContain("exact known Runtime capability");
-    expect(skill).toContain("search_capabilities");
-    expect(skill).toContain("describe_capability");
-    expect(skill).toContain("## Authoring Stage Lock");
-    expect(skill).toContain("DISCOVER → AUTHOR → VERIFY → CORRECT → VERIFY → DONE");
+    expect(root).toContain("LazyDesigner Control is the canonical routing/context authority");
+    expect(root).toContain("Control active stage/context");
+    expect(root).toContain("exact known Runtime capability");
+    expect(root).toContain("reuse returned state + control_delta");
+    expect(root).not.toContain("→ .agents/skills/blockit-bedrock-entity-mcp/SKILL.md");
+    expect(root).not.toContain("router + matching specialist");
   });
 
-  test("asset-authoring cwd does not promote MCP development ceremony", async () => {
-    const skill = await source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md");
-
-    expect(skill).toContain("workspace/active/<asset>/");
-    expect(skill).toContain("as cwd, not `mcp/`");
-    expect(skill).toContain("deeper MCP development rules are not authoring plan");
-    expect(skill).toContain("Do **not** inspect tests/CI/source or run Bun/build/verifiers/deploy");
-  });
-
-  test("Geometry strategy is explicit, user-selected, and keeps 3D-Assisted indivisible", async () => {
-    const [router, modelling] = await Promise.all([
-      source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md"),
-      source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
+  test("Control uses direct-first bounded discovery instead of repository/tool ceremony", async () => {
+    const [policy, controlReadme] = await Promise.all([
+      source("gateway/control/routingPolicy.ts"),
+      source("gateway/control/README.md"),
     ]);
 
-    for (const owner of [router, modelling]) {
-      expect(owner).toContain("approved image");
-      expect(owner).toContain("DIRECT");
-      expect(owner).toContain("3D_ASSISTED");
-      expect(owner).toMatch(/user-selected|user.*selected/i);
-      expect(owner).not.toContain("optional 3D Evidence");
-      expect(owner).not.toContain("Image Reference Route");
-    }
-    expect(router).toContain("Shape Reconstruction");
-    expect(router).toContain("PrimitiveAnything");
-    expect(router).toContain("manage_geometry_reference");
+    expect(policy).toContain('strategy: "DIRECT_FIRST"');
+    expect(policy).toContain('known_capability: "INVOKE_CAPABILITY"');
+    expect(policy).toContain('unknown_capability: "SEARCH_CAPABILITIES"');
+    expect(policy).toContain('schema_uncertain: "DESCRIBE_CAPABILITY"');
+    expect(policy).toContain('stale_or_lost_context: "STATUS"');
+    expect(policy).toContain("search_limit: 4");
+    expect(controlReadme).toContain("minimum canonical context");
+    expect(controlReadme).not.toContain("3D_ASSISTED");
   });
 
-  test("Geometry hierarchy and rig routes retain one canonical owner", async () => {
-    const skill = await source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md");
+  test("authoring context loads only the active specialist and one Geometry profile", async () => {
+    const [registry, root] = await Promise.all([
+      source("gateway/control/registry.ts"),
+      source("../AGENTS.md"),
+    ]);
 
-    expect(skill).toContain("Group/bone parent move         → reparent_element");
-    expect(skill).toContain("Group pivot/rotation/visible   → modify_group");
-    expect(skill).toContain("rig IK/mirror                  → bone_rigging");
-    expect(skill).toContain("`bone_rigging` only for IK/mirror");
-    expect(skill).toContain("Semantic cohort rule");
+    expect(registry).toContain("MODELLING_PATH");
+    expect(registry).toContain("TEXTURING_PATH");
+    expect(registry).toContain("ANIMATION_PATH");
+    expect(registry).toContain("PROFILE_PATHS[selectedProfile]");
+    expect(root).toContain("exactly one selected modelling profile");
+    expect(root).toContain("Do not preload sibling specialists or all profiles");
   });
 
-  test("Gateway discovery is bounded and only the AUTHORING/Animation boundary hands off", async () => {
-    const skill = await source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md");
-
-    expect(skill).toContain("## Capability Discovery / Recovery");
-    expect(skill).toContain("One precise search miss");
-    expect(skill).toContain("reformulate once");
-    expect(skill).toContain("second miss → `BLOCKED`");
-    expect(skill).toContain("known foreign-phase capability is never a discovery miss");
-    expect(skill).toContain("AUTHORING↔Animation uses handoff");
-    expect(skill).not.toContain("tool_search");
-  });
-
-  test("hot-path failures retain bounded evidence-based recovery", async () => {
-    const skill = await source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md");
-
-    for (const term of [
-      "INVALID_INPUT",
-      "TARGET_AMBIGUOUS",
-      "TARGET_NOT_FOUND",
-      "STALE_STATE",
-      "NO_EFFECT",
-      "CAPABILITY_MISMATCH",
-      "OUTCOME_UNKNOWN",
-      "repair args; same capability",
-      "focused identity lookup",
-      "one focused refresh",
-    ]) expect(skill).toContain(term);
-  });
-
-  test("texturing uses consolidated material facade and shared Authoring correction", async () => {
-    const texturing = await source("../.agents/skills/blockit-bedrock-texturing/SKILL.md");
-
-    for (const term of [
-      "create_texture",
-      "list_textures",
-      "get_texture",
-      "activate_texture",
-      "manage_material",
-      "manage_material_instances",
-      "HANDOFF_REQUIRED",
-      "switch_authoring_phase",
-      "Conditional Support",
-      "No Geometry↔Texturing phase switch",
-    ]) expect(texturing).toContain(term);
-
-    expect(texturing).not.toContain("create_pbr_material / configure_material / assign_texture_channel");
-    expect(texturing).not.toContain("reload BlockIT MCP");
-  });
-
-  test("animation keeps compact primary surface and Gateway handoff", async () => {
-    const animation = await source("../.agents/skills/blockit-bedrock-animation/SKILL.md");
-
-    for (const term of [
-      "create_animation",
-      "inspect_animation",
-      "manage_animation_timeline",
-      "manage_animation_effects",
-      "manage_animation_controller",
-      "HANDOFF_REQUIRED",
-      "switch_authoring_phase",
-      "same task",
-    ]) expect(animation).toContain(term);
-    expect(animation).not.toContain("reload BlockIT MCP");
-  });
-
-  test("readiness preflights and targeted existing-model intake prevent late stage bounce", async () => {
-    const [flow, router, modelling, texturing, animation] = await Promise.all([
-      source("../docs/knowledge/flow.md"),
-      source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md"),
-      source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
+  test("Geometry and Texturing share AUTHORING while Animation remains the handoff boundary", async () => {
+    const [root, texturing, animation] = await Promise.all([
+      source("../AGENTS.md"),
       source("../.agents/skills/blockit-bedrock-texturing/SKILL.md"),
       source("../.agents/skills/blockit-bedrock-animation/SKILL.md"),
     ]);
 
-    expect(flow).toContain("UV READINESS PREFLIGHT");
-    expect(flow).toContain("ANIMATION READINESS PREFLIGHT");
-    expect(flow).toContain("minimum targeted baseline inspection");
-    expect(flow).toContain("not new user approvals or persisted stages");
-    expect(router).toContain("Animation Readiness Preflight");
-    expect(router).toContain("inspect only affected target/dependencies");
-    expect(modelling).toContain("UV Readiness Preflight");
-    expect(modelling).toContain("Read-only: no production UV");
-    expect(texturing).toContain("Animation Readiness Preflight");
-    expect(animation).toContain("Animation Readiness Preflight");
+    expect(root).toContain("Geometry↔Texturing use the shared AUTHORING surface");
+    expect(root).toContain("Animation remains the Runtime phase handoff boundary");
+    expect(texturing).toContain("No Geometry↔Texturing phase switch");
+    expect(animation).toContain("HANDOFF_REQUIRED");
+    expect(animation).toContain("switch_authoring_phase");
   });
 
-  test("internal extended identifier remains compatibility rather than a second authoring router", async () => {
+  test("Workspace lifecycle prevents illegal late-stage entry", async () => {
+    const packet = await source("gateway/control/packet.ts");
+
+    expect(packet).toContain("GEOMETRY_APPROVAL_REQUIRED");
+    expect(packet).toContain("UV_LAYOUT_PASS_REQUIRED");
+    expect(packet).toContain("TEXTURE_APPROVAL_REQUIRED");
+    expect(packet).toContain("WORKSPACE_LIFECYCLE_UNAVAILABLE");
+  });
+
+  test("Control separates reference intent from current correction delta", async () => {
+    const projection = await source("gateway/control/contextProjection.ts");
+
+    expect(projection).toContain("original_user_intent");
+    expect(projection).toContain("current_user_delta");
+    expect(projection).toContain("reference_package_id_or_hash");
+    expect(projection).toContain("workspace_revision_or_hash");
+  });
+
+  test("normal asset routing excludes retired 3D-assisted architecture", async () => {
+    const [root, controlReadme, modelling] = await Promise.all([
+      source("../AGENTS.md"),
+      source("gateway/control/README.md"),
+      source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
+    ]);
+
+    for (const owner of [root, controlReadme, modelling]) {
+      expect(owner).not.toContain("DIRECT | 3D_ASSISTED");
+      expect(owner).not.toContain("Shape Reconstruction");
+      expect(owner).not.toContain("PrimitiveAnything");
+      expect(owner).not.toContain("manage_geometry_reference");
+    }
+  });
+
+  test("internal extended registration identifier remains debug compatibility only", async () => {
     const [profile, settings] = await Promise.all([
       source("lib/registrationProfile.ts"),
       source("ui/settings.ts"),
@@ -151,7 +102,6 @@ describe("asset tool routing", () => {
     expect(profile).toContain('export type McpRegistrationProfile = "bedrock_entity" | "extended";');
     expect(settings).toContain('name: "Legacy UI Fallbacks (Debug)"');
     expect(settings).toContain("not an authoring profile");
-    expect(profile).not.toContain("decision_loop");
     expect(profile).not.toContain("routing_state");
   });
 });
