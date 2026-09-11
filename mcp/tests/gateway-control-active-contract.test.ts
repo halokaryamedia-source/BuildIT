@@ -1,0 +1,110 @@
+import { describe, expect, test } from "bun:test";
+import {
+  CONTROL_ROUTING_POLICY,
+  buildControlDelta,
+  buildControlPacket,
+  buildControlSnapshot,
+  decorateCapabilities,
+  resolveDevelopmentIntent,
+} from "@/gateway/control";
+import type { GatewayRuntimeStatus } from "@/gateway/backend";
+
+const status: GatewayRuntimeStatus = {
+  gateway: "ready",
+  affinity: { project_uuid: "project-a", authoring_phase: "geometry" },
+  runtime: {
+    online: true,
+    endpoint: "http://127.0.0.1:3000/bb-mcp",
+    mcp_client_ready: true,
+    catalog_stale: false,
+    runtime_signature: "runtime-a",
+    connected_signature: "runtime-a",
+    catalog_count: 47,
+    health: {
+      build_identity: "sha256:build-a",
+      product: { authoring_phase: "geometry" },
+      project_context: {
+        active_project_uuid: "project-a",
+        requested_project_uuid: "project-a",
+        requested_project_available: true,
+        open_project_count: 1,
+      },
+    },
+  },
+  operations: {
+    active: 0,
+    queued: 0,
+    max_queue_depth: 8,
+    completed: 0,
+    failed: 0,
+    timed_out: 0,
+    rejected_busy: 0,
+  },
+  last_error: null,
+};
+
+describe("LazyDesigner Control active contract", () => {
+  test("authoring domain and source owner are distinct canonical concepts", () => {
+    const snapshot = buildControlSnapshot(status);
+    expect(snapshot.protocol).toBe("lazydesigner-control-v1");
+    expect(snapshot.authoring.domain).toBe("GEOMETRY");
+    expect(snapshot.authoring).not.toHaveProperty("owner");
+
+    const [capability] = decorateCapabilities(
+      [{ capability_id: "manage_cubes", description: "Create or update Bedrock cubes.", tier: "primary", read_only: false, destructive: true, idempotent: false }],
+      "GEOMETRY"
+    );
+
+    expect(capability.control.authoring_domain).toBe("GEOMETRY");
+    expect(capability.control.current_domain).toBe(true);
+    expect(capability.control.source_owner.source).toBe("mcp/server/tools/cubes.ts");
+    expect(capability.control).not.toHaveProperty("owner");
+    expect(capability.control).not.toHaveProperty("current_owner");
+
+    const delta = buildControlDelta({
+      capability: "manage_cubes",
+      phaseBefore: "geometry",
+      phaseAfter: "geometry",
+      projectUuid: "project-a",
+      succeeded: true,
+    });
+    expect(delta.protocol).toBe("lazydesigner-control-v1");
+    expect(delta.authoring_domain).toBe("GEOMETRY");
+    expect(delta.invalidates.authoring_domains).toEqual(["GEOMETRY", "TEXTURING", "ANIMATION"]);
+  });
+
+  test("routing priority is direct-first and keeps every fallback bounded", async () => {
+    const packet = await buildControlPacket(status);
+    expect(packet.control_protocol).toBe("lazydesigner-control-v1");
+    expect(packet.routing).toEqual(CONTROL_ROUTING_POLICY);
+    expect(packet.routing.strategy).toBe("DIRECT_FIRST");
+    expect(packet.routing.known_capability).toBe("INVOKE_CAPABILITY");
+    expect(packet.routing.unknown_capability).toBe("SEARCH_CAPABILITIES");
+    expect(packet.routing.schema_uncertain).toBe("DESCRIBE_CAPABILITY");
+    expect(packet.routing.stale_or_lost_context).toBe("STATUS");
+    expect(packet.routing.development_unresolved).toBe("BOUNDED_CONTEXT_THEN_TARGETED_SEARCH");
+    expect(packet.routing.search_limit).toBe(4);
+    expect(JSON.stringify(packet).length).toBeLessThan(7000);
+  });
+
+  test("system-development task identity ignores unrelated asset affinity and authoring phase", async () => {
+    const first = await buildControlPacket(status, {
+      taskMode: "SYSTEM_DEVELOPMENT",
+      taskIntent: "animation keyframe terlalu kaku",
+    });
+    const second = await buildControlPacket(
+      { ...status, affinity: { project_uuid: "project-b", authoring_phase: "texturing" } },
+      { taskMode: "SYSTEM_DEVELOPMENT", taskIntent: "animation keyframe terlalu kaku" }
+    );
+    expect(second.task_context_id).toBe(first.task_context_id);
+  });
+
+  test("unresolved development routing remains bounded and fail-closed", () => {
+    const result = resolveDevelopmentIntent("something unusual elsewhere");
+    expect(result.task_class).toBe("SYSTEM_DEVELOPMENT");
+    expect(result.domain).toBe("UNRESOLVED");
+    expect(result.confidence).toBe("UNRESOLVED");
+    expect(result.source_owners).toEqual([]);
+    expect(result.required_context_paths).toEqual(["AGENTS.md", "mcp/AGENTS.md"]);
+  });
+});
