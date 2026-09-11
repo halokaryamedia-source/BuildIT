@@ -9,6 +9,7 @@ Experimental research for improving Bedrock particle authoring quality with Chat
 - Production ownership remains `mcp/server/tools/particle.ts`, `mcp/server/resources/particle.ts`, and the existing Bedrock particle libraries.
 - The approved reference asset remains `examples/MIVUBI_Volcano_Eruption.zip`.
 - No experimental code is registered into the MCP server or runtime.
+- Promotion readiness has been audited; see `PROMOTION_READINESS.md`.
 
 ## Goal
 
@@ -33,6 +34,7 @@ chatgpt-particle-authoring/
 ├── README.md
 ├── DESIGN.md
 ├── WORKFLOW.md
+├── PROMOTION_READINESS.md
 ├── src/
 │   ├── index.ts
 │   ├── particlePreflight.ts
@@ -96,6 +98,22 @@ chatgpt-particle-authoring/
 
 Diagnostic codes are centralized and stable within the experiment so later promotion can preserve semantics without coupling production to this directory.
 
+## Promotion readiness
+
+The architecture and failure-mode coverage are mature enough to define a bounded migration plan, but production promotion is intentionally blocked until focused Bun tests run in `LOCAL_CODE`.
+
+The production audit concluded that promotion should:
+
+- preserve exactly `inspect_particle` and `manage_particle`;
+- move only import-safe deterministic preflight logic into `mcp/lib/`;
+- keep Bedrock-generic validity separate from Snowstorm-specific compatibility warnings;
+- integrate read-only inspection before mutation behavior;
+- reuse an existing image/texture owner if raw texture decoding is ever required;
+- regenerate generated API docs in the same logical production delivery;
+- keep live visual/native proof separate from static source verification.
+
+See `PROMOTION_READINESS.md` for the exact impact map, gates, stop conditions, and recommended production order.
+
 ## Important limits
 
 Texture QA accepts already-decoded RGBA pixels. This experiment intentionally does not add a PNG decoder or image dependency. Static texture checks do not prove visual quality.
@@ -123,4 +141,4 @@ Any production promotion must follow `AGENTS.md`, `GITHUB_RULES.md`, and `mcp/AG
 
 The committed prototype provides source/static evidence only. Focused Bun execution remains `LOCAL_CODE` proof, while Snowstorm parity, native Blockbench preview, and visual acceptance remain higher-context proof.
 
-See `DESIGN.md` for the promotion contract and `WORKFLOW.md` for the authoring rules learned from the approved reference asset.
+See `DESIGN.md` for the technical contract, `WORKFLOW.md` for the authoring rules learned from the approved reference asset, and `PROMOTION_READINESS.md` for the production migration audit.
