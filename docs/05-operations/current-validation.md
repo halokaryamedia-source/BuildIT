@@ -10,7 +10,7 @@ Current product name is **LazyDesigner**. Historical executable/runtime evidence
 
 The last user-identified local executable baseline remains BlockIT MCP `v0.2.0` at commit `b6c29c5d9edb7bb5058c42bbce123efe9dc02ed8`. That prior native evidence must not be relabeled as proof that current LazyDesigner source is installed or active.
 
-Current user-facing/source documentation identity is LazyDesigner. Compatibility-bound identifiers such as package/server/plugin IDs, bundle filename, `BLOCKIT_*` environment variables, `x-blockit-*` affinity headers and persisted setting IDs remain intentionally stable.
+Compatibility-bound package/server/plugin IDs, bundle filename, `BLOCKIT_*` environment variables, `x-blockit-*` affinity headers and persisted setting IDs remain intentionally stable.
 
 ## Current Source Architecture State
 
@@ -26,6 +26,13 @@ ChatGPT Reference Preparation
 ```
 
 Canonical Control source: `mcp/gateway/control/`.
+
+Canonical REFERENCE_PREPARATION Skills:
+
+```text
+.agents/skills/lazydesigner-reference-preparation/SKILL.md
+.agents/skills/lazydesigner-prompt-compiler/SKILL.md
+```
 
 Canonical ASSET_AUTHORING Skills:
 
@@ -47,6 +54,7 @@ Removed legacy routing/specialist paths include:
 
 ```text
 mcp/gateway/navigator/
+.agents/skills/blockbench-reference-generator/SKILL.md
 .agents/skills/blockit-bedrock-entity-mcp/SKILL.md
 .agents/skills/blockbench-bedrock-modelling/SKILL.md
 .agents/skills/blockit-bedrock-texturing/SKILL.md
@@ -58,7 +66,7 @@ mcp/gateway/navigator/
 
 Current Control protocol: `lazydesigner-control-v1`.
 
-Current source expresses:
+## Implemented Source Contracts
 
 ```text
 ASSET_AUTHORING / SYSTEM_DEVELOPMENT
@@ -82,10 +90,11 @@ Accurate boundary:
 
 ```text
 CONTROL SEMANTIC CONTRACT: IMPLEMENTED IN CURRENT SOURCE
-CONTROL PHYSICAL NAVIGATOR→CONTROL MIGRATION: COMPLETE IN SOURCE
+NAVIGATOR→CONTROL MIGRATION: COMPLETE IN SOURCE
 LEGACY ASSET ROUTER SKILL: REMOVED IN SOURCE
-ASSET_AUTHORING SPECIALIST NAMING MIGRATION: COMPLETE IN SOURCE
-PRODUCT_DEVELOPMENT SKILL NAMING MIGRATION: COMPLETE IN SOURCE
+REFERENCE_PREPARATION SKILL NAMING: COMPLETE IN SOURCE
+ASSET_AUTHORING SKILL NAMING: COMPLETE IN SOURCE
+PRODUCT_DEVELOPMENT SKILL NAMING: COMPLETE IN SOURCE
 CONTROL PACKET COMPACTION: IMPLEMENTED IN SOURCE
 SOURCE EXECUTION PROOF: NOT RUN IN THIS PHASE
 CONTROL LIVE PROOF: NOT ESTABLISHED
@@ -126,17 +135,6 @@ search/describe → no second getStatus() call for decorative metadata
 legacy routing/specialist aliases → absent
 ```
 
-Full Workspace/Reference projections still exist internally for lifecycle/readiness/context identity; source compaction removes duplicated emitted detail rather than weakening decisions.
-
-Static regressions/measurement owners include:
-
-```text
-mcp/tests/gateway-control-*.test.ts
-mcp/tests/authoring/*
-mcp/tests/repository/*
-mcp/scripts/measure-control-context.ts
-```
-
 Static context/payload measurements are supporting diagnostics only; whole-task savings remain unproven.
 
 ## Invalidation State
@@ -151,18 +149,6 @@ ambiguous structural evidence      → conservative downstream invalidation
 ```
 
 This is affected-knowledge metadata, not proof that live downstream authored state was rebuilt or revalidated.
-
-## Current Surface Counts
-
-Previously documented source targets:
-
-```text
-phase-union callable tools   54
-AUTHORING tools              47
-Animation tools              20
-```
-
-Treat these as source-era documented counts, not installed Runtime proof, until post-migration generator/build/runtime surfaces are verified.
 
 ## Visual / Reference Proof Rule
 
@@ -183,9 +169,8 @@ Reference Package + Control parser: implemented in source
 Control semantic protocol + canonical source path: implemented
 Navigator active source path: removed
 legacy asset-router Skill: removed
-canonical lazydesigner-* ASSET_AUTHORING specialists: implemented in source
-canonical lazydesigner-* PRODUCT_DEVELOPMENT specialists: implemented in source
-legacy authoring/development Skill paths: removed
+canonical lazydesigner-* primary Skills: implemented in source
+legacy primary Skill paths: removed
 stage-specific + lifecycle readiness projection: implemented in source
 canonical phase classification sharing: implemented in source
 effect-aware invalidation: implemented with conservative fallback
