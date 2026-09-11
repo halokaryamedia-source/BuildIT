@@ -84,7 +84,7 @@ describe("repository workflow supply chain", () => {
     expect(repositoryWorkflow).not.toContain("bun install");
   });
 
-  test("MCP verification publishes only a read-only exact-SHA verified build artifact", async () => {
+  test("MCP verification publishes only a read-only exact-SHA verified compatibility artifact", async () => {
     const workflow = await source("../.github/workflows/mcp-verify.yml");
     expect(workflow).toContain("bun run ./scripts/verified-build-artifact.ts write-ci");
     expect(workflow).toContain("name: blockit-mcp-verified");
@@ -95,28 +95,36 @@ describe("repository workflow supply chain", () => {
     expect(workflow).not.toContain("git push");
   });
 
-  test("developer-facing static docs route to repository verification rather than the full MCP gate", async () => {
+  test("developer-facing static docs route to Repository Verify rather than executable MCP verification", async () => {
     const [repositoryWorkflow, mcpWorkflow] = await Promise.all([
       source("../.github/workflows/repository-verify.yml"),
       source("../.github/workflows/mcp-verify.yml"),
     ]);
 
     for (const path of [
-      '"docs/knowledge/flow.md"',
-      '"mcp/llms.txt"',
+      '"docs/**"',
+      '"mcp/AGENTS.md"',
+      '"mcp/README.md"',
       '"mcp/about.md"',
       '"mcp/gateway/README.md"',
-      '"docs/knowledge/mcp-capability-backlog.md"',
+      '"mcp/llms.txt"',
     ]) {
       expect(repositoryWorkflow).toContain(path);
     }
 
     for (const path of [
-      '"!mcp/llms.txt"',
+      '"!mcp/AGENTS.md"',
+      '"!mcp/README.md"',
       '"!mcp/about.md"',
       '"!mcp/gateway/README.md"',
+      '"!mcp/llms.txt"',
     ]) {
       expect(mcpWorkflow).toContain(path);
+    }
+
+    for (const workflow of [repositoryWorkflow, mcpWorkflow]) {
+      expect(workflow).not.toContain("docs/knowledge/");
+      expect(workflow).not.toContain("docs/foundation/");
     }
   });
 
