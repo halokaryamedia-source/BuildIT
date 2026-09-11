@@ -33,7 +33,13 @@ export type ControlWorkspaceSummary = Pick<
 
 export type ControlReferenceSummary = Pick<
   ControlReferenceProjection,
-  "available" | "fingerprint" | "asset_name" | "selected_profile" | "unavailable_reason"
+  | "available"
+  | "fingerprint"
+  | "asset_name"
+  | "asset_kind"
+  | "selected_profile"
+  | "particle"
+  | "unavailable_reason"
 >;
 
 export type ControlPacket = Omit<ControlSnapshot, "context" | "mode"> & {
@@ -82,7 +88,9 @@ function referenceSummary(reference: ControlReferenceProjection): ControlReferen
     available: reference.available,
     fingerprint: reference.fingerprint,
     asset_name: reference.asset_name,
+    asset_kind: reference.asset_kind,
     selected_profile: reference.selected_profile,
+    particle: reference.particle,
     ...(reference.unavailable_reason ? { unavailable_reason: reference.unavailable_reason } : {}),
   };
 }
