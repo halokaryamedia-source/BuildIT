@@ -91,7 +91,7 @@ describe("LazyDesigner Control", () => {
   test("resolved context handles are content-addressed from current canonical files", async () => {
     const packet = await buildControlPacket(onlineStatus);
     expect(packet.context.required.length).toBe(1);
-    expect(packet.context.required[0]?.path).toBe(".agents/skills/blockbench-bedrock-modelling/SKILL.md");
+    expect(packet.context.required[0]?.path).toBe(".agents/skills/lazydesigner-modelling/SKILL.md");
     for (const handle of packet.context.required) {
       const bytes = await readFile(new URL(`../../${handle.path}`, import.meta.url));
       const digest = createHash("sha256").update(bytes).digest("hex");
@@ -135,7 +135,7 @@ describe("LazyDesigner Control", () => {
       requirements: { player_relative_scale: "PLAYER_HEIGHT" },
     });
     expect(packet.context.required.map((entry) => entry.path)).toEqual([
-      ".agents/skills/blockbench-bedrock-modelling/SKILL.md",
+      ".agents/skills/lazydesigner-modelling/SKILL.md",
       "docs/03-authoring/modelling/profiles/humanoid.md",
     ]);
   });
