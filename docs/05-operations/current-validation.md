@@ -10,11 +10,9 @@ Current product name is **LazyDesigner**. Historical executable/runtime evidence
 
 The last user-identified local executable baseline remains BlockIT MCP `v0.2.0` at commit `b6c29c5d9edb7bb5058c42bbce123efe9dc02ed8`.
 
-Prior native evidence established that historical build running in Blockbench 5.1.6 with matching Gateway/Runtime identity at the time of that run. This evidence must not be relabeled as proof that the current LazyDesigner migration source is installed or active.
+Prior native evidence established that historical build running in Blockbench 5.1.6 with matching Gateway/Runtime identity at the time of that run. This evidence must not be relabeled as proof that current LazyDesigner source is installed or active.
 
 ## Current Source Architecture State
-
-Canonical product boundary:
 
 ```text
 ChatGPT Reference Preparation
@@ -26,7 +24,13 @@ ChatGPT Reference Preparation
 → Blockbench
 ```
 
-The active Control semantic/public protocol in current source is:
+Canonical Control source is now:
+
+```text
+mcp/gateway/control/
+```
+
+The former active `mcp/gateway/navigator/` source path has been removed. Current Control protocol:
 
 ```text
 lazydesigner-control-v1
@@ -40,35 +44,30 @@ Reference Package projection from REFERENCE.json
 Active Workspace projection
 GEOMETRY_CONTEXT / TEXTURE_CONTEXT / ANIMATION_CONTEXT
 selected-profile context loading for Geometry
-content-addressed current-file Skill/profile handles
+content-addressed Skill/profile handles
 bounded system-development source-owner routing
 stage-scoped Reference readiness/blocking
-Control capability metadata
+Control capability/source-owner metadata
 control_delta post-operation continuation
+effect-aware bounded invalidation with conservative fallback
 canonical phase classification shared from mcp/lib/authoringPhase.ts
 ```
 
-The implementation is still physically located under legacy path:
-
-```text
-mcp/gateway/navigator/
-```
-
-Therefore the accurate boundary is:
+Accurate proof boundary:
 
 ```text
 CONTROL SEMANTIC CONTRACT: IMPLEMENTED IN CURRENT SOURCE
-CONTROL PHYSICAL/SYMBOL MIGRATION: IN PROGRESS
+CONTROL PHYSICAL NAVIGATOR→CONTROL MIGRATION: COMPLETE IN SOURCE
 CONTROL SOURCE EXECUTION PROOF: NOT RUN IN THIS PHASE
 CONTROL LIVE PROOF: NOT ESTABLISHED
 LAZYDESIGNER INSTALLED PROOF: NOT ESTABLISHED
 ```
 
-Do not describe the old Experimental Navigator proposal as current architecture. Historical proposal material is superseded by current authority under `docs/01-product/`, `docs/02-reference/`, and `docs/04-system/`.
+Historical Experimental Navigator material is not current architecture authority.
 
 ## Reference / Context Source Proof
 
-Current source now establishes these intended contracts:
+Current source expresses:
 
 ```text
 REFERENCE.json → compact typed Control projection
@@ -80,27 +79,24 @@ known_context_ids → unchanged context reuse by SHA-256 identity
 SYSTEM_DEVELOPMENT → bounded source/specialist/test owner projection
 ```
 
-The former asset-router Skill is no longer mandatory authoring context in Control source.
+The former asset-router Skill is no longer mandatory normal authoring context.
 
-Source regression files were added/updated for these semantics, including stage-scoped Reference readiness and canonical phase classification. They have **not** been executed in a local Bun environment during this phase.
+Static regression owners now use canonical `gateway-control-*` naming. They have **not** been executed in a local Bun environment during this phase.
 
 ## Invalidation State
 
-Current source expresses dependency direction:
+Current source performs effect-aware affected-knowledge projection:
 
 ```text
-Geometry → Geometry + potentially dependent Texture/Animation
-Texture  → Texture + potentially dependent Animation
-Animation→ Animation
+known local Geometry transform      → GEOMETRY
+shape/UV-sensitive Geometry change → GEOMETRY + TEXTURING + ANIMATION
+hierarchy/pivot structure change   → GEOMETRY + ANIMATION
+Texture/material change            → TEXTURING
+Animation change                   → ANIMATION
+ambiguous structural evidence      → conservative downstream invalidation
 ```
 
-This is currently domain-level affected-knowledge metadata. Field/effect-aware minimum invalidation is still pending, so do not claim that downstream invalidation is fully minimal yet.
-
-## 3D-Assisted Retirement
-
-The previous 3D-assisted/Hunyuan/PrimitiveAnything modelling route remains retired from current product semantics. Current authoring intent is one native Geometry path.
-
-Generated compatibility residue and tests/docs may still contain retired identifiers until later migration cleanup. Their presence does not reactivate the retired route.
+This is invalidation metadata, not proof that live downstream authored state was actually rebuilt or revalidated.
 
 ## Current Surface Counts
 
@@ -112,11 +108,11 @@ AUTHORING tools              47
 Animation tools              20
 ```
 
-Treat these as source-era documented counts, not installed Runtime proof, until post-migration generated/runtime surfaces are rebuilt and verified.
+Treat these as source-era documented counts, not installed Runtime proof, until post-migration generator/build/runtime surfaces are verified.
 
 ## Documentation Proof
 
-Current repository intent is separated into canonical domains and owners:
+Current canonical documentation owners include:
 
 ```text
 docs/README.md                           → AI documentation router
@@ -129,11 +125,11 @@ docs/05-operations/next-action.md        → continuation
 docs/05-operations/current-validation.md → proof interpretation
 ```
 
-Documentation/source structure is not live execution proof.
+Source/documentation structure is not live execution proof.
 
 ## Visual / Reference Proof Rule
 
-A visual/reference `PASS` requires the actual approved reference image plus fresh evidence from the current model/revision at a comparable view/scale.
+A visual/reference `PASS` requires the actual approved reference image plus fresh evidence from the current model/revision at comparable view/scale.
 
 Tool success, source/CI success, hashes, coordinates, export, scalar metrics, UV occupancy, or clean structural diagnostics cannot create visual PASS by themselves.
 
@@ -143,9 +139,9 @@ If corresponding live evidence is unavailable, report `UNVERIFIED` or `LOCAL PRO
 
 Authoring Efficiency means **Cost to Accepted Result**.
 
-Current Control source is explicitly designed to reduce repeated context loading, router duplication, broad discovery, readback, phase bouncing, and stale-context recovery. Whole-task savings remain **UNKNOWN** until measured on comparable accepted work after current source is built and exercised.
+Current Control source is designed to reduce repeated context loading, broad discovery, duplicate routing knowledge, readback, phase bouncing, and stale-context recovery. Whole-task savings remain **UNKNOWN** until measured on comparable accepted work after current source is built and exercised.
 
-Static payload/context measurements are supporting diagnostics only; they are not equivalent to end-to-end token/cost savings.
+Static context/payload measurements are supporting diagnostics only.
 
 ## Current Proof Ceiling
 
@@ -156,10 +152,12 @@ LazyDesigner product naming: introduced in source/docs
 AI-first docs hierarchy: implemented in source
 Reference Package contract: documented + Control parser implemented
 Control semantic/public protocol: implemented in current source
+Control canonical source path: mcp/gateway/control/
+Navigator active source path: removed
 stage-specific Control projection: implemented in current source
 canonical phase classification sharing: implemented in current source
-physical Navigator→Control path/symbol migration: pending
-field/effect-aware minimum invalidation: pending
+effect-aware invalidation: implemented in current source with conservative fallback
+legacy BlockIT/package/Skill identifier migration: pending
 generated-output freshness: pending local generator proof
 Bun/typecheck/test execution for current Control source: not run in this phase
 installed/live Blockbench validation: pending
