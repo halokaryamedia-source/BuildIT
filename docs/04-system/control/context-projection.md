@@ -31,14 +31,42 @@ GEOMETRY_CONTEXT | TEXTURE_CONTEXT | ANIMATION_CONTEXT
 
 The objective is not smallest possible payload. The objective is the minimum sufficient payload that reduces wrong-route recovery, repeated discovery, and repeated interpretation.
 
-## Shared Envelope
+## Packet Layering
 
-Every projection uses one compact shared envelope:
+A Control packet separates **identity/availability summary** from **active-stage decision detail**.
 
 ```text
-schema
+workspace
+→ summary only:
+  available
+  fingerprint
+  asset
+  unavailable_reason when material
+
+reference
+→ summary only:
+  available
+  fingerprint
+  asset_name
+  selected_profile
+  unavailable_reason when material
+
+stage_context
+→ one self-contained active-stage projection
+```
+
+Do not repeat Workspace gates, next step, full Reference readiness, requirements, document lists or image lists at the top level when the active decision already receives the required subset through `stage_context`.
+
+The full Workspace and Reference projections remain internal Control inputs for readiness, lifecycle checks, context identity and stage projection. Output compaction must not weaken those internal decisions.
+
+`stage_context` intentionally stays self-contained. Do not remove original intent, current delta, selected profile, active requirements, active reference document/image IDs, or current Workspace stage/gates merely to reduce bytes if doing so would force Codex to reconstruct the decision from neighboring packet fields.
+
+## Shared Envelope
+
+Every stage projection uses one compact shared envelope:
+
+```text
 context_type
-asset_id / asset_name
 original_user_intent
 current_user_delta
 selected_profile
@@ -47,7 +75,6 @@ workspace_revision_or_hash
 stage_readiness
 blocking_unknowns
 non_blocking_unknowns_relevant_to_stage
-source_freshness
 ```
 
 Rules:
@@ -314,6 +341,8 @@ Control projections must not become:
 The projection system is correct when:
 
 ```text
+top-level Reference/Workspace remain compact summaries
+stage_context contains one self-contained active-stage decision projection
 Geometry receives only geometry-relevant profile/reference/current-state context
 Texture receives only material/UV/mapped-surface context
 Animation receives only participating motion/rig/clip context
