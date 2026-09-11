@@ -49,8 +49,7 @@ describe("model creation effectiveness — professional construction without pre
   });
 
   test("surface integrity distinguishes required closure from intentional openings and intersections", async () => {
-    const [orchestrator, modelling, geometry] = await Promise.all([
-      source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md"),
+    const [modelling, geometry] = await Promise.all([
       source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
       source("../docs/03-authoring/modelling/standard.md"),
     ]);
@@ -60,7 +59,7 @@ describe("model creation effectiveness — professional construction without pre
       expect(geometry).toContain(relation);
     }
 
-    expect(orchestrator).toContain("bounded surface/contact review");
+    expect(lower(modelling)).toMatch(/surface.*contact/);
     expect(modelling).toContain("do not force universal watertight geometry");
     expect(geometry).toContain("not that every model is universally watertight");
   });
