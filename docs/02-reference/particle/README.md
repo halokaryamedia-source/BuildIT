@@ -35,6 +35,9 @@ Do not preload the entire corpus. Start with `authoring-spec.md` + `workflow.md`
 knowledge routing / provenance
 → knowledge-map.md
 
+official Bedrock schema closure / missing-owner audit
+→ official-schema-coverage.md
+
 Bedrock mental model
 → fundamentals.md
 
@@ -53,6 +56,9 @@ emitter lifecycle / built-in shapes / density
 custom shape + launch direction math
 → emitter-shape-math.md
 
+general vector / geometry / physics / probability math
+→ math-physics-reference.md
+
 trajectory / physics / parametric motion
 → motion.md
 
@@ -67,6 +73,9 @@ directional / velocity-aligned billboard edge cases
 
 production PNG/RGBA/atlas/UV/flipbook
 → texture-authoring.md
+
+resolution / resampling / downscale / frame stability
+→ texture-resolution-sampling.md
 
 filtering / bleeding / hidden RGB / matte / minification
 → texture-filtering-bleeding.md
@@ -136,9 +145,11 @@ The canonical knowledge base targets all practical layers required to author Bed
 
 ```text
 particle document structure
+official schema/component closure
 component inventory + field semantics
 emitter rate/lifetime/shape
 custom shape + vector/direction math
+general vector/geometry/probability/ballistic math
 emitter vs particle lifecycle
 creation/update/render timing
 local/world simulation + inherited velocity
@@ -146,10 +157,11 @@ initial speed / spin
 dynamic acceleration / drag
 parametric motion
 collision / bounce / contact events / kill plane / block expiration
-billboard facing + directional modes
+billboard facing + directional/emitter-transform modes
 materials + transparency
 RGBA texture production
 atlas construction + cell mapping
+texture resolution / resampling / downscale
 texture filtering / hidden RGB / bleed prevention
 UV mapping + flipbook animation
 tint / alpha / gradients
@@ -175,6 +187,10 @@ QA and clean delivery
 ```text
 texture-authoring.md
 → source PNG/RGBA, alpha, sprite bounds, atlas, UV/flipbook, tint compatibility
+
+texture-resolution-sampling.md
+→ source resolution, resampling, texel-density reasoning, downscale,
+  alpha coverage and frame stability
 
 texture-filtering-bleeding.md
 → hidden RGB, gutter/bleed risk, frame bounds, matte/halo, minification
@@ -202,6 +218,10 @@ molang-formula-cookbook.md
 → reusable formulas for lifetime envelopes, stable random ranges/classes,
   oscillation, orbit/spiral, remapping, cone/ring reasoning and safe math
 
+math-physics-reference.md
+→ vector magnitude/normalization, projection, sampling distributions,
+  ballistic equations, probability, angular readability and numerical safety
+
 molang-queries-context.md
 → query/context host availability and external-state coupling
 ```
@@ -216,6 +236,7 @@ ChatGPT does not claim live Snowstorm/Minecraft truth without review, Blockbench
 
 ```text
 Bedrock/source reasoning
+→ official schema/component coverage check when needed
 → component/field ownership check
 → Molang/math ownership check
 → texture/rendering QA
