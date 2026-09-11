@@ -53,10 +53,10 @@ const CORE_TEXTURE_TOOLS = new Set(["list_textures"]);
 const ANIMATION_EXCLUDED_CORE_TOOLS = new Set(["create_project"]);
 
 /**
- * Import-safe canonical phase hints for the consolidated/high-frequency public
- * capability names used by Gateway/Control. Runtime family classification below
- * remains the fallback for the full catalog. Keep phase ownership here so
- * Control never maintains a second hand-written domain table.
+ * Import-safe canonical phase hints for public and retained capability names.
+ * Runtime family classification below remains the fallback for catalog tools,
+ * while Gateway/Control can classify by name without owning a second domain
+ * table. Keep semantic phase ownership here only.
  */
 const CORE_NAMED_CAPABILITIES = new Set([
   "create_project",
@@ -82,12 +82,34 @@ const TEXTURING_NAMED_CAPABILITIES = new Set([
   "create_texture",
   "get_texture",
   "activate_texture",
+  "apply_texture",
+  "add_texture_group",
+  "create_pbr_material",
+  "configure_material",
+  "list_materials",
+  "get_material_info",
+  "import_texture_set",
+  "assign_texture_channel",
+  "save_material_config",
   "paint_fill_tool",
   "draw_shape_tool",
-  "paint_with_brush",
+  "gradient_tool",
+  "color_picker_tool",
+  "copy_brush_tool",
   "eraser_tool",
+  "paint_settings",
+  "paint_with_brush",
+  "create_brush_preset",
+  "load_brush_preset",
+  "texture_selection",
+  "texture_layer_management",
   "paint_texture_transaction",
   "manage_material",
+  "get_face_material_instances",
+  "set_face_material_instance",
+  "list_material_instances",
+  "bulk_set_material_instances",
+  "clear_material_instances",
   "manage_material_instances",
   "manage_render_profile",
   "filter_by_material",
@@ -95,6 +117,11 @@ const TEXTURING_NAMED_CAPABILITIES = new Set([
 
 const ANIMATION_NAMED_CAPABILITIES = new Set([
   "create_animation",
+  "manage_keyframes",
+  "animation_graph_editor",
+  "animation_timeline",
+  "batch_keyframe_operations",
+  "animation_copy_paste",
   "inspect_animation",
   "manage_animation_timeline",
   "manage_animation_effects",
