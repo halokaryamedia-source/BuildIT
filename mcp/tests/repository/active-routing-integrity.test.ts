@@ -40,17 +40,22 @@ describe("active routing integrity", () => {
     expect(root).not.toContain(".agents/skills/blockit-bedrock-entity-mcp/SKILL.md");
   });
 
-  test("MCP Verify tracks current non-mcp specialist owners without legacy router trigger", async () => {
+  test("MCP Verify tracks canonical non-mcp specialist owners without legacy router trigger", async () => {
     const workflow = await source("../.github/workflows/mcp-verify.yml");
     for (const path of [
-      ".agents/skills/blockbench-bedrock-modelling/**",
-      ".agents/skills/blockit-bedrock-texturing/**",
-      ".agents/skills/blockit-bedrock-animation/**",
+      ".agents/skills/lazydesigner-modelling/**",
+      ".agents/skills/lazydesigner-texturing/**",
+      ".agents/skills/lazydesigner-animation/**",
       "docs/05-operations/next-action.md",
     ]) {
       expect(workflow).toContain(`- "${path}"`);
     }
-    expect(workflow).not.toContain(".agents/skills/blockit-bedrock-entity-mcp/**");
+    for (const legacy of [
+      ".agents/skills/blockbench-bedrock-modelling/**",
+      ".agents/skills/blockit-bedrock-texturing/**",
+      ".agents/skills/blockit-bedrock-animation/**",
+      ".agents/skills/blockit-bedrock-entity-mcp/**",
+    ]) expect(workflow).not.toContain(legacy);
     expect(workflow).not.toContain("docs/knowledge/");
     expect(workflow).not.toContain("docs/foundation/");
   });
