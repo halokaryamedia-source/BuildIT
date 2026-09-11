@@ -1,0 +1,100 @@
+import { describe, expect, test } from "bun:test";
+import { readdir } from "node:fs/promises";
+import { join } from "node:path";
+
+async function text(path: string): Promise<string> {
+  return Bun.file(path).text();
+}
+
+async function walk(root: string): Promise<string[]> {
+  const out: string[] = [];
+  for (const entry of await readdir(root, { withFileTypes: true })) {
+    const path = join(root, entry.name);
+    if (entry.isDirectory()) out.push(...(await walk(path)));
+    else out.push(path);
+  }
+  return out;
+}
+
+describe("Reference Preparation content contract", () => {
+  test("reference domain routes to current canonical owners only", async () => {
+    const files = await walk("../docs/02-reference");
+    const stale: string[] = [];
+
+    for (const file of files) {
+      if (!file.endsWith(".md")) continue;
+      const content = await text(file);
+      if (
+        content.includes("docs/knowledge/") ||
+        content.includes("docs/foundation/") ||
+        content.includes("image-reference-standard.md") ||
+        content.includes("image-generation-prompt-contract.md") ||
+        content.includes("player-scale-and-sheet-escalation.md")
+      ) {
+        stale.push(file);
+      }
+    }
+
+    expect(stale).toEqual([]);
+  });
+
+  test("REFERENCE.json schema owns numeric and player-relative scale without inventing conversion", async () => {
+    const schema = await text("../docs/02-reference/package/schema.md");
+
+    expect(schema).toContain('"dimensions_blocks"');
+    expect(schema).toContain('"player_relative_scale"');
+    expect(schema).toContain("numeric dimensions = numeric authority");
+    expect(schema).toContain("semantic world-scale anchor, not a numeric conversion table");
+    expect(schema).toMatch(/never infer block values from image pixels/i);
+  });
+
+  test("image relevance survives optional stage Markdown omission", async () => {
+    const [schema, load, packageReadme] = await Promise.all([
+      text("../docs/02-reference/package/schema.md"),
+      text("../docs/02-reference/package/load-contract.md"),
+      text("../docs/02-reference/package/README.md"),
+    ]);
+
+    expect(schema).toContain('"used_by": ["GEOMETRY"]');
+    expect(schema).toContain("GEOMETRY | TEXTURE | ANIMATION");
+    expect(load).toContain("images.used_by includes GEOMETRY when GEOMETRY.md is absent");
+    expect(load).toContain("images.used_by includes TEXTURE when TEXTURE.md is absent");
+    expect(load).toContain("images.used_by includes ANIMATION when ANIMATION.md is absent");
+    expect(packageReadme).toContain("Stage Markdown files are optional");
+  });
+
+  test("authority is typed instead of silently ranking visual against scale", async () => {
+    const policy = await text("../docs/02-reference/policy.md");
+
+    expect(policy).toContain("Authority is **typed by fact**");
+    expect(policy).toContain("approved visual reference");
+    expect(policy).toContain("confirmed numeric dimensions");
+    expect(policy).toContain("confirmed player-relative scale");
+    expect(policy).toMatch(/do not silently choose one/i);
+  });
+
+  test("image generation preserves identity and scale locks", async () => {
+    const [prompt, templates, scale] = await Promise.all([
+      text("../docs/02-reference/image/prompt-contract.md"),
+      text("../docs/02-reference/image/master-templates.md"),
+      text("../docs/02-reference/image/scale-and-escalation.md"),
+    ]);
+
+    for (const owner of [prompt, templates, scale]) {
+      expect(owner).toContain("Scale Lock");
+    }
+    expect(prompt).toContain("DO NOT REDESIGN / DO NOT RESCALE");
+    expect(templates).toContain("PRESERVE SCALE LOCK");
+    expect(scale).toContain("Sheet 01 remains the identity and scale anchor");
+  });
+
+  test("reference handoff stays compact and delegates exact contracts", async () => {
+    const handoff = await text("../docs/02-reference/package/handoff.md");
+
+    expect(handoff).toContain("schema.md");
+    expect(handoff).toContain("load-contract.md");
+    expect(handoff).toContain("It deliberately does not repeat");
+    expect(handoff).not.toContain("## Canonical Asset Profiles");
+    expect(handoff).not.toContain("## Optional Reference Modules");
+  });
+});
