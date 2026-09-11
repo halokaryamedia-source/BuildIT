@@ -21,12 +21,14 @@ export {
   applyMcpToolSurface,
   describeMcpSurfaceToolNames,
   getActiveMcpRegistrationProfile,
+  getMcpSurfaceDescriptor,
   getMcpSurfaceToolNames,
   getToolCount,
   getToolRegistrationFamily,
   isCatalogToolEnabled,
   registerMcpProfile,
   setMcpProfileSwitchHandler,
+  type McpSurfaceDescriptor,
 } from "./runtime/registration";
 
 export {
