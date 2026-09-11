@@ -81,8 +81,10 @@ Repeated unavailable probes must not create a tight retry loop.
 Default policy:
 
 ```text
-250ms → 500ms → 1s → 2s → 4s → 5s cap
+250ms → 500ms → 1s → 2s cap
 ```
+
+Repeated observations while already offline/degraded do not inflate the backoff again. A successful Runtime reachability check may clear the cooldown so recovery can proceed without waiting for an obsolete failure delay.
 
 The backoff controls Gateway→Runtime attempts only. It never shuts down the Gateway and never asks the AI client to reconnect.
 
