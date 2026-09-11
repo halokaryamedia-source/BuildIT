@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { readFile, stat } from "node:fs/promises";
+import { classifyMcpToolPhaseByName } from "../../lib/authoringPhase";
 import type {
   NavigatorAuthoringDomain,
   NavigatorContextHandle,
@@ -73,44 +74,11 @@ export async function contextForAuthoringDomain(
   return { required, optional: [] };
 }
 
-const GEOMETRY_CAPABILITIES = new Set([
-  "manage_cubes",
-  "add_group",
-  "modify_group",
-  "reparent_element",
-  "remove_element",
-  "rename_element",
-  "manage_locator",
-  "manage_null_object",
-  "bone_rigging",
-  "inspect_model_bounds",
-]);
-const TEXTURING_CAPABILITIES = new Set([
-  "create_texture",
-  "list_textures",
-  "get_texture",
-  "activate_texture",
-  "paint_fill_tool",
-  "draw_shape_tool",
-  "paint_with_brush",
-  "eraser_tool",
-  "paint_texture_transaction",
-  "manage_material",
-  "manage_material_instances",
-  "manage_render_profile",
-]);
-const ANIMATION_CAPABILITIES = new Set([
-  "create_animation",
-  "inspect_animation",
-  "manage_animation_timeline",
-  "manage_animation_effects",
-  "manage_animation_controller",
-]);
-
 export function authoringDomainForCapability(capability: string): NavigatorAuthoringDomain {
-  if (GEOMETRY_CAPABILITIES.has(capability)) return "GEOMETRY";
-  if (TEXTURING_CAPABILITIES.has(capability)) return "TEXTURING";
-  if (ANIMATION_CAPABILITIES.has(capability)) return "ANIMATION";
+  const phase = classifyMcpToolPhaseByName(capability);
+  if (phase === "geometry") return "GEOMETRY";
+  if (phase === "texturing") return "TEXTURING";
+  if (phase === "animation") return "ANIMATION";
   return "CORE";
 }
 
@@ -139,6 +107,11 @@ const SOURCE_BY_CAPABILITY: Record<string, NavigatorSourceOwner> = {
     source: "mcp/server/tools/camera.ts",
     specialist: MODELLING_PATH,
     test_owner: "mcp/tests/camera-framing-contract.test.ts",
+  },
+  inspect_model_bounds: {
+    source: "mcp/server/tools/project.ts",
+    specialist: MODELLING_PATH,
+    test_owner: "mcp/tests/rendered-model-bounds-numeric-safety.test.ts",
   },
   create_texture: {
     source: "mcp/server/tools/texture.ts",
