@@ -158,11 +158,16 @@ mcp/plugin/blockbenchIntegration.ts
 → i18n/settings/UI/prompts/reference-resource integration
 → corresponding teardown
 
+mcp/plugin/reload.ts
+→ single native LazyDesigner plugin reload owner
+→ shared by human recovery UI and development sync
+
 mcp/plugin/devSync.ts
-→ development file watcher/build identity/reload only
+→ development file watcher/build identity only
+→ delegates reload to the shared plugin reload owner
 ```
 
-Native network/listener/UI/settings/reload ownership must not migrate back into `mcp/index.ts`.
+Native network/listener/UI/settings/reload ownership must not migrate back into `mcp/index.ts`. Human recovery and development sync must not create separate reload paths.
 
 ## Tool Capability Rule
 
