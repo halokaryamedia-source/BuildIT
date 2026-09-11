@@ -30,7 +30,7 @@ describe("LazyDesigner Control system-development intent", () => {
     expect(result).toMatchObject({ task_class: "SYSTEM_DEVELOPMENT", domain: "ANIMATION", confidence: "STRONG" });
     expect(result.source_owners.some((entry) => entry.source === "mcp/lib/animationMotionDynamics.ts")).toBe(true);
     expect(result.source_owners.some((entry) => entry.source === "mcp/lib/animationQuality.ts")).toBe(true);
-    expect(result.required_context_paths).toContain(".agents/skills/blockit-bedrock-animation/SKILL.md");
+    expect(result.required_context_paths).toContain(".agents/skills/lazydesigner-animation/SKILL.md");
   });
 
   test("build sync wording stays out of authoring owners", () => {
@@ -39,7 +39,7 @@ describe("LazyDesigner Control system-development intent", () => {
     expect(result.source_owners.map((entry) => entry.source)).toEqual([
       "mcp/build/index.ts", "mcp/build/watch-policy.ts", "mcp/scripts/deploy-local.ts",
     ]);
-    expect(result.required_context_paths).not.toContain(".agents/skills/blockbench-bedrock-modelling/SKILL.md");
+    expect(result.required_context_paths).not.toContain(".agents/skills/lazydesigner-modelling/SKILL.md");
   });
 
   test("ambiguous equal-score wording refuses to invent a single domain", () => {
@@ -76,7 +76,7 @@ describe("LazyDesigner Control system-development intent", () => {
       taskIntent: "gateway capability catalog bermasalah",
       knownContextIds: ["ctx:skill/modelling@old"],
       workspacePath: "/path/that/must/not/be/read",
-      referencePackagePath: "/path/that/must/not/be/read",
+      referencePackagePath: "/path/that/must/not-be-read",
     });
     expect(packet.mode).toBe("SYSTEM_DEVELOPMENT");
     expect(packet.development?.domain).toBe("GATEWAY");
