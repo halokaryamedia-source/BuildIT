@@ -15,6 +15,10 @@ describe("LazyDesigner Control particle reference packet", () => {
     expect(packet).toContain("particle: reference.particle");
 
     expect(reference).toContain('export type ControlReferenceAssetKind = "MODEL" | "PARTICLE"');
-    expect(reference).not.toContain('| "PARTICLE";\n\nexport type ControlReferenceStage');
+    const profileStart = reference.indexOf("export type ControlProfile =");
+    const profileEnd = reference.indexOf("export type ControlReferenceAssetKind", profileStart);
+    expect(profileStart).toBeGreaterThanOrEqual(0);
+    expect(profileEnd).toBeGreaterThan(profileStart);
+    expect(reference.slice(profileStart, profileEnd)).not.toContain('"PARTICLE"');
   });
 });
