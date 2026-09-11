@@ -10,7 +10,6 @@ import {
   GATEWAY_TOOLS,
   GATEWAY_VERSION,
   compactGatewayCapabilityStructuredContent,
-  summarizeCapability,
   type JsonRecord,
 } from "./contract";
 import { projectCapabilityInputSchema } from "./schemaProjection";
@@ -21,16 +20,16 @@ import {
   CONTROL_ROUTING_POLICY,
   decorateCapabilities,
 } from "./control";
+import { LocalCapabilityRegistry } from "./localCapabilities";
+import { recoveryForGatewayError } from "./recovery";
+import { projectGatewayStatus } from "./statusProjection";
 import {
-  VANILLA_ENTITY_REFERENCE_CAPABILITY,
-  VANILLA_ENTITY_REFERENCE_TOOL,
-  VanillaEntityReferenceError,
-  VanillaEntityReferenceProvider,
-  shouldProbeVanillaEntityReference,
-} from "./vanillaEntityReference";
+  capabilityNeedsPhaseSnapshot,
+  deriveControlReceipt,
+} from "./controlReceipt";
 
 const backend = new BlockitRuntimeBackend();
-const vanillaReferenceProvider = new VanillaEntityReferenceProvider();
+const localCapabilities = new LocalCapabilityRegistry();
 
 const server = new McpServer(
   {
@@ -65,29 +64,59 @@ const registerGatewayTool = server.registerTool.bind(server) as unknown as (
   handler: GatewayToolHandler
 ) => void;
 
-function gatewayErrorResult(error: unknown) {
+function errorRecord(error: unknown): {
+  code: string;
+  message: string;
+  safeToRetry: boolean;
+  details: JsonRecord;
+} | null {
   if (error instanceof GatewayBackendError) {
     return {
-      isError: true,
-      content: [{ type: "text" as const, text: `${error.code}: ${error.message}` }],
-      structuredContent: {
-        code: error.code,
-        message: error.message,
-        safe_to_retry: error.safeToRetry,
-        ...error.details,
-      },
+      code: error.code,
+      message: error.message,
+      safeToRetry: error.safeToRetry,
+      details: error.details,
     };
   }
 
-  if (error instanceof VanillaEntityReferenceError) {
+  if (!error || typeof error !== "object") return null;
+  const candidate = error as Record<string, unknown>;
+  if (typeof candidate.code !== "string") return null;
+  const details =
+    candidate.details &&
+    typeof candidate.details === "object" &&
+    !Array.isArray(candidate.details)
+      ? candidate.details as JsonRecord
+      : {};
+  return {
+    code: candidate.code,
+    message:
+      typeof candidate.message === "string"
+        ? candidate.message
+        : String(candidate.code),
+    safeToRetry: candidate.safeToRetry === true,
+    details,
+  };
+}
+
+function gatewayErrorResult(error: unknown) {
+  const known = errorRecord(error);
+  if (known) {
+    const recovery = recoveryForGatewayError(
+      known.code,
+      known.safeToRetry,
+      known.details
+    );
     return {
       isError: true,
-      content: [{ type: "text" as const, text: `${error.code}: ${error.message}` }],
+      content: [
+        { type: "text" as const, text: `${known.code}: ${known.message}` },
+      ],
       structuredContent: {
-        code: error.code,
-        message: error.message,
-        safe_to_retry: error.safeToRetry,
-        ...error.details,
+        code: known.code,
+        message: known.message,
+        ...known.details,
+        recovery,
       },
     };
   }
@@ -99,7 +128,7 @@ function gatewayErrorResult(error: unknown) {
     structuredContent: {
       code: "GATEWAY_ERROR",
       message,
-      safe_to_retry: false,
+      recovery: recoveryForGatewayError("GATEWAY_ERROR", false),
     },
   };
 }
@@ -156,7 +185,12 @@ const statusInput = z.object({
 
 const searchInput = z.object({
   query: z.string().default(""),
-  limit: z.number().int().min(1).max(50).default(CONTROL_ROUTING_POLICY.search_limit),
+  limit: z
+    .number()
+    .int()
+    .min(1)
+    .max(50)
+    .default(CONTROL_ROUTING_POLICY.search_limit),
 });
 
 const describeInput = z.object({
@@ -183,7 +217,7 @@ registerGatewayTool(
   {
     title: "LazyDesigner Status",
     description:
-      "Reports Gateway health plus a compact LazyDesigner Control packet. Asset mode can project a Reference Package + Workspace into GEOMETRY_CONTEXT, TEXTURE_CONTEXT, or ANIMATION_CONTEXT. System-development mode returns bounded source/specialist/test ownership. Pass known_context_ids to avoid retransmitting unchanged Skill/profile handles.",
+      "Reports normalized Gateway/Runtime health plus a compact LazyDesigner Control packet. Raw Runtime health remains backend/debug evidence and is not copied into the normal AI-client status payload. Asset mode can project a Reference Package + Workspace into GEOMETRY_CONTEXT, TEXTURE_CONTEXT, or ANIMATION_CONTEXT. System-development mode returns bounded source/specialist/test ownership.",
     inputSchema: statusInput.shape,
     annotations: {
       readOnlyHint: true,
@@ -218,17 +252,18 @@ registerGatewayTool(
         content: [
           {
             type: "text" as const,
-            text: task_mode === "SYSTEM_DEVELOPMENT"
-              ? `LazyDesigner Control routed development task ${control.task_context_id} to ${control.development?.domain ?? "UNRESOLVED"}.`
-              : status.runtime.online
-                ? status.affinity.project_uuid
-                  ? `LazyDesigner Gateway is ready; Control task ${control.task_context_id} is bound to project ${status.affinity.project_uuid}.`
-                  : "LazyDesigner Gateway is ready and Runtime is online; Control has no project binding yet."
-                : "LazyDesigner Gateway is ready; the Blockbench Runtime is currently offline.",
+            text:
+              task_mode === "SYSTEM_DEVELOPMENT"
+                ? `LazyDesigner Control routed development task ${control.task_context_id} to ${control.development?.domain ?? "UNRESOLVED"}.`
+                : status.runtime.online
+                  ? status.affinity.project_uuid
+                    ? `LazyDesigner Gateway is ready; Control task ${control.task_context_id} is bound to project ${status.affinity.project_uuid}.`
+                    : "LazyDesigner Gateway is ready and Runtime is online; Control has no project binding yet."
+                  : "LazyDesigner Gateway is ready; the Blockbench Runtime is currently offline.",
           },
         ],
         structuredContent: {
-          ...status,
+          ...projectGatewayStatus(status),
           control,
         },
       };
@@ -243,7 +278,7 @@ registerGatewayTool(
   {
     title: "Search LazyDesigner Capabilities",
     description:
-      "Searches the current exposed capability catalog and decorates results with LazyDesigner Control domain/source ownership. Search is fallback-only; it does not perform an extra status read merely to label results.",
+      "Searches the current exposed capability catalog and bounded local read-only support providers, then decorates results with LazyDesigner Control domain/source ownership. Search is fallback-only; it does not perform an extra status read merely to label results.",
     inputSchema: searchInput.shape,
     annotations: {
       readOnlyHint: true,
@@ -256,18 +291,11 @@ registerGatewayTool(
     try {
       const { query, limit } = searchInput.parse(rawArgs);
       const runtimeCapabilities = await backend.searchCapabilities(query, limit);
-      const includeVanillaReference =
-        shouldProbeVanillaEntityReference(query) &&
-        (await vanillaReferenceProvider.isAvailable());
-      const rawCapabilities = includeVanillaReference
-        ? [
-            summarizeCapability(VANILLA_ENTITY_REFERENCE_TOOL),
-            ...runtimeCapabilities.filter(
-              (candidate) =>
-                candidate.capability_id !== VANILLA_ENTITY_REFERENCE_CAPABILITY
-            ),
-          ].slice(0, limit)
-        : runtimeCapabilities;
+      const rawCapabilities = await localCapabilities.search(
+        query,
+        runtimeCapabilities,
+        limit
+      );
       const capabilities = decorateCapabilities(rawCapabilities);
       return {
         content: [
@@ -302,10 +330,8 @@ registerGatewayTool(
     try {
       const { capability, branch } = describeInput.parse(rawArgs);
       const tool =
-        capability === VANILLA_ENTITY_REFERENCE_CAPABILITY &&
-        (await vanillaReferenceProvider.isAvailable())
-          ? VANILLA_ENTITY_REFERENCE_TOOL
-          : await backend.describeCapability(capability);
+        (await localCapabilities.describe(capability)) ??
+        (await backend.describeCapability(capability));
       const projection = projectCapabilityInputSchema(
         capability,
         tool.inputSchema ?? {},
@@ -347,42 +373,38 @@ registerGatewayTool(
   {
     title: "Invoke LazyDesigner Capability",
     description:
-      "Invokes one exact LazyDesigner capability. Runtime calls use this Gateway's bound Blockbench project and authoring phase; rare read-only local support references do not mutate project state. Runtime calls are serialized and never automatically retried after interruption.",
+      "Invokes one exact LazyDesigner capability. Runtime calls use this Gateway's bound Blockbench project and authoring phase; bounded local support providers are read-only and own no authored project state. Runtime calls are serialized and never automatically retried after interruption.",
     inputSchema: invokeInput.shape,
   },
   async (rawArgs) => {
     try {
       const { capability, arguments: args } = invokeInput.parse(rawArgs);
-      const phaseBefore = capability === "switch_authoring_phase"
+      const phaseBefore = capabilityNeedsPhaseSnapshot(capability)
         ? (await backend.getStatus()).affinity.authoring_phase
         : null;
+      const localResult = await localCapabilities.invoke(capability, args);
       const result =
-        capability === VANILLA_ENTITY_REFERENCE_CAPABILITY
-          ? await vanillaReferenceProvider.invoke(args)
-          : await backend.invokeCapability(capability, args);
-      const structured = result.structuredContent && typeof result.structuredContent === "object" && !Array.isArray(result.structuredContent)
-        ? result.structuredContent as JsonRecord
-        : null;
+        localResult ?? (await backend.invokeCapability(capability, args));
       const succeeded = result.isError !== true;
-      const targetPhase = capability === "switch_authoring_phase" && typeof structured?.phase === "string"
-        ? structured.phase as "geometry" | "texturing" | "animation"
-        : null;
-      const phaseAfter = capability === "switch_authoring_phase" && succeeded
-        ? targetPhase
-        : phaseBefore;
-      const projectUuid = capability === "create_project" && structured?.project && typeof structured.project === "object" && !Array.isArray(structured.project)
-        ? typeof (structured.project as JsonRecord).uuid === "string" ? (structured.project as JsonRecord).uuid as string : null
-        : null;
+      const receipt = deriveControlReceipt(
+        capability,
+        result.structuredContent,
+        succeeded,
+        phaseBefore
+      );
       const controlDelta = buildControlDelta({
         capability,
-        phaseBefore,
-        phaseAfter,
-        projectUuid,
+        phaseBefore: receipt.phaseBefore,
+        phaseAfter: receipt.phaseAfter,
+        projectUuid: receipt.projectUuid,
         succeeded,
         result: result.structuredContent,
       });
       if (result.structuredContent === undefined) {
-        return { ...result, structuredContent: { control_delta: controlDelta } };
+        return {
+          ...result,
+          structuredContent: { control_delta: controlDelta },
+        };
       }
       const compacted = compactGatewayCapabilityStructuredContent(
         capability,
