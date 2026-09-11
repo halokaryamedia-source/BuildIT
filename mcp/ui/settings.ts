@@ -100,6 +100,7 @@ export function settingsSetup(): void {
 }
 
 export function settingsTeardown(): void {
+  extendedProfileHandler = undefined;
   for (const setting of settings.splice(0)) {
     setting.delete();
   }
