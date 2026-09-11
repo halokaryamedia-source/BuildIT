@@ -1,19 +1,28 @@
-# BlockIT Workspace Context
+# LazyDesigner Workspace Context
 
-Last verified stable facts: 2026-09-10  
+Last verified stable facts: 2026-09-11  
 Stability: stable design contract; implementation/proof tracked separately
 
-This file owns **stable project facts only**. Continuation → `docs/knowledge/next-action.md`; proof → `docs/knowledge/current-validation.md`; ownership → `docs/knowledge/implementation-map.md`; asset continuity → `workspace/active/<asset>/README.md`; routing → `AGENTS.md`.
+This file owns **stable project facts only**.
+
+```text
+Documentation entry → docs/README.md
+Continuation        → docs/05-operations/next-action.md
+Proof               → docs/05-operations/current-validation.md
+Ownership           → docs/04-system/implementation-map.md
+Asset continuity    → workspace/active/<asset>/README.md
+Routing             → AGENTS.md
+```
 
 ## Product
 
-BlockIT is a local MCP workflow for AI-assisted **Minecraft Bedrock Entity** authoring in desktop Blockbench. Normal AI-client boundary is the stable **BlockIT Gateway**; the Blockbench plugin is the execution Runtime behind it.
+LazyDesigner is a local MCP workflow for AI-assisted **Minecraft Bedrock Entity** authoring in desktop Blockbench. Normal AI-client boundary is the stable Gateway; the Blockbench plugin is the execution Runtime behind it.
 
 Primary editable output is `.bbmodel`. Tool/file/coordinate success is not proof of visual resemblance.
 
 ### Asset-only product scope
 
-BlockIT is an **asset authoring system**, not an add-on development system.
+LazyDesigner is an **asset authoring system**, not an add-on development system.
 
 Normal scope includes Geometry, rig/bones/pivots/locators, UV Layout, Texture Atlas/Styling/PBR, texture variants, visual material/render intent, Animation clips, artist-facing Animation Controller composition, effect cues, preview/validation, and native visual-asset export.
 
@@ -23,23 +32,25 @@ Resource-Pack semantics are retained only where they affect the Blockbench-autho
 
 ## Reference-Grounded Authoring
 
-Reference image creation belongs in ChatGPT. A source image may be used directly as the Approved Reference when its evidence is sufficient. When stronger normalized coverage is useful, the optional canonical board is:
+Reference image creation belongs in ChatGPT. Reference Preparation uses the unified adaptive system under `docs/02-reference/`.
+
+Default behavior:
 
 ```text
-UPPER: LEFT | FRONT | BACK
-LOWER: TOP  | FRONT-LEFT 3/4
+minimum useful visual evidence
+→ 1 primary sheet by default
+→ additional sheets only for real information overflow
+→ Sheet 01 locks identity + scale
+→ Sheet 02+ preserves both
 ```
 
-For a new model, Codex requires before Blockbench authoring:
+View selection is decision-driven; no fixed turnaround board is mandatory.
 
-```text
-Asset
-Approved Reference Image
-Dimensions
-Animation Required: YES | NO
-```
+Asset sizing is anchored to Minecraft player/world scale unless stronger explicit dimensions exist. Exact dimensions remain authoritative when explicitly supplied.
 
-The **Approved Reference Image** is visual authority and requested dimensions are numeric envelope authority (`1 block = 16 Blockbench units`). BlockIT uses one native Geometry authoring path; there is no modelling-strategy selection gate.
+For authoring, Codex consumes the approved reference package rather than reconstructing the original ChatGPT conversation.
+
+The approved image is visual authority. Confirmed dimensions and scale constraints are numeric/world-scale authority. LazyDesigner uses one native Geometry authoring path; there is no modelling-strategy selection gate.
 
 ### Shared AUTHORING surface and stage ownership
 
@@ -82,9 +93,9 @@ Normal authoring has no Standard/Extended choice. Runtime internal `bedrock_enti
 ```text
 AI client
   ↓ stdio
-BlockIT Gateway
+LazyDesigner Gateway
   ↓ loopback Streamable HTTP
-BlockIT Runtime inside Blockbench
+LazyDesigner Runtime inside Blockbench
   ↓
 Blockbench
 ```
@@ -98,7 +109,7 @@ describe_capability
 invoke_capability
 ```
 
-Current semantic phase union retains **54 callable Bedrock tools** after retirement of the two legacy 3D-assisted capabilities. Geometry and Texturing startup stages expose the same shared AUTHORING surface; Animation remains a separate runtime surface. Installed evidence is tracked separately in `current-validation.md`. Direct Runtime MCP remains for Inspector/conformance/debugging, not normal AI-client authoring.
+Current semantic phase union retains **54 callable Bedrock tools** after retirement of the two legacy 3D-assisted capabilities. Geometry and Texturing startup stages expose the same shared AUTHORING surface; Animation remains a separate runtime surface. Installed evidence is tracked separately in `docs/05-operations/current-validation.md`. Direct Runtime MCP remains for Inspector/conformance/debugging, not normal AI-client authoring.
 
 Gateway handoff keeps the same task/chat alive and refreshes backend catalog only when crossing AUTHORING↔Animation.
 
@@ -108,11 +119,11 @@ Repository source/docs/CI work follows `GITHUB_RULES.md`. Static proof never pro
 
 ## Navigation
 
-- routing → `AGENTS.md`
-- product flow → `docs/knowledge/flow.md`
+- documentation → `docs/README.md`
+- product flow → `docs/01-product/flow.md`
+- reference preparation → `docs/02-reference/README.md`
+- authoring policy → `docs/03-authoring/README.md`
+- system ownership → `docs/04-system/README.md`
+- current operations → `docs/05-operations/README.md`
 - workspace contract → `workspace/README.md`
-- continuation → `docs/knowledge/next-action.md`
-- ownership → `docs/knowledge/implementation-map.md`
-- proof → `docs/knowledge/current-validation.md`
-- reference policy → `docs/foundation/04-reference-guide.md`
 - research → `Experimental/`
