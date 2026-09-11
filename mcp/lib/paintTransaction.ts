@@ -4,6 +4,7 @@ import {
   textureIdOptionalSchema,
 } from "@/lib/zodObjects";
 import { textureRevisionSchema } from "@/lib/textureEvidence";
+import { isAbsoluteFilesystemPath } from "@/lib/util";
 
 export const paintTransactionCoordinateSchema = z
   .object({
@@ -66,6 +67,16 @@ export const paintTransactionOperationSchema = z.union([
   }).strict(),
 ]);
 
+export const paintTransactionOutputSchema = z
+  .object({
+    path: z
+      .string()
+      .refine(isAbsoluteFilesystemPath, "PNG output path must be absolute.")
+      .refine((value) => value.toLowerCase().endsWith(".png"), "Texture output must use the .png suffix."),
+    overwrite: z.boolean().optional().default(false),
+  })
+  .strict();
+
 /**
  * Public contract for one bounded exact-pixel transaction. Runtime registration
  * is owned by server/tools/prelocal-wiring.ts so policy/planning remains pure
@@ -84,6 +95,9 @@ export const paintTransactionParameters = z
       strength:z.number().finite().positive().max(1).default(.5),
     }).strict().refine(v=>v.bias<v.radius,"AO bias must be smaller than radius.").optional()
       .describe("Bedrock Cube AO at the current preview pose. Explicit targets, visible Cubes as occluders; preserves alpha, rejects conflicting UV. Repeated bakes darken again; use Undo to restore. Exclusive with operations."),
+    output: paintTransactionOutputSchema
+      .optional()
+      .describe("Optional verified PNG output for the final authored bitmap. Used by particle sprites and other external texture assets without adding a second save tool."),
   })
   .strict().refine(v=>(v.operations!==undefined)!==(v.ambient_occlusion!==undefined),"Provide operations or ambient_occlusion, exclusively.");
 
@@ -296,7 +310,6 @@ export function applyPaintTransactionRgba(
 
   for (const operation of plan.operations) {
     if (operation.operation === "copy_region") {
-      // Snapshot this operation's source so overlapping copies cannot smear.
       const snapshot = new Uint8ClampedArray(operation.source.width * operation.source.height * 4);
       for (let y=0;y<operation.source.height;y++) {
         const start=((operation.source.y+y)*width+operation.source.x)*4;
@@ -317,7 +330,6 @@ export function applyPaintTransactionRgba(
           if (mask && !mask.has(`${x},${y}`)) continue;
           const offset = (y * width + x) * 4;
           if (operation.preserve_transparent !== false && result[offset + 3] === 0) continue;
-          // Coordinate-seeded noise stays identical when a region is split into batches.
           let hash = (operation.seed ^ Math.imul(x, 0x9e3779b1) ^ Math.imul(y, 0x85ebca6b)) >>> 0;
           hash = Math.imul(hash ^ (hash >>> 16), 0x7feb352d);
           hash = Math.imul(hash ^ (hash >>> 15), 0x846ca68b);
