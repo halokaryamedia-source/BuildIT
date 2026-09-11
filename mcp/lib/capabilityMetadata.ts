@@ -4,9 +4,16 @@ export type CapabilityTier =
   | "experimental"
   | "maintenance";
 
+export type CapabilityEffects = {
+  projectAffinity: "preserve" | "adopt_created_project";
+  phaseAffinity: "preserve" | "update_from_result";
+  invalidateCatalog: boolean;
+};
+
 export type CapabilityMetadata = {
   tier: CapabilityTier;
   searchAliases: readonly string[];
+  effects: CapabilityEffects;
 };
 
 const PRIMARY_CAPABILITIES = new Set([
@@ -86,6 +93,25 @@ const SEARCH_ALIASES: Readonly<Record<string, readonly string[]>> = {
   ],
 };
 
+const DEFAULT_EFFECTS: CapabilityEffects = {
+  projectAffinity: "preserve",
+  phaseAffinity: "preserve",
+  invalidateCatalog: false,
+};
+
+const CAPABILITY_EFFECTS: Readonly<Record<string, CapabilityEffects>> = {
+  create_project: {
+    projectAffinity: "adopt_created_project",
+    phaseAffinity: "preserve",
+    invalidateCatalog: true,
+  },
+  switch_authoring_phase: {
+    projectAffinity: "preserve",
+    phaseAffinity: "update_from_result",
+    invalidateCatalog: true,
+  },
+};
+
 export const CAPABILITY_TIER_BOOST: Readonly<Record<CapabilityTier, number>> = {
   primary: 20,
   support: 6,
@@ -105,5 +131,6 @@ export function getCapabilityMetadata(name: string): CapabilityMetadata {
   return {
     tier,
     searchAliases: SEARCH_ALIASES[name] ?? [],
+    effects: CAPABILITY_EFFECTS[name] ?? DEFAULT_EFFECTS,
   };
 }
