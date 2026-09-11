@@ -16,11 +16,11 @@ import {
 import { projectCapabilityInputSchema } from "./schemaProjection";
 import {
   authoringDomainForCapability,
-  buildNavigatorDelta,
-  buildNavigatorPacket,
-  buildNavigatorSnapshot,
+  buildControlDelta,
+  buildControlPacket,
+  buildControlSnapshot,
   decorateCapabilities,
-} from "./navigator";
+} from "./control";
 import {
   VANILLA_ENTITY_REFERENCE_CAPABILITY,
   VANILLA_ENTITY_REFERENCE_TOOL,
@@ -206,7 +206,7 @@ registerGatewayTool(
       const status = adopt_active_project
         ? await backend.adoptActiveProject()
         : await backend.getStatus();
-      const control = await buildNavigatorPacket(status, {
+      const control = await buildControlPacket(status, {
         knownContextIds: known_context_ids,
         workspacePath: workspace_path,
         referencePackagePath: reference_package_path,
@@ -269,7 +269,7 @@ registerGatewayTool(
           ].slice(0, limit)
         : runtimeCapabilities;
       const controlStatus = await backend.getStatus();
-      const currentDomain = buildNavigatorSnapshot(controlStatus).authoring.domain;
+      const currentDomain = buildControlSnapshot(controlStatus).authoring.domain;
       const capabilities = decorateCapabilities(rawCapabilities, currentDomain);
       return {
         content: [
@@ -376,7 +376,7 @@ registerGatewayTool(
       const projectUuid = capability === "create_project" && structured?.project && typeof structured.project === "object" && !Array.isArray(structured.project)
         ? typeof (structured.project as JsonRecord).uuid === "string" ? (structured.project as JsonRecord).uuid as string : null
         : null;
-      const controlDelta = buildNavigatorDelta({
+      const controlDelta = buildControlDelta({
         capability,
         phaseBefore,
         phaseAfter,
