@@ -2,7 +2,7 @@
 
 LazyDesigner uses a stable MCP **Gateway** for normal AI-client connections and a Minecraft **Bedrock Entity-focused** Runtime/plugin inside desktop Blockbench. `Local` is the development authority.
 
-Do **not** use an upstream hosted plugin as runtime authority for this repository. LazyDesigner source/builds come from this repository. The current compatibility bundle filename remains `dist/blockit_mcp.js` until bundle/package identifier migration is explicitly mapped.
+Do **not** use an upstream hosted plugin as runtime authority for this repository. LazyDesigner source/builds come from this repository. The compatibility bundle filename remains `dist/blockit_mcp.js` until bundle/package identifier migration is explicitly mapped.
 
 ## Build / Verify
 
@@ -27,15 +27,15 @@ Use the smallest targeted test during iteration.
 
 ```text
 AI client
-  ↓ stdio
+  ↓ persistent stdio session
 LazyDesigner Gateway
-  ↓ loopback Streamable HTTP
+  ↓ reconnectable loopback Streamable HTTP
 LazyDesigner Runtime
   ↓
-Blockbench
+Plugin / Blockbench
 ```
 
-Normal AI-client use must point at the Gateway, not the native Runtime endpoint.
+Normal AI-client use points at the Gateway, not the native Runtime endpoint. Runtime/plugin reload, Runtime rebuild, phase handoff, temporary Runtime loss or Blockbench restart must recover beneath the same Gateway process; only replacing the Gateway process itself requires a client reconnect.
 
 Gateway surface:
 
@@ -68,9 +68,9 @@ Approved Reference + Dimensions + Requirements
 → validated .bbmodel
 ```
 
-Geometry and Texturing retain distinct semantic owners, but their tools are available together during AUTHORING. A texture-discovered Geometry/UV defect is corrected in-session by the Geometry owner instead of forcing a Runtime phase bounce. `HANDOFF_REQUIRED` + `switch_authoring_phase` is reserved for AUTHORING↔Animation.
+Geometry and Texturing retain distinct semantic owners but share the AUTHORING Runtime surface. `HANDOFF_REQUIRED` + `switch_authoring_phase` is reserved for AUTHORING↔Animation.
 
-The previous 3D-assisted/Hunyuan/PrimitiveAnything modelling path is retired. Normal modelling now has one native Group/Cube authoring path.
+The previous 3D-assisted/Hunyuan/PrimitiveAnything modelling path is retired. Normal modelling has one native Group/Cube authoring path.
 
 Generated API docs must never be hand-edited.
 
@@ -83,13 +83,11 @@ AUTHORING surface            47 tools
 Animation surface            20 tools
 ```
 
-The current generated source-doc snapshot may temporarily retain retired compatibility descriptors until its next `LOCAL_CODE` generator pass. They are excluded from active Runtime phase surfaces and are not current authoring capabilities.
+Generated source-doc snapshots may temporarily retain retired compatibility descriptors until the next canonical generator pass. They are excluded from active Runtime phase surfaces and are not current authoring capabilities.
 
 Installed Runtime counts and lifecycle state are proof results; see `../docs/05-operations/current-validation.md`.
 
 ## Capability Priority
-
-Gateway discovery ranks Runtime capabilities internally:
 
 ```text
 PRIMARY      normal authoring hot path
@@ -98,30 +96,32 @@ EXPERIMENTAL explicit matching intent only
 MAINTENANCE  legacy/debug fallback; de-prioritized
 ```
 
-Tiering affects discovery priority only. It does not create a second authoring profile. Known capabilities are invoked directly; bounded search is fallback-only.
+Tiering affects discovery priority only. Known capabilities are invoked directly; bounded search is fallback-only.
 
-## Quality Gates
+## Tool / Quality Contract
 
-Technical state is not visual acceptance.
+Tool consolidation is routing-only. Original executors, schemas, validation, native handling and authoring intelligence remain retained.
 
-- A clean positive-volume Cube-overlap audit does not prove absence of visible coplanar surfaces, seams, penetration, or gaps.
-- Assembly corrections preserve semantic cohorts; a partial child move needs an explicit local-part reason.
-- UV bounds/lock/partial-overlap checks do not prove a clean unwrap. Review face aspect, texel density, orientation, padding/seams, semantic reuse, and identity-specific islands.
-- User visual rejection reopens the affected gate even when an earlier structural validator passed.
+Technical state is not visual acceptance:
+
+- Validator clear does not mean visual/reference PASS;
+- internal quality PASS does not mean user approval;
+- tool/export success does not authorize phase handoff;
+- Animation handoff requires canonical readiness + checkpoint.
 
 ## Legacy UI Fallbacks
 
-Normal authoring has no Standard/Extended choice. Internal `bedrock_entity | extended` registration identifiers remain implementation compatibility only; `extended` exposes Legacy UI Fallback families for debug/maintenance. `risky_eval` and `from_geo_json` remain disabled.
+Normal authoring has no Standard/Extended choice. Internal `bedrock_entity | extended` identifiers remain compatibility only; `extended` exposes Legacy UI Fallback families for debug/maintenance. `risky_eval` and `from_geo_json` remain disabled.
 
 ## Local Development Loop
 
-The existing environment variable `BLOCKIT_PLUGIN_PATH` is retained as a compatibility identifier until environment/deploy migration is explicitly mapped. Configure it, or pass the destination after `--sync`, then run:
+`BLOCKIT_PLUGIN_PATH` remains a compatibility identifier. Configure it, or pass the destination after `--sync`, then run:
 
 ```bash
 bun run dev:sync
 ```
 
-`dev:sync` performs successful development rebuild → exact-byte deploy → file-based native plugin reload → live build-identity verification. Expected states are `LIVE_SYNCED`, `DEPLOYED_OFFLINE`, or `STALE_BUILD`.
+`dev:sync` performs development rebuild → exact-byte deploy → native plugin reload → live build-identity verification. Expected states are `LIVE_SYNCED`, `DEPLOYED_OFFLINE`, or `STALE_BUILD`.
 
 Build only:
 
@@ -129,7 +129,7 @@ Build only:
 bun run dev:watch
 ```
 
-Manual deploy currently uses the compatibility bundle filename:
+Manual deploy:
 
 ```bash
 bun run deploy:local -- /absolute/path/to/blockit_mcp.js
@@ -150,37 +150,45 @@ bun run verify:geometry-live -- --confirm-disposable
 
 These do not prove visual fidelity or accepted asset quality.
 
-## Surface Guard
+## Surface / Context Guard
 
 Static footprint guardrails are maintained by `scripts/measure-default-surface.ts` and `scripts/measure-phase-surfaces.ts`. Control payload diagnostics use `scripts/measure-control-context.ts`. They are not Authoring Efficiency proof.
 
+Normal authoring loads one active specialist. Geometry may additionally load exactly one selected modelling profile. Shared Stage Context is reused while unchanged; do not reload full Reference Packages/profiles/sibling domains as reassurance.
+
 ## Current Capability Shape
 
-Normal authoring includes Cube/Group authoring, hierarchy/rig/pivots, Locator/Null lifecycle, canonical capture, UV Layout mutation/audit, Texture Atlas/Painter/PBR/material instances/render-profile bindings, animation/timeline/effects/controllers, Undo/history, `.bbmodel` persistence, Bedrock geometry export, and stage control.
+Normal authoring includes Cube/Group authoring, hierarchy/rig/pivots, Locator/Null lifecycle, canonical capture, UV Layout mutation/audit, Texture Atlas/Painter/PBR/material instances/render-profile bindings, animation/timeline/effects/controllers, Particle asset support, Undo/history, `.bbmodel` persistence, Bedrock geometry export and stage control.
 
 ## Source Layout
 
 ```text
-gateway/control/ canonical LazyDesigner Control
-gateway/         stable client boundary + Runtime adapter
-index.ts         Blockbench plugin entry/lifecycle
-server/          Runtime transport/tools/resources/prompts
-lib/             schemas/factories/runtime helpers
-ui/              Blockbench panel/settings
-prompts/         canonical runtime workflow + generated manifest
-build/           build/docs/manifest tooling
-scripts/         verification/deploy/measurement utilities
-tests/           contract/integration regressions
-docs/            generated Runtime API documentation
+gateway/control/          canonical LazyDesigner Control
+gateway/                  stable client boundary + Runtime adapter/recovery
+index.ts                  thin Blockbench plugin orchestration
+plugin/                   RuntimeHost + Blockbench integration + dev reload
+server/net.ts             Runtime HTTP/MCP transport + serialization
+server/runtime/           registration/surface/consolidation/phase/bootstrap
+server/tools/             authored Tool implementations
+server/resources/         Runtime Resources
+lib/                      schemas/metadata/readiness/factories/runtime helpers
+ui/                       Blockbench UI implementation used by integration owner
+prompts/                  canonical runtime workflow + generated manifest
+build/                    build/docs/manifest tooling
+scripts/                  verification/deploy/measurement utilities
+tests/                    contract/integration regressions
+docs/                     generated Runtime API documentation
 ```
+
+Detailed source ownership: `../docs/04-system/implementation-map.md`.
 
 Generated API/prompt artifacts follow canonical source + generator output and must never be hand-edited.
 
 ## Identity Migration Boundary
 
-Current product-facing identity is LazyDesigner. Primary LazyDesigner Skill identities are already migrated; do not recreate the removed legacy Skill paths.
+Current product-facing identity is LazyDesigner. Primary LazyDesigner Skill identities are migrated; do not recreate removed legacy Skill paths.
 
-The following compatibility-bound identifiers remain intentionally unchanged until their dependency boundary is mapped:
+Compatibility-bound identifiers intentionally unchanged until dependency-mapped:
 
 ```text
 package name / MCP server IDs
@@ -196,4 +204,6 @@ Do not bulk-rename them.
 
 ## Proof Boundary
 
-Continuation → `../docs/05-operations/next-action.md`. Proof interpretation → `../docs/05-operations/current-validation.md`. Static source/CI success cannot prove installed Runtime freshness, live Gateway survival, final surface/UV quality, native Undo/playback/persistence, or visual fidelity unless those surfaces actually ran.
+Continuation → `../docs/05-operations/next-action.md`. Proof interpretation → `../docs/05-operations/current-validation.md`.
+
+Source/static success cannot prove installed Runtime freshness, live Gateway recovery, native Undo/playback/persistence, visual fidelity or measured whole-task savings unless those surfaces actually ran.
