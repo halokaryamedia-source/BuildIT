@@ -104,10 +104,13 @@ events/nested effects
 event timing/time ownership
 → docs/02-reference/particle/event-timing.md
 
-Snowstorm/Wintersky compatibility
+Snowstorm/Wintersky generic editor/preview compatibility
 → docs/02-reference/particle/snowstorm.md
 
-Snowstorm release/version quirks
+Snowstorm/Wintersky release capability and fix matrix
+→ docs/02-reference/particle/snowstorm-compatibility-matrix.md
+
+Snowstorm release/version quirks and regressions
 → docs/02-reference/particle/snowstorm-version-quirks.md
 
 performance reasoning
@@ -206,7 +209,10 @@ event sequencing/time ownership
 editor-preview compatibility
 → snowstorm.md
 
-release-specific Snowstorm anomaly
+which Snowstorm/Wintersky release supports/fixes the behavior?
+→ snowstorm-compatibility-matrix.md
+
+release-specific Snowstorm anomaly/regression
 → snowstorm-version-quirks.md
 
 count/overdraw/cost guidance
@@ -313,7 +319,37 @@ Use `motion.md + collision-advanced.md` for contact physics, `events.md` for eve
 
 ## Snowstorm version rule
 
-Use `snowstorm.md` for generic editor compatibility and `snowstorm-version-quirks.md` for release-specific anomalies. Never turn a preview regression into a generic Bedrock restriction without stronger evidence.
+Use:
+
+```text
+snowstorm.md
+→ generic editor/import/export/preview boundary
+
+snowstorm-compatibility-matrix.md
+→ release-by-release capabilities, fixed regressions, source mapping and round-trip risks
+
+snowstorm-version-quirks.md
+→ anomaly diagnosis and version-specific regressions
+```
+
+Published release notes outrank unreleased source-head package metadata for stable-capability claims. Source code may explain implementation but must be labeled development state when it is ahead of published release tags.
+
+Never turn a Snowstorm/Wintersky preview regression into a generic Bedrock restriction without stronger evidence.
+
+## Snowstorm round-trip rule
+
+For externally authored advanced JSON or high-value particle packages:
+
+```text
+preserve original JSON
+→ import Snowstorm
+→ edit
+→ export
+→ structural diff
+→ target Bedrock schema review
+```
+
+Do not assume successful import means every field is first-class editable or perfectly round-tripped. Pay special attention to meaningful `0`, `false`, omitted fields, event structures, and newly introduced Bedrock fields.
 
 ## Quality rule
 
