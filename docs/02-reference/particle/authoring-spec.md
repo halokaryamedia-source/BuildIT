@@ -128,7 +128,45 @@ TIER 3 — events, collision chains, entity context, advanced attachment or nest
 
 Start at the lowest viable tier. Escalate only when a required behavior cannot be represented cleanly at the current tier.
 
-## 6. Internal execution packet
+## 6. Output identity
+
+Resolve output identity once before files are authored:
+
+```text
+namespace
+package_slug
+effect_slug
+root_identifier
+child role slugs, if any
+texture basename or shared texture mapping
+standalone Resource Pack vs downstream handoff
+```
+
+Default naming rule:
+
+```text
+lowercase snake_case
+semantic role names
+no revision suffixes
+```
+
+Example:
+
+```text
+namespace       = mivubi
+package_slug    = blue_flame
+effect_slug     = blue_flame
+root_identifier = mivubi:blue_flame
+particle_file   = particles/blue_flame.particle.json
+texture_file    = textures/particle/blue_flame.png
+texture_ref     = textures/particle/blue_flame
+```
+
+Do not independently invent names later during packaging. The resolved output identity is the single naming source for JSON, texture paths, README, and optional `REFERENCE.json`.
+
+If the user/project already provides a namespace or naming convention, preserve it. Otherwise use the established workspace convention when known; if none exists, choose a conservative provisional namespace rather than implying it is authoritative.
+
+## 7. Internal execution packet
 
 Before authoring, reduce the request to a compact packet:
 
@@ -148,12 +186,13 @@ Molang role: none / identity / progression / external-reactive
 Snowstorm-specific requirements
 QA gates required
 provisional assumptions
+output_identity
 final delivery shape
 ```
 
 This packet is internal control state, not a new persisted system.
 
-## 7. Decomposition rule
+## 8. Decomposition rule
 
 Split layers only when they materially differ in one or more of:
 
@@ -181,7 +220,9 @@ simple flame → several emitters with identical motion/render roles
 
 Use `patterns.md` to decide the initial physical decomposition, then adapt rather than copy it literally.
 
-## 8. Texture decision
+Child effect names should describe those physical roles, e.g. `_debris`, `_plume`, `_flash`, rather than revision history.
+
+## 9. Texture decision
 
 Choose texture work only to the level required:
 
@@ -201,7 +242,9 @@ animated visual frames
 
 Do not create an atlas, flipbook, or generated texture pipeline by default.
 
-## 9. Molang decision
+Do not duplicate the same PNG solely to mirror child particle filenames; intentional shared texture references are valid when clear.
+
+## 10. Molang decision
 
 Use Molang only when a constant cannot express the intended behavior cleanly.
 
@@ -224,7 +267,7 @@ external/entity reactivity
 
 Do not add formulas merely because Molang is available.
 
-## 10. Snowstorm compatibility baseline
+## 11. Snowstorm compatibility baseline
 
 When Snowstorm/Wintersky preview is a target and authored launch magnitude matters, prefer:
 
@@ -235,7 +278,7 @@ minecraft:particle_initial_speed = scalar speed
 
 This is Snowstorm-targeted compatibility guidance, not a generic Bedrock prohibition on vector initial-speed forms.
 
-## 11. Authority order
+## 12. Authority order
 
 ```text
 explicit current user requirement
