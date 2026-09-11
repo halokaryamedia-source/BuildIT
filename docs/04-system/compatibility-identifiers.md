@@ -31,11 +31,22 @@ These values remain stable until a dedicated migration updates every producer, c
 
 Primary LazyDesigner Skill paths are **not** compatibility-bound. REFERENCE_PREPARATION, ASSET_AUTHORING, and PRODUCT_DEVELOPMENT primary Skills now use canonical `lazydesigner-*` identities; removed legacy paths must not return as aliases.
 
-Internal TypeScript symbols may still contain `Blockit`/`BLOCKIT` where renaming them provides little value. Never change a serialized/string compatibility value accidentally during symbol cleanup.
+Internal TypeScript symbols, DOM class names, event keys, or client names may still contain `Blockit`/`BLOCKIT` when renaming them provides little current value. Never change a serialized/string compatibility value accidentally during cosmetic cleanup.
 
 ## Presentation Identity
 
 Human-visible product language should use **LazyDesigner** when it does not change a serialized identifier or external contract.
+
+Safe presentation migration now covers current source for:
+
+```text
+MCP server initialize/instructions
+Gateway backend status/errors
+plugin lifecycle/install/dev-sync messages
+Blockbench panel + status bar
+local install guidance
+mcp/llms.txt
+```
 
 Safe presentation migration includes:
 - docs/headings/descriptions;
@@ -45,6 +56,22 @@ Safe presentation migration includes:
 - MCP titles/descriptions where protocol names remain unchanged.
 
 Do not expose compatibility residue as a second product name.
+
+## Generated Documentation Boundary
+
+`mcp/build/docs.ts` still owns generated API HTML presentation and currently has stale pre-rename display strings in its generated template. `mcp/docs/api.json` / `mcp/docs/index.html` are generated outputs and must not be hand-edited.
+
+Because the current context is `REMOTE_GITHUB` and canonical generated output requires `LOCAL_CODE` generator execution, treat this as one bounded source+generation residue:
+
+```text
+LOCAL_CODE
+→ update generator presentation source
+→ bun run docs:build
+→ bun run docs:check
+→ commit source + generated output together
+```
+
+Do not mutate the generator into a state that leaves committed generated output knowingly stale.
 
 ## Migration Preconditions
 
@@ -64,13 +91,13 @@ For persisted/install identifiers, migration must define whether old state is re
 ## Current Priority
 
 ```text
-1. continue bounded human-readable BlockIT → LazyDesigner cleanup
-2. keep compatibility-bound serialized values stable
-3. do not rename internal Blockit/BLOCKIT symbols merely for cosmetics
-4. rename a compatibility-bound value only as an atomic dedicated migration
-5. regenerate generated artifacts through canonical generators when LOCAL_CODE is active
+1. keep compatibility-bound serialized values stable
+2. keep current human-facing source presentation on LazyDesigner
+3. defer generator-coupled API-doc branding until LOCAL_CODE can regenerate canonical output
+4. do not rename internal Blockit/BLOCKIT symbols merely for cosmetics
+5. rename a compatibility-bound value only as an atomic dedicated migration
 ```
 
 ## Proof Boundary
 
-This document and source regressions can prove repository intent and string ownership. They do not prove installed migration, persisted-setting upgrade, live Gateway compatibility, or Blockbench plugin replacement behavior until exercised in the appropriate local/live context.
+This document and source regressions can prove repository intent and string ownership. They do not prove installed migration, persisted-setting upgrade, live Gateway compatibility, regenerated API output, or Blockbench plugin replacement behavior until exercised in the appropriate local/live context.
