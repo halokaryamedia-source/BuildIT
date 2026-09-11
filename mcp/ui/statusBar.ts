@@ -18,9 +18,9 @@ export const BLOCKIT_RUNTIME_STATUS_CHANGED = "blockit-runtime-status-changed";
 let currentStatus: BlockItRuntimeStatusDetail = { state: "running" };
 
 function statusLabel(state: McpServerStatus): string {
-  if (state === "starting") return "BlockIT Starting";
-  if (state === "failed") return "BlockIT Error";
-  return "BlockIT Ready";
+  if (state === "starting") return "LazyDesigner Starting";
+  if (state === "failed") return "LazyDesigner Error";
+  return "LazyDesigner Ready";
 }
 
 function renderStatus(): void {
@@ -36,7 +36,7 @@ function renderStatus(): void {
   statusIndicator.title = [
     statusLabel(currentStatus.state),
     diagnostic,
-    "Click to open BlockIT panel",
+    "Click to open LazyDesigner panel",
   ]
     .filter(Boolean)
     .join(" · ");
