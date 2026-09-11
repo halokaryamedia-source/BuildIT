@@ -4,7 +4,11 @@ import { resolveDevelopmentIntent, type NavigatorDevelopmentResolution } from ".
 import { NAVIGATOR_ROUTING_POLICY, type NavigatorRoutingPolicy } from "./routingPolicy";
 import { contextForAuthoringDomain } from "./registry";
 import { buildNavigatorSnapshot } from "./snapshot";
-import { buildControlStageContext, type ControlStageContext } from "./contextProjection";
+import {
+  buildControlStageContext,
+  readinessForAuthoringDomain,
+  type ControlStageContext,
+} from "./contextProjection";
 import { readReferencePackageProjection, type ControlReferenceProjection } from "./referencePackage";
 import { readWorkspaceProjection, type NavigatorWorkspaceProjection } from "./workspace";
 import type {
@@ -131,6 +135,11 @@ function buildReadiness(
   const projectReady = snapshot.project.binding === "BOUND";
   const domainReady = snapshot.authoring.domain !== null;
   const contextReady = snapshot.context.required.length > 0;
+  const activeReferenceReadiness = readinessForAuthoringDomain(
+    snapshot.authoring.domain,
+    reference
+  );
+  const activeReferenceBlocked = activeReferenceReadiness === "BLOCKED";
   const reasons: string[] = [];
 
   if (!snapshot.runtime.online) reasons.push("RUNTIME_OFFLINE");
@@ -139,9 +148,9 @@ function buildReadiness(
   if (!domainReady) reasons.push("AUTHORING_DOMAIN_UNRESOLVED");
   if (!contextReady) reasons.push("REQUIRED_CONTEXT_UNRESOLVED");
   if (!reference.available) reasons.push("REFERENCE_PACKAGE_UNAVAILABLE");
-  if (reference.blocking_unknowns.length > 0) reasons.push("REFERENCE_BLOCKED");
+  if (activeReferenceBlocked) reasons.push("REFERENCE_STAGE_BLOCKED");
 
-  const blocked = !runtimeReady || snapshot.project.binding === "LOST" || reference.blocking_unknowns.length > 0;
+  const blocked = !runtimeReady || snapshot.project.binding === "LOST" || activeReferenceBlocked;
   return {
     modelling_start: blocked
       ? "BLOCKED"
@@ -200,8 +209,8 @@ export async function buildNavigatorPacket(
   const workspaceBlockers = mode === "ASSET_AUTHORING"
     ? workspace.blockers.map((_, index) => `WORKSPACE_BLOCKER_${index + 1}`)
     : [];
-  const referenceBlockers = mode === "ASSET_AUTHORING" && reference.blocking_unknowns.length > 0
-    ? ["REFERENCE_BLOCKED"]
+  const referenceBlockers = mode === "ASSET_AUTHORING" && stageContext?.stage_readiness === "BLOCKED"
+    ? ["REFERENCE_STAGE_BLOCKED"]
     : [];
   const blockers = [...snapshot.blockers, ...workspaceBlockers, ...referenceBlockers];
 
