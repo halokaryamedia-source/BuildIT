@@ -1,5 +1,9 @@
 import { describe, expect, test } from "bun:test";
 import { getCapabilityMetadata } from "../lib/capabilityMetadata";
+import {
+  classifyMcpToolPhaseByName,
+  isMcpToolExposedForPhase,
+} from "../lib/authoringPhase";
 
 async function text(path: string): Promise<string> {
   return Bun.file(path).text();
@@ -29,6 +33,22 @@ describe("tool execution path contract", () => {
       "export_model",
     ]) {
       expect(getCapabilityMetadata(capability).tier).not.toBe("maintenance");
+    }
+  });
+
+  test("texture state helpers do not outrank semantic authoring tools", () => {
+    expect(getCapabilityMetadata("activate_texture").tier).toBe("support");
+    expect(getCapabilityMetadata("apply_texture").tier).toBe("support");
+    expect(getCapabilityMetadata("create_texture").tier).toBe("primary");
+    expect(getCapabilityMetadata("paint_texture_transaction").tier).toBe("primary");
+  });
+
+  test("editor selection helpers stay in AUTHORING and out of Animation", () => {
+    for (const capability of ["select_all_of_type", "get_selection"]) {
+      expect(classifyMcpToolPhaseByName(capability)).toBe("geometry");
+      expect(isMcpToolExposedForPhase(capability, "elements", "geometry")).toBe(true);
+      expect(isMcpToolExposedForPhase(capability, "elements", "texturing")).toBe(true);
+      expect(isMcpToolExposedForPhase(capability, "elements", "animation")).toBe(false);
     }
   });
 
