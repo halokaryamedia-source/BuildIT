@@ -107,7 +107,7 @@ Use `docs/02-reference/README.md` as the Reference domain index. Generate only m
 
 ### Asset Authoring
 
-LazyDesigner Control is the canonical routing/context authority. The migration-only `blockit-bedrock-entity-mcp` router Skill is not part of the normal authoring path.
+LazyDesigner Control is the canonical routing/context authority. There is no separate asset-router Skill in the normal authoring path.
 
 Before an authoring mutation, use the current Control packet when orientation/context is unknown or materially stale:
 
@@ -118,14 +118,14 @@ current AGENTS.md
 → exactly one active specialist
 
 Geometry / rig / pivots / UV Layout
-→ .agents/skills/blockbench-bedrock-modelling/SKILL.md
+→ .agents/skills/lazydesigner-modelling/SKILL.md
 → exactly one selected modelling profile when Control provides it
 
 Texture Atlas / Styling / PBR / Texture Verify
-→ .agents/skills/blockit-bedrock-texturing/SKILL.md
+→ .agents/skills/lazydesigner-texturing/SKILL.md
 
 Animation / motion
-→ .agents/skills/blockit-bedrock-animation/SKILL.md
+→ .agents/skills/lazydesigner-animation/SKILL.md
 ```
 
 Do not preload sibling specialists or all profiles. Load a new specialist only when semantic ownership changes. Reuse unchanged `known_context_ids` rather than retransmitting the same Skill/profile content.
