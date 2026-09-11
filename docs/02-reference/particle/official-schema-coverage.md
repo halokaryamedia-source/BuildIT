@@ -8,13 +8,13 @@ Evidence class: **OFFICIAL BEDROCK** for schema/component coverage. Coverage sta
 
 ```text
 COVERED
-→ dedicated owner exists and current practical semantics are documented
+→ dedicated owner exists and practical semantics are documented
 
-COVERED / EDGE CASES CONDITIONAL
-→ owner exists; exact target-version behavior may still require checking current official schema or runtime
+COVERED / VERSION-SENSITIVE
+→ owner exists; exact target-version schema/query behavior still matters
 
 TARGET-SPECIFIC
-→ generic Bedrock knowledge exists but Snowstorm/Wintersky behavior is intentionally separate
+→ generic Bedrock knowledge exists but Snowstorm/Wintersky behavior is separate
 
 NOT RUNTIME-PROVEN
 → static/document knowledge exists but visual/runtime behavior still requires target review
@@ -24,10 +24,10 @@ NOT RUNTIME-PROVEN
 
 | Area | Owner | Status |
 |---|---|---|
-| `format_version` / particle document shape | `fundamentals.md` | COVERED |
+| `format_version` / document shape | `fundamentals.md` | COVERED |
 | `description.identifier` | `component-field-reference.md` | COVERED |
-| `basic_render_parameters.material` | `appearance-rendering.md`, `component-field-reference.md` | COVERED |
-| `basic_render_parameters.texture` | `texture-authoring.md`, `component-field-reference.md` | COVERED |
+| render material | `appearance-rendering.md` | COVERED |
+| texture path | `texture-authoring.md` | COVERED |
 | `components` object | `component-catalog.md` | COVERED |
 | `curves` | `curves.md` | COVERED |
 | `events` | `events.md` | COVERED |
@@ -36,58 +36,60 @@ NOT RUNTIME-PROVEN
 
 | Component | Owner | Status |
 |---|---|---|
-| `minecraft:emitter_local_space` | `lifecycle-space.md`, `component-field-reference.md` | COVERED |
-| `minecraft:emitter_initialization` | `emitter.md`, `lifecycle-space.md` | COVERED |
+| `minecraft:emitter_local_space` | `lifecycle-space.md`, `entity-integration.md` | COVERED |
+| `minecraft:emitter_initialization` | `emitter.md`, `official-defaults-evaluation.md` | COVERED |
 
-Important local-space concerns already owned:
+Owned transform concerns:
 - position inheritance;
 - rotation inheritance;
 - velocity inheritance;
-- entity attachment interpretation;
-- world/local debugging order.
+- animated bone/locator transform stack;
+- fire-and-forget vs bound behavior;
+- emitter-transform billboard plane interaction.
 
 ## 3. Emitter rate
 
 | Component | Owner | Status |
 |---|---|---|
-| `minecraft:emitter_rate_instant` | `emitter.md` | COVERED |
+| `minecraft:emitter_rate_instant` | `emitter.md`, `official-defaults-evaluation.md` | COVERED / VERSION-SENSITIVE |
 | `minecraft:emitter_rate_steady` | `emitter.md`, `performance.md` | COVERED |
-| `minecraft:emitter_rate_manual` | `emitter.md` | COVERED / EDGE CASES CONDITIONAL |
+| `minecraft:emitter_rate_manual` | `emitter.md` | COVERED / VERSION-SENSITIVE |
 
-Manual-rate use depends on the downstream trigger/runtime context and should not be invented when no manual owner exists.
+Legacy defaults are not carried into newer generated schemas when the target schema says `not set`.
 
 ## 4. Emitter lifetime
 
 | Component | Owner | Status |
 |---|---|---|
-| `minecraft:emitter_lifetime_once` | `emitter.md` | COVERED |
-| `minecraft:emitter_lifetime_looping` | `emitter.md`, `event-timing.md` | COVERED |
+| `minecraft:emitter_lifetime_once` | `emitter.md`, `official-defaults-evaluation.md` | COVERED / VERSION-SENSITIVE |
+| `minecraft:emitter_lifetime_looping` | `emitter.md`, `event-timing.md` | COVERED / VERSION-SENSITIVE |
 | `minecraft:emitter_lifetime_expression` | `emitter.md`, `molang.md` | COVERED |
 | `minecraft:emitter_lifetime_events` | `events.md`, `event-timing.md` | COVERED |
+
+Emitter lifetime events cover:
+
+```text
+creation_event
+expiration_event
+timeline
+travel_distance_events
+looping_travel_distance_events
+```
+
+where exposed by the target schema.
 
 ## 5. Emitter shapes
 
 | Component | Owner | Status |
 |---|---|---|
-| `minecraft:emitter_shape_point` | `emitter.md` | COVERED |
-| `minecraft:emitter_shape_sphere` | `emitter.md`, `emitter-shape-math.md` | COVERED |
-| `minecraft:emitter_shape_box` | `emitter.md` | COVERED |
-| `minecraft:emitter_shape_disc` | `emitter.md`, `emitter-shape-math.md` | COVERED |
-| `minecraft:emitter_shape_entity_aabb` | `emitter.md`, `entity-integration.md` | COVERED |
-| `minecraft:emitter_shape_custom` | `emitter-shape-math.md`, `math-physics-reference.md` | COVERED |
+| point | `emitter.md` | COVERED |
+| sphere | `emitter.md`, `emitter-shape-math.md` | COVERED |
+| box | `emitter.md` | COVERED |
+| disc | `emitter.md`, `emitter-shape-math.md` | COVERED |
+| entity AABB | `emitter.md`, `entity-integration.md` | COVERED |
+| custom | `emitter-shape-math.md`, `math-physics-reference.md` | COVERED |
 
-Cross-cutting shape fields:
-
-```text
-offset
-direction
-surface_only
-radius
-half_dimensions
-plane_normal
-```
-
-Field-specific ownership is in `component-field-reference.md`.
+Cross-cutting fields such as `offset`, `direction`, `surface_only`, `radius`, `half_dimensions`, and `plane_normal` are owned by `component-field-reference.md` + `official-defaults-evaluation.md`.
 
 ## 6. Particle initialization / initial state
 
@@ -95,48 +97,57 @@ Field-specific ownership is in `component-field-reference.md`.
 |---|---|---|
 | `minecraft:particle_initialization` | `lifecycle-space.md`, `molang.md` | COVERED |
 | `minecraft:particle_initial_speed` | `motion.md`, `snowstorm.md` | COVERED + TARGET-SPECIFIC |
-| `minecraft:particle_initial_spin` | `motion.md`, `component-field-reference.md` | COVERED |
+| `minecraft:particle_initial_spin` | `component-field-reference.md`, `official-defaults-evaluation.md` | COVERED |
 
-Bedrock validity and Snowstorm/Wintersky scalar/vector interpretation remain deliberately separate.
+Spin knowledge explicitly separates:
+
+```text
+rotation
+rotation_rate
+rotation_acceleration
+rotation_drag_coefficient
+```
 
 ## 7. Particle motion
 
 | Component | Owner | Status |
 |---|---|---|
-| `minecraft:particle_motion_dynamic` | `motion.md`, `math-physics-reference.md` | COVERED |
-| `minecraft:particle_motion_parametric` | `motion.md`, `molang-formula-cookbook.md` | COVERED |
-| `minecraft:particle_motion_collision` | `collision-advanced.md` | COVERED / EDGE CASES CONDITIONAL |
+| dynamic motion | `motion.md`, `math-physics-reference.md` | COVERED |
+| parametric motion | `motion.md`, `molang-formula-cookbook.md` | COVERED |
+| collision | `collision-advanced.md` | COVERED / NOT RUNTIME-PROVEN |
 
-Collision remains runtime-sensitive for high-speed contact, geometry interaction, repeated contact and editor/runtime parity.
+Collision remains runtime-sensitive for geometry contact, high-speed tunneling, repeated contact, and editor/runtime parity.
 
-## 8. Particle environmental expiration
+## 8. Environmental expiration
 
 | Component | Owner | Status |
 |---|---|---|
-| `minecraft:particle_expire_if_in_blocks` | `component-catalog.md`, `component-field-reference.md` | COVERED |
-| `minecraft:particle_expire_if_not_in_blocks` | `component-catalog.md`, `component-field-reference.md` | COVERED |
+| `minecraft:particle_expire_if_in_blocks` | `component-field-reference.md` | COVERED |
+| `minecraft:particle_expire_if_not_in_blocks` | `component-field-reference.md` | COVERED |
 | `minecraft:particle_kill_plane` | `motion.md`, `component-field-reference.md` | COVERED |
+
+Knowledge now explicitly covers block-list semantics, allow-list semantics, coexistence with lifetime expiration, kill-plane math, and the fact that multiple kill paths may coexist.
 
 ## 9. Particle lifetime
 
 | Component | Owner | Status |
 |---|---|---|
-| `minecraft:particle_lifetime_expression` | `fundamentals.md`, `molang.md` | COVERED |
-| `minecraft:particle_lifetime_events` | `events.md`, `event-timing.md` | COVERED |
+| lifetime expression | `fundamentals.md`, `molang.md`, `official-defaults-evaluation.md` | COVERED |
+| lifetime events | `events.md`, `event-timing.md` | COVERED |
+
+One-time `max_lifetime` and continuous `expiration_expression` semantics are explicitly separated.
 
 ## 10. Particle appearance
 
 | Component | Owner | Status |
 |---|---|---|
-| `minecraft:particle_appearance_billboard` | `appearance-rendering.md`, `billboard-direction.md` | COVERED |
-| `minecraft:particle_appearance_tinting` | `appearance-rendering.md`, `texture-color-science.md` | COVERED |
-| `minecraft:particle_appearance_lighting` | `appearance-rendering.md` | COVERED / EDGE CASES CONDITIONAL |
-
-Lighting behavior is rendering context, not emitted world light.
+| billboard | `appearance-rendering.md`, `billboard-direction.md` | COVERED |
+| tinting | `appearance-rendering.md`, `texture-color-science.md` | COVERED |
+| lighting | `appearance-rendering.md` | COVERED / NOT RUNTIME-PROVEN |
 
 ## 11. Billboard facing modes
 
-Current official particle schema/reference exposes multiple facing modes. Canonical knowledge must recognize at least:
+Canonical knowledge recognizes target-version modes including:
 
 ```text
 lookat_xyz
@@ -152,36 +163,48 @@ emitter_transform_xz
 emitter_transform_yz
 ```
 
-Owner:
+Status: **COVERED / VERSION-SENSITIVE** for less common modes and editor parity.
+
+## 12. Billboard direction settings
+
+Owned fields/semantics include:
 
 ```text
-appearance-rendering.md
-billboard-direction.md
-component-field-reference.md
+mode
+custom_direction
+min_speed_threshold
 ```
 
-Status: **COVERED / VERSION CHECK RECOMMENDED FOR LESS COMMON MODES**.
+Legacy and generated-schema naming/default differences are tracked in `official-defaults-evaluation.md` rather than merged.
 
-Do not assume every editor version previews every official mode identically.
+## 13. UV / flipbook
 
-## 12. Billboard UV and flipbook
+Covered:
 
-| Area | Owner | Status |
-|---|---|---|
-| `texture_width` / `texture_height` | `texture-authoring.md`, `texture-resolution-sampling.md` | COVERED |
-| static UV | `texture-authoring.md` | COVERED |
-| `uv_size` | `texture-authoring.md` | COVERED |
-| `base_UV` | `texture-authoring.md` | COVERED |
-| `size_UV` | `texture-authoring.md` | COVERED |
-| `step_UV` | `texture-authoring.md` | COVERED |
-| `frames_per_second` | `texture-authoring.md` | COVERED |
-| `max_frame` | `texture-authoring.md` | COVERED / SCHEMA CHECK WHEN EXACT INDEX SEMANTICS MATTER |
-| `stretch_to_lifetime` | `texture-authoring.md` | COVERED |
-| `loop` | `texture-authoring.md` | COVERED |
+```text
+texture_width
+texture_height
+uv
+uv_size
+base_UV
+size_UV
+step_UV
+frames_per_second
+max_frame
+stretch_to_lifetime
+loop
+```
 
-## 13. Materials / transparency
+Owners:
+- `texture-authoring.md`;
+- `texture-resolution-sampling.md`;
+- `texture-filtering-bleeding.md`.
 
-Canonical materials covered:
+Status: **COVERED / VERSION-SENSITIVE** where exact indexing/default semantics differ by schema generation.
+
+## 14. Materials / transparency
+
+Covered:
 
 ```text
 particles_opaque
@@ -190,62 +213,63 @@ particles_blend
 particles_add
 ```
 
-Owners:
-- `appearance-rendering.md`;
-- `texture-authoring.md`;
-- `texture-color-science.md`;
-- `texture-resolution-sampling.md`.
+Status: **COVERED** for authoring intent. Exact internal shader equations are intentionally not claimed.
 
-Status: **COVERED** for authoring intent; exact shader/runtime internals are intentionally not claimed.
-
-## 14. Tint / gradient
+## 15. Tint / gradient
 
 Covered forms:
 
 ```text
-hex/static color
-RGBA arrays / Molang channels
+#RRGGBB
+#RRGGBBAA
+RGB/RGBA numeric or Molang arrays
 gradient + interpolant
+evenly spaced gradient data
+keyed-position gradient data
 ```
 
 Owners:
 - `appearance-rendering.md`;
 - `texture-color-science.md`;
-- `molang.md`.
+- `official-defaults-evaluation.md` for version/hex-order discrepancies.
 
-Status: **COVERED**.
+Status: **COVERED / VERSION-SENSITIVE** for legacy 8-digit hex ordering examples and exact union shapes.
 
-## 15. Curves
+## 16. Curves
 
-Covered curve families:
+Covered:
 
 ```text
 linear
-Bezier
-Bezier chain
-Catmull-Rom
+bezier
+bezier_chain
+catmull_rom
 ```
 
-Owners:
-- `curves.md`;
-- `molang-language-math.md` for expression inputs.
+`curves.md` now owns:
+- even-node linear semantics;
+- cubic four-node Bezier semantics;
+- keyed Bezier-chain positions;
+- value/slope/tangent field families;
+- Catmull-Rom endpoint/control behavior;
+- `horizontal_range` legacy/deprecation semantics.
 
-Status: **COVERED**.
+Status: **COVERED / VERSION-SENSITIVE** for exact target-schema node unions.
 
-## 16. Events
+## 17. Events
 
-Covered event node concepts:
+Covered event-node concepts:
 
 ```text
 expression
-sequence
-randomize
-sound_effect
+log
 particle_effect
-log where schema exposes it
+randomize
+sequence
+sound_effect
 ```
 
-Covered particle-effect relationship types:
+Visual-effect relationship types:
 
 ```text
 emitter
@@ -254,51 +278,60 @@ particle
 particle_with_velocity
 ```
 
-Owners:
-- `events.md`;
-- `event-timing.md`;
-- `performance.md` for fan-out cost.
-
-Status: **COVERED / RUNTIME REVIEW FOR COMPLEX CHAINS**.
-
-## 17. Molang particle state
-
-Canonical built-in particle-system variables are inventoried in `particle-variable-inventory.md`:
+Timing domains:
 
 ```text
-emitter_age
-emitter_lifetime
-emitter_random_1..4
-particle_age
-particle_lifetime
-particle_random_1..4
+emitter time
+particle time
+travel distance
+collision
 ```
 
-Generic query/context behavior belongs to `molang-queries-context.md`.
+Status: **COVERED / NOT RUNTIME-PROVEN FOR COMPLEX CHAINS**.
 
-Status: **COVERED** for documented particle-owned built-ins; generic query availability remains host/context specific.
+## 18. Molang particle state
 
-## 18. Math / formula layer
+Documented particle-system built-ins are inventoried in `particle-variable-inventory.md`.
+
+Molang language/math coverage now includes:
+- syntax/operators;
+- aliases/case rules;
+- loops/return/null-coalescing;
+- actor-reference operator;
+- current math/easing families;
+- evaluation-stage ownership;
+- target-version feature checking.
+
+## 19. Query / context availability
+
+`molang-queries-context.md` owns:
+- host-dependent query availability;
+- minimum-version query notes;
+- continuous vs sampled reads;
+- actor/reference lifetime;
+- client/context restrictions;
+- Snowstorm parser support vs Minecraft host support.
+
+Status: **COVERED / VERSION-SENSITIVE / HOST-SENSITIVE**.
+
+Generic query availability cannot be made universally static because Minecraft documents capabilities at the individual query/context level.
+
+## 20. Math / formula layer
 
 Owners:
 
 ```text
 molang-language-math.md
-→ language + official math functions
-
 molang-formula-cookbook.md
-→ reusable particle expressions
-
 math-physics-reference.md
-→ vector/geometry/physics/distribution reasoning
-
 emitter-shape-math.md
-→ shape-specific position/direction math
 ```
 
-Status: **COVERED** for authoring math; exact runtime numerical integration remains runtime-owned.
+Coverage includes language math, reusable formulas, vectors, projections, distributions, ballistics, probability, and custom direction math.
 
-## 19. Texture production
+Status: **COVERED** for authoring reasoning; exact runtime numerical integration remains runtime-owned.
+
+## 21. Texture production
 
 Owners:
 
@@ -309,22 +342,25 @@ texture-color-science.md
 texture-resolution-sampling.md
 ```
 
-Coverage includes:
-- RGBA transparency;
-- hidden RGB;
-- matte/halo risk;
-- atlas layout;
-- cell mapping;
-- gutter;
-- UV/flipbook;
-- pixel-art vs soft resampling;
-- tint compatibility;
-- additive/blend value design;
-- resolution/downscale reasoning.
+Coverage includes RGBA, hidden RGB, matte/halo, atlas/gutter, UV/flipbook, pixel-art vs soft resampling, tint compatibility, additive/blend value design, resolution/downscale, and frame stability.
 
-Status: **COVERED / VISUAL ACCEPTANCE STILL REQUIRED**.
+Status: **COVERED / VISUAL ACCEPTANCE REQUIRED**.
 
-## 20. Snowstorm / Wintersky
+## 22. Entity / locator integration
+
+`entity-integration.md` covers:
+- effect mapping;
+- locator/bone transform stack;
+- position/rotation/velocity local-space ownership;
+- emitter-transform billboards;
+- fire-and-forget vs bound effects;
+- pre-effect sampling;
+- query/reference lifetime;
+- child binding/velocity inheritance.
+
+Status: **COVERED AT REFERENCE BOUNDARY / LIVE BINDING NOT RUNTIME-PROVEN**.
+
+## 23. Snowstorm / Wintersky
 
 Owners:
 
@@ -333,61 +369,46 @@ snowstorm.md
 snowstorm-version-quirks.md
 ```
 
-Coverage includes editor boundary, release-specific regression classification, vector-speed compatibility finding, emitter-age class instability finding, nested preview caveats and minimal reproduction.
+Status: **TARGET-SPECIFIC**. Editor workarounds never redefine generic Bedrock validity.
 
-Status: **TARGET-SPECIFIC / NOT GENERIC BEDROCK VALIDITY**.
+## 24. Performance
 
-## 21. Entity / locator integration
+`performance.md` covers population estimates, caps, overdraw, event fan-out, collision/Molang/parametric complexity, and distance-aware budgeting.
 
-Owner: `entity-integration.md`.
+Status: **STATIC HEURISTIC ONLY**. No FPS claim without actual device/runtime measurement.
 
-Coverage includes mapping, locators, animation/controller triggers, local transform expectations, fire-and-forget vs sustained effects.
+## 25. Closure findings
 
-Status: **COVERED AT REFERENCE BOUNDARY**. Live binding remains downstream/runtime proof.
+Current canonical knowledge has an explicit owner for all major component families in the current stable Bedrock particle document model plus the practical math, texture, Molang, attachment, and editor boundaries needed for professional authoring.
 
-## 22. Performance
-
-Owner: `performance.md`.
-
-Coverage includes:
-- rate × lifetime population estimate;
-- max-particle cap;
-- event fan-out;
-- collision/Molang/parametric complexity;
-- translucent overdraw;
-- distance-aware budgeting.
-
-Status: **STATIC HEURISTIC ONLY**. No FPS claims without device/runtime measurement.
-
-## 23. Closure findings
-
-Current canonical knowledge has an explicit owner for all major official Bedrock particle component families used by the current stable particle document model.
-
-Remaining uncertainty is intentionally limited to:
+Remaining uncertainty is intentionally limited to runtime- or version-owned facts:
 
 ```text
-new fields/components introduced by future Bedrock versions
-exact runtime numerical integration details
-editor-version preview differences
-host-specific Molang query exposure
-complex collision/runtime geometry behavior
+future Bedrock fields/components
+individual query minimum-version changes
+host-specific query exposure
+exact runtime numerical integration
+complex collision geometry behavior
+editor-version preview regressions
 platform/GPU performance
 final visual quality
 ```
 
-These are not reasons to add a parallel framework.
+These are evidence boundaries, not missing-framework problems.
 
-## 24. Maintenance rule
+## 26. Maintenance rule
 
-When Minecraft Creator documentation changes:
+When Microsoft Creator documentation changes:
 
 ```text
-1. compare official component/field list against this audit
-2. identify new/changed field
-3. update the existing canonical owner
-4. update component-field-reference.md when field semantics changed
-5. update Snowstorm docs only if editor compatibility differs
-6. do not create another generic particle knowledge tree
+1. compare component/field list against this audit
+2. check generated target-version schema before legacy prose
+3. identify changed default/union/enum/evaluation semantics
+4. update the nearest existing canonical owner
+5. update component-field-reference.md when field behavior changed
+6. update official-defaults-evaluation.md when omission/default changed
+7. update Snowstorm docs only for editor-specific compatibility
+8. do not create another generic particle knowledge tree
 ```
 
 ## Core official sources
