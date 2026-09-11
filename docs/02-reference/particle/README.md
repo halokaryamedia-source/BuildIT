@@ -59,11 +59,20 @@ emitter rate/lifetime/shape
 trajectory/physics/collision
 → motion.md
 
+advanced contact/bounce/collision-event behavior
+→ collision-advanced.md
+
 billboard/material/tint/rendering
 → appearance-rendering.md
 
+velocity/direction aligned billboard edge cases
+→ billboard-direction.md
+
 PNG/RGBA/atlas/UV/flipbook texture production
 → texture-authoring.md
+
+texture filtering/bleeding/matte/minification
+→ texture-filtering-bleeding.md
 
 particle variable ownership/stability
 → molang.md
@@ -71,14 +80,23 @@ particle variable ownership/stability
 full Molang syntax/operators/math/easing/formulas
 → molang-language-math.md
 
+query/context/entity-state exposure and stability
+→ molang-queries-context.md
+
 curves
 → curves.md
 
 events / child effects
 → events.md
 
+event timing / emitter-vs-particle time ownership
+→ event-timing.md
+
 Snowstorm / Wintersky compatibility
 → snowstorm.md
+
+Snowstorm release/version quirks and preview regressions
+→ snowstorm-version-quirks.md
 
 performance reasoning
 → performance.md
@@ -120,25 +138,30 @@ local/world simulation + inherited velocity
 initial speed / spin
 dynamic motion / drag / acceleration
 parametric motion
-collision / kill plane / block expiration
+collision / bounce / contact events / kill plane / block expiration
 billboard facing + direction
+velocity-aligned billboard edge cases
 materials + transparency
 RGBA textures
 atlas construction
 UV mapping
 flipbook animation
+texture filtering/bleeding/matte/minification
 tint / alpha / gradients
 lighting
 full Molang syntax/operators
 variable namespaces
 particle/emitter built-in variables
-all current Molang math-function families
+particle-relevant queries/context reasoning
+current Molang math-function families
 easing/interpolation/random/trigonometry
 particle formula patterns
 curves
 events / nested child effects
+event timing and lifetime ownership
 entity/locator integration
 Snowstorm/Wintersky compatibility
+Snowstorm version/preview quirks
 static performance reasoning
 troubleshooting
 QA and clean delivery
@@ -146,15 +169,34 @@ QA and clean delivery
 
 ## Texture is first-class knowledge
 
-Particle texture authoring is not treated as a minor sub-step. `texture-authoring.md` owns production PNG/RGBA, alpha edges, atlas layout, gutters, UV/flipbook mapping, tint compatibility, pixel-art handling and texture QA.
+Particle texture authoring is not treated as a minor sub-step.
 
-`appearance-rendering.md` owns how those authored assets are rendered through materials/billboards/tint/lighting.
+```text
+texture-authoring.md
+→ production PNG/RGBA, alpha, atlas layout, UV/flipbook mapping,
+  tint compatibility, pixel-art handling and texture QA
+
+texture-filtering-bleeding.md
+→ hidden RGB under transparent pixels, gutter/bleed risk,
+  frame bounds, halo/matte artifacts and minification edge cases
+
+appearance-rendering.md
+→ how those authored assets are rendered through
+  materials/billboards/tint/lighting
+```
 
 ## Molang/math is first-class knowledge
 
-`molang.md` owns particle-specific variable ownership and stability.
+```text
+molang.md
+→ particle/emitter variable ownership and lifetime stability
 
-`molang-language-math.md` owns the deeper Molang language and math layer, including official math function families and reusable particle formulas.
+molang-language-math.md
+→ language, operators, math functions, easing and formulas
+
+molang-queries-context.md
+→ query/context availability, external state and host coupling
+```
 
 This separation prevents generic language knowledge from obscuring particle-specific ownership rules.
 
@@ -182,7 +224,7 @@ ChatGPT does not claim:
 
 ```text
 Bedrock/source reasoning
-→ Molang/math ownership check
+→ Molang/math/query ownership check
 → texture/rendering QA
 → Snowstorm compatibility reasoning when applicable
 → static/preflight QA
