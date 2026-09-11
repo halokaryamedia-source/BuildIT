@@ -3,6 +3,7 @@ import {
   DEFAULT_MCP_REGISTRATION_PROFILE,
 } from "@/lib/registrationProfile";
 import {
+  getMcpSurfaceDescriptor,
   getMcpSurfaceToolNames,
 } from "@/server/tools";
 import {
@@ -11,17 +12,23 @@ import {
 
 describe("Runtime immutable descriptors", () => {
   test("reuses one frozen surface descriptor for the same profile and phase", () => {
-    const first = getMcpSurfaceToolNames(
+    const first = getMcpSurfaceDescriptor(
       DEFAULT_MCP_REGISTRATION_PROFILE,
       "geometry"
     );
-    const second = getMcpSurfaceToolNames(
+    const second = getMcpSurfaceDescriptor(
       DEFAULT_MCP_REGISTRATION_PROFILE,
       "geometry"
     );
 
     expect(second).toBe(first);
     expect(Object.isFrozen(first)).toBe(true);
+    expect(Object.isFrozen(first.toolNames)).toBe(true);
+    expect(first.count).toBe(first.toolNames.length);
+    expect(first.toolNames.every((name) => first.toolNameSet.has(name))).toBe(true);
+    expect(
+      getMcpSurfaceToolNames(DEFAULT_MCP_REGISTRATION_PROFILE, "geometry")
+    ).toBe(first.toolNames);
   });
 
   test("reuses phase server instructions", () => {
