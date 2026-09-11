@@ -1,83 +1,133 @@
 # Particle QA Sequence
 
-Run checks in this order so later conclusions do not hide an earlier structural or semantic defect.
+Run checks in this order so later conclusions do not hide an earlier structural or semantic defect. Apply only gates relevant to the authored target/effect.
 
-## Gate 1 — Bedrock document structure
+## Gate 1 — Bedrock document + target-schema structure
 
 Check:
 - every `.particle.json` parses;
 - identifiers are valid and unique where required;
 - referenced textures/effects exist when evidence is available;
-- component/vector/scalar shapes are valid;
-- unknown authored fields are preserved rather than rewritten away.
+- component/vector/scalar shapes are valid for the target Bedrock schema/version;
+- omitted fields are not silently treated as `0`, `false`, empty collections, or zero vectors when the schema says `not set`;
+- one-time, per-update, per-render, and continuous expressions use the intended owner/evaluation stage;
+- unknown/new authored fields are preserved rather than rewritten away.
 
-## Gate 2 — Snowstorm / Wintersky compatibility
+Use `official-defaults-evaluation.md` when exact omission/default behavior materially affects the result.
+
+## Gate 2 — Snowstorm / Wintersky compatibility — conditional
+
+Run only when Snowstorm/Wintersky preview or editing is part of the target.
 
 Check:
-- no vector `minecraft:particle_initial_speed` when authored magnitude must survive Snowstorm preview;
-- launch direction lives on emitter shape when using scalar speed;
-- no emitter-age class switching inside living-particle motion, billboard size/UV, or tint when stability is required.
+- scalar-speed compatibility pattern is used when vector initial-speed magnitude would make Snowstorm preview unreliable;
+- launch direction lives on the intended shape/direction owner when scalar speed is used;
+- no emitter-age class switching inside living-particle motion, billboard size/UV, or tint when stable particle identity is required;
+- version-sensitive behavior is checked against `snowstorm-compatibility-matrix.md`;
+- a suspected preview regression is not promoted into a generic Bedrock restriction.
 
-## Gate 3 — Motion sanity
+A vector `minecraft:particle_initial_speed` form is not generically invalid merely because Snowstorm preview may be unsuitable for magnitude tuning.
 
-For constant numeric inputs, estimate:
+## Gate 3 — Snowstorm import/export round-trip — conditional
+
+Run only when advanced/external JSON has actually been imported and re-exported through Snowstorm.
+
+Check the structural diff for:
+- meaningful numeric `0` values;
+- meaningful `false` values;
+- omitted fields that became explicit or disappeared;
+- advanced event structures;
+- target-version fields Snowstorm may not expose as first-class controls;
+- texture/material/path changes.
+
+Successful import alone is not round-trip proof.
+
+## Gate 4 — Motion / rotation sanity — conditional
+
+When constant numeric inputs make static reasoning useful, estimate or inspect:
 - initial velocity;
-- apex;
-- time to apex when relevant;
-- horizontal travel;
-- final displacement.
+- acceleration/drag ownership;
+- apex/time-to-apex when relevant;
+- horizontal travel/final displacement;
+- initial rotation/rate and rotational acceleration/drag when relevant.
 
 Compare against explicit authored targets when present. A miss is diagnostic evidence, not permission to silently rewrite intent.
 
-## Gate 4 — Bundle integrity
+## Gate 5 — Bundle + event integrity
 
-Check:
+Check when multi-effect/event architecture exists:
 - duplicate identifiers;
 - document identifier mismatch;
 - missing child-effect references;
 - circular child chains;
 - orphan entries relative to an explicit root;
+- event owner/timing is emitter-, particle-, distance-, or collision-relative as intended;
 - texture reference resolution when the available set is known.
 
-## Gate 5 — Texture / atlas QA
+## Gate 6 — Texture / atlas QA
 
-Check when pixel data or direct visual inspection is available:
-- real transparency;
-- no baked checkerboard;
-- no unintended white matte/halo;
-- grid dimensions and UV bounds;
-- safe visible-pixel gutter;
-- duplicate cells when uniqueness is expected;
-- class-to-cell mapping is intentional.
+Check relevant texture concerns when pixel data or direct visual inspection is available:
+- real RGBA transparency;
+- no baked checkerboard/background;
+- no unintended white/dark matte or halo;
+- hidden RGB is compatible with intended alpha/filtering behavior;
+- dimensions and UV bounds match the authored mapping;
+- atlas/flipbook cells have safe gutters;
+- visible bounds/frame alignment are stable;
+- duplicate cells are intentional;
+- tint/texture alpha/material ownership is coherent.
 
-## Gate 6 — Spatial / keep-out sanity
+Skip atlas/flipbook checks for a single static sprite with no atlas.
 
-When environment geometry is known, check representative spawn/travel samples against explicit keep-out regions. This is not collision or renderer simulation.
+## Gate 7 — Collision / environmental termination — conditional
 
-## Gate 7 — View-distance readability
+When collision or environmental expiration is used, check:
+- collision radius/restitution/drag are target-schema valid;
+- collision-event `min_speed` is intentional;
+- repeated contact cannot create accidental fan-out;
+- `expire_if_in_blocks` / `expire_if_not_in_blocks` lists have the intended blacklist/allow-list role;
+- kill-plane orientation/sign is intentional;
+- max lifetime, expiration expression, environmental expiration, collision expiration, and kill plane do not conflict unexpectedly.
 
-Use particle size versus viewing distance as a deterministic heuristic. Treat this only as a warning signal; FOV, display resolution, contrast, opacity, motion and scene salience remain visual-review concerns.
+## Gate 8 — Spatial / attachment sanity — conditional
 
-## Gate 8 — Performance budget
+When environment geometry or entity attachment is known, check:
+- representative spawn/travel paths against explicit keep-out regions;
+- local/world-space ownership;
+- locator/bone/emitter transform expectations;
+- velocity inheritance when relevant;
+- bound vs fire-and-forget behavior.
 
-Estimate conservative visible load with available spawn-rate/lifetime/max-particle information. Do not claim FPS or device performance from this estimate.
+This is not a substitute for Minecraft collision/attachment simulation.
 
-## Gate 9 — Package integrity
+## Gate 9 — View-distance readability — conditional heuristic
+
+When target viewing distance matters, use particle size versus distance only as a warning signal. FOV, display resolution, contrast, alpha, motion, background, and scene salience remain visual-review concerns.
+
+## Gate 10 — Performance budget — conditional heuristic
+
+Estimate conservative visible load from available spawn-rate/lifetime/max-particle/event-fan-out information. Include translucent overdraw, collision, Molang, nested effects, and large billboards when material.
+
+Do not claim FPS or device performance from static estimates.
+
+## Gate 11 — Package integrity
 
 Before delivery verify:
 - normal Resource Pack structure;
-- all JSON texture paths resolve;
+- all JSON texture/effect references resolve;
 - no temp/scratch/obsolete QA files;
 - no duplicate unused textures;
-- no versioned working filenames unless the user explicitly requires them;
-- README usage notes match the actual package.
+- no versioned working filenames unless explicitly required;
+- usage notes match the actual package;
+- Snowstorm-specific notes are included only when Snowstorm is relevant.
 
 ## Final acceptance
 
 ```text
-STATIC QA PASS / WARNINGS UNDERSTOOD
-→ USER VISUAL REVIEW IN SNOWSTORM / MINECRAFT
+BEDROCK / STATIC QA PASS OR WARNINGS UNDERSTOOD
+→ OPTIONAL SNOWSTORM TARGET REVIEW
+→ USER VISUAL REVIEW IN THE ACTUAL TARGET ENVIRONMENT
 → APPROVE OR TARGETED REVISION
 ```
 
-Static QA never replaces visual approval.
+Static QA, Snowstorm preview, and source inspection never replace Minecraft/runtime visual truth when runtime truth is required.
