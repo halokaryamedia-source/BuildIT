@@ -6,7 +6,7 @@ This file owns **current implementation continuation only**. Product architectur
 
 ## Current Objective
 
-LazyDesigner Control source implementation is active. Documentation/Reference architecture is baseline; do not redo those audits without a concrete defect. Local/live Blockbench testing remains deferred until explicitly reactivated.
+LazyDesigner Control source implementation is active. Documentation/Reference architecture and ASSET_AUTHORING specialist naming are now source baselines. Local/live Blockbench testing remains deferred until explicitly reactivated.
 
 ## Completed Baseline
 
@@ -15,6 +15,7 @@ LazyDesigner Control source implementation is active. Documentation/Reference ar
 ✓ Reference Preparation / typed authority / package contracts
 ✓ canonical LazyDesigner Control source at mcp/gateway/control/
 ✓ former active navigator/ source removed with no permanent alias
+✓ migration-only asset-router Skill retired and removed
 ✓ ASSET_AUTHORING / SYSTEM_DEVELOPMENT routing
 ✓ GEOMETRY_CONTEXT / TEXTURE_CONTEXT / ANIMATION_CONTEXT
 ✓ exactly-one-profile Geometry loading
@@ -23,19 +24,18 @@ LazyDesigner Control source implementation is active. Documentation/Reference ar
 ✓ effect-aware downstream invalidation with conservative fallback
 ✓ Workspace lifecycle readiness for Texturing / Animation
 ✓ metadata-only search/describe status rereads removed
-✓ top-level Workspace/Reference projections compacted to summaries
-✓ active-stage decision detail remains self-contained in stage_context
-✓ stale Navigator imports in Control regressions removed
-✓ gateway-control-* regressions + measure:control
-✓ MCP presentation docs use LazyDesigner identity
-✓ migration-only blockit-bedrock-entity-mcp router Skill retired and removed
-✓ root/workspace/test/CI routing moved to Control + active specialist
+✓ summary-only top-level Workspace/Reference projections
+✓ self-contained active-stage stage_context
+✓ canonical ASSET_AUTHORING Skills:
+  - lazydesigner-modelling
+  - lazydesigner-texturing
+  - lazydesigner-animation
+✓ old modelling/texturing/animation Skill paths physically removed
+✓ Control/docs/CI/regressions route to canonical specialist names
 ✓ compatibility identifier boundary documented + regression guarded
 ```
 
 ## Lifecycle Readiness
-
-Persisted Workspace gates bound legal stage continuation:
 
 ```text
 GEOMETRY
@@ -51,30 +51,28 @@ ANIMATION
 → Texturing APPROVED
 ```
 
-When Workspace state is unavailable, Control returns orientation-required instead of inventing a failure. Reference readiness remains separately stage-scoped.
+Missing Workspace state requests orientation instead of inventing downstream failure. Reference readiness remains separately stage-scoped.
 
 ## Control Packet Economy
 
-Current packet layering is:
-
 ```text
 workspace top-level
-→ availability / fingerprint / asset summary only
+→ availability / fingerprint / asset summary
 
 reference top-level
-→ availability / fingerprint / asset/profile summary only
+→ availability / fingerprint / asset/profile summary
 
 stage_context
 → one self-contained active-stage decision projection
 ```
 
-Full Workspace/Reference projections remain internal Control inputs for readiness, lifecycle and context identity; they are not repeated in the emitted packet.
+Full Workspace/Reference projections remain internal Control inputs for readiness, lifecycle and context identity.
 
 ## Identifier Migration Boundary
 
 Current product-facing identity is LazyDesigner. Do **not** bulk-replace `blockit`.
 
-Compatibility-bound identifiers intentionally retained until dependency mapping is complete:
+Compatibility-bound identifiers intentionally retained:
 
 ```text
 package name / MCP server IDs
@@ -87,22 +85,16 @@ persisted setting IDs
 build/provenance identities coupled to the above
 ```
 
-Still-active specialist Skill folders using legacy names are migration debt, but they are not compatibility aliases for the retired router.
-
-Canonical migration boundary:
-
-```text
-docs/04-system/compatibility-identifiers.md
-```
+Canonical boundary: `docs/04-system/compatibility-identifiers.md`.
 
 ## Immediate Next Source Work
 
 ```text
-1. audit remaining Control packet/result fields for decision-value duplication
-2. map active legacy specialist Skill paths before any physical rename
-3. migrate bounded user-facing Runtime/Gateway strings that do not change compatibility values
-4. keep package/plugin/env/header/persisted identifiers stable until dedicated atomic migration
-5. audit remaining authoring/repository regressions for retired docs or stale symbols
+1. audit PRODUCT_DEVELOPMENT Skill naming and direct consumers
+2. migrate only non-compatibility Skill/package presentation identities atomically
+3. continue bounded user-facing Runtime/Gateway BlockIT → LazyDesigner string cleanup
+4. keep package/plugin/env/header/persisted identifiers stable until a dedicated migration exists
+5. audit remaining active regressions for retired docs/symbols only when concrete evidence appears
 6. regenerate generated artifacts only when LOCAL_CODE/generator execution is reactivated
 7. run local/live acceptance only when explicitly reactivated
 ```
@@ -110,7 +102,8 @@ docs/04-system/compatibility-identifiers.md
 ## Stop Rules
 
 - No Navigator compatibility alias or second Control path.
-- No replacement asset-router Skill after router retirement.
+- No replacement asset-router Skill.
+- No legacy ASSET_AUTHORING specialist aliases.
 - No second persistent state DB inside Control.
 - No duplicate capability-domain table outside `mcp/lib/authoringPhase.ts`.
 - No all-profile/all-stage loading as reassurance.
