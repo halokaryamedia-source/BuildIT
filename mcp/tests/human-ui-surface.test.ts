@@ -63,10 +63,10 @@ describe("human-facing Blockbench UI", () => {
   });
 
   test("recovery actions are contextual and copied support details avoid local paths", async () => {
-    const [panel, ui, devSync] = await Promise.all([
+    const [panel, ui, reload] = await Promise.all([
       source("ui/panel.html"),
       source("ui/index.ts"),
-      source("plugin/devSync.ts"),
+      source("plugin/reload.ts"),
     ]);
 
     expect(panel).toContain("runtime.state === 'failed'");
@@ -76,8 +76,19 @@ describe("human-facing Blockbench UI", () => {
     expect(ui).toContain("LazyDesigner support details");
     expect(ui).not.toContain("Project.save_path}");
     expect(ui).not.toContain("Project.export_path}");
-    expect(devSync).toContain("canReloadLazyDesignerPlugin");
-    expect(devSync).toContain("reloadLazyDesignerPlugin");
+    expect(reload).toContain("canReloadLazyDesignerPlugin");
+    expect(reload).toContain("reloadLazyDesignerPlugin");
+  });
+
+  test("dev auto-reload and human reload share one native plugin owner", async () => {
+    const [devSync, reload] = await Promise.all([
+      source("plugin/devSync.ts"),
+      source("plugin/reload.ts"),
+    ]);
+
+    expect(devSync).toContain("getReloadableLazyDesignerPlugin");
+    expect(devSync).not.toContain("function getReloadableBlockItPlugin");
+    expect(reload).toContain("plugin.reload()");
   });
 
   test("normal plugin metadata keeps creator credentials anonymous", async () => {
