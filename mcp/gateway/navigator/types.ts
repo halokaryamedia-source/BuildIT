@@ -28,7 +28,7 @@ export type NavigatorReadiness = {
 };
 
 export type NavigatorSnapshot = {
-  protocol: "blockit-navigator-v1";
+  protocol: "lazydesigner-control-v1";
   system: NavigatorSystemState;
   mode: "ASSET_AUTHORING";
   project: {
@@ -57,7 +57,7 @@ export type NavigatorSnapshot = {
 };
 
 export type NavigatorCapabilitySummary = CapabilitySummary & {
-  navigation: {
+  control: {
     authoring_domain: NavigatorAuthoringDomain;
     current_domain: boolean;
     eligibility: "RECOMMENDED" | "AVAILABLE" | "FOREIGN_PHASE";
@@ -66,7 +66,7 @@ export type NavigatorCapabilitySummary = CapabilitySummary & {
 };
 
 export type NavigatorDelta = {
-  protocol: "blockit-navigator-v1";
+  protocol: "lazydesigner-control-v1";
   capability: string;
   authoring_domain: NavigatorAuthoringDomain;
   source_owner: NavigatorSourceOwner;
