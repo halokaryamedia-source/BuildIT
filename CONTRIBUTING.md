@@ -1,6 +1,6 @@
-# Contributing to BlockIT
+# Contributing to LazyDesigner
 
-BlockIT is developed on the `Local` branch and promoted to `main` only by explicit maintainer instruction. Keep contributions small, evidence-driven, and aligned with repository owners instead of introducing parallel workflows or frameworks.
+LazyDesigner is developed on the `Local` branch and promoted to `main` only by explicit maintainer instruction. Keep contributions small, evidence-driven, and aligned with repository owners instead of introducing parallel workflows or frameworks.
 
 ## Branch model
 
@@ -18,7 +18,7 @@ Before implementation, classify the capability actually available:
 ```text
 REMOTE_GITHUB   → repository/GitHub + CI only
 LOCAL_CODE      → local checkout + Bun/tests/build/generators/filesystem
-LIVE_BLOCKBENCH → LOCAL_CODE + deployed/reloaded BlockIT + reconnected live MCP
+LIVE_BLOCKBENCH → LOCAL_CODE + deployed/reloaded LazyDesigner + reconnected live MCP
 ```
 
 Use `CONTEXT: ...` or `SWITCH CONTEXT: ...` when useful. The label does not create capability; root `AGENTS.md` owns proof ceilings and fail-safe defaults. Do not claim local/runtime proof from `REMOTE_GITHUB`, and do not treat `LIVE_BLOCKBENCH` as automatic activation of formal Local Acceptance.
@@ -27,12 +27,13 @@ Use `CONTEXT: ...` or `SWITCH CONTEXT: ...` when useful. The label does not crea
 
 Start from the smallest owner that can actually explain the requested change:
 
+- documentation router → `docs/README.md`;
 - repository routing and task class → `AGENTS.md`;
 - GitHub delivery/history/CI/security → `GITHUB_RULES.md`;
 - stable product facts → `CONTEXT.md`;
-- current continuation → `docs/knowledge/next-action.md` only when material;
-- current proof interpretation → `docs/knowledge/current-validation.md`;
-- source/tool ownership → `docs/knowledge/implementation-map.md`;
+- current continuation → `docs/05-operations/next-action.md` only when material;
+- current proof interpretation → `docs/05-operations/current-validation.md`;
+- source/tool ownership → `docs/04-system/implementation-map.md`;
 - MCP package implementation → `mcp/AGENTS.md`;
 - persistent asset work → `workspace/README.md`.
 
@@ -61,7 +62,7 @@ CI on `Local` is an asynchronous regression safety net, not a blocking permissio
 - After a normal `Local` commit, continue work without waiting for queued/in-progress CI unless its result is required for the next decision.
 - Only a failure on the current relevant `Local` HEAD needs diagnosis; cancelled or superseded runs can be ignored.
 - `Repository Verify` owns repository/routing/security/static infrastructure contracts.
-- `Authoring Policy Verify` owns static authoring policy, specialist routing, and 3D-Assisted Evidence source/reproducibility contracts.
+- `Authoring Policy Verify` owns static Reference/Authoring policy and specialist-routing contracts.
 - `MCP Verify` owns executable/public MCP source, build, generated-doc, and full package regressions.
 - `Release Verify` runs the canonical release gate for `main` pull requests and stable-branch pushes.
 
@@ -99,4 +100,4 @@ Do not create checkpoint commits, transfer experiments, placeholder files, tempo
 
 ## License
 
-BlockIT is distributed under the GNU General Public License v3.0. See `LICENSE` for the full terms.
+LazyDesigner is distributed under the GNU General Public License v3.0. See `LICENSE` for the full terms.
