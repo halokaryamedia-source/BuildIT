@@ -138,6 +138,11 @@ const SOURCE_BY_CAPABILITY: Record<string, ControlSourceOwner> = {
     specialist: TEXTURING_PATH,
     test_owner: "mcp/tests/material-instance-mutation-result.test.ts",
   },
+  manage_render_profile: {
+    source: "mcp/server/tools/render-profile.ts",
+    specialist: TEXTURING_PATH,
+    test_owner: "mcp/tests/render-profile-binding.test.ts",
+  },
   create_animation: {
     source: "mcp/server/tools/animation.ts",
     specialist: ANIMATION_PATH,
