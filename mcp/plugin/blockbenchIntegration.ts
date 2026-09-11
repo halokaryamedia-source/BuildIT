@@ -11,7 +11,6 @@ import { applyMcpRegistrationProfile } from "@/server/tools";
 import { uiSetup, uiTeardown } from "@/ui";
 import { setupI18n } from "@/ui/i18n";
 import {
-  clearExtendedMcpProfileHandler,
   isExtendedMcpFamiliesEnabled,
   setExtendedMcpProfileHandler,
   settingsSetup,
@@ -74,8 +73,8 @@ export class BlockbenchIntegration {
   }
 
   teardown(): void {
-    clearExtendedMcpProfileHandler();
     uiTeardown();
+    // settingsTeardown owns both Setting instances and its profile callback.
     settingsTeardown();
     this.generation = null;
     this.isGenerationCurrent = null;
