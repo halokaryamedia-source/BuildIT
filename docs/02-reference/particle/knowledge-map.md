@@ -25,6 +25,9 @@ component-catalog.md
 component-field-reference.md
 → field-by-field semantics, defaults/ownership concerns and failure modes
 
+official-schema-coverage.md
+→ closure audit mapping official component families to canonical owners
+
 lifecycle-space.md
 → creation/update/render timing, emitter-vs-particle lifetime, local/world simulation
 
@@ -33,6 +36,10 @@ emitter.md
 
 emitter-shape-math.md
 → direction vectors, normalization, custom shape/ring/cone/fan math
+
+math-physics-reference.md
+→ vectors, projection, distributions, ballistic equations, probability,
+  angular readability and numerical safety
 
 motion.md
 → initial impulse, acceleration, drag, parametric motion, kill planes
@@ -51,6 +58,10 @@ texture-authoring.md
 
 texture-filtering-bleeding.md
 → hidden RGB, atlas bleed, matte/halo, minification/filtering edge cases
+
+texture-resolution-sampling.md
+→ resolution, resampling, texel-density reasoning, downscaling,
+  alpha coverage, frame stability and approximate asset-size reasoning
 
 texture-color-science.md
 → practical alpha/value/color design for opaque/alpha/blend/add materials
@@ -114,6 +125,9 @@ Knowledge and workflow stay separate. Do not duplicate deep technical rules into
 basic task
 → authoring-spec.md + workflow.md
 
+need to confirm official coverage / locate missing schema knowledge
+→ official-schema-coverage.md
+
 unknown component
 → component-catalog.md
 
@@ -125,6 +139,9 @@ spawn/lifetime/shape
 
 custom distribution/direction/cone/ring math
 → emitter-shape-math.md
+
+general vector/physics/distribution/ballistic reasoning
+→ math-physics-reference.md
 
 creation/update/render or local/world-space question
 → lifecycle-space.md
@@ -143,6 +160,9 @@ directional sprite issue
 
 PNG/atlas/UV/flipbook production
 → texture-authoring.md
+
+resolution/resampling/downscale/frame-stability issue
+→ texture-resolution-sampling.md
 
 bleed/halo/filtering/minification
 → texture-filtering-bleeding.md
@@ -205,32 +225,35 @@ current explicit user requirement
 ## Coverage state
 
 ```text
-Bedrock architecture/components        STRONG
-Field-level component reference        STRONG
-Lifecycle/evaluation/local space       STRONG
-Emitter lifecycle/shapes               STRONG
-Emitter direction/custom-shape math    STRONG
-Dynamic/parametric motion              STRONG
-Advanced collision                     STRONG
-Appearance/material/billboards         STRONG
-Directional billboard edge cases       STRONG
-Texture/RGBA/atlas/UV/flipbook         STRONG
-Texture filtering/bleeding             STRONG
-Texture color/alpha/blend reasoning     STRONG PRACTICAL
-Particle Molang ownership              STRONG
-Particle built-in variable inventory   STRONG
-Molang language/math                   STRONG
-Molang formula cookbook                STRONG
-Molang query/context reasoning         STRONG
-Curves                                 STRONG
-Events/child effects                   STRONG
-Event timing                           STRONG
-Snowstorm/Wintersky                    STRONG BASELINE
-Snowstorm version quirks               STRONG VERSION-AWARE
-Performance reasoning                  STRONG STATIC
-Entity integration                     STRONG REFERENCE BOUNDARY
-Troubleshooting                        STRONG CAUSAL GUIDE
-Real multi-family visual cases         DEFERRED BY USER
+Official schema closure audit            STRONG / TRACKED
+Bedrock architecture/components          STRONG
+Field-level component reference          STRONG
+Lifecycle/evaluation/local space         STRONG
+Emitter lifecycle/shapes                 STRONG
+Emitter direction/custom-shape math      STRONG
+General vector/physics/distribution math STRONG
+Dynamic/parametric motion                STRONG
+Advanced collision                       STRONG
+Appearance/material/billboards           STRONG
+Directional billboard edge cases         STRONG
+Texture/RGBA/atlas/UV/flipbook           STRONG
+Texture resolution/resampling            STRONG PRACTICAL
+Texture filtering/bleeding               STRONG
+Texture color/alpha/blend reasoning       STRONG PRACTICAL
+Particle Molang ownership                STRONG
+Particle built-in variable inventory     STRONG
+Molang language/math                     STRONG
+Molang formula cookbook                  STRONG
+Molang query/context reasoning           STRONG
+Curves                                   STRONG
+Events/child effects                     STRONG
+Event timing                             STRONG
+Snowstorm/Wintersky                      STRONG BASELINE
+Snowstorm version quirks                 STRONG VERSION-AWARE
+Performance reasoning                    STRONG STATIC
+Entity integration                       STRONG REFERENCE BOUNDARY
+Troubleshooting                          STRONG CAUSAL GUIDE
+Real multi-family visual cases           DEFERRED BY USER
 ```
 
-Further work should close newly discovered official fields/version-specific behavior and empirical visual evidence, not create another particle framework.
+Further work should close only newly discovered official fields/version-specific behavior and empirical visual evidence, not create another particle framework.
