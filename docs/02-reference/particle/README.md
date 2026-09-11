@@ -29,14 +29,35 @@ Do not run both authoring authorities on the same revision at once.
 
 ## AI read rule
 
-Do not preload the entire corpus. Start with `authoring-spec.md` + `workflow.md`, then load only what the decision needs.
+Do not preload the entire corpus.
+
+For authoring execution:
 
 ```text
+authoring-spec.md
+→ workflow.md
+→ load only knowledge required by the current decisions
+```
+
+For a knowledge/diagnostic question:
+
+```text
+knowledge-map.md
+→ select the smallest relevant owner set
+```
+
+```text
+status / current maturity
+→ STATUS.md
+
 knowledge routing / provenance
 → knowledge-map.md
 
 official Bedrock schema closure / missing-owner audit
 → official-schema-coverage.md
+
+exact official defaults / omission / evaluation timing / schema deltas
+→ official-defaults-evaluation.md
 
 Bedrock mental model
 → fundamentals.md
@@ -142,6 +163,12 @@ HEURISTIC
 
 Snowstorm-specific behavior must never redefine generic Bedrock validity. Published Snowstorm/Wintersky release notes are preferred for stable editor capability claims; unreleased source-head behavior must be labeled development state. Heuristics must never be presented as live rendering or FPS proof.
 
+## Knowledge closure state
+
+The source/static knowledge foundation is mature. `STATUS.md` owns the current maturity statement and the intentionally unresolved runtime-only areas.
+
+Do not interpret knowledge closure as runtime proof. Final visual quality, exact collision/runtime integration, host-specific query availability, and device/GPU performance remain target-runtime concerns.
+
 ## Complete coverage target
 
 The canonical knowledge base targets all practical layers required to author Bedrock/Snowstorm particle assets professionally:
@@ -149,6 +176,7 @@ The canonical knowledge base targets all practical layers required to author Bed
 ```text
 particle document structure
 official schema/component closure
+official defaults / omission / evaluation timing
 component inventory + field semantics
 emitter rate/lifetime/shape
 custom shape + vector/direction math
@@ -241,15 +269,15 @@ ChatGPT does not claim live Snowstorm/Minecraft truth without review, Blockbench
 
 ```text
 Bedrock/source reasoning
-→ official schema/component coverage check when needed
+→ target-version schema/default check when needed
 → component/field ownership check
 → Molang/math ownership check
 → texture/rendering QA
 → Snowstorm compatibility reasoning when applicable
 → Snowstorm release matrix check when behavior is version-sensitive
-→ static/preflight QA
+→ relevant static/preflight QA only
 → clean package
-→ user Snowstorm/Minecraft review
+→ user review in the actual target environment
 → approve or revise causal layer
 ```
 
