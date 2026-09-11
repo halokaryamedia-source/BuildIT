@@ -56,8 +56,8 @@ describe("current developer-facing documentation sync", () => {
 
   test("reference and authoring specialists point to canonical owners", async () => {
     const [reference, modelling] = await Promise.all([
-      text("../.agents/skills/blockbench-reference-generator/SKILL.md"),
-      text("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
+      text("../.agents/skills/lazydesigner-reference-preparation/SKILL.md"),
+      text("../.agents/skills/lazydesigner-modelling/SKILL.md"),
     ]);
 
     expect(reference).toContain("docs/02-reference/image/standard.md");
