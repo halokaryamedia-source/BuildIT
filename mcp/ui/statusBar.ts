@@ -5,7 +5,6 @@ let statusBarCssHandle: { delete(): void } | undefined;
 let statusIndicator: HTMLDivElement | undefined;
 let statusDot: HTMLDivElement | undefined;
 let statusText: HTMLSpanElement | undefined;
-let runtimeAddress = "";
 
 export type McpServerStatus = "running" | "starting" | "failed";
 export interface BlockItRuntimeStatusDetail {
@@ -19,7 +18,7 @@ let currentStatus: BlockItRuntimeStatusDetail = { state: "running" };
 
 function statusLabel(state: McpServerStatus): string {
   if (state === "starting") return "LazyDesigner Starting";
-  if (state === "failed") return "LazyDesigner Error";
+  if (state === "failed") return "LazyDesigner Needs Attention";
   return "LazyDesigner Ready";
 }
 
@@ -28,18 +27,10 @@ function renderStatus(): void {
   if (statusText) statusText.textContent = statusLabel(currentStatus.state);
   if (!statusIndicator) return;
 
-  const detail = currentStatus.detail?.trim();
-  const diagnostic =
-    currentStatus.state === "running"
-      ? runtimeAddress
-      : detail || runtimeAddress;
   statusIndicator.title = [
     statusLabel(currentStatus.state),
-    diagnostic,
-    "Click to open LazyDesigner panel",
-  ]
-    .filter(Boolean)
-    .join(" · ");
+    "Click to open LazyDesigner",
+  ].join(" · ");
 }
 
 function emitStatus(): void {
@@ -62,10 +53,6 @@ export function setStatusBarState(
 
 export function statusBarSetup(): void {
   statusBarTeardown();
-
-  const port = Settings.get("mcp_port") || 3000;
-  const endpoint = Settings.get("mcp_endpoint") || "/bb-mcp";
-  runtimeAddress = `127.0.0.1:${port}${endpoint}`;
   statusBarCssHandle = Blockbench.addCSS(statusBarCSS);
 
   const existingStatusBar = document.getElementById("status_bar");
@@ -113,7 +100,6 @@ export function statusBarTeardown(): void {
   statusIndicator = undefined;
   statusDot = undefined;
   statusText = undefined;
-  runtimeAddress = "";
   statusBarCssHandle?.delete();
   statusBarCssHandle = undefined;
 }
