@@ -382,6 +382,7 @@ registerGatewayTool(
         phaseAfter,
         projectUuid,
         succeeded,
+        result: result.structuredContent,
       });
       if (result.structuredContent === undefined) {
         return { ...result, structuredContent: { control_delta: controlDelta } };
