@@ -1,11 +1,11 @@
 ---
 name: blockbench-runtime-development
-description: Specialist for Blockbench runtime/plugin integration in BlockIT. Use when the primary problem is BBPlugin lifecycle, Blockbench globals/APIs, panels/dialogs/settings/actions, runtime permissions, Undo/Canvas/model mutation mechanics, event cleanup, or other behavior that must execute correctly inside Blockbench. Do not use for MCP protocol contracts, ordinary TypeScript/Bun implementation mechanics, reference generation, or Bedrock modelling decisions such as shape, proportions, Cuboid decomposition, texture art direction, or visual quality.
+description: Specialist for Blockbench runtime/plugin integration in LazyDesigner. Use when the primary problem is BBPlugin lifecycle, Blockbench globals/APIs, panels/dialogs/settings/actions, runtime permissions, Undo/Canvas/model mutation mechanics, event cleanup, or other behavior that must execute correctly inside Blockbench. Do not use for MCP protocol contracts, ordinary TypeScript/Bun implementation mechanics, reference generation, or Bedrock modelling decisions such as shape, proportions, Cuboid decomposition, texture art direction, or visual quality.
 ---
 
 # Blockbench Runtime Development
 
-Own the **Blockbench runtime/plugin boundary** for BlockIT. This skill decides
+Own the **Blockbench runtime/plugin boundary** for LazyDesigner. This skill decides
 how an operation executes correctly inside Blockbench; it does not decide what a
 good model should look like.
 
@@ -26,7 +26,7 @@ Adjacent owners:
 
 - MCP public/protocol contracts → `mcp-server-development`;
 - Bedrock model shape/proportion/reference/visual judgement →
-  `blockbench-bedrock-modelling`;
+  `lazydesigner-modelling`;
 - Reference Preparation policy → `docs/02-reference/policy.md`;
 - TypeScript/Bun compiler/build/package mechanics → exact affected source/build owner under `mcp/AGENTS.md`.
 
