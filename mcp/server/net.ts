@@ -11,6 +11,7 @@ import {
   type McpRegistrationProfile
 } from '@/lib/registrationProfile'
 import { createProductIdentity } from '@/lib/productIdentity'
+import { getCapabilityMetadata } from '@/lib/capabilityMetadata'
 import {
   DEFAULT_MCP_AUTHORING_PHASE,
   getActiveMcpAuthoringPhase,
@@ -174,8 +175,8 @@ export function getRuntimeProjectHealth (
  * so targeting an inactive tab requires a native project select. The runtime
  * serializes MCP requests across sockets before entering this helper. The target
  * tab is temporarily locked against tab switching/close, then the user's prior
- * active tab is restored. Project-creating calls intentionally keep the newly
- * created tab active so the Gateway can adopt its returned UUID.
+ * active tab is restored. Project-transition calls intentionally keep the newly
+ * created/replaced tab active so the Gateway can adopt the authoritative result.
  */
 export async function runWithRuntimeProjectAffinity<T> (
   requestedProjectUuid: string | null,
@@ -269,8 +270,11 @@ function readRequestEnvelope (body: string): {
       record.method === 'tools/call' && typeof record.params?.name === 'string'
         ? record.params.name
         : null
+    const capabilityEffects = capability
+      ? getCapabilityMetadata(capability).effects
+      : null
     let targetAuthoringPhase: McpAuthoringPhase | null = null
-    if (capability === 'switch_authoring_phase') {
+    if (capabilityEffects?.phaseAffinity === 'update_from_result') {
       try {
         targetAuthoringPhase = normalizeAuthoringPhaseAffinity(
           record.params?.arguments?.target_phase
@@ -784,9 +788,13 @@ export default function createNetServer (
           }
           const webRequest = new Request(url, requestInit)
           const envelope = readRequestEnvelope(body)
+          const capabilityEffects = envelope.capability
+            ? getCapabilityMetadata(envelope.capability).effects
+            : null
           const needsProjectContext =
             envelope.method === 'tools/call' && requestedProjectUuid !== null
-          const allowProjectTransition = envelope.capability === 'create_project'
+          const allowProjectTransition =
+            capabilityEffects?.projectAffinity === 'adopt_created_project'
 
           try {
             // The input idle timeout protects incomplete local HTTP requests only.
@@ -820,7 +828,7 @@ export default function createNetServer (
             // handoff changes only that Gateway and cannot disturb another chat.
             if (
               requestedAuthoringPhase === null &&
-              envelope.capability === 'switch_authoring_phase' &&
+              capabilityEffects?.phaseAffinity === 'update_from_result' &&
               envelope.targetAuthoringPhase !== null &&
               isSuccessfulToolCallResponse(response)
             ) {
