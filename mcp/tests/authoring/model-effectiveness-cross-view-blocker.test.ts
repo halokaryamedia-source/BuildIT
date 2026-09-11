@@ -8,7 +8,7 @@ describe("model creation effectiveness — cross-view and blocker handling", () 
   test("material 3D claims keep explicit evidence states instead of borrowing confidence across axes", async () => {
     const [schema, modelling, workflow] = await Promise.all([
       source("../docs/02-reference/package/schema.md"),
-      source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
+      source("../.agents/skills/lazydesigner-modelling/SKILL.md"),
       source("prompts/bedrock_entity_workflow.md"),
     ]);
 
@@ -22,7 +22,7 @@ describe("model creation effectiveness — cross-view and blocker handling", () 
 
   test("material cross-view conflicts block instead of being averaged into invented geometry", async () => {
     const [modelling, validation] = await Promise.all([
-      source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
+      source("../.agents/skills/lazydesigner-modelling/SKILL.md"),
       source("../docs/03-authoring/validation/visual.md"),
     ]);
 
@@ -35,7 +35,7 @@ describe("model creation effectiveness — cross-view and blocker handling", () 
   test("persistent correction failures stop instead of looping", async () => {
     const [root, modelling, workflow] = await Promise.all([
       source("../AGENTS.md"),
-      source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
+      source("../.agents/skills/lazydesigner-modelling/SKILL.md"),
       source("prompts/bedrock_entity_workflow.md"),
     ]);
 
