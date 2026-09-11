@@ -1,21 +1,22 @@
 # ChatGPT Particle Authoring Experiment
 
-Experimental research for improving Bedrock particle authoring quality with ChatGPT while preserving BuildIT's existing production ownership.
+Experimental research and working method for authoring Minecraft Bedrock particle effects directly through ChatGPT while preserving BuildIT's existing production ownership.
 
 ## Status
 
-- Experimental only.
-- Not production authority for BuildIT particle authoring.
-- Production ownership remains `mcp/server/tools/particle.ts`, `mcp/server/resources/particle.ts`, and the existing Bedrock particle libraries.
+- Experimental ChatGPT workflow: **active**.
+- Not production authority for BuildIT MCP particle tooling.
+- No `LOCAL_CODE` step is required to author, validate, package, and deliver particles through this ChatGPT workflow.
+- Production MCP ownership remains `mcp/server/tools/particle.ts`, `mcp/server/resources/particle.ts`, and the existing Bedrock particle libraries.
 - The approved reference asset remains `examples/MIVUBI_Volcano_Eruption.zip`.
 - No experimental code is registered into the MCP server or runtime.
-- Promotion readiness has been audited; see `PROMOTION_READINESS.md`.
+- Promotion into production MCP is a separate deferred decision; see `PROMOTION_READINESS.md`.
 
 ## Goal
 
-Turn the lessons from the approved volcano particle workflow into a bounded, testable preflight model that can later strengthen the existing `inspect_particle` and `manage_particle` tools without creating parallel tools or a second particle framework.
+Provide a repeatable professional workflow that lets ChatGPT design, author, statically preflight, package, and refine Bedrock/Snowstorm particles without creating a parallel MCP system.
 
-The experiment focuses on gaps that structural JSON validation alone cannot catch:
+The experiment covers gaps that structural JSON validation alone cannot catch:
 
 1. Snowstorm / Wintersky runtime compatibility.
 2. Bounded motion estimation for scalar-speed dynamic particles.
@@ -26,14 +27,31 @@ The experiment focuses on gaps that structural JSON validation alone cannot catc
 7. Spatial keep-out / occlusion risk.
 8. View-distance readability heuristics.
 9. Conservative visible-particle performance budgeting.
+10. Clean Snowstorm + Minecraft Bedrock delivery packaging.
+
+## Workflow documents
+
+```text
+AUTHORING_SPEC.md      minimum request / intent contract
+WORKFLOW.md            practical authoring lessons
+QA_SEQUENCE.md         required static QA order
+DELIVERY_CONTRACT.md   final package and naming rules
+REFERENCE_PATTERNS.md  reusable physical authoring patterns
+DESIGN.md              experimental technical architecture
+PROMOTION_READINESS.md optional future MCP promotion audit
+```
 
 ## Current implementation
 
 ```text
 chatgpt-particle-authoring/
 ├── README.md
-├── DESIGN.md
+├── AUTHORING_SPEC.md
 ├── WORKFLOW.md
+├── QA_SEQUENCE.md
+├── DELIVERY_CONTRACT.md
+├── REFERENCE_PATTERNS.md
+├── DESIGN.md
 ├── PROMOTION_READINESS.md
 ├── src/
 │   ├── index.ts
@@ -94,25 +112,39 @@ chatgpt-particle-authoring/
 - bounded cylindrical keep-out overlap checks over authored spatial samples;
 - angular-size readability heuristic for intended viewing distance;
 - conservative steady-state visible-particle estimation using spawn rate, average lifetime, and `max_particles` caps;
-- an approved volcano golden static contract covering representative intent, motion, keep-out, readability, and effective particle budget.
+- approved volcano golden static contract covering representative intent, motion, keep-out, readability, and effective particle budget.
 
-Diagnostic codes are centralized and stable within the experiment so later promotion can preserve semantics without coupling production to this directory.
+## ChatGPT execution path
 
-## Promotion readiness
+The intended active path is:
 
-The architecture and failure-mode coverage are mature enough to define a bounded migration plan, but production promotion is intentionally blocked until focused Bun tests run in `LOCAL_CODE`.
+```text
+user request / reference
+→ normalize with AUTHORING_SPEC.md
+→ choose minimum physical decomposition
+→ author Bedrock particle JSON + textures
+→ run QA_SEQUENCE.md static checks
+→ package using DELIVERY_CONTRACT.md
+→ user reviews in Snowstorm / Minecraft
+→ refine only the causal layer that failed
+```
 
-The production audit concluded that promotion should:
+This path does not depend on BuildIT MCP execution or local repository tooling.
 
-- preserve exactly `inspect_particle` and `manage_particle`;
-- move only import-safe deterministic preflight logic into `mcp/lib/`;
-- keep Bedrock-generic validity separate from Snowstorm-specific compatibility warnings;
-- integrate read-only inspection before mutation behavior;
-- reuse an existing image/texture owner if raw texture decoding is ever required;
-- regenerate generated API docs in the same logical production delivery;
-- keep live visual/native proof separate from static source verification.
+## Reference patterns
 
-See `PROMOTION_READINESS.md` for the exact impact map, gates, stop conditions, and recommended production order.
+`REFERENCE_PATTERNS.md` currently records bounded starting patterns for:
+
+- ballistic eruption/debris;
+- rising smoke/plume;
+- ambient dust;
+- waterfall mist/spray;
+- fire/sparks;
+- magic/energy;
+- machinery exhaust;
+- impact bursts.
+
+Patterns are not presets. They become proven only after a real effect is accepted by the user.
 
 ## Important limits
 
@@ -124,9 +156,9 @@ The intent contract is an acceptance target, not a planner. It never silently re
 
 ## Production boundary
 
-Do not wire this directory into active MCP routing, tool registration, generated API docs, Skills, or production prompts.
+Do not wire this directory into active MCP routing, tool registration, generated API docs, Skills, or production prompts unless production promotion is explicitly authorized as a separate task.
 
-Promotion must extend the existing two-tool surface:
+If promotion is ever requested, it must extend the existing two-tool surface:
 
 ```text
 inspect_particle
@@ -135,10 +167,15 @@ manage_particle
 
 Do not introduce sibling tools such as `simulate_particle`, `snowstorm_particle`, or `texture_particle` unless future evidence proves the existing surface cannot own the capability.
 
-Any production promotion must follow `AGENTS.md`, `GITHUB_RULES.md`, and `mcp/AGENTS.md`, including generated-doc closure and the relevant verifier.
+## Proof model
 
-## Current proof ceiling
+For the **ChatGPT workflow**, static QA plus user visual review is the intended acceptance model.
 
-The committed prototype provides source/static evidence only. Focused Bun execution remains `LOCAL_CODE` proof, while Snowstorm parity, native Blockbench preview, and visual acceptance remain higher-context proof.
+```text
+ChatGPT static/preflight checks
+→ package delivery
+→ user Snowstorm/Minecraft visual review
+→ acceptance or targeted revision
+```
 
-See `DESIGN.md` for the technical contract, `WORKFLOW.md` for the authoring rules learned from the approved reference asset, and `PROMOTION_READINESS.md` for the production migration audit.
+`LOCAL_CODE` and MCP verification are relevant only if the experimental logic is later promoted into production BuildIT tooling. They are not blockers for using this ChatGPT authoring workflow now.
