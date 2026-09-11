@@ -83,9 +83,10 @@ describe("LazyDesigner Control active contract", () => {
     expect(CONTROL_ROUTING_POLICY.search_limit).toBe(4);
 
     const packet = await buildControlPacket(status);
-    expect(packet.control_protocol).toBe("lazydesigner-control-v1");
+    expect(packet.protocol).toBe("lazydesigner-control-v1");
+    expect(packet).not.toHaveProperty("control_protocol");
     expect(packet).not.toHaveProperty("routing");
-    expect(JSON.stringify(packet).length).toBeLessThan(6800);
+    expect(JSON.stringify(packet).length).toBeLessThan(6700);
   });
 
   test("system-development task identity ignores unrelated asset affinity and authoring phase", async () => {
