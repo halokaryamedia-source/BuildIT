@@ -29,6 +29,7 @@ import {
 import {
   getConsolidatedExecutor,
   getConsolidatedExecutors,
+  getConsolidatedFamily,
   type ConsolidatedCapability,
 } from "./consolidatedRoutes";
 
@@ -110,10 +111,10 @@ export const consolidatedMaterialInstancesToolDocs = {
  */
 function retainExecutorsBehindConsolidatedSurface(
   capability: ConsolidatedCapability,
-  family: McpRegistrationFamily,
   updateCatalog: ConsolidatedCatalogUpdate
 ): void {
   const definitions = getAllToolDefinitions();
+  const family = getConsolidatedFamily(capability);
   for (const name of getConsolidatedExecutors(capability)) {
     if (!definitions[name]) {
       throw new Error(
@@ -140,6 +141,13 @@ async function executeConsolidated(
   return definition.execute(args);
 }
 
+function exposeConsolidatedCapability(
+  capability: ConsolidatedCapability,
+  updateCatalog: ConsolidatedCatalogUpdate
+): void {
+  updateCatalog(capability, getConsolidatedFamily(capability), true);
+}
+
 export function registerConsolidatedTools(
   updateCatalog: ConsolidatedCatalogUpdate
 ): void {
@@ -157,10 +165,9 @@ export function registerConsolidatedTools(
     );
     retainExecutorsBehindConsolidatedSurface(
       "inspect_elements",
-      "element_inspection",
       updateCatalog
     );
-    updateCatalog("inspect_elements", "element_inspection", true);
+    exposeConsolidatedCapability("inspect_elements", updateCatalog);
   }
 
   if (!tools.manage_material) {
@@ -177,10 +184,9 @@ export function registerConsolidatedTools(
     );
     retainExecutorsBehindConsolidatedSurface(
       "manage_material",
-      "textures",
       updateCatalog
     );
-    updateCatalog("manage_material", "textures", true);
+    exposeConsolidatedCapability("manage_material", updateCatalog);
   }
 
   if (!tools.manage_animation_timeline) {
@@ -202,10 +208,9 @@ export function registerConsolidatedTools(
     );
     retainExecutorsBehindConsolidatedSurface(
       "manage_animation_timeline",
-      "animation",
       updateCatalog
     );
-    updateCatalog("manage_animation_timeline", "animation", true);
+    exposeConsolidatedCapability("manage_animation_timeline", updateCatalog);
   }
 
   if (!tools.manage_material_instances) {
@@ -226,9 +231,8 @@ export function registerConsolidatedTools(
     );
     retainExecutorsBehindConsolidatedSurface(
       "manage_material_instances",
-      "material_instances",
       updateCatalog
     );
-    updateCatalog("manage_material_instances", "material_instances", true);
+    exposeConsolidatedCapability("manage_material_instances", updateCatalog);
   }
 }
