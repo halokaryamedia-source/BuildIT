@@ -29,64 +29,70 @@ Do not run both authoring authorities on the same revision at once.
 
 ## AI read rule
 
-Do not preload the entire corpus.
-
-Start with:
+Do not preload the entire corpus. Start with `authoring-spec.md` + `workflow.md`, then load only what the decision needs.
 
 ```text
-authoring-spec.md
-workflow.md
-```
-
-Then load only what the decision needs:
-
-```text
-knowledge navigation / evidence provenance
+knowledge routing / provenance
 → knowledge-map.md
 
 Bedrock mental model
 → fundamentals.md
 
-complete component list
+complete component inventory
 → component-catalog.md
+
+field-by-field component semantics / failure modes
+→ component-field-reference.md
 
 creation/update/render timing + local/world simulation
 → lifecycle-space.md
 
-emitter rate/lifetime/shape
+emitter lifecycle / built-in shapes / density
 → emitter.md
 
-trajectory/physics/collision
+custom shape + launch direction math
+→ emitter-shape-math.md
+
+trajectory / physics / parametric motion
 → motion.md
 
-advanced contact/bounce/collision-event behavior
+advanced collision/contact/bounce
 → collision-advanced.md
 
-billboard/material/tint/rendering
+material / billboard / tint / lighting
 → appearance-rendering.md
 
-velocity/direction aligned billboard edge cases
+directional / velocity-aligned billboard edge cases
 → billboard-direction.md
 
-PNG/RGBA/atlas/UV/flipbook texture production
+production PNG/RGBA/atlas/UV/flipbook
 → texture-authoring.md
 
-texture filtering/bleeding/matte/minification
+filtering / bleeding / hidden RGB / matte / minification
 → texture-filtering-bleeding.md
 
-particle variable ownership/stability
+value / alpha / additive / blend color design
+→ texture-color-science.md
+
+particle/emitter variable ownership
 → molang.md
 
-full Molang syntax/operators/math/easing/formulas
+particle-system built-in variables
+→ particle-variable-inventory.md
+
+full Molang language / operators / functions / easing
 → molang-language-math.md
 
-query/context/entity-state exposure and stability
+reusable particle formulas
+→ molang-formula-cookbook.md
+
+query/context/external state
 → molang-queries-context.md
 
 curves
 → curves.md
 
-events / child effects
+event graphs / child effects
 → events.md
 
 event timing / emitter-vs-particle time ownership
@@ -95,10 +101,10 @@ event timing / emitter-vs-particle time ownership
 Snowstorm / Wintersky compatibility
 → snowstorm.md
 
-Snowstorm release/version quirks and preview regressions
+release-specific Snowstorm quirks
 → snowstorm-version-quirks.md
 
-performance reasoning
+performance
 → performance.md
 
 entity / locator / animation binding context
@@ -107,7 +113,7 @@ entity / locator / animation binding context
 symptom-first diagnosis
 → troubleshooting.md
 
-validation / package / starting patterns
+validation / delivery / starting patterns
 → qa.md / delivery.md / patterns.md
 ```
 
@@ -126,42 +132,39 @@ Snowstorm-specific behavior must never redefine generic Bedrock validity. Heuris
 
 ## Complete coverage target
 
-The canonical knowledge base now covers:
+The canonical knowledge base targets all practical layers required to author Bedrock/Snowstorm particle assets professionally:
 
 ```text
 particle document structure
-all emitter component families
-all particle initial/motion/appearance/lifetime families
+component inventory + field semantics
+emitter rate/lifetime/shape
+custom shape + vector/direction math
 emitter vs particle lifecycle
-creation/update/render evaluation timing
+creation/update/render timing
 local/world simulation + inherited velocity
 initial speed / spin
-dynamic motion / drag / acceleration
+dynamic acceleration / drag
 parametric motion
 collision / bounce / contact events / kill plane / block expiration
-billboard facing + direction
-velocity-aligned billboard edge cases
+billboard facing + directional modes
 materials + transparency
-RGBA textures
-atlas construction
-UV mapping
-flipbook animation
-texture filtering/bleeding/matte/minification
+RGBA texture production
+atlas construction + cell mapping
+texture filtering / hidden RGB / bleed prevention
+UV mapping + flipbook animation
 tint / alpha / gradients
+additive/blend color behavior
 lighting
-full Molang syntax/operators
-variable namespaces
+full Molang syntax/operators/functions
 particle/emitter built-in variables
-particle-relevant queries/context reasoning
-current Molang math-function families
-easing/interpolation/random/trigonometry
-particle formula patterns
+query/context boundaries
+math/easing/interpolation/random/trigonometry
+reusable particle formulas
 curves
 events / nested child effects
-event timing and lifetime ownership
+event timing / fan-out
 entity/locator integration
-Snowstorm/Wintersky compatibility
-Snowstorm version/preview quirks
+Snowstorm/Wintersky compatibility + release quirks
 static performance reasoning
 troubleshooting
 QA and clean delivery
@@ -169,62 +172,52 @@ QA and clean delivery
 
 ## Texture is first-class knowledge
 
-Particle texture authoring is not treated as a minor sub-step.
-
 ```text
 texture-authoring.md
-→ production PNG/RGBA, alpha, atlas layout, UV/flipbook mapping,
-  tint compatibility, pixel-art handling and texture QA
+→ source PNG/RGBA, alpha, sprite bounds, atlas, UV/flipbook, tint compatibility
 
 texture-filtering-bleeding.md
-→ hidden RGB under transparent pixels, gutter/bleed risk,
-  frame bounds, halo/matte artifacts and minification edge cases
+→ hidden RGB, gutter/bleed risk, frame bounds, matte/halo, minification
+
+texture-color-science.md
+→ practical color/value/alpha decisions for opaque/alpha/blend/additive rendering
 
 appearance-rendering.md
-→ how those authored assets are rendered through
-  materials/billboards/tint/lighting
+→ how authored texture data is rendered through material/billboard/tint/lighting
 ```
 
 ## Molang/math is first-class knowledge
 
 ```text
 molang.md
-→ particle/emitter variable ownership and lifetime stability
+→ particle/emitter ownership and stability
+
+particle-variable-inventory.md
+→ documented built-in particle/emitter variables
 
 molang-language-math.md
-→ language, operators, math functions, easing and formulas
+→ language, operators, functions, easing and interpolation
+
+molang-formula-cookbook.md
+→ reusable formulas for lifetime envelopes, stable random ranges/classes,
+  oscillation, orbit/spiral, remapping, cone/ring reasoning and safe math
 
 molang-queries-context.md
-→ query/context availability, external state and host coupling
+→ query/context host availability and external-state coupling
 ```
-
-This separation prevents generic language knowledge from obscuring particle-specific ownership rules.
 
 ## Boundary
 
-ChatGPT owns:
-- requirement normalization;
-- physical/visual decomposition;
-- particle JSON authoring;
-- texture/atlas generation or editing;
-- Bedrock/Molang/Snowstorm-aware reasoning;
-- motion/bundle/atlas/spatial/readability/budget preflight;
-- clean package assembly;
-- targeted revision after user review.
+ChatGPT owns requirement normalization, physical/visual decomposition, particle JSON authoring, texture/atlas generation or editing, Bedrock/Molang/Snowstorm-aware reasoning, static preflight, clean package assembly and targeted revision.
 
-ChatGPT does not claim:
-- live Snowstorm rendering truth without review;
-- Minecraft visual approval without user review;
-- Blockbench runtime execution;
-- FPS/device benchmarking;
-- perfect runtime equivalence for every editor preview;
-- MCP implementation ownership.
+ChatGPT does not claim live Snowstorm/Minecraft truth without review, Blockbench runtime execution, measured FPS/device performance, perfect editor/runtime equivalence, or MCP implementation ownership.
 
 ## Canonical acceptance model
 
 ```text
 Bedrock/source reasoning
-→ Molang/math/query ownership check
+→ component/field ownership check
+→ Molang/math ownership check
 → texture/rendering QA
 → Snowstorm compatibility reasoning when applicable
 → static/preflight QA
@@ -234,7 +227,3 @@ Bedrock/source reasoning
 ```
 
 `LOCAL_CODE` is not required for this ChatGPT-side workflow.
-
-## Downstream handoff
-
-A completed particle package may be consumed directly in Snowstorm/Minecraft or supplied to Codex/MCP as authored input. Downstream tools should not need the original ChatGPT transcript.
