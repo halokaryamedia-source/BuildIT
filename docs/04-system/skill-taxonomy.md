@@ -4,7 +4,7 @@ Updated: 2026-09-11
 
 This file is the canonical classification for LazyDesigner Skills. It defines what kind of work each Skill belongs to and prevents asset-authoring instructions from being mixed with product-development instructions.
 
-It does not replace the Skill contents themselves, `AGENTS.md` routing, or Control implementation. Physical folder names may remain legacy during migration; this document owns semantic category and target naming.
+It does not replace Skill contents, `AGENTS.md` routing, or Control implementation. Some remaining physical Skill folder names are still legacy compatibility names; this document owns semantic category and target naming.
 
 ## Authority Boundary
 
@@ -119,9 +119,8 @@ Execution owner: Codex for reasoning; Runtime/Blockbench for mutation.
 | `.agents/skills/blockbench-bedrock-modelling/SKILL.md` | `blockbench-bedrock-modelling` | `lazydesigner-modelling` | Geometry, hierarchy, pivots/rig-readiness, surfaces, UV Layout, correction and geometry verification execution procedure |
 | `.agents/skills/blockit-bedrock-texturing/SKILL.md` | `blockit-bedrock-texturing` | `lazydesigner-texturing` | Texture Atlas, pixel styling, materials/PBR and texture verification execution procedure |
 | `.agents/skills/blockit-bedrock-animation/SKILL.md` | `blockit-bedrock-animation` | `lazydesigner-animation` | rig usage, keyframes, motion, controllers, animation effects and playback verification execution procedure |
-| `.agents/skills/blockit-bedrock-entity-mcp/SKILL.md` | `blockit-bedrock-entity-mcp` | migration-only routing responsibility | legacy asset router; routing responsibility moves to LazyDesigner Control |
 
-Durable authoring policy belongs under `docs/03-authoring/`. Skills consume those policies operationally; they do not create parallel durable standards.
+The former `.agents/skills/blockit-bedrock-entity-mcp/SKILL.md` asset-router Skill is **retired and removed**. Its valid routing responsibilities are owned by LazyDesigner Control; durable authoring policy belongs under `docs/03-authoring/`; specialist procedures remain in the three active authoring Skills above.
 
 ### Modelling Core vs Modelling Profiles
 
@@ -144,6 +143,11 @@ Profiles may describe likely semantic assemblies, articulation concerns, useful 
 ### Authoring Routing Rule
 
 ```text
+Reference Package / Workspace / current task
+→ LazyDesigner Control
+→ active authoring domain/readiness/context
+→ exactly one active specialist
+
 Geometry / hierarchy / pivot / rig-readiness / UV Layout
 → lazydesigner-modelling
 
@@ -154,7 +158,7 @@ Animation / motion / controllers / mapped effects
 → lazydesigner-animation
 ```
 
-LazyDesigner Control owns task/domain/readiness/context routing. Do not preserve a second permanent asset router Skill after Control migration.
+Do not reintroduce a permanent asset-router Skill or duplicate Control routing policy inside specialist Skills.
 
 ## 3. PRODUCT_DEVELOPMENT
 
@@ -218,7 +222,7 @@ REFERENCE_PREPARATION task
 → do not load PRODUCT_DEVELOPMENT Skills
 
 ASSET_AUTHORING task
-→ load one active specialist; do not load PRODUCT_DEVELOPMENT Skills
+→ Control selects one active specialist; do not load PRODUCT_DEVELOPMENT Skills
 
 PRODUCT_DEVELOPMENT task
 → do not load ASSET_AUTHORING Skills unless explicitly required by changed authoring semantics
@@ -230,15 +234,15 @@ This is required for predictable context cost and to prevent development rules o
 
 ## Migration Rule
 
-Do not bulk-rename physical Skill paths before Control and routing references are migrated coherently.
+Router retirement is complete. Remaining physical Skill-name migration must still be dependency-mapped and atomic:
 
 ```text
-1. semantic taxonomy documented
-2. ChatGPT-side Reference Preparation gates stabilized
-3. Control becomes canonical router
-4. references/tests/docs updated to target semantic names
-5. physical Skill folders/frontmatter renamed coherently
-6. legacy blockit-* aliases removed
+1. Control remains canonical router
+2. active references/tests/docs use Control + specialists only
+3. retired asset-router Skill must stay absent
+4. rename remaining legacy specialist/development Skill folders/frontmatter coherently
+5. update every direct consumer in the same migration
+6. remove legacy blockit-* Skill names only when no active consumer depends on them
 ```
 
-Temporary legacy paths are compatibility residue only and must not become permanent parallel authorities.
+Temporary legacy specialist paths are compatibility residue only and must not become permanent parallel authorities.
