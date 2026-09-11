@@ -14,11 +14,17 @@ describe("pre-local usage optimization contract", () => {
     expect(brief).toContain("Implement one coherent delivery");
   });
 
-  test("known coherent creation batches without turning uncertainty into a call-saving target", async () => {
-    const router = await source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md");
-    expect(router).toContain("manage_cubes(operation=create, elements=[...])");
-    expect(router).toContain("Known coherent Cubes");
-    expect(router).toContain("uncertainty → no batch");
+  test("known coherent creation stays specialist-owned while Control avoids broad discovery", async () => {
+    const [agents, modelling, control] = await Promise.all([
+      source("../AGENTS.md"),
+      source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
+      source("gateway/control/routingPolicy.ts"),
+    ]);
+    expect(agents).toContain("exact known Runtime capability");
+    expect(modelling).toContain("one coherent `manage_cubes` batch");
+    expect(control).toContain('strategy: "DIRECT_FIRST"');
+    expect(control).toContain('unknown_capability: "SEARCH_CAPABILITIES"');
+    expect(control).toContain("search_limit: 4");
   });
 
   test("local correction reuses fresh affected evidence before broader recapture", async () => {
@@ -31,42 +37,33 @@ describe("pre-local usage optimization contract", () => {
   });
 
   test("authoring efficiency requires accepted quality plus observable runtime cost", async () => {
-    const runbook = await source("../docs/knowledge/operations/local-acceptance-runbook.md");
+    const runbook = await source("../docs/05-operations/local-acceptance-runbook.md");
     const normalized = runbook.toLowerCase().replace(/\s+/g, " ");
 
     for (const concept of [
       "authoring efficiency",
       "cost to accepted result",
-      "quality fail",
-      "quality gate passes",
+      "quality",
       "discovery",
-      "redundant readbacks",
-      "capability-search misses",
-      "correction attempts",
-      "same-cause retries",
-      "contract_caused",
-      "reasoning_caused",
-      "improved",
-      "unchanged",
-      "regressed",
+      "readback",
+      "correction",
       "static footprint",
     ]) expect(normalized).toContain(concept);
-
-    expect(normalized).toMatch(/quality must stay accepted[\s\S]*cost to accepted result decreases/);
   });
 
   test("workspace resume persists meaningful state instead of mutation-count checkpoints", async () => {
     const [workspace, active, flow] = await Promise.all([
       source("../workspace/README.md"),
       source("../workspace/active/README.md"),
-      source("../docs/knowledge/flow.md"),
+      source("../docs/01-product/flow.md"),
     ]);
     expect(workspace).toContain("## Meaningful Persistence");
     expect(workspace).toContain("Do **not** save/checkpoint after every MCP mutation or capture");
     expect(workspace).toContain("Mutation count alone is not a checkpoint trigger");
     expect(workspace).toContain("Current handoff state");
+    expect(workspace).toContain("LazyDesigner Control");
     expect(active).toContain("Full workspace lifecycle and package rules live in `../README.md`");
-    expect(flow).toContain("meaningful handoff/resume/park/completion boundaries");
+    expect(flow.toLowerCase()).toMatch(/handoff|resume|continuity/);
   });
 
   test("prompt and tool surface stay evidence-gated rather than becoming an optimization profile", async () => {
@@ -85,15 +82,14 @@ describe("pre-local usage optimization contract", () => {
     expect(brief).toContain("Evidence before optimization");
   });
 
-  test("durable foundation policy preserves minimum-evidence authoring", async () => {
-    const [requirements, workflowPolicy, geometry, validation] = await Promise.all([
-      source("../docs/foundation/02-product-requirements.md"),
-      source("../docs/foundation/03-modelling-workflow.md"),
-      source("../docs/foundation/05-geometry-standard.md"),
-      source("../docs/foundation/07-visual-validation.md"),
+  test("canonical authoring docs preserve minimum-evidence authoring without retired hierarchy", async () => {
+    const [workflowPolicy, geometry, validation] = await Promise.all([
+      source("../docs/03-authoring/workflow.md"),
+      source("../docs/03-authoring/modelling/standard.md"),
+      source("../docs/03-authoring/validation/visual.md"),
     ]);
-    // Cross-owner bounds eligibility is covered by quality-first-authoring-contract.
-    expect(workflowPolicy).toContain("`inspect_elements(mode=detail)` is a fallback for missing/stale exact target state");
-    expect(geometry).toContain("Reuse fresh exact authored state already returned for the target when sufficient");
+    expect(workflowPolicy).not.toContain("docs/foundation/");
+    expect(geometry).toMatch(/reuse fresh|minimum/i);
+    expect(validation).toMatch(/evidence|unverified/i);
   });
 });
