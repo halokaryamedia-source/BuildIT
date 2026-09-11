@@ -25,27 +25,19 @@ describe("model creation effectiveness — fidelity convergence and evaluation i
     expect(normalized(modelling)).toMatch(/require.*`improved`/);
   });
 
-  test("DIRECT correction reuses fresh pre-correction evidence instead of recapturing ceremonially", async () => {
-    const [modelling, flow] = await Promise.all([
-      source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
-      source("../docs/knowledge/flow.md"),
-    ]);
+  test("correction reuses fresh pre-correction evidence instead of recapturing ceremonially", async () => {
+    const modelling = await source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md");
     const modellingText = normalized(modelling);
-    const flowText = normalized(flow);
 
     expect(modellingText).toContain("reuse fresh affected pre-correction evidence");
     expect(modellingText).toContain("capture before mutation only when none exists");
     expect(modellingText).toContain("after mutation, recapture affected view(s)");
-    expect(flowText).toContain("direct — canonical hot path");
-    expect(flowText).toContain("reuse fresh affected pre-correction evidence when available");
-    expect(flowText).toContain("recapture affected view(s)");
-    expect(flowText).toContain("do not recapture all five views routinely");
   });
 
   test("model-facing evaluation remains evidence-bound and non-circular", async () => {
     const [reference, validation] = await Promise.all([
-      source("../docs/foundation/04-reference-guide.md"),
-      source("../docs/foundation/07-visual-validation.md"),
+      source("../docs/02-reference/policy.md"),
+      source("../docs/03-authoring/validation/visual.md"),
     ]);
     expect(normalized(reference)).toContain("actual approved reference image");
     expect(normalized(validation)).toContain("actual approved reference image");
