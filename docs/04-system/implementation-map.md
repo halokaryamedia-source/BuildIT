@@ -22,7 +22,7 @@ Current product name: LazyDesigner
 Former product name: BlockIT
 ```
 
-Some internal identifiers still use legacy `BlockIT` / `blockit-*` names during migration. They are compatibility residue, not a second product.
+Some internal package/runtime/Skill identifiers still use legacy `BlockIT` / `blockit-*` names. They are migration residue, not a second product.
 
 ## Runtime Architecture
 
@@ -36,18 +36,7 @@ ChatGPT Reference Preparation
 → Blockbench native APIs
 ```
 
-Current executable path after Control routing reaches Gateway remains:
-
-```text
-Codex / AI client
-→ mcp/gateway/index.ts
-→ mcp/gateway/backend.ts
-→ loopback Runtime transport
-→ mcp/server/**
-→ Blockbench native APIs
-```
-
-Gateway client surface remains four tools:
+Gateway client surface remains exactly:
 
 ```text
 status
@@ -58,72 +47,63 @@ invoke_capability
 
 ## Control Ownership
 
-LazyDesigner Control is now the active semantic/public routing contract (`lazydesigner-control-v1`). Its source is still physically located under the temporary legacy path:
+Canonical source path:
 
 ```text
-mcp/gateway/navigator/
+mcp/gateway/control/
 ```
 
-The physical path is migration residue only. There is no active parallel Navigator architecture.
+The former `mcp/gateway/navigator/` source path has been removed. No compatibility wrapper or parallel Navigator routing layer remains.
 
-Current Control implementation owns:
+Control owns:
 
 ```text
 ASSET_AUTHORING / SYSTEM_DEVELOPMENT intake
-Runtime/project/phase orientation projection
+Runtime/project/phase orientation
 Reference Package projection from REFERENCE.json
 Active Workspace projection
 GEOMETRY_CONTEXT / TEXTURE_CONTEXT / ANIMATION_CONTEXT
 content-addressed Skill/profile context handles
-bounded source/capability routing metadata
+bounded source/specialist/test routing metadata
 stage-scoped readiness/blockers
-post-operation Control delta/invalidation
+post-operation control_delta / invalidation
 ```
 
-Implemented source owners:
+Canonical source owners:
 
 ```text
-mcp/gateway/navigator/referencePackage.ts   Reference Package projection
-mcp/gateway/navigator/contextProjection.ts stage-specific authoring projection
-mcp/gateway/navigator/packet.ts            task packet/readiness/context selection
-mcp/gateway/navigator/registry.ts          context handles + source-owner mapping
-mcp/gateway/navigator/delta.ts             post-operation invalidation/delta
-mcp/gateway/navigator/developmentIntent.ts SYSTEM_DEVELOPMENT routing
+mcp/gateway/control/referencePackage.ts   Reference Package projection
+mcp/gateway/control/contextProjection.ts stage-specific authoring projection
+mcp/gateway/control/packet.ts            task packet/readiness/context selection
+mcp/gateway/control/registry.ts          context handles + source-owner mapping
+mcp/gateway/control/delta.ts             effect-aware invalidation/delta
+mcp/gateway/control/developmentIntent.ts SYSTEM_DEVELOPMENT routing
+mcp/gateway/control/snapshot.ts          live Gateway/Runtime orientation
+mcp/gateway/control/capabilities.ts      capability decoration
+mcp/gateway/control/index.ts             canonical module exports
 ```
 
-Canonical contracts:
+Canonical semantic contracts:
 
 ```text
 docs/04-system/ai-context-loading.md
 docs/04-system/control/context-projection.md
 ```
 
-Control does not own canonical Skill prose, Tool schemas, full reference content, live model data, persistent asset state, build execution, or Codex creative reasoning.
-
-## Reference Preparation Ownership
-
-ChatGPT owns reference preparation. Control consumes/projects the resulting package; it does not author or reinterpret reference truth.
-
-```text
-docs/02-reference/README.md
-docs/02-reference/package/schema.md
-docs/02-reference/package/load-contract.md
-```
-
-Images remain visible-design authority; confirmed numeric/player-relative scale keeps its own typed authority.
+Control does not own Skill prose, Tool schemas, full reference content, live model data, persistent asset state, build execution, or Codex creative reasoning.
 
 ## Authoring Semantic Ownership
 
 | Domain | Semantic owner | Runtime/source owner |
 | --- | --- | --- |
-| Geometry / rig / pivots / UV Layout | `.agents/skills/blockbench-bedrock-modelling/SKILL.md` | `mcp/server/tools/cubes.ts`, `mcp/server/tools/element.ts`, `mcp/server/tools/locators.ts`, relevant rig owners |
-| Texture / Painter / PBR | `.agents/skills/blockit-bedrock-texturing/SKILL.md` | `mcp/server/tools/texture.ts`, `mcp/server/tools/paint.ts`, material owners |
-| Animation / motion / effects/controllers | `.agents/skills/blockit-bedrock-animation/SKILL.md` | `mcp/server/tools/animation*.ts`, particle/controller owners |
-| Task/stage/context routing | LazyDesigner Control | `mcp/gateway/navigator/**` during physical-path migration |
-| Runtime phase classification | `mcp/lib/authoringPhase.ts` | shared by Runtime + Control |
-| Reference generation/preparation | `.agents/skills/blockbench-reference-generator/SKILL.md` + `docs/02-reference/` | ChatGPT |
+| Geometry / rig / pivots / UV Layout | `.agents/skills/blockbench-bedrock-modelling/SKILL.md` | Geometry/element/rig tool owners |
+| Texture / Painter / PBR | `.agents/skills/blockit-bedrock-texturing/SKILL.md` | Texture/paint/material tool owners |
+| Animation / motion / effects/controllers | `.agents/skills/blockit-bedrock-animation/SKILL.md` | Animation/particle/controller owners |
+| Task/stage/context routing | LazyDesigner Control | `mcp/gateway/control/**` |
+| Runtime phase/capability classification | `mcp/lib/authoringPhase.ts` | shared by Runtime + Control |
+| Reference preparation | `.agents/skills/blockbench-reference-generator/SKILL.md` + `docs/02-reference/` | ChatGPT |
 
-The legacy `.agents/skills/blockit-bedrock-entity-mcp/SKILL.md` is migration-only routing residue and is no longer mandatory Control context.
+The legacy `.agents/skills/blockit-bedrock-entity-mcp/SKILL.md` is migration-only semantic residue and is no longer mandatory Control context.
 
 ## Canonical Phase / Capability Classification
 
@@ -133,91 +113,63 @@ Single canonical owner:
 mcp/lib/authoringPhase.ts
 ```
 
-Functions:
-
 ```text
-classifyMcpToolPhaseByName() → import-safe high-frequency public capability classification
-classifyMcpToolPhase()       → full Runtime family-aware classification
+classifyMcpToolPhaseByName() → import-safe public capability classification
+classifyMcpToolPhase()       → Runtime family-aware classification
 ```
 
-Control `registry.ts` consumes `classifyMcpToolPhaseByName()` and no longer maintains separate Geometry/Texturing/Animation capability sets.
+Control consumes this owner and does not maintain a parallel hand-written Geometry/Texturing/Animation catalog.
 
 ## Context Loading
 
-Normal Geometry context:
-
 ```text
-Modelling Skill
-+ exactly one selected profile from REFERENCE.json
+Geometry  → Modelling Skill + exactly one selected profile when known
+Texturing → Texturing Skill
+Animation → Animation Skill
 ```
 
-Normal Texturing:
-
-```text
-Texturing Skill
-```
-
-Normal Animation:
-
-```text
-Animation Skill
-```
-
-Handles are SHA-256 identities calculated from current canonical repository files at runtime. `known_context_ids` suppresses unchanged content and invalidates changed members of the same family.
+Context handles are SHA-256 identities calculated from current canonical files. `known_context_ids` suppresses unchanged content and invalidates changed members of the same context family.
 
 ## Readiness / Invalidation
 
-Reference blockers are stage-scoped through stage-specific readiness. A blocker belonging to another stage must not block current READY work.
+Reference blocking follows active-stage readiness. A future-stage blocker does not block current READY work.
 
-Current mutation dependency direction:
+Current effect-aware invalidation:
 
 ```text
-Geometry → Geometry + potentially dependent Texture/Animation
-Texture  → Texture + potentially dependent Animation
-Animation→ Animation
+known local Geometry transform      → GEOMETRY
+shape/UV-sensitive Geometry change → GEOMETRY + TEXTURING + ANIMATION
+hierarchy/pivot structure change   → GEOMETRY + ANIMATION
+Texture/material change            → TEXTURING
+Animation change                   → ANIMATION
+ambiguous structural evidence      → conservative downstream invalidation
 ```
 
-This marks affected knowledge, not an unconditional full rebuild. Further field-level invalidation refinement remains source work.
+This marks potentially stale knowledge; it does not itself reset accepted downstream state.
 
 ## Gateway Owners
 
 | Concern | Owner |
 | --- | --- |
-| stable four-tool stdio boundary + Control status wiring | `mcp/gateway/index.ts` |
+| stable four-tool boundary + Control wiring | `mcp/gateway/index.ts` |
+| Control routing/context/delta | `mcp/gateway/control/**` |
 | Runtime connection/catalog/queue/project affinity | `mcp/gateway/backend.ts` |
 | capability priority/result compaction/runtime signature | `mcp/gateway/contract.ts` |
 | project/phase affinity headers | `mcp/gateway/projectAffinity.ts` |
 | branch-specific schema reduction | `mcp/gateway/schemaProjection.ts` |
 | local vanilla entity support reference | `mcp/gateway/vanillaEntityReference.ts` |
 
-Gateway is not Control. Control selects/routes context; Gateway remains the stable MCP client boundary.
+Gateway is not Control. Gateway remains the stable MCP transport boundary; Control selects the minimum task context and routing metadata.
 
 ## Runtime / Workspace / Build Owners
 
-Runtime execution:
-
 ```text
-mcp/server/tools.ts
-mcp/server/tools/**
-mcp/lib/**
+Runtime execution          → mcp/server/** + mcp/lib/**
+Persistent asset continuity→ workspace/active/<asset>/README.md
+Build/generated mechanics  → mcp/build/** + mcp/scripts/** + mcp/distribution/** + mcp/prompts/**
 ```
 
-Persistent asset continuity:
-
-```text
-workspace/active/<asset>/README.md
-```
-
-Build/generated mechanics:
-
-```text
-mcp/build/**
-mcp/scripts/**
-mcp/distribution/**
-mcp/prompts/**
-```
-
-Control may project fingerprints/owners but must not duplicate these states or execute their responsibilities.
+Control may project identities/owners from these sources but must not duplicate their persistent state or execution responsibility.
 
 ## System Development Routing
 
@@ -231,23 +183,23 @@ User request
 → actual build/generate/deploy owner
 ```
 
-Unknown/tied intent remains `UNRESOLVED`; Control does not replace uncertainty with a broad repository scan.
+Unknown or tied intent remains `UNRESOLVED`; Control does not replace uncertainty with a broad repository scan.
 
 ## Remaining Migration Debt
 
 ```text
-physical `mcp/gateway/navigator/` path and Navigator-prefixed internal symbols/tests/scripts
 legacy BlockIT product/package/protocol identifiers outside the Control public contract
-legacy asset-router Skill package
-field-level downstream invalidation refinement
-generated output/tests/docs that still encode retired identifiers
-Experimental Navigator history that must remain non-authoritative
+legacy `blockit-*` Skill package names and migration-only asset-router Skill
+generated outputs/docs that may encode legacy identifiers until canonical generators run
+Experimental Navigator history that must remain explicitly non-authoritative
 ```
 
-Do not solve migration debt with permanent aliases or a second routing layer.
+Physical Navigator→Control source migration and duplicate capability-domain table cleanup are complete at source level.
+
+Do not solve remaining debt with permanent aliases or a second routing layer.
 
 ## Proof / Efficiency Boundary
 
-Current repository changes prove source-contract intent only. They do not prove installed Blockbench activation, live Gateway behavior, visual fidelity, native playback/persistence, or measured whole-task usage savings.
+Current repository state can establish source ownership and deterministic routing contracts. It does not prove installed Blockbench activation, live Gateway/Runtime behavior, visual fidelity, native playback/persistence, or measured whole-task usage savings.
 
 Efficiency target remains **Cost to Accepted Result**: reduce broad context scans, repeated delivery, discovery/readback loops, wrong-route recovery and unnecessary resets without reducing accepted result quality.
