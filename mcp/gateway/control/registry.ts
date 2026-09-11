@@ -163,6 +163,16 @@ const SOURCE_BY_CAPABILITY: Record<string, ControlSourceOwner> = {
     specialist: ANIMATION_PATH,
     test_owner: "mcp/tests/animation-controller-mutation-contract.test.ts",
   },
+  inspect_particle: {
+    source: "mcp/server/tools/particle.ts",
+    specialist: ANIMATION_PATH,
+    test_owner: "mcp/tests/particle-tool-contract.test.ts",
+  },
+  manage_particle: {
+    source: "mcp/server/tools/particle.ts",
+    specialist: ANIMATION_PATH,
+    test_owner: "mcp/tests/particle-tool-contract.test.ts",
+  },
   switch_authoring_phase: {
     source: "mcp/server/tools.ts",
     specialist: null,
