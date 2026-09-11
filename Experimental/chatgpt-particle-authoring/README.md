@@ -1,55 +1,61 @@
 # ChatGPT Particle Authoring Experiment
 
-Experimental proof that ChatGPT can design, iterate, validate, and package Minecraft Bedrock particle effects for Snowstorm and direct Resource Pack use without relying on the BuildIT MCP runtime.
+Experimental research for improving Bedrock particle authoring quality with ChatGPT while preserving BuildIT's existing production ownership.
 
 ## Status
 
 - Experimental only.
 - Not production authority for BuildIT particle authoring.
-- The approved reference asset is `MIVUBI_Volcano_Eruption/`.
-- The example is intentionally preserved as a working research artifact and workflow reference.
+- Production ownership remains `mcp/server/tools/particle.ts`, `mcp/server/resources/particle.ts`, and the existing Bedrock particle libraries.
+- The approved reference asset remains `examples/MIVUBI_Volcano_Eruption.zip`.
+- No experimental code is registered into the MCP server or runtime.
 
-## What this experiment proves
+## Goal
 
-ChatGPT can assist with:
+Turn the lessons from the approved volcano particle workflow into a bounded, testable preflight model that can later strengthen the existing `inspect_particle` and `manage_particle` tools without creating parallel tools or a second particle framework.
 
-1. Particle concept decomposition and visual layering.
-2. Bedrock `.particle.json` authoring.
-3. Snowstorm/Wintersky-specific motion debugging.
-4. Pixel-art particle texture atlas authoring and cleanup.
-5. Texture/UV QA.
-6. Physics-oriented tuning for ballistic debris and rising plume behavior.
-7. Resource Pack packaging for Minecraft Bedrock without producing an `.mcpack`.
+The experiment focuses on gaps that structural JSON validation alone cannot catch:
 
-## Approved example
+1. Snowstorm / Wintersky runtime compatibility.
+2. Bounded motion estimation for scalar-speed dynamic particles.
+3. Stable particle-class ownership across a particle lifetime.
+4. Multi-effect bundle reference integrity.
+5. Texture-atlas QA requirements and promotion criteria.
 
-`MIVUBI_Volcano_Eruption/`
-
-Main effect:
+## Experimental structure
 
 ```text
-mivubi:volcano_eruption
+chatgpt-particle-authoring/
+├── README.md
+├── DESIGN.md
+├── WORKFLOW.md
+├── src/
+│   └── particlePreflight.ts
+├── tests/
+│   └── particlePreflight.test.ts
+└── examples/
+    └── MIVUBI_Volcano_Eruption.zip
 ```
 
-Internal effects:
+`DESIGN.md` is the technical owner for the experimental capability proposal. `WORKFLOW.md` owns the practical authoring lessons. The TypeScript prototype is intentionally import-safe and has no Blockbench globals or MCP registration side effects.
+
+## Production boundary
+
+Do not wire this directory into active MCP routing, tool registration, generated API docs, Skills, or production prompts.
+
+Promotion must extend the existing two-tool surface:
 
 ```text
-mivubi:volcano_eruption_core
-mivubi:volcano_eruption_bombs
-mivubi:volcano_eruption_plume_rise
-mivubi:volcano_eruption_plume_crown
+inspect_particle
+manage_particle
 ```
 
-The example uses three texture atlases:
+Do not introduce sibling tools such as `simulate_particle`, `snowstorm_particle`, or `texture_particle` unless future evidence proves the existing surface cannot own the capability.
 
-```text
-volcano_eruption_core.png
-volcano_eruption_bombs.png
-volcano_eruption_plume.png
-```
+Any production promotion must follow `AGENTS.md`, `GITHUB_RULES.md`, and `mcp/AGENTS.md`, including generated-doc closure and the relevant verifier.
 
-## Important boundary
+## Current proof ceiling
 
-Do not wire this experiment into the active MCP routing or duplicate the canonical particle tools. Production particle ownership remains under the existing BuildIT particle tool/resource system. This directory documents a separate ChatGPT-assisted authoring workflow and a known-good reference asset.
+The committed prototype can provide source/static evidence only. Runtime parity with Snowstorm, native Blockbench preview, and visual acceptance remain separate higher-context proof.
 
-See `WORKFLOW.md` for the important Snowstorm, motion, texture, and QA lessons learned.
+See `DESIGN.md` for the promotion contract and `WORKFLOW.md` for the authoring rules learned from the approved reference asset.
