@@ -22,7 +22,9 @@ The experiment focuses on gaps that structural JSON validation alone cannot catc
 4. Multi-effect bundle reference integrity.
 5. Texture-atlas QA requirements and promotion criteria.
 
-## Experimental structure
+## Current implementation
+
+The P0 preflight core is intentionally import-safe and separated by responsibility:
 
 ```text
 chatgpt-particle-authoring/
@@ -30,14 +32,37 @@ chatgpt-particle-authoring/
 ├── DESIGN.md
 ├── WORKFLOW.md
 ├── src/
-│   └── particlePreflight.ts
+│   ├── index.ts
+│   ├── particlePreflight.ts
+│   ├── diagnostics.ts
+│   ├── json.ts
+│   ├── types.ts
+│   ├── snowstormCompatibility.ts
+│   ├── motionPreflight.ts
+│   └── bundleValidation.ts
 ├── tests/
-│   └── particlePreflight.test.ts
+│   ├── helpers.ts
+│   ├── snowstormCompatibility.test.ts
+│   ├── motionPreflight.test.ts
+│   └── bundleValidation.test.ts
 └── examples/
     └── MIVUBI_Volcano_Eruption.zip
 ```
 
-`DESIGN.md` is the technical owner for the experimental capability proposal. `WORKFLOW.md` owns the practical authoring lessons. The TypeScript prototype is intentionally import-safe and has no Blockbench globals or MCP registration side effects.
+`particlePreflight.ts` is only a compatibility barrel for the initial experimental import path. Logic ownership lives in the focused modules above.
+
+## P0 coverage
+
+Current deterministic checks cover the recurring failures reproduced during the volcano experiment:
+
+- vector `minecraft:particle_initial_speed` losing intended magnitude in Snowstorm / Wintersky;
+- `variable.emitter_age` controlling living-particle motion or appearance properties;
+- bounded Wintersky-style numeric motion simulation for constant inputs;
+- authored apex/range envelope misses;
+- duplicate bundle identifiers;
+- missing child particle-effect references.
+
+Diagnostic codes are centralized and stable within the experiment so later promotion can preserve semantics without coupling production to this directory.
 
 ## Production boundary
 
@@ -56,6 +81,6 @@ Any production promotion must follow `AGENTS.md`, `GITHUB_RULES.md`, and `mcp/AG
 
 ## Current proof ceiling
 
-The committed prototype can provide source/static evidence only. Runtime parity with Snowstorm, native Blockbench preview, and visual acceptance remain separate higher-context proof.
+The committed prototype provides source/static evidence only. Focused Bun execution remains `LOCAL_CODE` proof, while Snowstorm parity, native Blockbench preview, and visual acceptance remain higher-context proof.
 
 See `DESIGN.md` for the promotion contract and `WORKFLOW.md` for the authoring rules learned from the approved reference asset.
