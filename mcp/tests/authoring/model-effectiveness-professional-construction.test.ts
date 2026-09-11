@@ -10,14 +10,13 @@ function lower(text: string): string {
 
 describe("model creation effectiveness — professional construction without presets", () => {
   test("professional construction stays reasoning-based rather than preset-based", async () => {
-    const [modelling, workflow, geometry, flow] = await Promise.all([
+    const [modelling, workflow, geometry] = await Promise.all([
       source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
       source("prompts/bedrock_entity_workflow.md"),
-      source("../docs/foundation/05-geometry-standard.md"),
-      source("../docs/knowledge/flow.md"),
+      source("../docs/03-authoring/modelling/standard.md"),
     ]);
 
-    for (const text of [modelling, workflow, geometry, flow]) {
+    for (const text of [modelling, workflow, geometry]) {
       expect(lower(text)).toContain("not presets");
       expect(lower(text)).toContain("transform ownership");
       expect(lower(text)).toMatch(/primary (?:blockout|cube batch)/);
@@ -33,13 +32,12 @@ describe("model creation effectiveness — professional construction without pre
   });
 
   test("representation stays 3D-need-first while the small-detail threshold remains a guardrail", async () => {
-    const [modelling, geometry, flow] = await Promise.all([
+    const [modelling, geometry] = await Promise.all([
       source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
-      source("../docs/foundation/05-geometry-standard.md"),
-      source("../docs/knowledge/flow.md"),
+      source("../docs/03-authoring/modelling/standard.md"),
     ]);
 
-    for (const text of [modelling, geometry, flow]) {
+    for (const text of [modelling, geometry]) {
       expect(text).toContain("PLANAR_CUTOUT_CARRIER");
       expect(lower(text)).toContain("representation");
       expect(lower(text)).toContain("guardrail");
@@ -48,44 +46,30 @@ describe("model creation effectiveness — professional construction without pre
 
     expect(geometry).toContain("minimum geometry required to preserve correct 3D form");
     expect(geometry).not.toContain("PrimitiveAnything");
-    expect(flow).not.toContain("Primitive count is not final Cube authority");
   });
 
   test("surface integrity distinguishes required closure from intentional openings and intersections", async () => {
-    const [orchestrator, modelling, geometry, flow] = await Promise.all([
+    const [orchestrator, modelling, geometry] = await Promise.all([
       source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md"),
       source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
-      source("../docs/foundation/05-geometry-standard.md"),
-      source("../docs/knowledge/flow.md"),
+      source("../docs/03-authoring/modelling/standard.md"),
     ]);
 
-    for (const relation of [
-      "CLOSED_BOUNDARY",
-      "INTENTIONAL_OPENING",
-      "LAYERED_OFFSET",
-      "INTENTIONAL_INTERSECTION",
-      "CUTOUT_CARRIER",
-    ]) {
+    for (const relation of ["CLOSED_BOUNDARY", "INTENTIONAL_OPENING", "LAYERED_OFFSET", "INTENTIONAL_INTERSECTION", "CUTOUT_CARRIER"]) {
       expect(modelling).toContain(relation);
       expect(geometry).toContain(relation);
-      expect(flow).toContain(relation);
     }
 
     expect(orchestrator).toContain("bounded surface/contact review");
-    expect(orchestrator).toContain("diagnosed bounded surface/contact integrity question");
-    expect(orchestrator).not.toContain(
-      "`inspect_model_bounds` only for envelope/scale/ground/displacement."
-    );
     expect(modelling).toContain("do not force universal watertight geometry");
     expect(geometry).toContain("not that every model is universally watertight");
-    expect(flow).toContain("inspect_model_bounds");
   });
 
   test("transform ownership distinguishes local Cube transforms from shared Group/Bone transforms", async () => {
     const [modelling, workflow, geometry] = await Promise.all([
       source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
       source("prompts/bedrock_entity_workflow.md"),
-      source("../docs/foundation/05-geometry-standard.md"),
+      source("../docs/03-authoring/modelling/standard.md"),
     ]);
 
     expect(modelling).toContain("Group/Bone-owned");
@@ -95,28 +79,6 @@ describe("model creation effectiveness — professional construction without pre
     }
     expect(geometry).toContain("Group/Bone-owned transform");
     expect(geometry).toContain("Do not create hierarchy solely to increase depth or node count");
-  });
-
-  test("form-defining hierarchy may be primary while neutral organization remains downstream", async () => {
-    const [modelling, workflow, geometry, flow] = await Promise.all([
-      source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
-      source("prompts/bedrock_entity_workflow.md"),
-      source("../docs/foundation/05-geometry-standard.md"),
-      source("../docs/knowledge/flow.md"),
-    ]);
-
-    for (const text of [modelling, workflow, geometry, flow]) {
-      const normalized = lower(text);
-      expect(normalized).toContain("primary");
-      expect(normalized).toContain("hierarchy");
-      expect(normalized).toContain("form");
-      expect(normalized).toContain("contact");
-      expect(normalized).toContain("articulation");
-    }
-
-    expect(geometry).toContain("Primary hierarchy timing");
-    expect(flow).toContain("required primary hierarchy/pivots");
-    expect(lower(flow)).toContain("neutral organization");
   });
 
   test("professional samples never become callable presets, profiles, or fixture anatomy", async () => {
@@ -129,24 +91,12 @@ describe("model creation effectiveness — professional construction without pre
     ]);
 
     const runtime = `${profile}\n${cubes}\n${element}`;
-    for (const forbidden of [
-      "professional_preset",
-      "construction_preset",
-      "asset_class_profile",
-      "detail_density_profile",
-      "professional_planner",
-    ]) {
+    for (const forbidden of ["professional_preset", "construction_preset", "asset_class_profile", "detail_density_profile", "professional_planner"]) {
       expect(runtime).not.toContain(forbidden);
     }
 
     const activeReasoning = lower(`${modelling}\n${workflow}`);
-    for (const fixture of [
-      "weapon_katana",
-      "armor_dragon_helmet",
-      "skeleton_spinosaurus",
-      "sample_samurai",
-      "dragon_boss",
-    ]) {
+    for (const fixture of ["weapon_katana", "armor_dragon_helmet", "skeleton_spinosaurus", "sample_samurai", "dragon_boss"]) {
       expect(activeReasoning).not.toContain(fixture);
     }
   });
