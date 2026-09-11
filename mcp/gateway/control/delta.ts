@@ -31,6 +31,18 @@ function record(value: unknown): Record<string, unknown> | null {
     : null;
 }
 
+function particleTextureHandoffRequired(value: unknown): boolean {
+  const root = record(value);
+  if (!root) return false;
+  const candidates = [root, record(root.structuredContent)].filter(
+    (entry): entry is Record<string, unknown> => entry !== null
+  );
+  return candidates.some((candidate) => {
+    const dependency = record(candidate.texture_dependency);
+    return dependency?.status === "REQUIRES_TEXTURING";
+  });
+}
+
 function effectChangedFields(value: unknown): string[] {
   const root = record(value);
   if (!root) return [];
@@ -72,7 +84,10 @@ function mutationInvalidation(
   succeeded: boolean,
   result: unknown
 ): ControlDelta["invalidates"] {
-  const mutates = succeeded && STATE_MUTATIONS.has(capability);
+  const dependencyHandoff =
+    capability === "manage_particle" && particleTextureHandoffRequired(result);
+  const mutates =
+    succeeded && STATE_MUTATIONS.has(capability) && !dependencyHandoff;
   let affectedDomains: ControlAuthoringDomain[] = [];
   if (mutates) {
     if (domain === "GEOMETRY") affectedDomains = geometryInvalidation(capability, result);
@@ -101,17 +116,23 @@ export function buildControlDelta(input: {
 
   const authoringDomain = authoringDomainForCapability(input.capability);
   const invalidates = mutationInvalidation(input.capability, authoringDomain, input.succeeded, input.result);
+  const particleTextureHandoff =
+    input.succeeded &&
+    input.capability === "manage_particle" &&
+    particleTextureHandoffRequired(input.result);
   const nextIntent = !input.succeeded
     ? "RECOVER_CURRENT_OPERATION"
-    : input.capability === "switch_authoring_phase"
-      ? "CONTINUE_NEW_AUTHORING_PHASE"
-      : authoringDomain === "GEOMETRY"
-        ? "VERIFY_OR_CONTINUE_GEOMETRY"
-        : authoringDomain === "TEXTURING"
-          ? "VERIFY_OR_CONTINUE_TEXTURING"
-          : authoringDomain === "ANIMATION"
-            ? "VERIFY_OR_CONTINUE_ANIMATION"
-            : "CONTINUE_CURRENT_TASK";
+    : particleTextureHandoff
+      ? "AUTHOR_PARTICLE_TEXTURE_THEN_RESUME"
+      : input.capability === "switch_authoring_phase"
+        ? "CONTINUE_NEW_AUTHORING_PHASE"
+        : authoringDomain === "GEOMETRY"
+          ? "VERIFY_OR_CONTINUE_GEOMETRY"
+          : authoringDomain === "TEXTURING"
+            ? "VERIFY_OR_CONTINUE_TEXTURING"
+            : authoringDomain === "ANIMATION"
+              ? "VERIFY_OR_CONTINUE_ANIMATION"
+              : "CONTINUE_CURRENT_TASK";
 
   return {
     protocol: "lazydesigner-control-v1",
