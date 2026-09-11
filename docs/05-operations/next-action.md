@@ -60,6 +60,9 @@ The broad REMOTE_GITHUB source-cleanup phase is complete. The active remote-only
 ✓ Geometry + Texturing remain one shared AUTHORING surface
 ✓ Animation remains the only foreign authoring surface
 ✓ particle authoring remains intentionally bounded to the Animation specialist route
+✓ orphan contextCache helper/export removed
+✓ context ownership regression guard added; registry + packet remain the only context reuse owners
+✓ Control/Gateway measurement now exposes envelope-level orientation overlap without changing the stable status contract
 ✓ no speculative Texture/Animation result compaction added without evidence
 ```
 
@@ -76,22 +79,26 @@ The broad REMOTE_GITHUB source-cleanup phase is complete. The active remote-only
    → normal Bedrock profile excludes import/ui fallback families
    → Particle remains an Animation-specialist asset route; no extra phase added
 
-3. Dead-code / obsolete helper sweep                         CURRENT
-   → verify contextCache helpers and other post-Navigator helpers still have callers
-   → remove only proven orphan exports/wrappers
-   → do not remove compatibility identifiers merely because names are old
+3. Dead-code / obsolete helper sweep                         COMPLETE ENOUGH FOR NEXT PHASE
+   → orphan contextCache export/helper removed
+   → content-addressed handle cache remains in registry.ts
+   → known/cached/invalidated context delivery remains in packet.ts
+   → compatibility identifiers remain intentionally untouched
 
-4. Context economy                                           NEXT
-   → inspect ControlPacket/stage_context for duplicated facts
-   → keep Geometry to Modelling Skill + exactly one profile
-   → keep Texturing/Animation specialist-only by default
-   → trim only facts that can be safely reconstructed or are already represented by identity/hash
-   → do not trim mutation receipts or recovery state without evidence
+4. Context economy                                           COMPLETE ENOUGH FOR LOCAL MEASUREMENT
+   → Geometry remains Modelling Skill + exactly one profile
+   → Texturing/Animation remain specialist-only by default
+   → stage_context remains self-contained for recovery/continuation
+   → Gateway status and Control have known normalized-orientation overlap
+   → measure-control-context now reports the full Gateway envelope and repeated orientation projection
+   → do not break the stable status contract based on static character counts alone
+   → no mutation-receipt or recovery-state trimming without execution evidence
 
-5. Error/recovery ownership
+5. Error/recovery ownership                                  CURRENT
    → ensure runtime offline, project loss, stale catalog, failed mutation, interrupted mutation, workspace/reference staleness each have one deterministic owner
+   → preserve no-auto-retry semantics for outcome-unknown mutation interruption
 
-6. Bedrock-first contract audit
+6. Bedrock-first contract audit                              NEXT
    → ensure abstraction never weakens Bedrock geometry/UV/texture/animation/controller/particle/export constraints
 
 7. Repository contract guards + remote freeze
@@ -128,6 +135,7 @@ LOCAL_CODE
 → bun run docs:build
 → bun run docs:check
 → run the relevant source verifier(s)
+→ run measure:control and compare Gateway envelope / cached-context footprint
 → commit canonical source + generated output together
 
 LIVE_BLOCKBENCH
@@ -147,6 +155,7 @@ Compatibility-bound identifier migration is a separate future task and must be d
 - No all-profile/all-stage loading as reassurance.
 - No full downstream reset for a bounded dependency.
 - No blind package/protocol/plugin/environment rename.
+- No speculative Gateway status-contract compaction from static byte/character counts alone.
 - No speculative receipt compaction without recovery-state evidence.
 - No hand-editing generated docs/output.
 - No local/live acceptance while user testing remains deferred.
