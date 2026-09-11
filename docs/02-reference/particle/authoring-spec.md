@@ -69,7 +69,53 @@ AUDIT / REVISION
 
 Do not promote a DIRECT request into COMPOSED merely to make the structure look sophisticated.
 
-## 4. Complexity tier
+## 4. Physical pattern selection
+
+After execution-class selection, choose the smallest physical starting pattern from `patterns.md` before deep technical reading.
+
+Pattern selection answers:
+
+```text
+what moves?
+where does it spawn?
+what is the dominant force/motion?
+how does it age/fade?
+what secondary role is actually necessary?
+```
+
+Examples:
+
+```text
+blue flame
+→ Flame
+
+sparks
+→ Sparks
+
+smoke plume
+→ Rising smoke/plume
+
+ambient dust
+→ Ambient dust
+
+rain
+→ Rain
+
+magic aura
+→ Magic aura/energy field
+
+impact
+→ Impact burst
+
+explosion
+→ composed candidate roles, but include only required layers
+```
+
+Keywords are routing hints, not rigid templates. Explicit user motion/style requirements override keyword mapping.
+
+If one pattern explains the effect, keep the request DIRECT. Combine patterns only when physics, timing, spawn region, render/material role, texture class, or event/attachment ownership materially differs.
+
+## 5. Complexity tier
 
 Choose the smallest implementation tier that satisfies the effect:
 
@@ -82,13 +128,14 @@ TIER 3 — events, collision chains, entity context, advanced attachment or nest
 
 Start at the lowest viable tier. Escalate only when a required behavior cannot be represented cleanly at the current tier.
 
-## 5. Internal execution packet
+## 6. Internal execution packet
 
 Before authoring, reduce the request to a compact packet:
 
 ```text
 intent
 execution_class
+pattern_family / composed_patterns
 complexity_tier
 target
 layers
@@ -106,7 +153,7 @@ final delivery shape
 
 This packet is internal control state, not a new persisted system.
 
-## 6. Decomposition rule
+## 7. Decomposition rule
 
 Split layers only when they materially differ in one or more of:
 
@@ -122,8 +169,8 @@ attachment/event ownership
 Good:
 
 ```text
-volcano → core + ballistic debris + rising plume + crown
-impact  → flash + debris + dust
+volcano → ballistic debris + rising plume
+impact  → flash + debris + dust when all three are visually required
 ```
 
 Bad:
@@ -132,7 +179,9 @@ Bad:
 simple flame → several emitters with identical motion/render roles
 ```
 
-## 7. Texture decision
+Use `patterns.md` to decide the initial physical decomposition, then adapt rather than copy it literally.
+
+## 8. Texture decision
 
 Choose texture work only to the level required:
 
@@ -152,7 +201,7 @@ animated visual frames
 
 Do not create an atlas, flipbook, or generated texture pipeline by default.
 
-## 8. Molang decision
+## 9. Molang decision
 
 Use Molang only when a constant cannot express the intended behavior cleanly.
 
@@ -175,7 +224,7 @@ external/entity reactivity
 
 Do not add formulas merely because Molang is available.
 
-## 9. Snowstorm compatibility baseline
+## 10. Snowstorm compatibility baseline
 
 When Snowstorm/Wintersky preview is a target and authored launch magnitude matters, prefer:
 
@@ -186,7 +235,7 @@ minecraft:particle_initial_speed = scalar speed
 
 This is Snowstorm-targeted compatibility guidance, not a generic Bedrock prohibition on vector initial-speed forms.
 
-## 10. Authority order
+## 11. Authority order
 
 ```text
 explicit current user requirement
@@ -194,6 +243,7 @@ explicit current user requirement
 → approved prior particle decision
 → target-version official Bedrock semantics
 → documented Snowstorm/Wintersky behavior when editor-specific
+→ canonical physical pattern reasoning
 → conservative reversible authoring choice
 → unresolved remains UNKNOWN
 ```
