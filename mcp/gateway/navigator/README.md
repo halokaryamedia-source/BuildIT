@@ -1,58 +1,27 @@
-# BlockIT Navigator
+# LazyDesigner Control — legacy physical path
 
-BlockIT Navigator is the **front-line context and routing layer** for the existing four-tool Gateway.
+> Physical path note: this module still lives under `mcp/gateway/navigator/` during source migration. **Navigator is not an active parallel architecture.** The public/runtime-facing contract implemented here is LazyDesigner Control (`lazydesigner-control-v1`). The folder will be physically renamed after remaining path dependencies are migrated.
 
-It is the first machine-facing authority used to orient a modelling task before authoring begins, but it is **not a warehouse that duplicates every source file**.
-
-## Front-line contract
+LazyDesigner Control is the **front-line intake, context projection, readiness and routing layer** behind the stable four-tool Gateway.
 
 ```text
-user task
-→ Navigator intake
-→ resolve live project/runtime/workspace state
-→ select exact canonical context
-→ declare readiness + blockers
-→ choose minimum legal route
-→ Gateway capability
-→ Runtime
-→ Blockbench
+USER / CODEX TASK
+→ CONTROL
+→ resolve task class + live orientation
+→ consume Reference Package / Workspace when applicable
+→ project minimum stage context
+→ route exact owner/capability
+→ GATEWAY
+→ RUNTIME
+→ BLOCKBENCH
+→ CONTROL DELTA
 ```
 
-Navigator collects **decision-relevant state and references** from canonical owners. Exact specialist knowledge, Tool schemas, workflow rules and asset state remain owned by their original sources.
+Control selects from canonical owners. It does not create a second Skill database, Tool schema catalog, asset-state database, or reference authority.
 
-The principle is:
+## Public Gateway boundary
 
-```text
-INTAKE EVERYTHING NEEDED TO DECIDE
-STORE NOTHING THAT CREATES A SECOND AUTHORITY
-SELECT, DON'T SUMMARIZE
-```
-
-## What Navigator owns
-
-Navigator owns only navigation concerns:
-
-- current task identity;
-- Runtime/Gateway health needed for routing;
-- project affinity and current authoring domain;
-- current Active Workspace projection when available;
-- content-addressed context handles;
-- bounded source/capability ownership metadata;
-- modelling readiness and blockers;
-- continuation delta and invalidation after mutations.
-
-Navigator does **not** own:
-
-- duplicated Tool schemas;
-- copied Skill or Prompt prose;
-- a second asset-state file;
-- visual acceptance decisions;
-- modelling, texturing or animation implementation;
-- build/install/runtime truth outside the canonical owners.
-
-## Gateway boundary
-
-The public Gateway remains exactly:
+The Gateway remains exactly:
 
 ```text
 status
@@ -61,64 +30,103 @@ describe_capability
 invoke_capability
 ```
 
-No Navigator-specific public tool family is required.
+No Control-specific public tool family is added.
 
-## Startup / resume
-
-Normal asset authoring begins with one front-line bootstrap when orientation is unknown or materially stale:
+## Task classes
 
 ```text
-status
-→ navigation.task_context_id
-→ navigation.readiness
-→ navigation.project
-→ navigation.authoring
-→ navigation.workspace
-→ navigation.context
-→ navigation.blockers
+ASSET_AUTHORING
+SYSTEM_DEVELOPMENT
 ```
 
-`readiness.modelling_start` is one of:
+### ASSET_AUTHORING
+
+`status` may receive:
 
 ```text
-READY
-NEEDS_ORIENTATION
-BLOCKED
+workspace_path
+reference_package_path
+current_user_delta
+known_context_ids
 ```
 
-It prevents the client from reconstructing readiness by repeatedly reading unrelated sources.
-
-`workspace_state=UNAVAILABLE` does not automatically mean authoring is impossible. A new project may not have an Active Workspace README yet. Runtime/project/domain/context readiness are evaluated independently.
-
-## Routing priority
-
-Navigator follows one direct-first contract:
+Control combines only decision-relevant state from:
 
 ```text
-known capability        → INVOKE_CAPABILITY
-unknown capability      → SEARCH_CAPABILITIES
-schema uncertainty      → DESCRIBE_CAPABILITY
-stale/lost orientation  → STATUS
-unresolved source task  → bounded base context, then targeted search
+REFERENCE.json
++ Active Workspace README
++ Runtime/project/phase orientation
++ current user delta
 ```
 
-Search is discovery fallback, not ceremony. Describe is schema fallback, not ceremony. A known capability with known arguments should invoke directly.
+and produces one active projection:
 
-The intended discovery ceiling is four results. The Gateway implementation should enforce this ceiling rather than rely only on caller discipline.
+```text
+GEOMETRY_CONTEXT
+TEXTURE_CONTEXT
+ANIMATION_CONTEXT
+```
 
-## Context projection
+The original reference intent remains unchanged. `current_user_delta` is additive correction context, not a replacement prompt.
 
-Canonical content is referenced by logical ID + SHA-256 identity. Navigator does not paraphrase canonical Skills/Prompts into a second knowledge base.
+### SYSTEM_DEVELOPMENT
 
-A caller can return exact `known_context_ids` to `status`. Unchanged handles are omitted; changed members of the same context family are invalidated and redelivered.
+```text
+status(
+  task_mode=SYSTEM_DEVELOPMENT,
+  task_intent=<concrete problem>
+)
+```
 
-This keeps context reuse safe while reducing repeated instruction delivery.
+Control resolves a bounded source/specialist/test owner set and excludes asset workspace/reference parsing. Unknown or tied intent remains `UNRESOLVED` instead of broad repository scanning.
+
+## Reference Package projection
+
+Control reads only compact structured authority from `REFERENCE.json`:
+
+```text
+asset identity / intent
+selected profile
+numeric + player-relative scale
+animation requirement
+stage readiness
+blocking/non-blocking unknowns
+stage document identities
+stage image IDs
+```
+
+Control does not copy full stage Markdown or image content into its own persistent state.
+
+## Context loading
+
+Canonical context handles are resolved from current repository files at runtime and content-addressed with SHA-256.
+
+Geometry normally receives:
+
+```text
+Modelling Skill
++ exactly one selected profile from REFERENCE.json
+```
+
+Texturing normally receives:
+
+```text
+Texturing Skill
+```
+
+Animation normally receives:
+
+```text
+Animation Skill
+```
+
+The former router Skill is **not** loaded as mandatory authoring context.
+
+`known_context_ids` lets a caller reuse exact already-loaded content. A changed member of the same context family is invalidated and redelivered.
 
 ## Workspace projection
 
-The Active Workspace README remains the asset-state authority.
-
-Navigator reads only the fields needed for navigation:
+The Active Workspace README remains the persistent asset-state owner. Control reads only navigation fields:
 
 ```text
 asset
@@ -131,71 +139,104 @@ Current next step
 Known blocker(s)
 ```
 
-The projection is cached using file metadata and content-addressed with SHA-256. Navigator never creates a competing workspace state file.
+No parallel workspace database is created.
 
-## Mutation continuation
+## Readiness
 
-Successful operations return `navigation_delta`.
-
-Ordinary mutations should not force a full `status` reread. Instead, the delta explicitly states what knowledge is no longer safe to reuse:
+Control distinguishes:
 
 ```text
-invalidates.authoring_domains
-invalidates.workspace_projection
-invalidates.acceptance_gates
+runtime readiness
+project binding
+active authoring domain
+required context availability
+Reference Package blockers
+Workspace blockers
 ```
 
-Example:
+A missing optional Reference Package does not automatically make an existing-asset correction illegal. A real blocking reference unknown does.
+
+## Capability routing
+
+Routing remains direct-first:
 
 ```text
-manage_cubes succeeds
-→ Geometry runtime mutation accepted
-→ Geometry workspace/acceptance knowledge becomes stale
-→ continue or verify Geometry
-→ no automatic full status round-trip
+known capability        → INVOKE_CAPABILITY
+unknown capability      → SEARCH_CAPABILITIES
+schema uncertainty      → DESCRIBE_CAPABILITY
+stale/lost orientation  → STATUS
+unresolved development  → bounded owners, then targeted search
 ```
 
-Gateway/Runtime authority changes such as phase handoff or project-affinity changes still set `requires_status_refresh=true`.
+Search/describe are fallbacks, not ceremony.
 
-This separates two different concepts:
+## Control delta / invalidation
+
+Successful capability invocation returns:
 
 ```text
-runtime orientation changed → refresh status
-asset acceptance knowledge changed → invalidate affected knowledge
+control_delta
 ```
 
-That distinction is required for both correctness and low call overhead.
-
-## Source-development mode
-
-For BlockIT source work:
+Mutation invalidation follows dependency direction:
 
 ```text
-status(
-  task_mode=MCP_DEVELOPMENT,
-  task_intent=<concrete problem>
-)
+Geometry mutation
+→ Geometry + dependent Texture + dependent Animation knowledge affected
+
+Texture mutation
+→ Texture + dependent Animation knowledge affected
+
+Animation mutation
+→ Animation knowledge affected
 ```
 
-Navigator resolves a bounded source/specialist/test owner set and excludes unrelated asset workspace context. Ambiguous or unknown intent fails closed as `UNRESOLVED` rather than guessing.
+This is **not** a full asset reset. Actual downstream rebuild is still conditional on whether the changed field materially invalidates that dependency.
 
-## Current architectural rule
+Phase/project authority changes set `requires_status_refresh=true`; ordinary asset mutations do not force an immediate full status reread.
 
-There is one authoritative route:
+## Ownership boundary
+
+Control owns:
 
 ```text
-Codex / AI client
-→ Gateway + Navigator
-→ Runtime
-→ Blockbench
+task intake metadata
+runtime/project orientation projection
+Reference Package projection
+Workspace projection
+stage-specific context selection
+content-addressed context handles
+bounded source/capability routing metadata
+post-operation invalidation/delta
 ```
 
-Navigator is the front line, not another layer beside the Gateway.
+Control does not own:
 
-## Efficiency rule
+```text
+user/reference truth
+canonical Skill prose
+full modelling profiles
+Runtime Tool schemas
+Blockbench model state
+visual acceptance
+persistent asset state
+creative authoring decisions
+```
 
-The target remains **Cost to Accepted Result**, not minimum token count in isolation.
+## Efficiency target
 
-Navigator is successful when it reduces avoidable context loading, discovery, readback, stale-state reuse, phase bouncing and recovery while preserving or improving accepted output quality.
+The target remains **Cost to Accepted Result**.
 
-Static packet size and tool-call count are diagnostics only. Whole-task efficiency must eventually be demonstrated on representative accepted modelling work.
+Control should reduce:
+
+```text
+broad docs/Skill loading
+repeated context delivery
+router duplication
+unnecessary capability discovery
+status reassurance loops
+wrong-stage correction
+full resets after bounded changes
+```
+
+without reducing reference fidelity or final asset quality.
