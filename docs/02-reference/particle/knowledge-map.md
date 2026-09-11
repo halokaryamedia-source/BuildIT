@@ -2,7 +2,7 @@
 
 Canonical knowledge map for ChatGPT-side Minecraft Bedrock / Snowstorm particle reference authoring.
 
-## Provenance labels
+## Evidence classes
 
 ```text
 OFFICIAL BEDROCK
@@ -11,9 +11,9 @@ EMPIRICALLY VERIFIED
 HEURISTIC
 ```
 
-Official Bedrock semantics outrank editor workarounds; Snowstorm-specific behavior must not redefine generic Bedrock validity; heuristics must not be presented as live runtime/FPS truth.
+Official Bedrock semantics outrank editor workarounds. Snowstorm-specific behavior must not redefine generic Bedrock validity. Heuristics must never be presented as live runtime/FPS truth.
 
-## Core knowledge domains
+## Canonical knowledge owners
 
 ```text
 fundamentals.md
@@ -23,73 +23,73 @@ component-catalog.md
 → complete component inventory
 
 component-field-reference.md
-→ field-by-field semantics, defaults/ownership concerns and failure modes
+→ field-by-field purpose, ownership and failure modes
 
 official-schema-coverage.md
 → closure audit mapping official component families to canonical owners
+
+official-defaults-evaluation.md
+→ verified defaults, omission semantics, evaluation timing and schema-version deltas
 
 lifecycle-space.md
 → creation/update/render timing, emitter-vs-particle lifetime, local/world simulation
 
 emitter.md
-→ rate, lifetime, initialization, built-in shapes, density
+→ rate, lifetime, initialization, built-in shapes and density
 
 emitter-shape-math.md
-→ direction vectors, normalization, custom shape/ring/cone/fan math
+→ custom shape/ring/cone/fan direction math
 
 math-physics-reference.md
-→ vectors, projection, distributions, ballistic equations, probability,
-  angular readability and numerical safety
+→ vectors, projection, spatial distributions, ballistics, probability and numerical safety
 
 motion.md
-→ initial impulse, acceleration, drag, parametric motion, kill planes
+→ initial impulse, acceleration, drag, parametric motion and kill planes
 
 collision-advanced.md
-→ restitution, drag, contact events, repeated contact, high-speed caveats
+→ restitution, drag, contact events, repeated contact and high-speed caveats
 
 appearance-rendering.md
-→ material, billboard, UV/flipbook/tint/lighting, overdraw
+→ materials, billboard, tint, lighting and overdraw
 
 billboard-direction.md
-→ direction_x/y/z, velocity alignment and near-zero direction edge cases
+→ directional/velocity-aligned billboard semantics and edge cases
 
 texture-authoring.md
-→ PNG/RGBA, atlas layout, gutters, UV/flipbook, tint-compatible source art
-
-texture-filtering-bleeding.md
-→ hidden RGB, atlas bleed, matte/halo, minification/filtering edge cases
+→ PNG/RGBA, atlas layout, gutters, UV/flipbook and tint-compatible source art
 
 texture-resolution-sampling.md
-→ resolution, resampling, texel-density reasoning, downscaling,
-  alpha coverage, frame stability and approximate asset-size reasoning
+→ resolution, resampling, texel density, downscale, alpha coverage and frame stability
+
+texture-filtering-bleeding.md
+→ hidden RGB, bleed, matte/halo and minification/filtering edge cases
 
 texture-color-science.md
-→ practical alpha/value/color design for opaque/alpha/blend/add materials
+→ practical value/alpha/color design for opaque/alpha/blend/additive materials
 
 molang.md
-→ emitter/particle variable ownership, stable state, age/lifetime usage
+→ particle/emitter variable ownership and lifetime stability
 
 particle-variable-inventory.md
-→ documented particle-system built-in variables and owner matrix
+→ documented particle-system built-in variables
 
 molang-language-math.md
-→ syntax/operators/math/easing/interpolation/random/trigonometry
+→ syntax, operators, math, easing, interpolation, random and trigonometry
 
 molang-formula-cookbook.md
-→ normalized age, fades, stable ranges/classes, oscillation, orbit/spiral,
-  ballistic estimates, remapping and safe math
+→ reusable lifetime, random-class, oscillation, orbit/spiral, remap and safe-math formulas
 
 molang-queries-context.md
-→ query/context host availability, entity state, continuous external reads
+→ query/context host availability and external-state coupling
 
 curves.md
-→ linear/Bezier/Bezier-chain/Catmull-Rom, ranges and normalized progression
+→ linear/Bezier/Bezier-chain/Catmull-Rom curves and normalized progression
 
 events.md
-→ emitter/particle/collision events, child effects, relationships, fan-out
+→ emitter/particle/collision events, child effects, relationships and fan-out
 
 event-timing.md
-→ emitter time vs particle time, birth-relative timing, nested ordering
+→ emitter time vs particle time, birth-relative timing and nested ordering
 
 snowstorm.md
 → generic Snowstorm/Wintersky compatibility boundary
@@ -98,10 +98,10 @@ snowstorm-version-quirks.md
 → release-specific preview quirks/regressions and minimal reproduction
 
 performance.md
-→ population, lifetime/rate/cap, overdraw, Molang/collision/event cost guidance
+→ population, lifetime/rate/cap, overdraw and expression/collision/event cost guidance
 
 entity-integration.md
-→ mapping, locators, animation/controller triggering, attached context
+→ entity mapping, locators, animation/controller triggering and attached context
 
 troubleshooting.md
 → symptom-first causal diagnosis
@@ -113,11 +113,11 @@ troubleshooting.md
 authoring-spec.md → normalize requested effect
 workflow.md       → authoring sequence
 qa.md             → static/preflight acceptance
-delivery.md       → final package contract
+delivery.md       → clean package contract
 patterns.md       → reusable physical starting patterns
 ```
 
-Knowledge and workflow stay separate. Do not duplicate deep technical rules into workflow files.
+Knowledge and workflow stay separate. Deep technical rules belong to the nearest knowledge owner, not duplicated into workflow files.
 
 ## Lazy-read routing
 
@@ -125,13 +125,16 @@ Knowledge and workflow stay separate. Do not duplicate deep technical rules into
 basic task
 → authoring-spec.md + workflow.md
 
-need to confirm official coverage / locate missing schema knowledge
+is official coverage complete?
 → official-schema-coverage.md
+
+what is the exact default / omission meaning / evaluation timing?
+→ official-defaults-evaluation.md
 
 unknown component
 → component-catalog.md
 
-specific JSON field/default/failure
+specific field purpose/failure mode
 → component-field-reference.md
 
 spawn/lifetime/shape
@@ -140,7 +143,7 @@ spawn/lifetime/shape
 custom distribution/direction/cone/ring math
 → emitter-shape-math.md
 
-general vector/physics/distribution/ballistic reasoning
+general vector/physics/distribution/ballistics
 → math-physics-reference.md
 
 creation/update/render or local/world-space question
@@ -161,7 +164,7 @@ directional sprite issue
 PNG/atlas/UV/flipbook production
 → texture-authoring.md
 
-resolution/resampling/downscale/frame-stability issue
+resolution/resampling/downscale/frame stability
 → texture-resolution-sampling.md
 
 bleed/halo/filtering/minification
@@ -173,7 +176,7 @@ brightness/alpha/additive/blend color design
 particle variable ownership
 → molang.md
 
-which built-in particle/emitter variable exists
+which built-in particle/emitter variable exists?
 → particle-variable-inventory.md
 
 Molang language/math
@@ -216,16 +219,20 @@ Load multiple files only when the task genuinely crosses boundaries.
 
 ```text
 current explicit user requirement
-→ current official Bedrock documentation
-→ reproduced Snowstorm/Wintersky target behavior for editor-specific issues
+→ target-version official Bedrock generated schema/reference
+→ official semantic/component documentation
+→ reproduced Snowstorm/Wintersky behavior for editor-specific issues
 → accepted empirical project evidence
 → conservative heuristic
 ```
+
+When newer generated schema and older hand-written documentation differ, use the target-version schema for JSON shape/defaults and retain older prose only when it remains semantically compatible.
 
 ## Coverage state
 
 ```text
 Official schema closure audit            STRONG / TRACKED
+Official defaults/evaluation timing      STRONG / TRACKED
 Bedrock architecture/components          STRONG
 Field-level component reference          STRONG
 Lifecycle/evaluation/local space         STRONG
@@ -239,7 +246,7 @@ Directional billboard edge cases         STRONG
 Texture/RGBA/atlas/UV/flipbook           STRONG
 Texture resolution/resampling            STRONG PRACTICAL
 Texture filtering/bleeding               STRONG
-Texture color/alpha/blend reasoning       STRONG PRACTICAL
+Texture color/alpha/blend reasoning      STRONG PRACTICAL
 Particle Molang ownership                STRONG
 Particle built-in variable inventory     STRONG
 Molang language/math                     STRONG
@@ -256,4 +263,4 @@ Troubleshooting                          STRONG CAUSAL GUIDE
 Real multi-family visual cases           DEFERRED BY USER
 ```
 
-Further work should close only newly discovered official fields/version-specific behavior and empirical visual evidence, not create another particle framework.
+Further work should close only newly discovered official fields/defaults/version-specific behavior and later empirical visual evidence. Do not create another parallel particle framework.
