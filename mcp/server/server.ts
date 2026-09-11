@@ -18,17 +18,25 @@ import { initializeRuntimeCapabilityWiring } from "./runtime/bootstrap";
 // load. The bootstrap mutates definitions only; it does not own a second catalog.
 initializeRuntimeCapabilityWiring();
 
+const serverInstructionCache = new Map<McpAuthoringPhase, string>();
+
 /**
- * Phase-aware server instructions are part of the agent contract: Codex must
- * know why foreign-phase tools are absent before it attempts discovery.
+ * Phase-aware server instructions are generation-stable. Cache the immutable
+ * string once per phase so request-owned MCP servers do not rebuild identical
+ * contracts on every stateless request.
  */
 export function buildMcpServerInstructions(
   phase: McpAuthoringPhase,
   _profile: McpRegistrationProfile = DEFAULT_MCP_REGISTRATION_PROFILE
 ): string {
-  return `LazyDesigner Bedrock Entity authoring. ${buildMcpPhaseRuntimeContract(
+  const cached = serverInstructionCache.get(phase);
+  if (cached) return cached;
+
+  const instructions = `LazyDesigner Bedrock Entity authoring. ${buildMcpPhaseRuntimeContract(
     phase
   )} Capability nouns: cube, texture/PBR, locator; Animation uses keyframe tooling. Core routes are lifecycle and read operations; selection, history, camera, and export are conditional support routes.`;
+  serverInstructionCache.set(phase, instructions);
+  return instructions;
 }
 
 export const MCP_SERVER_INSTRUCTIONS = buildMcpServerInstructions(
