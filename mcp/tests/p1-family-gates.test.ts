@@ -24,9 +24,10 @@ describe("P1.2 MCP family gates", () => {
     ]);
   });
 
-  test("Blockbench presents fallback families as debug maintenance rather than authoring profile", async () => {
-    const [settingsSource, indexSource] = await Promise.all([
+  test("Blockbench integration owns debug fallback profile selection", async () => {
+    const [settingsSource, integrationSource, indexSource] = await Promise.all([
       readFile(new URL("../ui/settings.ts", import.meta.url), "utf8"),
+      readFile(new URL("../plugin/blockbenchIntegration.ts", import.meta.url), "utf8"),
       readFile(new URL("../index.ts", import.meta.url), "utf8"),
     ]);
 
@@ -35,21 +36,27 @@ describe("P1.2 MCP family gates", () => {
     expect(settingsSource).toContain("not an authoring profile");
     expect(settingsSource).toContain("value: false");
 
-    const settingsSetup = indexSource.indexOf("settingsSetup();");
-    const gatedRegistration = indexSource.indexOf("registerMcpProfile(");
-    const serverStartup = indexSource.indexOf("if (!(await startMcpServer(generation))) return;");
-    expect(settingsSetup).toBeGreaterThan(-1);
-    expect(gatedRegistration).toBeGreaterThan(settingsSetup);
-    expect(serverStartup).toBeGreaterThan(gatedRegistration);
-    expect(indexSource).toContain("isExtendedMcpFamiliesEnabled()");
+    expect(integrationSource).toContain("settingsSetup();");
+    expect(integrationSource).toContain("isExtendedMcpFamiliesEnabled()");
+    expect(integrationSource).toContain("setExtendedMcpProfileHandler");
+    expect(integrationSource).toContain("applyMcpRegistrationProfile");
+
+    expect(indexSource).toContain("blockbenchIntegration.setupBase");
+    expect(indexSource).toContain("registerMcpProfile(registrationProfile)");
+    expect(indexSource).toContain("runtimeHost.start(generation)");
+    expect(indexSource).not.toContain("settingsSetup();");
+    expect(indexSource).not.toContain("isExtendedMcpFamiliesEnabled()");
   });
 
-  test("registration root keeps family registration idempotent", async () => {
-    const source = await readFile(new URL("../server/tools.ts", import.meta.url), "utf8");
-    expect(source).toContain("const registeredFamilies = new Set<McpRegistrationFamily>();");
-    expect(source).toContain("if (registeredFamilies.has(family)) return;");
-    expect(source).toContain("registeredFamilies.add(family);");
-    expect(source).toContain("registerMcpProfile(DEFAULT_MCP_REGISTRATION_PROFILE);");
+  test("runtime registration owner keeps family registration idempotent", async () => {
+    const [registrationSource, facadeSource] = await Promise.all([
+      readFile(new URL("../server/runtime/registration.ts", import.meta.url), "utf8"),
+      readFile(new URL("../server/tools.ts", import.meta.url), "utf8"),
+    ]);
+    expect(registrationSource).toContain("const registeredFamilies = new Set<McpRegistrationFamily>();");
+    expect(registrationSource).toContain("if (registeredFamilies.has(family)) return false;");
+    expect(registrationSource).toContain("registeredFamilies.add(family);");
+    expect(facadeSource).toContain("registerMcpProfile(DEFAULT_MCP_REGISTRATION_PROFILE);");
   });
 
   test("dangerous fallback tools remain disabled", async () => {
