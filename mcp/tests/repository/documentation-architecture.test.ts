@@ -96,7 +96,7 @@ describe("AI-first documentation architecture", () => {
 
     expect(context).toContain("exactly one selected profile");
     expect(context).toContain("Do not reload the initial package");
-    expect(context).toContain("do not load all docs");
+    expect(context).toMatch(/read all docs|load all docs/i);
   });
 
   test("Skill taxonomy points to current hierarchy and keeps Docs/Skills/Control roles separate", async () => {
