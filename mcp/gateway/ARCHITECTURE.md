@@ -31,6 +31,7 @@ The Gateway is the persistence boundary. Runtime connectivity is disposable and 
 8. Reconnect attempts use bounded exponential backoff; no heartbeat or background polling is required.
 9. Cached authored model state never lives in Gateway.
 10. The public MCP surface remains exactly four tools.
+11. Capability-specific affinity behavior is declared in canonical capability metadata, not as new tool-name branches inside Gateway.
 
 ## Connection state
 
@@ -104,6 +105,27 @@ The next step for `OUTCOME_UNKNOWN` is inspection/reconciliation, not automatic 
 The capability catalog should be treated as local Gateway cache after one successful Runtime handshake. Search and description should use that cache while its Runtime signature is current. Runtime mutations remain serialized because Blockbench has process-global active-project state.
 
 No background heartbeat, automatic confirmation read, duplicate catalog fetch, or mutation retry should be introduced.
+
+## Declarative capability effects
+
+Capability semantics that affect Gateway-owned state are declared in `mcp/lib/capabilityMetadata.ts`.
+
+```text
+ordinary tool
+→ projectAffinity: preserve
+→ phaseAffinity: preserve
+→ invalidateCatalog: false
+
+project-creating tool
+→ projectAffinity: adopt_created_project
+→ invalidateCatalog: true
+
+phase-changing tool
+→ phaseAffinity: update_from_result
+→ invalidateCatalog: true
+```
+
+`mcp/gateway/capabilityEffects.ts` is the single parser for these result receipts. Gateway backend code should consume that resolver rather than add new `if (capability === "...")` branches. This keeps future tools extensible through metadata instead of Gateway rewrites.
 
 ## Ownership boundary
 
