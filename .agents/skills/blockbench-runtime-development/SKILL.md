@@ -27,7 +27,7 @@ Adjacent owners:
 - MCP public/protocol contracts → `mcp-server-development`;
 - Bedrock model shape/proportion/reference/visual judgement →
   `blockbench-bedrock-modelling`;
-- Source Image → Modelling Brief generation → `docs/foundation/04-reference-guide.md`;
+- Reference Preparation policy → `docs/02-reference/policy.md`;
 - TypeScript/Bun compiler/build/package mechanics → exact affected source/build owner under `mcp/AGENTS.md`.
 
 If an MCP tool calls Blockbench APIs, choose by the **proved semantic owner**:
