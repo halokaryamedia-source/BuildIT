@@ -20,30 +20,29 @@ describe("active routing integrity", () => {
         .map((entry) => entry.name)
     );
 
-    const [root, developmentBrief, mcpDevelopment, orchestrator] = await Promise.all([
+    const [root, developmentBrief, mcpDevelopment] = await Promise.all([
       source("../AGENTS.md"),
       source("../.agents/skills/development-brief/SKILL.md"),
       source("../.agents/skills/mcp-server-development/SKILL.md"),
-      source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md"),
     ]);
 
     const referenced = new Set([
       ...backtickedSkillLikeNames(root),
       ...backtickedSkillLikeNames(developmentBrief),
       ...backtickedSkillLikeNames(mcpDevelopment),
-      ...backtickedSkillLikeNames(orchestrator),
     ]);
 
     for (const name of referenced) {
       expect(canonical.has(name)).toBe(true);
       expect(await Bun.file(`../.agents/skills/${name}/SKILL.md`).exists()).toBe(true);
     }
+
+    expect(root).not.toContain(".agents/skills/blockit-bedrock-entity-mcp/SKILL.md");
   });
 
-  test("MCP Verify tracks non-mcp owners consumed by executable contract tests", async () => {
+  test("MCP Verify tracks current non-mcp specialist owners without legacy router trigger", async () => {
     const workflow = await source("../.github/workflows/mcp-verify.yml");
     for (const path of [
-      ".agents/skills/blockit-bedrock-entity-mcp/**",
       ".agents/skills/blockbench-bedrock-modelling/**",
       ".agents/skills/blockit-bedrock-texturing/**",
       ".agents/skills/blockit-bedrock-animation/**",
@@ -51,6 +50,7 @@ describe("active routing integrity", () => {
     ]) {
       expect(workflow).toContain(`- "${path}"`);
     }
+    expect(workflow).not.toContain(".agents/skills/blockit-bedrock-entity-mcp/**");
     expect(workflow).not.toContain("docs/knowledge/");
     expect(workflow).not.toContain("docs/foundation/");
   });
