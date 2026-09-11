@@ -1,6 +1,6 @@
 # Bedrock Particle Component Field Reference
 
-Purpose: field-oriented reference for authoring and diagnosing Bedrock particle components. Use `component-catalog.md` for component discovery and this file when a specific field/property decision matters.
+Purpose: field-oriented reference for authoring and diagnosing Bedrock particle components. Use `component-catalog.md` for component discovery, `official-defaults-evaluation.md` for exact defaults/evaluation timing, and this file for field purpose/ownership/failure modes.
 
 Evidence class: **OFFICIAL BEDROCK** unless marked **HEURISTIC**.
 
@@ -11,13 +11,12 @@ Unique particle identifier such as `namespace:effect_name`.
 
 Failure modes:
 - duplicate identifier across files;
-- event/consumer references point to a different identifier;
+- child/consumer references point to a different identifier;
 - namespace/name typo.
 
 ### `description.basic_render_parameters.material`
-Particle render material.
+Common materials:
 
-Common values:
 ```text
 particles_opaque
 particles_alpha
@@ -31,7 +30,7 @@ Texture resource path without `.png` extension.
 Failure modes:
 - path mismatch;
 - missing PNG;
-- wrong atlas referenced.
+- wrong atlas.
 
 ---
 
@@ -40,19 +39,17 @@ Failure modes:
 ## `minecraft:emitter_local_space`
 
 Fields:
+
 ```text
 position
 rotation
 velocity
 ```
 
-Controls which emitter transforms/velocity are inherited by the simulation.
-
-Important: local-space choices affect spawn position, orientation, and motion interpretation. Do not debug trajectory before confirming this component.
+Controls emitter transform/velocity inheritance. Important constraint: local rotation requires local position ownership.
 
 ## `minecraft:emitter_initialization`
 
-Typical fields:
 ```text
 creation_expression
 per_update_expression
@@ -60,22 +57,18 @@ per_update_expression
 
 Use creation logic for emitter setup and per-update logic only for state intended to evolve with emitter updates.
 
-Failure mode: using continuously changing emitter state to stand in for per-particle initialization.
-
 ## `minecraft:emitter_rate_instant`
 
-Field:
 ```text
 num_particles
 ```
 
 Burst emission.
 
-Failure mode: huge instant count creates visual/performance spikes.
+Failure mode: oversized burst creates visual/performance spikes.
 
 ## `minecraft:emitter_rate_steady`
 
-Fields:
 ```text
 spawn_rate
 max_particles
@@ -83,61 +76,66 @@ max_particles
 
 Steady population control.
 
-Authoring relation:
-```text
-steady visible load ≈ min(max_particles, spawn_rate × average_particle_lifetime)
-```
+Approximation:
 
-Approximation only.
+```text
+visible population ≈ min(max_particles, spawn_rate × average_lifetime)
+```
 
 ## `minecraft:emitter_rate_manual`
 
-Manual/event-driven emission ownership. Use only when downstream triggering actually owns emission.
+Manual/external emission ownership. Use only when a downstream caller/event actually owns emission.
 
 ## `minecraft:emitter_lifetime_once`
 
-Field:
 ```text
 active_time
 ```
 
-Emitter runs once for the authored active duration.
+Single active emitter lifetime.
 
 ## `minecraft:emitter_lifetime_looping`
 
-Typical fields:
 ```text
 active_time
 sleep_time
 ```
 
-Repeating emitter lifecycle.
+Repeating active/sleep lifecycle.
 
-Failure mode: confusing emitter loop age with particle age.
+Failure mode: treating emitter-loop reset as particle-lifetime reset.
 
 ## `minecraft:emitter_lifetime_expression`
 
-Fields:
 ```text
 activation_expression
 expiration_expression
 ```
 
-Expression-driven activation/expiration.
-
-Failure mode: expressions oscillate around thresholds and create unintended activation behavior.
+Both are repeatedly evaluated according to the official component semantics.
 
 ## `minecraft:emitter_lifetime_events`
 
-Owns emitter lifecycle event hooks/timeline events. Keep event identifiers valid and bundle references resolvable.
+May expose:
+
+```text
+creation_event
+expiration_event
+timeline
+travel_distance_events
+looping_travel_distance_events
+```
+
+exact field availability depends on target schema/version.
+
+Time-based and distance-based event keys are different coordinate domains. Do not treat distance keys as seconds.
 
 ---
 
 # Emitter shapes
 
-## Common shape fields
+Common fields:
 
-Many shape components support:
 ```text
 offset
 direction
@@ -148,20 +146,16 @@ surface_only
 Spawn-region offset relative to emitter/local transform.
 
 ### `direction`
-May be `inwards`, `outwards`, or a Molang vector depending on the shape.
+May be `inwards`, `outwards`, or Molang vector depending on shape/schema.
 
 ### `surface_only`
-Restricts emission to a shape surface/edge where supported.
+Restricts emission to the shape surface/edge where supported.
 
 ## `minecraft:emitter_shape_point`
-
-Point origin plus optional offset/direction semantics.
-
-Use for compact no-volume sources.
+Compact point source.
 
 ## `minecraft:emitter_shape_sphere`
 
-Typical fields:
 ```text
 radius
 offset
@@ -169,11 +163,8 @@ direction
 surface_only
 ```
 
-Use for spherical volume/surface emission.
-
 ## `minecraft:emitter_shape_box`
 
-Typical fields:
 ```text
 half_dimensions
 offset
@@ -181,11 +172,10 @@ direction
 surface_only
 ```
 
-`half_dimensions` are center-to-face extents, not full width/height/depth.
+`half_dimensions` are center-to-face extents.
 
 ## `minecraft:emitter_shape_disc`
 
-Fields:
 ```text
 radius
 plane_normal
@@ -194,29 +184,19 @@ direction
 surface_only
 ```
 
-`plane_normal` controls disc orientation.
-
-Failure mode: wrong normal gives a vertical disc when a ground-plane disc was intended.
+Failure mode: wrong `plane_normal` rotates the intended source plane.
 
 ## `minecraft:emitter_shape_entity_aabb`
-
-Fields typically include:
-```text
-direction
-surface_only
-```
-
-Spawn region comes from attached entity AABB.
+Spawn region derives from the attached entity AABB.
 
 ## `minecraft:emitter_shape_custom`
 
-Fields:
 ```text
 offset [x,y,z]
 direction [x,y,z]
 ```
 
-Use only when built-in shapes are insufficient.
+Use only when built-in shapes cannot express the required distribution.
 
 ---
 
@@ -224,31 +204,46 @@ Use only when built-in shapes are insufficient.
 
 ## `minecraft:particle_initialization`
 
-Fields:
 ```text
 per_update_expression
 per_render_expression
 ```
 
-Use only for state that belongs at those evaluation stages. Persistent identity should rely on particle-owned stable values rather than recomputing from emitter time.
+These are ongoing evaluation-stage hooks, not one-time birth-only storage.
 
 ## `minecraft:particle_lifetime_expression`
 
-Field:
 ```text
 max_lifetime
+expiration_expression
 ```
 
-Evaluated to determine particle lifetime.
+Ownership:
+
+```text
+max_lifetime
+→ one-time lifetime ceiling for that particle
+
+expiration_expression
+→ continuous early-expiration condition
+```
 
 Failure modes:
 - zero/negative lifetime;
-- density unexpectedly high because lifetime is longer than intended;
-- all particles share exact lifetime when visual variance was expected.
+- assuming `max_lifetime` keeps reevaluating;
+- density unexpectedly high because lifetime is longer than intended.
 
 ## `minecraft:particle_lifetime_events`
 
-Lifecycle-driven event hooks/timeline events for individual particles.
+Lifecycle event hooks for individual particles:
+
+```text
+creation_event
+expiration_event
+timeline
+```
+
+Timeline time is particle-relative.
 
 ---
 
@@ -256,15 +251,54 @@ Lifecycle-driven event hooks/timeline events for individual particles.
 
 ## `minecraft:particle_initial_speed`
 
-Initial speed/magnitude contract.
-
-Bedrock accepts Molang/numeric forms documented by schema. Snowstorm/Wintersky may require target-specific caution around vector semantics; see `snowstorm.md`.
+Initial translational launch contract. Bedrock schema can accept scalar/Molang and vector forms; Snowstorm compatibility is target-specific.
 
 ## `minecraft:particle_initial_spin`
 
-Controls initial rotational state where supported.
+Fields:
 
-Use when billboard rotation matters; do not confuse spin with translational direction.
+```text
+rotation
+rotation_rate
+```
+
+### `rotation`
+Initial billboard rotation angle.
+
+### `rotation_rate`
+Initial angular velocity/spin rate.
+
+Do not confuse:
+
+```text
+rotation
+→ orientation angle
+
+rotation_rate
+→ change of angle over time
+
+particle_motion_dynamic.rotation_acceleration
+→ change of angular velocity
+
+particle_motion_dynamic.rotation_drag_coefficient
+→ angular damping
+```
+
+Authoring model:
+
+```text
+initial angle
++ initial angular velocity
++ rotational acceleration
+- rotational drag
+→ billboard rotation over lifetime
+```
+
+Failure modes:
+- using `rotation` when continuous spin was intended;
+- using huge `rotation_rate` to compensate for frame-rate perception;
+- applying rotational acceleration when constant spin is sufficient;
+- confusing sprite rotation with directional billboard alignment.
 
 ---
 
@@ -272,7 +306,6 @@ Use when billboard rotation matters; do not confuse spin with translational dire
 
 ## `minecraft:particle_motion_dynamic`
 
-Fields include:
 ```text
 linear_acceleration
 linear_drag_coefficient
@@ -281,31 +314,33 @@ rotation_drag_coefficient
 ```
 
 Interpretation:
-```text
-initial velocity
-+ acceleration
-- drag/damping
-→ motion
-```
 
-Failure modes:
-- using acceleration to fake launch impulse;
-- excessive drag freezes particle too quickly;
-- gravity sign/direction wrong;
-- deeply nested expressions make trajectory unauditable.
+```text
+initial translational velocity
++ linear acceleration
+- linear drag
+
+initial rotation rate
++ rotation acceleration
+- rotation drag
+```
 
 ## `minecraft:particle_motion_parametric`
 
-Fields commonly describe relative position/direction/rotation through Molang.
+Current field family includes:
+
+```text
+relative_position
+direction
+rotation
+```
 
 Use for exact authored paths such as orbit/spiral/wave.
 
-Failure mode: using parametric motion for natural physics where dynamic motion is simpler and more tunable.
-
 ## `minecraft:particle_motion_collision`
 
-Fields include:
 ```text
+enabled
 collision_radius
 collision_drag
 coefficient_of_restitution
@@ -313,15 +348,7 @@ expire_on_contact
 events
 ```
 
-Some schemas/versions expose additional contact thresholds such as minimum-speed behavior.
-
-Failure modes:
-- radius too large creates early contact;
-- restitution too high creates unrealistic bounce;
-- repeated collision event fan-out;
-- high-speed tunneling/preview mismatch.
-
-See `collision-advanced.md`.
+Collision events may also use minimum-speed thresholds depending on schema.
 
 ---
 
@@ -329,17 +356,77 @@ See `collision-advanced.md`.
 
 ## `minecraft:particle_expire_if_in_blocks`
 
-Expires particles when inside configured blocks.
+Value shape: array of block identifiers.
+
+Semantics:
+
+```text
+particle enters/is in any listed block
+→ particle expires
+```
+
+Official legacy documentation states this component may coexist with `particle_lifetime_expression`.
+
+Good uses:
+- steam disappears in water;
+- dust dies when entering configured media;
+- environment-specific cleanup.
+
+Failure modes:
+- wrong/unsupported block identifier;
+- forgetting namespace;
+- list unintentionally includes `minecraft:air` and kills almost everything;
+- assuming this replaces max lifetime instead of adding another expiration condition.
 
 ## `minecraft:particle_expire_if_not_in_blocks`
 
-Expires particles when outside configured blocks.
+Value shape: array of allowed block identifiers.
+
+Semantics:
+
+```text
+particle is NOT in any listed block
+→ particle expires
+```
+
+This is effectively an environment allow-list.
+
+Good uses:
+- underwater-only particles;
+- particles constrained to one medium/block class.
+
+Failure modes:
+- empty/incorrect allow-list causes immediate expiration;
+- assuming block matching checks visual material instead of block identifier;
+- expecting broad tags/categories when the schema expects explicit identifiers.
+
+## Combined expiration ownership
+
+Multiple expiration mechanisms can coexist conceptually:
+
+```text
+max lifetime
+OR expiration_expression
+OR expire_if_in_blocks
+OR expire_if_not_in_blocks
+OR kill plane
+OR collision expire_on_contact
+```
+
+The earliest satisfied expiration mechanism wins visually. Debug disappearing particles by checking all enabled kill paths, not only lifetime.
 
 ## `minecraft:particle_kill_plane`
 
-Defines a plane that kills particles crossing it.
+Plane coefficients:
 
-Failure mode: plane orientation/sign incorrect and removes particles immediately.
+```text
+[A, B, C, D]
+A*x + B*y + C*z + D = 0
+```
+
+Official semantics include a plane positioned relative to emitter while oriented in world space.
+
+Failure mode: sign/orientation mistakes kill particles immediately or on the wrong side.
 
 ---
 
@@ -347,7 +434,6 @@ Failure mode: plane orientation/sign incorrect and removes particles immediately
 
 ## `minecraft:particle_appearance_billboard`
 
-Fields include:
 ```text
 size
 facing_camera_mode
@@ -355,16 +441,14 @@ direction
 uv
 ```
 
-### `size`
-Two-dimensional billboard size; evaluated dynamically.
+Current facing modes include:
 
-### `facing_camera_mode`
-Documented modes include:
 ```text
-rotate_xyz
-rotate_y
 lookat_xyz
 lookat_y
+lookat_direction
+rotate_xyz
+rotate_y
 direction_x
 direction_y
 direction_z
@@ -373,16 +457,10 @@ emitter_transform_xz
 emitter_transform_yz
 ```
 
-Target schema/version support must be checked when using less common modes.
-
-### Direction source
-Directional billboard modes may derive orientation from velocity or use custom direction, depending on schema.
-
-Failure mode: near-zero direction/velocity produces unstable or unreadable orientation.
+Directional modes need a valid direction source. Emitter-transform modes depend on emitter/local attachment transforms.
 
 ## Billboard UV fields
 
-Common UV fields:
 ```text
 texture_width
 texture_height
@@ -391,15 +469,8 @@ uv_size
 flipbook
 ```
 
-Failure modes:
-- texture dimensions mismatch PNG;
-- UV region out of bounds;
-- wrong atlas cell;
-- flipbook steps bleed into neighbors.
-
 ## Flipbook fields
 
-Common fields:
 ```text
 base_UV
 size_UV
@@ -410,23 +481,25 @@ stretch_to_lifetime
 loop
 ```
 
-Use for texture animation, not physical motion.
-
 ## `minecraft:particle_appearance_tinting`
 
-Supports direct color/Molang channels/gradient forms depending on schema.
+Accepted representation families include:
+- static hex;
+- RGB/RGBA numeric/Molang array;
+- gradient + interpolant object.
 
-Failure mode: tint fights already-saturated texture colors or alpha ownership.
+See `appearance-rendering.md` for keyed/even gradient ownership and alpha interaction.
 
 ## `minecraft:particle_appearance_lighting`
 
-Enables particle lighting behavior. Do not treat it as emitted world light.
+Enables particle lighting interaction; it does not create emitted world light.
 
 ---
 
 # Curves
 
-Particle-effect `curves` definitions commonly use:
+Common fields:
+
 ```text
 type
 nodes
@@ -434,36 +507,42 @@ input
 horizontal_range
 ```
 
-Known curve families include linear, Bezier, Bezier chain, and Catmull-Rom variants.
+Curve families:
 
-Failure modes:
-- wrong normalized input;
-- horizontal range mismatch;
-- duplicated complex expressions instead of shared curve;
-- curve used where simple linear math would be clearer.
+```text
+linear
+bezier
+bezier_chain
+catmull_rom
+```
+
+Bezier-chain node structures may include keyed positions plus value/slope/tangent fields according to target schema.
 
 ---
 
 # Events
 
-Event nodes can include:
+Event nodes may include:
+
 ```text
 expression
-sequence
-randomize
-sound_effect
-particle_effect
 log
+particle_effect
+randomize
+sequence
+sound_effect
 ```
 
-Nested visual-effect event fields include:
+Visual-effect event fields:
+
 ```text
 effect
 type
 pre_effect_expression
 ```
 
-Relationship types include documented forms such as:
+Relationship types:
+
 ```text
 emitter
 emitter_bound
@@ -471,33 +550,27 @@ particle
 particle_with_velocity
 ```
 
-Failure modes:
-- missing child identifier;
-- circular effect graph;
-- unintended fan-out;
-- wrong velocity inheritance type;
-- event timing attached to emitter instead of particle or vice versa.
-
 ---
 
 # Field-authoring QA
 
-Before delivery verify:
-
 ```text
-[ ] identifier and referenced child identifiers resolve
+[ ] identifier and child identifiers resolve
 [ ] texture path resolves
 [ ] material matches alpha/blend intent
-[ ] emitter rate and lifetime are coherent
+[ ] emitter rate/lifetime are coherent
 [ ] shape dimensions/offset/plane normal are correct
 [ ] direction and initial-speed ownership are clear
 [ ] particle lifetime is positive and density-aware
+[ ] all active expiration paths are intentional
+[ ] block expiration identifiers are exact
+[ ] initial spin angle/rate and dynamic rotational fields have distinct roles
 [ ] motion fields represent intended physics
-[ ] collision fields do not create accidental event storms
-[ ] billboard facing mode has a valid direction source when required
-[ ] texture dimensions/UV/flipbook fields match the PNG
+[ ] collision does not create accidental event storms
+[ ] billboard facing mode has a valid direction/transform source
+[ ] texture dimensions/UV/flipbook match the PNG
 [ ] tint/alpha ownership is stable per particle
-[ ] curve inputs/ranges are coherent
+[ ] curve input/range/node representation matches target schema
 [ ] local/world-space behavior is intentional
 ```
 
@@ -505,4 +578,6 @@ Before delivery verify:
 
 - https://learn.microsoft.com/en-us/minecraft/creator/reference/content/particlesreference/examples/particlecomponents/particle_document?view=minecraft-bedrock-stable
 - https://learn.microsoft.com/en-us/minecraft/creator/reference/content/particlesreference/examples/particlecomponents/particle_effect_component?view=minecraft-bedrock-stable
-- https://learn.microsoft.com/en-us/minecraft/creator/reference/content/particlesreference/particlecomponents/minecraftparticle_appearance_billboard?view=minecraft-bedrock-stable
+- https://learn.microsoft.com/en-us/minecraft/creator/reference/content/particlesreference/examples/particlecomponents/particle_appearance_tinting?view=minecraft-bedrock-stable
+- https://learn.microsoft.com/en-us/minecraft/creator/reference/content/particlesreference/particlecomponents/minecraftparticle_expire_if_in_blocks?view=minecraft-bedrock-stable
+- https://learn.microsoft.com/en-us/minecraft/creator/reference/content/particlesreference/particlecomponents/minecraftparticle_expire_if_not_in_blocks?view=minecraft-bedrock-stable
