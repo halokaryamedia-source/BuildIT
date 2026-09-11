@@ -1,154 +1,185 @@
 # Particle Curves Knowledge
 
-Provenance labels:
-- **OFFICIAL BEDROCK** — Microsoft Bedrock particle documentation.
-- **SNOWSTORM / WINTERSKY** — editor/preview-specific behavior.
-- **EMPIRICALLY VERIFIED** — reproduced in accepted authoring work.
+Evidence classes:
+- **OFFICIAL BEDROCK** — Microsoft Bedrock particle documentation/schema.
+- **SNOWSTORM / WINTERSKY** — editor-preview-specific behavior.
+- **EMPIRICALLY VERIFIED** — reproduced project behavior.
 - **HEURISTIC** — authoring guidance.
 
-## What curves do
+## Role
 
-**OFFICIAL BEDROCK**
+Particle curves map a Molang `input` to a numeric output exposed through the curve's `variable.*` name. Official documentation describes curves as evaluated for rendering frames of living particles.
 
-Particle curves map an input value to an output value and expose the result through a `variable.*` Molang variable. Curves are evaluated for rendering frames of living particles.
+Use curves when one authored progression should be reused or when spline control is clearer than repeating long expressions.
 
-Use curves to centralize repeated progression logic instead of duplicating long expressions across size, tint, or other fields.
+## Core fields
 
-## Core curve contract
-
-A curve has:
+Common curve structure:
 
 ```text
-variable name
-input
-horizontal range
 type
 nodes
+input
+horizontal_range
 ```
 
-The variable name must be usable as a Molang `variable.*` symbol.
-
-## Supported curve families
-
-**OFFICIAL BEDROCK**
-
-Common particle curve types include:
+Current generated linear-curve schema records:
 
 ```text
-linear
-bezier
-bezier_chain
-catmull_rom
+horizontal_range default = 1
+input            = not set
+nodes            = not set
 ```
 
-### Linear
+Do not invent an input or node list when the target schema says `not set`.
 
-Piecewise linear interpolation across authored nodes.
+## Input normalization
 
-Use for:
-- simple fade ramps;
-- grow then shrink;
-- stepped but smooth-enough progression.
+Conceptually the curve maps:
 
-### Bezier
+```text
+curve_parameter = input / horizontal_range
+```
 
-A four-node Bezier spline for smooth nonlinear transitions.
+for curve types where horizontal range participates in the mapping.
 
-Use when one continuous ease-like curve is sufficient.
+Older official documentation marks `horizontal_range` optional/deprecated and states that it is ignored for `bezier_chain`. Preserve that distinction rather than applying one mapping rule blindly to all types.
 
-### Bezier chain
-
-Multiple connected Bezier segments for more complex smooth profiles.
-
-Use for:
-- custom plume growth;
-- multi-stage opacity/size evolution;
-- smooth energy pulses.
-
-### Catmull-Rom
-
-Smooth interpolation through control points.
-
-Use when the authored values themselves should be passed through smoothly.
-
-## Normalized lifetime input
-
-**HEURISTIC**
-
-A common input is normalized particle age:
+A common particle-owned input is:
 
 ```text
 variable.particle_age / variable.particle_lifetime
 ```
 
-This maps birth to approximately 0 and death to approximately 1.
+Use safe math when lifetime can be degenerate.
 
-Guard against invalid/zero lifetime assumptions when authoring dynamic expressions.
+## `linear`
 
-## Curve ownership
+Linear curves perform piecewise linear interpolation through the node list. Official prose describes linear nodes as evenly spaced over the normalized 0→1 curve domain.
 
-Curves are best for values that vary predictably over particle lifetime:
-- billboard scale;
-- alpha;
-- tint progression;
-- glow/pulse intensity;
-- controlled rotation factors.
+For N nodes, think of control positions as evenly distributed from start to end. Use for predictable ramps, grow/shrink envelopes, and simple multi-stage alpha.
 
-Do not use a curve merely to avoid choosing correct emitter or motion architecture.
+Failure modes:
+- node order does not match intended time order;
+- input range never reaches later nodes;
+- too many nodes imitate a smoother spline unnecessarily.
+
+## `bezier`
+
+The official particle curve model describes a single cubic Bezier using **four nodes**:
+
+```text
+P0 start
+P1 control
+P2 control
+P3 end
+```
+
+P0/P3 define endpoint values; the middle two control the transition shape.
+
+Use for one smooth non-linear transition. Do not treat arbitrary-length node arrays as equivalent to one cubic Bezier unless the target schema explicitly says so.
+
+## `bezier_chain`
+
+Bezier chain supports multiple connected segments and is the correct owner for more complex smooth piecewise-Bezier progressions.
+
+Older official schema/prose exposes keyed chain-node forms that may include:
+
+```text
+value
+left_value
+right_value
+slope
+left_slope
+right_slope
+```
+
+The map key represents the input position for the chain node. Exact accepted combinations are target-schema/version dependent; use the generated schema matching the target version rather than inventing missing tangent/value fields.
+
+Important legacy semantic: `horizontal_range` is ignored for `bezier_chain`; keyed node positions already define the horizontal coordinate system.
+
+## `catmull_rom`
+
+Catmull-Rom smoothly interpolates through interior authored control values. Official prose notes endpoint/control behavior where the first/last values act as spline controls and the curve passes through the intended interior nodes.
+
+Use when passing smoothly through authored values matters more than Bezier tangent control.
+
+Do not assume endpoint handling is identical to linear curves.
+
+## Variable ownership
+
+Curve variable naming follows Molang variable semantics. Persistent particle progression should normally use particle-owned input such as particle age/lifetime.
+
+Avoid:
+
+```text
+curve for living-particle size/tint
+input = emitter_age
+```
+
+when each particle should evolve from its own birth independently.
+
+Emitter-age curves are appropriate only for emitter-synchronized behavior.
 
 ## Stable randomness + curves
 
-**HEURISTIC**
-
-Combine stable per-particle random class with age curves when particles need both variation and coherent evolution.
-
-Example mental model:
+Use stable particle randoms to choose identity/class and curves to evolve that class:
 
 ```text
-particle_random selects class
-curve(age/lifetime) evolves that class
+particle_random → class
+particle_age/lifetime → progression
 ```
 
-This is preferable to emitter-age thresholds changing every living particle simultaneously.
+Do not use a curve to disguise unstable class ownership.
 
-## Color gradient relationship
+## Tint gradient relationship
 
-**OFFICIAL BEDROCK**
+A tint gradient can use a Molang interpolant, including a curve result. This allows one curve to coordinate color, alpha, size, or intensity progressions when that shared shape is intentional.
 
-Tinting gradients can use an interpolant, and a curve variable can provide that interpolant.
+Do not force all visual channels to share one curve when their desired timing genuinely differs.
 
-This allows one curve to drive color progression consistently.
+## Cost / maintainability
 
-## Curve performance guidance
+Curves are repeatedly evaluated. Prefer:
+- compact node sets;
+- reused curve results;
+- simple normalized inputs;
+- one intentional owner per progression.
 
-**HEURISTIC**
+Avoid duplicated curves with nearly identical purpose or heavy random/math expressions embedded independently in many render fields.
 
-Curves are evaluated repeatedly. Keep them compact and reuse results rather than recomputing large expressions in multiple render fields.
+## Version-aware authoring
 
-Avoid:
-- unnecessary high node counts;
-- many independent curves for values that can share one progression;
-- expensive random/math calls in per-render paths when stable precomputed values would work.
-
-## Common curve mistakes
-
-- variable name not using proper `variable.*` semantics;
-- input range does not match authored horizontal range;
-- curve used for an abrupt class switch that should be stable random selection;
-- using emitter age when the curve is intended to represent each particle's lifetime;
-- too many curves with duplicated purpose;
-- color, size, and alpha use separate incompatible lifetime progressions unintentionally.
-
-## Debug order
-
-If a curve-driven property looks wrong:
+Microsoft exposes both newer generated schema pages and older semantic reference prose. Use:
 
 ```text
-input expression
-→ input range
-→ curve type
-→ node values/order
-→ variable name reference
-→ consuming size/tint/rotation expression
-→ Snowstorm/Minecraft comparison
+target-version generated schema
+→ accepted field shapes / unions / explicit defaults
+
+older official prose
+→ interpolation semantics when still compatible
 ```
+
+If the representations conflict, do not synthesize a third undocumented shape.
+
+## Curve QA
+
+```text
+[ ] type exists in target schema
+[ ] variable name is valid Molang variable ownership
+[ ] input expression is valid in the particle context
+[ ] horizontal_range use matches curve type
+[ ] linear node order and range are intentional
+[ ] bezier has the target-required four-node form
+[ ] bezier_chain keyed positions/tangent fields match target schema
+[ ] Catmull-Rom endpoint behavior is understood
+[ ] particle-local progression does not accidentally use emitter age
+[ ] tint/size consumers reference the intended curve variable
+[ ] Snowstorm mismatch is isolated from Bedrock validity
+```
+
+## Sources
+
+- https://learn.microsoft.com/en-us/minecraft/creator/reference/content/particlesreference/examples/particlecomponents/particle_document?view=minecraft-bedrock-stable
+- https://learn.microsoft.com/en-us/minecraft/creator/reference/content/particlesreference/examples/particlecomponents/particle_curve_linear?view=minecraft-bedrock-stable
+- https://learn.microsoft.com/en-us/minecraft/creator/reference/content/particlesreference/?view=minecraft-bedrock-stable
