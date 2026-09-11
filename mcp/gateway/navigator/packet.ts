@@ -3,6 +3,8 @@ import type { GatewayRuntimeStatus } from "../backend";
 import { resolveDevelopmentIntent, type NavigatorDevelopmentResolution } from "./developmentIntent";
 import { NAVIGATOR_ROUTING_POLICY, type NavigatorRoutingPolicy } from "./routingPolicy";
 import { buildNavigatorSnapshot } from "./snapshot";
+import { buildControlStageContext, type ControlStageContext } from "./contextProjection";
+import { readReferencePackageProjection, type ControlReferenceProjection } from "./referencePackage";
 import { readWorkspaceProjection, type NavigatorWorkspaceProjection } from "./workspace";
 import type {
   NavigatorContextHandle,
@@ -10,7 +12,7 @@ import type {
   NavigatorSnapshot,
 } from "./types";
 
-export type NavigatorTaskMode = "ASSET_AUTHORING" | "MCP_DEVELOPMENT";
+export type NavigatorTaskMode = "ASSET_AUTHORING" | "SYSTEM_DEVELOPMENT";
 
 export type NavigatorContextDelivery = {
   required: NavigatorContextHandle[];
@@ -21,10 +23,13 @@ export type NavigatorContextDelivery = {
 
 export type NavigatorPacket = Omit<NavigatorSnapshot, "context" | "mode"> & {
   mode: NavigatorTaskMode;
+  control_protocol: "lazydesigner-control-v1";
   task_context_id: string;
   readiness: NavigatorReadiness;
   routing: NavigatorRoutingPolicy;
   workspace: NavigatorWorkspaceProjection;
+  reference: ControlReferenceProjection;
+  stage_context: ControlStageContext | null;
   development: NavigatorDevelopmentResolution | null;
   context: NavigatorContextDelivery;
 };
@@ -50,10 +55,12 @@ function runtimeContextIdentity(snapshot: NavigatorSnapshot): string {
 function taskContextId(
   snapshot: NavigatorSnapshot,
   workspace: NavigatorWorkspaceProjection,
+  reference: ControlReferenceProjection,
   mode: NavigatorTaskMode,
-  development: NavigatorDevelopmentResolution | null
+  development: NavigatorDevelopmentResolution | null,
+  currentUserDelta: string | null
 ): string {
-  const payload = mode === "MCP_DEVELOPMENT"
+  const payload = mode === "SYSTEM_DEVELOPMENT"
     ? [
         mode,
         runtimeContextIdentity(snapshot),
@@ -66,6 +73,8 @@ function taskContextId(
         snapshot.authoring.phase ?? "unknown",
         runtimeContextIdentity(snapshot),
         workspace.fingerprint ?? "no-workspace-state",
+        reference.fingerprint ?? "no-reference-package",
+        currentUserDelta ?? "no-user-delta",
       ];
   return `task:${createHash("sha256").update(payload.join("|")).digest("hex").slice(0, 20)}`;
 }
@@ -80,7 +89,7 @@ function filterContext(
   knownContextIds: readonly string[],
   mode: NavigatorTaskMode
 ): NavigatorContextDelivery {
-  if (mode === "MCP_DEVELOPMENT") {
+  if (mode === "SYSTEM_DEVELOPMENT") {
     return { required: [], optional: [], cached_ids: [], invalidated_ids: [] };
   }
 
@@ -102,9 +111,10 @@ function filterContext(
 function buildReadiness(
   snapshot: NavigatorSnapshot,
   workspace: NavigatorWorkspaceProjection,
+  reference: ControlReferenceProjection,
   mode: NavigatorTaskMode
 ): NavigatorReadiness {
-  if (mode === "MCP_DEVELOPMENT") {
+  if (mode === "SYSTEM_DEVELOPMENT") {
     return {
       modelling_start: "NEEDS_ORIENTATION",
       runtime_ready: snapshot.runtime.online && !snapshot.runtime.catalog_stale,
@@ -112,7 +122,7 @@ function buildReadiness(
       domain_ready: false,
       context_ready: true,
       workspace_state: "NOT_REQUIRED",
-      reasons: ["MCP_DEVELOPMENT_MODE"],
+      reasons: ["SYSTEM_DEVELOPMENT_MODE"],
     };
   }
 
@@ -127,8 +137,10 @@ function buildReadiness(
   if (!projectReady) reasons.push("PROJECT_NOT_BOUND");
   if (!domainReady) reasons.push("AUTHORING_DOMAIN_UNRESOLVED");
   if (!contextReady) reasons.push("REQUIRED_CONTEXT_UNRESOLVED");
+  if (!reference.available) reasons.push("REFERENCE_PACKAGE_UNAVAILABLE");
+  if (reference.blocking_unknowns.length > 0) reasons.push("REFERENCE_BLOCKED");
 
-  const blocked = !runtimeReady || snapshot.project.binding === "LOST";
+  const blocked = !runtimeReady || snapshot.project.binding === "LOST" || reference.blocking_unknowns.length > 0;
   return {
     modelling_start: blocked
       ? "BLOCKED"
@@ -149,31 +161,57 @@ export async function buildNavigatorPacket(
   options: {
     knownContextIds?: readonly string[];
     workspacePath?: string | null;
+    referencePackagePath?: string | null;
+    currentUserDelta?: string | null;
     taskMode?: NavigatorTaskMode;
     taskIntent?: string | null;
   } = {}
 ): Promise<NavigatorPacket> {
   const snapshot = buildNavigatorSnapshot(status);
   const mode = options.taskMode ?? "ASSET_AUTHORING";
-  const development = mode === "MCP_DEVELOPMENT"
+  const development = mode === "SYSTEM_DEVELOPMENT"
     ? resolveDevelopmentIntent(options.taskIntent ?? "")
     : null;
   const workspace = mode === "ASSET_AUTHORING"
     ? await readWorkspaceProjection(status, options.workspacePath)
     : emptyWorkspace();
+  const reference = mode === "ASSET_AUTHORING"
+    ? await readReferencePackageProjection(options.referencePackagePath)
+    : await readReferencePackageProjection(null);
+  const stageContext = mode === "ASSET_AUTHORING"
+    ? buildControlStageContext({
+        domain: snapshot.authoring.domain,
+        reference,
+        workspace,
+        currentUserDelta: options.currentUserDelta,
+      })
+    : null;
   const workspaceBlockers = mode === "ASSET_AUTHORING"
     ? workspace.blockers.map((_, index) => `WORKSPACE_BLOCKER_${index + 1}`)
     : [];
-  const blockers = [...snapshot.blockers, ...workspaceBlockers];
+  const referenceBlockers = mode === "ASSET_AUTHORING" && reference.blocking_unknowns.length > 0
+    ? ["REFERENCE_BLOCKED"]
+    : [];
+  const blockers = [...snapshot.blockers, ...workspaceBlockers, ...referenceBlockers];
 
   return {
     ...snapshot,
+    control_protocol: "lazydesigner-control-v1",
     mode,
-    system: snapshot.system === "READY" && workspaceBlockers.length > 0 ? "DEGRADED" : snapshot.system,
-    task_context_id: taskContextId(snapshot, workspace, mode, development),
-    readiness: buildReadiness(snapshot, workspace, mode),
+    system: snapshot.system === "READY" && blockers.length > snapshot.blockers.length ? "DEGRADED" : snapshot.system,
+    task_context_id: taskContextId(
+      snapshot,
+      workspace,
+      reference,
+      mode,
+      development,
+      options.currentUserDelta?.trim() || null
+    ),
+    readiness: buildReadiness(snapshot, workspace, reference, mode),
     routing: NAVIGATOR_ROUTING_POLICY,
     workspace,
+    reference,
+    stage_context: stageContext,
     development,
     context: filterContext(snapshot, options.knownContextIds ?? [], mode),
     blockers,
