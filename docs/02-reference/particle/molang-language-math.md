@@ -80,7 +80,15 @@ array[index]
 
 Other language forms include `return`, `loop`, `for_each`, `break`, `continue`, and the actor-reference arrow operator `->`.
 
-## 4. Variable namespaces
+## 4. Case sensitivity
+
+Molang language tokens and identifiers are documented as case-insensitive, while **string values preserve case**.
+
+Authoring consequence:
+- do not rely on capitalization to create separate Molang variables;
+- do preserve exact string content when comparing identifiers or string-returning queries.
+
+## 5. Variable namespaces
 
 Canonical namespaces and aliases:
 
@@ -91,21 +99,19 @@ temp.foo      == t.foo
 context.foo   == c.foo
 ```
 
-Particle authoring primarily relies on particle/emitter variables supplied by the particle runtime plus temporary variables used inside expressions.
-
 ### `variable.*`
-Read/write state where the owning context permits it. Particle-specific built-in variables such as particle/emitter age and random values are the important authoring state.
+Read/write state where the owning context permits it. Particle-specific built-ins such as age, lifetime, and stable random values are the main authoring state.
 
 ### `temp.*`
 Temporary expression-local working values. Use for readability in complex expressions.
 
 ### `query.*`
-Runtime queries exposed by the current context. Do not assume every entity query is available or meaningful inside every particle expression.
+Runtime queries exposed by the current host context. Do not assume every generic entity query is valid in every particle field.
 
 ### `context.*`
-Read-only contextual values supplied by the runtime in contexts that define them.
+Read-only contextual values supplied by the current host/evaluation context.
 
-## 5. Complex expressions
+## 6. Complex expressions
 
 Multiple statements require semicolons and should end with `return` when the expression must produce a value:
 
@@ -115,9 +121,9 @@ t.b = ...;
 return t.a * t.b;
 ```
 
-Without a final return, a multi-statement expression may evaluate to `0.0`.
+Without a final return, a complex expression evaluates to `0.0`.
 
-## 6. Strings
+## 7. Strings
 
 Strings use single quotes:
 
@@ -125,9 +131,9 @@ Strings use single quotes:
 'minecraft:pig'
 ```
 
-String operations are limited; equality/inequality are the main supported operations.
+String operations are limited; equality/inequality are the primary supported uses.
 
-## 7. Loops
+## 8. Loops and iteration
 
 Molang supports bounded loops:
 
@@ -137,11 +143,19 @@ loop(count, { ... });
 
 The documented loop safety maximum is 1024 iterations.
 
-**HEURISTIC:** Particle expressions should almost never need large loops. Prefer simpler formulas or authored curves because render/update expressions can execute many times across many particles.
+`for_each`, `break`, and `continue` are also language constructs where the host/context supports the referenced collection/state.
 
-## 8. Official math functions
+**HEURISTIC:** particle expressions should almost never need large loops. Prefer direct formulas, stable variables, or authored curves because per-update/per-render particle expressions can execute many times across many living particles.
 
-The current stable Molang math reference includes:
+## 9. Actor-reference arrow operator
+
+The `->` operator dereferences another actor/reference before reading its state.
+
+Do not assume a valid actor reference exists in particle context. Reference-bearing Molang examples from animation/entity docs are not automatically particle-safe.
+
+## 10. Official math functions
+
+The stable Molang reference includes these relevant function families.
 
 ### Absolute / rounding / signs
 
@@ -186,7 +200,7 @@ math.min_angle(value)
 math.pi
 ```
 
-`math.sin` and `math.cos` take degrees. `math.min_angle` normalizes to the shortest signed degree range.
+`math.sin` and `math.cos` use degrees. `math.min_angle` normalizes angular differences to a shortest signed degree range.
 
 ### Randomness
 
@@ -197,7 +211,7 @@ math.die_roll(num, low, high)
 math.die_roll_integer(num, low, high)
 ```
 
-**Particle rule:** Use stable `particle_random_*` / `emitter_random_*` variables for persistent class identity. Use runtime random functions only when frame-to-frame or evaluation-time randomness is actually desired.
+**Particle rule:** use stable `particle_random_*` / `emitter_random_*` values for persistent identity. Use runtime random functions only when reevaluation-time randomness is intended.
 
 ### Interpolation
 
@@ -208,9 +222,9 @@ math.lerprotate(start, end, t)
 math.hermite_blend(t)
 ```
 
-### Easing functions
+### Easing
 
-The stable math reference includes easing families for:
+Current Molang reference includes easing families such as:
 
 ```text
 back
@@ -225,67 +239,98 @@ quint
 sine
 ```
 
-with `ease_in_*`, `ease_out_*`, and `ease_in_out_*` variants, taking:
+with `ease_in_*`, `ease_out_*`, and `ease_in_out_*` variants.
 
-```text
-(start, end, 0_to_1)
-```
+Use easing when one expression is clearer than introducing a curve object.
 
-These are useful for authored size/alpha/intensity transitions when a curve object would be unnecessary.
+## 11. Particle-specific built-in state
 
-## 9. Particle-specific built-in state
-
-Common emitter state:
+Emitter-owned:
 
 ```text
 variable.emitter_age
 variable.emitter_lifetime
-variable.emitter_random_1
-variable.emitter_random_2
-variable.emitter_random_3
-variable.emitter_random_4
+variable.emitter_random_1..4
 ```
 
-Common particle state:
+Particle-owned:
 
 ```text
 variable.particle_age
 variable.particle_lifetime
-variable.particle_random_1
-variable.particle_random_2
-variable.particle_random_3
-variable.particle_random_4
+variable.particle_random_1..4
 ```
 
 Ownership rule:
 
 ```text
-emitter phase/timing → emitter_* variables
-living-particle identity/evolution → particle_* variables
+emitter phase/timing
+→ emitter_* variables
+
+living-particle identity/evolution
+→ particle_* variables
 ```
 
-## 10. Normalized lifetime
+## 12. Evaluation timing matters more than syntax alone
 
-The standard conceptual progress value is:
+A Molang expression can be syntactically valid but semantically wrong because the containing field evaluates it at the wrong time.
+
+Examples:
+
+```text
+particle max_lifetime
+→ sampled once for that particle
+
+particle expiration_expression
+→ evaluated continuously
+
+emitter activation / expiration expressions
+→ evaluated repeatedly
+
+particle per_render_expression
+→ render-stage evaluation
+
+particle per_update_expression
+→ simulation/update-stage evaluation
+```
+
+Always pair Molang reasoning with the field's evaluation contract in `official-defaults-evaluation.md`.
+
+## 13. Versioned Molang rule
+
+The Molang syntax guide explicitly carries versioned behavior. Therefore:
+
+```text
+generic Molang syntax page says feature exists
+≠
+feature is automatically valid in every older target content version
+```
+
+When an expression uses a recently added query/function/operator:
+1. check the target resource-pack/content version when documentation provides a minimum version;
+2. check the query/function page for version notes;
+3. do not backport by assumption;
+4. keep Snowstorm parser acceptance separate from Minecraft target-version support.
+
+Example: some queries document a minimum format version. That requirement belongs to the query itself, not to all Molang.
+
+## 14. Normalized lifetime
+
+Conceptual progress:
 
 ```text
 p = particle_age / particle_lifetime
 ```
 
-Use a bounded version when needed:
+Safer bounded form:
 
 ```text
-math.clamp(variable.particle_age / variable.particle_lifetime, 0, 1)
+math.clamp(variable.particle_age / math.max(variable.particle_lifetime, 0.0001), 0, 1)
 ```
 
-Use for:
-- fade in/out;
-- growth/shrink;
-- cooling/color change;
-- path progress;
-- curve input.
+Use for fade, growth, cooling, path progress, and curve inputs.
 
-## 11. Formula patterns for particles
+## 15. Formula patterns
 
 ### Linear fade out
 
@@ -296,18 +341,16 @@ Use for:
 ### Fade in then fade out
 
 ```text
-math.min(p / fade_in_fraction, (1 - p) / fade_out_fraction)
+math.clamp(1 - math.abs(p * 2 - 1), 0, 1)
 ```
 
-Clamp to `[0,1]` for safety.
-
-### Linear size interpolation
+### Linear interpolation
 
 ```text
-math.lerp(start_size, end_size, p)
+math.lerp(start, end, p)
 ```
 
-### Smooth Hermite transition
+### Smooth Hermite interpolation
 
 ```text
 math.lerp(start, end, math.hermite_blend(p))
@@ -326,8 +369,6 @@ x = radius * math.cos(angle)
 z = radius * math.sin(angle)
 ```
 
-where angle is age-driven.
-
 ### Spiral
 
 ```text
@@ -338,63 +379,53 @@ z = radius * math.sin(angle)
 y = height * p
 ```
 
-### Stable random class
+### Stable class
 
 ```text
 variable.particle_random_1 < 0.2 ? heavy_value : light_value
 ```
 
-This keeps class choice stable over one particle lifetime.
+## 16. Dynamic vs parametric math
 
-## 12. Dynamic motion interpretation
-
-For dynamic particles, keep these concepts separate:
+Dynamic motion:
 
 ```text
-initial velocity = launch impulse
-linear_acceleration = force-like change over time
-linear_drag_coefficient = damping
+initial velocity
++ acceleration over time
++ drag/damping
 ```
 
-Do not use giant positive acceleration as a substitute for missing initial impulse unless the desired effect is literally sustained acceleration.
+Parametric motion:
 
-## 13. Parametric motion interpretation
+```text
+position/direction/rotation = explicit function of age/state
+```
 
-Parametric motion is appropriate when position itself is a designed mathematical function of age/time.
+Prefer dynamic motion for natural debris, smoke, sparks, rain, and falling objects. Prefer parametric motion for exact orbits, helices, waves, rings, and choreographed energy.
 
-Good cases:
-- orbit;
-- helix;
-- sine-wave ribbon;
-- exact ring;
-- magical choreography.
-
-Poor cases:
-- natural rock arc;
-- basic smoke rise;
-- simple sparks;
-- debris that should feel ballistic.
-
-## 14. Expression stability rules
+## 17. Expression stability rules
 
 Avoid:
-- frame-random UV class changes;
-- emitter-age thresholds controlling living-particle class;
-- divide-by-zero risks;
-- deeply nested ternaries when a curve or temp variable is clearer;
-- repeated expensive expressions in many per-render fields;
-- hidden ownership where the same variable means different things in different classes.
+- reevaluated random calls for persistent UV/class identity;
+- emitter-age thresholds controlling living-particle classes;
+- divide-by-zero;
+- deep ternary trees when temp variables/curves are clearer;
+- repeated expensive expressions in several render fields;
+- using an entity query continuously when the desired value should have been sampled once.
 
 Prefer:
-- particle stable randoms for identity;
+- stable particle randoms for identity;
 - normalized age for progression;
 - temp variables for readable complex math;
 - curves/easing for authored envelopes;
-- bounded values with `math.clamp` where visual range matters.
+- `math.clamp` for bounded visual ranges;
+- explicit target-version checks for newly documented features.
 
-## 15. Source boundary
+## 18. Source boundary
 
-This file documents language/math capability; it does **not** imply every generic Molang query is available in every particle field. Field/component documentation remains authoritative for accepted shapes and evaluation context.
+This file documents Molang language/math capability. It does **not** imply every query, actor reference, context value, or language feature is available in every particle field.
+
+Field/component documentation and target-version query documentation remain authoritative.
 
 ## Sources
 
