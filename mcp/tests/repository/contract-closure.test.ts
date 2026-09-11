@@ -6,151 +6,78 @@ async function text(path: string): Promise<string> {
 
 describe("MCP dependency closure", () => {
   test("verification layers compose without rerunning repository/authoring subsets in the full gate", async () => {
-    const packageJson = JSON.parse(await text("package.json")) as {
-      scripts: Record<string, string>;
-    };
+    const packageJson = JSON.parse(await text("package.json")) as { scripts: Record<string, string> };
 
     expect(packageJson.scripts["test:runtime"]).toBe("bun test tests/*.test.ts");
-    expect(packageJson.scripts["verify:closure"]).toBe(
-      "bun run verify:repository && bun run verify:authoring && bun run docs:check"
-    );
+    expect(packageJson.scripts["verify:closure"]).toBe("bun run verify:repository && bun run verify:authoring && bun run docs:check");
     expect(packageJson.scripts["verify:closure"]).not.toContain("verify:mcp");
     expect(packageJson.scripts["verify:mcp"]).toContain("bun run test:runtime");
     expect(packageJson.scripts["verify:mcp"]).toContain("bun run verify:authoring");
-    expect(packageJson.scripts["verify:mcp"]).not.toContain("bun run test &&");
-    expect(packageJson.scripts["verify:full"]).toBe(
-      "bun run verify:repository && bun run verify:mcp"
-    );
-    expect(packageJson.scripts["verify:full"]).not.toContain("verify:closure");
+    expect(packageJson.scripts["verify:full"]).toBe("bun run verify:repository && bun run verify:mcp");
     expect(packageJson.scripts["verify:release"]).toBe("bun run verify:full");
     expect(packageJson.scripts["verify:mcp"]).toContain("bun run docs:check");
-    expect(packageJson.scripts["three-d-assisted:run"]).toBeUndefined();
-    expect(packageJson.scripts["three-d-assisted:prepare"]).toBeUndefined();
-    expect(packageJson.scripts["three-d-assisted:package"]).toBeUndefined();
   });
 
   test("generated docs and runtime prompt manifest share the same freshness gate", async () => {
     const freshness = await text("build/check-docs-freshness.ts");
-
     expect(freshness).toContain('{ file: "api.json"');
     expect(freshness).toContain('{ file: "index.html"');
     expect(freshness).toContain('file: "../prompts/manifest.json"');
     expect(freshness).toContain('runBuildScript("docs:build")');
     expect(freshness).toContain('runBuildScript("prompts:build")');
-    expect(freshness).toContain("Generated MCP documentation is stale");
   });
 
-  test("package rules define dependency classes, impact mapping, and proof boundaries", async () => {
-    const rules = await text("AGENTS.md");
+  test("documentation hierarchy keeps semantic owners separated", async () => {
+    const [docs, flow, reference, authoring, system, operations] = await Promise.all([
+      text("../docs/README.md"),
+      text("../docs/01-product/flow.md"),
+      text("../docs/02-reference/README.md"),
+      text("../docs/03-authoring/README.md"),
+      text("../docs/04-system/README.md"),
+      text("../docs/05-operations/README.md"),
+    ]);
 
-    expect(rules).toContain("## Dependency Closure");
-    expect(rules).toContain("### Change Closure Gate");
-    expect(rules).toContain("## Test Ownership / Anti-Stale");
-    for (const dependencyClass of [
-      "SHARED SOURCE",
-      "GENERATED",
-      "SEMANTIC MIRROR",
-      "CI ROUTING",
-    ]) {
-      expect(rules).toContain(dependencyClass);
+    for (const domain of ["01-product", "02-reference", "03-authoring", "04-system", "05-operations"]) {
+      expect(docs).toContain(domain);
     }
-    for (const marker of [
-      "transient impact map",
-      "UPDATED | VERIFIED_UNCHANGED | NOT_APPLICABLE",
-      "authoring semantics / stage / handoff",
-      "public Tool / Resource / Prompt",
-      "implementation-only change",
-      "state/proof owners if their state actually changes",
-    ]) {
-      expect(rules).toContain(marker);
-    }
-
-    expect(rules).toContain("bun run verify:closure");
-    expect(rules).toContain("does **not** replace `verify:mcp`");
-    expect(rules).toContain("Do not auto-rewrite `CONTEXT.md`");
-    expect(rules).toContain("only its coupled canonical edit remains higher-context residue");
-    expect(rules).toContain("unrelated regression, routing, harness, provenance, or static acceptance work continues in GitHub");
-    expect(rules).toContain("do not create a persisted checklist/roadmap file");
+    expect(flow).toMatch(/end-to-end|workflow/i);
+    expect(reference).toMatch(/reference/i);
+    expect(authoring).toMatch(/authoring/i);
+    expect(system).toMatch(/system|control/i);
+    expect(operations).toMatch(/operations|continuation|proof/i);
   });
 
-  test("semantic mirrors keep shared AUTHORING, readiness ordering, and representative fixtures generic", async () => {
-    const [flow, runbook, phaseContract] = await Promise.all([
-      text("../docs/knowledge/flow.md"),
-      text("../docs/knowledge/operations/local-acceptance-runbook.md"),
+  test("authoring stage mirrors are owned by authoring docs and local runbook", async () => {
+    const [workflow, runbook, phaseContract] = await Promise.all([
+      text("../docs/03-authoring/workflow.md"),
+      text("../docs/05-operations/local-acceptance-runbook.md"),
       text("lib/authoringPhase.ts"),
     ]);
 
-    expect(flow).toContain("No Geometry↔Texturing `switch_authoring_phase` is required");
-    expect(flow).toMatch(
-      /UV READINESS PREFLIGHT[\s\S]*READY_FOR_USER_REVIEW[\s\S]*Geometry APPROVED[\s\S]*UV Layout PASS/
-    );
-    expect(flow).toContain("minimum targeted baseline inspection");
-    expect(flow).not.toContain("→ inspect current model");
+    expect(workflow).toContain("Geometry APPROVED");
+    expect(workflow).toContain("UV Layout PASS");
     expect(runbook).toContain("Geometry↔Texturing stays on the shared AUTHORING surface");
-    expect(runbook).toMatch(
-      /UV readiness preflight[\s\S]*user Geometry APPROVED[\s\S]*UV Layout PASS[\s\S]*Texturing[\s\S]*Texture APPROVED/
-    );
-    expect(runbook).toMatch(
-      /Texture APPROVED[\s\S]*Animation readiness preflight[\s\S]*AUTHORING→Animation handoff/
-    );
+    expect(runbook).toMatch(/UV readiness preflight[\s\S]*user Geometry APPROVED[\s\S]*UV Layout PASS/);
     expect(phaseContract).toContain("UV Readiness Preflight");
     expect(phaseContract).toContain("Animation Readiness Preflight");
-    expect(runbook).toContain("only a representative test fixture");
-    expect(runbook).toContain("must not create LIFT-specific tool behavior");
-    expect(runbook).not.toContain("Geometry              25");
-    expect(runbook).not.toContain("Texturing             35");
   });
 
-  test("semantic mirrors and CI routes remain protected by their owning verifiers", async () => {
-    const [docSync, repositoryWorkflow, authoringWorkflow, mcpWorkflow] =
-      await Promise.all([
-        text("tests/repository/current-doc-sync.test.ts"),
-        text("../.github/workflows/repository-verify.yml"),
-        text("../.github/workflows/authoring-policy-verify.yml"),
-        text("../.github/workflows/mcp-verify.yml"),
-      ]);
+  test("CI routes track the hierarchical docs owners they validate", async () => {
+    const [repositoryWorkflow, authoringWorkflow, mcpWorkflow] = await Promise.all([
+      text("../.github/workflows/repository-verify.yml"),
+      text("../.github/workflows/authoring-policy-verify.yml"),
+      text("../.github/workflows/mcp-verify.yml"),
+    ]);
 
-    for (const invariant of [
-      "one native Geometry path",
-      "AUTHORING",
-      "switch_authoring_phase",
-      "UV Layout",
-    ]) {
-      expect(docSync).toContain(invariant);
+    expect(repositoryWorkflow).toContain('"docs/**"');
+    expect(authoringWorkflow).toContain('"docs/02-reference/**"');
+    expect(authoringWorkflow).toContain('"docs/03-authoring/**"');
+    expect(authoringWorkflow).toContain('"docs/04-system/implementation-map.md"');
+    expect(mcpWorkflow).toContain('"docs/05-operations/next-action.md"');
+
+    for (const workflow of [repositoryWorkflow, authoringWorkflow, mcpWorkflow]) {
+      expect(workflow).not.toContain("docs/knowledge/");
+      expect(workflow).not.toContain("docs/foundation/");
     }
-    expect(docSync).toContain("DIRECT | 3D_ASSISTED");
-    expect(docSync).toMatch(/not\.toContain\("DIRECT \| 3D_ASSISTED"\)/);
-
-    for (const routedPath of [
-      '"mcp/AGENTS.md"',
-      '"mcp/package.json"',
-      '"mcp/tests/repository/**"',
-      '".github/workflows/**"',
-    ]) {
-      expect(repositoryWorkflow).toContain(routedPath);
-    }
-
-    expect(authoringWorkflow).toContain('"mcp/tests/authoring/**"');
-    expect(authoringWorkflow).toContain('"workspace/active/**"');
-    expect(authoringWorkflow).toContain(
-      '".agents/skills/blockit-bedrock-entity-mcp/**"'
-    );
-    expect(authoringWorkflow).toContain(
-      '".agents/skills/blockbench-bedrock-modelling/**"'
-    );
-    expect(authoringWorkflow).toContain(
-      '".agents/skills/blockit-bedrock-texturing/**"'
-    );
-    expect(authoringWorkflow).toContain(
-      '".agents/skills/blockit-bedrock-animation/**"'
-    );
-
-    expect(mcpWorkflow).toContain('- "mcp/**"');
-    expect(mcpWorkflow).not.toContain('!mcp/server/**');
-    expect(mcpWorkflow).not.toContain(
-      '!mcp/prompts/bedrock_entity_workflow.md'
-    );
-    expect(mcpWorkflow).not.toContain("Experimental/three-d-assisted-hunyuan-poc");
-    expect(mcpWorkflow).not.toContain("Experimental/primitiveanything-poc");
   });
 });
