@@ -1,18 +1,18 @@
-# Project: BlockIT
+# Project: LazyDesigner
 # Repository: https://github.com/halokaryamedia-source/BuildIT
 # Author: Halo Karya Media
 # Type: Blockbench Plugin (MCP server)
 # Target: Minecraft Bedrock Entity + Blockbench 5.x
 
 ## Runtime Truth
-BlockIT is a local MCP server/plugin for AI-assisted Minecraft Bedrock Entity authoring in desktop Blockbench.
+LazyDesigner is a local MCP server/plugin workflow for AI-assisted Minecraft Bedrock Entity authoring in desktop Blockbench.
 
 Default endpoint:
 `http://127.0.0.1:3000/bb-mcp`
 
 Transport is loopback-only, stateless Streamable HTTP with JSON responses.
 
-The active source phase union retains **54 callable tools**. Installed proof is tracked separately in `current-validation.md`. Runtime exposure is organized as:
+The active source phase union retains **54 callable tools**. Installed proof is tracked separately in `docs/05-operations/current-validation.md`. Runtime exposure is organized as:
 
 ```text
 MCP CORE + AUTHORING
@@ -25,7 +25,7 @@ MCP CORE + ANIMATION
 
 Geometry and Texturing startup focus values expose the same AUTHORING capability set. They remain separate semantic stages/owners, but a Geometry↔Texturing correction does not require a Runtime phase switch. `HANDOFF_REQUIRED` + `switch_authoring_phase` is reserved for crossing AUTHORING↔Animation through the Gateway.
 
-Generated API documentation currently enumerates **68 declared source ToolSpecs**, including disabled/source-preserved definitions and phase control. The current generated snapshot may temporarily retain two retired 3D-assistance compatibility descriptors until the next canonical local generator pass; they are excluded from active Runtime phase surfaces.
+Generated API documentation currently enumerates source ToolSpecs, including disabled/source-preserved definitions and phase control. Generated snapshots may lag source until the canonical local generator runs; active Runtime phase surfaces remain source-owned.
 
 ## Bedrock Authoring Invariants
 - 1 Minecraft block = 16 Blockbench units.
@@ -67,6 +67,8 @@ Codex should route from:
 
 Known capability → invoke directly. Unknown/stale capability → bounded `search_capabilities`; schema needed → `describe_capability` once.
 
+Canonical AI context/routing is owned by root `AGENTS.md`, `docs/README.md`, and LazyDesigner Control. Primary LazyDesigner Skills use canonical `lazydesigner-*` identities.
+
 ## Development / Verification
 From `mcp/`:
 
@@ -79,7 +81,9 @@ Use the smallest targeted test during iteration. `test:runtime`, `verify:authori
 
 `measure:surface` guards the registered static payload. `measure:phases` measures the active source-owned Runtime surfaces over the real loopback transport. Neither measurement is installed-client token usage or Authoring Efficiency proof.
 
-Production artifact: `mcp/dist/blockit_mcp.js`.
+Production compatibility artifact: `mcp/dist/blockit_mcp.js`.
+
+`blockit_mcp.js` is retained for install/update continuity and is not the current product name.
 
 Static source/CI proof cannot establish live Blockbench rendering, installed-plugin freshness, visual quality, UV quality, or Authoring Efficiency.
 
