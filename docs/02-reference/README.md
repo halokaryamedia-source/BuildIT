@@ -2,15 +2,26 @@
 
 Owns ChatGPT-side reference preparation and the compact package handed to Codex.
 
-## Read order
+## AI Read Rule
+
+Do not preload this whole domain.
 
 ```text
-flow.md                    operational sequence
-policy.md                  durable reference policy
-image/README.md            only for generated visual references
-package/README.md          only for Codex handoff/package work
+reference task starts
+→ flow.md
+
+need durable evidence/authority rule
+→ policy.md
+
+need to generate/edit reference imagery
+→ image/README.md
+
+need to build/validate/consume Codex package
+→ package/README.md
 ```
+
+`policy.md`, `image/`, and `package/` are conditional owners, not mandatory boot context for every reference request.
 
 ## Boundary
 
-This domain ends when the approved reference package is ready for Codex. Blockbench authoring rules belong to `../03-authoring/`.
+This domain ends when the approved reference package is ready for Codex. Actual Blockbench asset authoring belongs to `../03-authoring/`.
