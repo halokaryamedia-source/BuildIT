@@ -63,13 +63,48 @@ discovery → list_textures(diagnostics=false); UV/atlas readiness → list_text
 face mapping → inspect_elements(mode=detail) only when needed
 blank atlas resolution unknown → get_project_info once
 atlas → list_textures / activate_texture / create_texture / get_texture
-paint → draw_shape_tool|paint_fill_tool|paint_with_brush|eraser_tool
-batch → paint_texture_transaction
+exact/deterministic pixel mutation → paint_texture_transaction
+native fill/shape/brush/eraser behavior → paint_fill_tool|draw_shape_tool|paint_with_brush|eraser_tool
 PBR/material semantics → manage_material / manage_material_instances
 render/preview → declared profile + mapped-model evidence; explicit file integration → manage_render_profile
 ```
 Unknown → `search_capabilities(limit=4)`. No confirmation rereads.
 **Pin atlas UUID and pass `texture_id` when multiple textures are loaded.**
+
+## Execution Path Preference
+Choose the cheapest executor that preserves the required visual behavior. Do not route through a native UI/Painter state merely because it resembles how a human would perform the edit.
+
+```text
+known exact RGBA/pixel coordinates
+→ paint_texture_transaction
+
+bounded repeated fill/erase/copy/noise over known pixels
+→ one paint_texture_transaction when representable
+
+artistic brush stroke / soft brush / connected stroke
+→ paint_with_brush
+
+native flood-fill semantics
+→ paint_fill_tool
+
+native shape semantics
+→ draw_shape_tool
+
+reference-supported continuous transition
+→ gradient_tool
+
+sample an already-authored pixel whose value is unknown
+→ color_picker_tool
+```
+
+Rules:
+- If the intended color is already known from the reference/palette/previous evidence, pass the color directly; **do not call `color_picker_tool` just to put a known value into Blockbench's active color slot**.
+- Prefer one coherent `paint_texture_transaction` over many one-pixel Painter calls when the result is deterministic and transaction operations can express it.
+- Prefer native Painter only when brush/fill/shape behavior itself is part of the required result.
+- Exact-data operations do not need proof that a Blockbench brush, slider, preset, or color slot was touched.
+- Do not use `trigger_action`, `emulate_clicks`, or `fill_dialog` for normal texturing. Those are maintenance/UI fallbacks, not authoring executors.
+- Do not call `activate_texture` immediately before a tool that already accepts explicit `texture_id` unless active-editor state itself is required for a subsequent human/native action.
+- Batch a coherent texture-owned correction before verification; do not verify after each pixel/stroke.
 
 ## UV Gate
 `uv_audit.production_gate`=ready = hygiene, **not UV Layout PASS**; review face aspect ratio, texel density, semantic UV reuse.
@@ -183,3 +218,4 @@ Never infer approval.
 Conditional on user intent; not normal hot path.
 `gradient_tool | color_picker_tool | copy_brush_tool | paint_settings | create_brush_preset | load_brush_preset | texture_selection | texture_layer_management | add_texture_group | list_materials | get_material_info | import_texture_set`.
 `gradient_tool`: reference-supported continuous transition; no extra discovery/readback.
+`color_picker_tool`: sample an existing pixel only when its exact authored value is unknown; never use it to re-enter a color already known from current evidence/palette.
