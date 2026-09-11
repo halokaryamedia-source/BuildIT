@@ -40,6 +40,34 @@ function getReloadableBlockItPlugin(): ReloadableBlockItPlugin | null {
   );
 }
 
+export function canReloadLazyDesignerPlugin(): boolean {
+  const plugin = getReloadableBlockItPlugin();
+  return Boolean(
+    plugin &&
+      typeof plugin.reload === "function" &&
+      (typeof plugin.isReloadable !== "function" || plugin.isReloadable())
+  );
+}
+
+export function reloadLazyDesignerPlugin(): boolean {
+  const plugin = getReloadableBlockItPlugin();
+  if (
+    !plugin ||
+    typeof plugin.reload !== "function" ||
+    (typeof plugin.isReloadable === "function" && !plugin.isReloadable())
+  ) {
+    return false;
+  }
+
+  try {
+    plugin.reload();
+    return true;
+  } catch (error) {
+    console.error("[MCP] Manual LazyDesigner reload failed", error);
+    return false;
+  }
+}
+
 function splitPluginPath(path: string): { directory: string; filename: string } {
   const slash = Math.max(path.lastIndexOf("/"), path.lastIndexOf("\\"));
   return {
