@@ -6,7 +6,9 @@ This file owns **current implementation continuation only**. Product architectur
 
 ## Current Objective
 
-The REMOTE_GITHUB pre-local hardening phase is complete enough to freeze safely. Bounded source defects found after the initial freeze were corrected without reopening a general cleanup phase: controller inspection schema/docs match, zero/null semantics are guarded, Particle is classified and invalidated through its Animation ownership, direct capability source ownership is more precise, `duplicate_element` invalidates its dependent authoring evidence, canonical name-only phase coverage now matches Runtime classification for exposed non-Core tools, and Texture invalidation distinguishes authored mutations from focus-only state such as `activate_texture`. Further optimization that depends on execution evidence is deferred to `LOCAL_CODE`; installed/native/visual proof remains deferred to `LIVE_BLOCKBENCH`.
+The REMOTE_GITHUB pre-local hardening phase is complete enough to freeze safely. Bounded source defects found after the initial freeze were corrected without reopening a general cleanup phase: controller inspection schema/docs match, zero/null semantics are guarded, Particle is classified and invalidated through its Animation ownership, direct capability source ownership is more precise, `duplicate_element` invalidates its dependent authoring evidence, canonical name-only phase coverage matches Runtime classification for exposed non-Core tools, Texture invalidation distinguishes authored mutations from focus-only state, and the Particle workflow now has one explicit generated-texture handoff, canonical resource layout, transactional PNG finalization, recovery semantics, and Animation/Locator continuation without adding tools or a fourth phase.
+
+The user has explicitly chosen **not to enter `LOCAL_CODE` yet**. Do not run local/Bun/typecheck/live Blockbench work until that boundary is changed explicitly.
 
 ## Completed Baseline
 
@@ -25,7 +27,19 @@ The REMOTE_GITHUB pre-local hardening phase is complete enough to freeze safely.
 ✓ Animation isolated as the only foreign authoring surface
 ✓ Particle retained as Animation-specialist asset support; no extra phase
 ✓ inspect_particle / manage_particle classified through canonical Animation ownership
-✓ manage_particle invalidates Animation evidence without resetting unrelated authoring domains
+✓ generated particle texture dependency routes to existing Texturing, not a new tool
+✓ canonical generated particle texture reference stays under textures/particle/ and omits .png
+✓ generated texture output path must resolve to the same textures/particle/... PNG
+✓ particle texture state explicitly transitions missing → ready
+✓ ready generated texture is verified as an existing non-empty PNG before particle write/preview
+✓ paint_texture_transaction owns optional verified PNG persistence for final texture bitmap
+✓ texture PNG persistence uses temporary write / replace / rollback inside the existing paint transaction
+✓ PNG save failure rolls back the paint transaction and does not authorize particle resume
+✓ pending particle texture dependency is a Control handoff, not an Animation mutation
+✓ particle validation errors block particle write and preview
+✓ particle binding remains owned by manage_animation_effects with explicit effect/time and locator when needed
+✓ no create_particle_texture / save_particle_texture / fourth Particle phase
+✓ manage_particle invalidates Animation evidence only after an actual completed particle mutation
 ✓ generic import/ui fallback remains extended opt-in only
 ✓ focused consolidated public tools keep legacy executors hidden
 ✓ canonical lazydesigner-* primary Skills
@@ -48,6 +62,7 @@ The REMOTE_GITHUB pre-local hardening phase is complete enough to freeze safely.
 ✓ authored gradient/copy/layer/material-import Texture changes invalidate Texture evidence
 ✓ activate_texture no longer invalidates authored Texture evidence because it only changes active focus
 ✓ Control phase-name coverage and Texture-mutation precision regression guards added
+✓ Particle texture dependency / handoff / end-to-end static regression guards added
 ✓ deterministic recovery ownership regression guard added
 ✓ Bedrock-first authoring contract regression guard added
 ✓ compatibility-bound BlockIT identifiers intentionally preserved
@@ -57,6 +72,7 @@ The REMOTE_GITHUB pre-local hardening phase is complete enough to freeze safely.
 ✓ manage_animation_controller remains the single controller mutation surface
 ✓ controller native/resource intelligence remains extension wiring, not extra tools
 ✓ controller source ownership documented in implementation-map.md
+✓ Particle workflow ownership documented in implementation-map.md and particle reference workflow
 ```
 
 ## Remote Freeze State
@@ -66,7 +82,11 @@ Control / Gateway policy ownership     COMPLETE IN SOURCE
 Canonical capability phase coverage    HARDENED IN SOURCE
 Tool-routing / source ownership        HARDENED FOR IDENTIFIED DIRECT OWNERS
 Animation Controller ownership         COMPLETE IN SOURCE
-Particle Control ownership             HARDENED IN SOURCE
+Particle Control ownership             COMPLETE / FROZEN IN SOURCE
+Particle texture dependency flow       COMPLETE / FROZEN IN SOURCE
+Particle resource path contract        COMPLETE / FROZEN IN SOURCE
+Particle error/recovery contract       COMPLETE / FROZEN IN SOURCE
+Particle Animation/Locator binding     COMPLETE / FROZEN IN SOURCE
 Element mutation invalidation          HARDENED IN SOURCE
 Texture mutation invalidation          HARDENED / MINIMIZED IN SOURCE
 Controller inspection contract         HARDENED IN SOURCE
@@ -78,6 +98,8 @@ Bedrock-first contract audit           COMPLETE IN SOURCE
 Repository regression guards           UPDATED
 
 REMOTE_GITHUB SOURCE HARDENING         FROZEN
+LOCAL_CODE                             EXPLICITLY DEFERRED BY USER
+LIVE_BLOCKBENCH                        EXPLICITLY DEFERRED BY USER
 ```
 
 Do not add another remote-only cleanup phase merely to keep changing source. Reopen remote mutation only for a newly identified concrete source defect with bounded ownership. Capability phase ownership remains single-sourced in `mcp/lib/authoringPhase.ts`; do not create a second Control mapping table.
@@ -85,8 +107,16 @@ Do not add another remote-only cleanup phase merely to keep changing source. Reo
 ## Next Meaningful Context
 
 ```text
-LOCAL_CODE
+REMOTE_GITHUB
+→ no open Particle task remains after 01–06 closure
+→ only reopen for a newly identified bounded source defect
+→ do not add a new Particle tool, save tool, phase, or parallel texture pipeline
+
+LOCAL_CODE — DEFERRED UNTIL USER EXPLICITLY REQUESTS IT
 → run bun/typecheck/repository verification
+→ run Particle texture dependency/path/output/recovery tests
+→ run Control particle handoff/invalidation tests
+→ run Animation effect binding tests
 → run Control phase-name coverage regression test
 → run Control routing/invalidation/source-owner regression tests
 → run controller inspection/mutation/native-composition tests
@@ -96,14 +126,15 @@ LOCAL_CODE
 → inspect any failing regression/type owner
 → change source only when execution evidence identifies a concrete defect
 
-LIVE_BLOCKBENCH
+LIVE_BLOCKBENCH — DEFERRED UNTIL AFTER LOCAL_CODE / USER REQUEST
 → deploy/reload the matching current LazyDesigner build
+→ verify generated particle texture create → paint → PNG save → ready resume
+→ verify particle JSON write + native preview
+→ verify manage_animation_effects particle keyframe with explicit locator
 → verify Gateway/Runtime project affinity
 → verify Geometry/Texturing/Animation surfaces live
-→ exercise Texture support tools and confirm Control continuation does not treat them as CORE
 → exercise inspect_animation → manage_animation_controller → focused re-inspection
 → verify controller Undo/persistence/native blend/nested composition behavior
-→ exercise Reference Package + Control continuation
 → verify interrupted/recovery behavior where safely reproducible
 → run representative Bedrock model quality/efficiency acceptance
 ```
@@ -139,6 +170,8 @@ Compatibility-bound identifier migration is a separate future task and must be d
 - No duplicate capability-domain table outside `mcp/lib/authoringPhase.ts`.
 - No duplicate Gateway search default outside `CONTROL_ROUTING_POLICY`.
 - No new authoring phase merely to classify Particle or another supporting capability.
+- No `create_particle_texture` or `save_particle_texture`; generated Particle bitmaps reuse existing Texturing tools.
+- No second Particle painting or PNG persistence system outside the existing Texturing pipeline.
 - No second Animation Controller mutation tool/profile; extend `manage_animation_controller` only when ownership is coherent.
 - No mutation behavior inside `inspect_animation`; it remains read-only.
 - No all-profile/all-stage loading as reassurance.
@@ -152,4 +185,4 @@ Compatibility-bound identifier migration is a separate future task and must be d
 
 ## Proof Boundary
 
-Current remote work establishes source contracts, ownership, and regression intent only. No Bun/typecheck/CI/local Runtime/Blockbench execution was performed in this phase. Generated freshness, installed LazyDesigner activation, live controller behavior, visual quality, and measured whole-task savings remain unverified until their corresponding proof contexts are activated.
+Current remote work establishes source contracts, ownership, path/recovery policy, and regression intent only. No Bun/typecheck/CI/local Runtime/Blockbench execution was performed in this phase. Generated freshness, installed LazyDesigner activation, actual filesystem write behavior in Blockbench, native particle preview, live locator attachment, visual quality, and measured whole-task savings remain unverified until their corresponding proof contexts are activated.
