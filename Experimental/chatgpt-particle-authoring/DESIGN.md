@@ -10,138 +10,113 @@ Capture the smallest reusable validation logic learned from the approved ChatGPT
 
 ### Success metric
 
-The experiment must deterministically detect the recurring defects that caused repeated Snowstorm failures during the volcano authoring session:
+The experiment must deterministically detect the recurring defect classes reproduced during the volcano authoring session:
 
-- vector `minecraft:particle_initial_speed` losing intended magnitude in Snowstorm / Wintersky preview;
-- `variable.emitter_age` switching living-particle motion or appearance classes mid-life;
-- ballistic settings that obviously miss an authored apex/range target;
-- master effects referencing missing child particle identifiers.
+- Snowstorm / Wintersky vector-speed magnitude loss;
+- emitter-age switching of living-particle motion or appearance;
+- obviously wrong ballistic/rising motion against an explicit target envelope;
+- incoherent multi-effect bundles;
+- objectively broken texture atlases;
+- malformed or ambiguous authoring acceptance targets.
 
 ### Forbidden proxy / non-goal
 
 - No claim of visual quality from static checks.
 - No claim of live Snowstorm or Blockbench execution.
 - No new public MCP tools.
-- No second particle document parser, Molang runtime, registry, router, or packaging framework.
+- No second particle parser, Molang runtime, registry, router, PNG stack, or packaging framework.
 - No generated API-doc edits from this experiment.
 - No automatic promotion into `mcp/**`.
 
 ### First wrong owner
 
-The current production gap is not the JSON mutation surface. `inspect_particle` / `manage_particle` already own particle documents and preserve unknown fields. The missing owner is bounded preflight semantics around runtime compatibility and intended motion.
+The production gap is not basic particle JSON mutation. `inspect_particle` / `manage_particle` already own Bedrock particle documents. This experiment owns only bounded preflight evidence that structural validation cannot provide.
 
 ### In scope
 
 1. Import-safe Snowstorm compatibility diagnostics.
-2. A bounded numeric simulator that mirrors the relevant Wintersky dynamic-motion update equation for constant numeric inputs.
-3. Optional motion-envelope checks for apex and horizontal travel.
-4. Bundle reference checks for child particle effects.
-5. Professional promotion boundaries for texture/atlas QA.
+2. Bounded numeric Wintersky dynamic-motion approximation for constant inputs.
+3. Intent-envelope checks for apex and horizontal travel.
+4. Multi-effect bundle integrity checks.
+5. Dependency-free QA over already-decoded RGBA atlas pixels.
+6. A small explicit authoring intent contract used only as acceptance input.
 
 ### Out of scope
 
-- PNG decoding or image mutation in the prototype.
+- PNG decoding or image mutation.
 - Visual scoring.
 - Collision/world simulation.
 - Full Molang evaluation.
 - Minecraft gameplay binding.
 - Client-entity or animation-controller mutation.
+- Automatic authoring/planning from the intent contract.
 
 ### Proof required
 
-Experimental source/static review plus a focused Bun test when `LOCAL_CODE` is available. Promotion to production additionally requires the owning MCP verifier and generated-doc closure required by `mcp/AGENTS.md`.
+Current `REMOTE_GITHUB` work can establish source/static review only. Focused Bun execution is `LOCAL_CODE` proof. Promotion to production additionally requires the owning MCP verifier, generated-doc closure when public contracts change, and separate live proof for native/visual claims.
 
 ### STOP condition
 
-Stop experimental expansion once the recurring defect classes above are represented by deterministic diagnostics/tests. Additional framework layers require new evidence.
+Stop experimental expansion when the currently reproduced defect classes are represented by bounded deterministic diagnostics/tests. New framework layers require new evidence.
 
 ---
 
 ## Architecture
 
-The eventual production design should preserve the existing two-tool public surface.
+The eventual production design must preserve the existing two-tool public surface.
 
 ```text
 inspect_particle
 ├── existing Bedrock structural/semantic inspection
-├── runtime compatibility diagnostics
+├── target-runtime compatibility diagnostics
 ├── optional bounded motion preflight
-└── optional bundle/reference summary
+├── optional bundle integrity summary
+└── optional asset/intention diagnostics
 
 manage_particle
 ├── existing create / patch / validate / write / preview
 └── consumes the same shared diagnostics before write/preview
 ```
 
-No new public tool is required by the current evidence.
+No new public particle tool is required by current evidence.
 
 ## Validation layers
 
 ### Layer 1 — Bedrock document validity
 
-Existing owner:
+Existing production owner:
 
 ```text
 mcp/lib/bedrockParticleDocument*.ts
 mcp/lib/bedrockParticleSemantics.ts
 ```
 
-This remains authoritative for Bedrock component shape, schema coverage, Molang lint, events, curves, and general particle semantics.
+The experiment must not redefine valid Bedrock syntax as invalid merely because Snowstorm previews it differently.
 
 ### Layer 2 — Snowstorm / Wintersky compatibility
 
-The experimental preflight adds target-specific warnings without redefining Bedrock validity.
-
-#### Rule: vector initial speed
-
-A vector `minecraft:particle_initial_speed` is valid Bedrock JSON, but Snowstorm / Wintersky interprets it as a direction vector and normalizes it while using linear speed `1`.
-
-Diagnostic intent:
+Target-specific warning rules currently include:
 
 ```text
-code: snowstorm_initial_speed_vector_normalized
-severity: warning
+vector particle_initial_speed
+→ snowstorm_initial_speed_vector_normalized
+
+emitter_age inside per-frame particle motion / billboard / tint
+→ unstable_emitter_age_particle_property
 ```
 
-Recommended authoring pattern when Snowstorm preview fidelity matters:
+Recommended Snowstorm-compatible launch pattern when authored magnitude matters:
 
 ```text
-shape.direction = [x, y, z]
+emitter shape direction = launch vector
 particle_initial_speed = scalar
 ```
 
-This is compatibility guidance, not a Bedrock syntax error.
-
-#### Rule: unstable emitter-age class switching
-
-`variable.emitter_age` is appropriate for emitter-level timing. It is risky when used in properties evaluated repeatedly for a living particle if it changes the particle's motion or visual class.
-
-Detect emitter-age use inside at least:
-
-```text
-minecraft:particle_motion_dynamic
-minecraft:particle_appearance_billboard
-minecraft:particle_appearance_tinting
-```
-
-Diagnostic intent:
-
-```text
-code: unstable_emitter_age_particle_property
-severity: warning
-```
-
-Stable particle class should prefer:
-
-```text
-variable.particle_random_1..4
-variable.particle_age
-variable.particle_lifetime
-```
+Emitter age remains appropriate for emitter-owned timing such as spawn-rate or event scheduling. Stable particle classes should prefer particle random/age/lifetime values.
 
 ### Layer 3 — bounded motion preflight
 
-The prototype simulator intentionally supports only constant numeric inputs:
+Supported numeric inputs:
 
 ```text
 direction: vec3
@@ -152,68 +127,89 @@ lifetime
 tick rate
 ```
 
-Update equation mirrors the relevant Wintersky dynamic-motion behavior:
+The update equation mirrors the relevant Wintersky dynamic-motion behavior:
 
 ```text
-acceleration_effective = acceleration - velocity * drag
-velocity += acceleration_effective * dt
+effective_acceleration = acceleration - velocity * drag
+velocity += effective_acceleration * dt
 position += velocity * dt
 ```
 
-Output:
+The simulator is bounded and reports:
 
 ```text
+initial_velocity
+final_velocity
 final_position
 apex_y
+time_to_apex
 maximum_horizontal_distance
+simulated_duration
 ```
 
-It is a diagnostic approximation, not a replacement runtime and not a Molang evaluator.
+It is diagnostic evidence, not a replacement runtime.
 
-### Layer 4 — intent envelope
+### Layer 4 — intent contract
 
-When an authoring task provides explicit targets, the preflight may compare the numeric simulation with a bounded envelope.
-
-Example:
+`ParticleIntentContract` records only acceptance facts that materially change validation:
 
 ```text
-apex_y: 15..23 blocks
-horizontal_distance: 28..40 blocks
+effect_name
+target_runtime
+view_distance_blocks (optional)
+total_duration_seconds (optional)
+named motion target envelopes (optional)
 ```
 
-A miss should be reported as a diagnostic, not silently rewritten.
+The intent contract never generates or rewrites particle values. Motion results can be checked against a named target through the existing envelope evaluator.
 
-### Layer 5 — bundle reference integrity
+### Layer 5 — bundle integrity
 
-Complex effects may be split by materially different physics while remaining one user-facing effect.
+`validateParticleBundle` checks:
 
-The experimental validator checks child-effect identifiers referenced by particle events against the provided bundle.
+- duplicate bundle identifiers;
+- document identifier mismatch;
+- missing child-effect references;
+- circular child-effect chains;
+- orphan effects relative to an explicitly declared root;
+- missing texture references when the caller supplies the available texture set.
 
-It does not own animation/controller binding.
+The compatibility wrapper `validateParticleBundleReferences(entries)` is retained so the initial experimental import path remains valid.
+
+### Layer 6 — texture atlas QA
+
+`analyzeTextureAtlas` is intentionally dependency-free. It accepts decoded RGBA pixels plus an explicit grid contract; image decoding remains outside the experiment.
+
+Static checks include:
+
+```text
+RGBA buffer length vs dimensions
+grid divisibility
+presence of transparency
+near-neutral visible-white matte risk
+minimum visible-pixel gutter per cell
+exact duplicate cells when uniqueness is required
+```
+
+The result returns both a compact atlas summary and diagnostics. White-pixel detection is a warning because legitimate white sprites can exist. Static atlas QA never proves visual quality.
 
 ---
 
-## Texture / atlas QA contract
+## Diagnostic ownership
 
-Texture QA is required by the workflow but intentionally remains a documented promotion requirement in this prototype because adding PNG parsing or image dependencies would broaden the experiment without current repository evidence.
+Stable experimental diagnostic codes are centralized in `src/diagnostics.ts`. Callers and tests must assert codes/behavior, not prose wording.
 
-A production implementation should validate texture assets through an existing suitable image owner or a separately approved minimal helper, not by embedding an ad-hoc image stack in the particle tool.
-
-Minimum atlas checks learned from the approved volcano asset:
+The current modules are deliberately small:
 
 ```text
-true RGBA transparency
-no baked checkerboard
-no neutral-white matte contamination
-UV bounds match authored texture dimensions
-safe gutter between visible sprite pixels and atlas cell boundary
-class-specific atlas row/cell mapping
-no obvious accidental duplicate cells when uniqueness is required
+snowstormCompatibility.ts → target-runtime semantics
+motionPreflight.ts        → numeric motion approximation + envelope
+bundleValidation.ts       → cross-effect/reference integrity
+textureAtlasQa.ts         → decoded-pixel atlas checks
+intentContract.ts         → acceptance-contract validation
 ```
 
-Static atlas QA never proves visual quality.
-
----
+`particlePreflight.ts` remains a compatibility barrel only.
 
 ## Proposed production ownership if promoted
 
@@ -223,33 +219,30 @@ Keep ownership compact:
 mcp/lib/bedrockParticleSemantics.ts
   Bedrock-generic semantics only
 
-new shared import-safe helper under mcp/lib/
-  target-specific compatibility + bounded motion preflight
+shared import-safe helper under mcp/lib/
+  target compatibility + bounded preflight logic
 
 mcp/server/tools/particle.ts
-  exposes existing inspect/manage options only
+  expose through existing inspect/manage options only
 
 mcp/server/resources/particle.ts
-  lazily documents workflow/runtime compatibility guidance
+  lazily document workflow/runtime compatibility guidance
 
-mcp/tests/particle-tool-contract.test.ts
-  public two-tool contract
-
-focused runtime/import-safe regression test
-  compatibility + simulator behavior
+focused runtime/import-safe tests
+  compatibility + motion + bundle + atlas/intent contracts
 ```
 
-Do not put Snowstorm-specific compatibility rules into Bedrock-generic validity in a way that turns valid Bedrock documents into syntax errors.
+Texture decoding should reuse an existing suitable image/texture owner if production integration needs raw PNG input; do not embed a second image stack in particle tooling.
 
 ## Promotion gate
 
 Promotion is allowed only when all of the following are true:
 
-1. The experimental diagnostic rules still correspond to reproduced current failures.
-2. The implementation reuses `inspect_particle` / `manage_particle` rather than adding parallel tools.
-3. Public-schema changes, if any, are completed in a context that can regenerate and verify committed API docs.
-4. Focused runtime tests cover vector-speed compatibility, emitter-age instability, motion simulation, and bundle references.
-5. `bun run verify:mcp` succeeds for executable/public MCP changes.
-6. Live visual claims remain `LIVE_BLOCKBENCH` proof, not static-test claims.
+1. Experimental diagnostics still correspond to current reproduced failures.
+2. Focused Bun tests pass in `LOCAL_CODE`.
+3. The implementation reuses `inspect_particle` / `manage_particle` rather than adding parallel tools.
+4. Public-schema changes, if any, are completed together with generated API docs in a capable context.
+5. The relevant MCP verifier succeeds for executable/public changes.
+6. Live visual claims remain separate `LIVE_BLOCKBENCH` evidence.
 
 Until then, this directory remains research evidence only.

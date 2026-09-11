@@ -8,7 +8,18 @@ export {
   evaluateMotionEnvelope,
   simulateWinterskyDynamicMotion,
 } from "./motionPreflight";
-export { validateParticleBundleReferences } from "./bundleValidation";
+export {
+  validateParticleBundle,
+  validateParticleBundleReferences,
+} from "./bundleValidation";
+export {
+  analyzeTextureAtlas,
+  type TextureAtlasAnalysis,
+} from "./textureAtlasQa";
+export {
+  evaluateMotionAgainstIntentTarget,
+  validateParticleIntentContract,
+} from "./intentContract";
 export type {
   JsonObject,
   JsonValue,
@@ -17,4 +28,10 @@ export type {
   MotionSimulationResult,
   MotionVector,
   ParticleBundleEntry,
+  ParticleBundleValidationInput,
+  ParticleIntentContract,
+  ParticleIntentMotionTarget,
+  TextureAtlasGrid,
+  TextureAtlasInput,
+  TextureAtlasSummary,
 } from "./types";

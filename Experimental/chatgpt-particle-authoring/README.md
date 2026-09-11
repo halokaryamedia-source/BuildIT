@@ -19,12 +19,11 @@ The experiment focuses on gaps that structural JSON validation alone cannot catc
 1. Snowstorm / Wintersky runtime compatibility.
 2. Bounded motion estimation for scalar-speed dynamic particles.
 3. Stable particle-class ownership across a particle lifetime.
-4. Multi-effect bundle reference integrity.
-5. Texture-atlas QA requirements and promotion criteria.
+4. Multi-effect bundle integrity.
+5. Texture-atlas QA.
+6. Explicit authoring intent as an acceptance contract.
 
 ## Current implementation
-
-The P0 preflight core is intentionally import-safe and separated by responsibility:
 
 ```text
 chatgpt-particle-authoring/
@@ -39,30 +38,50 @@ chatgpt-particle-authoring/
 │   ├── types.ts
 │   ├── snowstormCompatibility.ts
 │   ├── motionPreflight.ts
-│   └── bundleValidation.ts
+│   ├── bundleValidation.ts
+│   ├── textureAtlasQa.ts
+│   └── intentContract.ts
 ├── tests/
 │   ├── helpers.ts
 │   ├── snowstormCompatibility.test.ts
 │   ├── motionPreflight.test.ts
-│   └── bundleValidation.test.ts
+│   ├── bundleValidation.test.ts
+│   ├── textureAtlasQa.test.ts
+│   └── intentContract.test.ts
 └── examples/
     └── MIVUBI_Volcano_Eruption.zip
 ```
 
-`particlePreflight.ts` is only a compatibility barrel for the initial experimental import path. Logic ownership lives in the focused modules above.
+`particlePreflight.ts` remains only a compatibility barrel for the initial experimental import path. Logic ownership lives in the focused modules above.
 
-## P0 coverage
+## Implemented coverage
 
-Current deterministic checks cover the recurring failures reproduced during the volcano experiment:
+### P0 — runtime and motion preflight
 
-- vector `minecraft:particle_initial_speed` losing intended magnitude in Snowstorm / Wintersky;
+- vector `minecraft:particle_initial_speed` compatibility risk in Snowstorm / Wintersky;
 - `variable.emitter_age` controlling living-particle motion or appearance properties;
 - bounded Wintersky-style numeric motion simulation for constant inputs;
 - authored apex/range envelope misses;
-- duplicate bundle identifiers;
-- missing child particle-effect references.
+- exact offending paths for unstable particle-owned expressions.
+
+### P1 — asset, bundle and intent preflight
+
+- duplicate particle bundle identifiers;
+- document/bundle identifier mismatches;
+- missing child particle-effect references;
+- circular child-effect chains;
+- root-relative orphan particle effects;
+- missing referenced texture paths when an available texture set is supplied;
+- dependency-free RGBA atlas QA for transparency, white-matte risk, grid validity, gutter, and duplicate cells;
+- explicit intent-contract validation for runtime target, view distance, duration, and named motion envelopes.
 
 Diagnostic codes are centralized and stable within the experiment so later promotion can preserve semantics without coupling production to this directory.
+
+## Important limits
+
+Texture QA accepts already-decoded RGBA pixels. This experiment intentionally does not add a PNG decoder or image dependency. Static texture checks do not prove visual quality.
+
+The intent contract is an acceptance target, not a planner. It never silently rewrites particle values.
 
 ## Production boundary
 
