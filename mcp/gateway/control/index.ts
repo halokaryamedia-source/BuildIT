@@ -5,7 +5,6 @@ export { readReferencePackageProjection } from "./referencePackage";
 export { buildControlStageContext, readinessForAuthoringDomain } from "./contextProjection";
 export { decorateCapabilities } from "./capabilities";
 export { buildControlDelta } from "./delta";
-export { contextIds, contextSetChanged } from "./contextCache";
 export { resolveDevelopmentIntent } from "./developmentIntent";
 export type {
   ControlDevelopmentDomain,
