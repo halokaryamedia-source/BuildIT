@@ -104,10 +104,8 @@ exactly one selected profile from docs/03-authoring/modelling/profiles/
 ```text
 docs/03-authoring/modelling/standard.md
   → durable geometry-policy question not sufficiently resolved by specialist procedure
-
 docs/03-authoring/workflow.md
   → lifecycle/handoff/readiness ambiguity
-
 docs/03-authoring/validation/visual.md
   → visual verdict/evidence policy ambiguity
 additional reference package fields/views
@@ -144,16 +142,12 @@ current atlas / UV identity supplied by projection/runtime state
 ```text
 docs/03-authoring/texture/standard.md
   → durable texture-policy ambiguity
-
 docs/03-authoring/texture/material.md
   → material/PBR semantics are material to the task
-
 docs/03-authoring/texture/render-profile.md
   → render-profile semantics are material
-
 docs/03-authoring/texture/surface-pattern.md
   → pattern/continuity problem is material
-
 docs/03-authoring/validation/visual.md
   → visual verdict ambiguity
 bounded Geometry context
@@ -189,7 +183,6 @@ current participating rig + clip identity supplied by projection/runtime state
 ```text
 docs/03-authoring/animation/standard.md
   → durable animation-policy ambiguity
-
 docs/03-authoring/validation/visual.md
   → motion/visual verdict ambiguity
 bounded Geometry context
@@ -220,6 +213,14 @@ docs/04-system/implementation-map.md when ownership is not already exact
 matching PRODUCT_DEVELOPMENT Skill only when its reusable procedure materially helps
 ```
 
+Canonical PRODUCT_DEVELOPMENT Skills:
+
+```text
+lazydesigner-mcp-development
+lazydesigner-blockbench-development
+lazydesigner-development-brief
+```
+
 ### CONDITIONAL
 
 ```text
@@ -246,7 +247,7 @@ full repository scan
 05-operations local acceptance unless live acceptance is explicitly active
 ```
 
-Clear bounded changes go directly to the exact source owner. `development-brief` is not a mandatory development preamble.
+Clear bounded changes go directly to the exact source owner. `lazydesigner-development-brief` is not a mandatory development preamble.
 
 ---
 
