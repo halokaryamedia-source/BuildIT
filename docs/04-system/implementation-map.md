@@ -22,7 +22,7 @@ Current product name: LazyDesigner
 Former product name: BlockIT
 ```
 
-Some internal package/runtime/Skill identifiers still use legacy `BlockIT` / `blockit-*` names. They are migration residue, not a second product.
+Some internal package/runtime/specialist identifiers still use legacy `BlockIT` / `blockit-*` names. They are migration residue, not a second product.
 
 ## Runtime Architecture
 
@@ -103,7 +103,7 @@ Control does not own Skill prose, Tool schemas, full reference content, live mod
 | Runtime phase/capability classification | `mcp/lib/authoringPhase.ts` | shared by Runtime + Control |
 | Reference preparation | `.agents/skills/blockbench-reference-generator/SKILL.md` + `docs/02-reference/` | ChatGPT |
 
-The legacy `.agents/skills/blockit-bedrock-entity-mcp/SKILL.md` is migration-only semantic residue and is no longer mandatory Control context.
+The former `.agents/skills/blockit-bedrock-entity-mcp/SKILL.md` router has been removed. Its routing responsibility is now exclusively Control-owned; do not recreate it as an alias or parallel Skill.
 
 ## Canonical Phase / Capability Classification
 
@@ -133,6 +133,13 @@ Context handles are SHA-256 identities calculated from current canonical files. 
 ## Readiness / Invalidation
 
 Reference blocking follows active-stage readiness. A future-stage blocker does not block current READY work.
+
+Workspace lifecycle prerequisites:
+
+```text
+TEXTURING → Geometry APPROVED + UV Layout PASS
+ANIMATION → Geometry APPROVED + UV Layout PASS + Texturing APPROVED
+```
 
 Current effect-aware invalidation:
 
@@ -188,13 +195,21 @@ Unknown or tied intent remains `UNRESOLVED`; Control does not replace uncertaint
 ## Remaining Migration Debt
 
 ```text
-legacy BlockIT product/package/protocol identifiers outside the Control public contract
-legacy `blockit-*` Skill package names and migration-only asset-router Skill
+legacy BlockIT package/protocol/plugin/environment identifiers outside the Control public contract
+legacy `blockit-*` names on still-active specialist Skills
+remaining product-facing/runtime strings that can be migrated without compatibility breakage
 generated outputs/docs that may encode legacy identifiers until canonical generators run
 Experimental Navigator history that must remain explicitly non-authoritative
 ```
 
-Physical Navigator→Control source migration and duplicate capability-domain table cleanup are complete at source level.
+Completed source migrations:
+
+```text
+navigator/ → control/
+legacy asset-router Skill → removed
+Control capability-domain duplication → removed
+metadata-only search/describe status rereads → removed
+```
 
 Do not solve remaining debt with permanent aliases or a second routing layer.
 
