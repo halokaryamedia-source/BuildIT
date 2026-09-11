@@ -1,4 +1,5 @@
 import { isRuntimeGenerationCurrent } from "@/lib/runtimeLifecycle";
+import { getReloadableLazyDesignerPlugin } from "@/plugin/reload";
 
 type LocalDevFileWatcher = { close(): void };
 type LocalDevFilesystem = {
@@ -7,13 +8,6 @@ type LocalDevFilesystem = {
     listener: (eventType?: string, filename?: string | Buffer) => void
   ): LocalDevFileWatcher;
   readFileSync(path: string, encoding: "utf8"): string;
-};
-type ReloadableBlockItPlugin = {
-  id?: string;
-  source?: string;
-  path?: string;
-  reload?: () => unknown;
-  isReloadable?: () => boolean;
 };
 
 let localDevFileWatcher: LocalDevFileWatcher | null = null;
@@ -26,46 +20,6 @@ function embeddedBuildIdentity(content: string): string | null {
       /globalThis\.__BLOCKIT_BUILD_ID__\s*=\s*["'](sha256:[a-f0-9]{64})["']/
     )?.[1] ?? null
   );
-}
-
-function getReloadableBlockItPlugin(): ReloadableBlockItPlugin | null {
-  const pluginState = Plugins as unknown as {
-    registered?: Record<string, ReloadableBlockItPlugin>;
-    all?: ReloadableBlockItPlugin[];
-  };
-  return (
-    pluginState.registered?.blockit_mcp ??
-    pluginState.all?.find((plugin) => plugin.id === "blockit_mcp") ??
-    null
-  );
-}
-
-export function canReloadLazyDesignerPlugin(): boolean {
-  const plugin = getReloadableBlockItPlugin();
-  return Boolean(
-    plugin &&
-      typeof plugin.reload === "function" &&
-      (typeof plugin.isReloadable !== "function" || plugin.isReloadable())
-  );
-}
-
-export function reloadLazyDesignerPlugin(): boolean {
-  const plugin = getReloadableBlockItPlugin();
-  if (
-    !plugin ||
-    typeof plugin.reload !== "function" ||
-    (typeof plugin.isReloadable === "function" && !plugin.isReloadable())
-  ) {
-    return false;
-  }
-
-  try {
-    plugin.reload();
-    return true;
-  } catch (error) {
-    console.error("[MCP] Manual LazyDesigner reload failed", error);
-    return false;
-  }
 }
 
 function splitPluginPath(path: string): { directory: string; filename: string } {
@@ -97,7 +51,7 @@ export function setupLocalDevAutoReload(
     return;
   }
 
-  const plugin = getReloadableBlockItPlugin();
+  const plugin = getReloadableLazyDesignerPlugin();
   if (
     !plugin ||
     plugin.source !== "file" ||
