@@ -1,6 +1,6 @@
 # LazyDesigner Skill Taxonomy
 
-Updated: 2026-09-11
+Updated: 2026-09-12
 
 This file is the canonical classification for LazyDesigner Skills. It defines what kind of work each Skill belongs to and prevents asset-authoring instructions from being mixed with product-development instructions.
 
@@ -15,6 +15,8 @@ Control= task/stage/context selection and projection
 ```
 
 A Skill may summarize the operational trigger for a durable rule, but it must not become a competing policy owner. AI context selection is owned by `docs/04-system/ai-context-loading.md`.
+
+Cross-stage Geometry/Texturing/Animation context, evidence economy, convergence and handoff semantics are owned by `docs/04-system/authoring-stage-context.md`. This is a **shared semantic contract, not a Skill or router**. Do not create a `stage`, `authoring-core`, `manager`, or equivalent Skill around it.
 
 ## Top-Level Categories
 
@@ -83,9 +85,12 @@ The former asset-router Skill is retired and removed. LazyDesigner Control owns 
 ```text
 Reference Package / Workspace / current task
 → LazyDesigner Control
+→ shared authoring-stage contract (loaded once/reused)
 → active authoring domain/readiness/context
 → exactly one active specialist
 ```
+
+The shared authoring-stage contract does not select tools or replace specialist reasoning. It only owns rules that are genuinely cross-stage.
 
 Do not reintroduce a permanent asset-router Skill or duplicate Control routing policy inside specialist Skills.
 
@@ -147,7 +152,9 @@ REFERENCE_PREPARATION task
 → do not load PRODUCT_DEVELOPMENT Skills
 
 ASSET_AUTHORING task
-→ Control selects one active specialist; do not load PRODUCT_DEVELOPMENT Skills
+→ load/reuse shared authoring-stage contract
+→ Control selects one active specialist
+→ do not load PRODUCT_DEVELOPMENT Skills
 
 PRODUCT_DEVELOPMENT task
 → do not load ASSET_AUTHORING Skills unless explicitly required by changed authoring semantics
