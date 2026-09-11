@@ -38,6 +38,28 @@ function chars(value: unknown): number {
   return JSON.stringify(value).length;
 }
 
+function statusOrientationProjection(value: GatewayRuntimeStatus) {
+  return {
+    project_uuid: value.affinity.project_uuid,
+    authoring_phase: value.affinity.authoring_phase,
+    runtime_online: value.runtime.online,
+    runtime_signature: value.runtime.runtime_signature,
+    catalog_count: value.runtime.catalog_count,
+    catalog_stale: value.runtime.catalog_stale,
+  };
+}
+
+function controlOrientationProjection(value: ControlPacket) {
+  return {
+    project_uuid: value.project.affinity_uuid,
+    authoring_phase: value.authoring.phase,
+    runtime_online: value.runtime.online,
+    runtime_signature: value.runtime.runtime_signature,
+    catalog_count: value.runtime.catalog_count,
+    catalog_stale: value.runtime.catalog_stale,
+  };
+}
+
 const directory = await mkdtemp(join(tmpdir(), "lazydesigner-control-measure-"));
 try {
   await writeFile(
@@ -59,18 +81,31 @@ try {
   const fullChars = chars(full);
   const cachedChars = chars(cached);
   const deltaChars = chars(delta);
+  const statusChars = chars(status);
+  const fullEnvelopeChars = chars({ ...status, control: full });
+  const cachedEnvelopeChars = chars({ ...status, control: cached });
+  const statusOrientation = statusOrientationProjection(status);
+  const controlOrientation = controlOrientationProjection(full);
   const cachedReduction = fullChars > 0
     ? Number((((fullChars - cachedChars) / fullChars) * 100).toFixed(2))
     : 0;
 
   console.log(JSON.stringify({
-    proof: "static Control payload footprint; not whole-session model-token usage",
+    proof: "static Control/Gateway payload footprint; not whole-session model-token usage",
     full_packet_chars: fullChars,
     cached_packet_chars: cachedChars,
     delta_chars: deltaChars,
+    gateway_status_chars: statusChars,
+    gateway_envelope_full_chars: fullEnvelopeChars,
+    gateway_envelope_cached_chars: cachedEnvelopeChars,
     cached_packet_reduction_percent: cachedReduction,
     required_context_handles_full: full.context.required.length,
     required_context_handles_cached: cached.context.required.length,
+    repeated_orientation_projection_chars: chars(controlOrientation),
+    repeated_orientation_values_equal:
+      JSON.stringify(statusOrientation) === JSON.stringify(controlOrientation),
+    note:
+      "Gateway status and Control intentionally overlap on normalized orientation today. Measure before changing the stable status contract; do not infer removable token cost from this static character count alone.",
   }, null, 2));
 } finally {
   await rm(directory, { recursive: true, force: true });
