@@ -53,11 +53,11 @@ function repoPath(path: string): string {
   return resolve(process.cwd(), "..", path);
 }
 
-describe("BlockIT Navigator development intent", () => {
+describe("LazyDesigner Control system-development intent", () => {
   test("animation quality wording routes directly to animation quality owners", () => {
     const result = resolveDevelopmentIntent("animasi keyframe terlalu kaku");
     expect(result).toMatchObject({
-      task_class: "MCP_DEVELOPMENT",
+      task_class: "SYSTEM_DEVELOPMENT",
       domain: "ANIMATION",
       confidence: "STRONG",
     });
@@ -92,7 +92,6 @@ describe("BlockIT Navigator development intent", () => {
     expect(result.required_context_paths).toEqual([
       "AGENTS.md",
       "mcp/AGENTS.md",
-      ".agents/skills/development-brief/SKILL.md",
     ]);
   });
 
@@ -115,21 +114,24 @@ describe("BlockIT Navigator development intent", () => {
     }
   });
 
-  test("development packet skips workspace parsing and authoring Skill retransmission", async () => {
+  test("development packet skips workspace/reference parsing and authoring Skill retransmission", async () => {
     const packet = await buildNavigatorPacket(status, {
-      taskMode: "MCP_DEVELOPMENT",
+      taskMode: "SYSTEM_DEVELOPMENT",
       taskIntent: "gateway capability catalog bermasalah",
-      knownContextIds: ["ctx:skill/blockit-bedrock-entity-mcp@old"],
+      knownContextIds: ["ctx:skill/modelling@old"],
       workspacePath: "/path/that/must/not/be/read",
+      referencePackagePath: "/path/that/must/not/be/read",
     });
 
-    expect(packet.mode).toBe("MCP_DEVELOPMENT");
+    expect(packet.mode).toBe("SYSTEM_DEVELOPMENT");
     expect(packet.development?.domain).toBe("GATEWAY");
     expect(packet.workspace.available).toBe(false);
+    expect(packet.reference.available).toBe(false);
+    expect(packet.stage_context).toBeNull();
     expect(packet.context.required).toEqual([]);
     expect(packet.context.optional).toEqual([]);
     expect(packet.context.invalidated_ids).toEqual([]);
     expect(packet.task_context_id).toMatch(/^task:[a-f0-9]{20}$/);
-    expect(JSON.stringify(packet).length).toBeLessThan(6000);
+    expect(JSON.stringify(packet).length).toBeLessThan(7000);
   });
 });
