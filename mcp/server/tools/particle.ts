@@ -57,6 +57,13 @@ const jsonValueSchema: z.ZodType<JsonValue> = z.lazy(() =>
   ])
 );
 
+export const PARTICLE_VALIDATION_SCOPE = {
+  schema: "CURRENT_STABLE_COMPATIBILITY",
+  target_version_verified: false,
+  note:
+    "Particle diagnostics validate the repository's current stable Bedrock compatibility catalog. They do not prove exact field/default availability for an arbitrary target Bedrock version unless separate target-version evidence is supplied.",
+} as const;
+
 function exactlyOneSourceSchema(pathSchema: z.ZodType<string>, label: string) {
   return z
     .object({
@@ -79,7 +86,13 @@ const particleSourceSchema = exactlyOneSourceSchema(particlePathSchema, "source"
 const createParticleSchema = z
   .object({
     identifier: particleIdentifierSchema,
-    preset: z.enum(BEDROCK_PARTICLE_PRESETS).optional().default("steady"),
+    preset: z
+      .enum(BEDROCK_PARTICLE_PRESETS)
+      .optional()
+      .default("steady")
+      .describe(
+        "Bootstrap convenience only. Preset numeric values are editable starting points, not canonical visual or production defaults."
+      ),
     material: z.string().min(1).optional(),
     texture: z.string().min(1).optional(),
   })
@@ -384,7 +397,7 @@ export const manageParticleParameters = z
     texture_dependency: particleTextureDependencySchema
       .optional()
       .describe(
-        "Optional particle-texture provenance. generated state=missing routes to existing Texturing; resume with state=ready only after the verified PNG output exists."
+        "Optional texture provenance/handoff metadata. New particle creation still requires an explicit final texture reference in create.texture or set_render; generated state=missing routes the bitmap dependency to existing Texturing."
       ),
     output: outputPathSchema(particlePathSchema).optional(),
     preview: z
@@ -404,6 +417,19 @@ export const manageParticleParameters = z
         message: "Provide exactly one source or create input.",
       });
     }
+
+    if (
+      value.create !== undefined &&
+      finalExplicitTextureReference(value.create, value.operations) === null
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["create", "texture"],
+        message:
+          "New particle creation requires an explicit texture reference in create.texture or a set_render operation. The internal bootstrap texture fallback is not production authoring authority.",
+      });
+    }
+
     if (value.texture_dependency) {
       const explicitTexture = finalExplicitTextureReference(
         value.create,
@@ -445,7 +471,7 @@ export const particleToolDocs: ToolSpec[] = [
   {
     name: "inspect_particle",
     description:
-      "Inspects a Bedrock .particle.json document from an absolute path or inline content. Defaults to compact summary diagnostics; component and full modes are explicit to keep context usage bounded.",
+      "Inspects a Bedrock .particle.json document from an absolute path or inline content. Diagnostics use the repository current-stable compatibility catalog; they do not by themselves prove exact target-version field/default availability. Defaults to compact summary diagnostics; component and full modes are explicit to keep context usage bounded.",
     annotations: {
       title: "Inspect Bedrock Particle",
       readOnlyHint: true,
@@ -457,7 +483,7 @@ export const particleToolDocs: ToolSpec[] = [
   {
     name: "manage_particle",
     description:
-      "Creates or losslessly patches a Bedrock .particle.json document, preserves unknown JSON fields, validates final particle semantics, optionally performs a verified transactional file write, and can load the particle into Blockbench's native preview. Missing custom particle bitmaps route through existing create_texture + paint tools and finalize through paint_texture_transaction PNG output; manage_particle never duplicates texture authoring. Animation timing/locator binding remains owned by manage_animation_effects.",
+      "Creates or losslessly patches a Bedrock .particle.json document, preserves unknown JSON fields, validates against the repository current-stable compatibility catalog, optionally performs a verified transactional file write, and can load the particle into Blockbench's native preview. New creation requires an explicit texture reference. Missing custom particle bitmaps route through existing create_texture + paint tools and finalize through paint_texture_transaction PNG output; manage_particle never duplicates texture authoring. Downstream runtime binding remains owned by existing animation/controller tools.",
     annotations: {
       title: "Manage Bedrock Particle",
       destructiveHint: true,
@@ -826,6 +852,7 @@ export function registerParticleTools(): void {
           structuredContent: {
             source_path,
             mode,
+            validation_scope: PARTICLE_VALIDATION_SCOPE,
             ...result,
           },
         };
@@ -936,6 +963,7 @@ export function registerParticleTools(): void {
           structuredContent: {
             valid,
             artifact_ready: artifactReady,
+            validation_scope: PARTICLE_VALIDATION_SCOPE,
             source_path: base.source_path,
             wrote_to_path: particleWrite?.path ?? null,
             preview_path: previewPath,

@@ -1,12 +1,12 @@
 # LazyDesigner ChatGPT Reference Flow
 
-Updated: 2026-09-11
+Updated: 2026-09-12
 
 This document owns the ChatGPT-side operational sequence before an asset reference is handed downstream. Durable policy lives in `policy.md`; image construction lives under `image/`; particle/VFX reference authoring lives under `particle/`; compact Codex package structure and consumption live under `package/`.
 
 ## Objective
 
-Convert incomplete or casual user intent into a confirmed, internally clean reference target without requiring the user to understand prompting, topology, UV, rigging, particle JSON, or package terminology.
+Convert incomplete or casual user intent into an internally clean reference target without requiring the user to understand prompting, topology, UV, rigging, particle JSON, or package terminology.
 
 ## Canonical User Flow
 
@@ -14,25 +14,26 @@ Convert incomplete or casual user intent into a confirmed, internally clean refe
 USER REQUEST
 → UNDERSTAND
 → REQUIREMENT GATE
-→ missing blocking information?
+→ missing BLOCKING information?
    ├─ YES → ASK SIMPLE QUESTIONS → USER ANSWERS → GATE AGAIN
    └─ NO
 → PROMPT COMPILER
 → CLEAN PRODUCTION BRIEF
-→ FINAL CONFIRMATION
-→ user approves?
-   ├─ NO → revise brief → FINAL CONFIRMATION
-   └─ YES
 → CLASSIFY REQUIRED REFERENCE CAPABILITY
-   ├─ visual/model only → image/
-   ├─ particle/VFX only → particle/
-   └─ both only when explicitly/materially required
-→ GENERATE ONLY REQUIRED ARTIFACTS
+   ├─ visual/model only
+   │  → FINAL CONFIRMATION when the target materially depends on user decisions
+   │  → image/
+   ├─ particle/VFX only
+   │  → particle/authoring-spec.md
+   │  → no ceremonial pre-confirmation when no BLOCKING ambiguity remains
+   │  → particle first-pass authoring
+   └─ both
+      → use each branch only for the dependency it actually owns
 → BRANCH-SPECIFIC INTERNAL QA
 → USER REVIEW / CORRECTION when material
-→ BUILD CLEAN HANDOFF/PACKAGE when required
-→ CONSISTENCY GATE
-→ DOWNSTREAM USE / CODEX / MCP
+→ PACKAGE ONLY WHEN EXPLICITLY REQUESTED OR UNAMBIGUOUSLY PART OF THE REQUEST
+→ CONSISTENCY GATE when packaging/handoff exists
+→ DOWNSTREAM USE / CODEX / MCP when requested
 ```
 
 ## 1. Understand
@@ -50,7 +51,7 @@ critical parts/actions/materials/style
 still-valid approved prior decisions
 ```
 
-Do not generate yet and do not invent missing facts.
+Do not invent missing facts.
 
 ## 2. Requirement Gate
 
@@ -64,11 +65,9 @@ OPTIONAL
 
 `BLOCKING` must be resolved when the answer can materially change identity, primary structure, scale/viewing distance, required articulation/motion, or another major output decision.
 
-`USEFUL` is asked only when it is likely to materially improve correctness.
+`USEFUL` is asked only when it is likely to materially improve correctness. `OPTIONAL` does not block a first pass.
 
-`OPTIONAL` does not block generation and remains unspecified unless evidence resolves it.
-
-For visual/model references, scale follows `image/scale-and-escalation.md`. For particle/VFX tasks, intent normalization follows `particle/authoring-spec.md`.
+For visual/model references, scale follows `image/scale-and-escalation.md`. For particle/VFX tasks, intent normalization and reversible provisional choices follow `particle/authoring-spec.md`.
 
 ## 3. Independent Capability Rule
 
@@ -84,12 +83,10 @@ visual/model request only
 → do not author particle assets unless explicitly requested
 
 combined request
-→ use both branches only for the requested dependencies
+→ use both branches only for requested/material dependencies
 ```
 
-Do not force a visual reference step before particle authoring. A particle can be authored directly from text, an existing visual/reference source, or a confirmed effect brief.
-
-Do not force particle output into visual/model reference tasks.
+Do not force a visual reference step before particle authoring. A particle can be authored directly from text, an existing visual/reference source, or a sufficiently resolved effect brief.
 
 ## 4. Simple Question Rule
 
@@ -106,7 +103,7 @@ Do not ask the user for topology, pivot ownership, UV strategy, Molang implement
 
 ## 5. Prompt Compiler
 
-After blocking information is resolved, run `.agents/skills/lazydesigner-prompt-compiler/SKILL.md`.
+After blocking information is resolved, run `.agents/skills/lazydesigner-prompt-compiler/SKILL.md` when normalization materially helps.
 
 ```text
 raw user intent
@@ -120,23 +117,43 @@ Rejected or superseded directions are removed. The compiler may normalize wordin
 
 The compiled brief is internal working state and is not a default handoff file.
 
-## 6. Final Confirmation — Hard Gate
+## 6. Branch-specific confirmation
 
-Before generating a new user-facing artifact, show a concise summary and obtain explicit approval when the target materially depends on user decisions.
+### Visual / model reference
+
+Before generating a new visual artifact whose target materially depends on user decisions, show a concise summary and obtain explicit approval.
 
 Recommended shape:
 
 ```text
 Konfirmasi sebelum dibuat:
-- Objek/Efek: <target>
-- Skala/Jarak: <only when material>
-- Arah: <main visual/structural/motion direction>
+- Objek: <target>
+- Skala: <only when material>
+- Arah: <main structural/visual direction>
 - Tambahan: <only material extras>
 
 Sudah sesuai?
 ```
 
-Silence is not approval. A material revision requires a new bounded confirmation before generating the revised artifact.
+Silence is not approval. A material revision requires a new bounded confirmation before the revised visual is generated.
+
+### Particle / VFX reference
+
+Particle-only work uses the dedicated fast path:
+
+```text
+BLOCKING ambiguity remains
+→ ask the minimum decision-changing question
+
+no BLOCKING ambiguity remains
+→ do not request ceremonial pre-confirmation
+→ use reversible PROVISIONAL choices for non-blocking unknowns
+→ author the first particle pass
+→ static QA
+→ user review in the target environment when material
+```
+
+This exception prevents a simple request such as `buat particle api biru` from being stopped by an image-oriented confirmation ceremony. It does not permit inventing hidden geometry, exact runtime behavior, performance truth, or other blocking facts.
 
 ## 7. Reference Capability Branches
 
@@ -161,36 +178,25 @@ Do not generate every module by default.
 
 Use `.agents/skills/lazydesigner-particle-reference-authoring/SKILL.md` and `particle/README.md`.
 
-Typical output may include:
+Typical authored resources may include:
 
 ```text
 Bedrock .particle.json
-particle textures / atlases
-manifest + resource-pack structure
+particle textures / atlases when required
 static/preflight QA
-README usage notes
 ```
 
-Image reference output is not a prerequisite for this branch.
-
-This branch is ChatGPT-side reference authoring. It does not require MCP or local repository execution.
+A Resource Pack/ZIP, README, manifest, or `REFERENCE.json` is delivery output and is created only when packaging/handoff is requested. Image reference output is not a prerequisite for this branch.
 
 ## 8. Generate + Internal QA
 
-Every generation uses:
+Generation uses the smallest branch-ready authority set, not the uncontrolled full conversation.
 
-```text
-confirmed compiled brief
-+ approved source/reference authority when available
-+ resolved scale/view-distance anchor when material
-+ current capability purpose
-```
+Visual/model generation uses the confirmed compiled brief plus approved source/reference authority and scale lock when material.
 
-not the uncontrolled full conversation.
+Particle/VFX authoring uses the normalized particle brief with BLOCKING ambiguity resolved, the minimum required particle knowledge owner(s), and reversible provisional choices where allowed.
 
-Visual/model references use image QA. Particle/VFX references use `particle/qa.md`, including Bedrock structure, Snowstorm compatibility, motion/bundle/atlas/spatial/readability/budget checks when applicable.
-
-Do not run irrelevant QA from another reference branch.
+Visual/model references use image QA. Particle/VFX references use `particle/qa.md` and only the gates relevant to the authored effect.
 
 ## 9. User Review / Correction
 
@@ -200,9 +206,9 @@ For correction:
 
 ```text
 USER DELTA
-→ compile CHANGE + PRESERVE
+→ compile CHANGE + PRESERVE when useful
 → resolve only new blockers
-→ concise confirmation when needed
+→ branch-specific confirmation only when required
 → bounded correction
 → causal QA
 → user review
@@ -214,7 +220,7 @@ Preserve unaffected approved authority.
 
 Create package files only when package generation is explicitly authorized or already unambiguously requested in the current instruction.
 
-Do not create optional files or another reference branch merely to complete a template.
+Authoring a first particle pass does not by itself authorize a final Resource Pack ZIP. Do not create optional files or another reference branch merely to complete a template.
 
 ## 11. Package Build
 
@@ -236,17 +242,13 @@ Canonical owners remain under `package/`.
 
 ### Particle/VFX package
 
-Follow `particle/delivery.md`. The particle package itself is the handoff artifact and may be consumed directly in Snowstorm/Minecraft or passed to Codex/MCP.
+Follow `particle/delivery.md` only after package/handoff intent is known. Standalone delivery is an ordinary Bedrock Resource Pack folder/ZIP. `REFERENCE.json` is added only for explicit LazyDesigner/Codex/MCP handoff.
 
-Do not add image-reference files unless they are actually part of the particle request.
-
-Do not export the compiled production prompt, conversation transcript, duplicate bootstrap files, or internal scratch QA.
+Do not add image-reference files unless they are actually part of the particle request. Do not export the compiled production prompt, conversation transcript, duplicate bootstrap files, or internal scratch QA.
 
 ## 12. Package Consistency Gate
 
 Before handoff verify the package-specific contract.
-
-For all branches:
 
 ```text
 all listed/referenced files exist
@@ -262,14 +264,14 @@ Fix package plumbing internally. Ask the user only when a real requirement confl
 
 For visual/model references, consumption is defined by `package/load-contract.md`.
 
-For particle/VFX references, the clean Resource Pack folder/ZIP is the handoff boundary. Codex/MCP may inspect, copy, patch, bind, or preview it according to downstream authority; they should not need the original ChatGPT transcript or a separate image-reference package.
+For particle/VFX references, the clean Resource Pack or canonical particle `REFERENCE.json` package is the handoff boundary only when downstream handoff is requested. Codex/MCP should not need the original ChatGPT transcript or a separate image-reference package.
 
 ## 14. Authority Order
 
 ```text
 explicit current user requirement
 → approved branch-specific reference
-→ confirmed scale/view-distance requirement
+→ confirmed scale/view-distance requirement when material
 → canonical branch rules
 → downstream interpretation
 ```
@@ -281,7 +283,7 @@ The compiled brief organizes generation but never outranks approved user/referen
 Do not generate when:
 - a blocking requirement is unresolved;
 - materially conflicting evidence remains unresolved;
-- required confirmation is pending;
+- a branch-specific required confirmation is pending;
 - a correction would require guessing what must be preserved;
 - the proposed artifact does not materially help the downstream decision.
 
@@ -298,10 +300,10 @@ The user should normally only need to:
 ```text
 1. describe what they want
 2. answer a few simple questions when vital information is missing
-3. approve a concise target summary when material
-4. review only the reference artifacts they requested
-5. authorize package creation when needed
-6. receive the completed handoff
+3. approve a concise target summary only when the selected branch materially requires it
+4. review the requested reference artifact
+5. request/authorize packaging when a package is actually needed
+6. receive the completed handoff when requested
 ```
 
 Prompt quality, branch selection, particle preflight, package consistency, and technical terminology remain responsibilities of the ChatGPT-side system.

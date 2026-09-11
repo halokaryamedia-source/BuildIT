@@ -88,6 +88,23 @@ describe("Reference Preparation content contract", () => {
     expect(scale).toContain("Sheet 01 remains the identity and scale anchor");
   });
 
+  test("particle branch skips ceremonial pre-confirmation and packages only on request", async () => {
+    const [flow, particleWorkflow, referenceSkill, particleSkill] = await Promise.all([
+      text("../docs/02-reference/flow.md"),
+      text("../docs/02-reference/particle/workflow.md"),
+      text("../.agents/skills/lazydesigner-reference-preparation/SKILL.md"),
+      text("../.agents/skills/lazydesigner-particle-reference-authoring/SKILL.md"),
+    ]);
+
+    expect(flow).toContain("no ceremonial pre-confirmation when no BLOCKING ambiguity remains");
+    expect(referenceSkill).toContain("Particle-only exception");
+    expect(referenceSkill).toContain("does **not** inherit the image branch's hard pre-generation confirmation ceremony");
+    expect(particleWorkflow).toContain("PACKAGE ONLY IF EXPLICITLY REQUESTED OR UNAMBIGUOUSLY PART OF THE REQUEST");
+    expect(particleWorkflow).toContain("A validated particle artifact and a delivered Resource Pack are separate states");
+    expect(particleSkill).toContain("delivery.md only when package/handoff is requested");
+    expect(particleSkill).toContain("Do not duplicate those details here");
+  });
+
   test("reference handoff stays compact and delegates exact contracts", async () => {
     const handoff = await text("../docs/02-reference/package/handoff.md");
 

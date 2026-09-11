@@ -18,9 +18,10 @@ USER PARTICLE REQUEST
 → resolve one output identity
 → workflow.md
 → load minimum knowledge bundle
-→ author JSON + textures
+→ author JSON + required textures
 → relevant qa.md gates only
-→ deterministic delivery.md assembly
+→ ARTIFACT READY FOR REVIEW
+→ delivery.md only when package/handoff is requested
 → USER REVIEW IN TARGET ENVIRONMENT
 → optional Codex / MCP handoff
 ```
@@ -38,7 +39,7 @@ REACTIVE
 AUDIT / REVISION
 ```
 
-Then select the smallest physical starting family from `patterns.md` and choose the lowest viable complexity tier:
+Then use `patterns.md` as the single physical starting-pattern owner and choose the lowest viable complexity tier:
 
 ```text
 0 constants
@@ -47,84 +48,42 @@ Then select the smallest physical starting family from `patterns.md` and choose 
 3 events / collision chains / entity/external reactivity
 ```
 
-Do not escalate architecture unless a required behavior cannot be represented cleanly at the current tier.
+A request such as `buat particle api biru` should normally remain DIRECT and use the Flame family. Do not escalate architecture unless required behavior cannot be represented cleanly at the current tier.
 
-A request such as `buat particle api biru` should normally resolve as:
+## Pre-confirmation rule
+
+Particle-only authoring does not require a ceremonial pre-generation confirmation when no BLOCKING ambiguity remains.
 
 ```text
-DIRECT
-→ Flame pattern
-→ one dominant role
-→ simple texture
-→ minimal Molang only if needed
+BLOCKING ambiguity
+→ ask minimum decision-changing question
+
+no BLOCKING ambiguity
+→ proceed with conservative reversible PROVISIONAL choices where allowed
+→ author first pass
+→ static QA
+→ user review when visual/runtime review is material
 ```
 
-not multi-emitter/event architecture by default.
+This is specific to the particle branch. Never provisionally invent hidden geometry, required attachment names, exact viewing distance, device/FPS limits, gameplay semantics, or runtime truth.
 
-## Output-identity rule
+## Output identity rule
 
-Resolve one naming source before files are authored:
+Resolve one naming source before resources are authored:
 
 ```text
 namespace
-package_slug
-effect_slug
+working/package slug
+effect slug
 root identifier
-child role slugs, if any
-texture basename/shared texture mapping
-standalone Resource Pack vs downstream handoff
+child role slugs when needed
+texture basename/shared mapping
+delivery intent: artifact only / standalone package / downstream handoff
 ```
 
-Use lowercase snake_case by default unless an existing project convention overrides it.
+Use lowercase snake_case by default unless an existing project convention overrides it. One normalized identity drives particle filenames, identifier suffixes, texture mapping, and any later package metadata.
 
-One normalized slug drives:
-- particle filename;
-- identifier suffix;
-- texture basename where applicable;
-- README references;
-- optional `REFERENCE.json` paths.
-
-Do not invent independent names during packaging. Child suffixes describe physical role (`_debris`, `_plume`, `_flash`), never revision history.
-
-## Automatic physical-pattern rule
-
-Use `patterns.md` as the only canonical physical starting-pattern owner.
-
-Common routing hints:
-
-```text
-api / flame          → Flame
-spark / ember        → Sparks
-asap / smoke         → Rising smoke/plume
-ambient dust         → Ambient dust
-debu ledakan         → Ground/impact dust
-hujan                → Rain
-salju / abu jatuh    → Snow/Ash fall
-spray / mist         → Waterfall mist/spray
-trail                → Trail
-exhaust              → Machinery exhaust
-magic aura           → Magic aura/energy field
-beam / laser         → Beam/directional energy
-impact               → Impact burst
-explosion            → Explosion composed family
-shockwave            → Shockwave/ring expansion
-bubble               → Bubble/underwater rise
-```
-
-These are routing hints, never rigid templates. Explicit user motion/style/attachment/material requirements override keyword mapping.
-
-Combine pattern families only when at least one materially differs:
-
-```text
-physics
-spawn region
-timing
-render/material role
-texture class
-event/attachment ownership
-```
-
-Do not create a new pattern framework or duplicate these mappings elsewhere.
+Child suffixes describe physical role (`_debris`, `_plume`, `_flash`), never revision history.
 
 ## Context-budget rule
 
@@ -132,45 +91,32 @@ Do not preload the corpus.
 
 ```text
 normal authoring
-= authoring-spec + workflow + 1 primary owner
-+ at most 1–2 secondary owners when a real dependency appears
+= authoring-spec + patterns + workflow + 1 primary owner
++ at most 1–2 secondary owners for real cross-domain dependencies
 
 knowledge/diagnosis
 = knowledge-map + 1 primary owner
 + secondary owner only when required
 ```
 
-`patterns.md` is a lightweight pre-routing owner, not permission to preload every technical file related to a pattern.
-
-If more than three technical owners appear necessary, split the problem into causal decisions rather than reading everything.
+If more than three technical owners appear necessary, split the problem into causal decisions rather than loading everything.
 
 Do not load closure/default/version/troubleshooting/QA/delivery owners unless the current decision requires them.
 
-## Pattern-to-owner routing
+## Pattern routing
 
-After selecting a pattern, load technical knowledge from the causal owner only:
+`patterns.md` exclusively owns the complete keyword/physical-family map. Do not duplicate that map here.
+
+After a pattern is selected, route only to the causal technical owner:
 
 ```text
-spawn/lifetime dominated
-→ emitter
-
-trajectory dominated
-→ motion
-
-custom ring/cone/fan
-→ emitter-shape-math
-
-texture-driven visual
-→ texture-authoring
-
-age progression
-→ molang OR curves only when needed
-
-entity/locator anchored
-→ entity-integration
-
-event/contact reactive
-→ events / collision-advanced
+spawn/lifetime dominated → emitter
+trajectory dominated     → motion
+custom ring/cone/fan      → emitter-shape-math
+texture-driven visual     → texture-authoring
+age progression           → molang OR curves when needed
+entity/locator anchored   → entity-integration
+event/contact reactive    → events / collision-advanced
 ```
 
 Pattern selection reduces reads; it does not expand them.
@@ -186,61 +132,28 @@ texture-only
 → texture-authoring
 → + exactly one specialist when needed: resolution-sampling OR filtering-bleeding OR color-science
 
-spawn/lifetime
-→ emitter
-
-trajectory
-→ motion
-→ + math-physics only for real derivation
-
-Molang ownership
-→ molang
-
-Molang language/function
-→ molang-language-math
-
-formula
-→ molang-formula-cookbook
-
-existing JSON audit
-→ component-field-reference
-→ + official-defaults-evaluation only when omission/default/evaluation matters
-
-collision
-→ collision-advanced
-→ + events only when contact triggers an event graph
-
-nested event
-→ events + event-timing
-
-entity attached
-→ entity-integration + lifecycle-space
-
-Snowstorm generic
-→ snowstorm
-
-Snowstorm release support/fix
-→ snowstorm-compatibility-matrix
-
-Snowstorm regression
-→ snowstorm-version-quirks
-
-unknown symptom
-→ troubleshooting
-→ then only the causal owner it identifies
+spawn/lifetime → emitter
+trajectory     → motion (+ math-physics only for real derivation)
+Molang ownership → molang
+Molang language/function → molang-language-math
+formula → molang-formula-cookbook
+existing JSON audit → component-field-reference
+collision → collision-advanced (+ events only when contact triggers events)
+nested event → events + event-timing
+entity attached → entity-integration + lifecycle-space
+Snowstorm generic → snowstorm
+Snowstorm release support/fix → snowstorm-compatibility-matrix
+Snowstorm regression → snowstorm-version-quirks
+unknown symptom → troubleshooting, then only the identified causal owner
 ```
 
 ## Provisional-default rule
 
-When an unknown is not BLOCKING, prefer a conservative reversible first-pass choice rather than asking another question.
-
-Mark that choice internally as `PROVISIONAL`. Never present it as a user requirement, exact runtime fact, or measured performance result.
-
-Do not provisionally invent hidden geometry, required attachment names, exact viewing distance, device/FPS limits, or gameplay semantics.
+When an unknown is not BLOCKING, prefer a conservative reversible first-pass choice rather than another question. Mark it internally as `PROVISIONAL`; never present it as a user requirement or measured runtime fact.
 
 ## Numeric pattern rule
 
-`patterns.md` does not own universal numeric presets.
+Physical patterns do not own universal numeric presets.
 
 Choose numbers from:
 1. explicit user target;
@@ -248,7 +161,7 @@ Choose numbers from:
 3. previously accepted same-context effect;
 4. conservative reversible provisional values.
 
-Never promote one accepted speed/lifetime/size/spawn rate into a global default.
+Never promote one accepted speed/lifetime/size/spawn rate into a global default. MCP convenience presets are bootstrap values, not professional visual authority.
 
 ## Simplicity ladder
 
@@ -283,54 +196,29 @@ This is Snowstorm/Wintersky-targeted compatibility guidance, not a generic Bedro
 
 ## Single-pass QA rule
 
-Near finalization, run only applicable `qa.md` gates once.
-
-After a targeted revision, rerun the causal QA gate plus package-integrity checks rather than the whole suite.
+Near finalization, run only applicable `qa.md` gates once. After a targeted revision, rerun the causal QA gate; rerun package-integrity checks only when a package exists.
 
 Static QA does not replace target-environment review.
 
-## Deterministic delivery rule
+## Delivery rule
 
-Load `delivery.md` only when resource identity/graph is stable.
-
-For standalone delivery:
+A validated authored particle and a delivered package are separate states.
 
 ```text
-manifest.json
-particles/*.particle.json
-textures/particle/*.png when custom textures exist
-README.md
+artifact authored + relevant QA complete
+→ ready for review
+
+standalone Resource Pack / ZIP requested
+→ load delivery.md and assemble exactly that package
+
+downstream LazyDesigner/Codex/MCP handoff requested
+→ load delivery.md + ../package/particle-handoff.md
+
+no package requested
+→ do not create manifest/README/ZIP/REFERENCE.json merely to complete a template
 ```
 
-Only include required production files.
-
-Packaging must preserve:
-- one explicit root identifier;
-- exact child-effect references;
-- exact texture-reference ↔ PNG mapping;
-- clean semantic filenames;
-- one valid Resource Pack manifest;
-- no temp/revision/debug/QA debris.
-
-Custom Bedrock texture reference omits `.png`:
-
-```text
-textures/particle/blue_flame
-```
-
-while the packaged file is:
-
-```text
-textures/particle/blue_flame.png
-```
-
-Do not duplicate identical PNGs just to mirror child effect filenames.
-
-Generate distinct manifest UUIDs per delivered pack; never reuse placeholder UUIDs. Do not invent a strict minimum engine version without a target/project requirement.
-
-Standalone ZIP root should directly expose the Resource Pack root rather than accidental nested duplicate folders.
-
-`REFERENCE.json` is included only when explicit LazyDesigner/Codex/MCP downstream handoff is intended. It must follow `../package/particle-handoff.md`; never create a second particle handoff manifest.
+`delivery.md` is the sole owner for exact package naming, manifest, texture path, README, ZIP-root, production-file hygiene, and optional `REFERENCE.json` rules. Do not duplicate those details here.
 
 ## Snowstorm round-trip rule
 
@@ -358,10 +246,10 @@ EMPIRICALLY VERIFIED
 HEURISTIC
 ```
 
-Never present editor behavior as generic Bedrock validity or static heuristics as runtime/FPS truth.
+Never present editor behavior as generic Bedrock validity, current-stable compatibility as exact target-version proof, or static heuristics as runtime/FPS truth.
 
 ## Boundary
 
-This Skill may produce `.particle.json`, textures/atlases, Resource Pack structure, static/preflight diagnostics, concise usage notes, and clean handoff packages.
+This Skill may produce `.particle.json`, required textures/atlases, static/preflight diagnostics, and—only when requested—clean Resource Pack or handoff packages.
 
 It does not own MCP implementation, Blockbench runtime mutation, animation/controller integration, live Minecraft/Snowstorm truth, or device/FPS benchmarking.
