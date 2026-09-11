@@ -21,15 +21,7 @@ async function source(path: string): Promise<string> {
 
 describe("static footprint budget", () => {
   test("current instruction owners stay within deliberate guardrail ceilings", async () => {
-    const [
-      root,
-      referenceGenerator,
-      controlPacket,
-      modelling,
-      texturing,
-      animation,
-      workflow,
-    ] = await Promise.all([
+    const [root, referenceGenerator, controlPacket, modelling, texturing, animation, workflow] = await Promise.all([
       source("../AGENTS.md"),
       source("../.agents/skills/blockbench-reference-generator/SKILL.md"),
       source("gateway/control/packet.ts"),
@@ -39,8 +31,6 @@ describe("static footprint budget", () => {
       source("prompts/bedrock_entity_workflow.md"),
     ]);
 
-    // Static footprint is a regression guardrail only. It must not force removal
-    // of decision-critical authoring/reference guidance merely to hit an old byte cap.
     expect(root.length).toBeLessThan(12_000);
     expect(referenceGenerator.length).toBeLessThan(20_000);
     expect(controlPacket.length).toBeLessThan(14_000);
@@ -52,7 +42,7 @@ describe("static footprint budget", () => {
 
   test("static footprint is explicitly separate from authoring efficiency", async () => {
     const [brief, implementation, runbook, validation] = await Promise.all([
-      source("../.agents/skills/development-brief/SKILL.md"),
+      source("../.agents/skills/lazydesigner-development-brief/SKILL.md"),
       source("../docs/04-system/implementation-map.md"),
       source("../docs/05-operations/local-acceptance-runbook.md"),
       source("../docs/05-operations/current-validation.md"),
@@ -70,11 +60,7 @@ describe("static footprint budget", () => {
     const outline = listOutlineParameters.parse({});
     expect(outline.max_depth).toBe(8);
     expect(outline.max_nodes).toBe(120);
-    expect(listOutlineParameters.parse({ max_depth: 32, max_nodes: 5000 })).toEqual({
-      include_cubes: true,
-      max_depth: 32,
-      max_nodes: 5000,
-    });
+    expect(listOutlineParameters.parse({ max_depth: 32, max_nodes: 5000 })).toEqual({ include_cubes: true, max_depth: 32, max_nodes: 5000 });
 
     expect(findElementsByCriteriaParameters.parse({}).limit).toBe(50);
     expect(findElementsByCriteriaParameters.parse({ limit: 1000 }).limit).toBe(1000);
@@ -98,24 +84,13 @@ describe("static footprint budget", () => {
       for (const term of terms) expect(description).toContain(term);
     }
 
-    for (const schema of [
-      elementIdSchema,
-      textureIdOptionalSchema,
-      textureIdSchema,
-      animationIdOptionalSchema,
-      boneNameSchema,
-      cubeIdOptionalSchema,
-      cubeIdSchema,
-    ]) {
+    for (const schema of [elementIdSchema, textureIdOptionalSchema, textureIdSchema, animationIdOptionalSchema, boneNameSchema, cubeIdOptionalSchema, cubeIdSchema]) {
       expect(schema.safeParse("").success).toBe(false);
     }
   });
 
   test("optional Texture identity guidance is shared across Paint and texture reads", async () => {
-    const [paint, texture] = await Promise.all([
-      source("server/tools/paint.ts"),
-      source("server/tools/texture.ts"),
-    ]);
+    const [paint, texture] = await Promise.all([source("server/tools/paint.ts"), source("server/tools/texture.ts")]);
     expect((paint.match(/texture_id: textureIdOptionalSchema/g) ?? []).length).toBeGreaterThanOrEqual(7);
     expect(texture).toContain("texture: textureIdOptionalSchema");
   });
@@ -141,23 +116,13 @@ describe("static footprint budget", () => {
   });
 
   test("material discovery channel summaries omit redundant presence flags", () => {
-    const textures = [
-      { name: "Color", uuid: "tex-color", pbr_channel: "color" },
-    ] as Texture[];
-
-    expect(getChannelTextureInfo(textures, "color")).toEqual({
-      name: "Color",
-      uuid: "tex-color",
-    });
+    const textures = [{ name: "Color", uuid: "tex-color", pbr_channel: "color" }] as Texture[];
+    expect(getChannelTextureInfo(textures, "color")).toEqual({ name: "Color", uuid: "tex-color" });
     expect(getChannelTextureInfo(textures, "normal")).toBeNull();
   });
 
   test("project info stays lifecycle/counts-only and structured result mirrors stay compact", async () => {
-    const [project, factories] = await Promise.all([
-      source("server/tools/project.ts"),
-      source("lib/factories.ts"),
-    ]);
-
+    const [project, factories] = await Promise.all([source("server/tools/project.ts"), source("lib/factories.ts")]);
     expect(project).not.toContain("ROOT_GROUP_SUMMARY_LIMIT");
     expect(project).not.toContain("root_groups_truncated");
     expect(project).not.toContain("root_groups: rootGroups");
@@ -169,12 +134,9 @@ describe("static footprint budget", () => {
   });
 
   test("runtime prompt bundle contains only the exposed Bedrock workflow", async () => {
-    const manifest = JSON.parse(await source("prompts/manifest.json")) as {
-      prompts: Record<string, string>;
-    };
+    const manifest = JSON.parse(await source("prompts/manifest.json")) as { prompts: Record<string, string> };
     const serverPrompts = await source("server/prompts.ts");
     const generator = await source("build/generate-manifest.ts");
-
     expect(Object.keys(manifest.prompts)).toEqual(["bedrock_entity_workflow"]);
     expect(serverPrompts).toContain('createPrompt("bedrock_entity_workflow"');
     expect(serverPrompts).not.toContain('createPrompt("blockbench_native_apis"');
