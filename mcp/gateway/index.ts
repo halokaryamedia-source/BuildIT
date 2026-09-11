@@ -39,7 +39,7 @@ const server = new McpServer(
   },
   {
     instructions:
-      "Stable BlockIT client boundary with BlockIT Navigator. Start/resume with status only when orientation is unknown or materially stale; reuse its compact navigation packet. For source work, call status with task_mode=MCP_DEVELOPMENT plus the concrete task_intent to receive bounded source/specialist/test ownership instead of scanning the repo. Known Runtime capability → invoke directly; search only when unknown/stale and describe only for real schema uncertainty. Gateway exposes tools only; Runtime resources and prompts are not proxied. Geometry/Texturing share AUTHORING; Animation is the only runtime handoff. Project/phase affinity remain local to this Gateway. invoke_capability never auto-retries an interrupted mutation.",
+      "Stable LazyDesigner Gateway boundary with LazyDesigner Control. Start/resume with status only when orientation is unknown or materially stale; reuse the compact Control packet and content-addressed context handles. For asset work, pass reference_package_path when a LazyDesigner Reference Package exists; Control projects only the active authoring stage plus exactly one selected modelling profile for Geometry. For product/source work, use task_mode=SYSTEM_DEVELOPMENT with concrete task_intent so Control returns bounded source/specialist/test ownership instead of broad repository scans. Known Runtime capability → invoke directly; search only when unknown/stale and describe only for real schema uncertainty. Geometry/Texturing share AUTHORING; Animation is the only Runtime phase handoff. invoke_capability never auto-retries an interrupted mutation.",
   }
 );
 
@@ -116,27 +116,41 @@ const statusInput = z.object({
     .max(16)
     .default([])
     .describe(
-      "Optional Navigator context handles already loaded in this task. Matching exact hashes are omitted from delivery instead of retransmitted."
+      "Optional LazyDesigner Control context handles already loaded in this task. Matching current hashes are omitted from delivery; stale same-family handles are returned as invalidated IDs."
     ),
   workspace_path: z
     .string()
     .min(1)
     .optional()
     .describe(
-      "Optional Active Workspace directory or README.md path. Supply once when Runtime does not expose a saved project path; Navigator remembers it for this bound project."
+      "Optional Active Workspace directory or README.md path. Supply when Runtime cannot resolve the asset workspace from the bound project."
+    ),
+  reference_package_path: z
+    .string()
+    .min(1)
+    .optional()
+    .describe(
+      "Optional LazyDesigner Reference Package directory or REFERENCE.json path. Control reads only the compact machine-readable package projection and selects active-stage document/image identities."
+    ),
+  current_user_delta: z
+    .string()
+    .max(1000)
+    .optional()
+    .describe(
+      "Optional current asset correction/change request. Control includes this delta in the stage-specific context identity without replacing original reference intent."
     ),
   task_mode: z
-    .enum(["ASSET_AUTHORING", "MCP_DEVELOPMENT"])
+    .enum(["ASSET_AUTHORING", "SYSTEM_DEVELOPMENT"])
     .default("ASSET_AUTHORING")
     .describe(
-      "Navigator projection mode. Use MCP_DEVELOPMENT only for BlockIT source/tool/Gateway/runtime/build work; normal model creation remains ASSET_AUTHORING."
+      "LazyDesigner Control task class. ASSET_AUTHORING projects the current authoring stage; SYSTEM_DEVELOPMENT routes LazyDesigner source/Gateway/Runtime/build work to bounded owners."
     ),
   task_intent: z
     .string()
     .max(500)
     .optional()
     .describe(
-      "Concrete development problem to route when task_mode=MCP_DEVELOPMENT, for example 'animation terlalu kaku' or 'dev:sync stale build'."
+      "Concrete system-development problem to route when task_mode=SYSTEM_DEVELOPMENT, for example 'animation terlalu kaku' or 'dev:sync stale build'."
     ),
 });
 
@@ -167,9 +181,9 @@ const invokeInput = z.object({
 registerGatewayTool(
   GATEWAY_TOOLS.status,
   {
-    title: "BlockIT Status",
+    title: "LazyDesigner Status",
     description:
-      "Reports Gateway health plus a compact BlockIT Navigator packet. For source development, task_mode=MCP_DEVELOPMENT with task_intent returns bounded source/specialist/test ownership without scanning unrelated repo context. Pass known_context_ids to suppress exact Skill handles already loaded in an authoring task.",
+      "Reports Gateway health plus a compact LazyDesigner Control packet. Asset mode can project a Reference Package + Workspace into GEOMETRY_CONTEXT, TEXTURE_CONTEXT, or ANIMATION_CONTEXT. System-development mode returns bounded source/specialist/test ownership. Pass known_context_ids to avoid retransmitting unchanged Skill/profile handles.",
     inputSchema: statusInput.shape,
     annotations: {
       readOnlyHint: true,
@@ -184,15 +198,19 @@ registerGatewayTool(
         adopt_active_project,
         known_context_ids,
         workspace_path,
+        reference_package_path,
+        current_user_delta,
         task_mode,
         task_intent,
       } = statusInput.parse(rawArgs);
       const status = adopt_active_project
         ? await backend.adoptActiveProject()
         : await backend.getStatus();
-      const navigation = await buildNavigatorPacket(status, {
+      const control = await buildNavigatorPacket(status, {
         knownContextIds: known_context_ids,
         workspacePath: workspace_path,
+        referencePackagePath: reference_package_path,
+        currentUserDelta: current_user_delta,
         taskMode: task_mode,
         taskIntent: task_intent,
       });
@@ -200,18 +218,18 @@ registerGatewayTool(
         content: [
           {
             type: "text" as const,
-            text: task_mode === "MCP_DEVELOPMENT"
-              ? `BlockIT Navigator routed development task ${navigation.task_context_id} to ${navigation.development?.domain ?? "UNRESOLVED"}.`
+            text: task_mode === "SYSTEM_DEVELOPMENT"
+              ? `LazyDesigner Control routed development task ${control.task_context_id} to ${control.development?.domain ?? "UNRESOLVED"}.`
               : status.runtime.online
                 ? status.affinity.project_uuid
-                  ? `BlockIT Gateway is ready; Navigator task ${navigation.task_context_id} is bound to project ${status.affinity.project_uuid}.`
-                  : "BlockIT Gateway is ready and Runtime is online; Navigator has no project binding yet."
-                : "BlockIT Gateway is ready; the Blockbench Runtime is currently offline.",
+                  ? `LazyDesigner Gateway is ready; Control task ${control.task_context_id} is bound to project ${status.affinity.project_uuid}.`
+                  : "LazyDesigner Gateway is ready and Runtime is online; Control has no project binding yet."
+                : "LazyDesigner Gateway is ready; the Blockbench Runtime is currently offline.",
           },
         ],
         structuredContent: {
           ...status,
-          navigation,
+          control,
         },
       };
     } catch (error) {
@@ -223,9 +241,9 @@ registerGatewayTool(
 registerGatewayTool(
   GATEWAY_TOOLS.searchCapabilities,
   {
-    title: "Search BlockIT Capabilities",
+    title: "Search LazyDesigner Capabilities",
     description:
-      "Searches the live BlockIT capability catalog and decorates results with Navigator authoring-domain eligibility plus exact source ownership. Primary authoring capabilities rank ahead of support, experimental, and maintenance fallbacks when relevance is comparable.",
+      "Searches the live capability catalog and decorates results with LazyDesigner Control authoring-domain eligibility plus source ownership. Primary authoring capabilities rank ahead of support, experimental, and maintenance fallbacks when relevance is comparable.",
     inputSchema: searchInput.shape,
     annotations: {
       readOnlyHint: true,
@@ -250,14 +268,14 @@ registerGatewayTool(
             ),
           ].slice(0, limit)
         : runtimeCapabilities;
-      const navigationStatus = await backend.getStatus();
-      const currentDomain = buildNavigatorSnapshot(navigationStatus).authoring.domain;
+      const controlStatus = await backend.getStatus();
+      const currentDomain = buildNavigatorSnapshot(controlStatus).authoring.domain;
       const capabilities = decorateCapabilities(rawCapabilities, currentDomain);
       return {
         content: [
           {
             type: "text" as const,
-            text: `Found ${capabilities.length} BlockIT capabilities.`,
+            text: `Found ${capabilities.length} LazyDesigner capabilities.`,
           },
         ],
         structuredContent: { query, count: capabilities.length, capabilities },
@@ -271,9 +289,9 @@ registerGatewayTool(
 registerGatewayTool(
   GATEWAY_TOOLS.describeCapability,
   {
-    title: "Describe BlockIT Capability",
+    title: "Describe LazyDesigner Capability",
     description:
-      "Returns description, annotations, and exact input schema for one BlockIT capability. Known consolidated branches can be projected to continuation-relevant fields without returning unrelated schema branches.",
+      "Returns description, annotations, and exact input schema for one LazyDesigner capability. Known consolidated branches can be projected to continuation-relevant fields without returning unrelated schema branches.",
     inputSchema: describeInput.shape,
     annotations: {
       readOnlyHint: true,
@@ -300,8 +318,8 @@ registerGatewayTool(
           {
             type: "text" as const,
             text: projection.projected
-              ? `Capability ${capability} branch ${branch!.field}=${branch!.value} is available on the current BlockIT surface.`
-              : `Capability ${capability} is available on the current BlockIT surface.`,
+              ? `Capability ${capability} branch ${branch!.field}=${branch!.value} is available on the current LazyDesigner surface.`
+              : `Capability ${capability} is available on the current LazyDesigner surface.`,
           },
         ],
         structuredContent: {
@@ -314,7 +332,7 @@ registerGatewayTool(
               projected: projection.projected,
               branch: projection.branch,
             },
-            navigation: {
+            control: {
               authoring_domain: authoringDomainForCapability(capability),
               current_phase: (await backend.getStatus()).affinity.authoring_phase,
             },
@@ -330,9 +348,9 @@ registerGatewayTool(
 registerGatewayTool(
   GATEWAY_TOOLS.invokeCapability,
   {
-    title: "Invoke BlockIT Capability",
+    title: "Invoke LazyDesigner Capability",
     description:
-      "Invokes one exact BlockIT capability. Runtime calls use this Gateway's bound Blockbench project and authoring phase; rare read-only local support references do not mutate project state. Runtime calls are serialized and never automatically retried after interruption.",
+      "Invokes one exact LazyDesigner capability. Runtime calls use this Gateway's bound Blockbench project and authoring phase; rare read-only local support references do not mutate project state. Runtime calls are serialized and never automatically retried after interruption.",
     inputSchema: invokeInput.shape,
   },
   async (rawArgs) => {
@@ -358,7 +376,7 @@ registerGatewayTool(
       const projectUuid = capability === "create_project" && structured?.project && typeof structured.project === "object" && !Array.isArray(structured.project)
         ? typeof (structured.project as JsonRecord).uuid === "string" ? (structured.project as JsonRecord).uuid as string : null
         : null;
-      const navigationDelta = buildNavigatorDelta({
+      const controlDelta = buildNavigatorDelta({
         capability,
         phaseBefore,
         phaseAfter,
@@ -366,7 +384,7 @@ registerGatewayTool(
         succeeded,
       });
       if (result.structuredContent === undefined) {
-        return { ...result, structuredContent: { navigation_delta: navigationDelta } };
+        return { ...result, structuredContent: { control_delta: controlDelta } };
       }
       const compacted = compactGatewayCapabilityStructuredContent(
         capability,
@@ -376,8 +394,8 @@ registerGatewayTool(
         ...result,
         structuredContent:
           compacted && typeof compacted === "object" && !Array.isArray(compacted)
-            ? { ...(compacted as JsonRecord), navigation_delta: navigationDelta }
-            : { runtime_result: compacted, navigation_delta: navigationDelta },
+            ? { ...(compacted as JsonRecord), control_delta: controlDelta }
+            : { runtime_result: compacted, control_delta: controlDelta },
       };
     } catch (error) {
       return gatewayErrorResult(error);
@@ -408,6 +426,6 @@ async function main(): Promise<void> {
 }
 
 main().catch((error) => {
-  console.error("[BlockIT Gateway] fatal:", error);
+  console.error("[LazyDesigner Gateway] fatal:", error);
   void shutdown(1);
 });
