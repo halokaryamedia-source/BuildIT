@@ -86,6 +86,28 @@ describe("native Bedrock controller composition", () => {
     ).toBe(false);
   });
 
+  test("native composition preserves zero and explicit blend reset semantics", () => {
+    expect(
+      animationControllerNativeParameters.safeParse({
+        controller_id: "controller.animation.example",
+        native_operations: [
+          {
+            op: "add_animation_item",
+            state: "walk",
+            item: "animation.example.walk",
+            blend_value: 0,
+          },
+          {
+            op: "update_animation_item",
+            state: "walk",
+            id: "link-uuid",
+            blend_value: null,
+          },
+        ],
+      }).success
+    ).toBe(true);
+  });
+
   test("advanced controller support does not expand MCP tool count", async () => {
     const [source, server] = await Promise.all([
       Bun.file("server/tools/animation-controller-native-intelligence.ts").text(),
