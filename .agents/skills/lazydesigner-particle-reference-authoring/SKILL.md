@@ -5,7 +5,9 @@ description: ChatGPT-side specialist for creating Minecraft Bedrock/Snowstorm pa
 
 # LazyDesigner Particle Reference Authoring
 
-Specialist used inside the canonical Reference Preparation domain for particle/VFX tasks.
+Standalone specialist inside the canonical Reference Preparation domain for particle/VFX tasks.
+
+It does not depend on the image/model reference branch.
 
 ## Route
 
@@ -19,6 +21,12 @@ USER PARTICLE REQUEST
 → USER VISUAL REVIEW
 → optional Codex / MCP handoff
 ```
+
+If the user requests only particle/VFX work, do not generate image/model references merely as an intermediate step.
+
+Use image-reference capability only when:
+- the user explicitly requests it; or
+- a missing visual fact materially blocks the particle design and cannot be resolved from the current prompt/reference evidence.
 
 ## Canonical Owners
 
@@ -41,7 +49,7 @@ Package contract
 Reusable physical patterns
 → docs/02-reference/particle/patterns.md
 
-Parent reference flow
+Parent reference routing
 → docs/02-reference/flow.md
 ```
 
@@ -58,12 +66,27 @@ This Skill owns ChatGPT-side particle reference generation. It may produce:
 - a clean package ready for user review or downstream handoff.
 
 It does not own:
+- image/model reference generation unless separately requested;
 - MCP tool implementation;
 - Blockbench runtime mutation;
 - animation/controller binding;
 - live Snowstorm/Minecraft visual truth;
 - FPS/device benchmarking;
 - full Molang runtime execution.
+
+## Input Rule
+
+Particle authoring may start from any sufficient combination of:
+
+```text
+text-only effect request
+existing user image/reference
+existing world/object context
+previously approved particle behavior
+existing Bedrock particle package
+```
+
+A newly generated reference image is optional evidence, not a prerequisite.
 
 ## Runtime Compatibility Rule
 
@@ -84,10 +107,12 @@ Keep emitter timing emitter-owned. Keep living-particle classes particle-owned u
 
 Never package immediately after authoring. Follow the canonical QA sequence first. Static heuristics may warn about motion, keep-out overlap, readability, atlas hygiene, or particle count, but they never substitute for user visual review.
 
+Run only particle-relevant QA. Do not require image-reference QA when no image-reference artifact exists.
+
 ## Delivery Rule
 
-Deliver ordinary Bedrock Resource Pack files/folders or ZIP according to `delivery.md`. Do not create `.mcpack`, versioned scratch filenames, duplicate textures, or internal QA debris unless explicitly requested.
+Deliver ordinary Bedrock Resource Pack files/folders or ZIP according to `delivery.md`. Do not create `.mcpack`, versioned scratch filenames, duplicate textures, image-reference packages, or internal QA debris unless explicitly requested.
 
 ## Downstream Relationship
 
-Codex or MCP may consume the completed package later, but this Skill does not require MCP to create or validate the asset. The particle package is the handoff boundary.
+Codex or MCP may consume the completed package later, but this Skill does not require MCP or the image-reference branch to create or validate the asset. The particle package is the handoff boundary.
