@@ -89,6 +89,7 @@ export type BlockitRuntimeBackendOptions = {
   callTimeoutMs?: number;
   closeTimeoutMs?: number;
   maxQueueDepth?: number;
+  catalogLeaseMs?: number;
 };
 
 function errorMessage(error: unknown): string {
@@ -168,10 +169,12 @@ export class BlockitRuntimeBackend {
   private readonly callTimeoutMs: number;
   private readonly closeTimeoutMs: number;
   private readonly maxQueueDepth: number;
+  private readonly catalogLeaseMs: number;
   private readonly connection = new GatewayConnectionManager();
   private client: Client | null = null;
   private connectedSignature: string | null = null;
   private catalog = new Map<string, BackendTool>();
+  private catalogValidatedAt = 0;
   private projectUuid: string | null = null;
   private authoringPhase: BlockitAuthoringPhaseAffinity | null = null;
   private operationTail: Promise<void> = Promise.resolve();
@@ -212,6 +215,12 @@ export class BlockitRuntimeBackend {
       options.maxQueueDepth ??
         Number(process.env.BLOCKIT_GATEWAY_MAX_QUEUE_DEPTH ?? 8),
       8
+    );
+    this.catalogLeaseMs = normalizePositiveInteger(
+      options.catalogLeaseMs ??
+        Number(process.env.BLOCKIT_GATEWAY_CATALOG_LEASE_MS ?? 1000),
+      1000,
+      100
     );
   }
 
@@ -271,6 +280,16 @@ export class BlockitRuntimeBackend {
     return run;
   }
 
+  private hasFreshCatalog(now: number = Date.now()): boolean {
+    return Boolean(
+      this.client &&
+      this.connectedSignature &&
+      this.catalog.size > 0 &&
+      this.catalogValidatedAt > 0 &&
+      now - this.catalogValidatedAt <= this.catalogLeaseMs
+    );
+  }
+
   private runtimeRequestHeaders(): Headers {
     const headers = new Headers();
     if (this.projectUuid) {
@@ -304,6 +323,7 @@ export class BlockitRuntimeBackend {
         return { online: false, error: "Runtime health returned non-object JSON." };
       }
 
+      this.connection.markAvailable();
       return {
         online: true,
         health: body,
@@ -432,6 +452,7 @@ export class BlockitRuntimeBackend {
     this.client = null;
     this.connectedSignature = null;
     this.catalog.clear();
+    this.catalogValidatedAt = 0;
 
     if (client) {
       await this.closeClientBestEffort(client);
@@ -477,6 +498,7 @@ export class BlockitRuntimeBackend {
       this.client = client;
       this.connectedSignature = signature;
       this.catalog = new Map(tools.map((tool) => [tool.name, tool]));
+      this.catalogValidatedAt = Date.now();
       this.lastError = null;
       this.connection.markReady({ catalogRefreshed: true });
     } catch (error) {
@@ -549,6 +571,7 @@ export class BlockitRuntimeBackend {
       this.connectedSignature === probe.signature &&
       this.catalog.size > 0
     ) {
+      this.catalogValidatedAt = Date.now();
       this.connection.markHealthy();
       return;
     }
@@ -584,6 +607,7 @@ export class BlockitRuntimeBackend {
     const ready =
       Boolean(this.client) && this.connectedSignature === probe.signature;
     if (ready) {
+      this.catalogValidatedAt = Date.now();
       this.connection.markHealthy();
     }
     return {
@@ -655,26 +679,37 @@ export class BlockitRuntimeBackend {
     query: string,
     limit: number = 4
   ): Promise<CapabilitySummary[]> {
+    if (this.hasFreshCatalog()) {
+      return searchCapabilityCatalog([...this.catalog.values()], query, limit);
+    }
+
     return this.runExclusive(async () => {
-      await this.ensureCatalogUnsafe();
+      if (!this.hasFreshCatalog()) {
+        await this.ensureCatalogUnsafe();
+      }
       return searchCapabilityCatalog([...this.catalog.values()], query, limit);
     });
   }
 
   async describeCapability(capability: string): Promise<BackendTool> {
-    return this.runExclusive(async () => {
-      await this.ensureCatalogUnsafe();
-      const tool = this.catalog.get(capability);
-      if (!tool) {
-        throw new GatewayBackendError(
-          "CAPABILITY_NOT_FOUND",
-          `Runtime capability "${capability}" is not exposed by the current LazyDesigner surface.`,
-          true,
-          { capability }
-        );
-      }
-      return tool;
-    });
+    if (!this.hasFreshCatalog()) {
+      await this.runExclusive(async () => {
+        if (!this.hasFreshCatalog()) {
+          await this.ensureCatalogUnsafe();
+        }
+      });
+    }
+
+    const tool = this.catalog.get(capability);
+    if (!tool) {
+      throw new GatewayBackendError(
+        "CAPABILITY_NOT_FOUND",
+        `Runtime capability "${capability}" is not exposed by the current LazyDesigner surface.`,
+        true,
+        { capability }
+      );
+    }
+    return tool;
   }
 
   async invokeCapability(
