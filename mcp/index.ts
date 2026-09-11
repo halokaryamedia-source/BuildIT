@@ -6,10 +6,7 @@
 /// <reference types="three" />
 /// <reference types="blockbench-types" />
 import { VERSION } from "@/lib/constants";
-import {
-  PRODUCT_ABOUT,
-  PRODUCT_DESCRIPTION,
-} from "@/lib/productIdentity";
+import { PRODUCT_ABOUT } from "@/lib/productIdentity";
 import {
   applyMcpToolSurface,
   getActiveMcpRegistrationProfile,
@@ -144,7 +141,7 @@ BBPlugin.register("blockit_mcp", {
   version: VERSION,
   title: "LazyDesigner",
   author: "Anonymous",
-  description: PRODUCT_DESCRIPTION,
+  description: PRODUCT_ABOUT,
   about: PRODUCT_ABOUT,
   tags: ["MCP", "AI"],
   repository: "",
