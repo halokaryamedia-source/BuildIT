@@ -21,7 +21,7 @@ export function setExtendedMcpFamiliesEnabled(enabled: boolean): void {
   }
   Settings.save();
   Blockbench.showQuickMessage(
-    `BlockIT Legacy UI Fallbacks ${enabled ? "enabled" : "disabled"}. Runtime surface updated for debug/maintenance use.`,
+    `LazyDesigner Legacy UI Fallbacks ${enabled ? "enabled" : "disabled"}. Runtime surface updated for debug/maintenance use.`,
     3000
   );
   extendedProfileHandler?.(enabled);
