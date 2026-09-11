@@ -98,6 +98,16 @@ const SOURCE_BY_CAPABILITY: Record<string, ControlSourceOwner> = {
     specialist: MODELLING_PATH,
     test_owner: "mcp/tests/model-effectiveness-correction-accuracy.test.ts",
   },
+  manage_locator: {
+    source: "mcp/server/tools/locators.ts",
+    specialist: MODELLING_PATH,
+    test_owner: "mcp/tests/bedrock-locator-coverage.test.ts",
+  },
+  manage_null_object: {
+    source: "mcp/server/tools/locators.ts",
+    specialist: MODELLING_PATH,
+    test_owner: "mcp/tests/bedrock-locator-coverage.test.ts",
+  },
   bone_rigging: {
     source: "mcp/server/tools/animation.ts",
     specialist: MODELLING_PATH,
@@ -118,10 +128,30 @@ const SOURCE_BY_CAPABILITY: Record<string, ControlSourceOwner> = {
     specialist: TEXTURING_PATH,
     test_owner: "mcp/tests/authoring/asset-authoring-usage-slimming.test.ts",
   },
+  activate_texture: {
+    source: "mcp/server/tools/texture.ts",
+    specialist: TEXTURING_PATH,
+    test_owner: "mcp/tests/texture-authoring-contract.test.ts",
+  },
+  paint_fill_tool: {
+    source: "mcp/server/tools/paint.ts",
+    specialist: TEXTURING_PATH,
+    test_owner: "mcp/tests/paint-tool-selection.test.ts",
+  },
+  draw_shape_tool: {
+    source: "mcp/server/tools/paint.ts",
+    specialist: TEXTURING_PATH,
+    test_owner: "mcp/tests/paint-tool-selection.test.ts",
+  },
   paint_with_brush: {
     source: "mcp/server/tools/paint.ts",
     specialist: TEXTURING_PATH,
     test_owner: "mcp/tests/paint-stroke.test.ts",
+  },
+  eraser_tool: {
+    source: "mcp/server/tools/paint.ts",
+    specialist: TEXTURING_PATH,
+    test_owner: "mcp/tests/paint-tool-selection.test.ts",
   },
   paint_texture_transaction: {
     source: "mcp/server/tools/prelocal-wiring.ts",
