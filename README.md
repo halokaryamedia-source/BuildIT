@@ -20,29 +20,55 @@ Routine repository development uses `Local`. Repository behavior is routed by `A
 ```text
 User request
 → ChatGPT Reference Preparation
-   ├─ approved visual reference(s)
-   ├─ explicit technical requirements
-   ├─ buildability / representation guidance
-   ├─ geometry / rig / material / animation guidance when relevant
-   └─ compact machine-readable handoff metadata
+→ Reference Package
 → LazyDesigner Control
-   ├─ preserve original user intent
-   ├─ resolve task / asset / stage / readiness
-   ├─ select minimum canonical context
-   └─ route the minimum legal Codex path
-→ Codex authoring reasoning
+→ Codex
 → Gateway
 → Runtime
 → Blockbench
 → verification / approval / checkpoint
-→ next stage
 → Finalization
-→ final .bbmodel save
 ```
 
-ChatGPT owns **reference preparation**, not Blockbench execution. Its job is not only to create an image: it should provide enough explicit visual and technical information that Codex does not need to guess material requirements. Control remains a thin routing/context layer and must not duplicate canonical Skills, Tool schemas, workspace state, or creative reasoning.
+ChatGPT owns **reference preparation**, not Blockbench execution. Control remains a thin routing/context layer and must not duplicate canonical Skills, Tool schemas, workspace state, or creative reasoning.
 
 The approved image is visual authority. Requested dimensions are numeric authority. LazyDesigner has **one native modelling path**; the retired 3D-assisted/Hunyuan/PrimitiveAnything path is not part of current authoring.
+
+## Documentation
+
+Start from:
+
+```text
+docs/README.md
+```
+
+The documentation is organized for selective AI retrieval:
+
+```text
+docs/
+├── 01-product/      product identity, requirements, end-to-end flow
+├── 02-reference/    ChatGPT reference preparation and Codex handoff package
+├── 03-authoring/    modelling, texture, animation, validation, finalization
+├── 04-system/       Control, source ownership, Skill taxonomy
+└── 05-operations/   current proof, next action, local acceptance
+```
+
+Do not load the whole documentation tree by default. Select the current domain and read only its canonical owner(s).
+
+Current state owners:
+
+- documentation entry point → `docs/README.md`
+- stable project facts → `CONTEXT.md`
+- product flow → `docs/01-product/flow.md`
+- reference preparation → `docs/02-reference/README.md`
+- reference package → `docs/02-reference/package/README.md`
+- authoring policy → `docs/03-authoring/README.md`
+- system/source ownership → `docs/04-system/README.md`
+- repository/plugin continuation → `docs/05-operations/next-action.md`
+- current proof state → `docs/05-operations/current-validation.md`
+- asset continuity → `workspace/README.md`
+
+Historical audits, retired product paths, obsolete continuation, and old roadmaps belong in Git history rather than parallel current-state owners.
 
 ## Current Product Surface
 
@@ -67,34 +93,21 @@ Geometry and Texturing startup focus values resolve to the same shared AUTHORING
 
 Normal authoring has no Standard/Extended profile choice. Internal `extended` remains Legacy UI Fallback compatibility only; `risky_eval` and `from_geo_json` remain disabled.
 
-Installed Runtime counts and lifecycle behavior are proof results, not hand-maintained product facts. See `docs/knowledge/current-validation.md`.
+Installed Runtime counts and lifecycle behavior are proof results, not hand-maintained product facts. See `docs/05-operations/current-validation.md`.
 
 ## Evidence Boundary
 
 Static source/CI proof can establish routing, contracts, schemas, deterministic build output, and fail-closed source behavior. It does **not** prove installed Blockbench state, live Gateway survival, visual fidelity, native Undo/playback/persistence, or accepted asset quality.
 
-Current state owners:
-
-- stable project facts → `CONTEXT.md`
-- product flow → `docs/knowledge/flow.md`
-- reference-to-Codex intake contract → `docs/knowledge/reference-handoff.md`
-- repository/plugin continuation → `docs/knowledge/next-action.md`
-- current proof state → `docs/knowledge/current-validation.md`
-- exact source/tool ownership → `docs/knowledge/implementation-map.md`
-- asset continuity → `workspace/README.md`
-
 ## Repository Map
 
 ```text
 .agents/skills/    task/domain specialists loaded only when relevant
-docs/foundation/  durable authoring policy
-docs/knowledge/   current flow, continuation, source ownership, proof, intake/local procedure
-mcp/              Blockbench MCP plugin/runtime/Gateway/Control/build/tests/generated API docs
-workspace/        persistent active/saved asset packages
-Experimental/     bounded research only
+docs/              hierarchical canonical documentation; start at docs/README.md
+mcp/               Blockbench MCP plugin/runtime/Gateway/Control/build/tests/generated API docs
+workspace/         persistent active/saved asset packages
+Experimental/      bounded research only
 ```
-
-Historical audits, retired product paths, obsolete continuation, and old roadmaps belong in Git history rather than parallel current-state owners.
 
 ## Development
 
