@@ -10,7 +10,8 @@
 
         <div v-if="runtime.state === 'failed'" class="runtime-help">
             <div class="runtime-help-title">Try this</div>
-            <div class="runtime-help-text">Reload LazyDesigner. If the problem continues, restart Blockbench.</div>
+            <div v-if="canReload" class="runtime-help-text">Reload LazyDesigner. If the problem continues, restart Blockbench.</div>
+            <div v-else class="runtime-help-text">Restart Blockbench. You can copy the error details if you need help.</div>
             <div class="action-row">
                 <button v-if="canReload" type="button" class="user-action primary" @click="reloadLazyDesigner">
                     Reload LazyDesigner
