@@ -36,7 +36,7 @@ knowledge/diagnosis
 
 ## Execution efficiency
 
-The authoring path now classifies each request before deep reading:
+The authoring path classifies each request before deep reading:
 
 ```text
 DIRECT
@@ -45,7 +45,24 @@ REACTIVE
 AUDIT / REVISION
 ```
 
-and chooses the lowest viable implementation tier:
+Then it selects the smallest physical starting family from `patterns.md` before choosing technical owners.
+
+Examples:
+
+```text
+flame      → Flame
+sparks     → Sparks
+smoke      → Rising smoke/plume
+dust       → Ambient or impact dust based on context
+rain       → Rain
+magic aura → Magic aura/energy field
+impact     → Impact burst
+explosion  → composed candidate family, only required roles retained
+```
+
+Pattern selection is semantic/physical routing, not a preset system. Exact numeric values remain request/reference/context dependent.
+
+The path then chooses the lowest viable implementation tier:
 
 ```text
 TIER 0 constants
@@ -54,22 +71,23 @@ TIER 2 curves / atlas / flipbook / multi-layer
 TIER 3 events / collision chains / external or entity reactivity
 ```
 
-Non-blocking unknowns may use conservative reversible provisional choices so a simple prompt can reach a first production pass without unnecessary questioning. Architecture escalates only when the requested behavior requires it.
+Non-blocking unknowns may use conservative reversible provisional choices so a simple prompt can reach a first production pass without unnecessary questioning. Architecture escalates only when requested behavior requires it.
 
 QA is single-pass and conditional near finalization; targeted revisions rerun only the causal QA gate plus package integrity.
 
 ## Closure state
 
 ```text
-SOURCE / DOCUMENT KNOWLEDGE     MATURE
-OFFICIAL SCHEMA COVERAGE        TRACKED
-CONTEXT / TOKEN ROUTING         MATURE
-AUTHORING EXECUTION ROUTING     MATURE
-SNOWSTORM VERSION KNOWLEDGE     VERSION-AWARE
-STATIC AUTHORING QA             MATURE
-REAL MULTI-FAMILY VISUAL CASES  DEFERRED BY USER
-LIVE MINECRAFT PROOF            NOT CLAIMED
-DEVICE / FPS PROOF              NOT CLAIMED
+SOURCE / DOCUMENT KNOWLEDGE       MATURE
+OFFICIAL SCHEMA COVERAGE          TRACKED
+CONTEXT / TOKEN ROUTING           MATURE
+AUTHORING EXECUTION ROUTING       MATURE
+AUTOMATIC PHYSICAL PATTERN ROUTING MATURE
+SNOWSTORM VERSION KNOWLEDGE       VERSION-AWARE
+STATIC AUTHORING QA               MATURE
+REAL MULTI-FAMILY VISUAL CASES    DEFERRED BY USER
+LIVE MINECRAFT PROOF              NOT CLAIMED
+DEVICE / FPS PROOF                NOT CLAIMED
 ```
 
 Remaining uncertainty is intentionally limited to target-version/runtime facts such as future Bedrock fields, editor regressions, host-specific Molang query exposure, exact collision/runtime integration, GPU/device performance, and final visual acceptance.
