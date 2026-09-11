@@ -1,0 +1,49 @@
+import type { GatewayRuntimeStatus } from "./backend";
+import type { JsonRecord } from "./contract";
+
+function isRecord(value: unknown): value is JsonRecord {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+function stringValue(value: unknown): string | null {
+  return typeof value === "string" && value.trim() ? value : null;
+}
+
+function numberValue(value: unknown): number | null {
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+function runtimeIdentity(health: JsonRecord | null) {
+  const root = health ?? {};
+  const product = isRecord(root.product) ? root.product : {};
+  return {
+    build_identity: stringValue(root.build_identity),
+    instance_id: stringValue(root.instance_id),
+    startup_time: stringValue(root.startup_time),
+    product_id: stringValue(product.id),
+    product_version: stringValue(product.version),
+    profile: stringValue(product.profile),
+    exposed_tool_count: numberValue(root.exposed_tool_count),
+  };
+}
+
+/**
+ * Stable AI-client projection. Raw Runtime health remains backend/debug evidence
+ * and is intentionally not copied into the normal Gateway status contract.
+ */
+export function projectGatewayStatus(status: GatewayRuntimeStatus) {
+  return {
+    gateway: status.gateway,
+    affinity: status.affinity,
+    runtime: {
+      online: status.runtime.online,
+      mcp_client_ready: status.runtime.mcp_client_ready,
+      catalog_stale: status.runtime.catalog_stale,
+      catalog_count: status.runtime.catalog_count,
+      identity: runtimeIdentity(status.runtime.health),
+    },
+    connection: status.connection,
+    operations: status.operations,
+    last_error: status.last_error,
+  };
+}
