@@ -15,22 +15,7 @@ USER
 
 This domain is upstream of MCP. It does not register tools, mutate Blockbench, or define MCP runtime behavior.
 
-## Standalone Rule
-
-Particle/VFX reference work is independent from image/model reference work.
-
-```text
-particle-only request
-→ particle branch only
-
-image/model reference request
-→ image branch only
-
-combined request
-→ use both only because the user or task actually needs both
-```
-
-Do not generate image/model references as a mandatory intermediate step for particle work.
+It is also independent from the visual/model reference branch. A user can request only particle/VFX work without generating concept art, turnarounds, or model-reference packages.
 
 ## Authority Boundary
 
@@ -41,30 +26,63 @@ User asks ChatGPT to prepare/review/deliver a standalone particle reference pack
 → Particle Reference Authoring owns the package
 
 User/Codex is authoring or editing the active asset through BuildIT MCP / Blockbench
-→ inspect_particle / manage_particle + existing downstream capabilities own runtime authoring
+→ inspect_particle / manage_particle + existing Texturing/Animation capabilities own runtime authoring
 ```
 
-A completed reference package may become input to MCP later. MCP consumes the reviewed asset/package; it should not regenerate the same particle or texture unless a targeted correction is requested.
+A completed reference package may become input to MCP later. When that happens, MCP consumes the reviewed asset/package; it should not independently regenerate the same particle or texture unless a targeted correction is requested.
 
-## Knowledge Authority
+## AI Read Rule
 
-Durable particle knowledge is separated from workflow so ChatGPT can load only the evidence needed for the current decision.
+Do not preload the entire particle corpus.
+
+Start with:
 
 ```text
-knowledge navigation / evidence classes
-→ knowledge-map.md
-
-Bedrock particle document + emitter/particle/component fundamentals
-→ fundamentals.md
-
-particle-specific Molang ownership and stability
-→ molang.md
-
-Snowstorm / Wintersky editor-preview compatibility
-→ snowstorm.md
+particle task starts
+→ authoring-spec.md
+→ workflow.md
 ```
 
-Important evidence classes:
+Then load only the knowledge owner required by the current decision:
+
+```text
+need overall knowledge routing / provenance
+→ knowledge-map.md
+need Bedrock document/component foundation
+→ fundamentals.md
+need emitter timing, rate, shape, spawn region
+→ emitter.md
+need trajectory, drag, gravity, collision, parametric motion
+→ motion.md
+need material, billboard, UV, flipbook, tint, atlas, transparency
+→ appearance-rendering.md
+need particle Molang ownership / expressions
+→ molang.md
+need lifetime progression / interpolation curves
+→ curves.md
+need child effects / nested sequences / event fan-out
+→ events.md
+need Snowstorm / Wintersky compatibility
+→ snowstorm.md
+need particle count / overdraw / complexity guidance
+→ performance.md
+need entity locator / animation / controller attachment context
+→ entity-integration.md
+need symptom-first diagnosis
+→ troubleshooting.md
+need validation / acceptance
+→ qa.md
+need final files/package
+→ delivery.md
+need physical starting pattern
+→ patterns.md
+```
+
+Load multiple knowledge files only when the task genuinely crosses those boundaries.
+
+## Knowledge provenance
+
+Durable rules distinguish four evidence classes:
 
 ```text
 OFFICIAL BEDROCK
@@ -73,40 +91,7 @@ EMPIRICALLY VERIFIED
 HEURISTIC
 ```
 
-Do not merge Snowstorm-specific behavior into Bedrock validity or present a heuristic as runtime truth.
-
-## AI Read Rule
-
-Read only what the current decision needs:
-
-```text
-particle task starts
-→ authoring-spec.md
-→ workflow.md
-
-need Bedrock semantics / component ownership
-→ fundamentals.md
-
-need Molang decision
-→ molang.md
-
-need Snowstorm preview compatibility
-→ snowstorm.md
-
-need validation / acceptance
-→ qa.md
-
-need final files/package
-→ delivery.md
-
-need a physical starting pattern
-→ patterns.md
-
-need to identify the correct knowledge owner / evidence class
-→ knowledge-map.md
-```
-
-Do not preload every file by default.
+Use `knowledge-map.md` as the owner for evidence hierarchy. Snowstorm-specific compatibility must never redefine generic Bedrock validity, and static heuristics must never be presented as live rendering/FPS proof.
 
 ## Boundary
 
@@ -115,25 +100,23 @@ ChatGPT owns:
 - physical/visual decomposition;
 - particle JSON authoring;
 - texture/atlas generation or editing;
-- Bedrock-aware and Snowstorm-aware static reasoning;
-- motion/bundle/atlas/spatial/readability/budget preflight;
+- Snowstorm-aware static preflight;
+- motion/bundle/atlas/spatial/readability/budget reasoning;
 - clean package assembly;
 - targeted revision after user review.
 
 ChatGPT does not claim:
-- live Snowstorm rendering truth without review;
+- live Snowstorm rendering truth;
 - Minecraft visual approval without user review;
 - Blockbench runtime execution;
 - FPS/device performance prediction;
-- complete Molang runtime equivalence;
+- full Molang runtime evaluation;
 - MCP implementation.
 
-## Canonical Acceptance Model
+## Canonical acceptance model
 
 ```text
-Bedrock/source reasoning
-→ Snowstorm compatibility reasoning when applicable
-→ static/preflight QA
+static/source checks
 → clean package
 → user Snowstorm/Minecraft visual review
 → approve or revise causal layer
@@ -141,17 +124,26 @@ Bedrock/source reasoning
 
 `LOCAL_CODE` is not required for this ChatGPT-side workflow.
 
-## Downstream Handoff
+## Knowledge coverage
+
+Current canonical knowledge owners cover:
+
+```text
+Bedrock particle document/components
+emitter rates/lifetimes/shapes
+initial/dynamic/parametric/collision motion
+billboards/materials/UV/flipbook/tint/atlas
+particle Molang and stable ownership
+curves
+lifetime/collision/child events
+Snowstorm/Wintersky compatibility
+static performance reasoning
+entity/locator integration context
+causal troubleshooting
+```
+
+Real multi-family visual workflow testing remains intentionally deferred until the knowledge base is considered mature enough.
+
+## Downstream handoff
 
 A completed particle package may be consumed directly in Snowstorm/Minecraft or supplied to Codex/MCP as authored input. Downstream tools should not need the original ChatGPT transcript to understand the delivered particle asset.
-
-## Core Sources
-
-Durable knowledge should prefer:
-
-1. Microsoft Minecraft Creator particle JSON documentation.
-2. Microsoft Snowstorm overview/tutorial for editor positioning.
-3. Snowstorm repository/release notes for current editor behavior.
-4. Wintersky source/repository when preview semantics matter.
-5. accepted project evidence for reproduced compatibility behavior.
-6. bounded heuristics only where appropriate.
