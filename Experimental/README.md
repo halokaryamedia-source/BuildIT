@@ -7,6 +7,7 @@ Isolated workspace for bounded research and historical proposals that are **not*
 There is no active production authority under `Experimental/`.
 
 - `blockit-navigator/` is retained only as historical design context for the superseded Navigator concept.
+- `chatgpt-particle-authoring/` records an experimental ChatGPT-assisted Bedrock particle authoring workflow plus the approved `MIVUBI_Volcano_Eruption` reference package.
 - The former active `mcp/gateway/navigator/` production path has been removed.
 - Canonical routing/context ownership now lives under `mcp/gateway/control/` with shared phase classification in `mcp/lib/authoringPhase.ts`.
 
