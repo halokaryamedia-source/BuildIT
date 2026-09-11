@@ -33,13 +33,13 @@ describe("model creation effectiveness — cross-view and blocker handling", () 
   });
 
   test("persistent correction failures stop instead of looping", async () => {
-    const [modelling, orchestrator, workflow] = await Promise.all([
+    const [root, modelling, workflow] = await Promise.all([
+      source("../AGENTS.md"),
       source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
-      source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md"),
       source("prompts/bedrock_entity_workflow.md"),
     ]);
 
-    for (const text of [modelling, orchestrator, workflow]) expect(text).toContain("BLOCKED");
+    expect(root).toContain("Stop the same failed direction after two attempts without new evidence");
     expect(modelling).toMatch(/same causal correction.*twice without new evidence.*BLOCKED/i);
     expect(workflow).toContain("Same causal correction failing twice without new evidence");
   });
