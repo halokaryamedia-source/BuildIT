@@ -31,18 +31,105 @@ const STATE_MUTATIONS = new Set([
   "manage_animation_controller",
 ]);
 
+const UV_OR_SHAPE_FIELDS = new Set([
+  "from",
+  "to",
+  "inflate",
+  "faces",
+  "box_uv",
+  "uv_offset",
+  "mirror_uv",
+  "autouv",
+]);
+
+const HIERARCHY_OR_MOTION_STRUCTURE = new Set([
+  "add_group",
+  "modify_group",
+  "reparent_element",
+  "rename_element",
+  "manage_locator",
+  "manage_null_object",
+  "bone_rigging",
+]);
+
+function record(value: unknown): Record<string, unknown> | null {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : null;
+}
+
+function effectChangedFields(value: unknown): string[] {
+  const root = record(value);
+  if (!root) return [];
+  const fields = new Set<string>();
+
+  const addEffect = (raw: unknown) => {
+    const effect = record(raw);
+    const geometryEffect = record(effect?.geometry_effect);
+    const changed = geometryEffect?.changed_fields;
+    if (Array.isArray(changed)) {
+      for (const field of changed) {
+        if (typeof field === "string") fields.add(field);
+      }
+    }
+  };
+
+  addEffect(root);
+  if (Array.isArray(root.effects)) {
+    for (const effect of root.effects) addEffect(effect);
+  }
+  return [...fields];
+}
+
+function geometryInvalidation(
+  capability: string,
+  result: unknown
+): NavigatorAuthoringDomain[] {
+  if (capability === "manage_cubes") {
+    const changedFields = effectChangedFields(result);
+    if (changedFields.length > 0) {
+      if (changedFields.some((field) => UV_OR_SHAPE_FIELDS.has(field))) {
+        return ["GEOMETRY", "TEXTURING", "ANIMATION"];
+      }
+      // Local origin/rotation/name-like edits change current Geometry evidence but
+      // do not automatically invalidate UV/Texture or an unrelated animation.
+      return ["GEOMETRY"];
+    }
+    // Unknown create/delete/batch effect: fail safe until Runtime returns a
+    // decision-changing geometry_effect receipt.
+    return ["GEOMETRY", "TEXTURING", "ANIMATION"];
+  }
+
+  if (capability === "remove_element") {
+    return ["GEOMETRY", "TEXTURING", "ANIMATION"];
+  }
+
+  if (HIERARCHY_OR_MOTION_STRUCTURE.has(capability)) {
+    return ["GEOMETRY", "ANIMATION"];
+  }
+
+  return ["GEOMETRY"];
+}
+
 function mutationInvalidation(
   capability: string,
   domain: NavigatorAuthoringDomain,
-  succeeded: boolean
+  succeeded: boolean,
+  result: unknown
 ): NavigatorDelta["invalidates"] {
   const mutates = succeeded && STATE_MUTATIONS.has(capability);
-  const affectedDomains: NavigatorAuthoringDomain[] = [];
+  let affectedDomains: NavigatorAuthoringDomain[] = [];
 
   if (mutates) {
-    affectedDomains.push(domain);
-    if (domain === "GEOMETRY") affectedDomains.push("TEXTURING", "ANIMATION");
-    else if (domain === "TEXTURING") affectedDomains.push("ANIMATION");
+    if (domain === "GEOMETRY") {
+      affectedDomains = geometryInvalidation(capability, result);
+    } else if (domain === "TEXTURING") {
+      affectedDomains = ["TEXTURING"];
+    } else if (domain === "ANIMATION") {
+      affectedDomains = ["ANIMATION"];
+    } else {
+      affectedDomains = ["CORE"];
+    }
   }
 
   return {
@@ -58,6 +145,7 @@ export function buildNavigatorDelta(input: {
   phaseAfter: BlockitAuthoringPhaseAffinity | null;
   projectUuid: string | null;
   succeeded: boolean;
+  result?: unknown;
 }): NavigatorDelta {
   const changed: string[] = [];
   if (input.succeeded && input.phaseBefore !== input.phaseAfter) {
@@ -71,7 +159,8 @@ export function buildNavigatorDelta(input: {
   const invalidates = mutationInvalidation(
     input.capability,
     authoringDomain,
-    input.succeeded
+    input.succeeded,
+    input.result
   );
   const nextIntent = !input.succeeded
     ? "RECOVER_CURRENT_OPERATION"
