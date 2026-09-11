@@ -9,7 +9,7 @@ describe("model creation effectiveness — semantic form, rotation, pivot and co
   test("semantic/construction reasoning exists before exact Cube coordinates", async () => {
     const [modelling, geometry] = await Promise.all([
       source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
-      source("../docs/foundation/05-geometry-standard.md"),
+      source("../docs/03-authoring/modelling/standard.md"),
     ]);
 
     expect(modelling).toContain("Semantic Form / Construction / Transform Gate");
@@ -41,23 +41,22 @@ describe("model creation effectiveness — semantic form, rotation, pivot and co
     expect(modelling).toMatch(/`back`[^;]*rear topology\/asymmetry/);
     expect(modelling).toMatch(/`front_left_3q`[^.]*ambiguity[^.]*source-matched fidelity/);
     expect(modelling).toMatch(/bounded edits[^.]*affected views/);
-    expect(modelling).toContain(
-      "correspondence metadata only maps captures to canonical board slots"
-    );
+    expect(modelling).toContain("correspondence metadata only maps captures to canonical board slots");
     expect(modelling).toContain("it is not a scorer and never creates visual PASS");
   });
 
   test("small-detail budget stays texture-first while alpha carriers avoid micro-Cubes", async () => {
     const [modelling, geometry, texturing, textureStandard] = await Promise.all([
       source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
-      source("../docs/foundation/05-geometry-standard.md"),
+      source("../docs/03-authoring/modelling/standard.md"),
       source("../.agents/skills/blockit-bedrock-texturing/SKILL.md"),
-      source("../docs/foundation/06-texture-standard.md"),
+      source("../docs/03-authoring/texture/standard.md"),
     ]);
 
     expect(modelling).toContain("`<= 4 Blockbench units`");
     expect(modelling).toContain("PLANAR_CUTOUT_CARRIER");
-    expect(modelling).toContain("2 crossed planes (~90°) in one batch");
+    expect(modelling).toContain("1 plane or 2 crossed planes");
+    expect(modelling).toContain("rather than a fixed ritual angle");
     expect(geometry).toContain("### Planar cutout carrier");
     expect(geometry).toContain("not a new modelling strategy or object preset");
     expect(geometry).toContain("Small-detail thresholds measure the visible feature, not incidental carrier thickness");
@@ -77,7 +76,7 @@ describe("model creation effectiveness — semantic form, rotation, pivot and co
   test("rotation is an explicit modelling decision instead of zero-rotation default bias", async () => {
     const [modelling, geometry] = await Promise.all([
       source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
-      source("../docs/foundation/05-geometry-standard.md"),
+      source("../docs/03-authoring/modelling/standard.md"),
     ]);
 
     expect(modelling).toContain("AXIS_ALIGNED | ROTATED | UNRESOLVED");
@@ -94,15 +93,12 @@ describe("model creation effectiveness — semantic form, rotation, pivot and co
   test("pivot and contact preserve declared relationships instead of technical touching", async () => {
     const [modelling, geometry] = await Promise.all([
       source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
-      source("../docs/foundation/05-geometry-standard.md"),
+      source("../docs/03-authoring/modelling/standard.md"),
     ]);
 
-    for (const term of [
-      "required attachment",
-      "contact target/invariant",
-      "attachment/joint pivot",
-      "negative spaces",
-    ]) expect(modelling).toContain(term);
+    for (const term of ["required attachment", "contact target/invariant", "attachment/joint pivot", "negative spaces"]) {
+      expect(modelling).toContain(term);
+    }
     expect(modelling).toContain("AABB overlap, hierarchy, or numeric touching is not contact proof");
     expect(geometry.replace(/\s+/g, " ")).toContain("AABB overlap or hierarchy alone is not proof");
   });
