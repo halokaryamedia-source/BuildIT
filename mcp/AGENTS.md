@@ -1,227 +1,305 @@
 # MCP Package Rules
 
-Applies to `mcp/**`. Root `../AGENTS.md` owns repository routing, proof economy, evidence labels, communication, and general work discipline. This file keeps only MCP-package rules that change implementation decisions.
+Applies to `mcp/**`. Root `../AGENTS.md` owns repository routing, proof economy, evidence labels, communication and general work discipline. This file keeps only MCP-package rules that change implementation decisions.
 
 ## Source Ownership
 
 ```text
-index.ts        plugin lifecycle
-server/         MCP transport/tools/resources/prompts
-server/tools/   authored model/texture/animation operations
-lib/            shared schemas/factories/identity/runtime helpers
-ui/             Blockbench panel/settings
-prompts/        canonical prompt sources + generated manifest
-build/          build/docs/prompt generation + developer watch policy
-scripts/        verification/measurement/preparation/local-deploy utilities
-tests/          contract/integration regressions
-docs/           generated API docs; never hand-edit generated entries
+index.ts                 Blockbench plugin orchestration only
+plugin/                  Runtime host, Blockbench integration, dev reload ownership
+server/net.ts            Runtime HTTP/MCP transport + request serialization
+server/runtime/          registration/surface/consolidation/phase/bootstrap ownership
+server/tools/            authored Geometry/Texture/Animation/Particle/etc implementations
+server/resources/        Runtime Resource implementations
+server/prompts.ts        Runtime Prompt registration
+lib/                     shared schemas/metadata/readiness/factories/runtime helpers
+ui/                      Blockbench UI implementation details used by plugin integration
+prompts/                 canonical prompt source + generated manifest
+build/                   build/docs/prompt generation + watch policy
+scripts/                 verification/measurement/deploy utilities
+tests/                   contract/integration regressions
+docs/                    generated API docs; never hand-edit generated entries
 ```
 
-Use the affected owner + direct callers first. Do not scan every tool family for a bounded change.
+Use the affected owner + direct callers first. Do not scan every Tool family for a bounded change.
 
-TypeScript and Bun are implementation mechanics, not root Skill routes; keep compiler/build issues with the exact affected source/build owner and route only exposed MCP/runtime semantics to the matching specialist.
+`server/tools.ts` is a thin compatibility facade. Do not move Runtime state ownership back into it.
 
 ## Execution Context / Proof Ceiling
 
-Use the root execution-context names by capability, not product/UI label:
+Use execution-context names by capability:
 
 ```text
-REMOTE_GITHUB   = repository edits + GitHub Actions/source/CI proof
-LOCAL_CODE      = local checkout + Bun/tests/build/generators/filesystem
-LIVE_BLOCKBENCH = LOCAL_CODE + deployed/reloaded BlockIT + reconnected live MCP client
+REMOTE_GITHUB   = repository edits + source/static/available CI proof
+LOCAL_CODE      = local checkout + Bun/tests/typecheck/build/generators/filesystem
+LIVE_BLOCKBENCH = LOCAL_CODE + deployed current Runtime + functioning persistent Gateway/Runtime connection
 ```
 
-- `REMOTE_GITHUB` is the default MCP development workbench for exact-source diagnosis, implementation, regression/static tests, CI routing, verified build artifacts, deterministic fixtures, and live-harness preparation when those claims are source/static/CI-verifiable.
-- `LOCAL_CODE` owns canonical generator-authored committed output, dependency/lockfile mutation, and filesystem/toolchain work that cannot be authored through the current GitHub capability. A successful local build still does not prove installed Blockbench runtime.
-- `LIVE_BLOCKBENCH` is required for installed `build_identity`, native `tools/list`/runtime behavior, Undo/playback/persistence, and model/visual proof. `verify:stateless-local` remains a diagnostic live command, not a mandatory extra step when a later live verifier already performs the shared freshness/runtime preflight.
+Rules:
 
-A higher-context dependency does **not** transfer the whole MCP task. Complete all independent GitHub-verifiable source/test/harness/provenance work first, then hand off only the minimum generator/filesystem/native residue. Do not use CI to author generated files and do not hand-edit generated output.
+- `REMOTE_GITHUB` is the default workbench for exact-source diagnosis, implementation, regression intent, CI routing, deterministic fixtures and live-harness preparation.
+- `LOCAL_CODE` owns dependency/lockfile work, canonical generators and local verification that cannot be established through GitHub source inspection.
+- `LIVE_BLOCKBENCH` is required for installed `build_identity`, native runtime behavior, Undo/playback/persistence/export, Blockbench lifecycle and visual proof.
+- Runtime/plugin/Blockbench recovery is expected to occur **beneath the persistent Gateway**. Do not require a new Codex task/chat or client reconnect merely because the Runtime/plugin was reloaded or rebuilt. Client reconnect is required only when the Gateway process itself is replaced or dies.
+- A higher-context residue does not transfer the entire task. Complete independent source work first and hand off only what intrinsically requires local/live execution.
+- Static/source proof never becomes native/visual proof by wording.
 
-Read-only CI may produce and upload an **exact-SHA verified build artifact** after the owning verifier passes. It must carry source SHA plus bundle hash/build identity/toolchain/verifier provenance, must not commit back, and is still source/build evidence rather than installed-live proof.
+## Public Boundary
 
-## MCP Public Contract Pattern
+Normal AI clients connect to the stable Gateway, not directly to Runtime.
 
-Tool modules stay import-safe outside Blockbench because Bun/Node loads schemas for docs/tests.
+Gateway public tools remain exactly:
+
+```text
+status
+search_capabilities
+describe_capability
+invoke_capability
+```
+
+Do not add client-visible Gateway tools without an explicit product requirement.
+
+Runtime remains a Bedrock-focused capability execution surface. Gateway remains the stable client/recovery boundary. Control remains routing/context projection. None may absorb another layer's workflow or implementation ownership.
+
+## Tool Contract / Zero Capability Loss
+
+Tool modules must remain import-safe outside Blockbench because Bun/Node loads schemas for docs/tests.
 
 At module scope:
-- export the exact Zod parameter schema and domain `ToolSpec[]`;
-- do not read Blockbench runtime globals.
+- export exact Zod schemas / Tool specs;
+- do not read Blockbench globals.
 
 At registration/execution:
-- register through existing `createTool`/family ownership;
-- keep full runtime validation on the original schema;
-- preserve annotations and deterministic identities;
-- use Blockbench globals only where runtime execution owns them.
+- register through existing factories/family ownership;
+- validate through the canonical runtime schema before execution;
+- preserve annotations, deterministic identity and structured result semantics;
+- use Blockbench globals only inside runtime-owned execution.
 
-If a broad `ToolSpec` spread weakens inference, restate the same concrete `parameters` schema in `createTool`; do not weaken or duplicate the contract.
+Optimization rule:
 
-## Input / Identity Rules
+> **Capability/intelligence loss is forbidden as an efficiency technique.**
 
-- Validate MCP input at the boundary and match optional/default/nullability/refinement to execution.
-- Reuse shared schemas/identity resolvers; prefer UUID, then documented unique exact-name/ID fallback.
-- Ambiguous explicit targets fail closed; never silently choose editor selection or the first match.
-- Schema construction stays free of Blockbench globals; live-format checks belong in execution.
+Do not reduce:
+- operations/branches;
+- validation/refinements/defaults;
+- native handling;
+- recovery safety;
+- Geometry/Texture/Animation/Particle intelligence;
+- legitimate authored fields.
+
+Consolidation is routing-only:
+
+```text
+public consolidated capability
+→ declarative route
+→ retained original executor
+→ original implementation
+```
+
+Unknown branches fail explicitly; never silently fall back to a weaker/different executor.
+
+## Identity / Mutation Safety
+
+- Prefer UUID, then documented unique exact-name/ID fallback.
+- Ambiguous explicit targets fail closed.
+- Never silently choose selection or first match for a destructive request.
 - Reject provable destructive no-ops before Undo.
+- Keep mutations serialized where Runtime safety requires it.
+- Interrupted mutation with uncertain outcome is **not auto-retried**. Inspect current authored state first.
 
 ## Result / Context Efficiency
 
 `structuredContent` is canonical machine-readable state when available.
 
-- Do not mirror identical full JSON in `content.text`; use a short useful summary.
-- Keep discovery/list tools summary-first; focused reads own detail.
-- Reuse mutation-returned authored state instead of immediate confirmation reads.
-- Filesystem export is metadata-first after a verified write; return compiled content only when requested.
-- Do not remove legitimate authored fields or impose global limits merely to reduce size.
+- Do not mirror identical full JSON in `content.text`; return a compact useful summary.
+- Discovery/list surfaces stay summary-first; focused reads own detail.
+- Reuse mutation-returned authored state instead of immediate confirmation rereads.
+- Keep diagnostics optional/bounded where the implementation already provides that distinction.
+- Do not remove legitimate capability or fields merely to reduce payload size.
+- Optimize **Cost to Accepted Result**, not static character count or tool count.
+
+## Capability Metadata / Effects
+
+Canonical capability tier/search/effects owner:
+
+```text
+lib/capabilityMetadata.ts
+```
+
+Gateway/Runtime transport must not grow capability-name special cases when declarative metadata can own the behavior.
+
+Canonical authoring phase classification owner:
+
+```text
+lib/authoringPhase.ts
+```
+
+Do not create a second Geometry/Texturing/Animation capability table in Control/Gateway/Plugin.
+
+## Runtime Ownership
+
+Canonical Runtime structure:
+
+```text
+server/net.ts
+→ transport + serialized operation boundary + affinity/generation safety
+
+server/runtime/registration.ts
+→ catalog/surface/profile state
+
+server/runtime/consolidatedRoutes.ts
+→ family/discriminator/executor route metadata
+
+server/runtime/consolidatedTools.ts
+→ routing-only consolidated wrappers
+
+server/runtime/phaseControl.ts
+→ AUTHORING↔Animation capability
+
+server/runtime/bootstrap.ts
+→ exactly-once intelligence wiring
+
+server/tools/**
+→ domain implementations
+```
+
+Request-owned MCP server reconstruction may remain stateless/lightweight. Do not replace it with a shared mutable MCP server merely for micro-optimization.
+
+Surface/phase changes must invalidate only caches whose semantics actually changed.
+
+## Plugin Ownership
+
+```text
+index.ts
+→ lifecycle orchestration only
+
+plugin/runtimeHost.ts
+→ native network permission + listener lifecycle
+
+plugin/blockbenchIntegration.ts
+→ settings/UI/prompts/resources setup/teardown
+
+plugin/devSync.ts
+→ development watcher/reload only
+```
+
+Setup/teardown should be idempotent/defensive. Do not let native listener, watcher, settings or UI ownership grow back into `index.ts`.
+
+## Validation / QA / Handoff
+
+Technical validation and approval are distinct.
+
+Canonical Animation handoff readiness:
+
+```text
+lib/authoringReadiness.ts
+→ USER_APPROVED | AUTONOMOUS_VERIFIED
+```
+
+Canonical Validator projection:
+
+```text
+lib/validationVerdict.ts
+→ BLOCKED | REVIEW_REQUIRED | VALIDATOR_CLEAR
+```
+
+`VALIDATOR_CLEAR`, internal quality PASS, tool success, export success, bounds, hierarchy or similarity metrics **never equal user approval or visual PASS**.
+
+Control lifecycle readiness is orientation/state projection; it does not authorize AUTHORING↔Animation by itself.
+
+## Context / Skills Boundary
+
+Canonical context policy:
+
+```text
+../docs/04-system/ai-context-loading.md
+../docs/04-system/authoring-stage-context.md
+../docs/04-system/control/context-projection.md
+```
+
+Load one active specialist per authoring semantic owner. Geometry may add exactly one selected primary modelling profile. Do not load all profiles/stages as reassurance.
+
+Shared Stage Context is a semantic contract, not another Skill/router/manager/workflow engine.
 
 ## Generated Documentation / Prompts
 
-`build/docs-manifest.ts` owns generated API surface; `build/docs.ts` writes `docs/api.json` and `docs/index.html`.
+Generated outputs are not second owners.
 
-Before substantial implementation that can change a public schema/description/spec:
-
-```text
-LOCAL_CODE or LIVE_BLOCKBENCH can run docs:build + docs:check?
-  YES → canonical source + generated output may be delivered together
-  NO / REMOTE_GITHUB → partition first: finish independent diagnosis/tests/harness/CI prep;
-                       STOP/defer only the canonical source edit that would require unavailable generated output
-```
-
-Before substantial editing of canonical runtime prompt source:
+API docs:
 
 ```text
-LOCAL_CODE or LIVE_BLOCKBENCH can run prompts:build
-+ carry prompts/manifest.json in the same logical delivery?
-  YES → canonical prompt + manifest may be delivered together
-  NO / REMOTE_GITHUB → partition first: finish independent regression/routing/preparation work;
-                       STOP/defer only the prompt-source/generation residue
+build/docs-manifest.ts → build/docs.ts → docs/api.json + docs/index.html
 ```
 
-The same package version + canonical prompt content must produce the same manifest bytes; no wall-clock-only metadata. GitHub Actions may verify generated freshness and emit verified build artifacts, but is not the authoring path and must not create/commit generated output to `Local`.
+Runtime prompt:
 
-Public schema/description/spec change: edit source → update manifest ownership only when needed → `bun run docs:build` → `bun run docs:check`.
+```text
+prompts/bedrock_entity_workflow.md → prompts/manifest.json via canonical generator
+```
 
-Canonical runtime prompt change: edit source → `bun run prompts:build` → include `prompts/manifest.json` in the same logical delivery.
+Before changing canonical source that requires generated committed output, confirm the current execution context can run the required generator. If not, finish independent source/test/harness work and leave only the generator-coupled residue for `LOCAL_CODE`.
 
-Runtime bundles only prompts intentionally exposed by `server/prompts.ts`; maintainer Markdown stays source-only unless explicitly exposed.
+Never hand-edit generated API/prompt output to simulate generator freshness.
+
+GitHub Actions may verify freshness or emit exact-SHA build artifacts, but must not become the canonical generator authoring path.
 
 ## Dependency Closure
 
-Before a cross-surface MCP change is considered complete, classify every materially affected dependent as one of:
+For cross-surface changes, classify materially affected dependents:
 
 ```text
-SHARED SOURCE     same import-safe spec/constant can own runtime + generated-description metadata
-GENERATED         canonical source must regenerate committed output
-SEMANTIC MIRROR   distinct human-owned surface must preserve the same invariant through regression tests
-CI ROUTING        the verifier that owns the invariant must actually run for the changed path
-```
-
-Closure rules:
-
-- Prefer **SHARED SOURCE** over copying the same public metadata into runtime/docs/UI when the code can stay import-safe.
-- **GENERATED** output is never a second owner; regenerate it from canonical source and fail freshness checks when stale.
-- Use **SEMANTIC MIRROR** only where separate human-facing owners are intentional; protect the invariant, forbidden stale concepts, and workflow ordering rather than cosmetic prose.
-- Treat missing **CI ROUTING** as a routing defect: update the workflow/path owner instead of weakening tests or changing unrelated source.
-- Do not auto-rewrite `CONTEXT.md`, proof state, continuation state, Skills, or human-owned docs from source code. Their semantics remain manually owned and test-protected.
-- If a required **GENERATED** dependent cannot be produced in the current context, do not mutate the canonical source into an incomplete state. Finish independent GitHub-verifiable work, then transfer only the source+generation residue.
-
-For LOCAL_CODE cross-surface work, `bun run verify:closure` is the compact closure gate: repository semantic contracts → authoring semantic contracts → generated freshness. It does **not** replace `verify:mcp` when executable or public MCP behavior changed.
-
-### Change Closure Gate
-
-Before the first mutation of any cross-surface MCP or authoring contract, build a **transient impact map**; do not create a persisted checklist/roadmap file:
-
-```text
-canonical owner
-SHARED SOURCE dependents
-GENERATED dependents
-SEMANTIC MIRROR dependents
+SHARED SOURCE
+GENERATED
+SEMANTIC MIRROR
 CI ROUTING
-GitHub-verifiable partition
-higher-context residue
-state/proof owners if their state actually changes
 ```
 
-Every material row must end as `UPDATED | VERIFIED_UNCHANGED | NOT_APPLICABLE | RESIDUE_HANDOFF` before completion; `RESIDUE_HANDOFF` is valid only when its required capability is intrinsically above `REMOTE_GITHUB`.
+Prefer shared source over duplicated metadata. Generated files are outputs, not authority. Human-owned docs/Skills remain human-owned semantic mirrors when needed.
 
-Minimum impact rules:
-
-- authoring semantics / stage / handoff → `docs/03-authoring/workflow.md`, affected router/specialist Skills, runtime prompt/phase/handoff contract when exposed, Local Acceptance runbook, and semantic regressions;
-- public Tool / Resource / Prompt → exact source owner, direct callers, docs/prompt generator owner + committed generated output, contract tests, and Gateway only when boundary/discovery semantics actually change;
-- implementation-only change → implementation + direct regressions; do not churn Product Flow/Skills/docs when public semantics and proof state are unchanged;
-- live/native acceptance gap → prepare deterministic verifier/fixture/evidence capture in GitHub when possible; only execution remains live;
-- proof/continuation → update `docs/05-operations/current-validation.md` / `docs/05-operations/next-action.md` only after corresponding evidence or continuation state actually changes.
-
-If a generated dependent cannot be produced here, only its coupled canonical edit remains higher-context residue; unrelated regression, routing, harness, provenance, or static acceptance work continues in GitHub. Use `verify:closure` as the compact cross-surface preflight; use `verify:full` once for a final delivery that also affects executable/public MCP behavior.
+Update `docs/05-operations/current-validation.md` / `next-action.md` only when proof or continuation state actually changes.
 
 ## Test Ownership / Anti-Stale
 
 Tests are evidence, not prose snapshots.
 
-- Prefer imported behavior, schema, structured result, deterministic ownership, and public-contract assertions over source-string inspection.
-- Use source-string assertions only when the boundary cannot be imported safely; match stable identifiers or semantic invariants, not spacing, complete sentences, local variable names, or incidental implementation syntax.
-- Keep one primary regression owner per recurring defect. Do not repeat the same invariant in runtime, authoring, and repository suites unless each layer proves a materially different boundary.
-- If implementation/semantics are correct and an assertion is stale, fix, merge, or remove the **test owner**; do not rewrite product prose solely to satisfy an old string.
-- A test with no current failure mode, no canonical owner, or strictly weaker duplicate coverage should be deleted or merged rather than retained as ceremony.
-- During iteration run the smallest named test/file that can falsify the current change. Full verification is terminal evidence, not an edit loop.
+- Prefer imported behavior/schema/result/ownership assertions.
+- Use source-string assertions only where import-safe proof is unavailable; match stable semantic invariants, not formatting.
+- Keep one primary regression owner per recurring defect unless separate layers prove different boundaries.
+- If product behavior is correct and a test encodes retired architecture, fix/remove the stale test; do not reintroduce old architecture to satisfy it.
+- A weaker duplicate test with no distinct failure mode should be merged or removed.
 
 Test layers:
 
 ```text
-tests/*.test.ts              executable/runtime/import-safe contracts
-tests/authoring/*.test.ts    authoring semantics and policy
-tests/repository/*.test.ts   repository/docs/CI ownership and routing
+tests/*.test.ts            executable/import-safe runtime contracts
+tests/authoring/*.test.ts  authoring semantics/policy
+tests/repository/*.test.ts repository/docs/CI ownership
 ```
 
-Asset-specific static acceptance may live under `tests/authoring/` when it only validates versioned repository artifacts and never creates visual/native PASS. Keep production Runtime generic.
+Tests added remotely are regression intent until they actually run.
 
 ## Verification
 
-Verification follows the changed claim; `package.json` owns verifier composition so CI, local work, and docs do not maintain separate command lists.
+Canonical local entrypoints from `mcp/` remain package-script owned. During iteration run the smallest test that can falsify the current change. Run broad/full verification once as terminal evidence, not after every edit.
 
-Canonical entrypoints from `mcp/`:
-
-```text
-runtime/import-safe test layer                    → bun run test:runtime
-repository-policy / repository-static contract    → bun run verify:repository
-authoring-policy / authoring-static contract      → bun run verify:authoring
-cross-surface dependency closure                  → bun run verify:closure
-executable/public MCP + authoring compatibility   → bun run verify:mcp
-full repository + MCP final gate                  → bun run verify:full
-main release boundary                              → bun run verify:release
-```
-
-`verify:mcp` intentionally does not rerun repository tests. `verify:full` composes repository verification with `verify:mcp`, so repository, authoring, and runtime layers each run once in the final full gate.
-
-### During iteration
-
-- `REMOTE_GITHUB`: use exact-SHA CI for source/build proof and prepare later local/live execution as scripts/fixtures rather than prose where practical.
-- `LOCAL_CODE` / `LIVE_BLOCKBENCH`: run only checks that were not already accepted on the same clean source SHA or that specifically test the local/native residue.
-- Regenerate affected docs/prompt output before final delivery when the current context can canonically do so.
-- Do not rerun a canonical full verifier after each edit.
-
-### Final MCP gate
-
-For executable/public MCP changes whose repository-policy owners did not change:
-
-```bash
-bun install --frozen-lockfile
-bun run verify:mcp
-```
-
-For cross-surface work or a release candidate, run the non-duplicating full gate once:
+Typical final source gate:
 
 ```bash
 bun install --frozen-lockfile
 bun run verify:full
 ```
 
-A file under `mcp/tests/` alone never upgrades a static policy change into a full MCP gate. GitHub/static proof covers source contracts/buildability and exact-SHA verified build artifacts, not live Blockbench rendering, Undo, playback, persistence, or visual fidelity.
+Use narrower canonical scripts when the claim is narrower. Generated freshness must be produced/checked by its owning generator path.
 
 ## Security / Capability Boundary
 
-- Keep default server exposure loopback-only with present-Origin validation.
+- Keep Runtime/Gateway exposure loopback-only with existing local Host/Origin protections.
 - `risky_eval` and `from_geo_json` remain disabled.
 - Do not broaden network exposure without separately reviewed authentication design.
-- Do not add routers/profiles/frameworks, generic importers, alternate transports, or replacement schema/server stacks without a proved requirement.
-- Preserve retained Bedrock capability; lower tool count is not itself a product requirement.
+- Do not add alternate transports, schema/server stacks, generic importers, routers/profiles/frameworks or parallel authored-state systems without a proved requirement.
 - Keep dependencies lean and never commit secrets.
+- Compatibility-bound BlockIT package/plugin/protocol/environment identifiers remain unchanged until separately dependency-mapped; do not bulk-rename them.
+
+## Completion Rule
+
+A remote change is complete when its source owner, direct dependents and regression intent are aligned and all unavailable local/live proof is stated accurately. Stop rather than inventing another cleanup layer.
