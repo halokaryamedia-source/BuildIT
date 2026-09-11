@@ -6,181 +6,157 @@ This file owns **current implementation continuation only**. Product architectur
 
 ## Current Objective
 
-The AI-first documentation and Reference Preparation content audit are complete enough to be the active baseline. Do **not** automatically resume Control/source implementation or local/live testing. Both remain deferred until the user explicitly requests the next development phase.
+LazyDesigner Control source implementation is now active. Documentation and Reference Preparation architecture are baseline inputs; do not redo those audits unless a concrete source defect requires it.
 
-Canonical documentation entry point:
+Local/live Blockbench testing remains deferred until explicitly reactivated.
 
-```text
-docs/README.md
-```
-
-Canonical AI context-loading contract:
+## Completed Baseline
 
 ```text
-docs/04-system/ai-context-loading.md
+✓ AI-first documentation hierarchy
+✓ minimum-context loading contract
+✓ Skill ↔ Docs authority split
+✓ Reference Preparation content audit
+✓ typed visual / scale / JSON / stage authority
+✓ Unified Reference image system
+✓ Reference Package load contract
+✓ static documentation/reference regression guards
 ```
 
-## Current Documentation Hierarchy
+## Implemented Control Slice
+
+The active semantic/public contract is now:
 
 ```text
-docs/
-├── 01-product/      product identity, requirements, end-to-end flow
-├── 02-reference/    ChatGPT reference preparation, image system, package contracts
-├── 03-authoring/    modelling, profiles, texture, animation, validation, finalization
-├── 04-system/       AI context loading, Control, implementation ownership, Skill taxonomy
-└── 05-operations/   current continuation, proof, local acceptance
+lazydesigner-control-v1
 ```
 
-Rules:
+Physical source remains temporarily under:
 
 ```text
-one domain → one index
-one concern → one canonical semantic owner
-Docs = durable policy/contracts
-Skills = execution procedure
-Control = context selection/projection
-README files route; they do not duplicate policy
-AI loads only minimum sufficient context
+mcp/gateway/navigator/
 ```
 
-## Completed AI Documentation Work
+That path is migration residue only; there is no second Navigator architecture.
+
+Implemented:
 
 ```text
-✓ domain hierarchy replaces foundation/knowledge split
-✓ docs/README.md is the AI router
-✓ Reference image/package contracts grouped by domain
-✓ Authoring standards/profiles grouped by stage
-✓ System and Operations ownership separated
-✓ root routing files and active Skills point to current owners
-✓ workflow routing and static regressions no longer depend on removed doc paths
-✓ top-level Product Flow / Reference Policy compressed to avoid duplicate authority
+✓ ASSET_AUTHORING / SYSTEM_DEVELOPMENT task classes
+✓ Gateway status wired to LazyDesigner Control
+✓ reference_package_path input
+✓ current_user_delta input
+✓ REFERENCE.json compact projection
+✓ GEOMETRY_CONTEXT / TEXTURE_CONTEXT / ANIMATION_CONTEXT projection
+✓ original reference intent preserved separately from user delta
+✓ Geometry loads Modelling Skill + exactly one selected profile
+✓ Texturing loads only Texturing Skill by default
+✓ Animation loads only Animation Skill by default
+✓ former router Skill removed from mandatory authoring context
+✓ context handles use current-file SHA-256 instead of hard-coded hashes
+✓ known_context_ids reuse + same-family invalidation retained
+✓ SYSTEM_DEVELOPMENT routes bounded source/specialist/test owners
+✓ system-development base context no longer loads development-brief by default
+✓ capability search/describe metadata renamed to Control semantics
+✓ invoke returns control_delta
+✓ reference blockers respect active stage readiness
+✓ capability phase/domain classification now derives from mcp/lib/authoringPhase.ts
+✓ duplicate Geometry/Texturing/Animation capability sets removed from Control registry
 ```
 
-## Completed Context / Authority Audit
+Canonical source ownership:
 
 ```text
-✓ AI Documentation Consumption Audit
-  → task domain first
-  → minimum owner load
-  → no normal read-all-docs boot
+mcp/gateway/index.ts
+  → public four-tool Gateway + Control status wiring
 
-✓ Skill ↔ Docs Authority Audit
-  → Docs = durable semantic policy/contracts
-  → Skills = execution procedure
-  → Control = context selection/projection
+mcp/gateway/navigator/referencePackage.ts
+  → REFERENCE.json projection
 
-✓ Context Budget Design
-  → REFERENCE_PREPARATION
-  → GEOMETRY
-  → TEXTURING
-  → ANIMATION
-  → SYSTEM_DEVELOPMENT
-  each has REQUIRED / CONDITIONAL / EXCLUDED loading rules
+mcp/gateway/navigator/contextProjection.ts
+  → stage-specific Control context
 
-✓ Documentation Contract Protection
-  → mcp/tests/repository/documentation-architecture.test.ts
+mcp/gateway/navigator/packet.ts
+  → task packet/readiness/context selection
+
+mcp/gateway/navigator/registry.ts
+  → dynamic context handles + source owner projection
+
+mcp/gateway/navigator/delta.ts
+  → post-operation invalidation
+
+mcp/gateway/navigator/developmentIntent.ts
+  → SYSTEM_DEVELOPMENT owner routing
+
+mcp/lib/authoringPhase.ts
+  → single canonical phase/capability classification owner
 ```
 
-## Completed Reference Preparation Content Audit
-
-Canonical Reference baseline now includes:
+## Added / Updated Regression Owners
 
 ```text
-✓ typed authority model
-  → visual authority owns visible design
-  → numeric dimensions own numeric envelope
-  → player-relative scale owns world/interaction relationship
-  → JSON owns structured facts/readiness/unknowns
-  → stage Markdown owns stage-specific consequences
-
-✓ player-relative scale is part of REFERENCE.json
-  → dimensions_blocks
-  → player_relative_scale
-  → no invented conversion between them
-
-✓ optional stage Markdown remains truly optional
-  → images.used_by = GEOMETRY | TEXTURE | ANIMATION
-  → Codex can resolve stage-relevant image evidence even when stage Markdown is omitted
-
-✓ Reference handoff was reduced to boundary semantics
-  → no duplicate full schema / profile / module documentation
-
-✓ GEOMETRY.md now supports numeric + player-relative scale explicitly
-
-✓ Unified Image Standard now locks identity + scale
-
-✓ Prompt Contract / Master Templates preserve Scale Lock
-
-✓ old pre-hierarchy reference paths/file names removed from active Reference docs
-
-✓ reference-specific regression protection added
-  → mcp/tests/repository/reference-content-contract.test.ts
+mcp/tests/gateway-navigator.test.ts
+mcp/tests/gateway-navigator-active-contract.test.ts
+mcp/tests/gateway-navigator-development.test.ts
+mcp/tests/gateway-navigator-routing.test.ts
+mcp/tests/gateway-control-reference-readiness.test.ts
+mcp/tests/gateway-control-phase-classification.test.ts
 ```
 
-## Current Context Architecture
+Legacy test filenames containing `navigator` are path/name migration residue, not semantic authority.
 
-Asset-authoring projections remain:
+## Immediate Next Source Work
+
+Continue in this order:
 
 ```text
-GEOMETRY_CONTEXT
-TEXTURE_CONTEXT
-ANIMATION_CONTEXT
+1. map every remaining direct import/path dependency on mcp/gateway/navigator/**
+2. physically rename navigator/ → control/ in one coherent migration with no permanent alias
+3. rename Navigator-prefixed internal symbols/tests/scripts only where dependency mapping is complete
+4. refine Control delta from domain-level affected knowledge toward field/effect-aware minimum invalidation
+5. strengthen lifecycle readiness projection using current Workspace + Reference stage state
+6. hard-bound remaining discovery/status rereads
+7. migrate remaining BlockIT identifiers only after Control path/symbol migration is stable
+8. regenerate generated artifacts through canonical generators when LOCAL_CODE is available
+9. run local/live acceptance only when explicitly reactivated
 ```
 
-Projection owner:
+Known direct legacy consumer already identified:
 
 ```text
-docs/04-system/control/context-projection.md
+mcp/scripts/measure-navigator-context.ts
 ```
 
-Overall task-loading owner:
+GitHub code-search indexing is not reliable for the `Local` branch, so physical rename must use direct source/tree evidence rather than assuming zero search results means zero dependencies.
+
+## Invalidation Direction
+
+Current Control delta marks affected knowledge by dependency direction:
 
 ```text
-docs/04-system/ai-context-loading.md
+Geometry mutation
+→ Geometry + potentially dependent Texture/Animation
+
+Texture mutation
+→ Texture + potentially dependent Animation
+
+Animation mutation
+→ Animation
 ```
 
-Reference package consumption owner:
-
-```text
-docs/02-reference/package/load-contract.md
-```
-
-These are complementary:
-- `ai-context-loading.md` decides which owners belong in AI context;
-- `package/load-contract.md` decides how Codex consumes a Reference Package;
-- `control/context-projection.md` defines the stage-specific data subset Control eventually projects.
-
-## Deferred Development Work
-
-When the user explicitly resumes Control/source development, continue from current source rather than redoing documentation/reference architecture:
-
-```text
-1. migrate current Navigator module/concepts to Control without permanent aliases
-2. make Control the explicit front-line intake for ASSET_AUTHORING and SYSTEM_DEVELOPMENT
-3. implement GEOMETRY_CONTEXT / TEXTURE_CONTEXT / ANIMATION_CONTEXT projections
-4. derive capability/domain classification from canonical owners instead of duplicate tables
-5. implement task-intent and lifecycle readiness projection
-6. implement dependency/evidence invalidation projection
-7. implement minimum-context/content-addressed continuation using the new context-loading contract
-8. hard-bound discovery and avoid status/context rereads
-9. migrate remaining BlockIT identifiers only after dependency mapping is stable
-10. regenerate generated artifacts through canonical generator owners when LOCAL_CODE is available
-11. run local/live acceptance only when explicitly reactivated
-```
+This is an affected-domain signal, not permission to reset all downstream work. Next refinement should use mutation/effect fields to minimize actual invalidation.
 
 ## Stop Rules
 
-- Do not recreate `docs/foundation/` or `docs/knowledge/` as compatibility authorities.
-- Do not add redirect/stub copies that create two active owners.
-- Do not duplicate durable Docs policy into Skills or Control.
-- Do not create a second persistent state database inside Control.
-- Do not load PRODUCT_DEVELOPMENT Skills during normal asset authoring.
-- Do not send all stage contexts when one owner is known.
-- Do not preload sibling domains as reassurance.
-- Do not rename protocol/package identifiers blindly before dependency mapping.
-- Do not automatically resume Control/source work after this audit.
-- Do not run local/live acceptance while the user has explicitly postponed testing.
+- No permanent Navigator compatibility alias after physical migration.
+- No second persistent state database inside Control.
+- No duplicate capability-domain table outside `mcp/lib/authoringPhase.ts`.
+- No mandatory legacy router Skill in normal asset context.
+- No all-profile or all-stage context loading as reassurance.
+- No full downstream reset when only a bounded dependency is affected.
+- No blind BlockIT/package/protocol rename before dependency mapping.
+- No local/live acceptance while the user has deferred testing.
 
 ## Proof Boundary
 
-This phase establishes source/documentation hierarchy, Reference content contracts, authority split, AI loading rules, and static regression owners on `Local`. No local/runtime/image-generation/live Blockbench verification was executed. Generated-output freshness, installed LazyDesigner activation, live visual quality, and measured end-to-end usage reduction remain future proof tasks.
+Current changes establish source-level Control contracts and static regression intent only. No Bun/typecheck/CI/local Runtime/Blockbench execution was performed in this phase. Generated-output freshness, installed LazyDesigner activation, live Gateway behavior, visual quality, and measured end-to-end usage savings remain unverified until the appropriate later proof context is activated.
