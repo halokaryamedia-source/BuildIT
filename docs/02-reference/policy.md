@@ -3,16 +3,16 @@
 **Status:** Active Policy  
 **Updated:** 2026-09-11
 
-This file owns durable Reference Preparation principles only. It must stay compact and must not duplicate child contracts.
+This file owns durable Reference Preparation principles only. It stays compact and does not duplicate child contracts.
 
 ## Purpose
 
-Reference Preparation turns user intent and source evidence into an approved Minecraft/Blockbench visual target plus a compact reference package that lets Codex author without avoidable guessing.
+Reference Preparation turns user intent and source evidence into an approved Minecraft/Blockbench target plus a compact package that lets Codex author without avoidable guessing.
 
 ```text
 USER INTENT / SOURCE EVIDENCE
 → REQUIREMENT RESOLUTION
-→ APPROVED VISUAL AUTHORITY
+→ APPROVED TARGET AUTHORITY
 → REFERENCE PACKAGE
 → CODEX AUTHORING
 ```
@@ -21,18 +21,36 @@ Operational flow: `flow.md`
 Image rules: `image/README.md`  
 Package rules: `package/README.md`
 
-## Authority Order
+## Typed Authority Model
+
+Authority is **typed by fact**, not one simplistic global ranking.
 
 ```text
-1. explicit current user requirement
-2. approved visual reference
-3. confirmed numeric / player-relative scale requirement
-4. REFERENCE.json structured facts
-5. stage-specific package Markdown
-6. downstream interpretation
+explicit current user requirement
+→ highest task authority
+
+approved visual reference
+→ visible identity / silhouette / proportion / material appearance authority
+
+confirmed numeric dimensions
+→ numeric envelope authority
+
+confirmed player-relative scale
+→ world / interaction / occupancy scale authority
+
+REFERENCE.json
+→ structured record of confirmed facts, relationships, unknowns and readiness
+
+stage Markdown
+→ stage-specific consequences only
+
+Codex
+→ downstream interpretation / implementation reasoning
 ```
 
-A weaker layer may clarify but may not override a stronger authority.
+A weaker layer may clarify but may not override its stronger owner.
+
+When two strong authorities materially conflict—for example approved visual proportions vs explicit dimensions—do not silently choose one. Preserve the conflict and block only the dependent decision until resolved.
 
 ## Evidence Rule
 
@@ -55,7 +73,7 @@ minimum evidence that materially reduces downstream uncertainty
 
 A user-supplied image may already be sufficient. Generate additional visual reference only when it resolves a material ambiguity or creates a clearer approved Minecraft target.
 
-For generated sheets, use `image/standard.md`.
+Generated sheets follow `image/standard.md`.
 
 ## Minecraft Target Rule
 
@@ -67,13 +85,20 @@ All sizing is anchored to Minecraft player/world scale unless stronger explicit 
 
 Canonical rules: `image/scale-and-escalation.md`.
 
-Exact confirmed dimensions remain authoritative. Player-relative categories are semantic anchors, not permission to invent exact block values.
+Numeric dimensions and player-relative scale have distinct roles:
 
-## Identity / Anti-Drift Rule
+```text
+numeric dimensions       → exact envelope where confirmed
+player-relative scale    → world / interaction relationship
+```
 
-Sheet 01 establishes the visual identity and scale lock. Later sheets may elaborate but may not silently redesign or rescale the asset.
+A relative category never authorizes invented exact block values.
 
-A change to locked identity, scale, major silhouette, part count, material identity, asymmetry, accessory set, or construction logic is a revision and must update affected evidence coherently.
+## Identity / Scale Anti-Drift
+
+Sheet 01 establishes visual identity and scale locks. Later sheets may elaborate but may not silently redesign or rescale the asset.
+
+A material change to locked identity, scale, major silhouette, part count, material identity, asymmetry, accessories, or construction logic is a revision and must update affected evidence coherently.
 
 ## Profile Rule
 
@@ -95,7 +120,7 @@ Authoring profile details live under `../03-authoring/modelling/profiles/`.
 
 ## Unknown / Readiness Rule
 
-Unknowns are classified as:
+Unknowns are:
 
 ```text
 blocking
@@ -113,21 +138,21 @@ NEEDS_REVIEW
 BLOCKED
 ```
 
-Missing Texture evidence must not block Geometry unless it actually changes a Geometry decision.
+Missing Texture evidence does not block Geometry unless it changes a Geometry decision.
 
 ## Image / Metadata Boundary
 
 ```text
 image     → visual authority
-JSON      → structured facts / relations / readiness / unknowns
+JSON      → structured facts / relations / scale / readiness / unknowns
 Markdown  → stage-specific explanation only where useful
 ```
 
-Do not turn images into technical manuals. Do not turn metadata into a prose duplicate of the image.
+Do not turn images into technical manuals. Do not turn metadata into prose duplicates of images.
 
 ## Package Boundary
 
-The normal package is intentionally small:
+Normal package:
 
 ```text
 REFERENCE.json
@@ -139,7 +164,7 @@ approved/supporting image(s)
 
 Canonical package owners: `package/README.md`.
 
-Do not export conversation transcripts, compiled prompt history, generic tutorials, Tool schemas, or Cube-by-Cube implementation plans.
+Do not export transcripts, compiled prompt history, generic tutorials, Tool schemas, or Cube-by-Cube implementation plans.
 
 ## Approval Rule
 
@@ -154,7 +179,8 @@ Reference Preparation is complete when:
 ```text
 blocking information for the intended next stage is resolved
 approved visual authority exists when required
-scale is sufficiently anchored
+scale authority is sufficiently anchored
+strong authorities do not contain unresolved material conflict
 only useful reference evidence is present
 unknowns/readiness are explicit
 package consistency passes
