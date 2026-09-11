@@ -42,6 +42,14 @@ import { registerPhaseControlTool } from "./phaseControl";
 
 type RegistrationFunction = () => void;
 
+export type McpSurfaceDescriptor = Readonly<{
+  profile: McpRegistrationProfile;
+  phase: McpAuthoringPhase;
+  toolNames: readonly string[];
+  toolNameSet: ReadonlySet<string>;
+  count: number;
+}>;
+
 function registerAnimationFamilyTools(): void {
   registerAnimationTools();
   registerAnimationEffectTools();
@@ -93,7 +101,7 @@ let profileSwitchHandler:
 const registeredFamilies = new Set<McpRegistrationFamily>();
 const toolRegistrationFamily = new Map<string, McpRegistrationFamily>();
 const catalogToolEnabled = new Map<string, boolean>();
-const phaseSurfaceCache = new Map<string, readonly string[]>();
+const phaseSurfaceCache = new Map<string, McpSurfaceDescriptor>();
 
 function invalidatePhaseSurfaceCache(): void {
   phaseSurfaceCache.clear();
@@ -134,7 +142,7 @@ export function describeMcpSurfaceToolNames(
   profile: McpRegistrationProfile,
   phase: McpAuthoringPhase
 ): readonly string[] {
-  return getMcpSurfaceToolNames(profile, phase);
+  return getMcpSurfaceDescriptor(profile, phase).toolNames;
 }
 
 export function registerMcpProfile(
@@ -185,20 +193,20 @@ export function isCatalogToolEnabled(toolName: string): boolean {
 }
 
 /**
- * Return the immutable tool-name descriptor for one profile + phase. The same
- * frozen array is reused across health checks, request construction and tools/list
- * until catalog registration actually changes.
+ * Resolve one canonical immutable Runtime surface. Health, request construction,
+ * direct-client enablement and tools/list all reuse the same descriptor until
+ * catalog registration actually changes.
  */
-export function getMcpSurfaceToolNames(
+export function getMcpSurfaceDescriptor(
   profile: McpRegistrationProfile,
   phase: McpAuthoringPhase
-): readonly string[] {
+): McpSurfaceDescriptor {
   const cacheKey = surfaceCacheKey(profile, phase);
   const cached = phaseSurfaceCache.get(cacheKey);
   if (cached) return cached;
 
   const allowedFamilies = new Set(getRegistrationFamilies(profile));
-  const names = Object.freeze(
+  const toolNames = Object.freeze(
     Array.from(catalogToolEnabled.entries())
       .map(([toolName]) => toolName)
       .filter((toolName) => {
@@ -214,9 +222,23 @@ export function getMcpSurfaceToolNames(
       })
       .sort((a, b) => a.localeCompare(b))
   );
+  const descriptor: McpSurfaceDescriptor = Object.freeze({
+    profile,
+    phase,
+    toolNames,
+    toolNameSet: new Set(toolNames),
+    count: toolNames.length,
+  });
 
-  phaseSurfaceCache.set(cacheKey, names);
-  return names;
+  phaseSurfaceCache.set(cacheKey, descriptor);
+  return descriptor;
+}
+
+export function getMcpSurfaceToolNames(
+  profile: McpRegistrationProfile,
+  phase: McpAuthoringPhase
+): readonly string[] {
+  return getMcpSurfaceDescriptor(profile, phase).toolNames;
 }
 
 export function applyMcpToolSurface(
@@ -224,7 +246,7 @@ export function applyMcpToolSurface(
   phase: McpAuthoringPhase
 ): void {
   setActiveMcpAuthoringPhase(phase);
-  const exposed = new Set(getMcpSurfaceToolNames(profile, phase));
+  const exposed = getMcpSurfaceDescriptor(profile, phase).toolNameSet;
 
   for (const [toolName, authoredEnabled] of catalogToolEnabled) {
     const tool = tools[toolName];
