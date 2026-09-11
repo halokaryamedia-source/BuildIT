@@ -6,7 +6,7 @@ This file owns **current implementation continuation only**. Product architectur
 
 ## Current Objective
 
-LazyDesigner Control source implementation is active. Documentation/Reference architecture and all primary LazyDesigner Skill naming are now source baselines. Local/live Blockbench testing remains deferred until explicitly reactivated.
+LazyDesigner Control source implementation is active. Documentation/Reference architecture, primary Skill naming, and safe human-facing Runtime/Gateway branding are source baselines. Local/live Blockbench testing remains deferred until explicitly reactivated.
 
 ## Completed Baseline
 
@@ -38,6 +38,12 @@ LazyDesigner Control source implementation is active. Documentation/Reference ar
   - lazydesigner-development-brief
 ✓ old primary Skill paths physically removed
 ✓ root/docs/CI/regressions route to canonical Skill identities
+✓ safe presentation branding migrated to LazyDesigner in:
+  - MCP initialize/server instructions
+  - Gateway backend human-readable errors/status
+  - plugin lifecycle/install/dev-sync messages
+  - Blockbench panel + status bar
+  - local install docs + mcp/llms.txt
 ✓ compatibility identifier boundary documented + guarded
 ```
 
@@ -54,6 +60,7 @@ BLOCKIT_* environment variables
 x-blockit-* affinity headers
 persisted setting IDs
 build/provenance identities coupled to the above
+internal compatibility symbols/DOM/event keys where rename has no current value
 ```
 
 Canonical boundary: `docs/04-system/compatibility-identifiers.md`.
@@ -61,11 +68,11 @@ Canonical boundary: `docs/04-system/compatibility-identifiers.md`.
 ## Immediate Next Source Work
 
 ```text
-1. audit user-facing Runtime/Gateway messages for stale BlockIT presentation language
-2. migrate only human-readable strings that do not alter compatibility-bound values
-3. keep package/plugin/env/header/persisted identifiers stable until a dedicated migration exists
-4. audit remaining active regressions for retired docs/symbols only when concrete evidence appears
-5. regenerate generated artifacts only when LOCAL_CODE/generator execution is reactivated
+1. audit generated-documentation source for stale presentation branding
+2. do not mutate generated docs until LOCAL_CODE can run the canonical generator
+3. keep package/plugin/env/header/persisted identifiers stable until a dedicated atomic migration exists
+4. audit active regressions for retired docs/symbols only when concrete evidence appears
+5. regenerate generated docs/prompts only when LOCAL_CODE/generator execution is reactivated
 6. run local/live acceptance only when explicitly reactivated
 ```
 
@@ -79,6 +86,7 @@ Canonical boundary: `docs/04-system/compatibility-identifiers.md`.
 - No all-profile/all-stage loading as reassurance.
 - No full downstream reset for a bounded dependency.
 - No blind package/protocol/plugin/environment rename.
+- No hand-editing generated docs/output.
 - No local/live acceptance while user testing remains deferred.
 
 ## Proof Boundary
