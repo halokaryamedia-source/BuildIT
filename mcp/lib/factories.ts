@@ -108,15 +108,21 @@ function getToolCallbackCacheKey(toolName: string): string {
 }
 
 /**
- * Invalidation is intentionally explicit so profile and phase mutations can
- * reset the request-owned runtime surface without leaking stale callback state.
+ * Invalidate only the phase/profile-sensitive tool surface. Tool callbacks,
+ * resources and prompts are generation-stable and must survive ordinary
+ * authoring-surface changes.
  */
 export function invalidateToolRegistrationRuntimeCaches(): void {
   enabledToolDefinitionsCache = null;
   enabledToolRegistrationCache = null;
+}
+
+function invalidateResourceRegistrationRuntimeCache(): void {
   resourceRegistrationCache = null;
+}
+
+function invalidatePromptRegistrationRuntimeCache(): void {
   promptRegistrationCache = null;
-  toolInvocationCache.clear();
 }
 
 function compactUnknownResult(name: string, result: unknown) {
@@ -567,7 +573,7 @@ export function createResource(
   };
 
   resourceDefinitions[name] = resourceDef;
-  invalidateToolRegistrationRuntimeCaches();
+  invalidateResourceRegistrationRuntimeCache();
 
   resources[name] = {
     name,
@@ -684,7 +690,7 @@ export function createPrompt<T extends z.ZodRawShape = Record<string, never>>(
     promptDefinitions[name] = promptDef;
   }
 
-  invalidateToolRegistrationRuntimeCaches();
+  invalidatePromptRegistrationRuntimeCache();
 
   prompts[name] = {
     name,
