@@ -31,10 +31,13 @@ const PRIMARY_CAPABILITIES = new Set([
   "reparent_element",
   "remove_element",
   "rename_element",
+  "manage_locator",
+  "bone_rigging",
   "create_texture",
   "list_textures",
   "get_texture",
   "activate_texture",
+  "apply_texture",
   "paint_fill_tool",
   "draw_shape_tool",
   "paint_with_brush",
@@ -48,6 +51,8 @@ const PRIMARY_CAPABILITIES = new Set([
   "manage_animation_timeline",
   "manage_animation_effects",
   "manage_animation_controller",
+  "inspect_particle",
+  "manage_particle",
 ]);
 
 const EXPERIMENTAL_CAPABILITIES = new Set([
@@ -63,6 +68,24 @@ const MAINTENANCE_CAPABILITIES = new Set([
 ]);
 
 const SEARCH_ALIASES: Readonly<Record<string, readonly string[]>> = {
+  manage_locator: [
+    "locator",
+    "attachment point",
+    "socket",
+    "anchor point",
+  ],
+  bone_rigging: [
+    "bone rig",
+    "rigging",
+    "pivot hierarchy",
+    "bedrock bones",
+  ],
+  apply_texture: [
+    "assign texture",
+    "texture cube",
+    "texture face",
+    "map texture",
+  ],
   paint_texture_transaction: [
     "atomic paint",
     "exact pixel",
@@ -90,6 +113,18 @@ const SEARCH_ALIASES: Readonly<Record<string, readonly string[]>> = {
     "animation sound",
     "animation particle",
     "animation timeline event",
+  ],
+  inspect_particle: [
+    "inspect particle",
+    "particle emitter",
+    "snowstorm particle",
+    "particle molang",
+  ],
+  manage_particle: [
+    "particle emitter",
+    "bedrock particle",
+    "snowstorm",
+    "particle molang",
   ],
 };
 
