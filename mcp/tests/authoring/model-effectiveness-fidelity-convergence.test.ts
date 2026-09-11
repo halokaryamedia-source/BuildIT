@@ -11,7 +11,7 @@ function normalized(text: string): string {
 describe("model creation effectiveness — fidelity convergence and evaluation integrity", () => {
   test("local corrections require qualitative convergence rather than mutation activity", async () => {
     const [modelling, workflow] = await Promise.all([
-      source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
+      source("../.agents/skills/lazydesigner-modelling/SKILL.md"),
       source("prompts/bedrock_entity_workflow.md"),
     ]);
     for (const text of [modelling, workflow]) {
@@ -26,7 +26,7 @@ describe("model creation effectiveness — fidelity convergence and evaluation i
   });
 
   test("correction reuses fresh pre-correction evidence instead of recapturing ceremonially", async () => {
-    const modelling = await source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md");
+    const modelling = await source("../.agents/skills/lazydesigner-modelling/SKILL.md");
     const modellingText = normalized(modelling);
 
     expect(modellingText).toContain("reuse fresh affected pre-correction evidence");
@@ -49,7 +49,7 @@ describe("model creation effectiveness — fidelity convergence and evaluation i
     const [profile, cubes, modelling, workflow] = await Promise.all([
       source("lib/registrationProfile.ts"),
       source("server/tools/cubes.ts"),
-      source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
+      source("../.agents/skills/lazydesigner-modelling/SKILL.md"),
       source("prompts/bedrock_entity_workflow.md"),
     ]);
     for (const forbidden of ["reference_eval", "fidelity_profile", "vision_score", "fidelity_score"]) {
