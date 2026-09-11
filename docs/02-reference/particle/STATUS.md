@@ -45,19 +45,18 @@ REACTIVE
 AUDIT / REVISION
 ```
 
-Then it selects the smallest physical starting family from `patterns.md` before choosing technical owners.
+Then it selects the smallest physical starting family from `patterns.md`, chooses the lowest viable implementation tier, and resolves one output identity before files are authored.
 
-Examples:
+Output identity now acts as the naming source for:
 
 ```text
-flame      → Flame
-sparks     → Sparks
-smoke      → Rising smoke/plume
-dust       → Ambient or impact dust based on context
-rain       → Rain
-magic aura → Magic aura/energy field
-impact     → Impact burst
-explosion  → composed candidate family, only required roles retained
+namespace
+root identifier
+particle filenames
+child role filenames
+texture mapping
+README references
+optional REFERENCE.json paths
 ```
 
 Pattern selection is semantic/physical routing, not a preset system. Exact numeric values remain request/reference/context dependent.
@@ -75,19 +74,42 @@ Non-blocking unknowns may use conservative reversible provisional choices so a s
 
 QA is single-pass and conditional near finalization; targeted revisions rerun only the causal QA gate plus package integrity.
 
+## Delivery maturity
+
+Standalone delivery is deterministic from the approved effect identity/resource graph.
+
+Canonical expectations:
+
+```text
+one Resource Pack manifest
+clean semantic snake_case filenames
+one explicit root particle identifier
+exact child-effect references
+exact texture reference ↔ PNG mapping
+concise standalone README
+no scratch/revision/debug/QA debris
+no accidental double-wrapper ZIP root
+REFERENCE.json only for explicit downstream handoff
+```
+
+Manifest UUIDs must be distinct per delivered pack and header/module UUIDs distinct from each other. Minimum engine/version constraints are not invented without a target/project requirement.
+
+The downstream handoff remains the existing canonical `../package/particle-handoff.md`; Particle Reference Authoring does not create another package or manifest system.
+
 ## Closure state
 
 ```text
-SOURCE / DOCUMENT KNOWLEDGE       MATURE
-OFFICIAL SCHEMA COVERAGE          TRACKED
-CONTEXT / TOKEN ROUTING           MATURE
-AUTHORING EXECUTION ROUTING       MATURE
+SOURCE / DOCUMENT KNOWLEDGE        MATURE
+OFFICIAL SCHEMA COVERAGE           TRACKED
+CONTEXT / TOKEN ROUTING            MATURE
+AUTHORING EXECUTION ROUTING        MATURE
 AUTOMATIC PHYSICAL PATTERN ROUTING MATURE
-SNOWSTORM VERSION KNOWLEDGE       VERSION-AWARE
-STATIC AUTHORING QA               MATURE
-REAL MULTI-FAMILY VISUAL CASES    DEFERRED BY USER
-LIVE MINECRAFT PROOF              NOT CLAIMED
-DEVICE / FPS PROOF                NOT CLAIMED
+OUTPUT / PACKAGE CONTRACT          MATURE
+SNOWSTORM VERSION KNOWLEDGE        VERSION-AWARE
+STATIC AUTHORING QA                MATURE
+REAL MULTI-FAMILY VISUAL CASES     DEFERRED BY USER
+LIVE MINECRAFT PROOF               NOT CLAIMED
+DEVICE / FPS PROOF                 NOT CLAIMED
 ```
 
 Remaining uncertainty is intentionally limited to target-version/runtime facts such as future Bedrock fields, editor regressions, host-specific Molang query exposure, exact collision/runtime integration, GPU/device performance, and final visual acceptance.
