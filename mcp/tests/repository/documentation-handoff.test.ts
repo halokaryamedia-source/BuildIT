@@ -5,152 +5,107 @@ async function text(path: string): Promise<string> {
   return Bun.file(path).text();
 }
 
-describe("cross-agent repository handoff", () => {
-  test("repository-owned skill inventory resolves from canonical semantic owners", async () => {
-    const dirs = (await readdir("../.agents/skills", { withFileTypes: true }))
-      .filter((entry) => entry.isDirectory())
+describe("AI-first documentation hierarchy", () => {
+  test("docs root exposes only canonical domain hierarchy plus root router", async () => {
+    const entries = (await readdir("../docs", { withFileTypes: true }))
       .map((entry) => entry.name)
       .sort();
 
-    expect(dirs).toEqual([
-      "blockbench-bedrock-modelling",
-      "blockbench-reference-generator",
-      "blockbench-runtime-development",
-      "blockit-bedrock-animation",
-      "blockit-bedrock-entity-mcp",
-      "blockit-bedrock-texturing",
-      "development-brief",
-      "mcp-server-development",
+    expect(entries).toEqual([
+      "01-product",
+      "02-reference",
+      "03-authoring",
+      "04-system",
+      "05-operations",
+      "README.md",
     ]);
-    for (const name of dirs) expect(await Bun.file(`../.agents/skills/${name}/SKILL.md`).exists()).toBe(true);
-    expect(await Bun.file("../.agents/skills/bun-tooling/SKILL.md").exists()).toBe(false);
-    expect(await Bun.file("../.agents/skills/typescript-type-safety/SKILL.md").exists()).toBe(false);
+    expect(await Bun.file("../docs/foundation/README.md").exists()).toBe(false);
+    expect(await Bun.file("../docs/knowledge/README.md").exists()).toBe(false);
   });
 
-  test("language/build mechanics and complex-development ceremony stay with their real owners", async () => {
-    const [packageRules, implementation, root, brief] = await Promise.all([
-      text("AGENTS.md"),
-      text("../docs/knowledge/implementation-map.md"),
-      text("../AGENTS.md"),
-      text("../.agents/skills/development-brief/SKILL.md"),
-    ]);
-
-    expect(packageRules).toMatch(/TypeScript and Bun are implementation mechanics/i);
-    expect(implementation).toMatch(/MCP TypeScript\/Bun implementation mechanics/i);
-    expect(root).toContain("#### Development Execution Gate");
-    expect(brief).toContain("## Mandatory Development continuity");
-    for (const owner of [implementation, brief]) {
-      expect(owner).not.toContain("typescript-type-safety");
-      expect(owner).not.toContain("bun-tooling");
+  test("root docs README routes AI by domain instead of duplicating policy", async () => {
+    const readme = await text("../docs/README.md");
+    for (const domain of ["01-product", "02-reference", "03-authoring", "04-system", "05-operations"]) {
+      expect(readme).toContain(domain);
     }
+    expect(readme).toMatch(/minimum|smallest|relevant/i);
+    expect(readme).toMatch(/canonical owner/i);
   });
 
-  test("development objective and efficiency vocabulary remain explicit without duplicating procedure", async () => {
-    const [root, brief, runbook] = await Promise.all([
-      text("../AGENTS.md"),
-      text("../.agents/skills/development-brief/SKILL.md"),
-      text("../docs/knowledge/operations/local-acceptance-runbook.md"),
-    ]);
-
-    for (const owner of [root, brief]) {
-      expect(owner).toMatch(/success metric/i);
-      expect(owner).toMatch(/forbidden proxy\s*\/\s*non-goal/i);
-    }
-    for (const owner of [root, brief, runbook]) {
-      expect(owner).toMatch(/authoring efficiency/i);
-      expect(owner).toMatch(/static footprint/i);
-    }
-    expect(runbook).toMatch(/cost to accepted result/i);
-    expect(runbook).toMatch(/quality fail/i);
-  });
-
-  test("stable facts, active continuation, proof, source ownership, and live procedure stay separate", async () => {
-    const [context, next, validation, implementation, runbook] = await Promise.all([
-      text("../CONTEXT.md"),
-      text("../docs/knowledge/next-action.md"),
-      text("../docs/knowledge/current-validation.md"),
-      text("../docs/knowledge/implementation-map.md"),
-      text("../docs/knowledge/operations/local-acceptance-runbook.md"),
-    ]);
-
-    expect(context).toMatch(/stable project facts only/i);
-    expect(context).toContain("Reference-Grounded Authoring");
-    expect(next).toContain("SOURCE_READY");
-    expect(next).toContain("AUTHORING TAXONOMY");
-    expect(validation).toMatch(/current proof interpretation/i);
-    expect(implementation).toMatch(/no active task status/i);
-    expect(runbook).toMatch(/explicitly reactivates local testing/i);
-    expect(await Bun.file("../docs/foundation/validation-report.md").exists()).toBe(false);
-  });
-
-  test("retired proof paths and route/profile terminology cannot return to current canonical docs", async () => {
-    const owners = await Promise.all([
-      text("../AGENTS.md"),
-      text("../CONTEXT.md"),
-      text("README.md"),
-      text("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md"),
-      text("../docs/knowledge/next-action.md"),
-      text("../docs/knowledge/implementation-map.md"),
-    ]);
-
-    for (const owner of owners) {
-      expect(owner).not.toContain("docs/foundation/validation-report.md");
-      expect(owner).not.toMatch(/\bDeveloping Execution\b|\bAmbiguous Developing\b|\bMandatory Developing\b/);
-      expect(owner).not.toContain("Image Reference Route");
-      expect(owner).not.toContain("3D-Assisted Route");
-      expect(owner).not.toContain("Standard MCP Profile");
-      expect(owner).not.toContain("Extended MCP Profile");
-    }
-  });
-
-  test("transient and generated repository surfaces stay classified explicitly", async () => {
-    const rootDirs = (await readdir("..", { withFileTypes: true }))
-      .filter((entry) => entry.isDirectory())
-      .map((entry) => entry.name);
-    expect(rootDirs).not.toContain(".capture");
-    expect(rootDirs).not.toContain(".sample-renders");
-
-    const [ignore, attributes] = await Promise.all([text("../.gitignore"), text("../.gitattributes")]);
-    for (const marker of [".capture/", ".sample-renders/", ".env", ".env.*", "!.env.example"]) expect(ignore).toContain(marker);
-    expect(attributes).toContain("mcp/docs/*.html linguist-generated=true");
-  });
-
-  test("named MCP defects retain bounded source and regression owners", async () => {
-    const implementation = await text("../docs/knowledge/implementation-map.md");
-    expect(implementation).toContain("## Hot-Path Defect Index");
-
-    const mappings = [
-      { tools: ["create_project"], source: "server/tools/project.ts", test: "tests/p1-core-ownership.test.ts" },
-      { tools: ["inspect_model_bounds"], source: "server/tools/project.ts", test: "tests/rendered-model-bounds-numeric-safety.test.ts" },
-      { tools: ["manage_cubes"], source: "server/tools/cubes.ts", test: "tests/model-effectiveness-correction-accuracy.test.ts" },
-      { tools: ["inspect_elements"], source: "server/tools.ts", test: "tests/model-effectiveness-correction-accuracy.test.ts" },
-      { tools: ["capture_model_views"], source: "server/tools/camera.ts", test: "tests/camera-framing-contract.test.ts" },
-      { tools: ["export_model"], source: "server/tools/export.ts", test: "tests/prelocal-generic-semantics.test.ts" },
+  test("reference domain separates image and package authorities", async () => {
+    const required = [
+      "../docs/02-reference/README.md",
+      "../docs/02-reference/flow.md",
+      "../docs/02-reference/policy.md",
+      "../docs/02-reference/image/README.md",
+      "../docs/02-reference/image/standard.md",
+      "../docs/02-reference/image/scale-and-escalation.md",
+      "../docs/02-reference/image/prompt-contract.md",
+      "../docs/02-reference/image/master-templates.md",
+      "../docs/02-reference/package/README.md",
+      "../docs/02-reference/package/schema.md",
+      "../docs/02-reference/package/handoff.md",
+      "../docs/02-reference/package/load-contract.md",
+      "../docs/02-reference/package/geometry.md",
+      "../docs/02-reference/package/texture.md",
+      "../docs/02-reference/package/animation.md",
     ];
+    for (const path of required) expect(await Bun.file(path).exists()).toBe(true);
+  });
 
-    for (const mapping of mappings) {
-      const row = implementation.split("\n").find((line) => mapping.tools.every((tool) => line.includes(`\`${tool}\``)));
-      expect(row).toBeDefined();
-      expect(row).toContain(`\`mcp/${mapping.source}\``);
-      expect(row).toContain(`\`mcp/${mapping.test}\``);
-      expect(await Bun.file(mapping.source).exists()).toBe(true);
-      expect(await Bun.file(mapping.test).exists()).toBe(true);
+  test("authoring domain owns modelling profiles and stage standards", async () => {
+    const profileRoot = "../docs/03-authoring/modelling/profiles";
+    for (const profile of [
+      "README.md",
+      "prop-furniture.md",
+      "vehicle.md",
+      "humanoid.md",
+      "creature.md",
+      "mechanical.md",
+      "plant-foliage.md",
+      "generic.md",
+    ]) {
+      expect(await Bun.file(`${profileRoot}/${profile}`).exists()).toBe(true);
+    }
+
+    for (const path of [
+      "../docs/03-authoring/modelling/standard.md",
+      "../docs/03-authoring/texture/standard.md",
+      "../docs/03-authoring/animation/standard.md",
+      "../docs/03-authoring/validation/visual.md",
+      "../docs/03-authoring/finalization/standard.md",
+    ]) {
+      expect(await Bun.file(path).exists()).toBe(true);
     }
   });
 
-  test("current proof and local acceptance never upgrade static evidence into live quality", async () => {
-    const [validation, implementation, runbook] = await Promise.all([
-      text("../docs/knowledge/current-validation.md"),
-      text("../docs/knowledge/implementation-map.md"),
-      text("../docs/knowledge/operations/local-acceptance-runbook.md"),
+  test("system and operations state remain separate from product/reference policy", async () => {
+    const [implementation, validation, next, runbook] = await Promise.all([
+      text("../docs/04-system/implementation-map.md"),
+      text("../docs/05-operations/current-validation.md"),
+      text("../docs/05-operations/next-action.md"),
+      text("../docs/05-operations/local-acceptance-runbook.md"),
     ]);
 
-    expect(validation).toMatch(/Visual\s*\/\s*Reference Proof Rule/i);
-    expect(validation).toMatch(/actual approved reference image/i);
-    expect(validation).toMatch(/fresh evidence/i);
-    expect(validation).toMatch(/authoring efficiency/i);
-    expect(implementation).toMatch(/Static Footprint[\s\S]*cannot upgrade/i);
-    expect(runbook).toMatch(/quality gate passes/i);
-    expect(runbook).toMatch(/cost to accepted result/i);
+    expect(implementation).toMatch(/source ownership/i);
+    expect(validation).toMatch(/proof interpretation/i);
+    expect(next).toMatch(/continuation only/i);
+    expect(runbook).toMatch(/local acceptance/i);
+  });
+
+  test("primary AI-facing routing points to the new canonical hierarchy", async () => {
+    const [root, context, referenceSkill, modellingSkill] = await Promise.all([
+      text("../AGENTS.md"),
+      text("../CONTEXT.md"),
+      text("../.agents/skills/blockbench-reference-generator/SKILL.md"),
+      text("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
+    ]);
+
+    for (const owner of [root, context, referenceSkill, modellingSkill]) {
+      expect(owner).not.toContain("docs/knowledge/");
+      expect(owner).not.toContain("docs/foundation/");
+    }
+    expect(referenceSkill).toContain("docs/02-reference/");
+    expect(modellingSkill).toContain("docs/03-authoring/modelling/profiles/");
   });
 });
