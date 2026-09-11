@@ -11,8 +11,8 @@ describe("model creation effectiveness — texture/animation sequencing", () => 
       source("../docs/01-product/flow.md"),
       source("../workspace/README.md"),
       source("gateway/control/packet.ts"),
-      source("../.agents/skills/blockit-bedrock-texturing/SKILL.md"),
-      source("../.agents/skills/blockit-bedrock-animation/SKILL.md"),
+      source("../.agents/skills/lazydesigner-texturing/SKILL.md"),
+      source("../.agents/skills/lazydesigner-animation/SKILL.md"),
     ]);
 
     for (const text of [agents, flow, workspace]) {
@@ -36,7 +36,7 @@ describe("model creation effectiveness — texture/animation sequencing", () => 
 
   test("existing-asset baseline policy stays with authoring owners", async () => {
     const [modelling, workflow] = await Promise.all([
-      source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
+      source("../.agents/skills/lazydesigner-modelling/SKILL.md"),
       source("../docs/03-authoring/workflow.md"),
     ]);
 
@@ -46,8 +46,8 @@ describe("model creation effectiveness — texture/animation sequencing", () => 
 
   test("Texturing can correct upstream Geometry/UV in-session; Animation still hands back", async () => {
     const [texturing, animation] = await Promise.all([
-      source("../.agents/skills/blockit-bedrock-texturing/SKILL.md"),
-      source("../.agents/skills/blockit-bedrock-animation/SKILL.md"),
+      source("../.agents/skills/lazydesigner-texturing/SKILL.md"),
+      source("../.agents/skills/lazydesigner-animation/SKILL.md"),
     ]);
 
     expect(texturing).toMatch(/unlocked\/invalid UV\s+→ Geometry owner \+ bounded UV correction; no phase switch/);
@@ -60,8 +60,8 @@ describe("model creation effectiveness — texture/animation sequencing", () => 
 
   test("texture and animation guidance remains evidence-based without preset density metrics", async () => {
     const [texturing, animation, texturePolicy] = await Promise.all([
-      source("../.agents/skills/blockit-bedrock-texturing/SKILL.md"),
-      source("../.agents/skills/blockit-bedrock-animation/SKILL.md"),
+      source("../.agents/skills/lazydesigner-texturing/SKILL.md"),
+      source("../.agents/skills/lazydesigner-animation/SKILL.md"),
       source("../docs/03-authoring/texture/standard.md"),
     ]);
 
