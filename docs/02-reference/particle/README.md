@@ -9,7 +9,7 @@ USER
 → ChatGPT Reference Preparation
 → Particle Reference Authoring
 → Bedrock/Snowstorm particle package
-→ user visual review
+→ user review
 → optional Codex / MCP / manual Minecraft use
 ```
 
@@ -18,139 +18,73 @@ This domain is upstream of MCP and independent from image/model reference genera
 ## Authority boundary
 
 ```text
-ChatGPT prepares/reviews/delivers a standalone particle package
+ChatGPT prepares/reviews/delivers standalone particle reference assets
 → Particle Reference Authoring owns it
 
-Codex/MCP edits an active runtime asset in Blockbench
-→ downstream MCP/Texturing/Animation owners take over after explicit handoff
+Codex/MCP mutates active runtime assets
+→ downstream implementation owners take over after explicit handoff
 ```
 
 Do not run both authoring authorities on the same revision at once.
 
-## AI read rule
+## Minimal-read rule
 
-Do not preload the entire corpus.
+Do not preload the corpus.
 
-For authoring execution:
+For authoring:
 
 ```text
 authoring-spec.md
 → workflow.md
-→ load only knowledge required by the current decisions
+→ smallest required knowledge owner set
+→ qa.md only near finalization
+→ delivery.md only when packaging
 ```
 
-For a knowledge/diagnostic question:
+For knowledge/diagnosis:
 
 ```text
 knowledge-map.md
-→ select the smallest relevant owner set
+→ one primary owner
+→ one secondary owner only if the decision crosses domains
 ```
+
+Normal authoring should stay within two control documents plus one primary domain owner. Add a second/third knowledge owner only when the request materially crosses boundaries. If more are needed, split the problem into separate decisions.
+
+The specialist skill contains compact task bundles. `knowledge-map.md` owns the detailed routing map; this README does not duplicate it.
+
+## High-value routing
 
 ```text
-status / current maturity
+current maturity/status
 → STATUS.md
 
-knowledge routing / provenance
+knowledge owner selection
 → knowledge-map.md
 
-official Bedrock schema closure / missing-owner audit
+unknown/new official component coverage
 → official-schema-coverage.md
 
-exact official defaults / omission / evaluation timing / schema deltas
+exact defaults / omission / evaluation timing / version delta
 → official-defaults-evaluation.md
 
-Bedrock mental model
-→ fundamentals.md
-
-complete component inventory
-→ component-catalog.md
-
-field-by-field component semantics / failure modes
+field semantics / failure modes
 → component-field-reference.md
 
-creation/update/render timing + local/world simulation
-→ lifecycle-space.md
+Bedrock component mental model
+→ fundamentals.md
 
-emitter lifecycle / built-in shapes / density
-→ emitter.md
-
-custom shape + launch direction math
-→ emitter-shape-math.md
-
-general vector / geometry / physics / probability math
-→ math-physics-reference.md
-
-trajectory / physics / parametric motion
-→ motion.md
-
-advanced collision/contact/bounce
-→ collision-advanced.md
-
-material / billboard / tint / lighting
-→ appearance-rendering.md
-
-directional / velocity-aligned billboard edge cases
-→ billboard-direction.md
-
-production PNG/RGBA/atlas/UV/flipbook
-→ texture-authoring.md
-
-resolution / resampling / downscale / frame stability
-→ texture-resolution-sampling.md
-
-filtering / bleeding / hidden RGB / matte / minification
-→ texture-filtering-bleeding.md
-
-value / alpha / additive / blend color design
-→ texture-color-science.md
-
-particle/emitter variable ownership
-→ molang.md
-
-particle-system built-in variables
-→ particle-variable-inventory.md
-
-full Molang language / operators / functions / easing
-→ molang-language-math.md
-
-reusable particle formulas
-→ molang-formula-cookbook.md
-
-query/context/external state
-→ molang-queries-context.md
-
-curves
-→ curves.md
-
-event graphs / child effects
-→ events.md
-
-event timing / emitter-vs-particle time ownership
-→ event-timing.md
-
-Snowstorm / Wintersky generic editor/preview compatibility
+Snowstorm generic compatibility
 → snowstorm.md
 
-Snowstorm / Wintersky release capability and fix matrix
+Snowstorm release capability/fix question
 → snowstorm-compatibility-matrix.md
 
-release-specific Snowstorm quirks / regressions
+Snowstorm regression/anomaly
 → snowstorm-version-quirks.md
-
-performance
-→ performance.md
-
-entity / locator / animation binding context
-→ entity-integration.md
-
-symptom-first diagnosis
-→ troubleshooting.md
-
-validation / delivery / starting patterns
-→ qa.md / delivery.md / patterns.md
 ```
 
-## Knowledge provenance
+## Evidence classes
 
 Every durable rule is interpreted as one of:
 
@@ -161,124 +95,89 @@ EMPIRICALLY VERIFIED
 HEURISTIC
 ```
 
-Snowstorm-specific behavior must never redefine generic Bedrock validity. Published Snowstorm/Wintersky release notes are preferred for stable editor capability claims; unreleased source-head behavior must be labeled development state. Heuristics must never be presented as live rendering or FPS proof.
+Snowstorm-specific behavior must never redefine generic Bedrock validity. Published Snowstorm/Wintersky release notes are preferred for stable editor-capability claims; unreleased source-head behavior must be labeled development state. Static heuristics must never be presented as live rendering, FPS, or Minecraft proof.
 
-## Knowledge closure state
+## Coverage
 
-The source/static knowledge foundation is mature. `STATUS.md` owns the current maturity statement and the intentionally unresolved runtime-only areas.
-
-Do not interpret knowledge closure as runtime proof. Final visual quality, exact collision/runtime integration, host-specific query availability, and device/GPU performance remain target-runtime concerns.
-
-## Complete coverage target
-
-The canonical knowledge base targets all practical layers required to author Bedrock/Snowstorm particle assets professionally:
+The mature source/static knowledge base covers:
 
 ```text
-particle document structure
-official schema/component closure
-official defaults / omission / evaluation timing
-component inventory + field semantics
-emitter rate/lifetime/shape
-custom shape + vector/direction math
-general vector/geometry/probability/ballistic math
-emitter vs particle lifecycle
-creation/update/render timing
-local/world simulation + inherited velocity
-initial speed / spin
-dynamic acceleration / drag
-parametric motion
-collision / bounce / contact events / kill plane / block expiration
-billboard facing + directional/emitter-transform modes
-materials + transparency
-RGBA texture production
-atlas construction + cell mapping
-texture resolution / resampling / downscale
-texture filtering / hidden RGB / bleed prevention
-UV mapping + flipbook animation
-tint / alpha / gradients
-additive/blend color behavior
-lighting
-full Molang syntax/operators/functions
-particle/emitter built-in variables
-query/context boundaries
-math/easing/interpolation/random/trigonometry
-reusable particle formulas
-curves
-events / nested child effects
-event timing / fan-out
-entity/locator integration
-Snowstorm/Wintersky editor mapping
-Snowstorm/Wintersky version capability matrix
-Snowstorm import/export round-trip risks
-static performance reasoning
-troubleshooting
-QA and clean delivery
+Bedrock document/components + defaults/evaluation
+emitter lifecycle/rates/shapes
+motion/collision/rotation + math/physics
+Molang language/math/queries/ownership
+curves/events/event timing
+billboards/materials/tint/lighting
+RGBA texture/atlas/UV/flipbook/filtering/color
+entity/locator transform context
+Snowstorm/Wintersky editor mapping + release matrix + round-trip risks
+performance/readability/static QA
+troubleshooting + clean delivery
 ```
 
-## Texture is first-class knowledge
+`STATUS.md` owns the closure/maturity statement and unresolved runtime-only areas.
+
+## Texture is first-class
+
+Load only the owner needed:
 
 ```text
 texture-authoring.md
-→ source PNG/RGBA, alpha, sprite bounds, atlas, UV/flipbook, tint compatibility
+→ PNG/RGBA, atlas, UV/flipbook, tint-compatible source art
 
 texture-resolution-sampling.md
-→ source resolution, resampling, texel-density reasoning, downscale,
-  alpha coverage and frame stability
+→ resolution, resampling, downscale, alpha coverage/frame stability
 
 texture-filtering-bleeding.md
-→ hidden RGB, gutter/bleed risk, frame bounds, matte/halo, minification
+→ hidden RGB, matte/halo, gutter/bleed, filtering/minification
 
 texture-color-science.md
-→ practical color/value/alpha decisions for opaque/alpha/blend/additive rendering
+→ alpha/value/color decisions for opaque/alpha/blend/additive
 
 appearance-rendering.md
-→ how authored texture data is rendered through material/billboard/tint/lighting
+→ material/billboard/tint/lighting behavior
 ```
 
-## Molang/math is first-class knowledge
+## Molang/math is first-class
+
+Load only the needed layer:
 
 ```text
 molang.md
 → particle/emitter ownership and stability
 
 particle-variable-inventory.md
-→ documented built-in particle/emitter variables
+→ documented particle-system built-ins
 
 molang-language-math.md
-→ language, operators, functions, easing and interpolation
+→ language/operators/functions/easing
 
 molang-formula-cookbook.md
-→ reusable formulas for lifetime envelopes, stable random ranges/classes,
-  oscillation, orbit/spiral, remapping, cone/ring reasoning and safe math
+→ reusable particle formulas
 
 math-physics-reference.md
-→ vector magnitude/normalization, projection, sampling distributions,
-  ballistic equations, probability, angular readability and numerical safety
+→ vectors/geometry/ballistics/probability
 
 molang-queries-context.md
-→ query/context host availability and external-state coupling
+→ query/context host availability
 ```
 
 ## Boundary
 
-ChatGPT owns requirement normalization, physical/visual decomposition, particle JSON authoring, texture/atlas generation or editing, Bedrock/Molang/Snowstorm-aware reasoning, static preflight, clean package assembly and targeted revision.
+ChatGPT owns requirement normalization, physical/visual decomposition, particle JSON authoring, texture/atlas generation or editing, Bedrock/Molang/Snowstorm-aware reasoning, static preflight, clean package assembly, and targeted revision.
 
-ChatGPT does not claim live Snowstorm/Minecraft truth without review, Blockbench runtime execution, measured FPS/device performance, perfect editor/runtime equivalence, or MCP implementation ownership.
+ChatGPT does not claim live Snowstorm/Minecraft truth without review, exact Blockbench runtime behavior, measured FPS/device performance, perfect editor/runtime equivalence, or MCP implementation ownership.
 
-## Canonical acceptance model
+## Acceptance model
 
 ```text
 Bedrock/source reasoning
-→ target-version schema/default check when needed
-→ component/field ownership check
-→ Molang/math ownership check
-→ texture/rendering QA
-→ Snowstorm compatibility reasoning when applicable
-→ Snowstorm release matrix check when behavior is version-sensitive
+→ target-version schema/default check only when needed
+→ relevant domain knowledge only
 → relevant static/preflight QA only
 → clean package
-→ user review in the actual target environment
-→ approve or revise causal layer
+→ user review in actual target environment
+→ targeted revision or approval
 ```
 
 `LOCAL_CODE` is not required for this ChatGPT-side workflow.
