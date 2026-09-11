@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import type { GatewayRuntimeStatus } from "../backend";
 import { resolveDevelopmentIntent, type NavigatorDevelopmentResolution } from "./developmentIntent";
 import { NAVIGATOR_ROUTING_POLICY, type NavigatorRoutingPolicy } from "./routingPolicy";
+import { contextForAuthoringDomain } from "./registry";
 import { buildNavigatorSnapshot } from "./snapshot";
 import { buildControlStageContext, type ControlStageContext } from "./contextProjection";
 import { readReferencePackageProjection, type ControlReferenceProjection } from "./referencePackage";
@@ -167,7 +168,7 @@ export async function buildNavigatorPacket(
     taskIntent?: string | null;
   } = {}
 ): Promise<NavigatorPacket> {
-  const snapshot = buildNavigatorSnapshot(status);
+  const baseSnapshot = buildNavigatorSnapshot(status);
   const mode = options.taskMode ?? "ASSET_AUTHORING";
   const development = mode === "SYSTEM_DEVELOPMENT"
     ? resolveDevelopmentIntent(options.taskIntent ?? "")
@@ -178,6 +179,16 @@ export async function buildNavigatorPacket(
   const reference = mode === "ASSET_AUTHORING"
     ? await readReferencePackageProjection(options.referencePackagePath)
     : await readReferencePackageProjection(null);
+  const resolvedContext = mode === "ASSET_AUTHORING"
+    ? await contextForAuthoringDomain(
+        baseSnapshot.authoring.domain,
+        reference.selected_profile
+      )
+    : { required: [], optional: [] };
+  const snapshot: NavigatorSnapshot = {
+    ...baseSnapshot,
+    context: resolvedContext,
+  };
   const stageContext = mode === "ASSET_AUTHORING"
     ? buildControlStageContext({
         domain: snapshot.authoring.domain,
