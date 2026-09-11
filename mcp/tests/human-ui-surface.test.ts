@@ -4,11 +4,12 @@ const source = (relative: string) =>
   Bun.file(new URL(`../${relative}`, import.meta.url)).text();
 
 describe("human-facing Blockbench UI", () => {
-  test("normal panel exposes only human status, not AI/runtime internals", async () => {
+  test("normal panel exposes only human status and useful project actions", async () => {
     const panel = await source("ui/panel.html");
 
     expect(panel).toContain("LazyDesigner status");
-    expect(panel).toContain("What you can do");
+    expect(panel).toContain("Current project");
+    expect(panel).toContain("Open Project Folder");
     expect(panel).toContain("AI handles the technical authoring workflow in the background.");
 
     for (const internal of [
@@ -40,6 +41,43 @@ describe("human-facing Blockbench UI", () => {
     expect(statusBar).toContain('return "LazyDesigner Needs Attention"');
     expect(statusBar).not.toContain("runtimeAddress");
     expect(statusBar).not.toContain("127.0.0.1");
+  });
+
+  test("project display is event-driven and folder access reuses Blockbench native action", async () => {
+    const ui = await source("ui/index.ts");
+
+    for (const event of [
+      "select_project",
+      "new_project",
+      "setup_project",
+      "load_project",
+      "save_project",
+      "close_project",
+    ]) {
+      expect(ui).toContain(`"${event}"`);
+    }
+    expect(ui).toContain("Blockbench.on(event, callback)");
+    expect(ui).toContain("Blockbench.removeListener(event, callback)");
+    expect(ui).toContain("open_model_folder");
+    expect(ui).not.toContain("setInterval(");
+  });
+
+  test("recovery actions are contextual and copied support details avoid local paths", async () => {
+    const [panel, ui, devSync] = await Promise.all([
+      source("ui/panel.html"),
+      source("ui/index.ts"),
+      source("plugin/devSync.ts"),
+    ]);
+
+    expect(panel).toContain("runtime.state === 'failed'");
+    expect(panel).toContain("Reload LazyDesigner");
+    expect(panel).toContain("Copy Error Details");
+    expect(ui).toContain("reloadLazyDesignerPlugin()");
+    expect(ui).toContain("LazyDesigner support details");
+    expect(ui).not.toContain("Project.save_path}");
+    expect(ui).not.toContain("Project.export_path}");
+    expect(devSync).toContain("canReloadLazyDesignerPlugin");
+    expect(devSync).toContain("reloadLazyDesignerPlugin");
   });
 
   test("normal plugin metadata keeps creator credentials anonymous", async () => {
