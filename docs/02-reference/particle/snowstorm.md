@@ -1,266 +1,334 @@
 # Snowstorm / Wintersky Knowledge
 
-This file owns durable editor/preview compatibility knowledge for Snowstorm and its Wintersky renderer. It must not redefine Bedrock-generic validity.
+This file owns durable Snowstorm/Wintersky editor and preview knowledge for Particle Reference Authoring. It must never redefine generic Bedrock validity.
 
-## Evidence Classes
+## Evidence classes
 
-- **SNOWSTORM / WINTERSKY**: behavior documented by Snowstorm/Wintersky sources or releases.
-- **EMPIRICALLY VERIFIED**: reproduced behavior from accepted project authoring.
-- **HEURISTIC**: bounded workflow guidance for safer authoring.
+- **SNOWSTORM / WINTERSKY** — documented source/release behavior.
+- **EMPIRICALLY VERIFIED** — reproduced project behavior.
+- **HEURISTIC** — bounded authoring guidance.
 
-## 1. Positioning
+## Position
 
-Snowstorm is a third-party Bedrock particle editor by JannisX11. Microsoft documentation recommends it as a practical visual editor for Bedrock particle effects, but it is not a Mojang/Microsoft runtime.
+Snowstorm is a third-party Minecraft Bedrock particle editor by JannisX11, available as a web app and VS Code extension. Microsoft Creator documentation recommends it as a practical particle authoring tool, but Minecraft remains the runtime authority.
 
-Snowstorm is available as:
+Its 3D preview uses Wintersky, a THREE.js particle renderer based on the Bedrock particle format.
 
-```text
-web app
-VS Code extension
-```
-
-Its 3D preview is powered by Wintersky, a THREE.js renderer based on the Minecraft Bedrock particle format.
-
-Therefore keep three layers separate:
+Always separate:
 
 ```text
 Bedrock JSON validity
-Snowstorm/Wintersky preview behavior
-Minecraft target visual truth
+Snowstorm editor/import/export behavior
+Wintersky preview behavior
+Minecraft runtime behavior
 ```
 
-## 2. Current Tooling Context
+## Current version baseline
 
-Snowstorm 3.x includes features such as:
+At the current published release baseline:
 
 ```text
-Quick Setup
-live 3D preview
-Molang editing/autocomplete
+Snowstorm 3.2.1
+Wintersky 1.3.3
+MolangJS 1.6.x family
+```
+
+Snowstorm `master` package metadata currently reports `3.2.2`, but there is no matching published GitHub release in the reviewed release feed. Treat source-head version metadata as development state, not stable-release evidence.
+
+For detailed release boundaries use `snowstorm-compatibility-matrix.md`.
+
+## Source-level editor mapping
+
+Current Snowstorm source directly maps editor state into Bedrock particle JSON. The exporter currently writes a document beginning with:
+
+```text
+format_version: 1.10.0
+particle_effect.description
+particle_effect.curves
+particle_effect.events
+particle_effect.components
+```
+
+Source-level mapping covers major families such as:
+
+```text
+emitter initialization / local space
+instant / steady / manual rate
+once / looping / expression lifetime
+emitter lifetime events
+point / sphere / box / disc / custom / entity_aabb shapes
+particle initialization
+particle lifetime / environmental expiration
+initial spin / initial speed
+dynamic / parametric / collision motion
+billboard / UV / tint / lighting
 curves
 particle events
-nested effect preview
-texture editing
-code preview
-VS Code resource-pack workflow
 ```
 
-Recent Snowstorm releases also track Wintersky versions explicitly, confirming that preview behavior is tied to the Wintersky renderer implementation.
-
-## 3. Quick Setup
-
-**SNOWSTORM / WINTERSKY**
-
-Quick Setup is a convenience layer for common emitter shape, motion, timing, and texture configurations.
-
-Use it as:
+Important boundary:
 
 ```text
-starting configuration
-not authoritative design logic
+Snowstorm has an editor field
+≠ Bedrock requires that field
+
+Snowstorm can import JSON
+≠ every JSON field is first-class editable
+
+Snowstorm can export JSON
+≠ round-trip preservation is proven for every future Bedrock field
 ```
 
-After Quick Setup, still inspect the resulting component values. Do not assume a preset matches the physical intent merely because the preview looks approximately correct.
+## Import / export preservation rule
 
-## 4. Live Preview Value
+Snowstorm source explicitly tracks some imported advanced event structures as unsupported-field data. Therefore externally authored advanced JSON must not be treated as safely normalized simply because it opens in Snowstorm.
 
-Snowstorm preview is useful for rapid iteration on:
-- direction;
-- spread;
-- size;
+For valuable authored content:
+
+```text
+original JSON
+→ import Snowstorm
+→ edit
+→ export
+→ structural diff
+→ target-schema review
+```
+
+Pay special attention to semantically meaningful:
+
+```text
+0
+false
+empty but meaningful structures
+omitted fields
+advanced event structures
+newer Bedrock fields
+```
+
+Release history includes fixes for zero-valued fields being dropped, so round-trip QA is a real compatibility concern.
+
+## Quick Setup
+
+Quick Setup, introduced in Snowstorm 3.0.0, is a convenience layer for common emitter shape, motion, timing, and starter textures.
+
+Use it only as:
+
+```text
+bootstrap
+→ inspect generated JSON
+→ remove unnecessary components
+→ verify ownership / units / lifetime / rate / direction / speed
+→ normal particle QA
+```
+
+Do not treat a preset as authoring truth.
+
+## Web app vs VS Code extension
+
+### Web app
+
+Useful for:
+- fast standalone editing;
+- live preview;
+- child particle tabs for chained event work;
+- vanilla-oriented texture assistance.
+
+### VS Code extension
+
+Useful for:
+- actual resource-pack folder context;
+- resolving referenced child particle files;
+- project texture-path lookup;
+- saving texture changes into workspace paths.
+
+Compatibility note: Snowstorm 3.2.0 fixed a VS Code tick-throttling issue that could make previews run very slowly in some tabs. Do not tune physical speed against an affected older editor build.
+
+## Preview value and boundary
+
+Snowstorm/Wintersky preview is useful for:
+- emitter spread;
+- approximate motion;
+- billboard size;
 - density;
 - duration;
-- texture/UV behavior;
+- UV/flipbook;
 - event layering;
-- approximate motion.
+- curves;
+- texture/material iteration.
 
-But preview acceptance does not replace Minecraft acceptance when the final scene depends on:
-- world geometry;
-- camera/FOV context;
-- entity binding;
-- game-specific render behavior;
-- performance on target hardware;
-- exact collision/runtime differences.
+It does not replace Minecraft review when behavior depends on:
+- world geometry/collision;
+- entity/locator transforms;
+- camera/FOV scene context;
+- target GPU/device performance;
+- exact runtime query context;
+- renderer differences.
 
-## 5. Vector Initial Speed Caveat
+## Vector initial-speed compatibility finding
 
-**EMPIRICALLY VERIFIED / SNOWSTORM-COMPATIBILITY**
+**EMPIRICALLY VERIFIED / TARGET-SPECIFIC**
 
-A recurring Snowstorm/Wintersky issue observed during accepted volcano authoring:
-
-```text
-minecraft:particle_initial_speed = [x, y, z]
-```
-
-may behave as a direction-like vector whose magnitude is normalized for preview, producing an effective linear speed that does not preserve the authored vector magnitude.
+Project authoring reproduced a Snowstorm/Wintersky compatibility risk where vector-form `minecraft:particle_initial_speed` behaved direction-like and did not preserve the intended authored magnitude in preview.
 
 When Snowstorm preview fidelity matters and launch magnitude is important, prefer:
 
 ```text
-emitter shape direction = [x, y, z]
-minecraft:particle_initial_speed = scalar speed
+emitter shape direction = launch vector
+particle_initial_speed  = scalar magnitude
 ```
 
-This is a target-specific compatibility rule. A vector initial-speed form must not automatically be labeled invalid Bedrock JSON.
+This is not a generic Bedrock syntax prohibition.
 
-## 6. Direction Ownership
+## Stable living-particle ownership
 
-Use emitter shape direction to define where a particle initially launches when using the scalar-speed pattern.
+Do not use `variable.emitter_age` to classify already living particles when their identity should stay fixed.
 
-For intentional spread, vary direction components with stable emitter/particle random inputs rather than faking spread through unrelated acceleration.
-
-Example conceptual pattern:
+Risk fields include:
 
 ```text
-direction = [base_x + random_spread_x,
-             upward_bias + random_spread_y,
-             base_z + random_spread_z]
-initial_speed = scalar class speed
+particle_motion_dynamic
+particle_appearance_billboard
+particle_appearance_tinting
 ```
 
-## 7. Stable Living-particle Ownership
-
-**EMPIRICALLY VERIFIED**
-
-Snowstorm preview made a recurring authoring defect visible when `variable.emitter_age` was used inside properties of already living particles.
-
-Risk areas include:
+Prefer particle-owned state:
 
 ```text
-minecraft:particle_motion_dynamic
-minecraft:particle_appearance_billboard
-minecraft:particle_appearance_tinting
-```
-
-If emitter-age thresholds select classes in these fields, existing particles may visibly switch class mid-life.
-
-Prefer:
-
-```text
-particle_random_N
+particle_random_1..4
 particle_age
 particle_lifetime
 ```
 
-for persistent particle-owned behavior.
+Keep emitter-age logic emitter-owned: rate phases, emitter lifecycle, and emitter-level event timing.
 
-Keep `emitter_age` for emitter-level timing such as spawn-rate phases or event scheduling.
+## Molang compatibility layers
 
-## 8. Events
+Snowstorm and Wintersky rely on MolangJS. Keep three layers separate:
 
-Snowstorm 3.x supports Bedrock particle events, including:
-- particles;
-- sounds;
+```text
+parser accepts expression
+→ MolangJS syntax capability
+
+Snowstorm/Wintersky evaluates expression
+→ editor host/context capability
+
+Minecraft evaluates expression
+→ target runtime capability
+```
+
+Variable placeholders introduced in Snowstorm 3.1.0 are preview substitutions for undefined/game-only variables. A placeholder does not prove that a query or variable exists in Minecraft particle context.
+
+Release history includes Molang fixes for:
+- curve/expression evaluation;
+- nested scopes;
+- operations with negative numbers;
+- `math.min_angle` support;
+- event-expression undefined variables;
+- `camera_distance_range_lerp` preview behavior.
+
+Use `snowstorm-compatibility-matrix.md` before diagnosing a current expression from an older editor result.
+
+## Events and nested effects
+
+Snowstorm 3.0.0 introduced Bedrock event authoring and chained preview. Supported editor concepts include:
+- particle child effects;
+- sound events;
 - expressions;
 - sequences;
 - randomizers;
-- emitter creation/expiration triggers;
-- collisions;
-- timelines.
+- emitter creation/expiration;
+- collision triggers;
+- timelines;
+- distance-driven emitter events where exposed.
 
-Snowstorm can preview chained particle events together. In the web app, child particles may be opened in another tab and synchronize; the VS Code workflow can resolve referenced effects from a resource-pack folder.
+In the web app child particle tabs can synchronize. In the VS Code resource-pack workflow, referenced child effects can resolve from project files.
 
-Authoring implication:
-- use explicit child identifiers;
-- keep bundle references resolvable;
-- do not rely on one tab/file being self-contained when the event graph is not.
+Later releases fixed important preview/event issues, including concurrent timeline events, expiration events at playback start, inconsistent timeline time codes, and collision-event `min_speed` behavior.
 
-## 9. Texture Editing
+Do not redesign valid event architecture until the editor release is known.
 
-Snowstorm includes basic texture editing intended for quick pixel-level adjustments. Its own release notes position this as a convenience rather than a replacement for a full image editor.
+## Texture / UV / material editing
 
-Use Snowstorm texture editing for:
-- small corrections;
-- pixel cleanup;
-- quick iteration.
+Snowstorm 3.0.0 added basic texture editing and static UV manipulation. This is useful for quick pixel work, not a replacement for the production texture pipeline.
 
-Use dedicated image-generation/editing workflow when:
-- atlas construction is substantial;
-- alpha cleanup matters;
-- many unique cells are required;
-- style consistency is complex.
+Use dedicated texture knowledge for:
+- RGBA cleanup;
+- atlas generation;
+- gutters;
+- hidden RGB;
+- resampling;
+- alpha/value design;
+- complex flipbooks.
 
-## 10. Material / Rendering Preview
-
-Snowstorm supports particle materials including additive rendering in modern releases. Release notes have fixed preview-specific issues such as black pixels with additive materials.
+Release history includes preview/editor fixes for:
+- gradient editing state;
+- gradient hue/alpha edit registration;
+- unintended default texture saves;
+- additive black-pixel rendering.
 
 Therefore:
-- do not treat one preview artifact as proof that the JSON is wrong;
-- check current Snowstorm release behavior before encoding a permanent workaround;
-- distinguish editor regression from Bedrock authoring defect.
-
-## 11. Molang Support and Preview
-
-Snowstorm supports Molang editing and autocomplete and has fixed undefined-variable detection in event-related expressions.
-
-Do not assume Snowstorm's Molang evaluator is a complete substitute for Minecraft runtime semantics. Use it as authoring feedback and preview evidence.
-
-For class stability, use the ownership rules in `molang.md` regardless of whether Snowstorm accepts the expression syntactically.
-
-## 12. Preview Loop and Timing
-
-Snowstorm releases have changed/fixed preview loop defaults and event timeline behavior over time.
-
-Authoring rule:
 
 ```text
-preview timing bug suspected
-→ verify current Snowstorm version / release notes
-→ isolate JSON timing from editor loop behavior
-→ avoid permanent content workaround until behavior is reproduced
+visual artifact in Snowstorm
+→ check editor version
+→ inspect source texture/material
+→ minimal preview reproduction
+→ Minecraft comparison if runtime truth matters
 ```
 
-## 13. Version Awareness
+## Preview timing
 
-Snowstorm and Wintersky evolve independently from Bedrock itself.
+Snowstorm release behavior has changed around preview loop defaults and event timing. Snowstorm 3.2.0 changed the preview loop default to Auto; later releases fixed timeline/expiration issues.
 
-When a behavior is editor-specific, record:
+When timing looks wrong:
 
 ```text
-Snowstorm version if known
-Wintersky version if known
-reproduction condition
-whether Minecraft parity is confirmed
+identify editor version
+→ isolate one emitter/event
+→ use constant values
+→ verify Bedrock timing owner
+→ consult version matrix
+→ compare Minecraft only if required
 ```
 
-Do not make version-specific editor behavior a timeless Bedrock rule.
+## Strong empirical ballistic pattern
 
-## 14. Practical Compatibility Checklist
-
-Before delivery intended for Snowstorm review:
+For directional ballistic effects requiring predictable Snowstorm tuning:
 
 ```text
-[ ] Bedrock JSON remains valid independent of Snowstorm
-[ ] launch magnitude uses scalar speed when vector normalization would distort preview
-[ ] direction is authored explicitly in shape/direction owner
-[ ] living-particle class decisions use particle-owned stable state
-[ ] child event identifiers resolve
-[ ] texture path resolves in the package
-[ ] preview issue is not known to be editor-version-specific before content is rewritten
-[ ] Snowstorm approval is still treated as preview evidence, not Minecraft final truth
-```
-
-## 15. Known Strong Empirical Pattern
-
-For directional ballistic effects that need reliable Snowstorm tuning:
-
-```text
-shape.direction = normalized/intended launch direction with bounded random spread
+shape.direction = intended launch direction + bounded spread
 particle_initial_speed = scalar class speed
-particle_motion_dynamic.linear_acceleration = gravity / small force
+particle_motion_dynamic.linear_acceleration = gravity / intended force
 particle_motion_dynamic.linear_drag_coefficient = damping
 ```
 
-This pattern proved easier to reason about than embedding magnitude in the initial-speed vector.
+This keeps heading, magnitude, and post-spawn physics as separate responsibilities.
+
+## Compatibility checklist
+
+```text
+[ ] target Bedrock validity checked independently of Snowstorm
+[ ] Snowstorm release known when diagnosing editor behavior
+[ ] Wintersky version known when renderer/event behavior is relevant
+[ ] current compatibility matrix checked before adding a workaround
+[ ] imported advanced JSON diffed after export when preservation matters
+[ ] meaningful zero/false/omission preserved intentionally
+[ ] scalar-speed pattern used only when Snowstorm compatibility requires it
+[ ] living-particle identity uses particle-owned stable state
+[ ] child effect references resolve
+[ ] texture asset, alpha and material checked independently
+[ ] parser success is not treated as query-context proof
+[ ] final Snowstorm preview is not called Minecraft runtime proof
+```
 
 ## Sources
 
 - https://learn.microsoft.com/en-us/minecraft/creator/documents/particleeffects?view=minecraft-bedrock-stable
-- https://github.com/MicrosoftDocs/minecraft-creator/blob/main/creator/Documents/SnowstormOverview.md
 - https://github.com/JannisX11/snowstorm
 - https://github.com/JannisX11/snowstorm/releases
+- https://github.com/JannisX11/snowstorm/blob/master/package.json
+- https://github.com/JannisX11/snowstorm/blob/master/src/import.js
+- https://github.com/JannisX11/snowstorm/blob/master/src/export.js
 - https://github.com/JannisX11/wintersky
-
-Current source review notes:
-- Snowstorm repository package metadata identifies it as a Bedrock particle editor and uses Wintersky as a dependency.
-- Snowstorm 3.x release notes document Quick Setup, Events, texture editing, Molang improvements, additive material support, and multiple preview fixes.
+- https://github.com/JannisX11/wintersky/releases
+- https://github.com/JannisX11/wintersky/blob/master/package.json
