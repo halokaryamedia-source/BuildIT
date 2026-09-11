@@ -20,7 +20,7 @@ on:
       - ".agents/skills/blockbench-bedrock-modelling/**"
       - ".agents/skills/blockit-bedrock-texturing/**"
       - ".agents/skills/blockit-bedrock-animation/**"
-      - "docs/knowledge/next-action.md"
+      - "docs/05-operations/next-action.md"
       - ".bun-version"
       - ".github/workflows/mcp-verify.yml"
   workflow_dispatch:
