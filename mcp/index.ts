@@ -135,7 +135,7 @@ async function waitForServerListening(server: NetServer): Promise<void> {
     };
     const onClose = () => {
       cleanup();
-      reject(new Error("BlockIT MCP listener closed before binding completed."));
+      reject(new Error("LazyDesigner MCP listener closed before binding completed."));
     };
     server.once("listening", onListening);
     server.once("error", onError);
@@ -144,7 +144,7 @@ async function waitForServerListening(server: NetServer): Promise<void> {
       cleanup();
       reject(
         new Error(
-          `BlockIT MCP listener did not bind within ${SERVER_BIND_TIMEOUT_MS}ms.`
+          `LazyDesigner MCP listener did not bind within ${SERVER_BIND_TIMEOUT_MS}ms.`
         )
       );
     }, SERVER_BIND_TIMEOUT_MS);
@@ -179,7 +179,7 @@ async function startMcpServer(generation: number): Promise<boolean> {
       markRuntimeGenerationState(generation, "failed");
       setStatusBarState("failed", reason);
       Blockbench.showQuickMessage(
-        `BlockIT MCP failed to start: ${reason}. Close the old MCP instance or free port ${config.port}.`,
+        `LazyDesigner MCP failed to start: ${reason}. Close the old MCP instance or free port ${config.port}.`,
         6000
       );
     }
@@ -225,7 +225,7 @@ function beginBlockItRuntimeTeardown(
 
   if (generation === null) {
     void closePromise.catch((error) => {
-      console.error("[MCP] BlockIT listener cleanup failed", error);
+      console.error("[MCP] LazyDesigner listener cleanup failed", error);
     });
     return;
   }
@@ -233,7 +233,7 @@ function beginBlockItRuntimeTeardown(
   void beginRuntimeGenerationTeardown(generation, async () => {
     await closePromise;
   }).catch((error) => {
-    console.error("[MCP] BlockIT runtime teardown failed", error);
+    console.error("[MCP] LazyDesigner runtime teardown failed", error);
   });
 }
 
@@ -275,7 +275,7 @@ function setupLocalDevAutoReload(generation: number): void {
     (typeof plugin.isReloadable === "function" && !plugin.isReloadable())
   ) {
     console.warn(
-      "[MCP] dev:sync auto-reload requires BlockIT to be loaded as a reloadable file-based plugin."
+      "[MCP] dev:sync auto-reload requires LazyDesigner to be loaded as a reloadable file-based plugin."
     );
     return;
   }
@@ -288,8 +288,8 @@ function setupLocalDevAutoReload(generation: number): void {
 
   // @ts-ignore - requireNativeModule is a Blockbench desktop global.
   const devFs = requireNativeModule("fs", {
-    message: "BlockIT development sync watches its local plugin directory for successful atomic rebuilds.",
-    detail: "This is used only by development builds to reload the file-based BlockIT plugin automatically.",
+    message: "LazyDesigner development sync watches its local plugin directory for successful atomic rebuilds.",
+    detail: "This is used only by development builds to reload the file-based LazyDesigner plugin automatically.",
     optional: true,
   }) as LocalDevFilesystem | null;
   if (!devFs) {
@@ -328,14 +328,14 @@ function setupLocalDevAutoReload(generation: number): void {
         .then(() => {
           if (!isRuntimeGenerationCurrent(generation)) return;
           console.log(
-            `[MCP] Development bundle changed ${runningBuildIdentity} → ${nextBuildIdentity}; reloading BlockIT through native plugin lifecycle.`
+            `[MCP] Development bundle changed ${runningBuildIdentity} → ${nextBuildIdentity}; reloading LazyDesigner through native plugin lifecycle.`
           );
           plugin.reload?.();
         })
         .catch((error) => {
           console.error("[MCP] Automatic development plugin reload failed", error);
           Blockbench.showQuickMessage(
-            "BlockIT dev sync could not reload automatically; use the plugin Reload action once.",
+            "LazyDesigner dev sync could not reload automatically; use the plugin Reload action once.",
             5000
           );
         })
@@ -394,7 +394,7 @@ async function initializeBlockItRuntime(
     if (!isRuntimeGenerationCurrent(generation)) return;
     if (serverConfig) serverConfig.profile = profile;
     Blockbench.showQuickMessage(
-      `BlockIT compatibility surface switched to ${profile}. Gateway clients refresh automatically.`,
+      `LazyDesigner compatibility surface switched to ${profile}. Gateway clients refresh automatically.`,
       2000
     );
   });
@@ -445,7 +445,7 @@ async function initializeBlockItRuntime(
       serverConfig.phase = targetPhase;
     }
     Blockbench.showQuickMessage(
-      `BlockIT MCP phase switched to ${targetPhase}. Gateway clients refresh automatically.`,
+      `LazyDesigner MCP phase switched to ${targetPhase}. Gateway clients refresh automatically.`,
       2000
     );
   });
@@ -453,7 +453,7 @@ async function initializeBlockItRuntime(
   // Runtime-conditional resource (depends on the reference_models plugin).
   registerReferenceModelsResource();
 
-  // Local prompt content is bundled into this BlockIT build. Compatible user
+  // Local prompt content is bundled into this LazyDesigner build. Compatible user
   // overrides remain local; stale pre-phase overrides are discarded safely.
   await initPromptLoader();
   if (!isRuntimeGenerationCurrent(generation)) return;
@@ -513,9 +513,9 @@ BBPlugin.register("blockit_mcp", {
       .catch((error) => {
         if (!isRuntimeGenerationCurrent(claim.generation)) return;
         markRuntimeGenerationState(claim.generation, "failed");
-        console.error("[MCP] BlockIT runtime initialization failed", error);
+        console.error("[MCP] LazyDesigner runtime initialization failed", error);
         Blockbench.showQuickMessage(
-          `BlockIT MCP initialization failed: ${error instanceof Error ? error.message : String(error)}`,
+          `LazyDesigner MCP initialization failed: ${error instanceof Error ? error.message : String(error)}`,
           6000
         );
       })
@@ -531,11 +531,11 @@ BBPlugin.register("blockit_mcp", {
   },
 
   oninstall() {
-    Blockbench.showQuickMessage("Installed BlockIT Bedrock Entity MCP", 2000);
+    Blockbench.showQuickMessage("Installed LazyDesigner Bedrock Entity MCP", 2000);
   },
 
   onuninstall() {
-    Blockbench.showQuickMessage("Uninstalled BlockIT Bedrock Entity MCP", 2000);
+    Blockbench.showQuickMessage("Uninstalled LazyDesigner Bedrock Entity MCP", 2000);
     settingsTeardown();
   },
 });
