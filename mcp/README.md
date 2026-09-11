@@ -1,8 +1,8 @@
-# BlockIT — Bedrock Entity MCP
+# LazyDesigner — Bedrock Entity MCP
 
-BlockIT uses a stable MCP **Gateway** for normal AI-client connections and a Minecraft **Bedrock Entity-focused** Runtime/plugin inside desktop Blockbench. `Local` is the development authority.
+LazyDesigner uses a stable MCP **Gateway** for normal AI-client connections and a Minecraft **Bedrock Entity-focused** Runtime/plugin inside desktop Blockbench. `Local` is the development authority.
 
-Do **not** use an upstream hosted plugin as runtime authority for this repository. BlockIT source/builds come from this repository. Production plugin: `dist/blockit_mcp.js`.
+Do **not** use an upstream hosted plugin as runtime authority for this repository. LazyDesigner source/builds come from this repository. The current compatibility bundle filename remains `dist/blockit_mcp.js` until bundle/package identifier migration is explicitly mapped.
 
 ## Build / Verify
 
@@ -28,9 +28,9 @@ Use the smallest targeted test during iteration.
 ```text
 AI client
   ↓ stdio
-BlockIT Gateway
+LazyDesigner Gateway
   ↓ loopback Streamable HTTP
-BlockIT Runtime
+LazyDesigner Runtime
   ↓
 Blockbench
 ```
@@ -58,7 +58,7 @@ Direct Runtime access is for Inspector/conformance/focused debugging only.
 
 ```text
 Approved Reference + Dimensions + Requirements
-→ native BlockIT Geometry on shared AUTHORING
+→ native LazyDesigner Geometry on shared AUTHORING
 → Geometry approval
 → UV Layout PASS
 → Texturing/PBR on shared AUTHORING
@@ -83,7 +83,7 @@ AUTHORING surface            47 tools
 Animation surface            20 tools
 ```
 
-The current generated source-doc snapshot may temporarily retain two retired compatibility descriptors until its next `LOCAL_CODE` generator pass. They are excluded from all active Runtime phase surfaces and are not current authoring capabilities.
+The current generated source-doc snapshot may temporarily retain retired compatibility descriptors until its next `LOCAL_CODE` generator pass. They are excluded from active Runtime phase surfaces and are not current authoring capabilities.
 
 Installed Runtime counts and lifecycle state are proof results; see `../docs/05-operations/current-validation.md`.
 
@@ -115,7 +115,7 @@ Normal authoring has no Standard/Extended choice. Internal `bedrock_entity | ext
 
 ## Local Development Loop
 
-Configure the exact file-based Blockbench plugin destination through `BLOCKIT_PLUGIN_PATH` or pass the path after `--sync`, then run:
+The existing environment variable `BLOCKIT_PLUGIN_PATH` is retained as a compatibility identifier until environment/deploy migration is explicitly mapped. Configure it, or pass the destination after `--sync`, then run:
 
 ```bash
 bun run dev:sync
@@ -129,7 +129,7 @@ Build only:
 bun run dev:watch
 ```
 
-Manual deploy:
+Manual deploy currently uses the compatibility bundle filename:
 
 ```bash
 bun run deploy:local -- /absolute/path/to/blockit_mcp.js
@@ -152,7 +152,7 @@ These do not prove visual fidelity or accepted asset quality.
 
 ## Surface Guard
 
-Static footprint guardrails are maintained by `scripts/measure-default-surface.ts` and `scripts/measure-phase-surfaces.ts`. They are not Authoring Efficiency proof.
+Static footprint guardrails are maintained by `scripts/measure-default-surface.ts` and `scripts/measure-phase-surfaces.ts`. Control payload diagnostics use `scripts/measure-control-context.ts`. They are not Authoring Efficiency proof.
 
 ## Current Capability Shape
 
@@ -161,19 +161,34 @@ Normal authoring includes Cube/Group authoring, hierarchy/rig/pivots, Locator/Nu
 ## Source Layout
 
 ```text
-gateway/      stable client boundary + Runtime adapter
-index.ts      Blockbench plugin entry/lifecycle
-server/       Runtime transport/tools/resources/prompts
-lib/          schemas/factories/runtime helpers
-ui/           Blockbench panel/settings
-prompts/      canonical runtime workflow + generated manifest
-build/        build/docs/manifest tooling
-scripts/      verification/deploy/measurement utilities
-tests/        contract/integration regressions
-docs/         generated Runtime API documentation
+gateway/control/ canonical LazyDesigner Control
+gateway/         stable client boundary + Runtime adapter
+index.ts         Blockbench plugin entry/lifecycle
+server/          Runtime transport/tools/resources/prompts
+lib/             schemas/factories/runtime helpers
+ui/              Blockbench panel/settings
+prompts/         canonical runtime workflow + generated manifest
+build/           build/docs/manifest tooling
+scripts/         verification/deploy/measurement utilities
+tests/           contract/integration regressions
+docs/            generated Runtime API documentation
 ```
 
 Generated API/prompt artifacts follow canonical source + generator output and must never be hand-edited.
+
+## Identity Migration Boundary
+
+Current product-facing identity is LazyDesigner. These compatibility identifiers remain intentionally unchanged until their dependency boundary is mapped:
+
+```text
+package name / MCP server IDs
+bundle filename `blockit_mcp.js`
+BLOCKIT_* environment variables
+persisted setting / affinity header identifiers
+legacy `blockit-*` Skill package paths
+```
+
+Do not bulk-rename them.
 
 ## Proof Boundary
 
