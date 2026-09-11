@@ -2,12 +2,12 @@
 
 Updated: 2026-09-11
 
-This document owns the compact reusable master templates used after Reference Preparation has already resolved requirements, compiled a clean brief, selected useful panels, and obtained explicit user confirmation.
+This document owns the compact reusable master templates used after Reference Preparation has resolved requirements, compiled a clean brief, selected useful panels, and obtained explicit user confirmation.
 
 It complements:
-- `image-generation-prompt-contract.md`
-- `image-reference-standard.md`
-- `player-scale-and-sheet-escalation.md`
+- `prompt-contract.md`
+- `standard.md`
+- `scale-and-escalation.md`
 
 The templates are internal prompt-construction forms. They are not user-facing prompt requirements and must never be filled from uncontrolled raw chat when a compiled brief exists.
 
@@ -52,23 +52,7 @@ or
 Minecraft player-relative scale
 ```
 
-Canonical relative vocabulary is owned by `player-scale-and-sheet-escalation.md`, including:
-
-```text
-HANDHELD
-WEARABLE
-BELOW_KNEE
-KNEE_HEIGHT
-WAIST_HEIGHT
-CHEST_HEIGHT
-PLAYER_HEIGHT
-ABOVE_PLAYER_HEIGHT
-RIDEABLE_1P
-RIDEABLE_2P
-STALL_SCALE
-ROOM_SCALE
-CUSTOM
-```
+Canonical relative vocabulary is owned by `scale-and-escalation.md`.
 
 Never convert a relative scale category into invented exact block dimensions.
 
