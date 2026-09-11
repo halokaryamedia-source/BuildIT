@@ -5,7 +5,7 @@ description: ChatGPT-side specialist for creating Minecraft Bedrock/Snowstorm pa
 
 # LazyDesigner Particle Reference Authoring
 
-Standalone specialist inside the canonical Reference Preparation domain for particle/VFX tasks. It does not depend on the image/model reference branch and is not an MCP subsystem.
+Standalone specialist inside the canonical Reference Preparation domain for particle/VFX tasks. It is not an MCP subsystem and does not depend on image/model reference generation.
 
 ## Route
 
@@ -13,114 +13,181 @@ Standalone specialist inside the canonical Reference Preparation domain for part
 USER PARTICLE REQUEST
 → authoring-spec.md
 → workflow.md
-→ load only the minimum knowledge needed for the current decision
+→ classify execution + complexity once
+→ load minimum knowledge bundle
 → author JSON + textures
-→ qa.md
+→ relevant qa.md gates only
 → delivery.md
 → USER REVIEW IN TARGET ENVIRONMENT
 → optional Codex / MCP handoff
 ```
 
-For knowledge or diagnosis questions, start from `knowledge-map.md` instead of the authoring route.
+For knowledge/diagnosis questions, start from `knowledge-map.md` instead.
+
+## Execution-first rule
+
+Before deep reading, classify:
+
+```text
+DIRECT
+COMPOSED
+REACTIVE
+AUDIT / REVISION
+```
+
+and choose the lowest viable complexity tier:
+
+```text
+0 constants
+1 simple particle-owned Molang
+2 curves / atlas / flipbook / multi-layer
+3 events / collision chains / entity/external reactivity
+```
+
+Do not escalate architecture unless a required behavior cannot be represented cleanly at the current tier.
+
+A request such as `buat particle api biru` should normally take the DIRECT fast path, not trigger multi-emitter/event architecture by default.
 
 ## Context-budget rule
 
-Do not preload the particle corpus.
-
-Normal authoring budget:
+Do not preload the corpus.
 
 ```text
-control docs: authoring-spec.md + workflow.md
-+ 1 primary domain owner
-+ at most 1–2 secondary owners only when the decision actually crosses domains
+normal authoring
+= authoring-spec + workflow + 1 primary owner
++ at most 1–2 secondary owners when a real dependency appears
+
+knowledge/diagnosis
+= knowledge-map + 1 primary owner
++ secondary owner only when required
 ```
 
-Normal knowledge/diagnostic budget:
+If more than three owners appear necessary, split the problem into causal decisions rather than reading everything.
 
-```text
-knowledge-map.md
-+ 1 primary owner
-+ 1 secondary owner only when required by evidence or a cross-domain dependency
-```
-
-Escalate one file at a time. If more than three knowledge owners appear necessary, split the problem into separate decisions instead of loading all owners at once.
-
-Do not load:
-- `official-schema-coverage.md` during normal authoring unless checking a new/unknown component or closure state;
-- `official-defaults-evaluation.md` unless omission/default/evaluation timing matters;
-- `snowstorm-compatibility-matrix.md` unless behavior is version-sensitive;
-- `snowstorm-version-quirks.md` unless diagnosing a release-specific anomaly;
-- `troubleshooting.md` when the causal subsystem is already known;
-- `qa.md` or `delivery.md` before finalization unless the user explicitly asks about QA/package rules.
-
-`README.md` owns the domain boundary. `knowledge-map.md` owns detailed knowledge routing. Do not duplicate their complete owner lists here.
+Do not load closure/default/version/troubleshooting/QA/delivery owners unless the current decision requires them.
 
 ## Minimal task bundles
 
-Use these as default starting bundles, then add only the missing causal owner.
-
 ```text
-simple text-only particle
-→ authoring-spec + workflow + emitter OR motion
-→ add texture-authoring only when texture must be authored/changed
+simple text particle
+→ authoring-spec + workflow + primary owner
+→ texture-authoring only if texture creation/change is required
 
-texture-only task
+texture-only
 → texture-authoring
-→ add exactly one specialist: resolution-sampling OR filtering-bleeding OR color-science
-→ appearance-rendering only when material/tint/render behavior is part of the question
+→ + exactly one specialist when needed: resolution-sampling OR filtering-bleeding OR color-science
 
-Molang ownership/class stability
+spawn/lifetime
+→ emitter
+
+trajectory
+→ motion
+→ + math-physics only for real derivation
+
+Molang ownership
 → molang
 
-Molang syntax/math/function
+Molang language/function
 → molang-language-math
 
-reusable formula
+formula
 → molang-formula-cookbook
-→ add math-physics-reference only for actual vector/physics derivation
 
-existing JSON field audit
+existing JSON audit
 → component-field-reference
-→ add official-defaults-evaluation only when default/omission/evaluation matters
+→ + official-defaults-evaluation only when omission/default/evaluation matters
 
-emitter/spawn issue
-→ emitter
-→ add emitter-shape-math only for custom geometry/direction math
-
-trajectory issue
-→ motion
-→ add math-physics-reference only when calculation/derivation is required
-
-collision issue
+collision
 → collision-advanced
-→ add events only when collision triggers an event graph
+→ + events only when contact triggers an event graph
 
-nested event issue
+nested event
 → events + event-timing
-→ add performance only when fan-out/load is relevant
 
-entity-attached particle
+entity attached
 → entity-integration + lifecycle-space
-→ add billboard-direction only when orientation/facing is the actual problem
 
-Snowstorm generic compatibility
+Snowstorm generic
 → snowstorm
 
-Snowstorm version question
+Snowstorm release support/fix
 → snowstorm-compatibility-matrix
 
-Snowstorm regression/anomaly
+Snowstorm regression
 → snowstorm-version-quirks
-→ add snowstorm only if generic editor semantics are also uncertain
 
 unknown symptom
 → troubleshooting
-→ then load only the causal owner identified by that guide
+→ then only the causal owner it identifies
 ```
+
+## Provisional-default rule
+
+When an unknown is not BLOCKING, prefer a conservative reversible first-pass choice rather than asking another question.
+
+Mark that choice internally as `PROVISIONAL`. Never present it as a user requirement, exact runtime fact, or measured performance result.
+
+Good provisional choices are local and easy to revise, such as modest lifetime, simple static texture, single emitter, conservative size, or simple particle-age fade.
+
+Do not provisionally invent hidden geometry, required attachment names, exact viewing distance, device/FPS limits, or gameplay semantics.
+
+## Simplicity ladder
+
+Prefer:
+
+```text
+constant
+→ simple stable Molang
+→ curve / atlas / flipbook
+→ multiple layers
+→ event/reactive architecture
+```
+
+Use the first level that satisfies the requested visual behavior.
+
+## Core authoring rules
+
+Keep emitter timing emitter-owned. Keep persistent living-particle identity particle-owned using stable particle random/age/lifetime values.
+
+Use built-in emitter shapes before custom math. Keep spawn position, launch direction, speed magnitude, and post-spawn motion as separate responsibilities.
+
+Texture is first-class production data. Do not use presentation sheets, baked checkerboards, or generated-background images as production textures.
+
+For Snowstorm-facing authoring where launch magnitude must survive preview predictably:
+
+```text
+emitter shape direction = launch vector
+particle_initial_speed = scalar speed
+```
+
+This is Snowstorm/Wintersky-targeted compatibility guidance, not a generic Bedrock prohibition.
+
+## Single-pass QA rule
+
+Near finalization, run only applicable `qa.md` gates once.
+
+After a targeted revision, rerun the causal QA gate plus package-integrity checks rather than the whole suite.
+
+Static QA does not replace target-environment review.
+
+## Snowstorm round-trip rule
+
+For advanced/external JSON actually edited through Snowstorm:
+
+```text
+preserve original
+→ import
+→ edit
+→ export
+→ structural diff
+→ target Bedrock schema review
+```
+
+Successful import is not proof of perfect field-level round trip.
 
 ## Evidence discipline
 
-Preserve the evidence class of every durable rule:
+Preserve evidence class:
 
 ```text
 OFFICIAL BEDROCK
@@ -129,50 +196,10 @@ EMPIRICALLY VERIFIED
 HEURISTIC
 ```
 
-Never present Snowstorm-specific behavior as generic Bedrock validity, editor acceptance as Minecraft runtime proof, or static heuristics as FPS/visual proof.
-
-## Core authoring rules
-
-Keep emitter timing emitter-owned. Keep persistent living-particle classes particle-owned using stable particle random/age/lifetime values.
-
-For Snowstorm-facing authoring where launch magnitude must survive preview reliably, the preferred compatibility pattern is:
-
-```text
-emitter shape direction = launch vector
-particle_initial_speed = scalar speed
-```
-
-This is Snowstorm/Wintersky-targeted guidance, not a generic Bedrock prohibition on vector initial-speed forms.
-
-Texture is first-class production data. Do not use presentation sheets, baked checkerboards, or generated-background images as production particle textures.
-
-Use built-in emitter shapes before custom math. Keep spawn position, launch direction, scalar speed, and post-spawn motion as separate responsibilities.
-
-## Snowstorm round-trip rule
-
-For advanced or externally authored JSON:
-
-```text
-preserve original JSON
-→ import Snowstorm
-→ edit
-→ export
-→ structural diff
-→ target Bedrock schema review
-```
-
-Successful import does not prove every field is first-class editable or round-tripped perfectly. Pay special attention to meaningful `0`, `false`, omitted fields, advanced events, and newer Bedrock fields.
-
-Published Snowstorm/Wintersky release notes outrank unreleased source-head metadata for stable capability claims.
-
-## Quality and delivery
-
-Run only relevant gates from `qa.md`; do not execute every possible check by default. Static QA does not replace user review in Snowstorm/Minecraft.
-
-Deliver ordinary Bedrock Resource Pack files/folders or ZIP according to `delivery.md`. Do not create `.mcpack`, scratch/versioned working files, duplicate textures, or unrelated image-reference artifacts unless explicitly requested.
+Never present editor behavior as generic Bedrock validity or static heuristics as runtime/FPS truth.
 
 ## Boundary
 
 This Skill may produce `.particle.json`, textures/atlases, Resource Pack structure, static/preflight diagnostics, concise usage notes, and clean handoff packages.
 
-It does not own image/model reference generation unless separately requested, MCP implementation, Blockbench runtime mutation, animation/controller integration, live Snowstorm/Minecraft visual truth, or device/FPS benchmarking.
+It does not own MCP implementation, Blockbench runtime mutation, animation/controller integration, live Minecraft/Snowstorm truth, or device/FPS benchmarking.
