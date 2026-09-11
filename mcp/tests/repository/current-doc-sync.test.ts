@@ -84,7 +84,7 @@ describe("current developer-facing documentation sync", () => {
     expect(runbook).toMatch(/live_blockbench/i);
   });
 
-  test("current ownership docs describe the persistent Gateway and split Runtime/Plugin owners", async () => {
+  test("current ownership docs describe persistent Gateway semantics and split Runtime/Plugin owners", async () => {
     const [agents, implementation, validation, next] = await Promise.all([
       text("AGENTS.md"),
       text("../docs/04-system/implementation-map.md"),
@@ -92,9 +92,10 @@ describe("current developer-facing documentation sync", () => {
       text("../docs/05-operations/next-action.md"),
     ]);
 
-    for (const owner of [agents, implementation, validation, next]) {
-      expect(owner).toContain("persistent Gateway");
+    for (const owner of [agents, validation, next]) {
+      expect(owner).toMatch(/persistent[^\n.]*Gateway|Gateway[^\n.]*persistent/i);
     }
+    expect(implementation).toContain("Gateway owns client stability and Runtime recovery");
     expect(agents).toContain("server/runtime/");
     expect(agents).toContain("plugin/runtimeHost.ts");
     expect(implementation).toContain("mcp/server/runtime/bootstrap.ts");
