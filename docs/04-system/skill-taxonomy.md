@@ -46,10 +46,10 @@ Purpose: prepare visual and structured technical reference evidence before Codex
 
 Execution owner: ChatGPT.
 
-| Current path | Current name | Target semantic name | Role |
-| --- | --- | --- | --- |
-| `.agents/skills/blockbench-reference-generator/SKILL.md` | `blockbench-reference-generator` | `lazydesigner-reference-preparation` | requirements, reference planning, generation, QA and handoff |
-| `.agents/skills/lazydesigner-prompt-compiler/SKILL.md` | `lazydesigner-prompt-compiler` | `lazydesigner-prompt-compiler` | internal prompt normalization helper |
+| Canonical path | Canonical name | Role |
+| --- | --- | --- |
+| `.agents/skills/lazydesigner-reference-preparation/SKILL.md` | `lazydesigner-reference-preparation` | requirements, reference planning, generation, QA and handoff |
+| `.agents/skills/lazydesigner-prompt-compiler/SKILL.md` | `lazydesigner-prompt-compiler` | internal prompt normalization helper |
 
 Canonical flow: `docs/02-reference/flow.md`.
 
@@ -123,9 +123,10 @@ Asset-authoring Skills are not loaded for normal product development unless the 
 
 ## Naming Rules
 
-Canonical LazyDesigner names use prefix `lazydesigner-` plus a direct responsibility noun where the Skill is product-specific.
+Canonical LazyDesigner product-specific Skill names use prefix `lazydesigner-` plus a direct responsibility noun.
 
 ```text
+lazydesigner-reference-preparation
 lazydesigner-prompt-compiler
 lazydesigner-modelling
 lazydesigner-texturing
@@ -134,8 +135,6 @@ lazydesigner-mcp-development
 lazydesigner-blockbench-development
 lazydesigner-development-brief
 ```
-
-`blockbench-reference-generator` remains a pending REFERENCE_PREPARATION naming migration and is not coupled to product/runtime compatibility identifiers.
 
 Avoid ambiguous names such as `core`, `manager`, `director`, `helper`, `builder`, `toolkit`, bare `runtime`, or `router` when Control owns routing.
 
@@ -161,9 +160,10 @@ The Prompt Compiler receives only current intent, confirmed answers and still-va
 Completed source-level Skill identity migrations:
 
 ```text
+REFERENCE_PREPARATION → lazydesigner-reference-preparation + lazydesigner-prompt-compiler
 asset-router Skill → retired and removed
 ASSET_AUTHORING specialists → canonical lazydesigner-* names
 PRODUCT_DEVELOPMENT specialists → canonical lazydesigner-* names
 ```
 
-Remaining Skill naming debt is isolated from runtime/package compatibility IDs. Do not recreate removed aliases.
+Do not recreate removed legacy aliases. Runtime/package compatibility identifiers remain governed separately by `docs/04-system/compatibility-identifiers.md`.
