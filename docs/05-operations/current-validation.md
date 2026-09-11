@@ -1,199 +1,162 @@
 # LazyDesigner Current Validation
 
-Updated: 2026-09-11
+Updated: 2026-09-12
 
-This file owns **current proof interpretation only**. Product workflow belongs in `docs/01-product/flow.md`; reference preparation belongs in `docs/02-reference/`; source ownership belongs in `docs/04-system/implementation-map.md`; continuation belongs in `docs/05-operations/next-action.md`.
+This file owns **current proof interpretation only**. Product workflow belongs in `docs/01-product/flow.md`; reference preparation in `docs/02-reference/`; source ownership in `docs/04-system/implementation-map.md`; continuation in `docs/05-operations/next-action.md`.
 
-## Product Rename Boundary
-
-Current product name is **LazyDesigner**. Historical executable/runtime evidence was produced under the former BlockIT identity.
-
-The last user-identified local executable baseline remains BlockIT MCP `v0.2.0` at commit `b6c29c5d9edb7bb5058c42bbce123efe9dc02ed8`. That prior native evidence must not be relabeled as proof that current LazyDesigner source is installed or active.
-
-Compatibility-bound package/server/plugin IDs, bundle filename, `BLOCKIT_*` environment variables, `x-blockit-*` affinity headers and persisted setting IDs remain intentionally stable.
-
-Safe human-facing presentation strings now use LazyDesigner in current source for MCP initialize/server instructions, Gateway backend errors/status, plugin lifecycle/dev-sync/install messages, Blockbench panel/status bar, install guidance, and `mcp/llms.txt`.
-
-## Current Source Architecture State
+## Current Source Architecture
 
 ```text
 ChatGPT Reference Preparation
 → Reference Package
 → LazyDesigner Control
 → Codex
-→ exactly one active specialist
 → Gateway
 → Runtime
+→ Plugin
 → Blockbench
 ```
 
-Canonical Control source: `mcp/gateway/control/`.
+The current source contract is Bedrock-first and keeps one ownership chain. Geometry and Texturing share AUTHORING; Animation is the only separate authoring Runtime surface.
 
-Canonical REFERENCE_PREPARATION Skills:
+## Source-Proven Contracts
 
-```text
-.agents/skills/lazydesigner-reference-preparation/SKILL.md
-.agents/skills/lazydesigner-prompt-compiler/SKILL.md
-```
-
-Canonical ASSET_AUTHORING Skills:
+### Control
 
 ```text
-.agents/skills/lazydesigner-modelling/SKILL.md
-.agents/skills/lazydesigner-texturing/SKILL.md
-.agents/skills/lazydesigner-animation/SKILL.md
-```
-
-Canonical PRODUCT_DEVELOPMENT Skills:
-
-```text
-.agents/skills/lazydesigner-mcp-development/SKILL.md
-.agents/skills/lazydesigner-blockbench-development/SKILL.md
-.agents/skills/lazydesigner-development-brief/SKILL.md
-```
-
-Removed legacy routing/specialist paths include:
-
-```text
-mcp/gateway/navigator/
-mcp/gateway/control/contextCache.ts
-.agents/skills/blockbench-reference-generator/SKILL.md
-.agents/skills/blockit-bedrock-entity-mcp/SKILL.md
-.agents/skills/blockbench-bedrock-modelling/SKILL.md
-.agents/skills/blockit-bedrock-texturing/SKILL.md
-.agents/skills/blockit-bedrock-animation/SKILL.md
-.agents/skills/mcp-server-development/SKILL.md
-.agents/skills/blockbench-runtime-development/SKILL.md
-.agents/skills/development-brief/SKILL.md
-```
-
-Current Control protocol: `lazydesigner-control-v1`.
-
-## Implemented Source Contracts
-
-```text
-ASSET_AUTHORING / SYSTEM_DEVELOPMENT
+ASSET_AUTHORING / SYSTEM_DEVELOPMENT intake
 Reference Package + Active Workspace projection
 GEOMETRY_CONTEXT / TEXTURE_CONTEXT / ANIMATION_CONTEXT
-selected-profile Geometry context
-content-addressed Skill/profile handles
-bounded system-development owner routing
-stage-scoped Reference readiness
-Workspace lifecycle readiness
-Control capability/source-owner metadata
+exactly-one-profile Geometry loading
+content-addressed context handles
+stage-scoped readiness and bounded invalidation
 control_delta continuation
-effect-aware bounded invalidation with conservative fallback
-single phase classification owner in mcp/lib/authoringPhase.ts
-single search-policy owner in mcp/gateway/control/routingPolicy.ts
-bounded search/describe without metadata-only status rereads
-summary-only top-level Workspace/Reference output
-self-contained active-stage detail in stage_context
-deterministic recovery ownership between Gateway backend and Control
-Bedrock-first registration/authoring contract guards
 ```
 
-Accurate boundary:
+Control selects context and lifecycle state; it is not a second Runtime, recovery engine, or persistent authored-state database.
+
+### Gateway
+
+The public AI-client surface remains exactly:
 
 ```text
-CONTROL SEMANTIC CONTRACT: IMPLEMENTED IN CURRENT SOURCE
-NAVIGATOR→CONTROL MIGRATION: COMPLETE IN SOURCE
-LEGACY ASSET ROUTER SKILL: REMOVED IN SOURCE
-REFERENCE_PREPARATION SKILL NAMING: COMPLETE IN SOURCE
-ASSET_AUTHORING SKILL NAMING: COMPLETE IN SOURCE
-PRODUCT_DEVELOPMENT SKILL NAMING: COMPLETE IN SOURCE
-SAFE PRESENTATION BRANDING: MIGRATED IN CURRENT SOURCE
-ACTIVE REPOSITORY REGRESSION OWNERSHIP: SYNCHRONIZED TO CURRENT ARCHITECTURE
-CONTROL PACKET COMPACTION: IMPLEMENTED IN SOURCE
-REMOTE PRE-LOCAL HARDENING: COMPLETE ENOUGH TO FREEZE SOURCE
-SOURCE EXECUTION PROOF: NOT RUN IN THIS PHASE
-CONTROL LIVE PROOF: NOT ESTABLISHED
-LAZYDESIGNER INSTALLED PROOF: NOT ESTABLISHED
+status
+search_capabilities
+describe_capability
+invoke_capability
 ```
 
-Current stale-regression cleanup includes `current-doc-sync`, `repository-github-discipline`, `repository-supply-chain`, `control-source-migration`, routing-policy ownership, canonical authoring Skill ownership, context ownership, recovery ownership, and Bedrock-first contract guards. Their current source contracts use the hierarchical docs owners, canonical LazyDesigner Skills, Control, and deferred-local proof model rather than retired `docs/knowledge`, `docs/foundation`, old Skill paths, or `3D_ASSISTED` expectations.
-
-## Lifecycle Source Contract
+Current source contains:
 
 ```text
-GEOMETRY
-→ no downstream prerequisite gate
-
-TEXTURING
-→ Geometry APPROVED
-→ UV Layout PASS
-
-ANIMATION
-→ Geometry APPROVED
-→ UV Layout PASS
-→ Texturing APPROVED
+persistent Gateway process boundary
+demand-driven Runtime reconnect
+bounded reconnect backoff
+Runtime signature/catalog invalidation
+catalog fast-path for discovery
+serialized Runtime mutations
+fail-closed project affinity
+phase affinity
+structured recovery semantics
+OUTCOME_UNKNOWN with no mutation replay
+normalized public status
+canonical declarative capability effects
 ```
 
-When Workspace lifecycle state is unavailable, Control returns orientation-required rather than inventing an upstream failure. Reference readiness remains independently stage-scoped.
+Plugin reload, Runtime rebuild, authoring phase change, or temporary Runtime loss are designed to recover below the persistent Gateway. Only replacing the Gateway process itself requires client reconnection. This behavior is **source-designed but not live-proven in the current phase**.
 
-## Context / Efficiency Source Contract
+### Runtime
+
+Current ownership is split explicitly:
 
 ```text
-REFERENCE.json → compact typed Control projection
-active stage → one self-contained stage_context
-workspace top-level → availability/fingerprint/asset summary only
-reference top-level → availability/fingerprint/asset/profile summary only
-Geometry → lazydesigner-modelling + exactly one selected profile when known
-Texturing → lazydesigner-texturing only by default
-Animation → lazydesigner-animation only by default
-known_context_ids → unchanged context reuse by SHA-256 identity
-context-handle cache → registry.ts only
-known/cached/invalidated context delivery → packet.ts only
-SYSTEM_DEVELOPMENT → bounded source/specialist/test projection
-search/describe → no second getStatus() call for decorative metadata
-legacy routing/specialist aliases → absent
+server/net.ts                         Runtime HTTP/MCP transport + operation serialization
+server/runtime/registration.ts       registration/profile/surface ownership
+server/runtime/consolidatedRoutes.ts consolidated route descriptors
+server/runtime/consolidatedTools.ts  routing-only wrappers
+server/runtime/phaseControl.ts       AUTHORING↔Animation control capability
+server/runtime/bootstrap.ts          exactly-once Runtime intelligence wiring
+server/tools/**                       domain Tool implementations
 ```
 
-`measure-control-context.ts` now reports both Control packet size and full Gateway status+Control envelope size, including the repeated normalized orientation projection. That overlap is measured rather than removed remotely because the top-level Gateway status is a stable contract and static character count is not sufficient evidence for a breaking compaction. Static context/payload measurements are supporting diagnostics only; whole-task savings remain unproven.
+Runtime phase/profile changes use granular surface invalidation rather than discarding unrelated resource/prompt/callback caches.
 
-## Recovery Ownership Source Contract
+### Plugin / Blockbench Boundary
 
 ```text
-Runtime offline / transport failure / catalog refresh / queue pressure
-→ Gateway backend
-
-project affinity lost / explicit rebind
-→ Gateway backend
-
-interrupted read-only call
-→ Gateway backend classification + explicit safe_to_retry
-
-interrupted mutation / unknown outcome
-→ Gateway backend OUTCOME_UNKNOWN
-→ no automatic retry
-→ inspect current model state before retrying
-
-Workspace unavailable/stale lifecycle projection
-→ Control orientation/readiness
-
-Reference path/not-found/unreadable/invalid/stage-blocked
-→ Control reference projection/readiness
+mcp/index.ts                         plugin orchestration only
+mcp/plugin/runtimeHost.ts           native network + listener lifecycle
+mcp/plugin/blockbenchIntegration.ts settings/UI/prompts/resources integration
+mcp/plugin/devSync.ts               development reload watcher
 ```
 
-Control does not call the Runtime transport and does not become a second recovery engine.
+Setup/teardown ownership is explicit and defensive against duplicate setup/reload.
 
-## Bedrock-First Source Contract
+### Tools — Zero Capability Loss
+
+Tool cleanup is **routing/metadata/contract hardening only**.
+
+Source guards preserve:
 
 ```text
-normal registration profile → bedrock_entity
-generic import/ui fallback → extended opt-in only
-16 Blockbench units = 1 Minecraft block
-Geometry/Texturing → shared AUTHORING surface
-Animation → isolated runtime authoring surface
-Particle → Animation-specialist asset-only route
-client-entity/gameplay wiring → outside normal particle authoring
-Bedrock export family → retained in normal profile
+original executor definitions
+original runtime schemas/refinements/defaults
+validation before execution
+native Blockbench behavior
+all consolidated branches
+domain intelligence for Geometry / Texture / Animation / Particle
 ```
 
-The LazyDesigner abstraction therefore remains Bedrock-specific at the authoring boundary rather than becoming a generic 3D workflow.
+Consolidated capabilities delegate to retained original executors. Unknown branches fail instead of silently falling back to another operation.
+
+Family baselines guard Geometry/Element, Texture/Material, Animation, Particle, Inspection and Export surfaces. No implementation algorithm was intentionally simplified for context/tool-count reduction.
+
+### Validation / QA / Gates
+
+Canonical handoff readiness: `mcp/lib/authoringReadiness.ts`.
+
+```text
+USER_APPROVED
+or
+AUTONOMOUS_VERIFIED
+```
+
+Animation handoff requires UV Layout PASS, no blockers and a saved checkpoint plus the appropriate approval/authorized-verification evidence.
+
+Canonical Validator projection: `mcp/lib/validationVerdict.ts`.
+
+```text
+BLOCKED
+REVIEW_REQUIRED
+VALIDATOR_CLEAR
+```
+
+`VALIDATOR_CLEAR` remains technical evidence only:
+
+```text
+approval_claim = false
+visual_pass_claim = false
+```
+
+Quality-intelligence augmentation remains evidence-only and cannot create approval or phase authorization. Control lifecycle `READY` also does not replace `switch_authoring_phase` readiness.
+
+### Skills / Knowledge / Context
+
+Canonical context loading is owned by:
+
+```text
+docs/04-system/ai-context-loading.md
+docs/04-system/authoring-stage-context.md
+docs/04-system/control/context-projection.md
+```
+
+Normal authoring uses one active specialist and only the stage-relevant projection. Geometry may load exactly one selected modelling profile; Texturing/Animation receive only material/motion-relevant projected relationships by default. Shared Stage Context is a semantic contract, not another Skill/router/workflow engine.
+
+Reference Preparation already compiles confirmed user intent before generation and does not pass raw conversation transcript or prompt history as the Codex handoff package.
 
 ## Compatibility Boundary
 
-The following legacy-looking values are intentionally retained and must not be interpreted as stale presentation branding:
+Current product-facing identity is LazyDesigner. These compatibility-bound values remain intentionally unchanged until a separately dependency-mapped migration:
 
 ```text
 package/server/plugin IDs
@@ -203,63 +166,51 @@ blockit-gateway
 BLOCKIT_* environment variables
 x-blockit-* affinity headers
 persisted setting identifiers
-build/provenance identities coupled to the above
-internal compatibility symbols/event/DOM keys where migration has no current value
+build/provenance identities coupled to them
 ```
 
-Generated API output may still contain stale presentation text until the canonical generator can run under `LOCAL_CODE`; generated files must not be hand-edited.
+Legacy-looking compatibility identifiers are not evidence of stale architecture by themselves.
 
-## Invalidation State
+## Historical Native Evidence
 
-```text
-known local Geometry transform      → GEOMETRY
-shape/UV-sensitive Geometry change → GEOMETRY + TEXTURING + ANIMATION
-hierarchy/pivot structure change   → GEOMETRY + ANIMATION
-Texture/material change            → TEXTURING
-Animation change                   → ANIMATION
-ambiguous structural evidence      → conservative downstream invalidation
-```
-
-This is affected-knowledge metadata, not proof that live downstream authored state was rebuilt or revalidated.
-
-## Visual / Reference Proof Rule
-
-A visual/reference `PASS` requires the actual approved reference image plus fresh current-revision model evidence at comparable view/scale. Tool/source/static success cannot create visual PASS by itself.
-
-## Authoring Efficiency
-
-Authoring Efficiency means **Cost to Accepted Result**. Current source aims to reduce repeated context delivery, broad discovery, duplicate routing knowledge, status/readback chatter, phase bouncing and stale-context recovery. Removing router/legacy Skill aliases and the orphan context-cache helper reduces mandatory context/ownership ambiguity; packet compaction removes repeated Workspace/Reference output detail. Whole-task savings remain **UNKNOWN** until comparable accepted work is measured.
+Historical BlockIT native/runtime proof predates the current LazyDesigner hardening. It must **not** be used as proof that the current `Local` source is installed, type-correct, live, or behaviorally accepted.
 
 ## Current Proof Ceiling
 
-Safe statement:
+Safe current claims:
 
 ```text
-LazyDesigner presentation identity: active in current source/docs
-AI-first docs hierarchy: implemented
-Reference Package + Control parser: implemented in source
-Control semantic protocol + canonical source path: implemented
-Navigator active source path: removed
-orphan contextCache helper: removed
-legacy asset-router Skill: removed
-canonical lazydesigner-* primary Skills: implemented in source
-legacy primary Skill paths: removed
-safe Gateway/Runtime/UI presentation strings: migrated to LazyDesigner in source
-active repository regressions audited and aligned to current owners in source
-stage-specific + lifecycle readiness projection: implemented in source
-canonical phase classification sharing: implemented in source
-canonical routing/search policy ownership: implemented in source
-effect-aware invalidation: implemented with conservative fallback
-metadata-only search/describe status rereads: removed in source
-top-level Workspace/Reference duplicate detail: compacted in source
-Gateway/Control orientation overlap: instrumented for local measurement, not remotely removed
-deterministic recovery ownership: guarded in source
-Bedrock-first authoring boundary: guarded in source
-compatibility-bound BlockIT identifiers: intentionally retained pending dedicated migration
-generated-output freshness/presentation: pending local generator proof
-Bun/typecheck/test execution for current source: not run in this phase
-installed/live Blockbench validation: pending
-usage-savings benchmark: pending
+Control/Gateway/Runtime/Plugin ownership         implemented in source
+persistent-Gateway recovery architecture        implemented in source
+zero-loss Tool routing contracts                implemented + regression-guarded in source
+canonical QA/readiness separation               implemented + regression-guarded in source
+stage-context/context-loading economy            implemented/guarded in source
+Reference Package compact projection            implemented in source
+compatibility boundaries                         documented in source
 ```
 
-Do not strengthen these claims without matching source/local/live evidence.
+Not yet established for the current head:
+
+```text
+Bun/typecheck/test execution
+canonical generated-output freshness
+installed LazyDesigner Runtime freshness
+live Gateway survival across reload/rebuild/close-open
+native project affinity/rebind behavior
+Undo/playback/persistence/export execution
+visual/reference acceptance
+Minecraft in-game behavior
+measured token/latency or whole-task usage savings
+```
+
+Tests added during the remote hardening phase are **source regression intent until they are actually executed**.
+
+## Efficiency Interpretation
+
+Authoring Efficiency means **Cost to Accepted Result**, not fewer tools or fewer lines. Source changes target repeated context loading, duplicate routing, unnecessary discovery/readback, phase bouncing, cache churn and recovery ambiguity while preserving accepted quality and capability.
+
+Static character counts or source size alone cannot prove end-to-end usage improvement.
+
+## Proof Rule
+
+Do not strengthen source/static claims into local/live/visual claims without matching evidence from the exact current source SHA.
