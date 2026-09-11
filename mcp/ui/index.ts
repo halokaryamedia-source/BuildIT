@@ -4,7 +4,7 @@ import type { McpAuthoringPhase } from "@/lib/authoringPhase";
 import {
   canReloadLazyDesignerPlugin,
   reloadLazyDesignerPlugin,
-} from "@/plugin/devSync";
+} from "@/plugin/reload";
 import { pluginBrowserSetup, pluginBrowserTeardown } from "@/ui/pluginBrowser";
 import {
   BLOCKIT_RUNTIME_STATUS_CHANGED,
