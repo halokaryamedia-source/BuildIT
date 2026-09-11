@@ -6,6 +6,12 @@ This document defines the canonical stage-specific context contract projected by
 
 Control owns projection. Skills consume projection. Reference Preparation owns source reference facts. Workspace/Runtime own current asset state. No stage Skill should rebuild this contract independently.
 
+Overall AI loading policy, including REQUIRED / CONDITIONAL / EXCLUDED context outside Control projection, is owned by:
+
+```text
+docs/04-system/ai-context-loading.md
+```
+
 ## Objective
 
 Project only the information required for the current authoring decision while preserving source authority and avoiding repeated reasoning.
@@ -221,8 +227,11 @@ Reference Package metadata
 workspace / Runtime state
 → current authored-state authority
 
+domain docs
+→ durable semantic policy
+
 Skill/profile docs
-→ decision rules and reusable knowledge
+→ execution procedure / reusable knowledge
 
 Control projection
 → selection/transport only
@@ -314,4 +323,4 @@ bounded mutations invalidate only affected evidence
 unchanged context can be reused by identity/hash
 ```
 
-Control remains the selector/router. Codex remains the reasoning/authoring agent. Skills remain semantic authorities for their domains.
+Control remains the selector/router. Codex remains the reasoning/authoring agent. Skills remain execution specialists. Domain docs remain durable semantic authorities.
