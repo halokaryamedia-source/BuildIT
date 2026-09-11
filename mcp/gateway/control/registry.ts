@@ -8,9 +8,9 @@ import type {
 } from "./types";
 import type { ControlProfile } from "./referencePackage";
 
-const MODELLING_PATH = ".agents/skills/blockbench-bedrock-modelling/SKILL.md";
-const TEXTURING_PATH = ".agents/skills/blockit-bedrock-texturing/SKILL.md";
-const ANIMATION_PATH = ".agents/skills/blockit-bedrock-animation/SKILL.md";
+const MODELLING_PATH = ".agents/skills/lazydesigner-modelling/SKILL.md";
+const TEXTURING_PATH = ".agents/skills/lazydesigner-texturing/SKILL.md";
+const ANIMATION_PATH = ".agents/skills/lazydesigner-animation/SKILL.md";
 
 const PROFILE_PATHS: Record<ControlProfile, string> = {
   PROP_FURNITURE: "docs/03-authoring/modelling/profiles/prop-furniture.md",
