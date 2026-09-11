@@ -6,7 +6,7 @@ This file owns **current implementation continuation only**. Product architectur
 
 ## Current Objective
 
-The AI-first documentation optimization phase is complete enough to be the active navigation/context baseline. Do **not** automatically resume Control/source implementation or local/live testing. Both remain deferred until the user explicitly requests the next development phase.
+The AI-first documentation and Reference Preparation content audit are complete enough to be the active baseline. Do **not** automatically resume Control/source implementation or local/live testing. Both remain deferred until the user explicitly requests the next development phase.
 
 Canonical documentation entry point:
 
@@ -46,32 +46,28 @@ AI loads only minimum sufficient context
 ## Completed AI Documentation Work
 
 ```text
-✓ replaced foundation/knowledge split with domain hierarchy
-✓ added root docs/README.md AI router
-✓ grouped Reference image and package contracts
-✓ grouped Authoring standards and modelling profiles
-✓ grouped System ownership/Control docs
-✓ grouped Operations continuation/proof/runbook docs
-✓ updated root README / AGENTS / CONTEXT / GITHUB_RULES routing
-✓ updated active Skills and MCP operational docs to current owners
-✓ updated workflow path routing and stale regression owners
-✓ removed fixed-five-view Reference test authority in favor of Unified Reference System
-✓ compressed top-level Product Flow and Reference Policy to avoid duplicate domain rules
+✓ domain hierarchy replaces foundation/knowledge split
+✓ docs/README.md is the AI router
+✓ Reference image/package contracts grouped by domain
+✓ Authoring standards/profiles grouped by stage
+✓ System and Operations ownership separated
+✓ root routing files and active Skills point to current owners
+✓ workflow routing and static regressions no longer depend on removed doc paths
+✓ top-level Product Flow / Reference Policy compressed to avoid duplicate authority
 ```
 
 ## Completed Context / Authority Audit
 
 ```text
 ✓ AI Documentation Consumption Audit
-  → docs/README.md routes by task domain
-  → domain README files route to minimum owners
+  → task domain first
+  → minimum owner load
   → no normal read-all-docs boot
 
 ✓ Skill ↔ Docs Authority Audit
-  → Docs own durable semantic policy/contracts
-  → Skills own execution procedure
-  → Control owns context selection/projection
-  → Skill taxonomy points to current hierarchy
+  → Docs = durable semantic policy/contracts
+  → Skills = execution procedure
+  → Control = context selection/projection
 
 ✓ Context Budget Design
   → REFERENCE_PREPARATION
@@ -83,7 +79,42 @@ AI loads only minimum sufficient context
 
 ✓ Documentation Contract Protection
   → mcp/tests/repository/documentation-architecture.test.ts
-  protects hierarchy, owner resolution, context-loading contract, and legacy-path removal
+```
+
+## Completed Reference Preparation Content Audit
+
+Canonical Reference baseline now includes:
+
+```text
+✓ typed authority model
+  → visual authority owns visible design
+  → numeric dimensions own numeric envelope
+  → player-relative scale owns world/interaction relationship
+  → JSON owns structured facts/readiness/unknowns
+  → stage Markdown owns stage-specific consequences
+
+✓ player-relative scale is part of REFERENCE.json
+  → dimensions_blocks
+  → player_relative_scale
+  → no invented conversion between them
+
+✓ optional stage Markdown remains truly optional
+  → images.used_by = GEOMETRY | TEXTURE | ANIMATION
+  → Codex can resolve stage-relevant image evidence even when stage Markdown is omitted
+
+✓ Reference handoff was reduced to boundary semantics
+  → no duplicate full schema / profile / module documentation
+
+✓ GEOMETRY.md now supports numeric + player-relative scale explicitly
+
+✓ Unified Image Standard now locks identity + scale
+
+✓ Prompt Contract / Master Templates preserve Scale Lock
+
+✓ old pre-hierarchy reference paths/file names removed from active Reference docs
+
+✓ reference-specific regression protection added
+  → mcp/tests/repository/reference-content-contract.test.ts
 ```
 
 ## Current Context Architecture
@@ -108,13 +139,20 @@ Overall task-loading owner:
 docs/04-system/ai-context-loading.md
 ```
 
+Reference package consumption owner:
+
+```text
+docs/02-reference/package/load-contract.md
+```
+
 These are complementary:
 - `ai-context-loading.md` decides which owners belong in AI context;
-- `control/context-projection.md` defines the stage-specific data subset Control projects for asset authoring.
+- `package/load-contract.md` decides how Codex consumes a Reference Package;
+- `control/context-projection.md` defines the stage-specific data subset Control eventually projects.
 
 ## Deferred Development Work
 
-When the user explicitly resumes Control/source development, continue from current source rather than redoing documentation architecture:
+When the user explicitly resumes Control/source development, continue from current source rather than redoing documentation/reference architecture:
 
 ```text
 1. migrate current Navigator module/concepts to Control without permanent aliases
@@ -126,23 +164,23 @@ When the user explicitly resumes Control/source development, continue from curre
 7. implement minimum-context/content-addressed continuation using the new context-loading contract
 8. hard-bound discovery and avoid status/context rereads
 9. migrate remaining BlockIT identifiers only after dependency mapping is stable
-10. regenerate generated artifacts through their canonical generator owners when LOCAL_CODE is available
+10. regenerate generated artifacts through canonical generator owners when LOCAL_CODE is available
 11. run local/live acceptance only when explicitly reactivated
 ```
 
 ## Stop Rules
 
 - Do not recreate `docs/foundation/` or `docs/knowledge/` as compatibility authorities.
-- Do not add redirect/stub copies that make AI see two active owners.
+- Do not add redirect/stub copies that create two active owners.
 - Do not duplicate durable Docs policy into Skills or Control.
 - Do not create a second persistent state database inside Control.
 - Do not load PRODUCT_DEVELOPMENT Skills during normal asset authoring.
 - Do not send all stage contexts when one owner is known.
 - Do not preload sibling domains as reassurance.
 - Do not rename protocol/package identifiers blindly before dependency mapping.
-- Do not automatically resume Control/source work after documentation cleanup.
+- Do not automatically resume Control/source work after this audit.
 - Do not run local/live acceptance while the user has explicitly postponed testing.
 
 ## Proof Boundary
 
-This phase establishes the intended source/documentation hierarchy, authority split, AI loading contract, and static regression owner on `Local`. No local/runtime/visual verification was executed. Installed LazyDesigner activation, generated-output freshness, live Blockbench behavior, visual quality, and measured end-to-end usage reduction remain separate future proof tasks.
+This phase establishes source/documentation hierarchy, Reference content contracts, authority split, AI loading rules, and static regression owners on `Local`. No local/runtime/image-generation/live Blockbench verification was executed. Generated-output freshness, installed LazyDesigner activation, live visual quality, and measured end-to-end usage reduction remain future proof tasks.
