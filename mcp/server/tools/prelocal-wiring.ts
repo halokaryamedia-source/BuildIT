@@ -34,12 +34,6 @@ import { textureIdSchema } from "@/lib/zodObjects";
 import { createTextureParameters } from "./texture";
 import { registerRenderProfileTools } from "./render-profile";
 
-/**
- * Runtime closure for source-prepared texture contracts. Keeping this adapter
- * separate avoids duplicating the pure policy/planning helpers while allowing
- * the existing mature texture/paint implementations to remain authoritative
- * for every legacy branch.
- */
 export const wiredCreateTextureParameters = z.union([
   createTextureParameters,
   createTextureVariantParameters,
@@ -352,7 +346,13 @@ function finalizeTexturePngWrite(
   fs: TexturePngFilesystem,
   state: PreparedTexturePngWrite
 ): void {
-  if (state.backup_path && fs.existsSync(state.backup_path)) fs.unlinkSync(state.backup_path);
+  if (!state.backup_path || !fs.existsSync(state.backup_path)) return;
+  try {
+    fs.unlinkSync(state.backup_path);
+  } catch {
+    // The authored PNG and Undo unit are already committed. A stale backup is
+    // safer than turning successful authoring into a second rollback attempt.
+  }
 }
 
 async function getFocusedTextureEvidence(request: z.infer<typeof focusedGetTextureParameters>) {
@@ -547,12 +547,6 @@ export function registerPaintTextureTransactionTool(): void {
   );
 }
 
-/**
- * Replaces only the prepared create/get contracts after the canonical texture
- * family has registered. Legacy branches still dispatch to the original
- * create_texture executor; variant and focused evidence use their dedicated
- * source-owned policy helpers.
- */
 export function wireTextureRuntimeContracts(): void {
   if (textureRuntimeContractsWired) return;
 
