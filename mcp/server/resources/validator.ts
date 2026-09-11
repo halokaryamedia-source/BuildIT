@@ -2,10 +2,7 @@
 /// <reference types="blockbench-types" />
 
 import { createResource } from "@/lib/factories";
-
-// ============================================================================
-// Types for Validator (not fully typed in blockbench-types)
-// ============================================================================
+import { deriveValidatorGateVerdict } from "@/lib/validationVerdict";
 
 interface ValidatorButton {
   name: string;
@@ -38,12 +35,7 @@ interface ValidatorSingleton {
   validate: (trigger?: string) => void;
 }
 
-// Access the global Validator
 declare const Validator: ValidatorSingleton;
-
-// ============================================================================
-// Helper Functions
-// ============================================================================
 
 function refreshValidation(): void {
   Validator.validate();
@@ -74,10 +66,6 @@ export function summarizeActiveValidatorChecks(
   });
 }
 
-/**
- * Extract element references from a problem's buttons
- * Looks for common patterns like "Select Cube", "Select Texture", etc.
- */
 export function extractElementRefs(problem: ValidatorProblem): {
   type?: string;
   name?: string;
@@ -86,12 +74,6 @@ export function extractElementRefs(problem: ValidatorProblem): {
   const refs: { type?: string; name?: string; uuid?: string }[] = [];
 
   if (!problem.buttons) return refs;
-
-  // Try to find referenced elements by parsing the message
-  // Common patterns in validator messages:
-  // - 'The cube "name"' or 'cube "${cube.name}"'
-  // - 'Texture "name"'
-  // - 'on "${animator.name}"'
 
   const cubeMatch = problem.message.match(/cube\s+"([^"]+)"/i);
   if (cubeMatch) {
@@ -139,9 +121,6 @@ export function extractElementRefs(problem: ValidatorProblem): {
   return refs;
 }
 
-/**
- * Serialize a validator problem with element references
- */
 function serializeProblem(problem: ValidatorProblem, isError: boolean) {
   const elementRefs = extractElementRefs(problem);
 
@@ -156,9 +135,6 @@ function serializeProblem(problem: ValidatorProblem, isError: boolean) {
   };
 }
 
-/**
- * Serialize a validator check definition
- */
 function serializeCheck(check: ValidatorCheckInstance) {
   return {
     id: check.id,
@@ -170,19 +146,12 @@ function serializeCheck(check: ValidatorCheckInstance) {
   };
 }
 
-// ============================================================================
-// Resource Registration
-// ============================================================================
-
 export function registerValidatorResources() {
-  // ---------------------------------------------------------------------------
-  // Validator Status (Combined Summary)
-  // ---------------------------------------------------------------------------
   createResource("validator-status", {
     uriTemplate: "validator://status",
     title: "Validator Status",
     description:
-      "Returns validation counts/status only. Read `validator://errors` or `validator://warnings` only when detailed problems are needed.",
+      "Returns fresh validation counts plus a conservative technical gate verdict. VALIDATOR_CLEAR is never visual PASS or user approval. Read validator://errors or validator://warnings only when detailed problems are needed.",
     async listCallback() {
       return {
         resources: [
@@ -198,6 +167,10 @@ export function registerValidatorResources() {
     async readCallback(uri) {
       refreshValidation();
       const problemChecks = summarizeActiveValidatorChecks(Validator.checks);
+      const gate = deriveValidatorGateVerdict(
+        Validator.errors.length,
+        Validator.warnings.length
+      );
       return {
         contents: [
           {
@@ -212,6 +185,7 @@ export function registerValidatorResources() {
                   problemCheckCount: problemChecks.length,
                   triggers: Validator.triggers,
                 },
+                gate,
                 problem_checks: problemChecks,
                 detail_resources: {
                   errors: "validator://errors",
@@ -229,9 +203,6 @@ export function registerValidatorResources() {
     },
   });
 
-  // ---------------------------------------------------------------------------
-  // Validator Checks (Check Definitions)
-  // ---------------------------------------------------------------------------
   createResource("validator-checks", {
     uriTemplate: "validator://checks/{id}",
     title: "Validator Checks",
@@ -253,7 +224,6 @@ export function registerValidatorResources() {
     },
     async readCallback(uri, { id }) {
       refreshValidation();
-      // If no ID, return all checks
       if (!id) {
         return {
           contents: [
@@ -274,7 +244,6 @@ export function registerValidatorResources() {
         };
       }
 
-      // Find specific check
       const check = Validator.checks.find((c) => c.id === id);
       if (!check) {
         throw new Error(`Validator check with ID "${id}" not found.`);
@@ -300,9 +269,6 @@ export function registerValidatorResources() {
     },
   });
 
-  // ---------------------------------------------------------------------------
-  // Validator Warnings
-  // ---------------------------------------------------------------------------
   createResource("validator-warnings", {
     uriTemplate: "validator://warnings",
     title: "Validator Warnings",
@@ -324,7 +290,6 @@ export function registerValidatorResources() {
       refreshValidation();
       const warnings = Validator.warnings.map((w) => serializeProblem(w, false));
 
-      // Group warnings by affected element type
       const byElement: Record<string, typeof warnings> = {};
       const unlinked: typeof warnings = [];
 
@@ -359,9 +324,6 @@ export function registerValidatorResources() {
     },
   });
 
-  // ---------------------------------------------------------------------------
-  // Validator Errors
-  // ---------------------------------------------------------------------------
   createResource("validator-errors", {
     uriTemplate: "validator://errors",
     title: "Validator Errors",
@@ -383,7 +345,6 @@ export function registerValidatorResources() {
       refreshValidation();
       const errors = Validator.errors.map((e) => serializeProblem(e, true));
 
-      // Group errors by affected element type
       const byElement: Record<string, typeof errors> = {};
       const unlinked: typeof errors = [];
 
