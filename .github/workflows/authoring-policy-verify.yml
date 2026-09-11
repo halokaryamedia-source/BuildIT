@@ -7,7 +7,8 @@ on:
     paths:
       - "AGENTS.md"
       - "CONTEXT.md"
-      - ".agents/skills/blockbench-reference-generator/**"
+      - ".agents/skills/lazydesigner-reference-preparation/**"
+      - ".agents/skills/lazydesigner-prompt-compiler/**"
       - ".agents/skills/lazydesigner-modelling/**"
       - ".agents/skills/lazydesigner-texturing/**"
       - ".agents/skills/lazydesigner-animation/**"
