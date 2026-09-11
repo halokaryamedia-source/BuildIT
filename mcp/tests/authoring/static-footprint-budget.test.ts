@@ -23,7 +23,7 @@ describe("static footprint budget", () => {
   test("current instruction owners stay within deliberate guardrail ceilings", async () => {
     const [root, referenceGenerator, controlPacket, modelling, texturing, animation, workflow] = await Promise.all([
       source("../AGENTS.md"),
-      source("../.agents/skills/blockbench-reference-generator/SKILL.md"),
+      source("../.agents/skills/lazydesigner-reference-preparation/SKILL.md"),
       source("gateway/control/packet.ts"),
       source("../.agents/skills/lazydesigner-modelling/SKILL.md"),
       source("../.agents/skills/lazydesigner-texturing/SKILL.md"),
