@@ -14,18 +14,18 @@ describe("pre-local asset-authoring usage slimming", () => {
     expect(agents).toMatch(/asset authoring is not software \*\*Development\*\*/i);
     expect(agents).toMatch(/do not route it through `development-brief`/i);
     expect(agents).toContain("LazyDesigner Control");
-    expect(agents).toContain("exactly one matching current-worktree specialist");
-    expect(agents).toContain(".agents/skills/blockbench-bedrock-modelling/SKILL.md");
-    expect(agents).toContain(".agents/skills/blockit-bedrock-texturing/SKILL.md");
-    expect(agents).toContain(".agents/skills/blockit-bedrock-animation/SKILL.md");
+    expect(agents).toContain("exactly one active specialist");
+    expect(agents).toContain(".agents/skills/lazydesigner-modelling/SKILL.md");
+    expect(agents).toContain(".agents/skills/lazydesigner-texturing/SKILL.md");
+    expect(agents).toContain(".agents/skills/lazydesigner-animation/SKILL.md");
     expect(agents).not.toContain(".agents/skills/blockit-bedrock-entity-mcp/SKILL.md");
   });
 
   test("normal authoring context stays compact while hard gates and specialist judgement remain present", async () => {
     const [control, modelling, texturing] = await Promise.all([
       source("gateway/control/packet.ts"),
-      source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
-      source("../.agents/skills/blockit-bedrock-texturing/SKILL.md"),
+      source("../.agents/skills/lazydesigner-modelling/SKILL.md"),
+      source("../.agents/skills/lazydesigner-texturing/SKILL.md"),
     ]);
 
     expect(texturing.length).toBeLessThan(12_000);
