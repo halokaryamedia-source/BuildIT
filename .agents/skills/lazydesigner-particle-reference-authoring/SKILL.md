@@ -14,6 +14,7 @@ It does not depend on the image/model reference branch.
 ```text
 USER PARTICLE REQUEST
 → docs/02-reference/particle/authoring-spec.md
+→ load only needed particle knowledge
 → docs/02-reference/particle/workflow.md
 → author JSON + textures
 → docs/02-reference/particle/qa.md
@@ -26,13 +27,25 @@ If the user requests only particle/VFX work, do not generate image/model referen
 
 Use image-reference capability only when:
 - the user explicitly requests it; or
-- a missing visual fact materially blocks the particle design and cannot be resolved from the current prompt/reference evidence.
+- a missing visual fact materially blocks the particle design and cannot be resolved from current prompt/reference evidence.
 
 ## Canonical Owners
 
 ```text
 Particle entry/boundary
 → docs/02-reference/particle/README.md
+
+Knowledge navigation / evidence classes
+→ docs/02-reference/particle/knowledge-map.md
+
+Bedrock fundamentals
+→ docs/02-reference/particle/fundamentals.md
+
+Particle Molang
+→ docs/02-reference/particle/molang.md
+
+Snowstorm / Wintersky compatibility
+→ docs/02-reference/particle/snowstorm.md
 
 Intent normalization
 → docs/02-reference/particle/authoring-spec.md
@@ -54,6 +67,35 @@ Parent reference routing
 ```
 
 Do not maintain parallel copies of these rules in this Skill.
+
+## Knowledge Loading Rule
+
+Do not preload the entire particle domain.
+
+```text
+need component/schema ownership
+→ fundamentals.md
+
+need expression/variable/curve decision
+→ molang.md
+
+need editor-preview compatibility
+→ snowstorm.md
+
+need physical design pattern
+→ patterns.md
+```
+
+When a rule matters, preserve its evidence class:
+
+```text
+OFFICIAL BEDROCK
+SNOWSTORM / WINTERSKY
+EMPIRICALLY VERIFIED
+HEURISTIC
+```
+
+Never present Snowstorm-specific behavior as Bedrock validity, or a heuristic as live/runtime proof.
 
 ## Boundary
 
