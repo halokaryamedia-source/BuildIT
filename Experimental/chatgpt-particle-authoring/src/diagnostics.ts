@@ -20,6 +20,9 @@ export const PARTICLE_PREFLIGHT_DIAGNOSTIC_CODES = Object.freeze({
   textureAtlasDuplicateCell: "texture_atlas_duplicate_cell",
   invalidParticleIntentContract: "invalid_particle_intent_contract",
   duplicateParticleIntentTarget: "duplicate_particle_intent_target",
+  keepOutOverlap: "keep_out_overlap",
+  readabilityBelowTarget: "view_distance_readability_below_target",
+  performanceBudgetExceeded: "particle_performance_budget_exceeded",
 } as const);
 
 export type ParticlePreflightDiagnosticCode =

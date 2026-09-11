@@ -17,14 +17,17 @@ The experiment must deterministically detect the recurring defect classes reprod
 - obviously wrong ballistic/rising motion against an explicit target envelope;
 - incoherent multi-effect bundles;
 - objectively broken texture atlases;
-- malformed or ambiguous authoring acceptance targets.
+- malformed or ambiguous authoring acceptance targets;
+- authored spatial samples entering declared keep-out volumes;
+- particle scale that is unlikely to read at the intended viewing distance;
+- conservative visible-particle estimates exceeding an authored budget.
 
 ### Forbidden proxy / non-goal
 
 - No claim of visual quality from static checks.
 - No claim of live Snowstorm or Blockbench execution.
 - No new public MCP tools.
-- No second particle parser, Molang runtime, registry, router, PNG stack, or packaging framework.
+- No second particle parser, Molang runtime, registry, router, PNG stack, collision engine, renderer, or packaging framework.
 - No generated API-doc edits from this experiment.
 - No automatic promotion into `mcp/**`.
 
@@ -40,16 +43,21 @@ The production gap is not basic particle JSON mutation. `inspect_particle` / `ma
 4. Multi-effect bundle integrity checks.
 5. Dependency-free QA over already-decoded RGBA atlas pixels.
 6. A small explicit authoring intent contract used only as acceptance input.
+7. Bounded geometric keep-out checks over caller-supplied spatial samples.
+8. Angular-size view-distance readability heuristics.
+9. Conservative steady-state visible-particle budgeting.
+10. A static golden contract derived from the approved volcano example.
 
 ### Out of scope
 
 - PNG decoding or image mutation.
 - Visual scoring.
-- Collision/world simulation.
+- Collision/world/occlusion rendering simulation.
 - Full Molang evaluation.
 - Minecraft gameplay binding.
 - Client-entity or animation-controller mutation.
 - Automatic authoring/planning from the intent contract.
+- GPU fill-rate, transparency sorting, device benchmarking, or FPS prediction.
 
 ### Proof required
 
@@ -71,7 +79,7 @@ inspect_particle
 ├── target-runtime compatibility diagnostics
 ├── optional bounded motion preflight
 ├── optional bundle integrity summary
-└── optional asset/intention diagnostics
+└── optional asset / intent / spatial budget diagnostics
 
 manage_particle
 ├── existing create / patch / validate / write / preview
@@ -193,13 +201,51 @@ exact duplicate cells when uniqueness is required
 
 The result returns both a compact atlas summary and diagnostics. White-pixel detection is a warning because legitimate white sprites can exist. Static atlas QA never proves visual quality.
 
+### Layer 7 — spatial keep-out preflight
+
+`evaluateKeepOutSamples` checks caller-supplied spatial samples against a bounded cylindrical keep-out volume. It reports overlap fraction and warns when the authored threshold is reached.
+
+This deliberately does not simulate blocks, collisions, camera occlusion, or particle visibility. Its purpose is to catch obviously wasteful spawn/trajectory samples such as smoke or debris authored inside a known central block plume.
+
+### Layer 8 — view-distance readability
+
+`evaluateViewDistanceReadability` converts authored particle size and distance to angular size and compares it with an explicit threshold.
+
+The heuristic does not model display resolution, FOV, opacity, contrast, motion blur, or scene salience. It only provides a deterministic static signal that a particle is too small for the intended viewing distance.
+
+### Layer 9 — performance budget
+
+`estimateParticlePerformanceBudget` estimates per-emitter steady-state visible load as:
+
+```text
+min(max_particles, spawn_rate * average_lifetime)
+```
+
+and sums the result against an authored visible-particle budget.
+
+The estimate is conservative. It does not model staggered timelines, GPU fill-rate, transparency overdraw, device capability, or FPS.
+
+### Layer 10 — approved golden contract
+
+`tests/fixtures/volcanoGolden.ts` records representative acceptance facts from the approved volcano experiment:
+
+- Snowstorm target runtime;
+- approximately 100-block viewing distance;
+- approximately 30-second total visual event;
+- representative heavy-bomb apex/range target;
+- central keep-out radius around the block plume;
+- representative long-distance plume readability;
+- representative effective visible-particle budget.
+
+The golden fixture is static regression evidence only. It does not reclassify the historical asset as live runtime proof.
+
 ---
 
 ## Diagnostic ownership
 
 Stable experimental diagnostic codes are centralized in `src/diagnostics.ts`. Callers and tests must assert codes/behavior, not prose wording.
 
-The current modules are deliberately small:
+The modules are deliberately small:
 
 ```text
 snowstormCompatibility.ts → target-runtime semantics
@@ -207,6 +253,9 @@ motionPreflight.ts        → numeric motion approximation + envelope
 bundleValidation.ts       → cross-effect/reference integrity
 textureAtlasQa.ts         → decoded-pixel atlas checks
 intentContract.ts         → acceptance-contract validation
+spatialPreflight.ts       → keep-out sample overlap
+readabilityPreflight.ts   → angular-size heuristic
+performancePreflight.ts   → conservative visible-load estimate
 ```
 
 `particlePreflight.ts` remains a compatibility barrel only.
@@ -229,7 +278,7 @@ mcp/server/resources/particle.ts
   lazily document workflow/runtime compatibility guidance
 
 focused runtime/import-safe tests
-  compatibility + motion + bundle + atlas/intent contracts
+  compatibility + motion + bundle + atlas + intent + bounded spatial/budget contracts
 ```
 
 Texture decoding should reuse an existing suitable image/texture owner if production integration needs raw PNG input; do not embed a second image stack in particle tooling.
@@ -240,9 +289,10 @@ Promotion is allowed only when all of the following are true:
 
 1. Experimental diagnostics still correspond to current reproduced failures.
 2. Focused Bun tests pass in `LOCAL_CODE`.
-3. The implementation reuses `inspect_particle` / `manage_particle` rather than adding parallel tools.
-4. Public-schema changes, if any, are completed together with generated API docs in a capable context.
-5. The relevant MCP verifier succeeds for executable/public changes.
-6. Live visual claims remain separate `LIVE_BLOCKBENCH` evidence.
+3. The approved golden static contract passes under the same source SHA.
+4. The implementation reuses `inspect_particle` / `manage_particle` rather than adding parallel tools.
+5. Public-schema changes, if any, are completed together with generated API docs in a capable context.
+6. The relevant MCP verifier succeeds for executable/public changes.
+7. Live visual claims remain separate `LIVE_BLOCKBENCH` evidence.
 
 Until then, this directory remains research evidence only.

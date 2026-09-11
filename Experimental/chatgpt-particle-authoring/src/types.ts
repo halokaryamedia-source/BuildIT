@@ -9,6 +9,7 @@ export type JsonValue =
 export type JsonObject = { [key: string]: JsonValue };
 
 export type MotionVector = readonly [number, number, number];
+export type SpatialPoint = readonly [number, number, number];
 
 export type MotionSimulationInput = {
   direction: MotionVector;
@@ -87,4 +88,50 @@ export type ParticleIntentContract = {
   view_distance_blocks?: number;
   total_duration_seconds?: number;
   motion_targets?: readonly ParticleIntentMotionTarget[];
+};
+
+export type KeepOutCylinder = {
+  radius: number;
+  min_y: number;
+  max_y: number;
+  center_x?: number;
+  center_z?: number;
+};
+
+export type SpatialPreflightResult = {
+  sample_count: number;
+  inside_keep_out_count: number;
+  overlap_fraction: number;
+  diagnostics: import("./diagnostics").ExperimentalParticleDiagnostic[];
+};
+
+export type ViewDistanceReadabilityInput = {
+  size_blocks: number;
+  distance_blocks: number;
+  minimum_angular_degrees?: number;
+  label?: string;
+};
+
+export type ViewDistanceReadabilityResult = {
+  angular_size_degrees: number;
+  minimum_angular_degrees: number;
+  diagnostics: import("./diagnostics").ExperimentalParticleDiagnostic[];
+};
+
+export type ParticleEmitterBudgetInput = {
+  name: string;
+  spawn_rate: number;
+  average_lifetime: number;
+  max_particles: number;
+};
+
+export type ParticlePerformanceBudget = {
+  max_visible_particles: number;
+};
+
+export type ParticlePerformanceEstimate = {
+  emitters: { name: string; estimated_peak_visible: number }[];
+  estimated_peak_visible: number;
+  budget: ParticlePerformanceBudget;
+  diagnostics: import("./diagnostics").ExperimentalParticleDiagnostic[];
 };

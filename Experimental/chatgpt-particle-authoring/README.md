@@ -22,6 +22,9 @@ The experiment focuses on gaps that structural JSON validation alone cannot catc
 4. Multi-effect bundle integrity.
 5. Texture-atlas QA.
 6. Explicit authoring intent as an acceptance contract.
+7. Spatial keep-out / occlusion risk.
+8. View-distance readability heuristics.
+9. Conservative visible-particle performance budgeting.
 
 ## Current implementation
 
@@ -40,14 +43,23 @@ chatgpt-particle-authoring/
 │   ├── motionPreflight.ts
 │   ├── bundleValidation.ts
 │   ├── textureAtlasQa.ts
-│   └── intentContract.ts
+│   ├── intentContract.ts
+│   ├── spatialPreflight.ts
+│   ├── readabilityPreflight.ts
+│   └── performancePreflight.ts
 ├── tests/
 │   ├── helpers.ts
+│   ├── fixtures/
+│   │   └── volcanoGolden.ts
 │   ├── snowstormCompatibility.test.ts
 │   ├── motionPreflight.test.ts
 │   ├── bundleValidation.test.ts
 │   ├── textureAtlasQa.test.ts
-│   └── intentContract.test.ts
+│   ├── intentContract.test.ts
+│   ├── spatialPreflight.test.ts
+│   ├── readabilityPreflight.test.ts
+│   ├── performancePreflight.test.ts
+│   └── volcanoGolden.test.ts
 └── examples/
     └── MIVUBI_Volcano_Eruption.zip
 ```
@@ -75,11 +87,20 @@ chatgpt-particle-authoring/
 - dependency-free RGBA atlas QA for transparency, white-matte risk, grid validity, gutter, and duplicate cells;
 - explicit intent-contract validation for runtime target, view distance, duration, and named motion envelopes.
 
+### P2 — spatial, readability and performance preflight
+
+- bounded cylindrical keep-out overlap checks over authored spatial samples;
+- angular-size readability heuristic for intended viewing distance;
+- conservative steady-state visible-particle estimation using spawn rate, average lifetime, and `max_particles` caps;
+- an approved volcano golden static contract covering representative intent, motion, keep-out, readability, and effective particle budget.
+
 Diagnostic codes are centralized and stable within the experiment so later promotion can preserve semantics without coupling production to this directory.
 
 ## Important limits
 
 Texture QA accepts already-decoded RGBA pixels. This experiment intentionally does not add a PNG decoder or image dependency. Static texture checks do not prove visual quality.
+
+Spatial preflight is not collision or visibility simulation. Readability is an angular-size heuristic, not a display/FOV/contrast model. Performance estimation is conservative and does not model staggered timelines or GPU fill-rate.
 
 The intent contract is an acceptance target, not a planner. It never silently rewrites particle values.
 
