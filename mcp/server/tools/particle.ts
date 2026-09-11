@@ -174,6 +174,126 @@ export const particleMutationOperationSchema = z
     }
   });
 
+export const particleTextureDependencySchema = z.discriminatedUnion("source", [
+  z
+    .object({
+      source: z.literal("existing"),
+      texture: z
+        .string()
+        .min(1)
+        .describe("Bedrock texture reference already available to the resource pack."),
+    })
+    .strict(),
+  z
+    .object({
+      source: z.literal("vanilla"),
+      texture: z
+        .string()
+        .min(1)
+        .describe("Vanilla Bedrock texture reference reused without authoring a new bitmap."),
+    })
+    .strict(),
+  z
+    .object({
+      source: z.literal("generated"),
+      texture: z
+        .string()
+        .min(1)
+        .describe("Final Bedrock texture reference that the particle JSON will use."),
+      name: z
+        .string()
+        .min(1)
+        .describe("Texture name passed to the existing create_texture capability."),
+      width: z.number().int().min(16).max(4096).optional().default(16),
+      height: z.number().int().min(16).max(4096).optional().default(16),
+      transparent: z.literal(true).optional().default(true),
+      description: z
+        .string()
+        .min(1)
+        .describe("Compact visual brief for the existing Texturing paint pipeline."),
+    })
+    .strict(),
+]);
+
+function finalExplicitTextureReference(
+  create: z.infer<typeof createParticleSchema> | undefined,
+  operations: z.infer<typeof particleMutationOperationSchema>[]
+): string | null {
+  let texture = create?.texture ?? null;
+  for (const operation of operations) {
+    if (operation.op === "set_render" && operation.texture !== undefined) {
+      texture = operation.texture;
+    }
+  }
+  return texture;
+}
+
+export type ParticleTextureDependencyPlan =
+  | {
+      source: "existing" | "vanilla";
+      texture: string;
+      status: "SATISFIED";
+    }
+  | {
+      source: "generated";
+      texture: string;
+      status: "REQUIRES_TEXTURING";
+      authoring_domain: "TEXTURING";
+      entry_capability: "create_texture";
+      create_texture: {
+        name: string;
+        type: "blank";
+        width: number;
+        height: number;
+      };
+      paint_capabilities: readonly [
+        "paint_fill_tool",
+        "draw_shape_tool",
+        "gradient_tool",
+        "paint_with_brush",
+        "eraser_tool"
+      ];
+      description: string;
+      transparent: true;
+      resume_capability: "manage_particle";
+    };
+
+export function buildParticleTextureDependencyPlan(
+  dependency: z.infer<typeof particleTextureDependencySchema> | undefined
+): ParticleTextureDependencyPlan | null {
+  if (!dependency) return null;
+  if (dependency.source !== "generated") {
+    return {
+      source: dependency.source,
+      texture: dependency.texture,
+      status: "SATISFIED",
+    };
+  }
+  return {
+    source: "generated",
+    texture: dependency.texture,
+    status: "REQUIRES_TEXTURING",
+    authoring_domain: "TEXTURING",
+    entry_capability: "create_texture",
+    create_texture: {
+      name: dependency.name,
+      type: "blank",
+      width: dependency.width,
+      height: dependency.height,
+    },
+    paint_capabilities: [
+      "paint_fill_tool",
+      "draw_shape_tool",
+      "gradient_tool",
+      "paint_with_brush",
+      "eraser_tool",
+    ],
+    description: dependency.description,
+    transparent: true,
+    resume_capability: "manage_particle",
+  };
+}
+
 const outputPathSchema = <T extends z.ZodType<string>>(pathSchema: T) =>
   z
     .object({
@@ -211,6 +331,11 @@ export const manageParticleParameters = z
       .describe(
         "Ordered targeted particle mutations. Use patch for deep edits without replacing unknown sibling fields."
       ),
+    texture_dependency: particleTextureDependencySchema
+      .optional()
+      .describe(
+        "Optional particle-texture provenance. generated routes to the existing Texturing pipeline; manage_particle never creates a bitmap itself."
+      ),
     output: outputPathSchema(particlePathSchema).optional(),
     preview: z
       .boolean()
@@ -228,6 +353,27 @@ export const manageParticleParameters = z
         code: z.ZodIssueCode.custom,
         message: "Provide exactly one source or create input.",
       });
+    }
+    if (value.texture_dependency) {
+      const explicitTexture = finalExplicitTextureReference(
+        value.create,
+        value.operations
+      );
+      if (explicitTexture === null) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["texture_dependency", "texture"],
+          message:
+            "texture_dependency requires the same explicit texture reference in create.texture or a set_render operation; dependency metadata does not mutate particle JSON implicitly.",
+        });
+      } else if (explicitTexture !== value.texture_dependency.texture) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["texture_dependency", "texture"],
+          message:
+            "texture_dependency.texture must match the final explicit particle texture reference.",
+        });
+      }
     }
   });
 
@@ -247,7 +393,7 @@ export const particleToolDocs: ToolSpec[] = [
   {
     name: "manage_particle",
     description:
-      "Creates or losslessly patches a Bedrock .particle.json document, preserves unknown JSON fields, validates final particle semantics, optionally performs a verified transactional file write, and can load the particle into Blockbench's native preview. Animation/controller timing and downstream runtime binding remain owned by existing animation/controller tools.",
+      "Creates or losslessly patches a Bedrock .particle.json document, preserves unknown JSON fields, validates final particle semantics, optionally performs a verified transactional file write, and can load the particle into Blockbench's native preview. Missing custom particle bitmaps route through the existing create_texture + paint pipeline via texture_dependency; manage_particle does not duplicate texture authoring. Animation/controller timing and downstream runtime binding remain owned by existing animation/controller tools.",
     annotations: {
       title: "Manage Bedrock Particle",
       destructiveHint: true,
@@ -615,6 +761,7 @@ export function registerParticleTools(): void {
         source,
         create,
         operations,
+        texture_dependency,
         output,
         preview,
         max_content_length,
@@ -631,11 +778,17 @@ export function registerParticleTools(): void {
         const valid = !summary.diagnostics.some(
           (entry) => entry.severity === "error"
         );
+        const textureDependency = buildParticleTextureDependencyPlan(
+          texture_dependency
+        );
+        const textureDependencyPending =
+          textureDependency?.status === "REQUIRES_TEXTURING";
+        const artifactReady = valid && !textureDependencyPending;
         const serialized = serializeParticleDocument(document);
         const byteLength = Buffer.byteLength(serialized, "utf8");
 
         const intendedPreviewPath = output?.path ?? base.source_path;
-        if (preview && valid) {
+        if (preview && artifactReady) {
           if (!intendedPreviewPath) {
             throw new Error(
               "Native particle preview requires an existing source.path or output.path; inline-only documents have no stable Blockbench file identity."
@@ -645,7 +798,7 @@ export function registerParticleTools(): void {
         }
 
         const writePlans: PlannedWrite[] = [];
-        if (output && valid) {
+        if (output && artifactReady) {
           writePlans.push({
             kind: "particle",
             path: output.path,
@@ -662,12 +815,12 @@ export function registerParticleTools(): void {
             ),
           });
         }
-        const writes = valid ? writeArtifactsAtomically(writePlans) : [];
+        const writes = artifactReady ? writeArtifactsAtomically(writePlans) : [];
         const particleWrite = writes.find((entry) => entry.kind === "particle");
 
         let previewPath: string | null = null;
         let previewError: string | null = null;
-        if (preview && valid && intendedPreviewPath) {
+        if (preview && artifactReady && intendedPreviewPath) {
           previewPath = intendedPreviewPath;
           try {
             loadNativeParticlePreview(previewPath, serialized);
@@ -688,19 +841,23 @@ export function registerParticleTools(): void {
           content: [
             {
               type: "text" as const,
-              text: valid
-                ? `Prepared particle ${summary.identifier}: ${summary.component_count} components${particleWrite ? "; particle write verified" : ""}${previewPath && !previewError ? "; native preview loaded" : ""}${previewError ? "; native preview failed after artifact preparation" : ""}.`
-                : `Particle ${summary.identifier ?? "<missing identifier>"} has validation errors; no file write or preview was performed.`,
+              text: !valid
+                ? `Particle ${summary.identifier ?? "<missing identifier>"} has validation errors; no file write or preview was performed.`
+                : textureDependencyPending
+                  ? `Particle ${summary.identifier} requires generated texture ${textureDependency.texture}; route through existing Texturing tools beginning with create_texture, then resume manage_particle. No particle write or preview was performed yet.`
+                  : `Prepared particle ${summary.identifier}: ${summary.component_count} components${particleWrite ? "; particle write verified" : ""}${previewPath && !previewError ? "; native preview loaded" : ""}${previewError ? "; native preview failed after artifact preparation" : ""}.`,
             },
           ],
           structuredContent: {
             valid,
+            artifact_ready: artifactReady,
             source_path: base.source_path,
             wrote_to_path: particleWrite?.path ?? null,
             preview_path: previewPath,
             preview_error: previewError,
             byte_length: byteLength,
             operation_count: operations.length,
+            texture_dependency: textureDependency,
             summary,
             writes,
             ...particleContent,
