@@ -17,7 +17,7 @@ describe("pre-local usage optimization contract", () => {
   test("known coherent creation stays specialist-owned while Control avoids broad discovery", async () => {
     const [agents, modelling, control] = await Promise.all([
       source("../AGENTS.md"),
-      source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
+      source("../.agents/skills/lazydesigner-modelling/SKILL.md"),
       source("gateway/control/routingPolicy.ts"),
     ]);
     expect(agents).toContain("exact known Runtime capability");
@@ -28,7 +28,7 @@ describe("pre-local usage optimization contract", () => {
   });
 
   test("local correction reuses fresh affected evidence before broader recapture", async () => {
-    const modelling = await source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md");
+    const modelling = await source("../.agents/skills/lazydesigner-modelling/SKILL.md");
     expect(modelling).toContain("Reuse fresh affected pre-correction evidence");
     expect(modelling).toContain("capture before mutation only when none exists");
     expect(modelling).toContain("After mutation, recapture affected view(s)");
