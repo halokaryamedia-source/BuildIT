@@ -6,7 +6,7 @@ This file owns **current implementation continuation only**. Product architectur
 
 ## Current Objective
 
-LazyDesigner Control source implementation is active. Documentation/Reference architecture and ASSET_AUTHORING specialist naming are now source baselines. Local/live Blockbench testing remains deferred until explicitly reactivated.
+LazyDesigner Control source implementation is active. Documentation/Reference architecture plus ASSET_AUTHORING and PRODUCT_DEVELOPMENT Skill naming are source baselines. Local/live Blockbench testing remains deferred until explicitly reactivated.
 
 ## Completed Baseline
 
@@ -30,8 +30,12 @@ LazyDesigner Control source implementation is active. Documentation/Reference ar
   - lazydesigner-modelling
   - lazydesigner-texturing
   - lazydesigner-animation
-✓ old modelling/texturing/animation Skill paths physically removed
-✓ Control/docs/CI/regressions route to canonical specialist names
+✓ canonical PRODUCT_DEVELOPMENT Skills:
+  - lazydesigner-mcp-development
+  - lazydesigner-blockbench-development
+  - lazydesigner-development-brief
+✓ old authoring/development Skill paths physically removed
+✓ root/docs/CI/regressions route to canonical Skill names
 ✓ compatibility identifier boundary documented + regression guarded
 ```
 
@@ -90,8 +94,8 @@ Canonical boundary: `docs/04-system/compatibility-identifiers.md`.
 ## Immediate Next Source Work
 
 ```text
-1. audit PRODUCT_DEVELOPMENT Skill naming and direct consumers
-2. migrate only non-compatibility Skill/package presentation identities atomically
+1. migrate blockbench-reference-generator → lazydesigner-reference-preparation as a bounded Skill identity change
+2. update Reference Preparation direct consumers/tests/CI/docs in the same migration
 3. continue bounded user-facing Runtime/Gateway BlockIT → LazyDesigner string cleanup
 4. keep package/plugin/env/header/persisted identifiers stable until a dedicated migration exists
 5. audit remaining active regressions for retired docs/symbols only when concrete evidence appears
@@ -103,7 +107,7 @@ Canonical boundary: `docs/04-system/compatibility-identifiers.md`.
 
 - No Navigator compatibility alias or second Control path.
 - No replacement asset-router Skill.
-- No legacy ASSET_AUTHORING specialist aliases.
+- No legacy ASSET_AUTHORING or PRODUCT_DEVELOPMENT Skill aliases.
 - No second persistent state DB inside Control.
 - No duplicate capability-domain table outside `mcp/lib/authoringPhase.ts`.
 - No all-profile/all-stage loading as reassurance.
