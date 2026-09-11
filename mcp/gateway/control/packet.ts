@@ -38,7 +38,6 @@ export type ControlReferenceSummary = Pick<
 
 export type ControlPacket = Omit<ControlSnapshot, "context" | "mode"> & {
   mode: ControlTaskMode;
-  control_protocol: "lazydesigner-control-v1";
   task_context_id: string;
   readiness: ControlReadiness;
   workspace: ControlWorkspaceSummary;
@@ -303,7 +302,6 @@ export async function buildControlPacket(
 
   return {
     ...snapshot,
-    control_protocol: "lazydesigner-control-v1",
     mode,
     system: snapshot.system === "READY" && blockers.length > snapshot.blockers.length ? "DEGRADED" : snapshot.system,
     task_context_id: taskContextId(
