@@ -54,7 +54,7 @@ Known blocker(s), if any
 Current handoff state — only when phase reload/resume is pending
 ```
 
-BlockIT uses one native Geometry authoring path; no modelling-strategy state is required.
+LazyDesigner uses one native Geometry authoring path; no modelling-strategy state is required.
 
 ## Current Stage State
 
@@ -145,12 +145,12 @@ user names/continues asset
 → workspace/active/<asset>/README.md
 → current .bbmodel only if it exists
 → only files needed for next decision
-→ current-worktree BlockIT asset router
-→ current-worktree active specialist
+→ LazyDesigner Control resolves current stage/context/readiness
+→ current-worktree active specialist only
 → verify persisted prerequisite gate before mutation
 ```
 
-The router + active specialist loading contract comes from root `AGENTS.md`; remembered Skill content is not sufficient. If stored target phase and live MCP phase disagree, reconcile through Gateway rather than broad-searching tools. Do not scan every active project when asset is known.
+The Control + active specialist loading contract comes from root `AGENTS.md`; remembered Skill content is not sufficient. If stored target phase and live MCP phase disagree, reconcile through Gateway rather than broad-searching tools. Do not scan every active project when asset is known.
 
 ## Reference Generator Boundary
 
