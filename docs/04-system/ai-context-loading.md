@@ -93,7 +93,7 @@ Reference Preparation ends at an approved, consistent handoff package. It does n
 current user intent / delta
 actual approved reference image(s) relevant to geometry
 GEOMETRY_CONTEXT projection
-.agents/skills/blockbench-bedrock-modelling/SKILL.md
+.agents/skills/lazydesigner-modelling/SKILL.md
 exactly one selected profile from docs/03-authoring/modelling/profiles/
 ```
 
@@ -134,7 +134,7 @@ PRODUCT_DEVELOPMENT Skills
 ```text
 current user intent / texture delta
 TEXTURE_CONTEXT projection
-.agents/skills/blockit-bedrock-texturing/SKILL.md
+.agents/skills/lazydesigner-texturing/SKILL.md
 relevant approved material/reference views
 current atlas / UV identity supplied by projection/runtime state
 ```
@@ -179,7 +179,7 @@ PRODUCT_DEVELOPMENT Skills
 ```text
 current user intent / animation delta
 ANIMATION_CONTEXT projection
-.agents/skills/blockit-bedrock-animation/SKILL.md
+.agents/skills/lazydesigner-animation/SKILL.md
 relevant approved pose/motion reference views
 current participating rig + clip identity supplied by projection/runtime state
 ```
