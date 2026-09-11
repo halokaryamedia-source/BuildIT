@@ -98,6 +98,26 @@ const SOURCE_BY_CAPABILITY: Record<string, ControlSourceOwner> = {
     specialist: MODELLING_PATH,
     test_owner: "mcp/tests/model-effectiveness-correction-accuracy.test.ts",
   },
+  duplicate_element: {
+    source: "mcp/server/tools/element.ts",
+    specialist: MODELLING_PATH,
+    test_owner: "mcp/tests/prelocal-generic-semantics.test.ts",
+  },
+  reparent_element: {
+    source: "mcp/server/tools/element.ts",
+    specialist: MODELLING_PATH,
+    test_owner: "mcp/tests/p1-core-ownership.test.ts",
+  },
+  remove_element: {
+    source: "mcp/server/tools/element.ts",
+    specialist: MODELLING_PATH,
+    test_owner: "mcp/tests/p1-core-ownership.test.ts",
+  },
+  rename_element: {
+    source: "mcp/server/tools/element.ts",
+    specialist: MODELLING_PATH,
+    test_owner: "mcp/tests/batch-group-rename.test.ts",
+  },
   manage_locator: {
     source: "mcp/server/tools/locators.ts",
     specialist: MODELLING_PATH,
