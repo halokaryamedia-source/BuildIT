@@ -52,6 +52,66 @@ const GEOMETRY_MAINTENANCE_TOOLS = new Set([
 const CORE_TEXTURE_TOOLS = new Set(["list_textures"]);
 const ANIMATION_EXCLUDED_CORE_TOOLS = new Set(["create_project"]);
 
+/**
+ * Import-safe canonical phase hints for the consolidated/high-frequency public
+ * capability names used by Gateway/Control. Runtime family classification below
+ * remains the fallback for the full catalog. Keep phase ownership here so
+ * Control never maintains a second hand-written domain table.
+ */
+const CORE_NAMED_CAPABILITIES = new Set([
+  "create_project",
+  "get_project_info",
+  "inspect_elements",
+  "capture_model_views",
+  "inspect_model_bounds",
+  "export_model",
+  "undo",
+  "redo",
+  "get_undo_stack",
+  "switch_authoring_phase",
+  "list_textures",
+]);
+
+const GEOMETRY_NAMED_CAPABILITIES = new Set([
+  ...GEOMETRY_MAINTENANCE_TOOLS,
+  ...GEOMETRY_ELEMENT_TOOLS,
+  "bone_rigging",
+]);
+
+const TEXTURING_NAMED_CAPABILITIES = new Set([
+  "create_texture",
+  "get_texture",
+  "activate_texture",
+  "paint_fill_tool",
+  "draw_shape_tool",
+  "paint_with_brush",
+  "eraser_tool",
+  "paint_texture_transaction",
+  "manage_material",
+  "manage_material_instances",
+  "manage_render_profile",
+  "filter_by_material",
+]);
+
+const ANIMATION_NAMED_CAPABILITIES = new Set([
+  "create_animation",
+  "inspect_animation",
+  "manage_animation_timeline",
+  "manage_animation_effects",
+  "manage_animation_controller",
+]);
+
+export function classifyMcpToolPhaseByName(
+  toolName: string
+): McpToolPhaseCategory | null {
+  if (RETIRED_CAPABILITIES.has(toolName)) return null;
+  if (CORE_NAMED_CAPABILITIES.has(toolName)) return "core";
+  if (GEOMETRY_NAMED_CAPABILITIES.has(toolName)) return "geometry";
+  if (TEXTURING_NAMED_CAPABILITIES.has(toolName)) return "texturing";
+  if (ANIMATION_NAMED_CAPABILITIES.has(toolName)) return "animation";
+  return null;
+}
+
 function isAuthoringStage(phase: McpAuthoringPhase): boolean {
   return phase !== "animation";
 }
@@ -161,6 +221,10 @@ export function classifyMcpToolPhase(
   family: McpRegistrationFamily
 ): McpToolPhaseCategory | null {
   if (RETIRED_CAPABILITIES.has(toolName)) return null;
+
+  const namedPhase = classifyMcpToolPhaseByName(toolName);
+  if (namedPhase !== null) return namedPhase;
+
   if (family === "phase_control") return "core";
   if (
     toolName === "capture_screenshot" ||
@@ -177,7 +241,6 @@ export function classifyMcpToolPhase(
     toolName === "redo" ||
     toolName === "get_undo_stack"
   ) return "core";
-  if (GEOMETRY_MAINTENANCE_TOOLS.has(toolName)) return "geometry";
   if (CORE_FAMILIES.has(family)) return "core";
   if (family === "cubes") return "geometry";
   if (family === "textures") {
