@@ -2,13 +2,11 @@
 
 Updated: 2026-09-11
 
-This document owns the ChatGPT-side operational flow before any LazyDesigner asset is handed to Codex.
+This document owns the ChatGPT-side operational sequence before an asset reference is handed to Codex. Durable policy lives in `policy.md`; image construction lives under `image/`; package structure and consumption live under `package/`.
 
 ## Objective
 
-ChatGPT is responsible for converting incomplete or casual user intent into a confirmed, internally clean reference brief before generating any image or handoff file.
-
-The user should not need to know prompting, profile, rigging, UV, topology, or package terminology.
+Convert incomplete or casual user intent into a confirmed, internally clean reference target without requiring the user to understand prompting, topology, UV, rigging, or package terminology.
 
 ## Canonical User Flow
 
@@ -17,7 +15,7 @@ USER REQUEST
 → UNDERSTAND
 → REQUIREMENT GATE
 → missing blocking information?
-   ├─ YES → ASK SIMPLE QUESTIONS → USER ANSWERS → REQUIREMENT GATE
+   ├─ YES → ASK SIMPLE QUESTIONS → USER ANSWERS → GATE AGAIN
    └─ NO
 → PROMPT COMPILER
 → CLEAN PRODUCTION BRIEF
@@ -26,10 +24,10 @@ USER REQUEST
    ├─ NO → revise brief → FINAL CONFIRMATION
    └─ YES
 → REFERENCE PLAN
-→ GENERATE REQUIRED IMAGE(S)
+→ GENERATE REQUIRED IMAGE(S) when useful
 → INTERNAL QA
-→ USER VISUAL REVIEW / CORRECTION WHEN MATERIAL
-→ PACKAGE GENERATION CONFIRMATION WHEN REQUIRED
+→ USER VISUAL REVIEW / CORRECTION when material
+→ PACKAGE GENERATION CONFIRMATION when required
 → PACKAGE BUILD
 → PACKAGE CONSISTENCY GATE
 → HANDOFF TO CODEX
@@ -37,23 +35,24 @@ USER REQUEST
 
 ## 1. Understand
 
-Extract intent without inventing details.
+Resolve only what is supported by current intent/evidence:
 
-Resolve when available:
-- asset identity;
-- asset profile;
-- task type: new / continuation / correction;
-- supplied visual reference authority;
-- explicit dimensions;
-- animation requirement;
-- critical requested parts/actions/materials/style;
-- previously approved decisions that remain active.
+```text
+asset identity
+primary profile
+task: new / continuation / correction
+source/reference authority
+scale or explicit dimensions when known
+animation requirement
+critical parts/actions/materials/style
+still-valid approved prior decisions
+```
 
-Do not generate yet.
+Do not generate yet and do not invent missing facts.
 
 ## 2. Requirement Gate
 
-Classify missing information as:
+Classify missing information:
 
 ```text
 BLOCKING
@@ -61,85 +60,63 @@ USEFUL
 OPTIONAL
 ```
 
-### BLOCKING
-Must be resolved before any artifact generation when the missing answer can materially change target identity, primary structure, intended scale, required articulation/action, or other major output.
+`BLOCKING` must be resolved when the answer can materially change identity, primary structure, scale, required articulation/action, or another major output decision.
 
-### USEFUL
-Ask only when the answer is likely to materially improve the result. Do not create unnecessary questionnaires.
+`USEFUL` is asked only when it is likely to materially improve correctness.
 
-### OPTIONAL
-Do not block generation. Preserve as unspecified or allow downstream reference-driven treatment.
+`OPTIONAL` does not block generation and remains unspecified unless evidence resolves it.
 
-If blocking information exists, state only the fewest simple questions needed to resolve it.
+Scale follows `image/scale-and-escalation.md`: use an explicit numeric requirement when provided; otherwise use a player-relative anchor when safely resolvable; ask only when materially different scale would change the result.
 
 ## 3. Simple Question Rule
 
-User-facing questions must be basic and immediately answerable.
+Ask the fewest basic, immediately answerable questions.
 
 Good:
-- "Mau bentuknya mobil, motor, kereta, atau lainnya?"
-- "Ukurannya kira-kira berapa blok?"
-- "Perlu ada bagian yang bergerak atau model diam?"
-- "Gayanya mengikuti gambar yang Anda kirim, Minecraft stylized, realistis, atau lainnya?"
+- "Ukurannya sekitar setinggi pinggang player, setinggi player, atau lebih tinggi?"
+- "Kendaraannya cukup untuk 1 player atau 2 player?"
+- "Bagian mana yang perlu bergerak?"
+- "Gayanya mengikuti gambar yang Anda kirim atau ada arah lain?"
 
-Bad:
-- asking for topology;
-- asking for pivot ownership;
-- asking for deformation strategy;
-- asking for UV/material pipeline terms;
-- asking users to write a better prompt.
+Do not ask the user for topology, pivot ownership, UV strategy, deformation terminology, or a better prompt.
 
 ## 4. Prompt Compiler
 
-When all blocking information is resolved, run `lazydesigner-prompt-compiler`.
-
-The compiler produces one clean production brief from:
+After blocking information is resolved, run `.agents/skills/lazydesigner-prompt-compiler/SKILL.md`.
 
 ```text
 raw user intent
 + confirmed answers
 + approved prior decisions
 + source/reference facts
+→ CLEAN PRODUCTION BRIEF
 ```
 
-Rejected or superseded chat directions must not remain active.
+Rejected or superseded directions are removed. The compiler may normalize wording but may not invent design, scale, materials, topology, motion, or hidden structure.
 
-The compiled brief must never introduce new creative facts.
+The compiled brief is internal working state and is not a default Codex handoff file.
 
-The compiled brief is internal working state. It is not exported as a default Codex handoff file.
+## 5. Final Confirmation — Hard Gate
 
-## 5. Final Confirmation Gate — HARD GATE
+Before generating any new user-facing image or handoff file, show a concise summary and obtain explicit approval.
 
-Before generating **any** new user-facing artifact, ChatGPT must show a concise confirmation summary and obtain explicit user approval.
-
-This gate applies before:
-- concept image generation;
-- turnaround/reference image generation;
-- rig/pose/keyframe image generation;
-- JSON package creation;
-- Markdown handoff file creation;
-- any other generated reference file.
-
-Do not interpret silence or prior general approval as approval of a newly compiled target.
-
-Confirmation should be short and practical.
-
-Recommended format:
+Recommended shape:
 
 ```text
 Konfirmasi sebelum dibuat:
 - Objek: <asset>
+- Skala: <only when material>
 - Arah: <main visual/structural direction>
-- Tambahan: <animation/reference extras, only if relevant>
+- Tambahan: <only material extras>
 
 Sudah sesuai?
 ```
 
-Do not expose internal profile/module jargon unless it helps the user.
+Silence is not approval. A material revision requires a new bounded confirmation before generating the revised artifact.
 
 ## 6. Reference Plan
 
-After confirmation, choose only reference outputs that materially improve downstream authoring.
+Choose only outputs that materially reduce downstream uncertainty.
 
 Possible modules:
 
@@ -154,176 +131,147 @@ EXPRESSION_FACE
 ANIMATION_KEYFRAME
 ```
 
-Do not generate all modules by default.
+Do not generate every module by default. Generated images follow `image/README.md` and the Unified Image Reference Standard.
 
 ## 7. Generate + Internal QA
 
-Every generated reference must use:
+Every generation uses:
 
 ```text
 confirmed compiled brief
 + approved source/reference authority
-+ current reference-module purpose
++ resolved scale anchor
++ current sheet/module purpose
 ```
 
 not the uncontrolled full conversation.
 
-Before treating an output as ready for user review, internally check identity, required part completeness, cross-view consistency, attachment/topology, dimensions/style constraints, and relevant articulation/material requirements.
+Before user review, check identity, required parts, cross-view consistency, scale lock, attachment/topology, and any material articulation or material requirements.
 
-## 8. User Visual Review
+## 8. User Visual Review / Correction
 
-Material authority-changing visuals still require user acceptance before they become approved visual authority.
+A generated image becomes visual authority only after explicit user acceptance when visual approval is material.
 
-For corrections:
+For correction:
 
 ```text
 USER DELTA
 → compile CHANGE + PRESERVE
-→ if the corrected target itself is materially ambiguous, ask
-→ concise final confirmation before generating revised artifact
-→ generate bounded correction
+→ resolve only new blockers
+→ concise confirmation
+→ bounded correction
+→ identity + scale QA
+→ user review
 ```
 
-The confirmation gate applies again before a new/revised artifact is generated, but the summary should mention only the changed target and important preserved constraints.
+Preserve unaffected approved authority.
 
 ## 9. Package Generation Gate
 
-After required visual authority is accepted, prepare the package plan but do not create files until package generation is explicitly approved when that approval was not already given in the immediately preceding user instruction.
+After required visual authority is accepted, create package files only when package generation is explicitly authorized or already unambiguously requested in the current instruction.
 
-The package confirmation should remain concise, for example:
-
-```text
-Reference sudah siap.
-Saya akan buat:
-- REFERENCE.json
-- GEOMETRY.md
-- TEXTURE.md
-- ANIMATION.md (jika diperlukan)
-- image reference yang sudah disetujui
-
-Lanjut generate package?
-```
-
-Do not create unnecessary package files merely to fill a template.
+Do not create optional files merely to complete a template.
 
 ## 10. Package Build
 
-Canonical package structure:
+Canonical package:
 
 ```text
 asset_reference/
 ├── REFERENCE.json
 ├── GEOMETRY.md
-├── TEXTURE.md      ← only when required
-├── ANIMATION.md    ← only when required
+├── TEXTURE.md      ← only when useful
+├── ANIMATION.md    ← only when useful / required
 └── images/
     └── approved/supporting reference images
 ```
 
-`REFERENCE.json` is the canonical structured index and machine-readable fact contract.
-
-Exact schema is owned by:
+Canonical owners:
 
 ```text
-docs/knowledge/reference-package-schema.md
+REFERENCE.json → package/schema.md
+GEOMETRY.md    → package/geometry.md
+TEXTURE.md     → package/texture.md
+ANIMATION.md   → package/animation.md
+handoff        → package/handoff.md
+load order     → package/load-contract.md
 ```
 
-Stage documents are owned by:
-
-```text
-GEOMETRY.md
-→ docs/knowledge/geometry-reference-contract.md
-
-TEXTURE.md
-→ docs/knowledge/texture-reference-contract.md
-
-ANIMATION.md
-→ docs/knowledge/animation-reference-contract.md
-```
-
-Stage Markdown files are stage-specific projections. They must not become independent competing authorities.
-
-Do not export the compiled production prompt, conversation transcript, or duplicate README/bootstrap files by default.
+Do not export the compiled production prompt, conversation transcript, duplicate README/bootstrap file, Cube-by-Cube plan, or Tool schema.
 
 ## 11. Package Consistency Gate
 
-Before handoff to Codex, verify all of the following:
+Before handoff verify:
 
 ```text
-all documents listed in REFERENCE.json actually exist
-all referenced image IDs actually exist
-all image paths resolve inside the package
+all listed documents exist
+all image IDs and paths resolve
 stage documents agree with REFERENCE.json
 stage documents introduce no unsupported facts
-Geometry document contains no Texture/Animation implementation plan
-Texture document contains no Geometry workaround or Animation plan
-Animation document contains no Geometry workaround or Texture brief
-readiness values agree with blocking unknowns
-optional omitted files are not referenced
+Texture does not compensate for missing Geometry
+Animation does not compensate for a rig defect
+readiness agrees with blocking unknowns
+omitted optional files are not referenced
+scale facts are internally consistent
 ```
 
-If any check fails, correct the package before handoff.
+Fix package plumbing internally. Ask the user only when a real requirement conflict needs their decision.
 
-This gate is internal. Do not make the user review package plumbing unless a real requirement conflict requires their decision.
+## 12. Codex Handoff
 
-## 12. Codex Handoff / Load Contract
+Consumption is defined by `package/load-contract.md`.
 
-Package consumption is owned by:
-
-```text
-docs/knowledge/reference-package-load-contract.md
-```
-
-Expected downstream behavior:
+Default downstream behavior:
 
 ```text
 REFERENCE.json
-→ identify active stage and readiness
-→ load only the active stage document
-→ inspect only image IDs referenced by that stage
+→ determine active stage/readiness
+→ load only active stage document when present
+→ inspect only image IDs relevant to that stage
 → work
 ```
 
-The package is self-contained. Codex should not need the original ChatGPT transcript or compiled prompt.
+The package must be self-contained; Codex should not need the original ChatGPT transcript or compiled prompt.
 
 ## 13. Authority Order
 
 ```text
 explicit current user requirement
 → approved visual reference
+→ confirmed scale requirement
 → REFERENCE.json structured facts
-→ generated stage Markdown projections
+→ active stage Markdown projection
 → downstream Codex interpretation
 ```
 
-The compiled brief organizes generation but is not a higher authority than approved user/reference facts.
+The compiled brief organizes generation but never outranks approved user/reference facts.
 
 ## 14. Stop Conditions
 
 Do not generate when:
-- a blocking requirement is missing;
-- materially conflicting sources are unresolved;
-- the final confirmation has not been approved;
-- package generation is pending explicit approval;
-- a correction would require guessing what must remain unchanged;
-- a requested reference would not materially help the downstream decision.
+- a blocking requirement is unresolved;
+- materially conflicting evidence remains unresolved;
+- required confirmation is pending;
+- a correction would require guessing what must be preserved;
+- the proposed artifact does not materially help the downstream decision.
 
 Do not hand off when:
-- package consistency checks fail;
-- referenced files/images are missing;
-- a blocking unknown contradicts a `READY` stage.
+- package consistency fails;
+- listed files/images are missing;
+- stage readiness contradicts relevant blocking unknowns;
+- scale authority conflicts internally.
 
 ## User Experience Goal
 
-The user should only need to:
+The user should normally only need to:
 
 ```text
 1. describe what they want
 2. answer a few simple questions when vital information is missing
-3. approve a concise final summary
-4. review generated reference when necessary
-5. approve package generation
-6. receive the completed handoff package for Codex
+3. approve a concise target summary
+4. review generated reference when needed
+5. authorize package creation
+6. receive the completed Codex handoff
 ```
 
-Prompt quality and package consistency are responsibilities of the ChatGPT-side system, not the user.
+Prompt quality, reference planning, package consistency, and technical terminology remain responsibilities of the ChatGPT-side system.
