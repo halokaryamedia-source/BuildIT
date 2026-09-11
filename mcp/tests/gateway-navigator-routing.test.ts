@@ -40,7 +40,7 @@ const status: GatewayRuntimeStatus = {
   last_error: null,
 };
 
-describe("BlockIT Navigator routing", () => {
+describe("LazyDesigner Control routing", () => {
   test("known capabilities expose deterministic source, specialist and test owners", async () => {
     expect(sourceOwnerForCapability("manage_cubes")).toEqual({
       source: "mcp/server/tools/cubes.ts",
@@ -85,19 +85,20 @@ describe("BlockIT Navigator routing", () => {
       ],
       "GEOMETRY"
     );
-    expect(result.navigation.source_owner.source).toBe("mcp/server/tools/cubes.ts");
-    expect(result.navigation.source_owner.specialist).toContain("blockbench-bedrock-modelling");
+    expect(result.control.source_owner.source).toBe("mcp/server/tools/cubes.ts");
+    expect(result.control.source_owner.specialist).toContain("blockbench-bedrock-modelling");
     expect(result).not.toHaveProperty("inputSchema");
   });
 
   test("stale hashes from a still-required context family are explicitly invalidated", async () => {
     const packet = await buildNavigatorPacket(status, {
-      knownContextIds: ["ctx:skill/blockit-bedrock-entity-mcp@deadbeef0000"],
+      knownContextIds: ["ctx:skill/modelling@deadbeef0000"],
     });
     expect(packet.context.invalidated_ids).toEqual([
-      "ctx:skill/blockit-bedrock-entity-mcp@deadbeef0000",
+      "ctx:skill/modelling@deadbeef0000",
     ]);
-    expect(packet.context.required.some((entry) => entry.id.startsWith("ctx:skill/blockit-bedrock-entity-mcp@"))).toBe(true);
+    expect(packet.context.required.some((entry) => entry.id.startsWith("ctx:skill/modelling@"))).toBe(true);
+    expect(packet.context.required.some((entry) => entry.path.includes("blockit-bedrock-entity-mcp"))).toBe(false);
   });
 
   test("unrelated historical context does not create false invalidation noise", async () => {
