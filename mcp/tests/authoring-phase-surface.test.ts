@@ -191,14 +191,14 @@ describe("authoring stage MCP surface", () => {
     expect(animation).toContain("shared AUTHORING surface");
   });
 
-  test("specialist routing uses shared Authoring corrections and current consolidated tools", async () => {
-    const [orchestrator, texturing, animation] = await Promise.all([
-      source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md"),
-      source("../.agents/skills/blockit-bedrock-texturing/SKILL.md"),
-      source("../.agents/skills/blockit-bedrock-animation/SKILL.md"),
+  test("canonical specialists use shared Authoring corrections and current consolidated tools", async () => {
+    const [modelling, texturing, animation] = await Promise.all([
+      source("../.agents/skills/lazydesigner-modelling/SKILL.md"),
+      source("../.agents/skills/lazydesigner-texturing/SKILL.md"),
+      source("../.agents/skills/lazydesigner-animation/SKILL.md"),
     ]);
 
-    for (const owner of [orchestrator, texturing, animation]) {
+    for (const owner of [modelling, texturing, animation]) {
       expect(owner).toContain(MCP_HANDOFF_REQUIRED);
       expect(owner).toContain("switch_authoring_phase");
       expect(owner).toContain("Gateway");
@@ -207,11 +207,12 @@ describe("authoring stage MCP surface", () => {
       expect(owner).not.toContain("reload BlockIT MCP");
     }
 
-    expect(orchestrator).toMatch(/Animation boundary\s+→ switch_authoring_phase/);
-    expect(orchestrator).toContain("Animation → Texturing APPROVED");
+    expect(modelling).toContain("Geometry↔Texturing stays shared AUTHORING");
+    expect(modelling).toContain("AUTHORING↔Animation");
     expect(texturing).toContain("No Geometry↔Texturing phase switch");
     expect(texturing).toContain("manage_material");
     expect(animation).toContain("manage_animation_timeline");
+    expect(animation).toContain("inspect_particle / manage_particle");
   });
 
   test("plugin setting is a startup focus while Gateway owns Animation boundary", async () => {
