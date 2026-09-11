@@ -5,9 +5,7 @@ description: ChatGPT-side specialist for creating Minecraft Bedrock/Snowstorm pa
 
 # LazyDesigner Particle Reference Authoring
 
-Standalone specialist inside the canonical Reference Preparation domain for particle/VFX tasks.
-
-It does not depend on the image/model reference branch.
+Standalone specialist inside the canonical Reference Preparation domain for particle/VFX tasks. It does not depend on the image/model reference branch.
 
 ## Route
 
@@ -25,113 +23,116 @@ USER PARTICLE REQUEST
 
 If the user requests only particle/VFX work, do not generate image/model references merely as an intermediate step.
 
-Use image-reference capability only when:
-- the user explicitly requests it; or
-- a missing visual fact materially blocks the particle design and cannot be resolved from current prompt/reference evidence.
-
-## Canonical Owners
+## Canonical owners
 
 ```text
-Particle entry/boundary
+entry/boundary
 → docs/02-reference/particle/README.md
 
-Knowledge navigation / evidence classes
+knowledge navigation / evidence classes
 → docs/02-reference/particle/knowledge-map.md
 
 Bedrock fundamentals
 → docs/02-reference/particle/fundamentals.md
 
-Emitter lifecycle / rates / shapes
+complete Bedrock particle component catalog
+→ docs/02-reference/particle/component-catalog.md
+
+lifecycle/evaluation/local-space timing
+→ docs/02-reference/particle/lifecycle-space.md
+
+emitter lifecycle/rates/shapes
 → docs/02-reference/particle/emitter.md
 
-Motion / collision / parametric paths
+motion/collision/parametric paths
 → docs/02-reference/particle/motion.md
 
-Appearance / rendering / atlas
+appearance/rendering/material/billboard
 → docs/02-reference/particle/appearance-rendering.md
 
-Particle Molang
+production PNG/RGBA/atlas/UV/flipbook textures
+→ docs/02-reference/particle/texture-authoring.md
+
+particle-specific Molang ownership
 → docs/02-reference/particle/molang.md
 
-Curves
+full Molang language/math/easing/formulas
+→ docs/02-reference/particle/molang-language-math.md
+
+curves
 → docs/02-reference/particle/curves.md
 
-Events / nested effects
+events/nested effects
 → docs/02-reference/particle/events.md
 
-Snowstorm / Wintersky compatibility
+Snowstorm/Wintersky compatibility
 → docs/02-reference/particle/snowstorm.md
 
-Performance reasoning
+performance reasoning
 → docs/02-reference/particle/performance.md
 
-Entity integration context
+entity integration context
 → docs/02-reference/particle/entity-integration.md
 
-Troubleshooting
+troubleshooting
 → docs/02-reference/particle/troubleshooting.md
 
-Intent normalization
+intent/workflow/QA/delivery/patterns
 → docs/02-reference/particle/authoring-spec.md
-
-Authoring sequence
 → docs/02-reference/particle/workflow.md
-
-Static/preflight QA
 → docs/02-reference/particle/qa.md
-
-Package contract
 → docs/02-reference/particle/delivery.md
-
-Reusable physical patterns
 → docs/02-reference/particle/patterns.md
-
-Parent reference routing
-→ docs/02-reference/flow.md
 ```
 
 Do not maintain parallel copies of these rules in this Skill.
 
-## Knowledge Loading Rule
+## Knowledge loading rule
 
 Do not preload the entire particle domain.
 
 ```text
-need component/document ownership
-→ fundamentals.md
+unknown component or schema family
+→ component-catalog.md
 
-need spawn rate/lifetime/shape
+spawn/lifetime/shape
 → emitter.md
 
-need trajectory/physics/collision
+creation/update/render or local/world-space question
+→ lifecycle-space.md
+
+trajectory/physics/collision
 → motion.md
 
-need material/billboard/UV/tint/atlas
+material/billboard/tint/rendering
 → appearance-rendering.md
 
-need expression/variable ownership
+texture/alpha/atlas/UV/flipbook
+→ texture-authoring.md
+
+particle variable ownership
 → molang.md
 
-need lifetime interpolation
+generic Molang syntax/math/easing/formula
+→ molang-language-math.md
+
+lifetime interpolation
 → curves.md
 
-need child/nested effect architecture
+child/nested architecture
 → events.md
 
-need editor-preview compatibility
+editor-preview compatibility
 → snowstorm.md
 
-need count/overdraw/cost guidance
+count/overdraw/cost guidance
 → performance.md
 
-need locator/entity attachment assumptions
+locator/entity attachment
 → entity-integration.md
 
-unclear symptom / causal owner
+unclear symptom
 → troubleshooting.md
-
-need physical design pattern
-→ patterns.md
 ```
 
 When a rule matters, preserve its evidence class:
@@ -162,9 +163,9 @@ It does not own:
 - animation/controller binding;
 - live Snowstorm/Minecraft visual truth;
 - FPS/device benchmarking;
-- full Molang runtime execution.
+- generic runtime claims unsupported by target evidence.
 
-## Input Rule
+## Input rule
 
 Particle authoring may start from any sufficient combination of:
 
@@ -178,7 +179,7 @@ existing Bedrock particle package
 
 A newly generated reference image is optional evidence, not a prerequisite.
 
-## Runtime Compatibility Rule
+## Runtime compatibility rule
 
 When Snowstorm/Wintersky preview fidelity matters and authored launch magnitude is important:
 
@@ -189,20 +190,52 @@ particle_initial_speed = scalar speed
 
 Treat Bedrock validity, Snowstorm compatibility, and visual approval as separate concerns.
 
-## Stable Ownership Rule
+## Stable ownership rule
 
 Keep emitter timing emitter-owned. Keep living-particle classes particle-owned using stable particle random/age/lifetime values. Do not use emitter-age thresholds to switch existing particles between motion, UV, size, or tint classes unless that instability is explicitly desired.
 
-## Quality Rule
+## Texture rule
+
+Texture is a first-class authored asset. When texture work is required, load `texture-authoring.md` and explicitly own:
+
+```text
+RGBA transparency
+material/blend target
+sprite bounds
+atlas cell mapping
+transparent gutter
+UV/flipbook mapping
+tint compatibility
+pixel-art filtering/style
+matte/halo cleanup
+```
+
+Do not pass presentation sheets or generated-background images directly as production particle textures.
+
+## Molang/math rule
+
+When expressions are non-trivial, use both layers correctly:
+
+```text
+particle ownership/stability decision
+→ molang.md
+
+language/operator/function/formula decision
+→ molang-language-math.md
+```
+
+Do not use random/frame math where stable per-particle state is required.
+
+## Quality rule
 
 Never package immediately after authoring. Follow the canonical QA sequence first. Static heuristics may warn about motion, keep-out overlap, readability, atlas hygiene, or particle count, but they never substitute for user visual review.
 
 Run only particle-relevant QA. Do not require image-reference QA when no image-reference artifact exists.
 
-## Delivery Rule
+## Delivery rule
 
 Deliver ordinary Bedrock Resource Pack files/folders or ZIP according to `delivery.md`. Do not create `.mcpack`, versioned scratch filenames, duplicate textures, image-reference packages, or internal QA debris unless explicitly requested.
 
-## Downstream Relationship
+## Downstream relationship
 
 Codex or MCP may consume the completed package later, but this Skill does not require MCP or the image-reference branch to create or validate the asset. The particle package is the handoff boundary.
