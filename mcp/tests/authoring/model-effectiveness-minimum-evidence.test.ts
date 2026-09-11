@@ -5,33 +5,40 @@ async function source(path: string): Promise<string> {
 }
 
 describe("model creation effectiveness — minimum necessary evidence", () => {
-  test("domain judgement owns evidence policy while router owns state reuse", async () => {
-    const orchestrator = await source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md");
-    const modelling = await source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md");
-    const workflow = await source("prompts/bedrock_entity_workflow.md");
+  test("domain judgement owns evidence policy while Control owns context/state reuse", async () => {
+    const [root, control, modelling, workflow] = await Promise.all([
+      source("../AGENTS.md"),
+      source("gateway/control/README.md"),
+      source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
+      source("prompts/bedrock_entity_workflow.md"),
+    ]);
 
     for (const text of [modelling, workflow]) {
       expect(text.toLowerCase()).toContain("minimum necessary evidence");
       expect(text.toLowerCase()).toContain("unverified");
     }
 
-    expect(orchestrator).toContain("State Reuse / Anti-Loop");
-    expect(orchestrator).toContain("Do not automatically re-read fresh mutation targets");
-    expect(orchestrator).not.toContain("FAIL / UNVERIFIED / PASS");
-    expect(orchestrator.toLowerCase()).not.toContain("difference-first");
+    expect(control).toContain("content-addressed");
+    expect(control).toContain("control_delta");
+    expect(root).toContain("Reuse unchanged `known_context_ids`");
+    expect(root).toContain("do not add reassurance reads or progress checks");
     expect(modelling).toContain("No per-Cube inspection ceremony");
     expect(modelling).toContain("No screenshot-per-mutation loop");
     expect(workflow).toContain("Do not inspect every Cube, capture after every mutation");
   });
 
   test("bounds, discovery, and uncertainty remain conditional rather than mandatory", async () => {
-    const orchestrator = await source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md");
-    const modelling = await source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md");
-    const workflow = await source("prompts/bedrock_entity_workflow.md");
+    const [root, policy, modelling, workflow] = await Promise.all([
+      source("../AGENTS.md"),
+      source("gateway/control/routingPolicy.ts"),
+      source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
+      source("prompts/bedrock_entity_workflow.md"),
+    ]);
 
-    expect(orchestrator).toContain("deferred spec loading after routing");
-    expect(orchestrator).toContain("diagnosed bounded surface/contact integrity question");
-    expect(orchestrator).toContain("bounded surface/contact review");
+    expect(root).toContain("Search is fallback for unknown/stale capability identity");
+    expect(root).toContain("describe is fallback for real schema uncertainty");
+    expect(policy).toContain('known_capability: "INVOKE_CAPABILITY"');
+    expect(policy).toContain('stale_or_lost_context: "STATUS"');
     expect(modelling).toContain("reuse fresh evidence");
     expect(workflow).toContain("`UNVERIFIED` is not a retry command");
   });
