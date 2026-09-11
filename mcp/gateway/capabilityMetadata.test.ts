@@ -28,4 +28,21 @@ describe("canonical capability metadata", () => {
 
     expect(results[0]?.capability_id).toBe("manage_animation_controller");
   });
+
+  test("declares affinity changes instead of teaching Gateway tool names", () => {
+    const project = getCapabilityMetadata("create_project").effects;
+    expect(project.projectAffinity).toBe("adopt_created_project");
+    expect(project.phaseAffinity).toBe("preserve");
+    expect(project.invalidateCatalog).toBe(true);
+
+    const phase = getCapabilityMetadata("switch_authoring_phase").effects;
+    expect(phase.projectAffinity).toBe("preserve");
+    expect(phase.phaseAffinity).toBe("update_from_result");
+    expect(phase.invalidateCatalog).toBe(true);
+
+    const ordinary = getCapabilityMetadata("manage_cubes").effects;
+    expect(ordinary.projectAffinity).toBe("preserve");
+    expect(ordinary.phaseAffinity).toBe("preserve");
+    expect(ordinary.invalidateCatalog).toBe(false);
+  });
 });
