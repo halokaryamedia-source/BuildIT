@@ -8,7 +8,7 @@ async function source(path: string): Promise<string> {
 describe("model creation effectiveness — semantic form, rotation, pivot and contact", () => {
   test("semantic/construction reasoning exists before exact Cube coordinates", async () => {
     const [modelling, geometry] = await Promise.all([
-      source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
+      source("../.agents/skills/lazydesigner-modelling/SKILL.md"),
       source("../docs/03-authoring/modelling/standard.md"),
     ]);
 
@@ -26,7 +26,7 @@ describe("model creation effectiveness — semantic form, rotation, pivot and co
   });
 
   test("native Geometry stays quality-first without per-Cube planning or five-view capture ceremony", async () => {
-    const modelling = await source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md");
+    const modelling = await source("../.agents/skills/lazydesigner-modelling/SKILL.md");
 
     for (const term of [
       "Geometry Hot Path",
@@ -47,9 +47,9 @@ describe("model creation effectiveness — semantic form, rotation, pivot and co
 
   test("small-detail budget stays texture-first while alpha carriers avoid micro-Cubes", async () => {
     const [modelling, geometry, texturing, textureStandard] = await Promise.all([
-      source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
+      source("../.agents/skills/lazydesigner-modelling/SKILL.md"),
       source("../docs/03-authoring/modelling/standard.md"),
-      source("../.agents/skills/blockit-bedrock-texturing/SKILL.md"),
+      source("../.agents/skills/lazydesigner-texturing/SKILL.md"),
       source("../docs/03-authoring/texture/standard.md"),
     ]);
 
@@ -75,7 +75,7 @@ describe("model creation effectiveness — semantic form, rotation, pivot and co
 
   test("rotation is an explicit modelling decision instead of zero-rotation default bias", async () => {
     const [modelling, geometry] = await Promise.all([
-      source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
+      source("../.agents/skills/lazydesigner-modelling/SKILL.md"),
       source("../docs/03-authoring/modelling/standard.md"),
     ]);
 
@@ -92,7 +92,7 @@ describe("model creation effectiveness — semantic form, rotation, pivot and co
 
   test("pivot and contact preserve declared relationships instead of technical touching", async () => {
     const [modelling, geometry] = await Promise.all([
-      source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
+      source("../.agents/skills/lazydesigner-modelling/SKILL.md"),
       source("../docs/03-authoring/modelling/standard.md"),
     ]);
 
