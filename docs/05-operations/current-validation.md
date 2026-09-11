@@ -55,6 +55,8 @@ control_delta continuation
 effect-aware bounded invalidation with conservative fallback
 single phase classification owner in mcp/lib/authoringPhase.ts
 bounded search/describe without metadata-only status rereads
+summary-only top-level Workspace/Reference output
+self-contained active-stage detail in stage_context
 ```
 
 Accurate boundary:
@@ -63,6 +65,7 @@ Accurate boundary:
 CONTROL SEMANTIC CONTRACT: IMPLEMENTED IN CURRENT SOURCE
 CONTROL PHYSICAL NAVIGATOR→CONTROL MIGRATION: COMPLETE IN SOURCE
 LEGACY ASSET ROUTER SKILL: REMOVED IN SOURCE
+CONTROL PACKET COMPACTION: IMPLEMENTED IN SOURCE
 CONTROL SOURCE EXECUTION PROOF: NOT RUN IN THIS PHASE
 CONTROL LIVE PROOF: NOT ESTABLISHED
 LAZYDESIGNER INSTALLED PROOF: NOT ESTABLISHED
@@ -102,7 +105,9 @@ Current source expresses:
 
 ```text
 REFERENCE.json → compact typed Control projection
-active stage → one stage context
+active stage → one self-contained stage_context
+workspace top-level → availability/fingerprint/asset summary only
+reference top-level → availability/fingerprint/asset/profile summary only
 Geometry → Modelling Skill + exactly one selected profile when known
 Texturing → Texturing Skill only by default
 Animation → Animation Skill only by default
@@ -111,6 +116,8 @@ SYSTEM_DEVELOPMENT → bounded source/specialist/test projection
 search/describe → no second getStatus() call for decorative metadata
 legacy asset-router Skill → absent
 ```
+
+Full Workspace/Reference projections still exist internally for lifecycle/readiness/context identity; source compaction removes duplicated emitted detail rather than weakening decisions.
 
 Static regressions/measurement owners include:
 
@@ -154,7 +161,7 @@ A visual/reference `PASS` requires the actual approved reference image plus fres
 
 ## Authoring Efficiency
 
-Authoring Efficiency means **Cost to Accepted Result**. Current source aims to reduce repeated context delivery, broad discovery, duplicate routing knowledge, status/readback chatter, phase bouncing and stale-context recovery. Removing the router Skill also removes one mandatory authoring context layer. Whole-task savings remain **UNKNOWN** until comparable accepted work is measured.
+Authoring Efficiency means **Cost to Accepted Result**. Current source aims to reduce repeated context delivery, broad discovery, duplicate routing knowledge, status/readback chatter, phase bouncing and stale-context recovery. Removing the router Skill removes one mandatory authoring context layer; packet compaction removes repeated Workspace/Reference output detail. Whole-task savings remain **UNKNOWN** until comparable accepted work is measured.
 
 ## Current Proof Ceiling
 
@@ -171,6 +178,7 @@ stage-specific + lifecycle readiness projection: implemented in source
 canonical phase classification sharing: implemented in source
 effect-aware invalidation: implemented with conservative fallback
 metadata-only search/describe status rereads: removed in source
+top-level Workspace/Reference duplicate detail: compacted in source
 compatibility-bound BlockIT identifiers: intentionally pending dependency-mapped migration
 generated-output freshness: pending local generator proof
 Bun/typecheck/test execution for current source: not run in this phase
