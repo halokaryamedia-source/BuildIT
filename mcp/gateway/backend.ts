@@ -7,7 +7,6 @@ import { ErrorCode, McpError } from "@modelcontextprotocol/sdk/types.js";
 import {
   BLOCKIT_AUTHORING_PHASE_AFFINITY_HEADER,
   BLOCKIT_PROJECT_AFFINITY_HEADER,
-  normalizeAuthoringPhaseAffinity,
   readRuntimeAuthoringPhase,
   readRuntimeProjectHealth,
   type BlockitAuthoringPhaseAffinity,
@@ -24,6 +23,8 @@ import {
   type JsonRecord,
 } from "./contract";
 import { GatewayConnectionManager } from "./connectionManager";
+import { resolveGatewayCapabilityEffects } from "./capabilityEffects";
+import { getCapabilityMetadata } from "../lib/capabilityMetadata";
 
 export type GatewayBackendErrorCode =
   | "BACKEND_UNAVAILABLE"
@@ -137,10 +138,10 @@ function normalizeRuntimeCallResult(result: unknown): GatewayRuntimeCallResult {
 }
 
 function normalizeGatewayManagedResult(
-  capability: string,
+  phaseAffinityUpdated: boolean,
   result: GatewayRuntimeCallResult
 ): GatewayRuntimeCallResult {
-  if (capability !== "switch_authoring_phase" || result.isError === true) {
+  if (!phaseAffinityUpdated || result.isError === true) {
     return result;
   }
 
@@ -717,7 +718,9 @@ export class BlockitRuntimeBackend {
     args: JsonRecord = {}
   ): Promise<GatewayRuntimeCallResult> {
     return this.runExclusive(async () => {
-      const projectTransition = capability === "create_project";
+      const capabilityMetadata = getCapabilityMetadata(capability);
+      const projectTransition =
+        capabilityMetadata.effects.projectAffinity === "adopt_created_project";
       await this.ensureCatalogUnsafe(!projectTransition, projectTransition);
       const tool = this.catalog.get(capability);
       if (!tool) {
@@ -740,62 +743,54 @@ export class BlockitRuntimeBackend {
         );
         const normalized = normalizeRuntimeCallResult(result);
         let managed = normalized;
+        const application = resolveGatewayCapabilityEffects(
+          capability,
+          normalized.structuredContent,
+          this.authoringPhase
+        );
+        let affinityChanged = false;
 
-        if (capability === "create_project" && normalized.isError !== true) {
-          const structured = isRecord(normalized.structuredContent)
-            ? normalized.structuredContent
-            : null;
-          const project = structured && isRecord(structured.project)
-            ? structured.project
-            : null;
-          const createdUuid = project && typeof project.uuid === "string"
-            ? project.uuid.trim()
-            : "";
-          if (createdUuid) {
-            this.projectUuid = createdUuid;
-            await this.closeConnectionUnsafe();
-          }
-        } else if (
-          capability === "switch_authoring_phase" &&
-          normalized.isError !== true
-        ) {
-          const structured = isRecord(normalized.structuredContent)
-            ? normalized.structuredContent
-            : null;
-          let nextPhase: BlockitAuthoringPhaseAffinity | null = null;
-          try {
-            nextPhase = normalizeAuthoringPhaseAffinity(structured?.phase);
-          } catch {
-            nextPhase = null;
-          }
-          if (!nextPhase) {
-            await this.closeConnectionUnsafe();
-            this.connection.markDegraded();
-            throw new GatewayBackendError(
-              "BACKEND_UNAVAILABLE",
-              "LazyDesigner Runtime returned an invalid authoring phase handoff receipt.",
-              false
-            );
+        if (normalized.isError !== true) {
+          if (application.projectUuid) {
+            this.projectUuid = application.projectUuid;
+            affinityChanged = true;
           }
 
-          const previousPhase = this.authoringPhase;
-          this.authoringPhase = nextPhase;
-          managed = {
-            ...normalized,
-            structuredContent: {
-              ...(structured ?? {}),
-              phase: nextPhase,
-              surface_changed:
-                previousPhase === null
-                  ? structured?.surface_changed === true
-                  : (previousPhase === "animation") !==
-                    (nextPhase === "animation"),
-            },
-          };
-          await this.closeConnectionUnsafe();
+          const phaseAffinityUpdated =
+            application.effects.phaseAffinity === "update_from_result";
+          if (phaseAffinityUpdated) {
+            if (!application.authoringPhase) {
+              await this.closeConnectionUnsafe();
+              this.connection.markDegraded();
+              throw new GatewayBackendError(
+                "BACKEND_UNAVAILABLE",
+                "LazyDesigner Runtime returned an invalid authoring phase handoff receipt.",
+                false
+              );
+            }
+
+            this.authoringPhase = application.authoringPhase;
+            affinityChanged = true;
+            managed = {
+              ...normalized,
+              structuredContent: {
+                ...(isRecord(normalized.structuredContent)
+                  ? normalized.structuredContent
+                  : {}),
+                phase: application.authoringPhase,
+                surface_changed: application.surfaceChanged === true,
+              },
+            };
+          }
+
+          if (application.effects.invalidateCatalog || affinityChanged) {
+            await this.closeConnectionUnsafe();
+          }
+
+          return normalizeGatewayManagedResult(phaseAffinityUpdated, managed);
         }
 
-        return normalizeGatewayManagedResult(capability, managed);
+        return managed;
       } catch (error) {
         const message = errorMessage(error);
         if (isRuntimeProjectContextError(error)) {
