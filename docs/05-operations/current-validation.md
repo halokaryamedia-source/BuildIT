@@ -10,7 +10,7 @@ Current product name is **LazyDesigner**. Historical executable/runtime evidence
 
 The last user-identified local executable baseline remains BlockIT MCP `v0.2.0` at commit `b6c29c5d9edb7bb5058c42bbce123efe9dc02ed8`. That prior native evidence must not be relabeled as proof that current LazyDesigner source is installed or active.
 
-Current user-facing/source documentation identity is LazyDesigner. Compatibility-bound identifiers such as package/server/plugin IDs, bundle filename, `BLOCKIT_*` environment variables, `x-blockit-*` affinity headers, persisted setting IDs and legacy Skill paths are intentionally not bulk-renamed.
+Current user-facing/source documentation identity is LazyDesigner. Compatibility-bound identifiers such as package/server/plugin IDs, bundle filename, `BLOCKIT_*` environment variables, `x-blockit-*` affinity headers and persisted setting IDs are intentionally not bulk-renamed.
 
 ## Current Source Architecture State
 
@@ -19,6 +19,7 @@ ChatGPT Reference Preparation
 → Reference Package
 → LazyDesigner Control
 → Codex
+→ active specialist
 → Gateway
 → Runtime
 → Blockbench
@@ -30,7 +31,9 @@ Canonical Control source:
 mcp/gateway/control/
 ```
 
-Former active `mcp/gateway/navigator/` source path is removed. Current Control protocol:
+Former active `mcp/gateway/navigator/` source path is removed. The migration-only `.agents/skills/blockit-bedrock-entity-mcp/SKILL.md` asset-router Skill is also removed; active routing now uses Control + exactly one stage specialist.
+
+Current Control protocol:
 
 ```text
 lazydesigner-control-v1
@@ -59,6 +62,7 @@ Accurate boundary:
 ```text
 CONTROL SEMANTIC CONTRACT: IMPLEMENTED IN CURRENT SOURCE
 CONTROL PHYSICAL NAVIGATOR→CONTROL MIGRATION: COMPLETE IN SOURCE
+LEGACY ASSET ROUTER SKILL: REMOVED IN SOURCE
 CONTROL SOURCE EXECUTION PROOF: NOT RUN IN THIS PHASE
 CONTROL LIVE PROOF: NOT ESTABLISHED
 LAZYDESIGNER INSTALLED PROOF: NOT ESTABLISHED
@@ -105,12 +109,15 @@ Animation → Animation Skill only by default
 known_context_ids → unchanged context reuse by SHA-256 identity
 SYSTEM_DEVELOPMENT → bounded source/specialist/test projection
 search/describe → no second getStatus() call for decorative metadata
+legacy asset-router Skill → absent
 ```
 
 Static regressions/measurement owners include:
 
 ```text
 mcp/tests/gateway-control-*.test.ts
+mcp/tests/authoring/*
+mcp/tests/repository/*
 mcp/scripts/measure-control-context.ts
 ```
 
@@ -147,7 +154,7 @@ A visual/reference `PASS` requires the actual approved reference image plus fres
 
 ## Authoring Efficiency
 
-Authoring Efficiency means **Cost to Accepted Result**. Current source aims to reduce repeated context delivery, broad discovery, duplicate routing knowledge, status/readback chatter, phase bouncing and stale-context recovery. Whole-task savings remain **UNKNOWN** until comparable accepted work is measured.
+Authoring Efficiency means **Cost to Accepted Result**. Current source aims to reduce repeated context delivery, broad discovery, duplicate routing knowledge, status/readback chatter, phase bouncing and stale-context recovery. Removing the router Skill also removes one mandatory authoring context layer. Whole-task savings remain **UNKNOWN** until comparable accepted work is measured.
 
 ## Current Proof Ceiling
 
@@ -159,6 +166,7 @@ AI-first docs hierarchy: implemented
 Reference Package + Control parser: implemented in source
 Control semantic protocol + canonical source path: implemented
 Navigator active source path: removed
+legacy asset-router Skill: removed
 stage-specific + lifecycle readiness projection: implemented in source
 canonical phase classification sharing: implemented in source
 effect-aware invalidation: implemented with conservative fallback
