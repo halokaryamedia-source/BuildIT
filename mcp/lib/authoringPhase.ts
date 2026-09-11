@@ -99,6 +99,8 @@ const ANIMATION_NAMED_CAPABILITIES = new Set([
   "manage_animation_timeline",
   "manage_animation_effects",
   "manage_animation_controller",
+  "inspect_particle",
+  "manage_particle",
 ]);
 
 export function classifyMcpToolPhaseByName(
