@@ -26,9 +26,14 @@ describe("LazyDesigner Control routing", () => {
       test_owner: "mcp/tests/model-effectiveness-correction-accuracy.test.ts",
     });
     expect(sourceOwnerForCapability("paint_with_brush").source).toBe("mcp/server/tools/paint.ts");
+    expect(sourceOwnerForCapability("manage_render_profile")).toEqual({
+      source: "mcp/server/tools/render-profile.ts",
+      specialist: ".agents/skills/lazydesigner-texturing/SKILL.md",
+      test_owner: "mcp/tests/render-profile-binding.test.ts",
+    });
     expect(sourceOwnerForCapability("manage_animation_controller").source).toBe("mcp/server/tools/animation-controller.ts");
 
-    for (const capability of ["manage_cubes", "paint_with_brush", "manage_animation_controller", "switch_authoring_phase"]) {
+    for (const capability of ["manage_cubes", "paint_with_brush", "manage_render_profile", "manage_animation_controller", "switch_authoring_phase"]) {
       const owner = sourceOwnerForCapability(capability);
       expect(await Bun.file(new URL(`../../${owner.source}`, import.meta.url)).exists(), owner.source).toBe(true);
       if (owner.specialist) expect(await Bun.file(new URL(`../../${owner.specialist}`, import.meta.url)).exists(), owner.specialist).toBe(true);
