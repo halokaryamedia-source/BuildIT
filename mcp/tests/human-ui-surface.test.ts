@@ -50,7 +50,21 @@ describe("human-facing Blockbench UI", () => {
     expect(plugin).toContain('repository: ""');
     expect(plugin).toContain('bug_tracker: ""');
 
+    expect(plugin).not.toContain("@author");
+    expect(plugin).not.toContain("@discord");
+    expect(plugin).not.toContain("@github");
     expect(plugin).not.toContain("compatibility surface switched");
     expect(plugin).not.toContain("MCP phase switched");
+  });
+
+  test("rare manual settings are clearly marked advanced or developer-only", async () => {
+    const settings = await source("ui/settings.ts");
+
+    expect(settings).toContain("Connection Port (Advanced)");
+    expect(settings).toContain("Connection Path (Advanced)");
+    expect(settings).toContain("Startup Focus (Advanced)");
+    expect(settings).toContain("Legacy Compatibility (Developer)");
+    expect(settings).toContain("Leave this at the default for normal use.");
+    expect(settings).toContain("Leave this off for normal use.");
   });
 });
