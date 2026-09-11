@@ -25,13 +25,9 @@ ChatGPT Reference Preparation
 → Blockbench
 ```
 
-Canonical Control source:
+Canonical Control source: `mcp/gateway/control/`.
 
-```text
-mcp/gateway/control/
-```
-
-Canonical ASSET_AUTHORING specialist identities:
+Canonical ASSET_AUTHORING Skills:
 
 ```text
 .agents/skills/lazydesigner-modelling/SKILL.md
@@ -39,7 +35,15 @@ Canonical ASSET_AUTHORING specialist identities:
 .agents/skills/lazydesigner-animation/SKILL.md
 ```
 
-Removed legacy authoring paths:
+Canonical PRODUCT_DEVELOPMENT Skills:
+
+```text
+.agents/skills/lazydesigner-mcp-development/SKILL.md
+.agents/skills/lazydesigner-blockbench-development/SKILL.md
+.agents/skills/lazydesigner-development-brief/SKILL.md
+```
+
+Removed legacy routing/specialist paths include:
 
 ```text
 mcp/gateway/navigator/
@@ -47,13 +51,12 @@ mcp/gateway/navigator/
 .agents/skills/blockbench-bedrock-modelling/SKILL.md
 .agents/skills/blockit-bedrock-texturing/SKILL.md
 .agents/skills/blockit-bedrock-animation/SKILL.md
+.agents/skills/mcp-server-development/SKILL.md
+.agents/skills/blockbench-runtime-development/SKILL.md
+.agents/skills/development-brief/SKILL.md
 ```
 
-Current Control protocol:
-
-```text
-lazydesigner-control-v1
-```
+Current Control protocol: `lazydesigner-control-v1`.
 
 Current source expresses:
 
@@ -82,6 +85,7 @@ CONTROL SEMANTIC CONTRACT: IMPLEMENTED IN CURRENT SOURCE
 CONTROL PHYSICAL NAVIGATOR→CONTROL MIGRATION: COMPLETE IN SOURCE
 LEGACY ASSET ROUTER SKILL: REMOVED IN SOURCE
 ASSET_AUTHORING SPECIALIST NAMING MIGRATION: COMPLETE IN SOURCE
+PRODUCT_DEVELOPMENT SKILL NAMING MIGRATION: COMPLETE IN SOURCE
 CONTROL PACKET COMPACTION: IMPLEMENTED IN SOURCE
 SOURCE EXECUTION PROOF: NOT RUN IN THIS PHASE
 CONTROL LIVE PROOF: NOT ESTABLISHED
@@ -119,7 +123,7 @@ Animation → lazydesigner-animation only by default
 known_context_ids → unchanged context reuse by SHA-256 identity
 SYSTEM_DEVELOPMENT → bounded source/specialist/test projection
 search/describe → no second getStatus() call for decorative metadata
-legacy router / specialist aliases → absent
+legacy routing/specialist aliases → absent
 ```
 
 Full Workspace/Reference projections still exist internally for lifecycle/readiness/context identity; source compaction removes duplicated emitted detail rather than weakening decisions.
@@ -166,7 +170,7 @@ A visual/reference `PASS` requires the actual approved reference image plus fres
 
 ## Authoring Efficiency
 
-Authoring Efficiency means **Cost to Accepted Result**. Current source aims to reduce repeated context delivery, broad discovery, duplicate routing knowledge, status/readback chatter, phase bouncing and stale-context recovery. Removing the router Skill and old specialist aliases reduces mandatory context/routing ambiguity; packet compaction removes repeated Workspace/Reference output detail. Whole-task savings remain **UNKNOWN** until comparable accepted work is measured.
+Authoring Efficiency means **Cost to Accepted Result**. Current source aims to reduce repeated context delivery, broad discovery, duplicate routing knowledge, status/readback chatter, phase bouncing and stale-context recovery. Removing router/legacy Skill aliases reduces mandatory context ambiguity; packet compaction removes repeated Workspace/Reference output detail. Whole-task savings remain **UNKNOWN** until comparable accepted work is measured.
 
 ## Current Proof Ceiling
 
@@ -180,7 +184,8 @@ Control semantic protocol + canonical source path: implemented
 Navigator active source path: removed
 legacy asset-router Skill: removed
 canonical lazydesigner-* ASSET_AUTHORING specialists: implemented in source
-legacy modelling/texturing/animation Skill paths: removed
+canonical lazydesigner-* PRODUCT_DEVELOPMENT specialists: implemented in source
+legacy authoring/development Skill paths: removed
 stage-specific + lifecycle readiness projection: implemented in source
 canonical phase classification sharing: implemented in source
 effect-aware invalidation: implemented with conservative fallback
