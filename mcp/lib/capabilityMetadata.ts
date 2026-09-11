@@ -36,8 +36,6 @@ const PRIMARY_CAPABILITIES = new Set([
   "create_texture",
   "list_textures",
   "get_texture",
-  "activate_texture",
-  "apply_texture",
   "paint_fill_tool",
   "draw_shape_tool",
   "paint_with_brush",
