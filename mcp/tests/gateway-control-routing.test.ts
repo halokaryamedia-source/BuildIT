@@ -22,7 +22,7 @@ describe("LazyDesigner Control routing", () => {
   test("known capabilities expose deterministic source, specialist and test owners", async () => {
     expect(sourceOwnerForCapability("manage_cubes")).toEqual({
       source: "mcp/server/tools/cubes.ts",
-      specialist: ".agents/skills/blockbench-bedrock-modelling/SKILL.md",
+      specialist: ".agents/skills/lazydesigner-modelling/SKILL.md",
       test_owner: "mcp/tests/model-effectiveness-correction-accuracy.test.ts",
     });
     expect(sourceOwnerForCapability("paint_with_brush").source).toBe("mcp/server/tools/paint.ts");
@@ -41,7 +41,7 @@ describe("LazyDesigner Control routing", () => {
       { capability_id: "manage_cubes", description: "Create or update Bedrock cubes.", tier: "primary", read_only: false, destructive: true, idempotent: false },
     ], "GEOMETRY");
     expect(result.control.source_owner.source).toBe("mcp/server/tools/cubes.ts");
-    expect(result.control.source_owner.specialist).toContain("blockbench-bedrock-modelling");
+    expect(result.control.source_owner.specialist).toContain("lazydesigner-modelling");
     expect(result).not.toHaveProperty("inputSchema");
   });
 
