@@ -25,11 +25,13 @@ LazyDesigner Control source implementation is active. Documentation/Reference ar
 ✓ metadata-only search/describe status rereads removed
 ✓ gateway-control-* regressions + measure:control
 ✓ MCP presentation docs use LazyDesigner identity
+✓ migration-only blockit-bedrock-entity-mcp router Skill retired and removed
+✓ root/workspace/test/CI routing moved to Control + active specialist
 ```
 
 ## Lifecycle Readiness
 
-Persisted Workspace gates now bound legal stage continuation:
+Persisted Workspace gates bound legal stage continuation:
 
 ```text
 GEOMETRY
@@ -61,24 +63,27 @@ GATEWAY_NAME blockit-gateway
 BLOCKIT_* environment variables
 x-blockit-* affinity headers
 persisted setting IDs
-legacy blockit-* Skill package paths
 build/provenance identities coupled to the above
 ```
+
+Still-active specialist Skill folders using legacy names are migration debt, but they are not compatibility aliases for the retired router.
 
 ## Immediate Next Source Work
 
 ```text
-1. map active compatibility-bound BlockIT identifiers to exact producers/consumers
-2. migrate only bounded internal symbols and user-facing Runtime messages that cannot break compatibility
-3. retire migration-only blockit-bedrock-entity-mcp Skill after all active references are explicitly migrated
-4. audit Control packet/result payload for any remaining redundant fields/context
-5. regenerate generated artifacts only when LOCAL_CODE/generator execution is reactivated
-6. run local/live acceptance only when explicitly reactivated
+1. add/maintain guard: retired blockit-bedrock-entity-mcp Skill must stay absent from active authority/test/CI routing
+2. map active compatibility-bound BlockIT identifiers to exact producers/consumers
+3. migrate only bounded internal symbols and user-facing Runtime messages that cannot break compatibility
+4. plan atomic rename of remaining legacy specialist Skill folders/frontmatter after every direct consumer is mapped
+5. audit Control packet/result payload for remaining redundant fields/context
+6. regenerate generated artifacts only when LOCAL_CODE/generator execution is reactivated
+7. run local/live acceptance only when explicitly reactivated
 ```
 
 ## Stop Rules
 
 - No Navigator compatibility alias or second Control path.
+- No replacement asset-router Skill after router retirement.
 - No second persistent state DB inside Control.
 - No duplicate capability-domain table outside `mcp/lib/authoringPhase.ts`.
 - No all-profile/all-stage loading as reassurance.
