@@ -11,6 +11,7 @@ User-authorized autonomy replaces approval waits with verified checkpoints; neve
 
 - `Local` is working authority; `main` changes only on explicit user request.
 - Material GitHub work follows `GITHUB_RULES.md`.
+- Canonical documentation starts at `docs/README.md`; select one domain before loading deeper docs.
 
 ## Execution Context Gate
 
@@ -28,7 +29,7 @@ A marker is intent, not proof. Without a marker, choose the lowest sufficient pr
 ```text
 REMOTE_GITHUB   = GitHub repository + CI; no local worktree/Bun/installed Blockbench
 LOCAL_CODE      = local checkout + Bun/tests/build/generators/filesystem
-LIVE_BLOCKBENCH = LOCAL_CODE + deployed BlockIT + functioning Gateway/runtime connection
+LIVE_BLOCKBENCH = LOCAL_CODE + deployed LazyDesigner runtime + functioning Gateway/runtime connection
 ```
 
 Proof ceiling follows actual context; exact-commit source acceptance follows `GITHUB_RULES.md`.
@@ -48,7 +49,7 @@ For read-only `amati`, inspect, audit, or recovery:
 ```text
 AGENTS.md → GITHUB_RULES.md Core Rules
 → smallest owner/evidence that can answer the question
-→ CONTEXT.md / next-action only when prior state is material
+→ CONTEXT.md / docs/05-operations/next-action.md only when prior state is material
 → report → STOP
 ```
 
@@ -100,13 +101,13 @@ Use `.agents/skills/development-brief/SKILL.md` only when architecture, cross-ow
 
 ### Reference Preparation
 
-Image/reference generation belongs in **ChatGPT** using `.agents/skills/blockbench-reference-generator/SKILL.md`. Codex authoring consumes the actual user-approved reference image; it does not recreate the reference workflow.
+Image/reference generation belongs in **ChatGPT** using `.agents/skills/blockbench-reference-generator/SKILL.md`. Codex authoring consumes the actual user-approved reference package; it does not recreate the reference workflow.
 
-An actual source image is an Approved Reference unless marked draft/not ready; do not force board generation when the supplied evidence is sufficient. A canonical five-view board remains an optional stronger-coverage reference for complex/asymmetric assets.
+Use `docs/02-reference/README.md` as the Reference domain index. Generate only minimum useful visual evidence. Sheet 01 is the identity/scale anchor; Sheet 02+ exists only for real information overflow. Do not force fixed turnaround boards or extra views when they do not reduce downstream uncertainty.
 
 ### Asset Authoring
 
-Before any BlockIT Bedrock Entity authoring mutation:
+Before any LazyDesigner Bedrock Entity authoring mutation:
 
 ```text
 current AGENTS.md
@@ -138,11 +139,11 @@ approved image + explicit asset requirements
 → minimum evidence that can change the verdict
 ```
 
-Geometry uses the single native BlockIT authoring path. AUTHORING↔Animation handoff uses Gateway `switch_authoring_phase` in the same task; Geometry↔Texturing correction stays in AUTHORING.
+Geometry uses the single native LazyDesigner authoring path. AUTHORING↔Animation handoff uses Gateway `switch_authoring_phase` in the same task; Geometry↔Texturing correction stays in AUTHORING.
 
-For normal asset authoring, do not automatically load repository continuation/history/foundation docs, scan source/tests/CI, or run development verifiers. Asset authoring is not software **Development**; do not route it through `development-brief` unless repository/plugin behavior changes.
+For normal asset authoring, do not automatically load repository continuation/history/all docs, scan source/tests/CI, or run development verifiers. Asset authoring is not software **Development**; do not route it through `development-brief` unless repository/plugin behavior changes.
 
-At `FINALIZATION`, load only `docs/foundation/09-finalization-standard.md`; do not load it during earlier authoring stages.
+At `FINALIZATION`, load only `docs/03-authoring/finalization/standard.md`; do not load it during earlier authoring stages.
 
 ## GitHub Work
 
@@ -150,7 +151,7 @@ At `FINALIZATION`, load only `docs/foundation/09-finalization-standard.md`; do n
 
 ## Source Precedence
 
-current user → current source/proof → nearest `AGENTS.md` → required specialist → foundation/continuity only when material → history.
+current user → current source/proof → nearest `AGENTS.md` → required specialist → selected canonical doc owner under `docs/` → operational continuity only when material → history.
 
 ## Work Discipline
 
@@ -170,10 +171,21 @@ UNKNOWN
 
 ## Product Boundary
 
-BlockIT authors Bedrock visual assets, not Minecraft add-on development. `bedrock` remains default; `mcp/AGENTS.md` owns `mcp/**`.
+LazyDesigner authors Bedrock visual assets, not Minecraft add-on development. `bedrock` remains default; `mcp/AGENTS.md` owns `mcp/**`.
 
 ## Canonical Owners
 
-GitHub → `GITHUB_RULES.md`; flow → `docs/knowledge/flow.md`; continuation → `docs/knowledge/next-action.md`; assets → `workspace/active/<project>/README.md`; facts → `CONTEXT.md`; ownership → `docs/knowledge/implementation-map.md`; proof → `docs/knowledge/current-validation.md`; policy → `docs/foundation/`; research → `Experimental/`.
+```text
+documentation entry point → docs/README.md
+product/flow              → docs/01-product/
+reference preparation     → docs/02-reference/
+asset authoring           → docs/03-authoring/
+system/ownership          → docs/04-system/
+current operations        → docs/05-operations/
+asset continuity          → workspace/active/<project>/README.md
+stable project facts      → CONTEXT.md
+GitHub execution          → GITHUB_RULES.md
+research                  → Experimental/
+```
 
 Do not create duplicate navigation, review archives, decision logs, roadmaps, or parallel state systems.
