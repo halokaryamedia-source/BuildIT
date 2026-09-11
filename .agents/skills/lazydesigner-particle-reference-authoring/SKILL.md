@@ -15,11 +15,12 @@ USER PARTICLE REQUEST
 → classify execution once
 → select minimal physical pattern from patterns.md
 → choose lowest viable complexity tier
+→ resolve one output identity
 → workflow.md
 → load minimum knowledge bundle
 → author JSON + textures
 → relevant qa.md gates only
-→ delivery.md
+→ deterministic delivery.md assembly
 → USER REVIEW IN TARGET ENVIRONMENT
 → optional Codex / MCP handoff
 ```
@@ -59,6 +60,31 @@ DIRECT
 ```
 
 not multi-emitter/event architecture by default.
+
+## Output-identity rule
+
+Resolve one naming source before files are authored:
+
+```text
+namespace
+package_slug
+effect_slug
+root identifier
+child role slugs, if any
+texture basename/shared texture mapping
+standalone Resource Pack vs downstream handoff
+```
+
+Use lowercase snake_case by default unless an existing project convention overrides it.
+
+One normalized slug drives:
+- particle filename;
+- identifier suffix;
+- texture basename where applicable;
+- README references;
+- optional `REFERENCE.json` paths.
+
+Do not invent independent names during packaging. Child suffixes describe physical role (`_debris`, `_plume`, `_flash`), never revision history.
 
 ## Automatic physical-pattern rule
 
@@ -263,13 +289,56 @@ After a targeted revision, rerun the causal QA gate plus package-integrity check
 
 Static QA does not replace target-environment review.
 
+## Deterministic delivery rule
+
+Load `delivery.md` only when resource identity/graph is stable.
+
+For standalone delivery:
+
+```text
+manifest.json
+particles/*.particle.json
+textures/particle/*.png when custom textures exist
+README.md
+```
+
+Only include required production files.
+
+Packaging must preserve:
+- one explicit root identifier;
+- exact child-effect references;
+- exact texture-reference ↔ PNG mapping;
+- clean semantic filenames;
+- one valid Resource Pack manifest;
+- no temp/revision/debug/QA debris.
+
+Custom Bedrock texture reference omits `.png`:
+
+```text
+textures/particle/blue_flame
+```
+
+while the packaged file is:
+
+```text
+textures/particle/blue_flame.png
+```
+
+Do not duplicate identical PNGs just to mirror child effect filenames.
+
+Generate distinct manifest UUIDs per delivered pack; never reuse placeholder UUIDs. Do not invent a strict minimum engine version without a target/project requirement.
+
+Standalone ZIP root should directly expose the Resource Pack root rather than accidental nested duplicate folders.
+
+`REFERENCE.json` is included only when explicit LazyDesigner/Codex/MCP downstream handoff is intended. It must follow `../package/particle-handoff.md`; never create a second particle handoff manifest.
+
 ## Snowstorm round-trip rule
 
 For advanced/external JSON actually edited through Snowstorm:
 
 ```text
 preserve original
-→ import
+→ import Snowstorm
 → edit
 → export
 → structural diff
