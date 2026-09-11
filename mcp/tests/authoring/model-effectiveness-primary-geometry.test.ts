@@ -15,7 +15,7 @@ describe("model creation effectiveness — primary geometry", () => {
 
   test("successful placement cannot authorize visual PASS or secondary detail", async () => {
     const [modelling, workflow] = await Promise.all([
-      source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
+      source("../.agents/skills/lazydesigner-modelling/SKILL.md"),
       source("prompts/bedrock_entity_workflow.md"),
     ]);
 
@@ -30,7 +30,7 @@ describe("model creation effectiveness — primary geometry", () => {
   });
 
   test("under-constrained geometry remains provisional rather than success-by-placement", async () => {
-    const modelling = await source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md");
+    const modelling = await source("../.agents/skills/lazydesigner-modelling/SKILL.md");
     expect(modelling).toContain("PROVISIONAL");
     expect(modelling).toContain("placement never verifies it");
     expect(modelling).toContain("Material `UNRESOLVED` → `BLOCKED`");
