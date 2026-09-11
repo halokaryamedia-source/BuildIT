@@ -7,6 +7,7 @@ import {
   BEDROCK_PARTICLE_PRESET_REFERENCE,
 } from "@/lib/bedrockParticleDocument";
 import { BEDROCK_PARTICLE_SPECIAL_MOLANG_VARIABLES } from "@/lib/bedrockParticleSemantics";
+import { BEDROCK_PARTICLE_RESOURCE_LAYOUT } from "@/lib/particleResourceLayout";
 
 export const PARTICLE_REFERENCE_IDS = [
   "components",
@@ -93,29 +94,46 @@ const PARTICLE_MOLANG_REFERENCE = {
 };
 
 const PARTICLE_WORKFLOW_REFERENCE = {
+  resource_layout: BEDROCK_PARTICLE_RESOURCE_LAYOUT,
   fast_path: [
     "intent",
     "choose closest preset only as a starting point",
     "targeted component/curve/event edits",
+    "resolve particle texture provenance: existing, vanilla, or generated",
+    "for generated texture: create_texture -> paint -> final paint_texture_transaction PNG output -> resume manage_particle with state=ready",
+    "verify generated PNG exists before particle write/preview",
     "use Molang/curves when motion or appearance is mathematically driven",
     "inspect summary diagnostics",
-    "native Blockbench preview when a stable path exists",
+    "native Blockbench preview when a stable particle path exists",
     "smallest causal correction",
     "save verified .particle.json",
-    "bind through existing animation/controller tools",
+    "bind through manage_animation_effects with explicit time/effect and locator when attachment is required",
   ],
   ownership: {
     particle_asset: "inspect_particle / manage_particle",
-    animation_timing: "manage_animation_effects",
+    texture_canvas: "create_texture",
+    texture_authoring: "existing Texturing paint capabilities",
+    texture_final_png: "paint_texture_transaction optional output",
+    animation_timing_and_locator: "manage_animation_effects",
     controller_state_binding: "manage_animation_controller",
     locator_authoring: "manage_locator",
   },
+  recovery: [
+    "Generated texture state=missing is a dependency handoff, not a particle mutation; do not write or preview the particle yet.",
+    "Generated texture state=ready is accepted only when the canonical PNG output exists and is non-empty.",
+    "A final PNG write failure rolls back the paint transaction; remain in Texturing and do not resume particle authoring.",
+    "Particle validation errors block particle file writes and preview.",
+    "Particle asset creation does not mutate animation effects; bind only after the particle artifact is ready.",
+    "Animation particle binding requires explicit effect/time and uses explicit locator identity when attachment is required; ambiguous or missing targets must fail rather than guess.",
+    "Do not automatically retry an outcome-unknown mutation after interruption.",
+  ],
   quality: [
     "Particle JSON validity is not visual approval.",
     "Particle math lint is not runtime evaluation; native preview owns motion/appearance truth before approval.",
     "Prefer bounded particle counts and profile collision, high event fan-out, parametric motion, and complex per-render Molang on target hardware.",
     "Use patch for deep changes when sibling fields are not fully known.",
     "Do not regenerate a complex imported particle from a shallow preset when a targeted edit is sufficient.",
+    "Do not add create_particle_texture or a second particle-specific painting/save system; reuse the canonical Texturing pipeline.",
   ],
 };
 
