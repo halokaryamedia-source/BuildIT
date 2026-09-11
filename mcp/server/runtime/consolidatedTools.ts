@@ -26,6 +26,11 @@ import {
   listMaterialInstancesParametersSchema,
   setFaceMaterialInstanceParametersSchema,
 } from "../tools/material-instances";
+import {
+  getConsolidatedExecutor,
+  getConsolidatedExecutors,
+  type ConsolidatedCapability,
+} from "./consolidatedRoutes";
 
 export type ConsolidatedCatalogUpdate = (
   toolName: string,
@@ -98,15 +103,41 @@ export const consolidatedMaterialInstancesToolDocs = {
   status: "stable" as const,
 };
 
-function disableLegacyTools(
-  names: readonly string[],
+/**
+ * Retain every original executor definition in the canonical registry while
+ * removing duplicate public exposure. Consolidation is routing-only: it must
+ * never replace, simplify, or delete the original implementation.
+ */
+function retainExecutorsBehindConsolidatedSurface(
+  capability: ConsolidatedCapability,
   family: McpRegistrationFamily,
   updateCatalog: ConsolidatedCatalogUpdate
 ): void {
-  for (const name of names) {
+  const definitions = getAllToolDefinitions();
+  for (const name of getConsolidatedExecutors(capability)) {
+    if (!definitions[name]) {
+      throw new Error(
+        `Consolidated capability ${capability} requires retained executor ${name}.`
+      );
+    }
     if (tools[name]) tools[name].enabled = false;
     updateCatalog(name, family, false);
   }
+}
+
+async function executeConsolidated(
+  capability: ConsolidatedCapability,
+  discriminatorValue: string,
+  args: Record<string, unknown>
+) {
+  const target = getConsolidatedExecutor(capability, discriminatorValue);
+  const definition = getAllToolDefinitions()[target];
+  if (!definition) {
+    throw new Error(
+      `Consolidated capability ${capability} executor ${target} is unavailable.`
+    );
+  }
+  return definition.execute(args);
 }
 
 export function registerConsolidatedTools(
@@ -118,21 +149,14 @@ export function registerConsolidatedTools(
       {
         ...consolidatedInspectionToolDocs,
         async execute(request) {
-          const target = request.mode === "outline"
-            ? "list_outline"
-            : request.mode === "search"
-              ? "find_elements_by_criteria"
-              : "inspect_element";
-          const definition = getAllToolDefinitions()[target];
-          if (!definition) throw new Error(`Inspection executor ${target} is unavailable.`);
-          const { mode: _mode, ...args } = request;
-          return definition.execute(args);
+          const { mode, ...args } = request;
+          return executeConsolidated("inspect_elements", mode, args);
         },
       },
       "stable"
     );
-    disableLegacyTools(
-      ["list_outline", "find_elements_by_criteria", "inspect_element"],
+    retainExecutorsBehindConsolidatedSurface(
+      "inspect_elements",
       "element_inspection",
       updateCatalog
     );
@@ -145,23 +169,14 @@ export function registerConsolidatedTools(
       {
         ...consolidatedMaterialToolDocs,
         async execute(request) {
-          const target = request.operation === "create"
-            ? "create_pbr_material"
-            : request.operation === "configure"
-              ? "configure_material"
-              : request.operation === "assign_channel"
-                ? "assign_texture_channel"
-                : "save_material_config";
-          const definition = getAllToolDefinitions()[target];
-          if (!definition) throw new Error(`Material executor ${target} is unavailable.`);
-          const { operation: _operation, ...args } = request;
-          return definition.execute(args);
+          const { operation, ...args } = request;
+          return executeConsolidated("manage_material", operation, args);
         },
       },
       "stable"
     );
-    disableLegacyTools(
-      ["create_pbr_material", "configure_material", "assign_texture_channel", "save_material_config"],
+    retainExecutorsBehindConsolidatedSurface(
+      "manage_material",
       "textures",
       updateCatalog
     );
@@ -174,22 +189,19 @@ export function registerConsolidatedTools(
       {
         ...consolidatedAnimationTimelineToolDocs,
         async execute(request) {
-          let target = "animation_copy_paste";
           const operation = String(request.operation);
-          if (operation === "keyframes") target = "manage_keyframes";
-          else if (operation === "graph") target = "animation_graph_editor";
-          else if (operation === "timeline") target = "animation_timeline";
-          else if (operation === "batch") target = "batch_keyframe_operations";
-          const definition = getAllToolDefinitions()[target];
-          if (!definition) throw new Error(`Animation timeline executor ${target} is unavailable.`);
           const { operation: _operation, ...args } = request;
-          return definition.execute(args);
+          return executeConsolidated(
+            "manage_animation_timeline",
+            operation,
+            args
+          );
         },
       },
       "stable"
     );
-    disableLegacyTools(
-      ["manage_keyframes", "animation_graph_editor", "animation_timeline", "batch_keyframe_operations", "animation_copy_paste"],
+    retainExecutorsBehindConsolidatedSurface(
+      "manage_animation_timeline",
       "animation",
       updateCatalog
     );
@@ -202,25 +214,18 @@ export function registerConsolidatedTools(
       {
         ...consolidatedMaterialInstancesToolDocs,
         async execute(request) {
-          const target = request.operation === "list"
-            ? "list_material_instances"
-            : request.operation === "get"
-              ? "get_face_material_instances"
-              : request.operation === "set"
-                ? "set_face_material_instance"
-                : request.operation === "bulk_set"
-                  ? "bulk_set_material_instances"
-                  : "clear_material_instances";
-          const definition = getAllToolDefinitions()[target];
-          if (!definition) throw new Error(`Material-instance executor ${target} is unavailable.`);
-          const { operation: _operation, ...args } = request;
-          return definition.execute(args);
+          const { operation, ...args } = request;
+          return executeConsolidated(
+            "manage_material_instances",
+            operation,
+            args
+          );
         },
       },
       "stable"
     );
-    disableLegacyTools(
-      ["list_material_instances", "get_face_material_instances", "set_face_material_instance", "bulk_set_material_instances", "clear_material_instances"],
+    retainExecutorsBehindConsolidatedSurface(
+      "manage_material_instances",
       "material_instances",
       updateCatalog
     );
