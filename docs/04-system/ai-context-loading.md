@@ -52,7 +52,7 @@ A missing CONDITIONAL document is not a reason to broaden into its whole sibling
 
 ```text
 current user intent + current source/reference images
-.agents/skills/blockbench-reference-generator/SKILL.md
+.agents/skills/lazydesigner-reference-preparation/SKILL.md
 docs/02-reference/flow.md
 ```
 
@@ -64,10 +64,8 @@ docs/02-reference/policy.md
 
 .agents/skills/lazydesigner-prompt-compiler/SKILL.md
   → after blocking requirements are resolved
-
 docs/02-reference/image/*
   → only when generating/editing reference imagery
-
 docs/02-reference/package/*
   → only when building/validating Codex handoff package
 ```
