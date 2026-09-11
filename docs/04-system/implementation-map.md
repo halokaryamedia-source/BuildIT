@@ -22,7 +22,7 @@ Current product name: LazyDesigner
 Former product name: BlockIT
 ```
 
-Some internal package/runtime/specialist identifiers still use legacy `BlockIT` / `blockit-*` names. They are migration residue, not a second product.
+Some internal package/runtime identifiers still use legacy `BlockIT` / `blockit-*` values for compatibility. They are migration residue, not a second product.
 
 ## Runtime Architecture
 
@@ -96,9 +96,9 @@ Control does not own Skill prose, Tool schemas, full reference content, live mod
 
 | Domain | Semantic owner | Runtime/source owner |
 | --- | --- | --- |
-| Geometry / rig / pivots / UV Layout | `.agents/skills/blockbench-bedrock-modelling/SKILL.md` | Geometry/element/rig tool owners |
-| Texture / Painter / PBR | `.agents/skills/blockit-bedrock-texturing/SKILL.md` | Texture/paint/material tool owners |
-| Animation / motion / effects/controllers | `.agents/skills/blockit-bedrock-animation/SKILL.md` | Animation/particle/controller owners |
+| Geometry / rig / pivots / UV Layout | `.agents/skills/lazydesigner-modelling/SKILL.md` | Geometry/element/rig tool owners |
+| Texture / Painter / PBR | `.agents/skills/lazydesigner-texturing/SKILL.md` | Texture/paint/material tool owners |
+| Animation / motion / effects/controllers | `.agents/skills/lazydesigner-animation/SKILL.md` | Animation/particle/controller owners |
 | Task/stage/context routing | LazyDesigner Control | `mcp/gateway/control/**` |
 | Runtime phase/capability classification | `mcp/lib/authoringPhase.ts` | shared by Runtime + Control |
 | Reference preparation | `.agents/skills/blockbench-reference-generator/SKILL.md` + `docs/02-reference/` | ChatGPT |
@@ -123,9 +123,9 @@ Control consumes this owner and does not maintain a parallel hand-written Geomet
 ## Context Loading
 
 ```text
-Geometry  → Modelling Skill + exactly one selected profile when known
-Texturing → Texturing Skill
-Animation → Animation Skill
+Geometry  → .agents/skills/lazydesigner-modelling/SKILL.md + exactly one selected profile when known
+Texturing → .agents/skills/lazydesigner-texturing/SKILL.md
+Animation → .agents/skills/lazydesigner-animation/SKILL.md
 ```
 
 Context handles are SHA-256 identities calculated from current canonical files. `known_context_ids` suppresses unchanged content and invalidates changed members of the same context family.
@@ -196,7 +196,7 @@ Unknown or tied intent remains `UNRESOLVED`; Control does not replace uncertaint
 
 ```text
 legacy BlockIT package/protocol/plugin/environment identifiers outside the Control public contract
-legacy `blockit-*` names on still-active specialist Skills
+remaining PRODUCT_DEVELOPMENT Skill names that have not yet migrated to lazydesigner-* identities
 remaining product-facing/runtime strings that can be migrated without compatibility breakage
 generated outputs/docs that may encode legacy identifiers until canonical generators run
 Experimental Navigator history that must remain explicitly non-authoritative
@@ -207,6 +207,7 @@ Completed source migrations:
 ```text
 navigator/ → control/
 legacy asset-router Skill → removed
+ASSET_AUTHORING specialist canonical files → lazydesigner-modelling/texturing/animation
 Control capability-domain duplication → removed
 metadata-only search/describe status rereads → removed
 ```
