@@ -79,9 +79,10 @@ describe("AI-first documentation architecture", () => {
   });
 
   test("context loading contract defines bounded bundles for every active task class", async () => {
-    const [context, sharedStage] = await Promise.all([
+    const [context, sharedStage, taxonomy] = await Promise.all([
       text("../docs/04-system/ai-context-loading.md"),
       text("../docs/04-system/authoring-stage-context.md"),
+      text("../docs/04-system/skill-taxonomy.md"),
     ]);
 
     for (const task of [
@@ -102,8 +103,9 @@ describe("AI-first documentation architecture", () => {
     expect(context).toContain("exactly one selected profile");
     expect(context).toContain("Do not reload the initial package");
     expect(context).toMatch(/read all docs|load all docs/i);
-    expect(sharedStage).toMatch(/not a Skill|not another Skill/i);
-    expect(sharedStage).toMatch(/Control/i);
+    expect(sharedStage).toContain("stage-specific projection from LazyDesigner Control");
+    expect(sharedStage).toContain("Domain-specific reasoning remains in the relevant specialist Skill");
+    expect(taxonomy).toContain("shared semantic contract, not a Skill or router");
   });
 
   test("Skill taxonomy points to current hierarchy and keeps Docs/Skills/Control roles separate", async () => {
