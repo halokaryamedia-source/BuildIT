@@ -144,6 +144,30 @@ Animation change                   → ANIMATION
 ambiguous structural evidence      → conservative downstream invalidation
 ```
 
+## Animation Controller Source Ownership
+
+Animation Controller support is one public capability surface, not parallel controller systems:
+
+```text
+inspect_animation
+→ mcp/server/tools/animation-inspection.ts
+→ read-only Animation / AnimationController inspection
+
+manage_animation_controller
+→ mcp/server/tools/animation-controller.ts
+→ core controller/state/transition/animation-link/sound/particle mutation
+
+same manage_animation_controller tool
+→ mcp/server/tools/animation-controller-native-intelligence.ts
+→ nested AnimationController links + native blend curves
+
+same manage_animation_controller / inspect_animation tools
+→ mcp/server/tools/animation-runtime-resource-intelligence.ts
+→ bounded file-backed runtime-resource compatibility/diagnostics branch
+```
+
+`mcp/server/server.ts` wires the native/resource intelligence into the already-registered controller capability; these extensions must not create another public MCP tool or registration profile. `inspect_animation` remains read-only and focused; mutation ownership remains `manage_animation_controller`.
+
 ## Gateway / Runtime / Workspace Owners
 
 | Concern | Owner |
