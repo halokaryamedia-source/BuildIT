@@ -19,7 +19,7 @@ describe("professional animation reasoning contract", () => {
 
   test("new animation reuses create receipt instead of confirmation inspection", async () => {
     const [skill, animationSource] = await Promise.all([
-      source("../.agents/skills/blockit-bedrock-animation/SKILL.md"),
+      source("../.agents/skills/lazydesigner-animation/SKILL.md"),
       source("server/tools/animation.ts"),
     ]);
 
@@ -42,8 +42,8 @@ describe("professional animation reasoning contract", () => {
 
   test("active animation guidance requires a motion design contract without preset metrics", async () => {
     const [skill, policy] = await Promise.all([
-      source("../.agents/skills/blockit-bedrock-animation/SKILL.md"),
-      source("../docs/foundation/08-animation-standard.md"),
+      source("../.agents/skills/lazydesigner-animation/SKILL.md"),
+      source("../docs/03-authoring/animation/standard.md"),
     ]);
 
     for (const text of [skill, policy]) {
@@ -73,8 +73,8 @@ describe("professional animation reasoning contract", () => {
 
   test("procedural math is bounded to causal continuous motion rather than replacing authored action", async () => {
     const [skill, policy] = await Promise.all([
-      source("../.agents/skills/blockit-bedrock-animation/SKILL.md"),
-      source("../docs/foundation/08-animation-standard.md"),
+      source("../.agents/skills/lazydesigner-animation/SKILL.md"),
+      source("../docs/03-authoring/animation/standard.md"),
     ]);
 
     for (const text of [skill, policy]) {
@@ -96,8 +96,8 @@ describe("professional animation reasoning contract", () => {
 
   test("active guidance does not promote Bezier complexity or a new animation generator", async () => {
     const [skill, policy, profile] = await Promise.all([
-      source("../.agents/skills/blockit-bedrock-animation/SKILL.md"),
-      source("../docs/foundation/08-animation-standard.md"),
+      source("../.agents/skills/lazydesigner-animation/SKILL.md"),
+      source("../docs/03-authoring/animation/standard.md"),
       source("lib/registrationProfile.ts"),
     ]);
 
@@ -117,8 +117,8 @@ describe("professional animation reasoning contract", () => {
 
   test("verified effect/controller owners replace only the gaps they actually close", async () => {
     const [skill, policy, controller, effects] = await Promise.all([
-      source("../.agents/skills/blockit-bedrock-animation/SKILL.md"),
-      source("../docs/foundation/08-animation-standard.md"),
+      source("../.agents/skills/lazydesigner-animation/SKILL.md"),
+      source("../docs/03-authoring/animation/standard.md"),
       source("server/tools/animation-controller.ts"),
       source("server/tools/animation-effects.ts"),
     ]);
