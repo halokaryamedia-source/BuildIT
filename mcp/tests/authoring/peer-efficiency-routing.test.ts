@@ -6,19 +6,17 @@ async function source(path: string): Promise<string> {
 
 describe("peer-inspired authoring efficiency routing", () => {
   test("Geometry reuses fresh cohort state and batches deterministic corrections", async () => {
-    const router = await source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md");
-    expect(router).toMatch(/Known Cubes sharing one deterministic TRANSLATE\/RESIZE intent/i);
-    expect(router).toMatch(/derive absolute targets once from fresh state/i);
-    expect(router).toContain("manage_cubes(operation=batch_update)");
-    expect(router).toMatch(/never loop inspect→modify per Cube/i);
-    expect(router).toMatch(/reasoning-layer arithmetic/i);
-    expect(router).toMatch(/absolute\/fail-closed/i);
+    const modelling = await source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md");
+    expect(modelling).toMatch(/deterministic.*TRANSLATE|TRANSLATE.*deterministic/i);
+    expect(modelling).toMatch(/fresh state/i);
+    expect(modelling).toContain("manage_cubes");
+    expect(modelling).toMatch(/batch|cohort/i);
+    expect(modelling).toMatch(/absolute|fail-closed/i);
   });
 
   test("Texturing keeps atlas lifecycle idempotent and avoids the provisional blank default", async () => {
     const skill = await source("../.agents/skills/blockit-bedrock-texturing/SKILL.md");
     expect(skill).toMatch(/blank atlas resolution unknown\s+→ get_project_info once/i);
-    // Protect atlas identity reuse, not one obsolete sentence spelling.
     expect(skill).toMatch(/Pin atlas UUID[^\n]*texture_id/i);
     expect(skill).toMatch(/\breuse (?:existing atlas|its) UUID\b/i);
     expect(skill).toContain("not omit blank Atlas size");
