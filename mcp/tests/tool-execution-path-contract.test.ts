@@ -83,6 +83,29 @@ describe("tool execution path contract", () => {
     expect(skill).toMatch(/do not call `activate_texture` immediately before a tool that already accepts explicit `texture_id`/i);
   });
 
+  test("modelling specialist prefers direct coherent batches over selection or UI loops", async () => {
+    const skill = await text("../.agents/skills/lazydesigner-modelling/SKILL.md");
+
+    expect(skill).toContain('manage_cubes(operation="create")');
+    expect(skill).toContain('manage_cubes(operation="batch_update")');
+    expect(skill).toContain("add_group(groups=[...])");
+    expect(skill).toMatch(/prefer explicit UUID\/name targeting over editor selection/i);
+    expect(skill).toMatch(/do not create one Cube per MCP call/i);
+    expect(skill).toMatch(/do not use `trigger_action`, `emulate_clicks`, or `fill_dialog` for normal Cube\/Group creation/i);
+  });
+
+  test("animation specialist prefers native timeline and bounded cohorts over UI/key loops", async () => {
+    const skill = await text("../.agents/skills/lazydesigner-animation/SKILL.md");
+
+    expect(skill).toContain('manage_animation_timeline(operation="batch")');
+    expect(skill).toContain('manage_animation_timeline(operation="timeline")');
+    expect(skill).toContain('manage_animation_timeline(operation="properties")');
+    expect(skill).toMatch(/do not use `trigger_action`, `emulate_clicks`, or `fill_dialog` for normal animation/i);
+    expect(skill).toMatch(/prefer one bounded keyframe\/batch mutation over loops of one-key calls/i);
+    expect(skill).toMatch(/do not call `inspect_animation` after every successful deterministic mutation/i);
+    expect(skill).toMatch(/prefer one bounded `capture_model_views\(animation_preview\)` request/i);
+  });
+
   test("normal registration excludes generic UI/import fallback families", async () => {
     const profile = await text("lib/registrationProfile.ts");
 
