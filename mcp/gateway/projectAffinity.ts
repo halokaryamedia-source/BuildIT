@@ -20,7 +20,7 @@ export type RuntimeProjectHealth = {
 export function normalizeProjectAffinityUuid(value: unknown): string | null {
   if (value === undefined || value === null || value === "") return null;
   if (typeof value !== "string") {
-    throw new Error("BlockIT project affinity must be a string project UUID.");
+    throw new Error("LazyDesigner project affinity must be a string project UUID.");
   }
 
   const normalized = value.trim();
@@ -29,7 +29,7 @@ export function normalizeProjectAffinityUuid(value: unknown): string | null {
     normalized.length > 128 ||
     /[\u0000-\u001f\u007f]/.test(normalized)
   ) {
-    throw new Error("BlockIT project affinity contains an invalid project UUID.");
+    throw new Error("LazyDesigner project affinity contains an invalid project UUID.");
   }
   return normalized;
 }
@@ -43,7 +43,7 @@ export function normalizeAuthoringPhaseAffinity(
     !BLOCKIT_AUTHORING_PHASES.includes(value as BlockitAuthoringPhaseAffinity)
   ) {
     throw new Error(
-      "BlockIT authoring phase affinity must be geometry, texturing, or animation."
+      "LazyDesigner authoring phase affinity must be geometry, texturing, or animation."
     );
   }
   return value as BlockitAuthoringPhaseAffinity;
