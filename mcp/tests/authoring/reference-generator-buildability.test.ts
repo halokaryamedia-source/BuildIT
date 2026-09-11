@@ -4,10 +4,12 @@ async function read(path: string) {
   return (await Bun.file(path).text()).replaceAll("**", "").replace(/\s+/g, " ").toLowerCase();
 }
 
+const REFERENCE_SKILL = "../.agents/skills/lazydesigner-reference-preparation/SKILL.md";
+
 describe("LazyDesigner reference preparation contract", () => {
   test("reference generation is gated by blocking requirements and explicit confirmation", async () => {
     const [skill, flow] = await Promise.all([
-      read("../.agents/skills/blockbench-reference-generator/SKILL.md"),
+      read(REFERENCE_SKILL),
       read("../docs/02-reference/flow.md"),
     ]);
 
@@ -21,7 +23,7 @@ describe("LazyDesigner reference preparation contract", () => {
 
   test("source images remain evidence while final generated sheets target Minecraft/Blockbench", async () => {
     const [skill, policy, standard] = await Promise.all([
-      read("../.agents/skills/blockbench-reference-generator/SKILL.md"),
+      read(REFERENCE_SKILL),
       read("../docs/02-reference/policy.md"),
       read("../docs/02-reference/image/standard.md"),
     ]);
@@ -34,7 +36,7 @@ describe("LazyDesigner reference preparation contract", () => {
 
   test("one unified visual system uses only decision-critical panels", async () => {
     const [skill, standard] = await Promise.all([
-      read("../.agents/skills/blockbench-reference-generator/SKILL.md"),
+      read(REFERENCE_SKILL),
       read("../docs/02-reference/image/standard.md"),
     ]);
 
@@ -66,7 +68,7 @@ describe("LazyDesigner reference preparation contract", () => {
 
   test("Minecraft player-relative scale is canonical without inventing exact dimensions", async () => {
     const [skill, scale] = await Promise.all([
-      read("../.agents/skills/blockbench-reference-generator/SKILL.md"),
+      read(REFERENCE_SKILL),
       read("../docs/02-reference/image/scale-and-escalation.md"),
     ]);
 
@@ -80,7 +82,7 @@ describe("LazyDesigner reference preparation contract", () => {
 
   test("sheet escalation preserves identity and scale instead of overpacking", async () => {
     const [skill, standard, scale] = await Promise.all([
-      read("../.agents/skills/blockbench-reference-generator/SKILL.md"),
+      read(REFERENCE_SKILL),
       read("../docs/02-reference/image/standard.md"),
       read("../docs/02-reference/image/scale-and-escalation.md"),
     ]);
@@ -95,7 +97,7 @@ describe("LazyDesigner reference preparation contract", () => {
 
   test("generation prompting uses compiled state, not raw conversation", async () => {
     const [skill, prompt, templates] = await Promise.all([
-      read("../.agents/skills/blockbench-reference-generator/SKILL.md"),
+      read(REFERENCE_SKILL),
       read("../docs/02-reference/image/prompt-contract.md"),
       read("../docs/02-reference/image/master-templates.md"),
     ]);
@@ -110,7 +112,7 @@ describe("LazyDesigner reference preparation contract", () => {
 
   test("corrections are delta-first and preserve unaffected visual authority", async () => {
     const [skill, prompt] = await Promise.all([
-      read("../.agents/skills/blockbench-reference-generator/SKILL.md"),
+      read(REFERENCE_SKILL),
       read("../docs/02-reference/image/prompt-contract.md"),
     ]);
 
