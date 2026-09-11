@@ -38,9 +38,9 @@ describe("LazyDesigner asset routing", () => {
       source("../AGENTS.md"),
     ]);
 
-    expect(registry).toContain("MODELLING_PATH");
-    expect(registry).toContain("TEXTURING_PATH");
-    expect(registry).toContain("ANIMATION_PATH");
+    expect(registry).toContain('.agents/skills/lazydesigner-modelling/SKILL.md');
+    expect(registry).toContain('.agents/skills/lazydesigner-texturing/SKILL.md');
+    expect(registry).toContain('.agents/skills/lazydesigner-animation/SKILL.md');
     expect(registry).toContain("PROFILE_PATHS[selectedProfile]");
     expect(root).toContain("exactly one selected modelling profile");
     expect(root).toContain("Do not preload sibling specialists or all profiles");
@@ -49,8 +49,8 @@ describe("LazyDesigner asset routing", () => {
   test("Geometry and Texturing share AUTHORING while Animation remains the handoff boundary", async () => {
     const [root, texturing, animation] = await Promise.all([
       source("../AGENTS.md"),
-      source("../.agents/skills/blockit-bedrock-texturing/SKILL.md"),
-      source("../.agents/skills/blockit-bedrock-animation/SKILL.md"),
+      source("../.agents/skills/lazydesigner-texturing/SKILL.md"),
+      source("../.agents/skills/lazydesigner-animation/SKILL.md"),
     ]);
 
     expect(root).toContain("Geometry↔Texturing use the shared AUTHORING surface");
@@ -82,7 +82,7 @@ describe("LazyDesigner asset routing", () => {
     const [root, controlReadme, modelling] = await Promise.all([
       source("../AGENTS.md"),
       source("gateway/control/README.md"),
-      source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
+      source("../.agents/skills/lazydesigner-modelling/SKILL.md"),
     ]);
 
     for (const owner of [root, controlReadme, modelling]) {
