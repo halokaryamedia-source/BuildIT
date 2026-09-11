@@ -101,7 +101,7 @@ Use `.agents/skills/lazydesigner-development-brief/SKILL.md` only when architect
 
 ### Reference Preparation
 
-Image/reference generation belongs in **ChatGPT** using `.agents/skills/blockbench-reference-generator/SKILL.md`. Codex authoring consumes the actual user-approved reference package; it does not recreate the reference workflow.
+Image/reference generation belongs in **ChatGPT** using `.agents/skills/lazydesigner-reference-preparation/SKILL.md`. Codex authoring consumes the actual user-approved reference package; it does not recreate the reference workflow.
 
 Use `docs/02-reference/README.md` as the Reference domain index. Generate only minimum useful visual evidence. Sheet 01 is the identity/scale anchor; Sheet 02+ exists only for real information overflow. Do not force fixed turnaround boards or extra views when they do not reduce downstream uncertainty.
 
