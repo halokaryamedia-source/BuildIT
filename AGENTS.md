@@ -107,15 +107,19 @@ Use `docs/02-reference/README.md` as the Reference domain index. Generate only m
 
 ### Asset Authoring
 
-Before any LazyDesigner Bedrock Entity authoring mutation:
+LazyDesigner Control is the canonical routing/context authority. The migration-only `blockit-bedrock-entity-mcp` router Skill is not part of the normal authoring path.
+
+Before an authoring mutation, use the current Control packet when orientation/context is unknown or materially stale:
 
 ```text
 current AGENTS.md
-→ .agents/skills/blockit-bedrock-entity-mcp/SKILL.md
-→ exactly one matching current-worktree specialist
+→ LazyDesigner Control
+→ active stage context + content-addressed required handles
+→ exactly one active specialist
 
 Geometry / rig / pivots / UV Layout
 → .agents/skills/blockbench-bedrock-modelling/SKILL.md
+→ exactly one selected modelling profile when Control provides it
 
 Texture Atlas / Styling / PBR / Texture Verify
 → .agents/skills/blockit-bedrock-texturing/SKILL.md
@@ -124,22 +128,40 @@ Animation / motion
 → .agents/skills/blockit-bedrock-animation/SKILL.md
 ```
 
-No authoring mutation is allowed until the router + matching specialist are loaded from the current worktree and the specialist entry gate is satisfied. Load a new specialist only when semantic ownership changes.
+Do not preload sibling specialists or all profiles. Load a new specialist only when semantic ownership changes. Reuse unchanged `known_context_ids` rather than retransmitting the same Skill/profile content.
 
-Geometry↔Texturing use the shared AUTHORING surface: Geometry APPROVED → UV Layout PASS → Texturing → Texturing APPROVED. Animation remains a Gateway handoff.
+Control readiness is not user approval. Persisted Workspace lifecycle remains:
+
+```text
+Geometry
+→ author + verify
+→ Geometry APPROVED
+→ UV Layout PASS
+
+Texturing
+→ requires Geometry APPROVED + UV Layout PASS
+→ author + verify
+→ Texturing APPROVED
+
+Animation
+→ requires valid upstream gates + Texturing APPROVED
+→ AUTHORING↔Animation handoff through Gateway
+```
+
+Geometry↔Texturing use the shared AUTHORING surface. Animation remains the Runtime phase handoff boundary.
 
 Hot path:
 
 ```text
-approved image + explicit asset requirements
-→ active stage/owner
+approved Reference Package + current user delta
+→ Control active stage/context
 → exact known Runtime capability
 → mutate
-→ reuse returned state
+→ reuse returned state + control_delta
 → minimum evidence that can change the verdict
 ```
 
-Geometry uses the single native LazyDesigner authoring path. AUTHORING↔Animation handoff uses Gateway `switch_authoring_phase` in the same task; Geometry↔Texturing correction stays in AUTHORING.
+Use `status` only when orientation is unknown/materially stale, after project/phase authority changes, or when Control explicitly requires reorientation. Search is fallback for unknown/stale capability identity; describe is fallback for real schema uncertainty. Do not use status/search/describe as progress-confirmation ceremony.
 
 For normal asset authoring, do not automatically load repository continuation/history/all docs, scan source/tests/CI, or run development verifiers. Asset authoring is not software **Development**; do not route it through `development-brief` unless repository/plugin behavior changes.
 
@@ -151,7 +173,7 @@ At `FINALIZATION`, load only `docs/03-authoring/finalization/standard.md`; do no
 
 ## Source Precedence
 
-current user → current source/proof → nearest `AGENTS.md` → required specialist → selected canonical doc owner under `docs/` → operational continuity only when material → history.
+current user → current source/proof → nearest `AGENTS.md` → Control-projected active specialist/context → selected canonical doc owner under `docs/` → operational continuity only when material → history.
 
 ## Work Discipline
 
