@@ -41,11 +41,35 @@ Knowledge navigation / evidence classes
 Bedrock fundamentals
 → docs/02-reference/particle/fundamentals.md
 
+Emitter lifecycle / rates / shapes
+→ docs/02-reference/particle/emitter.md
+
+Motion / collision / parametric paths
+→ docs/02-reference/particle/motion.md
+
+Appearance / rendering / atlas
+→ docs/02-reference/particle/appearance-rendering.md
+
 Particle Molang
 → docs/02-reference/particle/molang.md
 
+Curves
+→ docs/02-reference/particle/curves.md
+
+Events / nested effects
+→ docs/02-reference/particle/events.md
+
 Snowstorm / Wintersky compatibility
 → docs/02-reference/particle/snowstorm.md
+
+Performance reasoning
+→ docs/02-reference/particle/performance.md
+
+Entity integration context
+→ docs/02-reference/particle/entity-integration.md
+
+Troubleshooting
+→ docs/02-reference/particle/troubleshooting.md
 
 Intent normalization
 → docs/02-reference/particle/authoring-spec.md
@@ -73,14 +97,38 @@ Do not maintain parallel copies of these rules in this Skill.
 Do not preload the entire particle domain.
 
 ```text
-need component/schema ownership
+need component/document ownership
 → fundamentals.md
 
-need expression/variable/curve decision
+need spawn rate/lifetime/shape
+→ emitter.md
+
+need trajectory/physics/collision
+→ motion.md
+
+need material/billboard/UV/tint/atlas
+→ appearance-rendering.md
+
+need expression/variable ownership
 → molang.md
+
+need lifetime interpolation
+→ curves.md
+
+need child/nested effect architecture
+→ events.md
 
 need editor-preview compatibility
 → snowstorm.md
+
+need count/overdraw/cost guidance
+→ performance.md
+
+need locator/entity attachment assumptions
+→ entity-integration.md
+
+unclear symptom / causal owner
+→ troubleshooting.md
 
 need physical design pattern
 → patterns.md
