@@ -1,6 +1,6 @@
 ---
 name: mcp-server-development
-description: Specialist for BlockIT MCP public contracts: tools/resources/prompts, input schemas, result shapes, registration, annotations, Streamable HTTP transport, and MCP protocol behavior. Use when that client-facing boundary is the primary change; package invariants remain owned by mcp/AGENTS.md.
+description: Specialist for LazyDesigner MCP public contracts: tools/resources/prompts, input schemas, result shapes, registration, annotations, Streamable HTTP transport, and MCP protocol behavior. Use when that client-facing boundary is the primary change; package invariants remain owned by mcp/AGENTS.md.
 ---
 
 # MCP Server Development
@@ -21,7 +21,7 @@ Route elsewhere when the primary semantic owner is:
 
 ```text
 Blockbench API/lifecycle/UI/Undo → blockbench-runtime-development
-visual/model judgement           → blockbench-bedrock-modelling
+visual/model judgement           → lazydesigner-modelling
 TypeScript/Bun compile/build mechanics → exact source/build owner under mcp/AGENTS.md
 ```
 
