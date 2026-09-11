@@ -1,19 +1,17 @@
 # Directional Billboard Knowledge
 
-This file owns directional billboard orientation, edge cases, and authoring decisions beyond the general rendering overview.
+This file owns direction-aware billboard orientation and version-sensitive direction settings beyond the general rendering overview.
 
 ## Evidence classes
 
-- **OFFICIAL BEDROCK** — documented billboard modes and direction fields.
+- **OFFICIAL BEDROCK** — documented billboard modes/direction settings.
 - **SNOWSTORM / WINTERSKY** — preview-specific behavior.
 - **EMPIRICALLY VERIFIED** — reproduced project evidence.
 - **HEURISTIC** — authoring guidance.
 
-## 1. Facing modes
+## Facing modes
 
-**OFFICIAL BEDROCK**
-
-Current official particle reference exposes these facing-camera choices:
+Current official particle references expose modes including:
 
 ```text
 lookat_xyz
@@ -29,9 +27,9 @@ emitter_transform_xz
 emitter_transform_yz
 ```
 
-Treat less-common modes as schema-valid only for the Bedrock version that documents them, and verify Snowstorm support separately.
+Check target-version support for less-common modes and verify Snowstorm support separately.
 
-### General camera-facing modes
+### Camera-facing
 
 ```text
 lookat_xyz
@@ -40,9 +38,9 @@ rotate_xyz
 rotate_y
 ```
 
-Use for smoke, explosions, mist, fire and other sprites whose primary job is to face the viewer rather than express a motion axis.
+Use when the sprite's job is primarily to face the viewer.
 
-### Direction-derived modes
+### Direction-derived
 
 ```text
 lookat_direction
@@ -51,7 +49,7 @@ direction_y
 direction_z
 ```
 
-Use when the sprite must orient from an authored/current direction vector.
+Use only when a meaningful direction vector exists.
 
 ### Emitter-transform plane modes
 
@@ -61,182 +59,165 @@ emitter_transform_xz
 emitter_transform_yz
 ```
 
-These bind billboard orientation to a plane derived from the emitter transform rather than ordinary camera-facing behavior. They are useful for effects that should inherit an emitter-relative plane, but they are more context-sensitive than ordinary camera-facing sprites.
+These derive billboard plane orientation from emitter transform and therefore depend on local/world transform ownership.
 
-## 2. Directional axis semantics
+## Direction-settings schema delta
 
-`direction_x` means the billboard's unrotated X axis follows the direction vector.
+This area has an important official version/documentation discrepancy.
 
-`direction_y` means the billboard's unrotated Y axis follows the direction vector.
-
-`direction_z` aligns the billboard's local Z orientation according to the documented direction-mode contract. Because a billboard is fundamentally a planar render primitive, verify the exact visual result in the target Bedrock/editor version before relying on `direction_z` for critical art direction.
-
-This matters for texture authorship:
-- a spark drawn left-to-right usually maps naturally to `direction_x`;
-- a streak drawn bottom-to-top may map naturally to `direction_y`;
-- unusual orientation requirements should be tested with a single constant-direction particle before adding complex motion.
-
-Choose orientation based on the sprite's intrinsic axis, not by trial-and-error only.
-
-## 3. `lookat_direction`
-
-`lookat_direction` is distinct from ordinary camera-facing modes. It uses direction-oriented appearance behavior rather than simply rotating the sprite to the camera.
-
-Use it only when the effect genuinely needs direction-aware facing. If a soft smoke sprite does not visually benefit from a direction vector, prefer a simpler camera-facing mode.
-
-## 4. Direction source
-
-Directional appearance only works well when the authored direction is meaningful.
-
-Possible conceptual sources:
-- current particle velocity;
-- a custom authored direction vector;
-- emitter/shape launch direction;
-- parametric tangent direction.
-
-Do not assume movement and orientation are always the same contract. A particle can move one way while its billboard is authored to face another.
-
-## 5. Near-zero direction vectors
-
-**HEURISTIC**
-
-A directional billboard becomes underdefined when its direction vector approaches zero.
-
-Risk situations:
-- drag slows velocity almost to zero;
-- a particle reaches an apex;
-- parametric derivative/tangent becomes very small;
-- initialization produces `[0,0,0]`.
-
-Mitigations:
-- avoid directional mode for particles that frequently stop;
-- keep a stable fallback direction where the format/authoring design permits;
-- shorten lifetime before prolonged zero-speed phases;
-- use camera-facing mode for soft, non-directional sprites.
-
-## 6. Apex behavior
-
-Ballistic streaks can become visually unstable near apex because vertical velocity changes sign.
-
-If a long directional sprite visibly flips:
-- decide whether velocity alignment is actually desired through the apex;
-- reduce elongation near low speed;
-- switch design to shorter debris sprites;
-- separate ascending streak and falling debris layers rather than forcing one sprite to represent both.
-
-Avoid runtime class switching solely to hide a poor physical decomposition.
-
-## 7. Direction strength and normalization
-
-Orientation generally cares about direction more than magnitude. Do not rely on a large vector magnitude as a substitute for a valid direction.
-
-Keep these concepts distinct:
+Older hand-written particle documentation describes an omitted direction subsection as behaving like:
 
 ```text
-direction vector
-→ orientation / launch axis
-
-scalar speed
-→ magnitude of launch velocity
+mode                = derive_from_velocity
+min_speed_threshold = 0.01
 ```
 
-This separation is especially important for Snowstorm/Wintersky compatibility in workflows where scalar `particle_initial_speed` is preferred for authored magnitude.
+and describes direction modes such as:
 
-## 8. Camera constraints
+```text
+derive_from_velocity
+custom_direction
+```
 
-Y-constrained billboard modes are useful when world-up matters, such as upright flames or vertical mist columns.
+A newer generated `DirectionSettings` proxy instead exposes fields/choices conceptually as:
 
-Full XYZ modes are useful for:
-- floating smoke;
-- explosions;
-- spherical magic;
-- camera-facing soft sprites.
+```text
+custom_direction     = not set
+min_speed_threshold  default = 0
+mode                  = custom | derive_from_velocity
+```
 
-Directional modes are useful for:
-- sparks;
-- rain streaks;
-- tracers;
-- elongated debris trails.
+Do **not** merge these into one universal claim.
 
-Emitter-transform modes are useful when a particle must inherit a stable plane from an attached/rotated emitter instead of following the camera normally.
+Authoring rule:
 
-## 9. Emitter-transform plane modes
+```text
+direction subsection omitted
+≠ automatically identical to
+explicit direction object with omitted child fields
+```
 
-For `emitter_transform_xy`, `emitter_transform_xz`, and `emitter_transform_yz`, establish the emitter's local/world-space relationship before debugging the billboard.
+For exact JSON shape/defaults use the generated schema matching the target Bedrock version. Use older prose only for compatible semantic explanation.
 
-If orientation is wrong, inspect in this order:
+This also means the string `custom_direction` may refer to a legacy mode description while newer generated schemas use `mode = custom` plus a separate `custom_direction` vector field.
+
+## Directional axis semantics
+
+`direction_x` aligns the billboard's unrotated X axis to the direction vector.
+
+`direction_y` aligns the unrotated Y axis.
+
+`direction_z` is a documented mode in current schema/reference inventories, but because billboard geometry is planar, verify its exact target-runtime/editor visual result before relying on it for critical art direction.
+
+Texture rule:
+
+```text
+horizontal/streak sprite long axis X → direction_x is a natural starting point
+vertical/streak sprite long axis Y   → direction_y is a natural starting point
+```
+
+Do not rotate production source art merely to compensate for a misunderstood direction mode.
+
+## Direction source versus motion
+
+Possible sources include:
+- derived particle velocity;
+- explicit custom direction;
+- a direction maintained by parametric logic;
+- another target-supported direction source.
+
+Movement and billboard orientation are separate contracts. A particle can move along one trajectory while its billboard is oriented from another vector.
+
+## Near-zero direction
+
+Direction-derived modes become underdefined or visually unstable when the source vector approaches zero.
+
+Risk cases:
+- strong drag;
+- ballistic apex;
+- parametric tangent approaching zero;
+- explicit `[0,0,0]` custom direction;
+- threshold behavior differing by schema/version.
+
+Mitigations:
+- prefer camera-facing mode for soft non-directional sprites;
+- keep a stable nonzero custom direction when appropriate;
+- shorten lifetime before a prolonged stopped phase;
+- reduce streak elongation near low speed;
+- decompose ascending streak and falling debris when they need different orientation behavior.
+
+## Apex behavior
+
+A velocity-derived streak can flip or become weak near ballistic apex as vertical velocity crosses zero. Do not hide this by unstable class switching.
+
+Prefer a causal fix:
+
+```text
+wrong physics role → split layers
+wrong orientation source → change direction contract
+excessive visual flip → reduce aspect ratio / low-speed exposure
+```
+
+## Emitter-transform modes
+
+When using `emitter_transform_xy/xz/yz`, debug in this order:
 
 ```text
 emitter transform
-→ local-space configuration
-→ selected emitter plane mode
+→ emitter local-space position/rotation
+→ selected transform plane
 → entity/locator transform if attached
-→ Snowstorm vs Minecraft preview difference
+→ target editor/runtime comparison
 ```
 
-Do not compensate for an incorrect emitter transform by rotating the source texture unless the texture axis itself is actually wrong.
+Emitter-transform billboard modes should not be debugged as texture rotation problems first.
 
-## 10. Texture orientation contract
+## Aspect ratio and readability
 
-Document the sprite's canonical axis:
+Long directional sprites amplify orientation errors. Tune:
+- length/width ratio;
+- particle speed;
+- target view distance;
+- texture edge softness;
+- low-speed lifetime portion.
 
-```text
-SPRITE_LONG_AXIS = X
-or
-SPRITE_LONG_AXIS = Y
-```
-
-Then select the matching directional mode when possible. This avoids compensating with rotated source images or confusing UV layouts.
-
-## 11. Aspect ratio
-
-Elongated billboards need controlled width:length ratio. If the ratio is too extreme:
-- turning artifacts become obvious;
-- atlas edge softness stretches;
-- low-speed orientation instability becomes more visible.
-
-Tune aspect ratio together with speed and view distance.
-
-## 12. Directional stretch heuristic
-
-For streak-like effects, apparent length can be correlated with speed, but do not let size approach zero or extreme values unpredictably.
-
-Conceptually:
+A speed-correlated length heuristic is possible only if a reliable speed-like quantity exists in the expression context:
 
 ```text
 length = clamp(base + speed * scale, min_length, max_length)
 ```
 
-Only use this if a reliable speed-like quantity is available in the expression context.
+Do not invent a speed query unavailable to the particle context.
 
-## 13. Snowstorm vs Minecraft
+## Snowstorm / Wintersky boundary
 
-If directional orientation differs:
-1. reduce to a single particle and static direction;
-2. confirm texture axis;
-3. confirm facing mode;
-4. remove complex Molang size/rotation logic;
-5. test nonzero constant velocity/direction;
-6. compare Snowstorm and Minecraft;
-7. check whether the selected facing mode is supported correctly by that Snowstorm/Wintersky release;
-8. classify the difference as editor-preview-specific before rewriting valid Bedrock logic.
+Snowstorm may lag current Bedrock schema support or implement a mode differently. For mismatch:
+1. one particle;
+2. constant nonzero direction/velocity;
+3. simple size and static UV;
+4. confirm sprite long axis;
+5. confirm target-version mode spelling/shape;
+6. compare Snowstorm release;
+7. compare Minecraft runtime when material.
 
-## 14. QA checklist
+Preview differences remain Snowstorm-specific until proven otherwise.
+
+## QA
 
 ```text
-[ ] facing mode exists in the target Bedrock schema/version
-[ ] billboard mode matches sprite type
+[ ] facing mode exists in target Bedrock schema
+[ ] direction-settings mode spelling matches target schema
+[ ] omitted direction block is not confused with an explicit block using defaults
+[ ] min_speed_threshold assumption is target-version sourced
+[ ] custom direction is nonzero when required
 [ ] sprite long axis matches directional-axis intent
-[ ] direction vector cannot accidentally remain zero for most of lifetime
-[ ] apex/low-speed behavior is intentionally handled
-[ ] direction and speed magnitude are not conflated
-[ ] emitter-transform modes have intentional local/world transform ownership
-[ ] elongated aspect ratio remains readable at target distance
-[ ] Snowstorm mismatch is isolated before changing generic Bedrock semantics
+[ ] low-speed/apex behavior is intentional
+[ ] emitter-transform modes have correct transform ownership
+[ ] Snowstorm behavior is not treated as generic Bedrock validity
 ```
 
 ## Sources
 
-- https://learn.microsoft.com/en-us/minecraft/creator/reference/content/particlesreference/examples/particlecomponents/particle_appearance_billboard?view=minecraft-bedrock-stable
 - https://learn.microsoft.com/en-us/minecraft/creator/reference/content/particlesreference/particlecomponents/minecraftparticle_appearance_billboard?view=minecraft-bedrock-stable
+- https://learn.microsoft.com/en-us/minecraft/creator/reference/content/particlesreference/examples/particlecomponents/particle_appearance_billboard?view=minecraft-bedrock-stable
 - https://learn.microsoft.com/en-us/minecraft/creator/reference/content/particlesreference/examples/particlecomponents/particle_effect_component?view=minecraft-bedrock-stable
