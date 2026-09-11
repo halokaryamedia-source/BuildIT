@@ -47,11 +47,20 @@ emitter lifecycle/rates/shapes
 motion/collision/parametric paths
 → docs/02-reference/particle/motion.md
 
+advanced collision/contact/bounce/event behavior
+→ docs/02-reference/particle/collision-advanced.md
+
 appearance/rendering/material/billboard
 → docs/02-reference/particle/appearance-rendering.md
 
+directional billboard edge cases
+→ docs/02-reference/particle/billboard-direction.md
+
 production PNG/RGBA/atlas/UV/flipbook textures
 → docs/02-reference/particle/texture-authoring.md
+
+texture filtering/bleeding/matte/minification
+→ docs/02-reference/particle/texture-filtering-bleeding.md
 
 particle-specific Molang ownership
 → docs/02-reference/particle/molang.md
@@ -59,14 +68,23 @@ particle-specific Molang ownership
 full Molang language/math/easing/formulas
 → docs/02-reference/particle/molang-language-math.md
 
+Molang queries/context/external state
+→ docs/02-reference/particle/molang-queries-context.md
+
 curves
 → docs/02-reference/particle/curves.md
 
 events/nested effects
 → docs/02-reference/particle/events.md
 
+event timing and time ownership
+→ docs/02-reference/particle/event-timing.md
+
 Snowstorm/Wintersky compatibility
 → docs/02-reference/particle/snowstorm.md
+
+Snowstorm release/version quirks
+→ docs/02-reference/particle/snowstorm-version-quirks.md
 
 performance reasoning
 → docs/02-reference/particle/performance.md
@@ -101,14 +119,23 @@ spawn/lifetime/shape
 creation/update/render or local/world-space question
 → lifecycle-space.md
 
-trajectory/physics/collision
+trajectory/physics
 → motion.md
+
+contact/bounce/collision-event issue
+→ collision-advanced.md
 
 material/billboard/tint/rendering
 → appearance-rendering.md
 
+velocity/direction-aligned sprite issue
+→ billboard-direction.md
+
 texture/alpha/atlas/UV/flipbook
 → texture-authoring.md
+
+halo/bleeding/filtering/minification issue
+→ texture-filtering-bleeding.md
 
 particle variable ownership
 → molang.md
@@ -116,14 +143,23 @@ particle variable ownership
 generic Molang syntax/math/easing/formula
 → molang-language-math.md
 
+query/context/entity-state dependency
+→ molang-queries-context.md
+
 lifetime interpolation
 → curves.md
 
 child/nested architecture
 → events.md
 
+event sequencing/time ownership
+→ event-timing.md
+
 editor-preview compatibility
 → snowstorm.md
+
+release-specific Snowstorm anomaly
+→ snowstorm-version-quirks.md
 
 count/overdraw/cost guidance
 → performance.md
@@ -196,25 +232,32 @@ Keep emitter timing emitter-owned. Keep living-particle classes particle-owned u
 
 ## Texture rule
 
-Texture is a first-class authored asset. When texture work is required, load `texture-authoring.md` and explicitly own:
+Texture is a first-class authored asset. When texture work is required, load both texture owners as needed:
 
 ```text
-RGBA transparency
-material/blend target
-sprite bounds
-atlas cell mapping
-transparent gutter
-UV/flipbook mapping
-tint compatibility
-pixel-art filtering/style
-matte/halo cleanup
+texture-authoring.md
+→ RGBA transparency
+→ material/blend target
+→ sprite bounds
+→ atlas cell mapping
+→ transparent gutter
+→ UV/flipbook mapping
+→ tint compatibility
+→ pixel-art production
+
+texture-filtering-bleeding.md
+→ hidden RGB under transparent pixels
+→ matte/halo risk
+→ atlas bleed
+→ frame-bound jitter
+→ minification/filtering edge cases
 ```
 
 Do not pass presentation sheets or generated-background images directly as production particle textures.
 
 ## Molang/math rule
 
-When expressions are non-trivial, use both layers correctly:
+When expressions are non-trivial, use the correct layer:
 
 ```text
 particle ownership/stability decision
@@ -222,9 +265,33 @@ particle ownership/stability decision
 
 language/operator/function/formula decision
 → molang-language-math.md
+
+query/context/external-state decision
+→ molang-queries-context.md
 ```
 
-Do not use random/frame math where stable per-particle state is required.
+Do not use changing external queries or frame-random math where stable per-particle state is required.
+
+## Collision and event timing rule
+
+When contact or nested timing is material:
+
+```text
+trajectory/contact physics
+→ motion.md + collision-advanced.md
+
+event graph
+→ events.md
+
+event order / emitter-vs-particle time ownership
+→ event-timing.md
+```
+
+Do not let collision-event fan-out or time-owner mistakes create accidental density explosions or synchronized class changes.
+
+## Snowstorm version rule
+
+Use `snowstorm.md` for generic editor compatibility and `snowstorm-version-quirks.md` for release-specific anomalies. A preview regression must not be promoted into a generic Bedrock restriction without runtime evidence.
 
 ## Quality rule
 
