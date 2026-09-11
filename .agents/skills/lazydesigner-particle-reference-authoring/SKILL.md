@@ -32,6 +32,9 @@ entry/boundary
 knowledge navigation / evidence classes
 → docs/02-reference/particle/knowledge-map.md
 
+official schema closure audit
+→ docs/02-reference/particle/official-schema-coverage.md
+
 Bedrock fundamentals
 → docs/02-reference/particle/fundamentals.md
 
@@ -50,6 +53,9 @@ emitter lifecycle/rates/shapes
 advanced emitter shape/direction math
 → docs/02-reference/particle/emitter-shape-math.md
 
+general vector/physics/distribution math
+→ docs/02-reference/particle/math-physics-reference.md
+
 motion/parametric paths
 → docs/02-reference/particle/motion.md
 
@@ -67,6 +73,9 @@ production PNG/RGBA/atlas/UV/flipbook textures
 
 texture filtering/bleeding/matte/minification
 → docs/02-reference/particle/texture-filtering-bleeding.md
+
+texture resolution/resampling/downscale/frame stability
+→ docs/02-reference/particle/texture-resolution-sampling.md
 
 texture color/alpha/additive/blend reasoning
 → docs/02-reference/particle/texture-color-science.md
@@ -125,6 +134,9 @@ Do not maintain parallel copies of these rules in this Skill.
 Do not preload the entire particle domain.
 
 ```text
+need to confirm whether official particle coverage is complete
+→ official-schema-coverage.md
+
 unknown component/schema family
 → component-catalog.md
 
@@ -134,8 +146,11 @@ specific property/default/failure mode
 spawn/lifetime/shape
 → emitter.md
 
-custom shape/ring/cone/fan/vector math
+custom shape/ring/cone/fan math
 → emitter-shape-math.md
+
+general vector/physics/distribution/ballistic math
+→ math-physics-reference.md
 
 creation/update/render or local/world-space
 → lifecycle-space.md
@@ -154,6 +169,9 @@ velocity/direction-aligned sprite
 
 texture/alpha/atlas/UV/flipbook
 → texture-authoring.md
+
+resolution/resampling/downscale/frame-stability
+→ texture-resolution-sampling.md
 
 halo/bleeding/filtering/minification
 → texture-filtering-bleeding.md
@@ -245,6 +263,9 @@ Texture is first-class authored data. Load the texture owners as needed:
 texture-authoring.md
 → RGBA, sprite bounds, atlas mapping, gutter, UV/flipbook, tint compatibility
 
+texture-resolution-sampling.md
+→ source resolution, resampling, downscaling, alpha coverage, frame stability
+
 texture-filtering-bleeding.md
 → hidden RGB, matte/halo, atlas bleed, minification/filtering
 
@@ -269,6 +290,9 @@ language/operator/function semantics
 reusable expression pattern
 → molang-formula-cookbook.md
 
+general vector/physics/distribution math
+→ math-physics-reference.md
+
 query/context/external-state dependency
 → molang-queries-context.md
 ```
@@ -277,7 +301,11 @@ Do not use changing external queries or frame-random math where stable per-parti
 
 ## Shape/math rule
 
-Use built-in emitter shapes when sufficient. Use `emitter-shape-math.md` only when custom position/direction math is materially required. Keep spawn position, launch direction, speed magnitude, and post-spawn motion as separate responsibilities.
+Use built-in emitter shapes when sufficient. Use `emitter-shape-math.md` when custom spawn position/direction math is materially required. Use `math-physics-reference.md` when the problem is broader than one emitter component. Keep spawn position, launch direction, speed magnitude, and post-spawn motion as separate responsibilities.
+
+## Schema closure rule
+
+Use `official-schema-coverage.md` to verify that a requested component/field already has a canonical owner before creating new knowledge files. New Bedrock fields should extend the nearest existing owner; do not create another generic particle tree.
 
 ## Collision/event timing rule
 
