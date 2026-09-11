@@ -6,7 +6,7 @@ This file owns **current implementation continuation only**. Product architectur
 
 ## Current Objective
 
-LazyDesigner Control source implementation is now active. Documentation and Reference Preparation architecture are baseline inputs; do not redo those audits unless a concrete source defect requires it.
+LazyDesigner Control source implementation is active. Documentation and Reference Preparation architecture are baseline inputs; do not redo those audits unless a concrete source defect requires it.
 
 Local/live Blockbench testing remains deferred until explicitly reactivated.
 
@@ -23,135 +23,79 @@ Local/live Blockbench testing remains deferred until explicitly reactivated.
 ✓ static documentation/reference regression guards
 ```
 
-## Implemented Control Slice
-
-The active semantic/public contract is now:
+## Completed Control Source Slice
 
 ```text
-lazydesigner-control-v1
-```
-
-Physical source remains temporarily under:
-
-```text
-mcp/gateway/navigator/
-```
-
-That path is migration residue only; there is no second Navigator architecture.
-
-Implemented:
-
-```text
+✓ canonical protocol: lazydesigner-control-v1
+✓ canonical source path: mcp/gateway/control/
+✓ former mcp/gateway/navigator/ source path removed
+✓ no permanent Navigator compatibility wrapper
 ✓ ASSET_AUTHORING / SYSTEM_DEVELOPMENT task classes
-✓ Gateway status wired to LazyDesigner Control
-✓ reference_package_path input
-✓ current_user_delta input
-✓ REFERENCE.json compact projection
-✓ GEOMETRY_CONTEXT / TEXTURE_CONTEXT / ANIMATION_CONTEXT projection
-✓ original reference intent preserved separately from user delta
+✓ Reference Package + Workspace projections
+✓ GEOMETRY_CONTEXT / TEXTURE_CONTEXT / ANIMATION_CONTEXT
+✓ original reference intent separated from current_user_delta
 ✓ Geometry loads Modelling Skill + exactly one selected profile
-✓ Texturing loads only Texturing Skill by default
-✓ Animation loads only Animation Skill by default
-✓ former router Skill removed from mandatory authoring context
-✓ context handles use current-file SHA-256 instead of hard-coded hashes
-✓ known_context_ids reuse + same-family invalidation retained
-✓ SYSTEM_DEVELOPMENT routes bounded source/specialist/test owners
-✓ system-development base context no longer loads development-brief by default
-✓ capability search/describe metadata renamed to Control semantics
+✓ Texturing/Animation avoid full profile reload by default
+✓ legacy router Skill removed from mandatory authoring context
+✓ dynamic current-file SHA-256 context handles
+✓ known_context_ids reuse + same-family invalidation
+✓ bounded SYSTEM_DEVELOPMENT owner routing
+✓ Gateway imports canonical ./control module
+✓ capability search/describe metadata uses Control semantics
 ✓ invoke returns control_delta
-✓ reference blockers respect active stage readiness
-✓ capability phase/domain classification now derives from mcp/lib/authoringPhase.ts
-✓ duplicate Geometry/Texturing/Animation capability sets removed from Control registry
+✓ active-stage Reference readiness controls blocking
+✓ mcp/lib/authoringPhase.ts is single phase/capability classification owner
+✓ duplicate Control capability-domain tables removed
+✓ effect-aware downstream invalidation with conservative fallback
+✓ gateway-control-* regressions replace gateway-navigator-* regressions
+✓ measure:control replaces measure:navigator
 ```
 
 Canonical source ownership:
 
 ```text
-mcp/gateway/index.ts
-  → public four-tool Gateway + Control status wiring
-
-mcp/gateway/navigator/referencePackage.ts
-  → REFERENCE.json projection
-
-mcp/gateway/navigator/contextProjection.ts
-  → stage-specific Control context
-
-mcp/gateway/navigator/packet.ts
-  → task packet/readiness/context selection
-
-mcp/gateway/navigator/registry.ts
-  → dynamic context handles + source owner projection
-
-mcp/gateway/navigator/delta.ts
-  → post-operation invalidation
-
-mcp/gateway/navigator/developmentIntent.ts
-  → SYSTEM_DEVELOPMENT owner routing
-
-mcp/lib/authoringPhase.ts
-  → single canonical phase/capability classification owner
+mcp/gateway/index.ts                    four-tool Gateway + Control wiring
+mcp/gateway/control/**                  Control implementation
+mcp/lib/authoringPhase.ts               canonical phase/capability classification
+mcp/scripts/measure-control-context.ts  static Control payload measurement
 ```
-
-## Added / Updated Regression Owners
-
-```text
-mcp/tests/gateway-navigator.test.ts
-mcp/tests/gateway-navigator-active-contract.test.ts
-mcp/tests/gateway-navigator-development.test.ts
-mcp/tests/gateway-navigator-routing.test.ts
-mcp/tests/gateway-control-reference-readiness.test.ts
-mcp/tests/gateway-control-phase-classification.test.ts
-```
-
-Legacy test filenames containing `navigator` are path/name migration residue, not semantic authority.
 
 ## Immediate Next Source Work
 
 Continue in this order:
 
 ```text
-1. map every remaining direct import/path dependency on mcp/gateway/navigator/**
-2. physically rename navigator/ → control/ in one coherent migration with no permanent alias
-3. rename Navigator-prefixed internal symbols/tests/scripts only where dependency mapping is complete
-4. refine Control delta from domain-level affected knowledge toward field/effect-aware minimum invalidation
-5. strengthen lifecycle readiness projection using current Workspace + Reference stage state
-6. hard-bound remaining discovery/status rereads
-7. migrate remaining BlockIT identifiers only after Control path/symbol migration is stable
-8. regenerate generated artifacts through canonical generators when LOCAL_CODE is available
-9. run local/live acceptance only when explicitly reactivated
+1. audit active remaining BlockIT/blockit-* identifiers by ownership and external compatibility risk
+2. migrate user-facing/product-facing LazyDesigner identifiers first
+3. keep package/protocol/bundle identifiers unchanged until their dependency/compatibility boundary is explicitly mapped
+4. retire the migration-only asset-router Skill only after all active references are proven gone
+5. harden lifecycle/readiness only where current Workspace + Reference evidence shows a real gap
+6. hard-bound any remaining discovery/status rereads
+7. regenerate generated artifacts through canonical generators when LOCAL_CODE is available
+8. run local/live acceptance only when explicitly reactivated
 ```
 
-Known direct legacy consumer already identified:
+### Identifier migration categories
 
 ```text
-mcp/scripts/measure-navigator-context.ts
+SAFE SOURCE/PRESENTATION
+→ user-facing names, docs, descriptions, internal class/symbol names with bounded consumers
+
+DEPENDENCY-MAPPED
+→ MCP server/package IDs, bundle filenames, plugin IDs, client config names, persisted settings, generated manifests
+
+HISTORICAL
+→ Git history / explicitly non-authoritative Experimental material
 ```
 
-GitHub code-search indexing is not reliable for the `Local` branch, so physical rename must use direct source/tree evidence rather than assuming zero search results means zero dependencies.
-
-## Invalidation Direction
-
-Current Control delta marks affected knowledge by dependency direction:
-
-```text
-Geometry mutation
-→ Geometry + potentially dependent Texture/Animation
-
-Texture mutation
-→ Texture + potentially dependent Animation
-
-Animation mutation
-→ Animation
-```
-
-This is an affected-domain signal, not permission to reset all downstream work. Next refinement should use mutation/effect fields to minimize actual invalidation.
+Do not bulk-replace `blockit` across the repository.
 
 ## Stop Rules
 
-- No permanent Navigator compatibility alias after physical migration.
+- No Navigator compatibility alias or second Control path.
 - No second persistent state database inside Control.
 - No duplicate capability-domain table outside `mcp/lib/authoringPhase.ts`.
-- No mandatory legacy router Skill in normal asset context.
+- No mandatory migration-only router Skill in normal asset context.
 - No all-profile or all-stage context loading as reassurance.
 - No full downstream reset when only a bounded dependency is affected.
 - No blind BlockIT/package/protocol rename before dependency mapping.
@@ -159,4 +103,4 @@ This is an affected-domain signal, not permission to reset all downstream work. 
 
 ## Proof Boundary
 
-Current changes establish source-level Control contracts and static regression intent only. No Bun/typecheck/CI/local Runtime/Blockbench execution was performed in this phase. Generated-output freshness, installed LazyDesigner activation, live Gateway behavior, visual quality, and measured end-to-end usage savings remain unverified until the appropriate later proof context is activated.
+Current changes establish source-level Control structure, physical source migration, static regression intent, and routing/context/invalidation contracts only. No Bun/typecheck/CI/local Runtime/Blockbench execution was performed in this phase. Generated-output freshness, installed LazyDesigner activation, live Gateway behavior, visual quality, and measured end-to-end usage savings remain unverified until the appropriate later proof context is activated.
