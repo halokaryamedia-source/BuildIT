@@ -65,21 +65,18 @@ describe("Bedrock prompt and skill surface", () => {
     expect(prompts).toContain("assertBedrockWorkflowSourceCompatible(workflow)");
   });
 
-  test("skill stack keeps shared Runtime access separate from semantic judgement owners", async () => {
-    const [root, orchestrator, modelling, texturing, animation] = await Promise.all([
+  test("Control routing stays separate from specialist visual judgement", async () => {
+    const [root, control, modelling, texturing, animation] = await Promise.all([
       source("../AGENTS.md"),
-      source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md"),
+      source("gateway/control/README.md"),
       source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
       source("../.agents/skills/blockit-bedrock-texturing/SKILL.md"),
       source("../.agents/skills/blockit-bedrock-animation/SKILL.md"),
     ]);
-    expect(root).toContain("shared AUTHORING surface");
-    expect(orchestrator).toContain("Tool Lane Discipline");
-    for (const owner of ["blockbench-bedrock-modelling", "blockit-bedrock-texturing", "blockit-bedrock-animation"]) {
-      expect(orchestrator).toContain(owner);
-    }
-    expect(orchestrator).not.toContain("FAIL / UNVERIFIED / PASS");
-    expect(orchestrator.toLowerCase()).not.toContain("difference-first");
+
+    expect(root).toContain("LazyDesigner Control is the canonical routing/context authority");
+    expect(control).toContain("Control does not own");
+    expect(control).toContain("Codex creative/technical reasoning");
     expect(modelling).toContain("Difference-First Reference Fidelity Verdict");
     expect(texturing).toContain("material_instance");
     expect(texturing).toContain("PBR/material semantics");
@@ -89,10 +86,9 @@ describe("Bedrock prompt and skill surface", () => {
   });
 
   test("normal authoring stays asset-only while retaining visual and controller intelligence", async () => {
-    const [root, context, orchestrator, modelling, texturing, animation] = await Promise.all([
+    const [root, context, modelling, texturing, animation] = await Promise.all([
       source("../AGENTS.md"),
       source("../CONTEXT.md"),
-      source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md"),
       source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
       source("../.agents/skills/blockit-bedrock-texturing/SKILL.md"),
       source("../.agents/skills/blockit-bedrock-animation/SKILL.md"),
@@ -101,8 +97,6 @@ describe("Bedrock prompt and skill surface", () => {
     expect(root).toContain("not Minecraft add-on development");
     expect(context).toContain("Asset-only product scope");
     expect(context).toContain("Behavior Pack");
-    expect(orchestrator).toContain("Product Scope Firewall");
-    expect(orchestrator).toMatch(/`resource_operations` is not a normal (?:model-)?authoring route/);
 
     expect(modelling).toContain("Production-Scale Entity Construction");
     expect(modelling).toContain("rotated Cubes");
@@ -121,11 +115,10 @@ describe("Bedrock prompt and skill surface", () => {
   });
 
   test("reference-driven modelling keeps a difference-first three-state visual verdict", async () => {
-    const [workflow, modelling, orchestrator, validation] = await Promise.all([
+    const [workflow, modelling, validation] = await Promise.all([
       source("prompts/bedrock_entity_workflow.md"),
       source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
-      source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md"),
-      source("../docs/foundation/07-visual-validation.md"),
+      source("../docs/03-authoring/validation/visual.md"),
     ]);
     for (const text of [workflow, modelling, validation]) {
       expect(text).toContain("FAIL");
@@ -133,16 +126,17 @@ describe("Bedrock prompt and skill surface", () => {
       expect(text).toContain("PASS");
       expect(text.toLowerCase()).toContain("difference-first");
     }
-    expect(orchestrator).not.toContain("FAIL / UNVERIFIED / PASS");
-    expect(orchestrator.toLowerCase()).not.toContain("difference-first");
     expect(workflow).toContain("Front PASS is not full 3D PASS");
   });
 
-  test("generated-doc source is BlockIT-branded and README requires the local build", async () => {
-    const [docs, readme] = await Promise.all([source("build/docs.ts"), source("README.md")]);
-    expect(docs).toContain("BlockIT — Bedrock Entity MCP");
-    expect(readme).toContain("runtime authority for this repository");
-    expect(readme).toContain("BlockIT source/builds come from this repository");
-    expect(readme).toContain("dist/blockit_mcp.js");
+  test("product-facing README uses LazyDesigner while compatibility bundle identity remains explicit", async () => {
+    const [identity, readme] = await Promise.all([
+      source("lib/productIdentity.ts"),
+      source("README.md"),
+    ]);
+    expect(identity).toContain('PRODUCT_NAME = "LazyDesigner — Bedrock Entity MCP"');
+    expect(readme).toContain("# LazyDesigner — Bedrock Entity MCP");
+    expect(readme).toContain("compatibility bundle filename remains `dist/blockit_mcp.js`");
+    expect(readme).toContain("Do not bulk-rename them");
   });
 });
