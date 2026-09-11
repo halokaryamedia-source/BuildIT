@@ -20,7 +20,9 @@ export const inspectAnimationParameters = z.object({
     .string()
     .min(1)
     .optional()
-    .describe(      "Optional controller state UUID or unique name for focused state-machine detail."),
+    .describe(
+      "Optional controller state UUID or unique exact name for focused state-machine detail."
+    ),
   include_effect_keyframes: z
     .boolean()
     .optional()
@@ -34,7 +36,7 @@ export const animationInspectionToolDocs: ToolSpec[] = [
   {
     name: "inspect_animation",
     description:
-      "Inspects authored Bedrock Animation clips or AnimationControllers. Use bone/channel/time_range for focused transform evidence; this is not model-element inspection.",
+      "Inspects authored Bedrock Animation clips or AnimationControllers. Use bone for focused authored-bone transforms, state for focused controller-state detail, and include_effect_keyframes only when full authored Animation effects are required.",
     annotations: {
       title: "Inspect Animation Clip or Controller",
       readOnlyHint: true,
@@ -51,11 +53,33 @@ type EffectDataPoint = KeyframeDataPoint & {
   bind_to_actor?: boolean;
   script?: string;
 };
-
 type InspectableAnimationItem = _Animation | AnimationController;
+type ControllerStateView = AnimationControllerState & {
+  animations: Array<{
+    uuid: string;
+    key: string;
+    animation: string;
+    blend_value: string | number;
+  }>;
+  transitions: Array<{ uuid: string; target: string; condition: string }>;
+  sounds: Array<{ uuid?: string; effect?: string }>;
+  particles: Array<{
+    uuid?: string;
+    effect?: string;
+    locator?: string;
+    bind_to_actor?: boolean;
+    pre_effect_script?: string;
+  }>;
+  blend_transition_curve?: Record<string, number>;
+};
 
-function isAnimationController(item: InspectableAnimationItem): item is AnimationController {
-  return typeof AnimationController !== "undefined" && item instanceof AnimationController;
+function isAnimationController(
+  item: InspectableAnimationItem
+): item is AnimationController {
+  return (
+    typeof AnimationController !== "undefined" &&
+    item instanceof AnimationController
+  );
 }
 
 function resolveAnimationItem(reference?: string): InspectableAnimationItem {
@@ -82,7 +106,6 @@ function resolveAnimationItem(reference?: string): InspectableAnimationItem {
         .join(", ")}`
     );
   }
-
   throw new Error(
     `AnimationItem "${reference}" not found. Pass an exact Animation/AnimationController UUID or unique exact name.`
   );
@@ -92,9 +115,7 @@ function resolveGroup(reference: string): Group {
   const uuidMatch = Group.all.find((group: Group) => group.uuid === reference);
   if (uuidMatch) return uuidMatch;
 
-  const nameMatches = Group.all.filter(
-    (group: Group) => group.name === reference
-  );
+  const nameMatches = Group.all.filter((group: Group) => group.name === reference);
   if (nameMatches.length === 1) return nameMatches[0];
   if (nameMatches.length > 1) {
     throw new Error(
@@ -103,37 +124,22 @@ function resolveGroup(reference: string): Group {
         .join(", ")}`
     );
   }
-
   throw new Error(
     `Group "${reference}" not found. Use inspect_elements(mode=outline) to confirm the intended Group UUID.`
   );
 }
 
-
-type ControllerStateView = AnimationControllerState & {
-  animations: Array<{ uuid: string; key: string; animation: string; blend_value: string | number }>;
-  transitions: Array<{ uuid: string; target: string; condition: string }>;
-  sounds: Array<{ uuid?: string; effect?: string }>;
-  particles: Array<{
-    uuid?: string;
-    effect?: string;
-    locator?: string;
-    bind_to_actor?: boolean;
-    pre_effect_script?: string;
-  }>;
-  blend_transition_curve?: Record<string, number>;
-};
-
-export function resolveUniqueControllerState<T extends { uuid: string; name: string }>(
-  states: readonly T[],
-  reference: string
-): T {
+export function resolveUniqueControllerState<
+  T extends { uuid: string; name: string },
+>(states: readonly T[], reference: string): T {
   const uuidMatch = states.find((state) => state.uuid === reference);
   if (uuidMatch) return uuidMatch;
   const nameMatches = states.filter((state) => state.name === reference);
   if (nameMatches.length === 1) return nameMatches[0];
   if (nameMatches.length > 1) {
-    throw new Error(`AnimationController state name "${reference}" is ambiguous. Use an exact state UUID.`);
+    throw new Error(
+      `AnimationController state name "${reference}" is ambiguous. Use an exact state UUID.`
+    );
   }
   throw new Error(`AnimationController state "${reference}" not found.`);
 }
@@ -147,15 +153,25 @@ function summarizeControllerState(state: ControllerStateView, index: number) {
     transition_count: state.transitions.length,
     sound_count: state.sounds.length,
     particle_count: state.particles.length,
-    has_on_entry: Boolean(state.on_entry && state.on_entry.replace(/[\n\s;.]+/g, "")),
-    has_on_exit: Boolean(state.on_exit && state.on_exit.replace(/[\n\s;.]+/g, "")),
-    blend_transition: state.blend_transition || 0,
-    has_blend_transition_curve: Boolean(state.blend_transition_curve && Object.keys(state.blend_transition_curve).length),
+    has_on_entry: Boolean(
+      state.on_entry && state.on_entry.replace(/[\n\s;.]+/g, "")
+    ),
+    has_on_exit: Boolean(
+      state.on_exit && state.on_exit.replace(/[\n\s;.]+/g, "")
+    ),
+    blend_transition: state.blend_transition ?? 0,
+    has_blend_transition_curve: Boolean(
+      state.blend_transition_curve &&
+        Object.keys(state.blend_transition_curve).length
+    ),
     blend_via_shortest_path: Boolean(state.blend_via_shortest_path),
   };
 }
 
-function inspectControllerState(controller: AnimationController, reference: string) {
+function inspectControllerState(
+  controller: AnimationController,
+  reference: string
+) {
   const state = resolveUniqueControllerState(
     controller.states as ControllerStateView[],
     reference
@@ -166,7 +182,9 @@ function inspectControllerState(controller: AnimationController, reference: stri
     name: state.name,
     animations: state.animations.map((link, index) => {
       const loaded = link.animation
-        ? allItems.find((item) => item.uuid === link.animation && !isAnimationController(item))
+        ? allItems.find(
+            (item) => item.uuid === link.animation && !isAnimationController(item)
+          )
         : undefined;
       return {
         index,
@@ -174,11 +192,13 @@ function inspectControllerState(controller: AnimationController, reference: stri
         animation_key: link.key,
         loaded_animation_uuid: link.animation || null,
         loaded_animation_name: loaded?.name || null,
-        blend_value: link.blend_value || null,
+        blend_value: link.blend_value ?? null,
       };
     }),
     transitions: state.transitions.map((transition, index) => {
-      const target = controller.states.find((candidate) => candidate.uuid === transition.target);
+      const target = controller.states.find(
+        (candidate) => candidate.uuid === transition.target
+      );
       return {
         index,
         uuid: transition.uuid,
@@ -202,17 +222,23 @@ function inspectControllerState(controller: AnimationController, reference: stri
     })),
     on_entry: state.on_entry || null,
     on_exit: state.on_exit || null,
-    blend_transition: state.blend_transition || 0,
+    blend_transition: state.blend_transition ?? 0,
     blend_transition_curve:
-      state.blend_transition_curve && Object.keys(state.blend_transition_curve).length
+      state.blend_transition_curve &&
+      Object.keys(state.blend_transition_curve).length
         ? { ...state.blend_transition_curve }
         : null,
     blend_via_shortest_path: Boolean(state.blend_via_shortest_path),
   };
 }
 
-function inspectAnimationController(controller: AnimationController, stateReference?: string) {
-  const initial = controller.states.find((state) => state.uuid === controller.initial_state);
+function inspectAnimationController(
+  controller: AnimationController,
+  stateReference?: string
+) {
+  const initial = controller.states.find(
+    (state) => state.uuid === controller.initial_state
+  );
   const base = {
     authored_space: "blockbench_animation_controller" as const,
     controller: {
@@ -232,10 +258,11 @@ function inspectAnimationController(controller: AnimationController, stateRefere
       focused_state: inspectControllerState(controller, stateReference),
     };
   }
-
   return {
     ...base,
-    states: (controller.states as ControllerStateView[]).map(summarizeControllerState),
+    states: (controller.states as ControllerStateView[]).map(
+      summarizeControllerState
+    ),
     focused_state: null,
   };
 }
@@ -264,7 +291,6 @@ function inspectChannel(animator: BoneAnimator, channel: TransformChannel) {
   const keyframes = ((animator[channel] as _Keyframe[] | undefined) ?? [])
     .slice()
     .sort((a, b) => a.time - b.time || a.uuid.localeCompare(b.uuid));
-
   return {
     keyframe_count: keyframes.length,
     keyframes: keyframes.map(inspectKeyframe),
@@ -279,7 +305,10 @@ function normalizePreEffectScript(script: string | undefined): string | null {
 export function countEffectiveEffectDataPoints(
   points: readonly { effect?: string | null }[]
 ): number {
-  return points.reduce((count, point) => count + (point.effect ? 1 : 0), 0);
+  return points.reduce(
+    (count, point) => count + (point.effect ? 1 : 0),
+    0
+  );
 }
 
 export function countEffectiveTimelineScriptLines(
@@ -321,10 +350,10 @@ function inspectParticleEffects(animation: _Animation, includeKeyframes: boolean
     );
   }
 
-  const keyframes = ((existingEffects.particle as _Keyframe[] | undefined) ?? [])
+  const particleKeyframes = ((existingEffects.particle as _Keyframe[] | undefined) ?? [])
     .slice()
     .sort((a, b) => a.time - b.time || a.uuid.localeCompare(b.uuid));
-  const inspectedKeyframes = keyframes.map((keyframe) => ({
+  const inspectedKeyframes = particleKeyframes.map((keyframe) => ({
     uuid: keyframe.uuid,
     time: keyframe.time,
     particles: keyframe.data_points.map((dataPoint, dataPointIndex) => {
@@ -338,6 +367,7 @@ function inspectParticleEffects(animation: _Animation, includeKeyframes: boolean
       };
     }),
   }));
+
   const soundKeyframes = ((existingEffects.sound as _Keyframe[] | undefined) ?? [])
     .slice()
     .sort((a, b) => a.time - b.time || a.uuid.localeCompare(b.uuid));
@@ -353,6 +383,7 @@ function inspectParticleEffects(animation: _Animation, includeKeyframes: boolean
       };
     }),
   }));
+
   const timelineKeyframes = ((existingEffects.timeline as _Keyframe[] | undefined) ?? [])
     .slice()
     .sort((a, b) => a.time - b.time || a.uuid.localeCompare(b.uuid));
@@ -370,10 +401,7 @@ function inspectParticleEffects(animation: _Animation, includeKeyframes: boolean
 
   return {
     has_animator: true,
-    animator: {
-      uuid: existingEffects.uuid,
-      name: existingEffects.name,
-    },
+    animator: { uuid: existingEffects.uuid, name: existingEffects.name },
     particle: {
       keyframe_count: inspectedKeyframes.length,
       particle_count: inspectedKeyframes.reduce(
@@ -386,7 +414,8 @@ function inspectParticleEffects(animation: _Animation, includeKeyframes: boolean
     sound: {
       keyframe_count: inspectedSoundKeyframes.length,
       sound_count: inspectedSoundKeyframes.reduce(
-        (count, keyframe) => count + countEffectiveEffectDataPoints(keyframe.sounds),
+        (count, keyframe) =>
+          count + countEffectiveEffectDataPoints(keyframe.sounds),
         0
       ),
       ...(includeKeyframes ? { keyframes: inspectedSoundKeyframes } : {}),
@@ -407,18 +436,12 @@ function summarizeBoneAnimators(animation: _Animation) {
   return Object.values(animation.animators)
     .filter((animator): animator is BoneAnimator => animator instanceof BoneAnimator)
     .map((animator) => {
-      const group = Group.all.find((candidate: Group) => candidate.uuid === animator.uuid);
+      const group = Group.all.find(
+        (candidate: Group) => candidate.uuid === animator.uuid
+      );
       return {
-        animator: {
-          uuid: animator.uuid,
-          name: animator.name,
-        },
-        group: group
-          ? {
-              uuid: group.uuid,
-              name: group.name,
-            }
-          : null,
+        animator: { uuid: animator.uuid, name: animator.name },
+        group: group ? { uuid: group.uuid, name: group.name } : null,
         channels: {
           rotation: ((animator.rotation as _Keyframe[] | undefined) ?? []).length,
           position: ((animator.position as _Keyframe[] | undefined) ?? []).length,
@@ -429,7 +452,10 @@ function summarizeBoneAnimators(animation: _Animation) {
     .sort((a, b) => {
       const aName = a.group?.name ?? a.animator.name;
       const bName = b.group?.name ?? b.animator.name;
-      return aName.localeCompare(bName) || a.animator.uuid.localeCompare(b.animator.uuid);
+      return (
+        aName.localeCompare(bName) ||
+        a.animator.uuid.localeCompare(b.animator.uuid)
+      );
     });
 }
 
@@ -442,10 +468,14 @@ export function registerAnimationInspectionTools() {
         const item = resolveAnimationItem(animation_id);
         if (isAnimationController(item)) {
           if (bone !== undefined) {
-            throw new Error("`bone` applies only to authored Animation inspection; use `state` for AnimationController detail.");
+            throw new Error(
+              "`bone` applies only to authored Animation inspection; use `state` for AnimationController detail."
+            );
           }
           if (include_effect_keyframes) {
-            throw new Error("`include_effect_keyframes` applies only to authored Animation effect keyframes, not controller state effects.");
+            throw new Error(
+              "`include_effect_keyframes` applies only to authored Animation effect keyframes, not controller state effects."
+            );
           }
           const result = inspectAnimationController(item, state);
           return {
@@ -454,7 +484,9 @@ export function registerAnimationInspectionTools() {
           };
         }
         if (state !== undefined) {
-          throw new Error("`state` applies only to AnimationController inspection; use `bone` for authored Animation detail.");
+          throw new Error(
+            "`state` applies only to AnimationController inspection; use `bone` for authored Animation detail."
+          );
         }
 
         const animation = item;
@@ -476,19 +508,12 @@ export function registerAnimationInspectionTools() {
               `Animator stored for Group "${group.name}" (${group.uuid}) is not a BoneAnimator.`
             );
           }
-
           const animator = existingAnimator as BoneAnimator | undefined;
           const focusedBone = {
-            group: {
-              uuid: group.uuid,
-              name: group.name,
-            },
+            group: { uuid: group.uuid, name: group.name },
             has_animator: !!animator,
             animator: animator
-              ? {
-                  uuid: animator.uuid,
-                  name: animator.name,
-                }
+              ? { uuid: animator.uuid, name: animator.name }
               : null,
             channels: animator
               ? {
@@ -526,13 +551,9 @@ export function registerAnimationInspectionTools() {
           effects,
           focused_bone: null,
         };
-
         return {
           content: [
-            {
-              type: "text" as const,
-              text: JSON.stringify(result),
-            },
+            { type: "text" as const, text: JSON.stringify(result) },
           ],
           structuredContent: result,
         };
