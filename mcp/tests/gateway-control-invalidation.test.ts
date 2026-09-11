@@ -59,6 +59,24 @@ describe("LazyDesigner Control minimum invalidation", () => {
     ]);
   });
 
+  test("duplicated geometry invalidates Geometry plus dependent Texture and Animation evidence", () => {
+    const delta = buildControlDelta({
+      capability: "duplicate_element",
+      phaseBefore: null,
+      phaseAfter: null,
+      projectUuid: "project-a",
+      succeeded: true,
+    });
+
+    expect(delta.invalidates.authoring_domains).toEqual([
+      "GEOMETRY",
+      "TEXTURING",
+      "ANIMATION",
+    ]);
+    expect(delta.invalidates.workspace_projection).toBe(true);
+    expect(delta.invalidates.acceptance_gates).toBe(true);
+  });
+
   test("paint/material changes invalidate only Texture knowledge", () => {
     for (const capability of ["paint_with_brush", "manage_material"] as const) {
       const delta = buildControlDelta({
