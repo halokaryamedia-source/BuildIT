@@ -18,9 +18,10 @@ const CATALOG_TOOL_COUNT = 54;
 const EXPECTED_PHASE_TOOL_COUNTS: Record<McpAuthoringPhase, number> = {
   geometry: 47,
   texturing: 47,
-  // Animation intentionally excludes create_project; project lifecycle belongs
-  // to AUTHORING before the approved handoff into the Animation surface.
-  animation: 20,
+  // Animation intentionally excludes create_project plus editor-selection helpers;
+  // project lifecycle and Cube/Group selection belong to AUTHORING before the
+  // approved handoff into the Animation surface.
+  animation: 18,
 };
 
 type ListedTool = {
