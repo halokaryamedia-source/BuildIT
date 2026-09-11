@@ -52,6 +52,42 @@ describe("AnimationController mutation closure", () => {
     }).success).toBe(false);
   });
 
+  test("zero and false remain valid authored controller values", () => {
+    expect(manageAnimationControllerParameters.safeParse({
+      controller_id: "controller-uuid",
+      operations: [
+        {
+          op: "update_state",
+          state: "walk",
+          blend_transition: 0,
+          blend_via_shortest_path: false,
+        },
+        {
+          op: "update_animation",
+          state: "walk",
+          id: "animation-link-uuid",
+          blend_value: 0,
+        },
+      ],
+    }).success).toBe(true);
+  });
+
+  test("explicit null remains the supported clear/reset signal for particle fields", () => {
+    expect(manageAnimationControllerParameters.safeParse({
+      controller_id: "controller-uuid",
+      operations: [
+        {
+          op: "update_particle",
+          state: "walk",
+          id: "particle-uuid",
+          locator: null,
+          bind_to_actor: null,
+          pre_effect_script: null,
+        },
+      ],
+    }).success).toBe(true);
+  });
+
   test("implementation preflights a plan then applies one native Undo transaction", async () => {
     const controller = await source("server/tools/animation-controller.ts");
     expect(controller).toContain("applyOperationToPlan");
