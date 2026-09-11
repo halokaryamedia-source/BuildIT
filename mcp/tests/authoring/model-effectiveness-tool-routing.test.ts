@@ -9,7 +9,7 @@ describe("model creation effectiveness — tool routing", () => {
   test("Geometry focus gets complete AUTHORING guidance without Animation tools", async () => {
     const [controlRegistry, modelling, workflow] = await Promise.all([
       source("gateway/control/registry.ts"),
-      source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
+      source("../.agents/skills/lazydesigner-modelling/SKILL.md"),
       source("prompts/bedrock_entity_workflow.md"),
     ]);
     const geometryRuntime = selectMcpPhaseWorkflowBody(workflow, "geometry");
@@ -28,8 +28,8 @@ describe("model creation effectiveness — tool routing", () => {
 
   test("specialists reuse known state instead of forcing lifecycle/discovery rereads", async () => {
     const [animation, texturing] = await Promise.all([
-      source("../.agents/skills/blockit-bedrock-animation/SKILL.md"),
-      source("../.agents/skills/blockit-bedrock-texturing/SKILL.md"),
+      source("../.agents/skills/lazydesigner-animation/SKILL.md"),
+      source("../.agents/skills/lazydesigner-texturing/SKILL.md"),
     ]);
     const normalizedAnimation = animation.toLowerCase().replaceAll("`", "");
     const normalizedTexturing = texturing.toLowerCase();
