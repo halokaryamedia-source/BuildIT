@@ -67,6 +67,38 @@ describe("tool execution path contract", () => {
     expect(animation).toContain("Timeline.setTime(");
   });
 
+  test("texturing specialist routes deterministic pixels away from unnecessary Painter/UI state", async () => {
+    const skill = await text("../.agents/skills/lazydesigner-texturing/SKILL.md");
+
+    expect(skill).toContain("exact/deterministic pixel mutation → paint_texture_transaction");
+    expect(skill).toContain("known exact RGBA/pixel coordinates");
+    expect(skill).toContain("→ paint_texture_transaction");
+    expect(skill).toContain("artistic brush stroke / soft brush / connected stroke");
+    expect(skill).toContain("→ paint_with_brush");
+    expect(skill).toContain("sample an already-authored pixel whose value is unknown");
+    expect(skill).toContain("→ color_picker_tool");
+    expect(skill).toMatch(/do not call `color_picker_tool` just to put a known value/i);
+    expect(skill).toMatch(/one coherent `paint_texture_transaction` over many one-pixel Painter calls/i);
+    expect(skill).toMatch(/do not use `trigger_action`, `emulate_clicks`, or `fill_dialog` for normal texturing/i);
+    expect(skill).toMatch(/do not call `activate_texture` immediately before a tool that already accepts explicit `texture_id`/i);
+  });
+
+  test("normal registration excludes generic UI/import fallback families", async () => {
+    const profile = await text("lib/registrationProfile.ts");
+
+    const normalFamilyBlock = profile.match(
+      /BEDROCK_ENTITY_REGISTRATION_FAMILIES = \[([\s\S]*?)\] as const/
+    )?.[1] ?? "";
+    const legacyFamilyBlock = profile.match(
+      /EXTENDED_LEGACY_REGISTRATION_FAMILIES = \[([\s\S]*?)\] as const/
+    )?.[1] ?? "";
+
+    expect(normalFamilyBlock).not.toContain('"ui"');
+    expect(normalFamilyBlock).not.toContain('"import"');
+    expect(legacyFamilyBlock).toContain('"ui"');
+    expect(legacyFamilyBlock).toContain('"import"');
+  });
+
   test("execution-path documentation keeps exact data distinct from UI fallback", async () => {
     const contract = await text("../docs/04-system/tool-execution-paths.md");
 
