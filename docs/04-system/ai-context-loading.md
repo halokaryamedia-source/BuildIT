@@ -1,6 +1,6 @@
 # LazyDesigner AI Context Loading
 
-Updated: 2026-09-11
+Updated: 2026-09-12
 
 This document is the canonical contract for **what AI context to load for a task**. It exists to reduce broad reading, duplicate authority, and repeated context delivery without reducing decision quality.
 
@@ -33,6 +33,24 @@ Rules:
 - load source only when implementation state can change the decision;
 - load `05-operations/` only for continuation, proof interpretation, or local acceptance;
 - unchanged large context should be reused by identity/hash when already available.
+
+## Shared Authoring Stage Contract
+
+Geometry, Texturing, and Animation share one cross-stage context/handoff owner:
+
+```text
+docs/04-system/authoring-stage-context.md
+```
+
+It owns:
+- stage-specific context projection shape;
+- evidence-reuse/economy rules;
+- diagnostic PASS vs approval semantics;
+- AUTHORING↔Animation handoff semantics;
+- correction convergence;
+- compact stage-exit projection.
+
+Load it **once per oriented authoring task/session** and reuse it while unchanged. Specialist Skills should provide domain intelligence, not independent copies of this cross-stage policy.
 
 ## Load Classes
 
@@ -91,6 +109,7 @@ Reference Preparation ends at an approved, consistent handoff package. It does n
 current user intent / delta
 actual approved reference image(s) relevant to geometry
 GEOMETRY_CONTEXT projection
+docs/04-system/authoring-stage-context.md (reuse when already loaded and unchanged)
 .agents/skills/lazydesigner-modelling/SKILL.md
 exactly one selected profile from docs/03-authoring/modelling/profiles/
 ```
@@ -130,6 +149,7 @@ PRODUCT_DEVELOPMENT Skills
 ```text
 current user intent / texture delta
 TEXTURE_CONTEXT projection
+docs/04-system/authoring-stage-context.md (reuse when already loaded and unchanged)
 .agents/skills/lazydesigner-texturing/SKILL.md
 relevant approved material/reference views
 current atlas / UV identity supplied by projection/runtime state
@@ -171,6 +191,7 @@ PRODUCT_DEVELOPMENT Skills
 ```text
 current user intent / animation delta
 ANIMATION_CONTEXT projection
+docs/04-system/authoring-stage-context.md (reuse when already loaded and unchanged)
 .agents/skills/lazydesigner-animation/SKILL.md
 relevant approved pose/motion reference views
 current participating rig + clip identity supplied by projection/runtime state
@@ -261,7 +282,7 @@ current delta
 → continue
 ```
 
-Do not reload the initial package, profile, or sibling domain unless the current delta invalidated that context.
+Do not reload the initial package, profile, shared stage contract, or sibling domain unless the current delta invalidated that context.
 
 ## Broadening Rule
 
@@ -280,6 +301,7 @@ Otherwise do not broaden.
 
 AI context loading is correct when:
 - the task has one resolved domain/stage;
+- the shared authoring-stage contract is loaded at most once while unchanged;
 - only one primary specialist is active for that semantic owner;
 - only one primary modelling profile is loaded when Geometry needs one;
 - sibling domains remain unloaded unless a proved dependency crosses the boundary;
