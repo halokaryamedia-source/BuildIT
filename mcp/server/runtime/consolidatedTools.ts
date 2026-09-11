@@ -70,11 +70,11 @@ export const consolidatedMaterialToolDocs = {
 };
 
 const consolidatedAnimationTimelineParameters = z.union([
-  manageKeyframesParameters.and(z.object({ operation: z.literal("keyframes") })),
-  animationGraphEditorParameters.and(z.object({ operation: z.literal("graph") })),
-  animationTimelineParameters.and(z.object({ operation: z.literal("timeline") })),
-  batchKeyframeOperationsParameters.and(z.object({ operation: z.literal("batch") })),
-  animationCopyPasteParameters.and(z.object({ operation: z.literal("copy_paste") })),
+  withToolBranch(manageKeyframesParameters, "operation", "keyframes"),
+  withToolBranch(animationGraphEditorParameters, "operation", "graph"),
+  withToolBranch(animationTimelineParameters, "operation", "timeline"),
+  withToolBranch(batchKeyframeOperationsParameters, "operation", "batch"),
+  withToolBranch(animationCopyPasteParameters, "operation", "copy_paste"),
 ]);
 
 export const consolidatedAnimationTimelineToolDocs = {
