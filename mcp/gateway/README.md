@@ -4,12 +4,13 @@ LazyDesigner Gateway is the stable four-tool MCP client boundary in front of the
 
 ```text
 AI client / Codex
-   ↓ stdio
+   ↓ stable stdio session
 LazyDesigner Gateway
-   ↓ Control status/routing metadata
-   ↓ loopback Streamable HTTP
+   ↓ reconnectable loopback Streamable HTTP session
 LazyDesigner Runtime inside Blockbench
 ```
+
+The Gateway is the persistence boundary: Runtime/plugin reload, rebuild, phase change, temporary Runtime loss, or Blockbench restart must not require restarting the AI client. Runtime transport objects and capability catalogs are disposable and may be rebuilt behind the same Gateway process. See `ARCHITECTURE.md` for the persistent connection design.
 
 ## Stable Client Surface
 
@@ -120,6 +121,34 @@ invoke through Gateway
 
 No manual AI-client reconnect is required.
 
+## Persistent Runtime Recovery
+
+The Gateway process remains alive when Runtime disappears or is replaced. Recovery is demand-driven rather than heartbeat-driven:
+
+```text
+explicit Gateway request
+→ health probe
+→ compare Runtime signature
+→ reuse current backend when unchanged
+→ otherwise drop only backend transport/catalog
+→ reconnect to current Runtime
+→ refresh catalog once
+→ continue the same Codex task
+```
+
+Repeated Runtime failures use bounded exponential backoff. There is no background reconnect loop, idle heartbeat chatter, or automatic mutation replay.
+
+Expected behavior:
+
+```text
+plugin reload       → backend reconnect only
+Runtime rebuild     → backend reconnect only
+phase handoff       → catalog refresh on next request
+Blockbench closed   → Gateway stays alive/offline
+Blockbench reopened → next explicit request reconnects automatically
+Codex               → remains connected throughout
+```
+
 ## Control Delta
 
 Every normal invocation receives a compact post-operation `control_delta`.
@@ -158,6 +187,8 @@ No heartbeat chatter, background catalog polling, automatic confirmation reads, 
 - Gateway startup does not require Blockbench to be open.
 - Blockbench/plugin reload does not terminate the Gateway process.
 - Changed Runtime build/profile/stage invalidates cached backend catalog.
+- Backend reconnect is automatic on the next explicit request; the AI client stays connected.
+- Repeated unavailable backends are rate-limited by bounded reconnect backoff.
 - Each Gateway owns one project UUID affinity and one authoring-phase affinity.
 - Cross-Gateway Runtime calls remain serialized around Blockbench process-wide project globals.
 - Bound project loss fails closed.
