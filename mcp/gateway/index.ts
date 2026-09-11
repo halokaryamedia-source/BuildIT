@@ -18,7 +18,6 @@ import {
   authoringDomainForCapability,
   buildControlDelta,
   buildControlPacket,
-  buildControlSnapshot,
   decorateCapabilities,
 } from "./control";
 import {
@@ -243,7 +242,7 @@ registerGatewayTool(
   {
     title: "Search LazyDesigner Capabilities",
     description:
-      "Searches the live capability catalog and decorates results with LazyDesigner Control authoring-domain eligibility plus source ownership. Primary authoring capabilities rank ahead of support, experimental, and maintenance fallbacks when relevance is comparable.",
+      "Searches the current exposed capability catalog and decorates results with LazyDesigner Control domain/source ownership. Search is fallback-only; it does not perform an extra status read merely to label results.",
     inputSchema: searchInput.shape,
     annotations: {
       readOnlyHint: true,
@@ -268,9 +267,7 @@ registerGatewayTool(
             ),
           ].slice(0, limit)
         : runtimeCapabilities;
-      const controlStatus = await backend.getStatus();
-      const currentDomain = buildControlSnapshot(controlStatus).authoring.domain;
-      const capabilities = decorateCapabilities(rawCapabilities, currentDomain);
+      const capabilities = decorateCapabilities(rawCapabilities);
       return {
         content: [
           {
@@ -291,7 +288,7 @@ registerGatewayTool(
   {
     title: "Describe LazyDesigner Capability",
     description:
-      "Returns description, annotations, and exact input schema for one LazyDesigner capability. Known consolidated branches can be projected to continuation-relevant fields without returning unrelated schema branches.",
+      "Returns description, annotations, exact input schema and semantic owner for one exposed capability. It does not perform a second status read merely to repeat current phase metadata.",
     inputSchema: describeInput.shape,
     annotations: {
       readOnlyHint: true,
@@ -334,7 +331,6 @@ registerGatewayTool(
             },
             control: {
               authoring_domain: authoringDomainForCapability(capability),
-              current_phase: (await backend.getStatus()).affinity.authoring_phase,
             },
           },
         },
