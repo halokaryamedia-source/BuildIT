@@ -29,44 +29,44 @@ USER REQUEST
 
 ## Canonical Owners
 
-Use these documents as authority:
+Use the hierarchical docs entry point at `docs/README.md`. For this Skill, the relevant owners are:
 
 ```text
 ChatGPT-side operational flow
-→ docs/knowledge/chatgpt-reference-flow.md
+→ docs/02-reference/flow.md
 
 Prompt normalization
 → .agents/skills/lazydesigner-prompt-compiler/SKILL.md
 
 Visual reference layout / panel economy / anti-drift
-→ docs/knowledge/image-reference-standard.md
+→ docs/02-reference/image/standard.md
 
 Minecraft player scale + sheet escalation
-→ docs/knowledge/player-scale-and-sheet-escalation.md
+→ docs/02-reference/image/scale-and-escalation.md
 
 Image-generation prompting / identity lock / panel prompt construction
-→ docs/knowledge/image-generation-prompt-contract.md
+→ docs/02-reference/image/prompt-contract.md
 
 Reusable Sheet 01 / Sheet 02+ / Correction master templates
-→ docs/knowledge/image-generation-master-templates.md
+→ docs/02-reference/image/master-templates.md
 
 REFERENCE.json schema
-→ docs/knowledge/reference-package-schema.md
+→ docs/02-reference/package/schema.md
 
 GEOMETRY.md
-→ docs/knowledge/geometry-reference-contract.md
+→ docs/02-reference/package/geometry.md
 
 TEXTURE.md
-→ docs/knowledge/texture-reference-contract.md
+→ docs/02-reference/package/texture.md
 
 ANIMATION.md
-→ docs/knowledge/animation-reference-contract.md
+→ docs/02-reference/package/animation.md
 
 Package load order / consistency
-→ docs/knowledge/reference-package-load-contract.md
+→ docs/02-reference/package/load-contract.md
 
 Durable reference policy
-→ docs/foundation/04-reference-guide.md
+→ docs/02-reference/policy.md
 ```
 
 Do not maintain parallel copies of those contracts in this Skill.
@@ -133,7 +133,7 @@ When blocking information is missing:
 
 `OPTIONAL` remains unspecified and does not create a questionnaire.
 
-Scale follows `player-scale-and-sheet-escalation.md`: explicit dimensions remain authoritative; otherwise use a Minecraft player-relative anchor when appropriate, and ask only when materially different scale would change the result.
+Scale follows `docs/02-reference/image/scale-and-escalation.md`: explicit dimensions remain authoritative; otherwise use a Minecraft player-relative anchor when appropriate, and ask only when materially different scale would change the result.
 
 ## Prompt Compiler
 
@@ -233,19 +233,11 @@ CONFIRMED USER INTENT
 
 Never use the uncontrolled full conversation as the generation prompt when a compiled brief exists.
 
-Use:
+Use `docs/02-reference/image/prompt-contract.md` for the general prompt-layer order, consistency rules, panel-specific evidence and negative constraints.
+
+Then use exactly one reusable generation mode from `docs/02-reference/image/master-templates.md`:
 
 ```text
-docs/knowledge/image-generation-prompt-contract.md
-```
-
-for the general prompt-layer order, consistency rules, panel-specific evidence and negative constraints.
-
-Then use exactly one reusable generation mode from:
-
-```text
-docs/knowledge/image-generation-master-templates.md
-
 TEMPLATE A → Sheet 01 / MAIN_REFERENCE
 TEMPLATE B → Sheet 02+ / continuation or overflow
 TEMPLATE C → correction / revision
@@ -323,7 +315,7 @@ Do not sacrifice readable form/depth/topology to fit extra support content.
 
 ## Sheet Escalation
 
-Follow `player-scale-and-sheet-escalation.md`.
+Follow `docs/02-reference/image/scale-and-escalation.md`.
 
 Before adding another sheet:
 
@@ -452,7 +444,7 @@ The image owns pose silhouette/direction/contact. Timing detail belongs in `ANIM
 
 All asset sizing is anchored to Minecraft player scale unless stronger explicit dimensions or user requirements exist.
 
-Use the canonical vocabulary and rules from `player-scale-and-sheet-escalation.md`.
+Use the canonical vocabulary and rules from `docs/02-reference/image/scale-and-escalation.md`.
 
 Do not invent exact block values from a relative category.
 
