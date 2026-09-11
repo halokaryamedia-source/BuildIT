@@ -40,28 +40,28 @@ describe("Codex Bedrock agent legibility contract", () => {
     }
   });
 
-  test("root authoring boot deterministically routes through Control then one current-worktree specialist", async () => {
+  test("root authoring boot deterministically routes through Control then one current specialist", async () => {
     const [agents, control, modelling, texturing, animation] = await Promise.all([
       source("../AGENTS.md"),
       source("gateway/control/packet.ts"),
-      source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
-      source("../.agents/skills/blockit-bedrock-texturing/SKILL.md"),
-      source("../.agents/skills/blockit-bedrock-animation/SKILL.md"),
+      source("../.agents/skills/lazydesigner-modelling/SKILL.md"),
+      source("../.agents/skills/lazydesigner-texturing/SKILL.md"),
+      source("../.agents/skills/lazydesigner-animation/SKILL.md"),
     ]);
 
     expect(agents).toContain("LazyDesigner Control");
-    expect(agents).toContain("exactly one matching current-worktree specialist");
+    expect(agents).toContain("exactly one active specialist");
     expect(agents).not.toContain(".agents/skills/blockit-bedrock-entity-mcp/SKILL.md");
     for (const path of [
-      ".agents/skills/blockbench-bedrock-modelling/SKILL.md",
-      ".agents/skills/blockit-bedrock-texturing/SKILL.md",
-      ".agents/skills/blockit-bedrock-animation/SKILL.md",
+      ".agents/skills/lazydesigner-modelling/SKILL.md",
+      ".agents/skills/lazydesigner-texturing/SKILL.md",
+      ".agents/skills/lazydesigner-animation/SKILL.md",
     ]) expect(agents).toContain(path);
 
     expect(control).toContain('mode: ControlTaskMode');
-    expect(control).toContain('control_protocol: "lazydesigner-control-v1"');
     expect(control).toContain("buildControlStageContext");
     expect(control).toContain("contextForAuthoringDomain");
+    expect(control).not.toContain("control_protocol");
 
     expect(modelling).toMatch(/Bedrock Geometry|modelling/i);
     expect(texturing).toMatch(/Bedrock Texture|texturing/i);
@@ -71,7 +71,7 @@ describe("Codex Bedrock agent legibility contract", () => {
   test("common Geometry choices remain explicit in the modelling specialist while Control owns routing", async () => {
     const [control, modelling] = await Promise.all([
       source("gateway/control/packet.ts"),
-      source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
+      source("../.agents/skills/lazydesigner-modelling/SKILL.md"),
     ]);
 
     expect(control).toContain("contextForAuthoringDomain");
@@ -85,7 +85,7 @@ describe("Codex Bedrock agent legibility contract", () => {
   });
 
   test("Texturing exposes hard entry gate, UV gate, Painter intent, and blank-atlas guard", async () => {
-    const texturing = await source("../.agents/skills/blockit-bedrock-texturing/SKILL.md");
+    const texturing = await source("../.agents/skills/lazydesigner-texturing/SKILL.md");
 
     expect(texturing).toContain("Geometry APPROVED + UV Layout PASS");
     expect(texturing).toMatch(/Entry:.*Geometry APPROVED \+ UV Layout PASS/);
