@@ -107,10 +107,13 @@ event graphs / child effects
 event timing / emitter-vs-particle time ownership
 → event-timing.md
 
-Snowstorm / Wintersky compatibility
+Snowstorm / Wintersky generic editor/preview compatibility
 → snowstorm.md
 
-release-specific Snowstorm quirks
+Snowstorm / Wintersky release capability and fix matrix
+→ snowstorm-compatibility-matrix.md
+
+release-specific Snowstorm quirks / regressions
 → snowstorm-version-quirks.md
 
 performance
@@ -137,7 +140,7 @@ EMPIRICALLY VERIFIED
 HEURISTIC
 ```
 
-Snowstorm-specific behavior must never redefine generic Bedrock validity. Heuristics must never be presented as live rendering or FPS proof.
+Snowstorm-specific behavior must never redefine generic Bedrock validity. Published Snowstorm/Wintersky release notes are preferred for stable editor capability claims; unreleased source-head behavior must be labeled development state. Heuristics must never be presented as live rendering or FPS proof.
 
 ## Complete coverage target
 
@@ -176,7 +179,9 @@ curves
 events / nested child effects
 event timing / fan-out
 entity/locator integration
-Snowstorm/Wintersky compatibility + release quirks
+Snowstorm/Wintersky editor mapping
+Snowstorm/Wintersky version capability matrix
+Snowstorm import/export round-trip risks
 static performance reasoning
 troubleshooting
 QA and clean delivery
@@ -241,6 +246,7 @@ Bedrock/source reasoning
 → Molang/math ownership check
 → texture/rendering QA
 → Snowstorm compatibility reasoning when applicable
+→ Snowstorm release matrix check when behavior is version-sensitive
 → static/preflight QA
 → clean package
 → user Snowstorm/Minecraft review
