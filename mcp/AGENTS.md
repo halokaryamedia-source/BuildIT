@@ -145,11 +145,11 @@ Every material row must end as `UPDATED | VERIFIED_UNCHANGED | NOT_APPLICABLE | 
 
 Minimum impact rules:
 
-- authoring semantics / stage / handoff → `docs/knowledge/flow.md`, affected router/specialist Skills, runtime prompt/phase/handoff contract when exposed, Local Acceptance runbook, and semantic regressions;
+- authoring semantics / stage / handoff → `docs/03-authoring/workflow.md`, affected router/specialist Skills, runtime prompt/phase/handoff contract when exposed, Local Acceptance runbook, and semantic regressions;
 - public Tool / Resource / Prompt → exact source owner, direct callers, docs/prompt generator owner + committed generated output, contract tests, and Gateway only when boundary/discovery semantics actually change;
-- implementation-only change → implementation + direct regressions; do not churn Flow/Skills/docs when public semantics and proof state are unchanged;
+- implementation-only change → implementation + direct regressions; do not churn Product Flow/Skills/docs when public semantics and proof state are unchanged;
 - live/native acceptance gap → prepare deterministic verifier/fixture/evidence capture in GitHub when possible; only execution remains live;
-- proof/continuation → update `current-validation.md` / `next-action.md` only after corresponding evidence or continuation state actually changes.
+- proof/continuation → update `docs/05-operations/current-validation.md` / `docs/05-operations/next-action.md` only after corresponding evidence or continuation state actually changes.
 
 If a generated dependent cannot be produced here, only its coupled canonical edit remains higher-context residue; unrelated regression, routing, harness, provenance, or static acceptance work continues in GitHub. Use `verify:closure` as the compact cross-surface preflight; use `verify:full` once for a final delivery that also affects executable/public MCP behavior.
 
