@@ -6,101 +6,86 @@ This file owns **current implementation continuation only**. Product architectur
 
 ## Current Objective
 
-LazyDesigner Control source implementation is active. Documentation and Reference Preparation architecture are baseline inputs; do not redo those audits unless a concrete source defect requires it.
-
-Local/live Blockbench testing remains deferred until explicitly reactivated.
+LazyDesigner Control source implementation is active. Documentation/Reference architecture is baseline; do not redo those audits without a concrete defect. Local/live Blockbench testing remains deferred until explicitly reactivated.
 
 ## Completed Baseline
 
 ```text
-✓ AI-first documentation hierarchy
-✓ minimum-context loading contract
-✓ Skill ↔ Docs authority split
-✓ Reference Preparation content audit
-✓ typed visual / scale / JSON / stage authority
-✓ Unified Reference image system
-✓ Reference Package load contract
-✓ static documentation/reference regression guards
-```
-
-## Completed Control Source Slice
-
-```text
-✓ canonical protocol: lazydesigner-control-v1
-✓ canonical source path: mcp/gateway/control/
-✓ former mcp/gateway/navigator/ source path removed
-✓ no permanent Navigator compatibility wrapper
-✓ ASSET_AUTHORING / SYSTEM_DEVELOPMENT task classes
-✓ Reference Package + Workspace projections
+✓ AI-first docs + minimum-context contract
+✓ Reference Preparation / typed authority / package contracts
+✓ canonical LazyDesigner Control source at mcp/gateway/control/
+✓ former active navigator/ source removed with no permanent alias
+✓ ASSET_AUTHORING / SYSTEM_DEVELOPMENT routing
 ✓ GEOMETRY_CONTEXT / TEXTURE_CONTEXT / ANIMATION_CONTEXT
-✓ original reference intent separated from current_user_delta
-✓ Geometry loads Modelling Skill + exactly one selected profile
-✓ Texturing/Animation avoid full profile reload by default
-✓ legacy router Skill removed from mandatory authoring context
-✓ dynamic current-file SHA-256 context handles
-✓ known_context_ids reuse + same-family invalidation
-✓ bounded SYSTEM_DEVELOPMENT owner routing
-✓ Gateway imports canonical ./control module
-✓ capability search/describe metadata uses Control semantics
-✓ invoke returns control_delta
-✓ active-stage Reference readiness controls blocking
-✓ mcp/lib/authoringPhase.ts is single phase/capability classification owner
-✓ duplicate Control capability-domain tables removed
+✓ exactly-one-profile Geometry loading
+✓ dynamic content-addressed context reuse
+✓ canonical capability classification in mcp/lib/authoringPhase.ts
 ✓ effect-aware downstream invalidation with conservative fallback
-✓ gateway-control-* regressions replace gateway-navigator-* regressions
-✓ measure:control replaces measure:navigator
+✓ Workspace lifecycle readiness for Texturing / Animation
+✓ metadata-only search/describe status rereads removed
+✓ gateway-control-* regressions + measure:control
+✓ MCP presentation docs use LazyDesigner identity
 ```
 
-Canonical source ownership:
+## Lifecycle Readiness
+
+Persisted Workspace gates now bound legal stage continuation:
 
 ```text
-mcp/gateway/index.ts                    four-tool Gateway + Control wiring
-mcp/gateway/control/**                  Control implementation
-mcp/lib/authoringPhase.ts               canonical phase/capability classification
-mcp/scripts/measure-control-context.ts  static Control payload measurement
+GEOMETRY
+→ no downstream prerequisite gate
+
+TEXTURING
+→ Geometry APPROVED
+→ UV Layout PASS
+
+ANIMATION
+→ Geometry APPROVED
+→ UV Layout PASS
+→ Texturing APPROVED
+```
+
+When Workspace state is unavailable, Control returns orientation-required instead of inventing a failure. Reference readiness remains separately stage-scoped.
+
+## Identifier Migration Boundary
+
+Current product-facing identity is LazyDesigner. Do **not** bulk-replace `blockit`.
+
+Compatibility-bound identifiers intentionally retained until dependency mapping is complete:
+
+```text
+package name / MCP server IDs
+bundle filename blockit_mcp.js
+BBPlugin id blockit_mcp
+GATEWAY_NAME blockit-gateway
+BLOCKIT_* environment variables
+x-blockit-* affinity headers
+persisted setting IDs
+legacy blockit-* Skill package paths
+build/provenance identities coupled to the above
 ```
 
 ## Immediate Next Source Work
 
-Continue in this order:
-
 ```text
-1. audit active remaining BlockIT/blockit-* identifiers by ownership and external compatibility risk
-2. migrate user-facing/product-facing LazyDesigner identifiers first
-3. keep package/protocol/bundle identifiers unchanged until their dependency/compatibility boundary is explicitly mapped
-4. retire the migration-only asset-router Skill only after all active references are proven gone
-5. harden lifecycle/readiness only where current Workspace + Reference evidence shows a real gap
-6. hard-bound any remaining discovery/status rereads
-7. regenerate generated artifacts through canonical generators when LOCAL_CODE is available
-8. run local/live acceptance only when explicitly reactivated
+1. map active compatibility-bound BlockIT identifiers to exact producers/consumers
+2. migrate only bounded internal symbols and user-facing Runtime messages that cannot break compatibility
+3. retire migration-only blockit-bedrock-entity-mcp Skill after all active references are explicitly migrated
+4. audit Control packet/result payload for any remaining redundant fields/context
+5. regenerate generated artifacts only when LOCAL_CODE/generator execution is reactivated
+6. run local/live acceptance only when explicitly reactivated
 ```
-
-### Identifier migration categories
-
-```text
-SAFE SOURCE/PRESENTATION
-→ user-facing names, docs, descriptions, internal class/symbol names with bounded consumers
-
-DEPENDENCY-MAPPED
-→ MCP server/package IDs, bundle filenames, plugin IDs, client config names, persisted settings, generated manifests
-
-HISTORICAL
-→ Git history / explicitly non-authoritative Experimental material
-```
-
-Do not bulk-replace `blockit` across the repository.
 
 ## Stop Rules
 
 - No Navigator compatibility alias or second Control path.
-- No second persistent state database inside Control.
+- No second persistent state DB inside Control.
 - No duplicate capability-domain table outside `mcp/lib/authoringPhase.ts`.
-- No mandatory migration-only router Skill in normal asset context.
-- No all-profile or all-stage context loading as reassurance.
-- No full downstream reset when only a bounded dependency is affected.
-- No blind BlockIT/package/protocol rename before dependency mapping.
-- No local/live acceptance while the user has deferred testing.
+- No all-profile/all-stage loading as reassurance.
+- No full downstream reset for a bounded dependency.
+- No blind package/protocol/plugin/environment rename.
+- No local/live acceptance while user testing remains deferred.
 
 ## Proof Boundary
 
-Current changes establish source-level Control structure, physical source migration, static regression intent, and routing/context/invalidation contracts only. No Bun/typecheck/CI/local Runtime/Blockbench execution was performed in this phase. Generated-output freshness, installed LazyDesigner activation, live Gateway behavior, visual quality, and measured end-to-end usage savings remain unverified until the appropriate later proof context is activated.
+Current work establishes source contracts and regression intent only. No Bun/typecheck/CI/local Runtime/Blockbench execution was performed in this phase. Generated freshness, installed LazyDesigner activation, live behavior, visual quality, and measured whole-task savings remain unverified until their proof context is explicitly activated.
