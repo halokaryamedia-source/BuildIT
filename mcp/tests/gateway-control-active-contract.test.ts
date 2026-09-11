@@ -73,18 +73,19 @@ describe("LazyDesigner Control active contract", () => {
     expect(delta.invalidates.authoring_domains).toEqual(["GEOMETRY", "TEXTURING", "ANIMATION"]);
   });
 
-  test("routing priority is direct-first and keeps every fallback bounded", async () => {
+  test("routing policy remains direct-first and bounded without being retransmitted in every packet", async () => {
+    expect(CONTROL_ROUTING_POLICY.strategy).toBe("DIRECT_FIRST");
+    expect(CONTROL_ROUTING_POLICY.known_capability).toBe("INVOKE_CAPABILITY");
+    expect(CONTROL_ROUTING_POLICY.unknown_capability).toBe("SEARCH_CAPABILITIES");
+    expect(CONTROL_ROUTING_POLICY.schema_uncertain).toBe("DESCRIBE_CAPABILITY");
+    expect(CONTROL_ROUTING_POLICY.stale_or_lost_context).toBe("STATUS");
+    expect(CONTROL_ROUTING_POLICY.development_unresolved).toBe("BOUNDED_CONTEXT_THEN_TARGETED_SEARCH");
+    expect(CONTROL_ROUTING_POLICY.search_limit).toBe(4);
+
     const packet = await buildControlPacket(status);
     expect(packet.control_protocol).toBe("lazydesigner-control-v1");
-    expect(packet.routing).toEqual(CONTROL_ROUTING_POLICY);
-    expect(packet.routing.strategy).toBe("DIRECT_FIRST");
-    expect(packet.routing.known_capability).toBe("INVOKE_CAPABILITY");
-    expect(packet.routing.unknown_capability).toBe("SEARCH_CAPABILITIES");
-    expect(packet.routing.schema_uncertain).toBe("DESCRIBE_CAPABILITY");
-    expect(packet.routing.stale_or_lost_context).toBe("STATUS");
-    expect(packet.routing.development_unresolved).toBe("BOUNDED_CONTEXT_THEN_TARGETED_SEARCH");
-    expect(packet.routing.search_limit).toBe(4);
-    expect(JSON.stringify(packet).length).toBeLessThan(7000);
+    expect(packet).not.toHaveProperty("routing");
+    expect(JSON.stringify(packet).length).toBeLessThan(6800);
   });
 
   test("system-development task identity ignores unrelated asset affinity and authoring phase", async () => {
