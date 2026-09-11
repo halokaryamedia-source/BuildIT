@@ -53,6 +53,15 @@ export const CONSOLIDATED_EXECUTOR_ROUTES = {
 
 export type ConsolidatedCapability = keyof typeof CONSOLIDATED_EXECUTOR_ROUTES;
 
+const CONSOLIDATED_EXECUTOR_LISTS = Object.freeze(
+  Object.fromEntries(
+    Object.entries(CONSOLIDATED_EXECUTOR_ROUTES).map(([capability, route]) => [
+      capability,
+      Object.freeze(Object.values(route.routes)),
+    ])
+  )
+) as Readonly<Record<ConsolidatedCapability, readonly string[]>>;
+
 export function getConsolidatedExecutor(
   capability: ConsolidatedCapability,
   discriminatorValue: string
@@ -70,7 +79,7 @@ export function getConsolidatedExecutor(
 export function getConsolidatedExecutors(
   capability: ConsolidatedCapability
 ): readonly string[] {
-  return Object.freeze(Object.values(CONSOLIDATED_EXECUTOR_ROUTES[capability].routes));
+  return CONSOLIDATED_EXECUTOR_LISTS[capability];
 }
 
 export function getConsolidatedFamily(
