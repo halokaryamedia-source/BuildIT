@@ -2,15 +2,15 @@
 
 Updated: 2026-09-11
 
-This file owns **current proof interpretation only**. Product workflow belongs in `docs/01-product/flow.md`; reference preparation belongs in `docs/02-reference/`; source ownership belongs in `docs/04-system/implementation-map.md`; continuation belongs in `docs/05-operations/next-action.md`; active asset continuity remains in `workspace/active/<asset>/README.md`.
+This file owns **current proof interpretation only**. Product workflow belongs in `docs/01-product/flow.md`; reference preparation belongs in `docs/02-reference/`; source ownership belongs in `docs/04-system/implementation-map.md`; continuation belongs in `docs/05-operations/next-action.md`.
 
 ## Product Rename Boundary
 
 Current product name is **LazyDesigner**. Historical executable/runtime evidence was produced under the former BlockIT identity.
 
-The last user-identified local executable baseline remains BlockIT MCP `v0.2.0` at commit `b6c29c5d9edb7bb5058c42bbce123efe9dc02ed8`.
+The last user-identified local executable baseline remains BlockIT MCP `v0.2.0` at commit `b6c29c5d9edb7bb5058c42bbce123efe9dc02ed8`. That prior native evidence must not be relabeled as proof that current LazyDesigner source is installed or active.
 
-Prior native evidence established that historical build running in Blockbench 5.1.6 with matching Gateway/Runtime identity at the time of that run. This evidence must not be relabeled as proof that current LazyDesigner source is installed or active.
+Current user-facing/source documentation identity is LazyDesigner. Compatibility-bound identifiers such as package/server/plugin IDs, bundle filename, `BLOCKIT_*` environment variables, `x-blockit-*` affinity headers, persisted setting IDs and legacy Skill paths are intentionally not bulk-renamed.
 
 ## Current Source Architecture State
 
@@ -24,36 +24,37 @@ ChatGPT Reference Preparation
 → Blockbench
 ```
 
-Canonical Control source is now:
+Canonical Control source:
 
 ```text
 mcp/gateway/control/
 ```
 
-The former active `mcp/gateway/navigator/` source path has been removed. Current Control protocol:
+Former active `mcp/gateway/navigator/` source path is removed. Current Control protocol:
 
 ```text
 lazydesigner-control-v1
 ```
 
-Current source implements:
+Current source expresses:
 
 ```text
-ASSET_AUTHORING / SYSTEM_DEVELOPMENT task classes
-Reference Package projection from REFERENCE.json
-Active Workspace projection
+ASSET_AUTHORING / SYSTEM_DEVELOPMENT
+Reference Package + Active Workspace projection
 GEOMETRY_CONTEXT / TEXTURE_CONTEXT / ANIMATION_CONTEXT
-selected-profile context loading for Geometry
+selected-profile Geometry context
 content-addressed Skill/profile handles
-bounded system-development source-owner routing
-stage-scoped Reference readiness/blocking
+bounded system-development owner routing
+stage-scoped Reference readiness
+Workspace lifecycle readiness
 Control capability/source-owner metadata
-control_delta post-operation continuation
+control_delta continuation
 effect-aware bounded invalidation with conservative fallback
-canonical phase classification shared from mcp/lib/authoringPhase.ts
+single phase classification owner in mcp/lib/authoringPhase.ts
+bounded search/describe without metadata-only status rereads
 ```
 
-Accurate proof boundary:
+Accurate boundary:
 
 ```text
 CONTROL SEMANTIC CONTRACT: IMPLEMENTED IN CURRENT SOURCE
@@ -63,29 +64,59 @@ CONTROL LIVE PROOF: NOT ESTABLISHED
 LAZYDESIGNER INSTALLED PROOF: NOT ESTABLISHED
 ```
 
-Historical Experimental Navigator material is not current architecture authority.
+## Lifecycle Source Contract
 
-## Reference / Context Source Proof
+Current Control source uses persisted Workspace gates as stage prerequisites when Workspace state is available:
+
+```text
+GEOMETRY
+→ no downstream prerequisite gate
+
+TEXTURING
+→ Geometry APPROVED
+→ UV Layout PASS
+
+ANIMATION
+→ Geometry APPROVED
+→ UV Layout PASS
+→ Texturing APPROVED
+```
+
+When Workspace lifecycle state is unavailable, Control returns orientation-required rather than inventing an upstream failure. Reference readiness remains independently stage-scoped.
+
+Regression owner:
+
+```text
+mcp/tests/gateway-control-lifecycle-readiness.test.ts
+```
+
+This regression has not been executed locally in this phase.
+
+## Context / Efficiency Source Contract
 
 Current source expresses:
 
 ```text
 REFERENCE.json → compact typed Control projection
-active authoring stage → one stage context only
+active stage → one stage context
 Geometry → Modelling Skill + exactly one selected profile when known
-Texturing → Texturing Skill without full modelling profile by default
-Animation → Animation Skill without full modelling profile by default
+Texturing → Texturing Skill only by default
+Animation → Animation Skill only by default
 known_context_ids → unchanged context reuse by SHA-256 identity
-SYSTEM_DEVELOPMENT → bounded source/specialist/test owner projection
+SYSTEM_DEVELOPMENT → bounded source/specialist/test projection
+search/describe → no second getStatus() call for decorative metadata
 ```
 
-The former asset-router Skill is no longer mandatory normal authoring context.
+Static regressions/measurement owners include:
 
-Static regression owners now use canonical `gateway-control-*` naming. They have **not** been executed in a local Bun environment during this phase.
+```text
+mcp/tests/gateway-control-*.test.ts
+mcp/scripts/measure-control-context.ts
+```
+
+Static payload size is diagnostic only; whole-task savings remain unproven.
 
 ## Invalidation State
-
-Current source performs effect-aware affected-knowledge projection:
 
 ```text
 known local Geometry transform      → GEOMETRY
@@ -96,7 +127,7 @@ Animation change                   → ANIMATION
 ambiguous structural evidence      → conservative downstream invalidation
 ```
 
-This is invalidation metadata, not proof that live downstream authored state was actually rebuilt or revalidated.
+This is affected-knowledge metadata, not proof that live downstream authored state was rebuilt or revalidated.
 
 ## Current Surface Counts
 
@@ -110,56 +141,31 @@ Animation tools              20
 
 Treat these as source-era documented counts, not installed Runtime proof, until post-migration generator/build/runtime surfaces are verified.
 
-## Documentation Proof
-
-Current canonical documentation owners include:
-
-```text
-docs/README.md                           → AI documentation router
-docs/01-product/flow.md                  → end-to-end workflow
-docs/02-reference/                       → Reference Preparation/package contracts
-docs/03-authoring/                       → asset-authoring standards
-docs/04-system/ai-context-loading.md     → minimum AI context contract
-docs/04-system/implementation-map.md     → source/module ownership
-docs/05-operations/next-action.md        → continuation
-docs/05-operations/current-validation.md → proof interpretation
-```
-
-Source/documentation structure is not live execution proof.
-
 ## Visual / Reference Proof Rule
 
-A visual/reference `PASS` requires the actual approved reference image plus fresh evidence from the current model/revision at comparable view/scale.
-
-Tool success, source/CI success, hashes, coordinates, export, scalar metrics, UV occupancy, or clean structural diagnostics cannot create visual PASS by themselves.
-
-If corresponding live evidence is unavailable, report `UNVERIFIED` or `LOCAL PROOF REQUIRED`.
+A visual/reference `PASS` requires the actual approved reference image plus fresh current-revision model evidence at comparable view/scale. Tool/source/static success cannot create visual PASS by itself.
 
 ## Authoring Efficiency
 
-Authoring Efficiency means **Cost to Accepted Result**.
-
-Current Control source is designed to reduce repeated context loading, broad discovery, duplicate routing knowledge, readback, phase bouncing, and stale-context recovery. Whole-task savings remain **UNKNOWN** until measured on comparable accepted work after current source is built and exercised.
-
-Static context/payload measurements are supporting diagnostics only.
+Authoring Efficiency means **Cost to Accepted Result**. Current source aims to reduce repeated context delivery, broad discovery, duplicate routing knowledge, status/readback chatter, phase bouncing and stale-context recovery. Whole-task savings remain **UNKNOWN** until comparable accepted work is measured.
 
 ## Current Proof Ceiling
 
-Safe statement now:
+Safe statement:
 
 ```text
-LazyDesigner product naming: introduced in source/docs
-AI-first docs hierarchy: implemented in source
-Reference Package contract: documented + Control parser implemented
-Control semantic/public protocol: implemented in current source
-Control canonical source path: mcp/gateway/control/
+LazyDesigner presentation identity: active in source/docs
+AI-first docs hierarchy: implemented
+Reference Package + Control parser: implemented in source
+Control semantic protocol + canonical source path: implemented
 Navigator active source path: removed
-stage-specific Control projection: implemented in current source
-canonical phase classification sharing: implemented in current source
-effect-aware invalidation: implemented in current source with conservative fallback
-legacy BlockIT/package/Skill identifier migration: pending
+stage-specific + lifecycle readiness projection: implemented in source
+canonical phase classification sharing: implemented in source
+effect-aware invalidation: implemented with conservative fallback
+metadata-only search/describe status rereads: removed in source
+compatibility-bound BlockIT identifiers: intentionally pending dependency-mapped migration
 generated-output freshness: pending local generator proof
-Bun/typecheck/test execution for current Control source: not run in this phase
+Bun/typecheck/test execution for current source: not run in this phase
 installed/live Blockbench validation: pending
 usage-savings benchmark: pending
 ```
