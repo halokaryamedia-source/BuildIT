@@ -12,6 +12,8 @@ The last user-identified local executable baseline remains BlockIT MCP `v0.2.0` 
 
 Compatibility-bound package/server/plugin IDs, bundle filename, `BLOCKIT_*` environment variables, `x-blockit-*` affinity headers and persisted setting IDs remain intentionally stable.
 
+Safe human-facing presentation strings now use LazyDesigner in current source for MCP initialize/server instructions, Gateway backend errors/status, plugin lifecycle/dev-sync/install messages, Blockbench panel/status bar, install guidance, and `mcp/llms.txt`.
+
 ## Current Source Architecture State
 
 ```text
@@ -95,6 +97,7 @@ LEGACY ASSET ROUTER SKILL: REMOVED IN SOURCE
 REFERENCE_PREPARATION SKILL NAMING: COMPLETE IN SOURCE
 ASSET_AUTHORING SKILL NAMING: COMPLETE IN SOURCE
 PRODUCT_DEVELOPMENT SKILL NAMING: COMPLETE IN SOURCE
+SAFE PRESENTATION BRANDING: MIGRATED IN CURRENT SOURCE
 CONTROL PACKET COMPACTION: IMPLEMENTED IN SOURCE
 SOURCE EXECUTION PROOF: NOT RUN IN THIS PHASE
 CONTROL LIVE PROOF: NOT ESTABLISHED
@@ -137,6 +140,24 @@ legacy routing/specialist aliases → absent
 
 Static context/payload measurements are supporting diagnostics only; whole-task savings remain unproven.
 
+## Compatibility Boundary
+
+The following legacy-looking values are intentionally retained and must not be interpreted as stale presentation branding:
+
+```text
+package/server/plugin IDs
+blockit_mcp.js
+blockit_mcp
+blockit-gateway
+BLOCKIT_* environment variables
+x-blockit-* affinity headers
+persisted setting identifiers
+build/provenance identities coupled to the above
+internal compatibility symbols/event/DOM keys where migration has no current value
+```
+
+Generated API output may still contain stale presentation text until the canonical generator can run under `LOCAL_CODE`; generated files must not be hand-edited.
+
 ## Invalidation State
 
 ```text
@@ -163,7 +184,7 @@ Authoring Efficiency means **Cost to Accepted Result**. Current source aims to r
 Safe statement:
 
 ```text
-LazyDesigner presentation identity: active in source/docs
+LazyDesigner presentation identity: active in current source/docs
 AI-first docs hierarchy: implemented
 Reference Package + Control parser: implemented in source
 Control semantic protocol + canonical source path: implemented
@@ -171,13 +192,14 @@ Navigator active source path: removed
 legacy asset-router Skill: removed
 canonical lazydesigner-* primary Skills: implemented in source
 legacy primary Skill paths: removed
+safe Gateway/Runtime/UI presentation strings: migrated to LazyDesigner in source
 stage-specific + lifecycle readiness projection: implemented in source
 canonical phase classification sharing: implemented in source
 effect-aware invalidation: implemented with conservative fallback
 metadata-only search/describe status rereads: removed in source
 top-level Workspace/Reference duplicate detail: compacted in source
 compatibility-bound BlockIT identifiers: intentionally retained pending dedicated migration
-generated-output freshness: pending local generator proof
+generated-output freshness/presentation: pending local generator proof
 Bun/typecheck/test execution for current source: not run in this phase
 installed/live Blockbench validation: pending
 usage-savings benchmark: pending
