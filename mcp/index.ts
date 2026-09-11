@@ -9,7 +9,6 @@ import { VERSION } from "@/lib/constants";
 import {
   PRODUCT_ABOUT,
   PRODUCT_DESCRIPTION,
-  PRODUCT_NAME,
 } from "@/lib/productIdentity";
 import {
   applyMcpToolSurface,
@@ -87,10 +86,6 @@ async function initializeBlockItRuntime(
   setMcpProfileSwitchHandler((profile) => {
     if (!isRuntimeGenerationCurrent(generation)) return;
     runtimeHost.updateProfile(profile);
-    Blockbench.showQuickMessage(
-      `LazyDesigner compatibility surface switched to ${profile}. Gateway clients refresh automatically.`,
-      2000
-    );
   });
 
   const rawPort = Number(Settings.get("mcp_port") || 3000);
@@ -99,7 +94,10 @@ async function initializeBlockItRuntime(
     console.error(
       `[MCP] Invalid mcp_port value "${Settings.get("mcp_port")}" - server will not start. Set a port between 1 and 65535 in plugin settings.`
     );
-    Blockbench.showQuickMessage("MCP Server: invalid port in settings", 3000);
+    Blockbench.showQuickMessage(
+      "LazyDesigner couldn't start. Check its connection settings.",
+      4000
+    );
     return;
   }
 
@@ -112,8 +110,8 @@ async function initializeBlockItRuntime(
     markRuntimeGenerationState(generation, "failed");
     console.error("[MCP] Invalid authoring phase setting - server will not start", error);
     Blockbench.showQuickMessage(
-      "MCP Server: invalid Authoring Phase setting",
-      3000
+      "LazyDesigner couldn't start. Check its startup settings.",
+      4000
     );
     return;
   }
@@ -124,10 +122,6 @@ async function initializeBlockItRuntime(
     const activeProfile = getActiveMcpRegistrationProfile();
     applyMcpToolSurface(activeProfile, targetPhase);
     runtimeHost.updateSurface(activeProfile, targetPhase);
-    Blockbench.showQuickMessage(
-      `LazyDesigner MCP phase switched to ${targetPhase}. Gateway clients refresh automatically.`,
-      2000
-    );
   });
 
   if (!(await blockbenchIntegration.loadPrompts())) return;
@@ -148,7 +142,7 @@ async function initializeBlockItRuntime(
 
 BBPlugin.register("blockit_mcp", {
   version: VERSION,
-  title: PRODUCT_NAME,
+  title: "LazyDesigner",
   author: "Anonymous",
   description: PRODUCT_DESCRIPTION,
   about: PRODUCT_ABOUT,
@@ -180,8 +174,8 @@ BBPlugin.register("blockit_mcp", {
         markRuntimeGenerationState(claim.generation, "failed");
         console.error("[MCP] LazyDesigner runtime initialization failed", error);
         Blockbench.showQuickMessage(
-          `LazyDesigner MCP initialization failed: ${error instanceof Error ? error.message : String(error)}`,
-          6000
+          "LazyDesigner couldn't start. Technical details are available in the console.",
+          5000
         );
       })
       .finally(() => {
@@ -196,11 +190,11 @@ BBPlugin.register("blockit_mcp", {
   },
 
   oninstall() {
-    Blockbench.showQuickMessage("Installed LazyDesigner Bedrock Entity MCP", 2000);
+    Blockbench.showQuickMessage("LazyDesigner installed", 2000);
   },
 
   onuninstall() {
-    Blockbench.showQuickMessage("Uninstalled LazyDesigner Bedrock Entity MCP", 2000);
+    Blockbench.showQuickMessage("LazyDesigner removed", 2000);
     blockbenchIntegration.teardown();
   },
 });
