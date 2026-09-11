@@ -2,7 +2,7 @@
 
 Updated: 2026-09-11
 
-This document owns how Astra/Codex should consume a ChatGPT-generated LazyDesigner reference package. It does not define Geometry, Texture, Animation, image-generation, or Runtime implementation semantics.
+This document owns how Astra/Codex consumes a ChatGPT-generated LazyDesigner reference package. It does not define Geometry, Texture, Animation, image-generation, or Runtime implementation semantics.
 
 ## Objective
 
@@ -10,15 +10,20 @@ Keep package consumption deterministic and small:
 
 ```text
 REFERENCE.json
-→ identify current task/stage/readiness
-→ load only the relevant stage Markdown
-→ inspect only the image IDs referenced by that stage
-→ perform downstream work
+→ identify task / active stage / readiness
+→ load active stage Markdown when present
+→ load only stage-relevant image IDs
+→ load current downstream authoring state
+→ work
 ```
 
-Do not read every Markdown file and every image by default.
+Do not read every Markdown file or every image by default.
 
-## Canonical Package
+## Entry Point
+
+`REFERENCE.json` is always the package entry point.
+
+Canonical package:
 
 ```text
 asset_reference/
@@ -29,97 +34,115 @@ asset_reference/
 └── images/
 ```
 
-`REFERENCE.json` is always the entrypoint.
-
 ## Authority Order
 
 ```text
-1. explicit current user requirement
-2. approved visual reference
-3. REFERENCE.json structured facts
-4. active stage Markdown
-5. downstream Codex interpretation
+explicit current user requirement
+→ approved visual reference
+→ confirmed scale requirement
+→ REFERENCE.json structured facts
+→ active stage Markdown
+→ downstream interpretation
 ```
 
-Stage Markdown is a projection, not an independent authority.
+A lower authority never silently overrides a higher authority. Block only the dependent decision when a material conflict exists.
 
-If a lower authority conflicts with a higher authority, do not silently merge them. Treat the affected decision as conflicting and stop only the dependent work.
-
-## Load Order
+## Stage Load Order
 
 ### Geometry
 
 ```text
 1. REFERENCE.json
-2. GEOMETRY.md
-3. only image IDs referenced by GEOMETRY.md
-4. downstream LazyDesigner Modelling Skill / selected profile
+2. GEOMETRY.md when present
+3. Geometry image IDs referenced by GEOMETRY.md
+   OR images.used_by includes GEOMETRY when GEOMETRY.md is absent
+4. current asset Geometry state when continuing/correcting
+5. LazyDesigner Modelling Skill + exactly one selected profile when useful
 ```
 
-Do not load `TEXTURE.md` or `ANIMATION.md` unless a specific Geometry decision explicitly depends on information owned there.
+Do not load `TEXTURE.md` or `ANIMATION.md` merely because they exist.
 
 ### Texture
 
 ```text
 1. REFERENCE.json
 2. TEXTURE.md when present
-3. only image IDs referenced by TEXTURE.md
-4. current approved Geometry/UV state from downstream authoring environment
+3. Texture image IDs referenced by TEXTURE.md
+   OR images.used_by includes TEXTURE when TEXTURE.md is absent
+4. current approved Geometry/UV state
 5. LazyDesigner Texturing Skill
 ```
 
-Do not reload full Geometry reference prose merely because the asset has Geometry. Geometry facts needed by Texturing should already be represented through stable semantic IDs, mapped state, or bounded references.
+Do not reload full Geometry prose. Stable Geometry facts needed by Texture should arrive through semantic IDs/current mapped state.
 
 ### Animation
 
 ```text
 1. REFERENCE.json
 2. ANIMATION.md when present
-3. only image IDs referenced by ANIMATION.md
-4. current approved rig/hierarchy/pivot state from downstream authoring environment
+3. Animation image IDs referenced by ANIMATION.md
+   OR images.used_by includes ANIMATION when ANIMATION.md is absent
+4. current approved rig/hierarchy/pivot state
 5. LazyDesigner Animation Skill
 ```
 
-Do not load `TEXTURE.md` unless material/effect appearance materially changes motion interpretation.
+Do not load unrelated Texture or full modelling-profile prose.
 
-## Stage Skip Rule
+## Optional Stage Document Rule
 
-A stage document may be absent when it does not materially improve downstream correctness.
+A stage Markdown file may be absent when it would not materially improve correctness.
 
 Examples:
 
 ```text
-simple solid-color prop
+simple prop with obvious material
 → TEXTURE.md may be absent
 
-known simple rigid mechanical loop
-→ ANIMATION.md may be absent if REFERENCE.json already carries enough explicit motion fact
+simple explicit rigid mechanical loop
+→ ANIMATION.md may be absent
 
 static asset
-→ ANIMATION.md absent and readiness.animation = NOT_REQUIRED
+→ ANIMATION.md absent + readiness.animation = NOT_REQUIRED
 ```
 
-Missing optional stage document is not an error when `REFERENCE.json` records the stage appropriately.
+When a stage file is absent, `REFERENCE.json` remains sufficient orientation through stable facts, `images.used_by`, unknowns, and readiness.
+
+Missing optional Markdown is not an error.
 
 ## Image Loading Rule
 
-Images are loaded by semantic ID, not by scanning the whole `images/` folder.
+Never scan `images/` blindly.
 
-Example:
+Preferred image resolution:
 
 ```text
-GEOMETRY.md
-→ IMG_GEO_01
-→ IMG_RIG_01
+stage Markdown image IDs
+→ if stage Markdown absent, REFERENCE.json images.used_by
+→ additional image only for a specific unresolved decision
 ```
 
-Codex should inspect those first. Additional images are loaded only if a specific unresolved decision requires them.
+`images.used_by` vocabulary:
 
-This prevents image-heavy packages from becoming automatic context overhead.
+```text
+GEOMETRY | TEXTURE | ANIMATION
+```
+
+An image may support multiple stages without being duplicated.
+
+## Scale Loading Rule
+
+Use scale directly from `REFERENCE.json.requirements`:
+
+```text
+dimensions_blocks
+player_relative_scale
+```
+
+Numeric dimensions are numeric authority. Player-relative scale communicates world/interactivity relationship. If they materially conflict, block the dependent stage instead of inventing a reconciliation.
+
+Do not infer world scale from image size when package scale authority already exists.
 
 ## Cross-Stage Leakage Rule
-
-Each stage document owns only its domain interpretation:
 
 ```text
 GEOMETRY.md
@@ -129,80 +152,81 @@ TEXTURE.md
 → materials / colors / markings / surface / alpha / emissive / PBR
 
 ANIMATION.md
-→ participants / motion relationships / poses / timing / contact / deformation
+→ participants / motion / poses / timing / contact / deformation
 ```
 
-If a fact belongs to multiple stages, `REFERENCE.json` owns the stable cross-stage fact and each Markdown file may contain only the stage-specific consequence.
+Stable facts shared across stages belong in `REFERENCE.json`; Markdown contains only stage-specific consequences.
 
 Example:
 
 ```text
 REFERENCE.json
-part: right_hand owns tool
+→ right_hand owns tool
 
 GEOMETRY.md
-→ tool must be structurally attached to right_hand
+→ tool structurally attaches to right_hand
 
 ANIMATION.md
-→ tool must remain attached to right_hand throughout the clip
+→ tool remains attached during motion
 ```
 
-This is not duplicate authority; it is one fact with two stage-specific consequences.
+This is one fact with separate stage consequences, not duplicate authority.
 
 ## Unknown / Blocker Rule
 
 `REFERENCE.json` owns the canonical unknown inventory.
 
-Stage Markdown may repeat only the unknowns relevant to that stage.
+Stage Markdown repeats only stage-relevant consequences.
 
 ```text
-texture-only unknown
-→ must not appear as Geometry blocker
+Texture-only unknown
+→ does not block Geometry
 
 rig blocker
 → may block Animation while Texture remains READY
 ```
 
-Do not promote a non-blocking unknown into a blocker merely because a stage document mentions it.
+Do not promote a non-blocking unknown simply because a stage document mentions it.
 
 ## Correction / Delta Load
 
-For a bounded correction:
+For bounded corrections:
 
 ```text
 REFERENCE.json
-→ identify changed fact / affected stage
-→ load only affected stage Markdown
-→ load only affected image IDs
-→ preserve unaffected accepted package content
+→ identify changed fact + affected stage(s)
+→ load affected stage Markdown only
+→ load affected image IDs only
+→ load current affected asset state
+→ preserve unaffected accepted context
 ```
 
-Do not reread the entire package for a local correction unless the change invalidates whole-asset identity or multiple stage authorities.
+Do not reread the entire package unless the change invalidates whole-asset identity, scale, or multiple stage authorities.
 
 ## Package Consistency Gate
 
-Before handoff, ChatGPT should ensure:
+Before handoff, ChatGPT verifies:
 
 ```text
 all listed documents exist
-all referenced image IDs exist
-all stage files agree with REFERENCE.json
+all image IDs/paths resolve
+images.used_by uses valid stages
+stage files agree with REFERENCE.json
 no stage file introduces unsupported facts
-no stage file contains another stage's implementation plan
-readiness values match blockers
-optional omitted files are not referenced
+no stage file compensates for another stage's defect
+numeric/player-relative scale do not conflict
+readiness matches blockers
+omitted optional files are not referenced
 ```
 
-A package failing these checks is not ready for Codex.
+A failing package is not ready for Codex.
 
 ## Minimal Consumption Principle
-
-The intended downstream behavior is:
 
 ```text
 ORIENT ONCE
 → LOAD ACTIVE STAGE
-→ LOAD REFERENCED EVIDENCE
+→ LOAD RELEVANT EVIDENCE
 → WORK
 ```
 
@@ -214,19 +238,8 @@ READ EVERYTHING
 → WORK
 ```
 
-The goal is minimum context required for the next correct decision, not minimum context at the expense of fidelity.
+The goal is minimum sufficient context, not minimum context at the expense of fidelity.
 
-## Completion Condition
+## Completion
 
-This contract is satisfied when Astra/Codex can determine:
-
-```text
-where to start
-which stage file to read
-which images to inspect
-which files can be ignored for the current stage
-how authority conflicts are handled
-how corrections stay bounded
-```
-
-without relying on the original ChatGPT conversation.
+This contract is satisfied when Astra/Codex can determine where to start, which stage file is relevant, which images matter even when a stage file is omitted, what scale authority exists, what can be ignored, and how corrections remain bounded—without using the original ChatGPT transcript.
