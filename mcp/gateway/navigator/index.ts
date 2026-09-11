@@ -1,6 +1,8 @@
 export { buildNavigatorSnapshot } from "./snapshot";
 export { buildNavigatorPacket } from "./packet";
 export { readWorkspaceProjection } from "./workspace";
+export { readReferencePackageProjection } from "./referencePackage";
+export { buildControlStageContext } from "./contextProjection";
 export { decorateCapabilities } from "./capabilities";
 export { buildNavigatorDelta } from "./delta";
 export { contextIds, contextSetChanged } from "./contextCache";
@@ -17,10 +19,15 @@ export {
   authoringDomainForCapability,
   contextForAuthoringDomain,
   sourceOwnerForCapability,
-  NAVIGATOR_CONTEXT_HANDLES,
 } from "./registry";
 export type { NavigatorPacket, NavigatorContextDelivery } from "./packet";
 export type { NavigatorWorkspaceProjection } from "./workspace";
+export type {
+  ControlProfile,
+  ControlReferenceProjection,
+  ControlReferenceStage,
+} from "./referencePackage";
+export type { ControlContextType, ControlStageContext } from "./contextProjection";
 export type {
   NavigatorAuthoringDomain,
   NavigatorCapabilitySummary,
