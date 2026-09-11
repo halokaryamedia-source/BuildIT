@@ -1,102 +1,178 @@
 # Official Particle Defaults and Evaluation Semantics
 
-Purpose: record **current official Bedrock defaults, evaluation timing, and version-sensitive field semantics** that are easy to lose when reading only high-level component descriptions.
+Purpose: record current official Bedrock defaults, omission semantics, evaluation timing, and version-sensitive deltas that are easy to lose in high-level component summaries.
 
-Evidence class: **OFFICIAL BEDROCK** unless explicitly marked otherwise.
+Evidence class: **OFFICIAL BEDROCK** unless marked otherwise.
 
-This file complements:
+Use with:
 
 ```text
 component-catalog.md
-→ what components exist
+→ component discovery
 
 component-field-reference.md
 → field purpose / ownership / failure modes
 
 official-schema-coverage.md
-→ whether every official family has an owner
+→ family-level closure audit
 
 THIS FILE
-→ defaults + evaluation timing + schema-version delta notes
+→ defaults / omission / evaluation timing / version deltas
 ```
 
-Do not infer a default when Microsoft documentation says `not set`.
+Never infer zero, false, empty array, or zero vector from `not set`.
+
+## Authority rule
+
+Microsoft currently exposes newer generated schema/reference pages alongside older hand-written semantic docs.
+
+Use:
+
+```text
+target-version generated schema
+→ accepted JSON shape, unions, enum strings, explicit defaults
+
+older official prose
+→ semantic/evaluation explanation only when compatible
+```
+
+If they conflict, do not average or invent a third behavior. Record the discrepancy and use the target-version schema for authoring.
 
 ---
 
-## 1. Emitter local space
+## Emitter local space
 
 `minecraft:emitter_local_space`
 
-Documented fields:
-
 ```text
-position
-rotation
-velocity
+position default = false
+rotation default = false
 ```
 
-Official behavior:
-- `position` defaults to `false`;
-- `rotation` defaults to `false`;
+Official semantic rules:
 - `rotation=true` with `position=false` is invalid;
-- `velocity=true` adds emitter velocity to the particle's initial velocity;
-- when local position/rotation are false, particles are emitted relative to the emitter then simulate independently in world space.
+- `velocity=true` adds emitter velocity to initial particle velocity;
+- without local position/rotation, particles are emitted from the emitter then simulate independently in world space.
 
-Authoring consequence: confirm local-space ownership before diagnosing trajectory, attachment drift, or inherited motion.
+Check local-space ownership before diagnosing trajectory/attachment drift.
 
 ---
 
-## 2. Emitter lifetime expression
+## Emitter initialization
 
-`minecraft:emitter_lifetime_expression`
+`minecraft:emitter_initialization`
+
+Current generated defaults:
+
+```text
+creation_expression   default = 0
+per_update_expression default = 0
+```
+
+Older official prose clarifies:
+- `creation_expression` evaluates once when the emitter starts;
+- `per_update_expression` evaluates once per emitter update.
+
+Do not use `per_update_expression` when a one-time sampled emitter choice is intended.
+
+---
+
+## Emitter rate deltas
+
+### Instant
+
+Current generated `minecraft:emitter_rate_instant` schema records:
+
+```text
+num_particles = not set
+```
+
+Older hand-written documentation described a default of `10` and one evaluation per emitter loop.
+
+**Version delta:** do not assume `10` when authoring for a current generated schema that says `not set`.
+
+### Steady
+
+Current generated schema records:
+
+```text
+spawn_rate    = not set
+max_particles = not set
+```
+
+### Manual
+
+Current generated schema exposes:
+
+```text
+max_particles = not set
+```
+
+Manual emission still requires a real downstream/manual owner; absence of rate fields is not permission to invent one.
+
+---
+
+## Emitter lifetime deltas
+
+### Expression
 
 ```text
 activation_expression default = 1
 expiration_expression default = 0
 ```
 
-Both are documented as frame-evaluated.
+Both are frame-evaluated.
 
-Meaning:
-- activation non-zero → emitter emits;
-- activation zero → emitter turns off;
-- expiration non-zero → emitter expires.
+### Looping
 
-Do not treat activation and expiration as one-time initialization values.
+Current generated schema records:
+
+```text
+active_time default = 0
+sleep_time  default = 0
+```
+
+Older hand-written docs described:
+
+```text
+active_time default = 10
+sleep_time  default = 0
+```
+
+and described both as evaluated once per emitter loop.
+
+**Version delta:** target generated schema wins for omission/default behavior.
+
+### Once
+
+Older hand-written docs describe `active_time` default `10` and one evaluation. Do not claim that as the current generated-schema default unless the target-version schema explicitly confirms it.
 
 ---
 
-## 3. Particle lifetime expression
+## Particle lifetime expression
 
 `minecraft:particle_lifetime_expression`
 
 ```text
 expiration_expression default = 0
-max_lifetime             = no implicit authored value documented
+max_lifetime             = not implicitly authored / target-schema required
 ```
 
-Official evaluation distinction:
-- `expiration_expression` is evaluated continuously/every frame and expires when non-zero;
-- `max_lifetime` is evaluated once for the particle and determines the absolute lifetime ceiling.
-
-This is a critical ownership distinction:
+Evaluation distinction:
 
 ```text
-sample once at birth
-→ max_lifetime
+max_lifetime
+→ evaluated once for the particle
 
-continuous condition
-→ expiration_expression
+expiration_expression
+→ evaluated continuously; nonzero expires the particle
 ```
 
-Do not use changing external state in `max_lifetime` expecting it to keep updating.
+Changing external state in `max_lifetime` does not make the lifetime continuously reactive.
 
 ---
 
-## 4. Particle initialization
-
-`minecraft:particle_initialization`
+## Particle initialization
 
 Current generated schema exposes:
 
@@ -105,202 +181,278 @@ per_update_expression default = 0
 per_render_expression default = 0
 ```
 
-The component is particle-owned, but those field names describe their ongoing evaluation stages. Do **not** simplify the whole component into "runs only once at birth" merely because the component is named initialization.
-
-Use:
-- `per_update_expression` only for state intentionally updated with simulation;
-- `per_render_expression` only for state intentionally evaluated for rendering.
-
-Persistent one-time identity should still prefer stable particle-owned random values or other birth-stable inputs when possible.
+These names describe ongoing evaluation stages. Do not describe the whole component as birth-only initialization.
 
 ---
 
-## 5. Emitter shape defaults
+## Particle initial spin
+
+`minecraft:particle_initial_spin`
+
+Current generated defaults:
+
+```text
+rotation      default = 0
+rotation_rate default = 0
+```
+
+Older semantic docs clarify both are evaluated once for initial state; rotation is degrees and rotation rate is degrees/second.
+
+---
+
+## Emitter shape defaults
+
+### Point
+
+```text
+offset    default = [0,0,0]
+direction = not set
+```
+
+Older semantics describe position/direction expressions as evaluated per emitted particle.
 
 ### Disc
 
-`minecraft:emitter_shape_disc`
-
-Current documented defaults:
-
 ```text
-offset       = [0, 0, 0]
-plane_normal = [0, 1, 0]
-radius       = 1
-surface_only = false
+offset       default = [0,0,0]
+plane_normal default = [0,1,0]
+radius       default = 1
+surface_only default = false
 direction    = not set
 ```
 
-`plane_normal` may be axis shorthand (`x`, `y`, `z`) or a vector form depending on schema form.
-
 ### Sphere
 
-`minecraft:emitter_shape_sphere`
+```text
+offset       default = [0,0,0]
+radius       default = 1
+surface_only default = false
+direction    = not set
+```
+
+### Box
 
 ```text
-offset       = [0, 0, 0]
-radius       = 1
-surface_only = false
+offset          default = [0,0,0]
+half_dimensions = not set
+surface_only    default = false
+direction       = not set
+```
+
+### Entity AABB
+
+```text
+surface_only default = false
 direction    = not set
 ```
 
 ### Custom
 
-`minecraft:emitter_shape_custom`
-
 ```text
-offset    = [0, 0, 0]
-direction = [0, 0, 0]
+offset    default = [0,0,0]
+direction default = [0,0,0]
 ```
 
-### Entity AABB
-
-`minecraft:emitter_shape_entity_aabb`
-
-```text
-surface_only = false
-direction    = not set
-```
-
-Authoring rule: distinguish `not set` from an explicit zero vector. They are not interchangeable assumptions.
+Explicit zero vector and omitted direction are distinct authoring states.
 
 ---
 
-## 6. Billboard direction defaults
+## Parametric motion
 
-`minecraft:particle_appearance_billboard`
-
-The billboard direction subsection supports direction source modes including:
+Current generated `minecraft:particle_motion_parametric` uses:
 
 ```text
-derive_from_velocity
-custom_direction
+relative_position
+direction
+rotation
 ```
 
-Legacy/current official documentation states that when the direction subsection is omitted, directional facing behaves as:
+with fields represented as target-schema values/not-set forms. The current field name is `direction`, not legacy/guessed `relative_direction`.
+
+---
+
+## Billboard direction version delta
+
+Older hand-written docs describe omitted direction settings as:
 
 ```text
 mode                = derive_from_velocity
 min_speed_threshold = 0.01
 ```
 
-For `custom_direction`, provide an explicit 3D direction vector.
+and describe a custom mode as `custom_direction`.
 
-Important: this direction subsection is relevant to facing modes that require direction input; it is not the same thing as emitter launch direction or `particle_initial_speed`.
+Newer generated DirectionSettings schema instead exposes:
+
+```text
+mode choices        = custom | derive_from_velocity
+custom_direction    = not set
+min_speed_threshold default = 0
+```
+
+Do not merge these representations.
+
+Key distinction:
+
+```text
+entire direction block omitted
+may have documented legacy fallback semantics
+
+explicit direction object
+uses the target-version child-field schema/defaults
+```
+
+Use `billboard-direction.md` for the full authoring rule.
 
 ---
 
-## 7. Billboard UV defaults
+## Billboard UV / flipbook defaults
 
-Billboard `uv` documentation records:
+Billboard UV:
 
 ```text
 texture_width  default = 1
 texture_height default = 1
 ```
 
-At `1`, UV values behave like normalized coordinates. Setting actual image dimensions makes authored UVs work in texel-like units.
+At `1`, UV values operate in normalized-style coordinates; explicit image dimensions allow texel-oriented atlas mapping.
 
-Do not assume texture pixel dimensions are auto-detected by JSON semantics when explicit atlas math matters.
-
----
-
-## 8. Flipbook defaults
-
-Current generated flipbook schema records:
+Current generated flipbook defaults include:
 
 ```text
-frames_per_second  default = 0
-size_UV            default = [1, 1]
-step_UV            default = [0, 0]
+frames_per_second   default = 0
+size_UV             default = [1,1]
+step_UV             default = [0,0]
 stretch_to_lifetime default = false
 loop                default = false
-base_UV             = not set
-max_frame           = not set
+base_UV              = not set
+max_frame            = not set
 ```
 
-Older descriptive documentation additionally clarifies:
-- first frame is frame `1` for `max_frame` reasoning;
-- `stretch_to_lifetime=true` adjusts playback timing to match particle lifetime.
-
-Version note: generated `1.21.0` schema pages may omit explicit defaults even when the general component page lists them. Prefer the schema matching the target version when exact omission/default behavior matters.
+Older semantic docs clarify lifetime stretching and frame interpretation. Use target schema for exact indexing/omission behavior.
 
 ---
 
-## 9. Collision defaults and bounds
+## Tinting / gradient schema
 
-`minecraft:particle_motion_collision`
+`minecraft:particle_appearance_tinting`
 
-Current generated defaults:
+Current generated schema exposes `color = not set` and supports target-schema forms including:
 
 ```text
-enabled                    = 1
-coefficient_of_restitution = 0
-collision_drag             = 0
-expire_on_contact          = false
+hex color string
+RGB/RGBA value/Molang array
+gradient object
+```
+
+Gradient object fields include:
+
+```text
+gradient
+interpolant
+```
+
+with `interpolant = not set` unless explicitly authored in the current schema form.
+
+Gradient can be represented by evenly-spaced color arrays or keyed-position maps where the target schema permits it.
+
+### Hex alpha-order discrepancy
+
+Older and newer official examples/documentation can differ in how 8-digit hex ordering is presented (for example alpha-first versus alpha-last conventions in different pages/generations).
+
+Do **not** normalize this by memory. For 8-digit hex, follow the target-version generated schema/examples or prefer explicit RGBA arrays when ambiguity would matter.
+
+---
+
+## Collision defaults and limits
+
+Current generated `minecraft:particle_motion_collision` defaults:
+
+```text
+enabled                    default = 1
+coefficient_of_restitution default = 0
+collision_drag             default = 0
+expire_on_contact          default = false
 collision_radius           = not set
 ```
 
-Collision event entries expose:
+Collision event entries:
 
 ```text
-event     = required reference
-min_speed = 2
+event     = required/reference
+min_speed default = 2
 ```
 
-The older official component documentation states:
-- `min_speed` default/minimum is 2 blocks/sec for event triggering;
-- `collision_radius` must be less than or equal to 0.5 block;
-- restitution `0` means no bounce, `1` approximately preserves bounce energy, values above `1` add energy.
+Older official prose states:
+- collision radius should be <= 0.5 block;
+- restitution 0 means no bounce; ~1 preserves bounce energy; >1 adds energy.
 
-Keep the older physical explanation as semantic guidance while using the current generated schema for target-version field shape/defaults.
+Use current schema for accepted fields/defaults and older prose for compatible physical interpretation.
 
 ---
 
-## 10. Particle lifetime events
+## Event-node defaults
 
-`minecraft:particle_lifetime_events`
-
-Official lifecycle meanings:
+Current generated event-node schema records:
 
 ```text
-creation_event
-→ fires when the particle is created
-
-expiration_event
-→ fires when the particle expires
-
-timeline
-→ keys are particle-relative times that trigger named events
+expression      default = 0
+log             default = ""
+particle_effect default = {"effect":"","pre_effect_expression":0,"type":null}
+randomize       = not set
+sequence        = not set
+sound_effect    = not set
 ```
 
-Event values may be a string or an array of strings where supported.
-
-Do not confuse particle timeline time with emitter loop time.
+Randomized child nodes expose explicit `weight`; do not infer a particle-event weight default when the particle schema does not document it.
 
 ---
 
-## 11. Emitter lifetime events
+## Particle lifetime events
 
-`minecraft:emitter_lifetime_events`
-
-Official lifecycle meanings include:
+Semantic ownership:
 
 ```text
-creation_event
-expiration_event
-timeline
+creation_event   → particle birth
+expiration_event → particle death
+timeline         → particle-relative time
 ```
 
-For looping emitters, timeline events fire on each loop according to the emitter timeline semantics.
-
-Some documentation/schema forms also expose travel-distance-driven event structures. Treat those as target-schema fields and verify the target version before authoring them.
+String/array event-value unions can be target-schema dependent. Use the target generated schema for exact shape.
 
 ---
 
-## 12. Kill plane coordinate rule
+## Emitter lifetime events and distance triggers
 
-`minecraft:particle_kill_plane`
+Current generated forms expose:
+
+```text
+creation_event                 default = [] in array form
+expiration_event               default = [] in array form
+timeline                       default = {}
+travel_distance_events         default = {}
+looping_travel_distance_events default = []
+```
+
+Alternate string/union branches may show `not set`; do not copy documentation-generator union artifacts as literal required JSON.
+
+Semantics:
+- `creation_event` fires on emitter creation;
+- `expiration_event` fires when the emitter expires and does not wait for living particles to finish;
+- `timeline` is emitter-relative and repeats according to emitter-loop semantics;
+- `travel_distance_events` use accumulated emitter movement thresholds;
+- `looping_travel_distance_events` repeat every authored travel interval from the previous firing.
+
+Looping distance entries can expose:
+
+```text
+distance = not set
+effects  = not set (string/array union by schema)
+```
+
+---
+
+## Kill plane
 
 Plane equation:
 
@@ -308,97 +460,65 @@ Plane equation:
 A*x + B*y + C*z + D = 0
 ```
 
-Official legacy documentation clarifies the plane is:
-- relative to the emitter;
-- oriented in world space.
-
-This mixed relationship is easy to misread. Do not treat the kill plane as simply "fully local" or "fully world-positioned" without considering that documented distinction.
+Older official semantics describe the plane as relative to the emitter while oriented in world space. Preserve this mixed coordinate relationship; do not reduce it to simply local or simply world space.
 
 ---
 
-## 13. Linear curve default
+## Curves / defaults
 
-For current generated `particle_curve_linear` schema:
+Current generated linear curve:
 
 ```text
 horizontal_range default = 1
 input            = not set
 nodes            = not set
-type             = required by curve structure
 ```
 
-Do not invent default nodes or input expressions.
+Older semantic docs mark `horizontal_range` optional/deprecated and state it is ignored for `bezier_chain`.
+
+Do not invent nodes/input.
 
 ---
 
-## 14. `not set` is not zero
+## `not set` rule
 
-A recurring schema rule:
-
-```text
-Default Value = not set
-```
-
-means the field is absent unless authored. It does **not** authorize ChatGPT to silently substitute:
+`Default Value = not set` means the field is absent unless authored. It does not authorize substitution with:
 
 ```text
 0
 false
+""
 []
+{}
 [0,0,0]
 ```
 
-unless another official schema/document explicitly defines such a default.
+unless another official target-schema rule explicitly defines that default.
 
-This matters especially for:
-- billboard size/facing mode;
-- texture/UV regions;
-- particle max lifetime;
+Fields where this distinction is especially important:
+- lifetime values;
+- direction/custom direction;
 - collision radius;
-- event references;
+- UV regions;
 - curve nodes/input;
-- effect identifiers.
+- event/effect references;
+- shape dimensions.
 
 ---
 
-## 15. Generated-schema vs legacy-reference rule
-
-Microsoft currently exposes both:
-- newer generated schema/reference pages (2026);
-- older hand-written component reference pages (commonly 2023).
-
-Use them together:
+## Official-default QA
 
 ```text
-current generated schema
-→ current field names, choices, shapes, explicit defaults
-
-older hand-written reference
-→ semantic explanation, evaluation timing, physical interpretation
-```
-
-If they conflict materially:
-1. prefer the target-version generated schema for accepted JSON shape/defaults;
-2. retain older prose only when it still explains semantics without contradicting the current schema;
-3. mark uncertainty rather than inventing reconciliation;
-4. validate in target Snowstorm/Minecraft when runtime behavior matters.
-
----
-
-## 16. Official-default QA
-
-Before delivering a particle that relies on omitted fields:
-
-```text
-[ ] confirm omission is intentional
-[ ] confirm the official target schema defines the expected default
-[ ] do not infer zero/false from "not set"
-[ ] confirm per-frame vs one-time evaluation ownership
-[ ] confirm event timeline uses the correct time owner
-[ ] confirm billboard direction default is suitable for low-speed particles
-[ ] confirm UV/flipbook defaults do not collapse an intended atlas animation
-[ ] confirm collision event min-speed default is appropriate
-[ ] confirm local-space omission is intentional for attached effects
+[ ] target Bedrock schema/version identified when exact defaults matter
+[ ] omitted field versus explicit zero/false distinguished
+[ ] generated schema versus legacy prose discrepancies recorded
+[ ] one-time versus per-update/per-render evaluation confirmed
+[ ] emitter time, particle time, distance, and collision timing not mixed
+[ ] billboard direction mode/default spelling follows target schema
+[ ] 8-digit tint hex ordering is not guessed
+[ ] rate/lifetime legacy defaults are not carried into newer `not set` schemas
+[ ] flipbook/UV defaults do not silently collapse intended animation
+[ ] collision min-speed/radius assumptions are target-sourced
 ```
 
 ## Sources
@@ -409,10 +529,7 @@ Before delivering a particle that relies on omitted fields:
 - https://learn.microsoft.com/en-us/minecraft/creator/reference/content/particlesreference/particlecomponents/minecraftemitter_lifetime_expression?view=minecraft-bedrock-stable
 - https://learn.microsoft.com/en-us/minecraft/creator/reference/content/particlesreference/particlecomponents/minecraftparticle_lifetime_expression?view=minecraft-bedrock-stable
 - https://learn.microsoft.com/en-us/minecraft/creator/reference/content/particlesreference/particlecomponents/minecraftparticle_appearance_billboard?view=minecraft-bedrock-stable
-- https://learn.microsoft.com/en-us/minecraft/creator/reference/content/particlesreference/examples/particlecomponents/particle_appearance_billboard_flipbook_data?view=minecraft-bedrock-stable
-- https://learn.microsoft.com/en-us/minecraft/creator/reference/content/particlesreference/examples/particlecomponents/particle_motion_collision_event?view=minecraft-bedrock-stable
+- https://learn.microsoft.com/en-us/minecraft/creator/reference/content/particlesreference/particlecomponents/minecraftparticle_appearance_tinting?view=minecraft-bedrock-stable
 - https://learn.microsoft.com/en-us/minecraft/creator/reference/content/particlesreference/particlecomponents/minecraftparticle_motion_collision?view=minecraft-bedrock-stable
-- https://learn.microsoft.com/en-us/minecraft/creator/reference/content/particlesreference/particlecomponents/minecraftparticle_lifetime_events?view=minecraft-bedrock-stable
 - https://learn.microsoft.com/en-us/minecraft/creator/reference/content/particlesreference/particlecomponents/minecraftemitter_lifetime_events?view=minecraft-bedrock-stable
-- https://learn.microsoft.com/en-us/minecraft/creator/reference/content/particlesreference/particlecomponents/minecraftparticle_lifetime_kill-plane?view=minecraft-bedrock-stable
-- https://learn.microsoft.com/en-us/minecraft/creator/reference/content/particlesreference/examples/particlecomponents/particle_curve_linear?view=minecraft-bedrock-stable
+- https://learn.microsoft.com/en-us/minecraft/creator/reference/content/particlesreference/particlecomponents/minecraftparticle_lifetime_events?view=minecraft-bedrock-stable
