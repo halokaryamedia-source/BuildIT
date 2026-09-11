@@ -18,6 +18,22 @@ describe("GatewayConnectionManager", () => {
     expect(repeated.state).toBe("offline");
   });
 
+  test("runtime availability clears reconnect cooldown immediately", () => {
+    const manager = new GatewayConnectionManager();
+
+    manager.beginProbe();
+    manager.markOffline();
+    expect(manager.snapshot().reconnect.failures).toBe(1);
+
+    manager.markAvailable();
+
+    const snapshot = manager.snapshot();
+    expect(snapshot.state).toBe("probing");
+    expect(snapshot.reconnect.failures).toBe(0);
+    expect(snapshot.reconnect.retry_after_ms).toBe(0);
+    expect(manager.canAttempt()).toBe(true);
+  });
+
   test("successful connection resets reconnect cooldown", () => {
     const manager = new GatewayConnectionManager();
 
