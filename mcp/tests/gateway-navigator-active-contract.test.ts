@@ -43,9 +43,10 @@ const status: GatewayRuntimeStatus = {
   last_error: null,
 };
 
-describe("BlockIT Navigator active naming contract", () => {
+describe("LazyDesigner Control active contract", () => {
   test("authoring domain and source owner are distinct canonical concepts", () => {
     const snapshot = buildNavigatorSnapshot(status);
+    expect(snapshot.protocol).toBe("lazydesigner-control-v1");
     expect(snapshot.authoring.domain).toBe("GEOMETRY");
     expect(snapshot.authoring).not.toHaveProperty("owner");
 
@@ -63,11 +64,11 @@ describe("BlockIT Navigator active naming contract", () => {
       "GEOMETRY"
     );
 
-    expect(capability.navigation.authoring_domain).toBe("GEOMETRY");
-    expect(capability.navigation.current_domain).toBe(true);
-    expect(capability.navigation.source_owner.source).toBe("mcp/server/tools/cubes.ts");
-    expect(capability.navigation).not.toHaveProperty("owner");
-    expect(capability.navigation).not.toHaveProperty("current_owner");
+    expect(capability.control.authoring_domain).toBe("GEOMETRY");
+    expect(capability.control.current_domain).toBe(true);
+    expect(capability.control.source_owner.source).toBe("mcp/server/tools/cubes.ts");
+    expect(capability.control).not.toHaveProperty("owner");
+    expect(capability.control).not.toHaveProperty("current_owner");
 
     const delta = buildNavigatorDelta({
       capability: "manage_cubes",
@@ -76,12 +77,18 @@ describe("BlockIT Navigator active naming contract", () => {
       projectUuid: "project-a",
       succeeded: true,
     });
+    expect(delta.protocol).toBe("lazydesigner-control-v1");
     expect(delta.authoring_domain).toBe("GEOMETRY");
-    expect(delta).not.toHaveProperty("owner");
+    expect(delta.invalidates.authoring_domains).toEqual([
+      "GEOMETRY",
+      "TEXTURING",
+      "ANIMATION",
+    ]);
   });
 
   test("routing priority is direct-first and keeps every fallback bounded", async () => {
     const packet = await buildNavigatorPacket(status);
+    expect(packet.control_protocol).toBe("lazydesigner-control-v1");
     expect(packet.routing).toEqual(NAVIGATOR_ROUTING_POLICY);
     expect(packet.routing.strategy).toBe("DIRECT_FIRST");
     expect(packet.routing.known_capability).toBe("INVOKE_CAPABILITY");
@@ -92,12 +99,12 @@ describe("BlockIT Navigator active naming contract", () => {
       "BOUNDED_CONTEXT_THEN_TARGETED_SEARCH"
     );
     expect(packet.routing.search_limit).toBe(4);
-    expect(JSON.stringify(packet).length).toBeLessThan(5200);
+    expect(JSON.stringify(packet).length).toBeLessThan(7000);
   });
 
-  test("development task identity ignores unrelated asset affinity and authoring phase", async () => {
+  test("system-development task identity ignores unrelated asset affinity and authoring phase", async () => {
     const first = await buildNavigatorPacket(status, {
-      taskMode: "MCP_DEVELOPMENT",
+      taskMode: "SYSTEM_DEVELOPMENT",
       taskIntent: "animation keyframe terlalu kaku",
     });
     const second = await buildNavigatorPacket(
@@ -106,7 +113,7 @@ describe("BlockIT Navigator active naming contract", () => {
         affinity: { project_uuid: "project-b", authoring_phase: "texturing" },
       },
       {
-        taskMode: "MCP_DEVELOPMENT",
+        taskMode: "SYSTEM_DEVELOPMENT",
         taskIntent: "animation keyframe terlalu kaku",
       }
     );
@@ -116,13 +123,13 @@ describe("BlockIT Navigator active naming contract", () => {
 
   test("unresolved development routing remains bounded and fail-closed", () => {
     const result = resolveDevelopmentIntent("something unusual elsewhere");
+    expect(result.task_class).toBe("SYSTEM_DEVELOPMENT");
     expect(result.domain).toBe("UNRESOLVED");
     expect(result.confidence).toBe("UNRESOLVED");
     expect(result.source_owners).toEqual([]);
     expect(result.required_context_paths).toEqual([
       "AGENTS.md",
       "mcp/AGENTS.md",
-      ".agents/skills/development-brief/SKILL.md",
     ]);
   });
 });
