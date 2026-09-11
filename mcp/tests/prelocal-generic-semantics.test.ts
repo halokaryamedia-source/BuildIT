@@ -125,13 +125,10 @@ describe("pre-local generic semantics narrowing", () => {
 
   test("fixed export-format discovery is default-disabled without removing export capability", async () => {
     const exportSource = await source("server/tools/export.ts");
-    const skill = await source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md");
     expect(exportSource).toContain("exportToolDocs[0].status,\n    false");
     expect(exportSource).toContain("BLOCKIT_MODEL_CODEC_IDS = [\"bedrock\", \"project\"]");
-    expect(skill).toContain(
-      "`export_model`: `bedrock` JSON or `project` `.bbmodel`."
-    );
-    expect(skill).not.toContain("list_export_formats");
+    expect(exportSource).toContain('z.enum(BLOCKIT_MODEL_CODEC_IDS).default("bedrock")');
+    expect(exportSource).not.toContain('codec_id: z.enum(["obj"');
   });
 
   test("generic full-app capture and editor-camera mutation are default-disabled", async () => {
@@ -143,7 +140,7 @@ describe("pre-local generic semantics narrowing", () => {
 
   test("generic per-face texture apply is disabled for Bedrock single-texture authoring", async () => {
     const texture = await source("server/tools/texture.ts");
-    const skill = await source("../.agents/skills/blockit-bedrock-texturing/SKILL.md");
+    const skill = await source("../.agents/skills/lazydesigner-texturing/SKILL.md");
     expect(texture).toContain("textureToolDocs[1].status, false");
     expect(texture).toContain("Legacy per-face texture wrapper. Disabled on the normal Bedrock Entity surface; use activate_texture.");
     expect(skill).not.toContain("- `apply_texture`");
