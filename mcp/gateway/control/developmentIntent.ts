@@ -81,7 +81,7 @@ const RULES: readonly Rule[] = [
     domain: "PARTICLE",
     terms: ["particle", "particles", "partikel", "snowstorm"],
     owners: () => [
-      owner("mcp/server/tools/particle.ts", "mcp/tests/particle-tool-contract.test.ts"),
+      sourceOwnerForCapability("manage_particle"),
       owner("mcp/lib/bedrockParticleSemantics.ts", "mcp/tests/particle-advanced-semantics.test.ts"),
     ],
   },
@@ -104,8 +104,11 @@ const RULES: readonly Rule[] = [
   },
   {
     domain: "GATEWAY",
-    terms: ["gateway", "stdio", "capability catalog", "search_capabilities", "describe_capability", "invoke_capability", "control", "navigator"],
+    terms: ["gateway", "stdio", "capability catalog", "search_capabilities", "describe_capability", "invoke_capability", "control", "control layer", "routing", "continuation", "navigator"],
     owners: () => [
+      owner("mcp/gateway/control/packet.ts", "mcp/tests/gateway-control-active-contract.test.ts"),
+      owner("mcp/gateway/control/routingPolicy.ts", "mcp/tests/gateway-control-routing.test.ts"),
+      owner("mcp/gateway/control/delta.ts", "mcp/tests/gateway-control-continuation-hardening.test.ts"),
       owner("mcp/gateway/index.ts", "mcp/tests/gateway-contract.test.ts"),
       owner("mcp/gateway/backend.ts", "mcp/tests/gateway-reliability-hardening.test.ts"),
       owner("mcp/gateway/contract.ts", "mcp/tests/gateway-contract.test.ts"),
