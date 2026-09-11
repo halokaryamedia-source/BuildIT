@@ -23,6 +23,7 @@ import {
   type CapabilitySummary,
   type JsonRecord,
 } from "./contract";
+import { GatewayConnectionManager } from "./connectionManager";
 
 export type GatewayBackendErrorCode =
   | "BACKEND_UNAVAILABLE"
@@ -64,6 +65,7 @@ export type GatewayRuntimeStatus = {
     catalog_count: number;
     health: JsonRecord | null;
   };
+  connection: ReturnType<GatewayConnectionManager["snapshot"]>;
   operations: {
     active: number;
     queued: number;
@@ -166,6 +168,7 @@ export class BlockitRuntimeBackend {
   private readonly callTimeoutMs: number;
   private readonly closeTimeoutMs: number;
   private readonly maxQueueDepth: number;
+  private readonly connection = new GatewayConnectionManager();
   private client: Client | null = null;
   private connectedSignature: string | null = null;
   private catalog = new Map<string, BackendTool>();
@@ -458,6 +461,7 @@ export class BlockitRuntimeBackend {
 
   private async connectFreshUnsafe(signature: string): Promise<void> {
     await this.closeConnectionUnsafe();
+    this.connection.beginConnect();
 
     const client = new Client(
       { name: "blockit-gateway-runtime-client", version: GATEWAY_VERSION },
@@ -474,16 +478,21 @@ export class BlockitRuntimeBackend {
       this.connectedSignature = signature;
       this.catalog = new Map(tools.map((tool) => [tool.name, tool]));
       this.lastError = null;
+      this.connection.markReady({ catalogRefreshed: true });
     } catch (error) {
       await this.closeClientBestEffort(client);
       const message = errorMessage(error);
       const timedOut = isRequestTimeoutError(error);
+      const retryAfterMs = this.connection.markDegraded();
       this.lastError = message;
       throw new GatewayBackendError(
         "BACKEND_UNAVAILABLE",
         `LazyDesigner Runtime MCP connection failed: ${message}`,
         true,
-        timedOut ? { timeout_ms: this.connectTimeoutMs } : {}
+        {
+          ...(timedOut ? { timeout_ms: this.connectTimeoutMs } : {}),
+          retry_after_ms: retryAfterMs,
+        }
       );
     }
   }
@@ -492,14 +501,27 @@ export class BlockitRuntimeBackend {
     bindProject: boolean = false,
     allowMissingBoundProject: boolean = false
   ): Promise<void> {
+    if (!this.client && !this.connection.canAttempt()) {
+      const retryAfterMs = this.connection.retryAfterMs();
+      throw new GatewayBackendError(
+        "BACKEND_UNAVAILABLE",
+        `LazyDesigner Runtime reconnect is cooling down for ${retryAfterMs}ms after a recent connection failure.`,
+        true,
+        { retry_after_ms: retryAfterMs }
+      );
+    }
+
+    this.connection.beginProbe();
     const probe = await this.probeHealth();
     if (!probe.online) {
       await this.closeConnectionUnsafe();
+      const retryAfterMs = this.connection.markOffline();
       this.lastError = probe.error;
       throw new GatewayBackendError(
         "BACKEND_UNAVAILABLE",
         `LazyDesigner Runtime is unavailable: ${probe.error}`,
-        true
+        true,
+        { retry_after_ms: retryAfterMs }
       );
     }
 
@@ -527,6 +549,7 @@ export class BlockitRuntimeBackend {
       this.connectedSignature === probe.signature &&
       this.catalog.size > 0
     ) {
+      this.connection.markHealthy();
       return;
     }
 
@@ -535,6 +558,7 @@ export class BlockitRuntimeBackend {
 
   private buildStatus(probe: HealthProbe): GatewayRuntimeStatus {
     if (!probe.online) {
+      this.connection.markOffline();
       return {
         gateway: "ready",
         affinity: {
@@ -551,6 +575,7 @@ export class BlockitRuntimeBackend {
           catalog_count: this.catalog.size,
           health: null,
         },
+        connection: this.connection.snapshot(),
         operations: this.operationStatus(),
         last_error: probe.error,
       };
@@ -558,6 +583,9 @@ export class BlockitRuntimeBackend {
 
     const ready =
       Boolean(this.client) && this.connectedSignature === probe.signature;
+    if (ready) {
+      this.connection.markHealthy();
+    }
     return {
       gateway: "ready",
       affinity: {
@@ -576,6 +604,7 @@ export class BlockitRuntimeBackend {
         catalog_count: this.catalog.size,
         health: probe.health,
       },
+      connection: this.connection.snapshot(),
       operations: this.operationStatus(),
       last_error: this.lastError,
     };
@@ -706,6 +735,7 @@ export class BlockitRuntimeBackend {
           }
           if (!nextPhase) {
             await this.closeConnectionUnsafe();
+            this.connection.markDegraded();
             throw new GatewayBackendError(
               "BACKEND_UNAVAILABLE",
               "LazyDesigner Runtime returned an invalid authoring phase handoff receipt.",
@@ -756,6 +786,7 @@ export class BlockitRuntimeBackend {
         const classification = classifyInterruptedCall(tool);
         const timedOut = isRequestTimeoutError(error);
         await this.closeConnectionUnsafe();
+        const retryAfterMs = this.connection.markDegraded();
         this.lastError = message;
         throw new GatewayBackendError(
           classification.code,
@@ -766,6 +797,7 @@ export class BlockitRuntimeBackend {
           {
             capability,
             cause: message,
+            retry_after_ms: retryAfterMs,
             ...(timedOut ? { timeout_ms: this.callTimeoutMs } : {}),
           }
         );
