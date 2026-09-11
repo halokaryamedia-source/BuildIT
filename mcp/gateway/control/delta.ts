@@ -12,6 +12,7 @@ const STATE_MUTATIONS = new Set([
   "paint_with_brush", "eraser_tool", "paint_texture_transaction", "manage_material",
   "manage_material_instances", "manage_render_profile", "create_animation",
   "manage_animation_timeline", "manage_animation_effects", "manage_animation_controller",
+  "manage_particle",
 ]);
 
 const UV_OR_SHAPE_FIELDS = new Set([
