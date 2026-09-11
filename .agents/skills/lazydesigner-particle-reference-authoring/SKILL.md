@@ -12,8 +12,10 @@ Standalone specialist inside the canonical Reference Preparation domain for part
 ```text
 USER PARTICLE REQUEST
 → authoring-spec.md
+→ classify execution once
+→ select minimal physical pattern from patterns.md
+→ choose lowest viable complexity tier
 → workflow.md
-→ classify execution + complexity once
 → load minimum knowledge bundle
 → author JSON + textures
 → relevant qa.md gates only
@@ -35,7 +37,7 @@ REACTIVE
 AUDIT / REVISION
 ```
 
-and choose the lowest viable complexity tier:
+Then select the smallest physical starting family from `patterns.md` and choose the lowest viable complexity tier:
 
 ```text
 0 constants
@@ -46,7 +48,57 @@ and choose the lowest viable complexity tier:
 
 Do not escalate architecture unless a required behavior cannot be represented cleanly at the current tier.
 
-A request such as `buat particle api biru` should normally take the DIRECT fast path, not trigger multi-emitter/event architecture by default.
+A request such as `buat particle api biru` should normally resolve as:
+
+```text
+DIRECT
+→ Flame pattern
+→ one dominant role
+→ simple texture
+→ minimal Molang only if needed
+```
+
+not multi-emitter/event architecture by default.
+
+## Automatic physical-pattern rule
+
+Use `patterns.md` as the only canonical physical starting-pattern owner.
+
+Common routing hints:
+
+```text
+api / flame          → Flame
+spark / ember        → Sparks
+asap / smoke         → Rising smoke/plume
+ambient dust         → Ambient dust
+debu ledakan         → Ground/impact dust
+hujan                → Rain
+salju / abu jatuh    → Snow/Ash fall
+spray / mist         → Waterfall mist/spray
+trail                → Trail
+exhaust              → Machinery exhaust
+magic aura           → Magic aura/energy field
+beam / laser         → Beam/directional energy
+impact               → Impact burst
+explosion            → Explosion composed family
+shockwave            → Shockwave/ring expansion
+bubble               → Bubble/underwater rise
+```
+
+These are routing hints, never rigid templates. Explicit user motion/style/attachment/material requirements override keyword mapping.
+
+Combine pattern families only when at least one materially differs:
+
+```text
+physics
+spawn region
+timing
+render/material role
+texture class
+event/attachment ownership
+```
+
+Do not create a new pattern framework or duplicate these mappings elsewhere.
 
 ## Context-budget rule
 
@@ -62,15 +114,46 @@ knowledge/diagnosis
 + secondary owner only when required
 ```
 
-If more than three owners appear necessary, split the problem into causal decisions rather than reading everything.
+`patterns.md` is a lightweight pre-routing owner, not permission to preload every technical file related to a pattern.
+
+If more than three technical owners appear necessary, split the problem into causal decisions rather than reading everything.
 
 Do not load closure/default/version/troubleshooting/QA/delivery owners unless the current decision requires them.
+
+## Pattern-to-owner routing
+
+After selecting a pattern, load technical knowledge from the causal owner only:
+
+```text
+spawn/lifetime dominated
+→ emitter
+
+trajectory dominated
+→ motion
+
+custom ring/cone/fan
+→ emitter-shape-math
+
+texture-driven visual
+→ texture-authoring
+
+age progression
+→ molang OR curves only when needed
+
+entity/locator anchored
+→ entity-integration
+
+event/contact reactive
+→ events / collision-advanced
+```
+
+Pattern selection reduces reads; it does not expand them.
 
 ## Minimal task bundles
 
 ```text
 simple text particle
-→ authoring-spec + workflow + primary owner
+→ authoring-spec + patterns + workflow + primary owner
 → texture-authoring only if texture creation/change is required
 
 texture-only
@@ -127,9 +210,19 @@ When an unknown is not BLOCKING, prefer a conservative reversible first-pass cho
 
 Mark that choice internally as `PROVISIONAL`. Never present it as a user requirement, exact runtime fact, or measured performance result.
 
-Good provisional choices are local and easy to revise, such as modest lifetime, simple static texture, single emitter, conservative size, or simple particle-age fade.
-
 Do not provisionally invent hidden geometry, required attachment names, exact viewing distance, device/FPS limits, or gameplay semantics.
+
+## Numeric pattern rule
+
+`patterns.md` does not own universal numeric presets.
+
+Choose numbers from:
+1. explicit user target;
+2. visible/reference evidence;
+3. previously accepted same-context effect;
+4. conservative reversible provisional values.
+
+Never promote one accepted speed/lifetime/size/spawn rate into a global default.
 
 ## Simplicity ladder
 
