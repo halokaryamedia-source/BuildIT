@@ -47,9 +47,11 @@ describe("active routing integrity", () => {
       ".agents/skills/blockbench-bedrock-modelling/**",
       ".agents/skills/blockit-bedrock-texturing/**",
       ".agents/skills/blockit-bedrock-animation/**",
-      "docs/knowledge/next-action.md",
+      "docs/05-operations/next-action.md",
     ]) {
       expect(workflow).toContain(`- "${path}"`);
     }
+    expect(workflow).not.toContain("docs/knowledge/");
+    expect(workflow).not.toContain("docs/foundation/");
   });
 });
