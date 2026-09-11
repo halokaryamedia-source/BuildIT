@@ -16,9 +16,9 @@ on:
       - "!mcp/prompts/blockbench_code_eval_safety.md"
       - "!mcp/prompts/blockbench_native_apis.md"
       # Executable contract tests read these non-mcp owners directly.
-      - ".agents/skills/blockbench-bedrock-modelling/**"
-      - ".agents/skills/blockit-bedrock-texturing/**"
-      - ".agents/skills/blockit-bedrock-animation/**"
+      - ".agents/skills/lazydesigner-modelling/**"
+      - ".agents/skills/lazydesigner-texturing/**"
+      - ".agents/skills/lazydesigner-animation/**"
       - "docs/05-operations/next-action.md"
       - ".bun-version"
       - ".github/workflows/mcp-verify.yml"
