@@ -1,4 +1,9 @@
 import { version } from "../package.json";
+import {
+  CAPABILITY_TIER_BOOST,
+  getCapabilityMetadata,
+  type CapabilityTier,
+} from "../lib/capabilityMetadata";
 
 export const GATEWAY_NAME = "blockit-gateway";
 export const GATEWAY_VERSION = version;
@@ -32,11 +37,7 @@ export type BackendTool = {
   [key: string]: unknown;
 };
 
-export type CapabilityTier =
-  | "primary"
-  | "support"
-  | "experimental"
-  | "maintenance";
+export type { CapabilityTier };
 
 export type CapabilitySummary = {
   capability_id: string;
@@ -45,90 +46,6 @@ export type CapabilitySummary = {
   read_only: boolean;
   destructive: boolean;
   idempotent: boolean;
-};
-
-const PRIMARY_CAPABILITIES = new Set([
-  "create_project",
-  "get_project_info",
-  "inspect_elements",
-  "capture_model_views",
-  "export_model",
-  "undo",
-  "redo",
-  "switch_authoring_phase",
-  "manage_cubes",
-  "add_group",
-  "modify_group",
-  "reparent_element",
-  "remove_element",
-  "rename_element",
-  "create_texture",
-  "list_textures",
-  "get_texture",
-  "activate_texture",
-  "paint_fill_tool",
-  "draw_shape_tool",
-  "paint_with_brush",
-  "eraser_tool",
-  "paint_texture_transaction",
-  "manage_material",
-  "manage_material_instances",
-  "manage_render_profile",
-  "create_animation",
-  "inspect_animation",
-  "manage_animation_timeline",
-  "manage_animation_effects",
-  "manage_animation_controller",
-]);
-
-const CAPABILITY_SEARCH_ALIASES: Readonly<Record<string, readonly string[]>> = {
-  paint_texture_transaction: [
-    "atomic paint",
-    "exact pixel",
-    "exact pixels",
-    "revision protected paint",
-  ],
-  manage_render_profile: [
-    "alpha cutout translucent",
-    "render material",
-    "entity alphatest alphablend emissive",
-  ],
-  manage_animation_timeline: [
-    "animation properties",
-    "native animation properties",
-    "animation molang",
-    "rotation space",
-  ],
-  manage_animation_controller: [
-    "state machine",
-    "nested controller",
-    "blend curve",
-    "transition curve",
-  ],
-  manage_animation_effects: [
-    "animation sound",
-    "animation particle",
-    "animation timeline event",
-  ],
-};
-
-const EXPERIMENTAL_CAPABILITIES = new Set([
-  "manage_geometry_reference",
-]);
-
-const MAINTENANCE_CAPABILITIES = new Set([
-  "trigger_action",
-  "emulate_clicks",
-  "fill_dialog",
-  "risky_eval",
-  "from_geo_json",
-]);
-
-const TIER_BOOST: Record<CapabilityTier, number> = {
-  primary: 20,
-  support: 6,
-  experimental: 0,
-  maintenance: -20,
 };
 
 const CUBE_UV_CONTINUATION_FIELDS = new Set([
@@ -274,10 +191,7 @@ export function createRuntimeSignature(health: unknown): string {
 }
 
 export function classifyCapabilityTier(tool: BackendTool): CapabilityTier {
-  if (MAINTENANCE_CAPABILITIES.has(tool.name)) return "maintenance";
-  if (EXPERIMENTAL_CAPABILITIES.has(tool.name)) return "experimental";
-  if (PRIMARY_CAPABILITIES.has(tool.name)) return "primary";
-  return "support";
+  return getCapabilityMetadata(tool.name).tier;
 }
 
 export function summarizeCapability(tool: BackendTool): CapabilitySummary {
@@ -310,7 +224,7 @@ function lexicalCapabilityScore(tool: BackendTool, tokens: string[]): number {
   const name = tool.name.toLowerCase();
   const searchableName = name.replace(/[_.\/-]+/g, " ");
   const description = (tool.description ?? "").toLowerCase();
-  const aliases = (CAPABILITY_SEARCH_ALIASES[tool.name] ?? [])
+  const aliases = getCapabilityMetadata(tool.name).searchAliases
     .join(" ")
     .toLowerCase();
   let score = 0;
@@ -349,7 +263,7 @@ export function searchCapabilityCatalog(
         tool,
         tier,
         lexicalScore,
-        score: lexicalScore + TIER_BOOST[tier],
+        score: lexicalScore + CAPABILITY_TIER_BOOST[tier],
       };
     })
     .filter(({ tier, lexicalScore }) =>
