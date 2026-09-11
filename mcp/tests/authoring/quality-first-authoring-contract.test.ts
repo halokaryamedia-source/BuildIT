@@ -7,7 +7,7 @@ async function source(path: string): Promise<string> {
 describe("quality-first generic authoring contract", () => {
   test("bounds and visual evidence policies live in current modelling/validation owners", async () => {
     const [modelling, geometry, validation] = await Promise.all([
-      source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
+      source("../.agents/skills/lazydesigner-modelling/SKILL.md"),
       source("../docs/03-authoring/modelling/standard.md"),
       source("../docs/03-authoring/validation/visual.md"),
     ]);
@@ -19,7 +19,7 @@ describe("quality-first generic authoring contract", () => {
 
   test("reference and production UV policy preserve explicit authority without blocking nonvisual edits", async () => {
     const [modelling, reference, texture] = await Promise.all([
-      source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
+      source("../.agents/skills/lazydesigner-modelling/SKILL.md"),
       source("../docs/02-reference/policy.md"),
       source("../docs/03-authoring/texture/standard.md"),
     ]);
@@ -32,8 +32,8 @@ describe("quality-first generic authoring contract", () => {
   test("supported controller editing and fresh state are not blocked by stale workflow rules", async () => {
     const [workflow, animation, texture] = await Promise.all([
       source("prompts/bedrock_entity_workflow.md"),
-      source("../.agents/skills/blockit-bedrock-animation/SKILL.md"),
-      source("../.agents/skills/blockit-bedrock-texturing/SKILL.md"),
+      source("../.agents/skills/lazydesigner-animation/SKILL.md"),
+      source("../.agents/skills/lazydesigner-texturing/SKILL.md"),
     ]);
     const gaps = workflow.split("Protected gaps remain")[1] ?? "";
     expect(gaps).not.toContain("controller blend-curve mutation");
@@ -52,9 +52,9 @@ describe("quality-first generic authoring contract", () => {
 
   test("review boundaries preserve rejection and require current differences and playable motion", async () => {
     const [geometry, texture, animation, flow, validation] = await Promise.all([
-      source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
-      source("../.agents/skills/blockit-bedrock-texturing/SKILL.md"),
-      source("../.agents/skills/blockit-bedrock-animation/SKILL.md"),
+      source("../.agents/skills/lazydesigner-modelling/SKILL.md"),
+      source("../.agents/skills/lazydesigner-texturing/SKILL.md"),
+      source("../.agents/skills/lazydesigner-animation/SKILL.md"),
       source("../docs/01-product/flow.md"),
       source("../docs/03-authoring/validation/visual.md"),
     ]);
@@ -66,7 +66,7 @@ describe("quality-first generic authoring contract", () => {
   });
 
   test("Geometry protects assembly, mapped resize, motion readiness, and requested atlas constraints", async () => {
-    const skill = await source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md");
+    const skill = await source("../.agents/skills/lazydesigner-modelling/SKILL.md");
 
     for (const marker of [
       "motion-ready structure",
@@ -82,7 +82,7 @@ describe("quality-first generic authoring contract", () => {
   });
 
   test("Texturing proves material intent before propagation and protects variants and live authority", async () => {
-    const skill = await source("../.agents/skills/blockit-bedrock-texturing/SKILL.md");
+    const skill = await source("../.agents/skills/lazydesigner-texturing/SKILL.md");
 
     for (const marker of [
       "representative patch/cohort",
@@ -98,7 +98,7 @@ describe("quality-first generic authoring contract", () => {
   });
 
   test("Animation proves rig readiness, caller semantics, and time-based quality", async () => {
-    const skill = await source("../.agents/skills/blockit-bedrock-animation/SKILL.md");
+    const skill = await source("../.agents/skills/lazydesigner-animation/SKILL.md");
 
     for (const marker of [
       "representative extreme poses",
@@ -139,9 +139,9 @@ describe("quality-first generic authoring contract", () => {
 
   test("quality hardening remains generic rather than fixture or object specific", async () => {
     const files = await Promise.all([
-      source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
-      source("../.agents/skills/blockit-bedrock-texturing/SKILL.md"),
-      source("../.agents/skills/blockit-bedrock-animation/SKILL.md"),
+      source("../.agents/skills/lazydesigner-modelling/SKILL.md"),
+      source("../.agents/skills/lazydesigner-texturing/SKILL.md"),
+      source("../.agents/skills/lazydesigner-animation/SKILL.md"),
       source("../docs/03-authoring/finalization/standard.md"),
     ]);
 
