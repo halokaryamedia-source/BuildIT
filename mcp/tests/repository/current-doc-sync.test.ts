@@ -79,7 +79,27 @@ describe("current developer-facing documentation sync", () => {
     expect(validation).toMatch(/proof interpretation/i);
     expect(next).toMatch(/continuation only/i);
     expect(runbook).toMatch(/local acceptance/i);
-    expect(validation).toMatch(/static source\/ci|source\/documentation/i);
+    expect(validation).toMatch(/source\/static|static source|source architecture/i);
+    expect(validation).toContain("not been typechecked/executed locally");
     expect(runbook).toMatch(/live_blockbench/i);
+  });
+
+  test("current ownership docs describe the persistent Gateway and split Runtime/Plugin owners", async () => {
+    const [agents, implementation, validation, next] = await Promise.all([
+      text("AGENTS.md"),
+      text("../docs/04-system/implementation-map.md"),
+      text("../docs/05-operations/current-validation.md"),
+      text("../docs/05-operations/next-action.md"),
+    ]);
+
+    for (const owner of [agents, implementation, validation, next]) {
+      expect(owner).toContain("persistent Gateway");
+    }
+    expect(agents).toContain("server/runtime/");
+    expect(agents).toContain("plugin/runtimeHost.ts");
+    expect(implementation).toContain("mcp/server/runtime/bootstrap.ts");
+    expect(implementation).toContain("mcp/plugin/blockbenchIntegration.ts");
+    expect(implementation).not.toContain("`mcp/server/server.ts` wires");
+    expect(agents).not.toContain("reconnected live MCP client");
   });
 });
