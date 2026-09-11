@@ -1,8 +1,3 @@
-/**
- * @author jasonjgardner
- * @discord jason.gardner
- * @github https://github.com/jasonjgardner
- */
 /// <reference types="three" />
 /// <reference types="blockbench-types" />
 import { VERSION } from "@/lib/constants";
