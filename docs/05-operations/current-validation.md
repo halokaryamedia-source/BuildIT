@@ -2,7 +2,7 @@
 
 Updated: 2026-09-11
 
-This file owns **current proof interpretation only**. Product workflow belongs in `flow.md`; reference preparation in `reference-handoff.md`; source ownership in `implementation-map.md`; continuation in `next-action.md`; active asset continuity in `workspace/active/<asset>/README.md`.
+This file owns **current proof interpretation only**. Product workflow belongs in `docs/01-product/flow.md`; reference preparation belongs in `docs/02-reference/`; source ownership belongs in `docs/04-system/implementation-map.md`; continuation belongs in `docs/05-operations/next-action.md`; active asset continuity remains in `workspace/active/<asset>/README.md`.
 
 ## Product Rename Boundary
 
@@ -34,7 +34,13 @@ CONTROL LIVE PROOF: NOT ESTABLISHED
 LAZYDESIGNER INSTALLED PROOF: NOT ESTABLISHED
 ```
 
-Do not describe the old Experimental Navigator proposal as the current product architecture. Historical proposal material is superseded by the current `flow.md`, `reference-handoff.md`, and `implementation-map.md` authority set.
+Do not describe the old Experimental Navigator proposal as the current product architecture. Historical proposal material is superseded by the current authority set under:
+
+```text
+docs/01-product/
+docs/02-reference/
+docs/04-system/
+```
 
 ## 3D-Assisted Retirement
 
@@ -56,14 +62,16 @@ Treat these as source-era documented counts, not installed Runtime proof, until 
 
 ## Documentation Proof
 
-The documentation cleanup can establish only that current repository intent is now separated into canonical owners:
+The documentation cleanup can establish only that current repository intent is separated into canonical domains and owners:
 
 ```text
-flow.md                → end-to-end workflow
-reference-handoff.md   → ChatGPT → Codex reference package contract
-implementation-map.md  → source/module ownership
-next-action.md         → implementation continuation
-current-validation.md  → proof interpretation
+docs/README.md                         → AI documentation router
+docs/01-product/flow.md                → end-to-end workflow
+docs/02-reference/                     → reference preparation + package contracts
+docs/03-authoring/                     → asset-authoring standards
+docs/04-system/implementation-map.md   → source/module ownership
+docs/05-operations/next-action.md      → current continuation
+docs/05-operations/current-validation.md → proof interpretation
 ```
 
 It does not prove that source implementation already matches the complete documented design.
@@ -90,12 +98,12 @@ At this point the safe statement is:
 
 ```text
 LazyDesigner naming: introduced in source/docs
-new canonical workflow: documented
+AI-first docs hierarchy: implemented in source
 Reference Package contract: documented
 Control architecture: documented + partial legacy-path implementation
 full Control implementation: pending
 identifier migration: pending
-generated/test/CI synchronization: intentionally pending
+generated/test/CI synchronization: partially pending
 installed/live Blockbench validation: pending
 usage-savings benchmark: pending
 ```
