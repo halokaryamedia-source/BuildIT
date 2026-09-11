@@ -12,33 +12,17 @@ import {
   PRODUCT_NAME,
 } from "@/lib/productIdentity";
 import {
-  tools,
-  prompts,
   applyMcpToolSurface,
-  applyMcpRegistrationProfile,
   getActiveMcpRegistrationProfile,
   registerMcpProfile,
   setMcpPhaseSwitchHandler,
   setMcpProfileSwitchHandler,
 } from "@/server/tools";
-import { resolveMcpRegistrationProfile } from "@/lib/registrationProfile";
 import {
   MCP_AUTHORING_PHASE_SETTING_ID,
   resolveMcpAuthoringPhase,
   type McpAuthoringPhase,
 } from "@/lib/authoringPhase";
-import { resources } from "@/server";
-import { registerReferenceModelsResource } from "@/server/resources";
-import { uiSetup, uiTeardown } from "@/ui";
-import {
-  isExtendedMcpFamiliesEnabled,
-  setExtendedMcpProfileHandler,
-  clearExtendedMcpProfileHandler,
-  settingsSetup,
-  settingsTeardown,
-} from "@/ui/settings";
-import { setupI18n } from "@/ui/i18n";
-import { initPromptLoader } from "@/lib/promptLoader";
 import {
   claimRuntimeGeneration,
   isRuntimeGenerationCurrent,
@@ -51,8 +35,10 @@ import {
   stopLocalDevAutoReload,
 } from "@/plugin/devSync";
 import { RuntimeHost } from "@/plugin/runtimeHost";
+import { BlockbenchIntegration } from "@/plugin/blockbenchIntegration";
 
 const runtimeHost = new RuntimeHost();
+const blockbenchIntegration = new BlockbenchIntegration();
 let runtimeGeneration: number | null = null;
 let initializationInProgress: Promise<void> | null = null;
 
@@ -74,15 +60,13 @@ function beginBlockItRuntimeTeardown(
   }
   initializationInProgress = null;
 
-  // Blockbench does not await plugin onunload(). Detach user-facing callbacks
+  // Blockbench does not await plugin onunload(). Detach integration callbacks
   // synchronously, then let RuntimeHost + the lifecycle coordinator drain native
   // work and listener shutdown before a new generation binds.
   stopLocalDevAutoReload();
   setMcpPhaseSwitchHandler(() => undefined);
   setMcpProfileSwitchHandler(() => undefined);
-  clearExtendedMcpProfileHandler();
-  uiTeardown();
-  settingsTeardown();
+  blockbenchIntegration.teardown();
   runtimeHost.teardown(generation);
 }
 
@@ -109,8 +93,11 @@ async function initializeBlockItRuntime(
   }
   runtimeHost.setNativeNet(net);
 
-  setupI18n();
-  settingsSetup();
+  const registrationProfile = blockbenchIntegration.setupBase({
+    generation,
+    isGenerationCurrent: isRuntimeGenerationCurrent,
+  });
+  registerMcpProfile(registrationProfile);
 
   setMcpProfileSwitchHandler((profile) => {
     if (!isRuntimeGenerationCurrent(generation)) return;
@@ -130,17 +117,6 @@ async function initializeBlockItRuntime(
     Blockbench.showQuickMessage("MCP Server: invalid port in settings", 3000);
     return;
   }
-
-  // Bedrock Entity remains the catalog truth. Extended mode only adds retained
-  // maintenance compatibility families; it does not create a second catalog.
-  const registrationProfile = resolveMcpRegistrationProfile(
-    isExtendedMcpFamiliesEnabled()
-  );
-  registerMcpProfile(registrationProfile);
-  setExtendedMcpProfileHandler((enabled) => {
-    if (!isRuntimeGenerationCurrent(generation)) return;
-    applyMcpRegistrationProfile(resolveMcpRegistrationProfile(enabled));
-  });
 
   let authoringPhase: McpAuthoringPhase;
   try {
@@ -169,13 +145,7 @@ async function initializeBlockItRuntime(
     );
   });
 
-  // Runtime-conditional resource (depends on the reference_models plugin).
-  registerReferenceModelsResource();
-
-  // Local prompt content is bundled into this build. Compatible user overrides
-  // remain local; stale pre-phase overrides are discarded by the loader.
-  await initPromptLoader();
-  if (!isRuntimeGenerationCurrent(generation)) return;
+  if (!(await blockbenchIntegration.loadPrompts())) return;
 
   runtimeHost.setConfig({
     port: rawPort,
@@ -187,13 +157,7 @@ async function initializeBlockItRuntime(
   if (!(await runtimeHost.start(generation))) return;
   if (!isRuntimeGenerationCurrent(generation)) return;
 
-  uiSetup({
-    tools,
-    resources,
-    prompts,
-    profile: registrationProfile,
-    phase: authoringPhase,
-  });
+  blockbenchIntegration.setupUi(registrationProfile, authoringPhase);
   setupLocalDevAutoReload(generation, currentBuildIdentity());
 }
 
@@ -255,6 +219,6 @@ BBPlugin.register("blockit_mcp", {
 
   onuninstall() {
     Blockbench.showQuickMessage("Uninstalled LazyDesigner Bedrock Entity MCP", 2000);
-    settingsTeardown();
+    blockbenchIntegration.teardown();
   },
 });
