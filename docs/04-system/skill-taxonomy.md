@@ -18,8 +18,6 @@ A Skill may summarize the operational trigger for a durable rule, but it must no
 
 ## Top-Level Categories
 
-LazyDesigner uses exactly three Skill categories:
-
 ```text
 REFERENCE_PREPARATION
 ASSET_AUTHORING
@@ -29,8 +27,6 @@ PRODUCT_DEVELOPMENT
 These categories are mutually exclusive as primary ownership. Another category is consulted only when materially required.
 
 ## Canonical Asset Profile Vocabulary
-
-Reference Preparation and Modelling use one shared, user-readable profile vocabulary:
 
 ```text
 PROP_FURNITURE
@@ -42,15 +38,7 @@ PLANT_FOLIAGE
 GENERIC
 ```
 
-Profile names describe the **asset class**, not the modelling technique. Technical terms such as `PLANE_LIKE`, `CROSSED_CUTOUT`, `LAYERED_CUTOUT`, or `VOLUMETRIC_GEOMETRY` belong inside the relevant profile as representation choices and must not become user-facing profile names.
-
-Do not maintain parallel `PROP` and `FURNITURE` profile names. `PROP_FURNITURE` may use optional subtype vocabulary such as `STATIC_PROP`, `FURNITURE`, `CONTAINER`, `INTERACTIVE_PROP`, or `MECHANICAL_PROP`, but those are not primary profiles.
-
-`PLANT_FOLIAGE` covers vegetation/foliage assets. It does not imply that every plant uses cutout planes; representation remains reference-driven.
-
-`GENERIC` is fail-safe fallback only; it is not the default profile when another profile materially improves downstream decisions.
-
-Profiles are lightweight knowledge overlays, not workflow engines or geometry presets.
+Profile names describe the **asset class**, not the modelling technique. Technical terms such as `PLANE_LIKE`, `CROSSED_CUTOUT`, `LAYERED_CUTOUT`, or `VOLUMETRIC_GEOMETRY` remain representation choices. `GENERIC` is fail-safe fallback only. Profiles are lightweight knowledge overlays, not workflow engines or geometry presets.
 
 ## 1. REFERENCE_PREPARATION
 
@@ -60,16 +48,10 @@ Execution owner: ChatGPT.
 
 | Current path | Current name | Target semantic name | Role |
 | --- | --- | --- | --- |
-| `.agents/skills/blockbench-reference-generator/SKILL.md` | `blockbench-reference-generator` | `lazydesigner-reference-preparation` | single ChatGPT-side execution procedure for requirements, reference planning, generation, QA and handoff |
-| `.agents/skills/lazydesigner-prompt-compiler/SKILL.md` | `lazydesigner-prompt-compiler` | `lazydesigner-prompt-compiler` | internal prompt normalization helper; converts confirmed intent into a clean production brief without adding creative authority |
+| `.agents/skills/blockbench-reference-generator/SKILL.md` | `blockbench-reference-generator` | `lazydesigner-reference-preparation` | requirements, reference planning, generation, QA and handoff |
+| `.agents/skills/lazydesigner-prompt-compiler/SKILL.md` | `lazydesigner-prompt-compiler` | `lazydesigner-prompt-compiler` | internal prompt normalization helper |
 
-Canonical ChatGPT-side operational flow is owned by:
-
-```text
-docs/02-reference/flow.md
-```
-
-Reference Preparation uses:
+Canonical flow: `docs/02-reference/flow.md`.
 
 ```text
 UNDERSTAND
@@ -82,31 +64,7 @@ UNDERSTAND
 → PACKAGE
 ```
 
-The final confirmation before artifact generation is a hard gate. If vital information is missing, ChatGPT must ask the fewest simple user-facing questions needed before compilation or generation.
-
-The Prompt Compiler is **not** a second workflow authority and must never generate images/files, invent requirements, or replace the original user intent.
-
-Reference Preparation then uses:
-
-```text
-CORE RULES
-+ ONE PRIMARY ASSET PROFILE
-+ ONLY NECESSARY REFERENCE MODULES
-```
-
-Reusable reference modules:
-
-```text
-TURNAROUND
-STRUCTURAL_DETAIL
-MATERIAL_TEXTURE
-RIG_DEFORMATION
-POSE_ACTION
-EXPRESSION_FACE
-ANIMATION_KEYFRAME
-```
-
-This category must not own Blockbench mutation, MCP/plugin implementation, or Codex modelling decisions.
+Reference Preparation must not own Blockbench mutation, MCP/plugin implementation, or Codex modelling decisions.
 
 ## 2. ASSET_AUTHORING
 
@@ -116,61 +74,32 @@ Execution owner: Codex for reasoning; Runtime/Blockbench for mutation.
 
 | Canonical path | Canonical name | Role |
 | --- | --- | --- |
-| `.agents/skills/lazydesigner-modelling/SKILL.md` | `lazydesigner-modelling` | Geometry, hierarchy, pivots/rig-readiness, surfaces, UV Layout, correction and geometry verification execution procedure |
-| `.agents/skills/lazydesigner-texturing/SKILL.md` | `lazydesigner-texturing` | Texture Atlas, pixel styling, materials/PBR and texture verification execution procedure |
-| `.agents/skills/lazydesigner-animation/SKILL.md` | `lazydesigner-animation` | rig usage, keyframes, motion, controllers, animation effects and playback verification execution procedure |
+| `.agents/skills/lazydesigner-modelling/SKILL.md` | `lazydesigner-modelling` | Geometry, hierarchy, pivots/rig-readiness, surfaces, UV Layout, correction and geometry verification |
+| `.agents/skills/lazydesigner-texturing/SKILL.md` | `lazydesigner-texturing` | Texture Atlas, pixel styling, materials/PBR and texture verification |
+| `.agents/skills/lazydesigner-animation/SKILL.md` | `lazydesigner-animation` | rig usage, keyframes, motion, controllers, effects and playback verification |
 
-The former `.agents/skills/blockit-bedrock-entity-mcp/SKILL.md` asset-router Skill is **retired and removed**. Its valid routing responsibilities are owned by LazyDesigner Control; durable authoring policy belongs under `docs/03-authoring/`; specialist procedures remain in the three active authoring Skills above.
-
-### Modelling Core vs Modelling Profiles
-
-`lazydesigner-modelling` is the technical modelling execution specialist. Durable Geometry rules are owned by `docs/03-authoring/modelling/standard.md` and selected profile knowledge by `docs/03-authoring/modelling/profiles/`.
-
-The same canonical profile vocabulary is used downstream to add asset-class reasoning without becoming a preset:
-
-```text
-PROP_FURNITURE
-VEHICLE
-HUMANOID
-CREATURE
-MECHANICAL
-PLANT_FOLIAGE
-GENERIC
-```
-
-Profiles may describe likely semantic assemblies, articulation concerns, useful reference relationships, hierarchy expectations, common pivot concerns and geometry-vs-texture decisions. They must never dictate fixed Cube counts, coordinates or template geometry independent of approved evidence.
-
-### Authoring Routing Rule
+The former asset-router Skill is retired and removed. LazyDesigner Control owns task/stage/context routing.
 
 ```text
 Reference Package / Workspace / current task
 → LazyDesigner Control
 → active authoring domain/readiness/context
 → exactly one active specialist
-
-Geometry / hierarchy / pivot / rig-readiness / UV Layout
-→ lazydesigner-modelling
-
-Texture Atlas / styling / materials / PBR
-→ lazydesigner-texturing
-
-Animation / motion / controllers / mapped effects
-→ lazydesigner-animation
 ```
 
 Do not reintroduce a permanent asset-router Skill or duplicate Control routing policy inside specialist Skills.
 
 ## 3. PRODUCT_DEVELOPMENT
 
-Purpose: change LazyDesigner itself: MCP contracts, Blockbench plugin/runtime integration, build/distribution, architecture, tooling, source behavior, tests and development continuity.
+Purpose: change LazyDesigner itself: MCP contracts, Blockbench plugin/runtime integration, architecture, tooling, source behavior, tests and development continuity.
 
 Execution owner: Codex development workflow.
 
-| Current path | Current name | Target semantic name | Role |
-| --- | --- | --- | --- |
-| `.agents/skills/mcp-server-development/SKILL.md` | `mcp-server-development` | `lazydesigner-mcp-development` | client-visible MCP contracts, schemas, registration and protocol/session behavior |
-| `.agents/skills/blockbench-runtime-development/SKILL.md` | `blockbench-runtime-development` | `lazydesigner-blockbench-development` | Blockbench plugin/runtime APIs, lifecycle, UI, Undo and runtime mutation mechanics |
-| `.agents/skills/development-brief/SKILL.md` | `development-brief` | `lazydesigner-development-brief` | complex/ambiguous cross-owner development design only |
+| Canonical path | Canonical name | Role |
+| --- | --- | --- |
+| `.agents/skills/lazydesigner-mcp-development/SKILL.md` | `lazydesigner-mcp-development` | client-visible MCP contracts, schemas, registration and protocol/session behavior |
+| `.agents/skills/lazydesigner-blockbench-development/SKILL.md` | `lazydesigner-blockbench-development` | Blockbench plugin/runtime APIs, lifecycle, UI, Undo and runtime mutation mechanics |
+| `.agents/skills/lazydesigner-development-brief/SKILL.md` | `lazydesigner-development-brief` | complex/ambiguous cross-owner development design only |
 
 Build/package/compiler mechanics remain owned by the exact source/build owner under `mcp/AGENTS.md` unless repeated work justifies a distinct reusable Skill.
 
@@ -190,14 +119,13 @@ clear bounded source/build/test change
 → exact source owner; no development-brief ceremony
 ```
 
-Asset-authoring Skills are not loaded for normal product development unless the development task explicitly changes/evaluates that authoring behavior.
+Asset-authoring Skills are not loaded for normal product development unless the development task explicitly changes/evaluates authoring behavior.
 
 ## Naming Rules
 
-Target Skill names use prefix `lazydesigner-` plus a direct responsibility noun:
+Canonical LazyDesigner names use prefix `lazydesigner-` plus a direct responsibility noun where the Skill is product-specific.
 
 ```text
-lazydesigner-reference-preparation
 lazydesigner-prompt-compiler
 lazydesigner-modelling
 lazydesigner-texturing
@@ -207,15 +135,13 @@ lazydesigner-blockbench-development
 lazydesigner-development-brief
 ```
 
-Avoid ambiguous names such as `core`, `manager`, `director`, `helper`, `builder`, `toolkit`, bare `runtime`, or `router` when Control owns routing.
+`blockbench-reference-generator` remains a pending REFERENCE_PREPARATION naming migration and is not coupled to product/runtime compatibility identifiers.
 
-A Skill name should answer: what semantic decision does this Skill execute?
+Avoid ambiguous names such as `core`, `manager`, `director`, `helper`, `builder`, `toolkit`, bare `runtime`, or `router` when Control owns routing.
 
 ## Context Isolation Rule
 
 Canonical loading bundles are owned by `docs/04-system/ai-context-loading.md`.
-
-At minimum:
 
 ```text
 REFERENCE_PREPARATION task
@@ -228,12 +154,16 @@ PRODUCT_DEVELOPMENT task
 → do not load ASSET_AUTHORING Skills unless explicitly required by changed authoring semantics
 ```
 
-The Prompt Compiler receives only current intent, confirmed answers and still-valid approved decisions. Rejected/superseded chat directions are not active production context.
-
-This is required for predictable context cost and to prevent development rules or stale conversation history contaminating reference/modelling decisions.
+The Prompt Compiler receives only current intent, confirmed answers and still-valid approved decisions. Rejected/superseded directions are not active production context.
 
 ## Migration Rule
 
-Asset-router retirement is complete and the three ASSET_AUTHORING specialists now have canonical `lazydesigner-*` identities. During the current path migration, all direct consumers must move before the old specialist files are deleted; no compatibility aliases remain afterward.
+Completed source-level Skill identity migrations:
 
-Remaining PRODUCT_DEVELOPMENT Skill renames are a separate bounded migration and must not be coupled to runtime/package identifiers.
+```text
+asset-router Skill → retired and removed
+ASSET_AUTHORING specialists → canonical lazydesigner-* names
+PRODUCT_DEVELOPMENT specialists → canonical lazydesigner-* names
+```
+
+Remaining Skill naming debt is isolated from runtime/package compatibility IDs. Do not recreate removed aliases.
