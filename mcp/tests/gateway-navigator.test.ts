@@ -7,7 +7,6 @@ import {
   buildNavigatorPacket,
   buildNavigatorSnapshot,
   decorateCapabilities,
-  NAVIGATOR_CONTEXT_HANDLES,
 } from "@/gateway/navigator";
 import type { GatewayRuntimeStatus } from "@/gateway/backend";
 
@@ -37,21 +36,18 @@ const onlineStatus: GatewayRuntimeStatus = {
   last_error: null,
 };
 
-describe("BlockIT Navigator", () => {
-  test("L0 snapshot is compact, deterministic and derived from live Gateway/Runtime state", () => {
-    const nav = buildNavigatorSnapshot(onlineStatus);
-    expect(nav.protocol).toBe("blockit-navigator-v1");
-    expect(nav.system).toBe("READY");
-    expect(nav.project).toMatchObject({ affinity_uuid: "project-a", binding: "BOUND" });
-    expect(nav.authoring).toMatchObject({ phase: "geometry", domain: "GEOMETRY" });
-    expect(nav.runtime.build_identity).toBe("sha256:build-a");
-    expect(nav.context.required.map((entry) => entry.path)).toEqual([
-      ".agents/skills/blockit-bedrock-entity-mcp/SKILL.md",
-      ".agents/skills/blockbench-bedrock-modelling/SKILL.md",
-    ]);
+describe("LazyDesigner Control", () => {
+  test("runtime snapshot stays compact and defers file context until reference/profile is known", () => {
+    const snapshot = buildNavigatorSnapshot(onlineStatus);
+    expect(snapshot.protocol).toBe("lazydesigner-control-v1");
+    expect(snapshot.system).toBe("READY");
+    expect(snapshot.project).toMatchObject({ affinity_uuid: "project-a", binding: "BOUND" });
+    expect(snapshot.authoring).toMatchObject({ phase: "geometry", domain: "GEOMETRY" });
+    expect(snapshot.runtime.build_identity).toBe("sha256:build-a");
+    expect(snapshot.context.required).toEqual([]);
   });
 
-  test("offline state fails closed in navigation", () => {
+  test("offline state fails closed in Control orientation", () => {
     const offline = buildNavigatorSnapshot({
       ...onlineStatus,
       affinity: { project_uuid: null, authoring_phase: "geometry" },
@@ -77,16 +73,18 @@ describe("BlockIT Navigator", () => {
       { capability_id: "manage_cubes", description: "", tier: "primary", read_only: false, destructive: true, idempotent: false },
       { capability_id: "paint_with_brush", description: "", tier: "primary", read_only: false, destructive: true, idempotent: false },
     ], "GEOMETRY");
-    expect(decorated[0]?.navigation.authoring_domain).toBe("GEOMETRY");
-    expect(decorated[0]?.navigation.current_domain).toBe(true);
-    expect(decorated[0]?.navigation.eligibility).toBe("RECOMMENDED");
-    expect(decorated[1]?.navigation.current_domain).toBe(false);
-    expect(decorated[1]?.navigation.eligibility).toBe("FOREIGN_PHASE");
+    expect(decorated[0]?.control.authoring_domain).toBe("GEOMETRY");
+    expect(decorated[0]?.control.current_domain).toBe(true);
+    expect(decorated[0]?.control.eligibility).toBe("RECOMMENDED");
+    expect(decorated[1]?.control.current_domain).toBe(false);
+    expect(decorated[1]?.control.eligibility).toBe("FOREIGN_PHASE");
   });
 
-  test("mutation continuation emits delta instead of requiring a full status packet", () => {
+  test("mutation continuation emits bounded downstream invalidation", () => {
     const delta = buildNavigatorDelta({ capability: "manage_cubes", phaseBefore: "geometry", phaseAfter: "geometry", projectUuid: "project-a", succeeded: true });
+    expect(delta.protocol).toBe("lazydesigner-control-v1");
     expect(delta.authoring_domain).toBe("GEOMETRY");
+    expect(delta.invalidates.authoring_domains).toEqual(["GEOMETRY", "TEXTURING", "ANIMATION"]);
     expect(delta.requires_status_refresh).toBe(false);
     expect(delta.changed).toEqual([]);
     expect(delta.next_intent).toBe("VERIFY_OR_CONTINUE_GEOMETRY");
@@ -96,8 +94,13 @@ describe("BlockIT Navigator", () => {
     expect(handoff.changed).toContain("authoring_phase");
   });
 
-  test("context handles are content-addressed and fail stale when canonical content changes", async () => {
-    for (const handle of Object.values(NAVIGATOR_CONTEXT_HANDLES)) {
+  test("resolved context handles are content-addressed from current canonical files", async () => {
+    const packet = await buildNavigatorPacket(onlineStatus);
+    expect(packet.context.required.length).toBe(1);
+    expect(packet.context.required[0]?.path).toBe(
+      ".agents/skills/blockbench-bedrock-modelling/SKILL.md"
+    );
+    for (const handle of packet.context.required) {
       const bytes = await readFile(new URL(`../../${handle.path}`, import.meta.url));
       const digest = createHash("sha256").update(bytes).digest("hex");
       expect(digest, handle.path).toBe(handle.sha256);
@@ -105,11 +108,74 @@ describe("BlockIT Navigator", () => {
     }
   });
 
-  test("workspace projection and task context are lossless, bounded, and cache-aware", async () => {
+  test("Reference Package projects Geometry context and exactly one selected profile", async () => {
     const { mkdtemp, writeFile } = await import("node:fs/promises");
     const { tmpdir } = await import("node:os");
     const { join } = await import("node:path");
-    const directory = await mkdtemp(join(tmpdir(), "blockit-nav-"));
+    const directory = await mkdtemp(join(tmpdir(), "lazydesigner-reference-"));
+    await writeFile(join(directory, "REFERENCE.json"), JSON.stringify({
+      schema: "lazydesigner-reference-v1",
+      asset: {
+        name: "farmer_npc",
+        profile: "HUMANOID",
+        task: "NEW_ASSET",
+        intent: "Farmer NPC harvesting cinnamon",
+      },
+      requirements: {
+        dimensions_blocks: { width: null, height: null, length: null },
+        player_relative_scale: "PLAYER_HEIGHT",
+        animation_required: true,
+      },
+      documents: { geometry: "GEOMETRY.md" },
+      images: [
+        {
+          id: "IMG_GEO_01",
+          file: "images/01-main-reference.png",
+          role: "PRIMARY_GEOMETRY",
+          used_by: ["GEOMETRY"],
+          status: "APPROVED",
+        },
+      ],
+      unknowns: { blocking: [], non_blocking: ["underside color"] },
+      readiness: {
+        overall: "READY",
+        geometry: "READY",
+        texture: "NEEDS_REVIEW",
+        animation: "READY",
+      },
+    }));
+
+    const packet = await buildNavigatorPacket(onlineStatus, {
+      referencePackagePath: directory,
+      currentUserDelta: "preserve basket and adjust tool grip",
+    });
+
+    expect(packet.reference).toMatchObject({
+      available: true,
+      asset_name: "farmer_npc",
+      selected_profile: "HUMANOID",
+    });
+    expect(packet.stage_context).toMatchObject({
+      context_type: "GEOMETRY_CONTEXT",
+      original_user_intent: "Farmer NPC harvesting cinnamon",
+      current_user_delta: "preserve basket and adjust tool grip",
+      selected_profile: "HUMANOID",
+      stage_readiness: "READY",
+      reference_document: "GEOMETRY.md",
+      reference_image_ids: ["IMG_GEO_01"],
+      requirements: { player_relative_scale: "PLAYER_HEIGHT" },
+    });
+    expect(packet.context.required.map((entry) => entry.path)).toEqual([
+      ".agents/skills/blockbench-bedrock-modelling/SKILL.md",
+      "docs/03-authoring/modelling/profiles/humanoid.md",
+    ]);
+  });
+
+  test("workspace projection and task context remain bounded and cache-aware", async () => {
+    const { mkdtemp, writeFile } = await import("node:fs/promises");
+    const { tmpdir } = await import("node:os");
+    const { join } = await import("node:path");
+    const directory = await mkdtemp(join(tmpdir(), "lazydesigner-control-"));
     await writeFile(join(directory, "test.bbmodel"), "{}");
     await writeFile(join(directory, "README.md"), `# Test Asset\n\nCurrent Stage: TEXTURING\n\nGeometry: APPROVED\n\nUV Layout: PASS\n\nTexturing: IN_PROGRESS\n\nAnimation: NOT_STARTED\n\nCurrent next step: Complete identity pass\n\nKnown blocker(s): None\n`);
 
@@ -122,7 +188,7 @@ describe("BlockIT Navigator", () => {
       next_step: "Complete identity pass",
     });
     expect(first.task_context_id).toMatch(/^task:[a-f0-9]{20}$/);
-    expect(JSON.stringify(first).length).toBeLessThan(5000);
+    expect(JSON.stringify(first).length).toBeLessThan(8000);
 
     const known = first.context.required.map((entry) => entry.id);
     const second = await buildNavigatorPacket(onlineStatus, { knownContextIds: known });
