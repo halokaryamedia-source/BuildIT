@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { mkdtemp, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { buildNavigatorPacket } from "@/gateway/navigator";
+import { buildControlPacket } from "@/gateway/control";
 import type { GatewayRuntimeStatus } from "@/gateway/backend";
 
 const status: GatewayRuntimeStatus = {
@@ -59,7 +59,7 @@ describe("LazyDesigner Control reference readiness", () => {
       },
     }));
 
-    const packet = await buildNavigatorPacket(status, {
+    const packet = await buildControlPacket(status, {
       referencePackagePath: directory,
     });
 
@@ -92,7 +92,7 @@ describe("LazyDesigner Control reference readiness", () => {
       },
     }));
 
-    const packet = await buildNavigatorPacket(status, {
+    const packet = await buildControlPacket(status, {
       referencePackagePath: directory,
     });
 
