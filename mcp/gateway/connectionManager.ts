@@ -8,6 +8,14 @@ export class GatewayConnectionManager {
   });
   readonly session = new RuntimeSessionState();
 
+  canAttempt(now: number = Date.now()): boolean {
+    return this.reconnect.canAttempt(now);
+  }
+
+  retryAfterMs(now: number = Date.now()): number {
+    return this.reconnect.retryAfterMs(now);
+  }
+
   beginProbe(): void {
     this.session.transition("probing");
   }
@@ -16,9 +24,15 @@ export class GatewayConnectionManager {
     this.session.transition("connecting");
   }
 
-  markReady(options: { reconnected?: boolean; catalogRefreshed?: boolean } = {}): void {
-    if (options.reconnected) this.session.markReconnect();
+  markReady(options: { catalogRefreshed?: boolean } = {}): void {
+    const wasReadyBefore = this.session.hasBeenReady();
     if (options.catalogRefreshed) this.session.markCatalogRefresh();
+    if (wasReadyBefore) this.session.markReconnect();
+    this.reconnect.markSuccess();
+    this.session.transition("ready");
+  }
+
+  markHealthy(): void {
     this.reconnect.markSuccess();
     this.session.transition("ready");
   }
