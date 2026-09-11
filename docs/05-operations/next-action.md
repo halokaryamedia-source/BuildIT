@@ -2,13 +2,19 @@
 Updated: 2026-09-11
 Branch: `Local` only.
 
-This file owns **current implementation continuation only**. Architecture belongs in `flow.md`; reference preparation in `reference-handoff.md`; Skill categories/naming in `skill-taxonomy.md`; source ownership in `implementation-map.md`; proof interpretation in `current-validation.md`.
+This file owns **current implementation continuation only**. Product architecture belongs in `docs/01-product/flow.md`; reference preparation in `docs/02-reference/`; Skill taxonomy/source ownership in `docs/04-system/`; proof interpretation in `docs/05-operations/current-validation.md`.
 
 ## Current Objective
 
-Documentation-first transition from BlockIT/Navigator terminology to the LazyDesigner architecture, with asset-authoring profile knowledge and stage-specific context projection now defined before further Control implementation.
+Finish the AI-first documentation hierarchy migration and stale-path cleanup before resuming Control/source implementation.
 
-Canonical product flow is:
+Canonical documentation entry point:
+
+```text
+docs/README.md
+```
+
+Canonical product flow:
 
 ```text
 USER
@@ -23,11 +29,29 @@ USER
 → Verify / Review / Continue
 ```
 
-Control is the former Navigator role, expanded into the single Codex front line for both `ASSET_AUTHORING` and `SYSTEM_DEVELOPMENT`.
+## Current Documentation Hierarchy
+
+```text
+docs/
+├── 01-product/      product identity, requirements, end-to-end flow
+├── 02-reference/    ChatGPT reference preparation, image system, package contracts
+├── 03-authoring/    modelling, profiles, texture, animation, validation, finalization
+├── 04-system/       Control, implementation ownership, Skill taxonomy
+└── 05-operations/   current continuation, proof, local acceptance
+```
+
+Rules:
+
+```text
+one domain → one index
+one concern → one canonical owner
+README files route; they do not duplicate policy
+AI loads only the minimum relevant domain owner
+```
 
 ## Current Skill Architecture
 
-The semantic taxonomy is fixed as:
+Semantic taxonomy:
 
 ```text
 REFERENCE_PREPARATION
@@ -35,7 +59,7 @@ ASSET_AUTHORING
 PRODUCT_DEVELOPMENT
 ```
 
-Canonical modelling profile vocabulary is now:
+Canonical modelling profiles:
 
 ```text
 PROP_FURNITURE
@@ -47,12 +71,16 @@ PLANT_FOLIAGE
 GENERIC
 ```
 
-`docs/knowledge/modelling-profiles/README.md` owns profile selection. `GENERIC` is fallback only.
-
-Stage-specific Control projection is now defined in:
+Profile selection owner:
 
 ```text
-docs/knowledge/control-context-projection.md
+docs/03-authoring/modelling/profiles/README.md
+```
+
+Control stage projection owner:
+
+```text
+docs/04-system/control/context-projection.md
 ```
 
 with canonical outputs:
@@ -63,77 +91,59 @@ TEXTURE_CONTEXT
 ANIMATION_CONTEXT
 ```
 
-## Completed Design Work
-
-The following design/semantic work is sufficiently defined for Control implementation to consume:
+## Completed Documentation Work
 
 ```text
-✓ canonical modelling profiles and resolver
-✓ Reference Preparation + Reference Package contract
-✓ Modelling Skill selected-profile contract
-✓ Texturing stage-specific projection consumer contract
-✓ Animation stage-specific projection consumer contract
-✓ canonical Control context projection contract
+✓ replaced foundation/knowledge split with domain hierarchy
+✓ added root docs/README.md AI router
+✓ grouped Reference image and package contracts
+✓ grouped Authoring standards and modelling profiles
+✓ grouped System ownership/Control docs
+✓ grouped Operations continuation/proof/runbook docs
+✓ updated primary root routing files
+✓ updated Reference Preparation Skill to new owners
+✓ compressed top-level Product Flow and Reference Policy
 ```
 
-Do not duplicate these contracts inside Control implementation. Control should project/route them.
+## Immediate Next Work
 
-## Implementation Order
-
-Do not optimize CI or generated-output cleanup yet. The current implementation sequence is:
+Before any further Control implementation:
 
 ```text
-1. rename current Navigator module/concepts to Control without permanent aliases
+1. remove remaining active references to docs/knowledge/** and docs/foundation/**
+2. update AI-facing Skills and MCP operational docs first
+3. update static tests/fixtures that intentionally read canonical docs
+4. leave generated documentation to its generator owner rather than hand-editing generated output
+5. audit that no active owner points at a removed path
+```
+
+After stale-path cleanup, resume source implementation in this order:
+
+```text
+1. migrate current Navigator module/concepts to Control without permanent aliases
 2. make Control the explicit front-line intake for ASSET_AUTHORING and SYSTEM_DEVELOPMENT
-3. implement canonical stage projections: GEOMETRY_CONTEXT / TEXTURE_CONTEXT / ANIMATION_CONTEXT
-4. derive capability/domain classification from canonical owners instead of manual duplicate tables
-5. implement asset task-intent resolution
-6. implement lifecycle readiness projection
-7. implement dependency/downstream invalidation projection
-8. implement evidence freshness projection
-9. implement minimum-context / content-addressed continuation
-10. hard-bound discovery and remove avoidable status/context rereads
-11. migrate remaining BlockIT Skill/package/protocol identifiers only after dependency mapping is stable
-12. then restore generated-output/tests/CI closure
-13. finally run local/live acceptance
-```
-
-## Immediate Next Implementation
-
-The next source-level task is to migrate the current `mcp/gateway/navigator/` responsibility surface into **LazyDesigner Control** coherently and wire the projection contract without creating a second architecture.
-
-Before mutation, inspect dependencies on:
-
-```text
-mcp/gateway/navigator/**
-mcp/gateway/index.ts
-mcp/gateway/backend.ts
-mcp/lib/authoringPhase.ts
-mcp/server/tools.ts
-```
-
-Goals:
-
-```text
-Navigator terminology removed from active architecture
-Control becomes one front-line source authority
-existing working routing/context logic preserved where valid
-GEOMETRY_CONTEXT / TEXTURE_CONTEXT / ANIMATION_CONTEXT generated by Control
-no duplicate capability-domain classification tables
-no second persistent asset-state database
+3. implement GEOMETRY_CONTEXT / TEXTURE_CONTEXT / ANIMATION_CONTEXT projections
+4. derive capability/domain classification from canonical owners instead of duplicate tables
+5. implement task-intent and lifecycle readiness projection
+6. implement dependency/evidence invalidation projection
+7. implement minimum-context/content-addressed continuation
+8. hard-bound discovery and avoid status/context rereads
+9. migrate remaining BlockIT identifiers only after dependency mapping is stable
+10. restore generated-output/tests/CI closure
+11. run local/live acceptance later
 ```
 
 ## Stop Rules
 
-- Do not create a second persistent state database inside Control.
+- Do not recreate `docs/foundation/` or `docs/knowledge/` as compatibility authorities.
+- Do not add redirect/stub copies that make AI see two active owners.
 - Do not duplicate Skill/Tool canonical content into Control.
+- Do not create a second persistent state database inside Control.
 - Do not load PRODUCT_DEVELOPMENT Skills during normal asset authoring.
-- Do not keep a permanent router Skill after Control becomes canonical routing authority.
 - Do not send all stage contexts when one owner is known.
-- Do not force complete reference packages for trivial corrections.
-- Do not rename protocol/package identifiers blindly before their dependency map is understood.
-- Do not spend effort making CI green while the architecture intentionally remains in active migration.
+- Do not rename protocol/package identifiers blindly before dependency mapping.
+- Do not spend effort on local/live testing while the user has explicitly postponed testing.
 
 ## Proof Boundary
 
-Current source/documentation work proves design/source intent only. It does not prove installed LazyDesigner activation, live Blockbench behavior, visual quality, or end-to-end usage reduction. Those require later local/live validation.
+Documentation/source cleanup can prove path/ownership consistency in repository source. It does not prove installed LazyDesigner activation, live Blockbench behavior, visual quality, or end-to-end usage reduction. Those require later local/live validation.
