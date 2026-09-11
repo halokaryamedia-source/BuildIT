@@ -64,4 +64,18 @@ describe("LazyDesigner Control source migration", () => {
     expect(next).toMatch(/former navigator\/ source removed/i);
     expect(next).toMatch(/no alias|with no alias/i);
   });
+
+  test("Experimental Navigator history cannot advertise retired production ownership", async () => {
+    const [experimental, proposal] = await Promise.all([
+      text("../Experimental/README.md"),
+      text("../Experimental/blockit-navigator/README.md"),
+    ]);
+
+    expect(experimental).toContain("mcp/gateway/control/");
+    expect(proposal).toContain("mcp/gateway/control/");
+    expect(experimental).toMatch(/former active `mcp\/gateway\/navigator\/` production path has been removed/i);
+    expect(proposal).toMatch(/former production `mcp\/gateway\/navigator\/` source path has been removed/i);
+    expect(proposal).not.toMatch(/PRODUCTION IMPLEMENTATION:\s*mcp\/gateway\/navigator\//i);
+    expect(proposal).not.toMatch(/Current Navigator behavior[\s\S]*mcp\/gateway\/navigator\//i);
+  });
 });
