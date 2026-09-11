@@ -22,6 +22,14 @@ export class GatewayConnectionManager {
     }
   }
 
+  markAvailable(): void {
+    this.reconnect.markSuccess();
+    const state = this.session.snapshot().state;
+    if (state === "offline" || state === "degraded") {
+      this.session.transition("probing");
+    }
+  }
+
   beginConnect(): void {
     this.session.transition("connecting");
   }
