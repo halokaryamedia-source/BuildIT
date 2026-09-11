@@ -4,6 +4,7 @@ Owns LazyDesigner system architecture details that are neither product policy no
 
 ```text
 ai-context-loading.md
+authoring-stage-context.md
 control/context-projection.md
 implementation-map.md
 skill-taxonomy.md
@@ -15,6 +16,9 @@ compatibility-identifiers.md
 ```text
 What should the AI load for this task?
 → ai-context-loading.md
+
+Which cross-stage context rules are shared without creating another Skill/router?
+→ authoring-stage-context.md
 
 What does Control project to Codex?
 → control/context-projection.md
@@ -29,4 +33,4 @@ Which legacy BlockIT identifier must remain stable during migration?
 → compatibility-identifiers.md
 ```
 
-AI load rule: use this domain for context loading, Control/context routing, source ownership, Skill ownership, or compatibility-identifier questions. Do not use it as a substitute for product flow or authoring standards.
+AI load rule: use this domain for context loading, shared Stage Context, Control/context routing, source ownership, Skill ownership, or compatibility-identifier questions. Do not use it as a substitute for product flow or authoring standards.
