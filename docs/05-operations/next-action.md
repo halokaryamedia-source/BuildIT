@@ -6,7 +6,7 @@ This file owns **current implementation continuation only**. Product architectur
 
 ## Current Objective
 
-The current REMOTE_GITHUB source-cleanup phase is complete enough to stop safely. Documentation/Reference architecture, Control, primary Skill naming, safe human-facing branding, and active repository routing regressions are source baselines. Local/live Blockbench testing remains deferred until explicitly reactivated.
+The broad REMOTE_GITHUB source-cleanup phase is complete. The active remote-only continuation is **pre-local hardening**: eliminate remaining stale authority pointers, duplicate policy ownership, dead/obsolete routing residue, and context/tool-routing drift that can be proven from source without Runtime or Blockbench execution. Local/live Blockbench testing remains deferred until explicitly reactivated.
 
 ## Completed Baseline
 
@@ -50,7 +50,32 @@ The current REMOTE_GITHUB source-cleanup phase is complete enough to stop safely
   - repository-github-discipline
   - repository-supply-chain
   - control-source-migration
+✓ Experimental Navigator history no longer advertises removed production ownership
+✓ regression guard covers Experimental Navigator authority pointers
 ✓ no speculative Texture/Animation result compaction added without evidence
+```
+
+## Active Remote Hardening Order
+
+```text
+1. Control / Gateway policy ownership
+   → remove duplicate routing/search defaults where one canonical Control owner already exists
+   → preserve the stable four-tool Gateway surface
+
+2. Tool-routing / source ownership
+   → verify high-frequency capabilities resolve to one semantic phase owner
+   → detect overlapping public tools, obsolete wrappers, and unnecessary discovery paths
+
+3. Context economy
+   → keep Geometry to Modelling Skill + exactly one profile
+   → keep Texturing/Animation specialist-only by default
+   → do not trim receipts or stage context without recovery-state evidence
+
+4. Repository contract guards
+   → prevent retired Navigator/Skill/docs ownership from reappearing
+   → keep compatibility identifiers separate from human-facing branding
+
+5. Freeze for LOCAL_CODE / LIVE_BLOCKBENCH proof
 ```
 
 ## Identifier Migration Boundary
@@ -73,7 +98,7 @@ Canonical boundary: `docs/04-system/compatibility-identifiers.md`.
 
 ## Deferred Higher-Context Residue
 
-No further REMOTE_GITHUB mutation is required merely to continue the rename/cleanup. The next meaningful residue needs a context that can execute canonical generators and tests:
+Do not convert remote source assumptions into claimed runtime proof. The remaining proof steps need a context that can execute canonical generators/tests or Blockbench itself:
 
 ```text
 LOCAL_CODE
