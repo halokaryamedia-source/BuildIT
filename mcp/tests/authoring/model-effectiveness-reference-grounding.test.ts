@@ -12,7 +12,7 @@ describe("model creation effectiveness — actual reference grounding", () => {
   test("actual approved image is required; path, prose and memory cannot substitute", async () => {
     const [reference, modelling, workflow, validation] = await Promise.all([
       source("../docs/02-reference/policy.md"),
-      source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
+      source("../.agents/skills/lazydesigner-modelling/SKILL.md"),
       source("prompts/bedrock_entity_workflow.md"),
       source("../docs/03-authoring/validation/visual.md"),
     ]);
@@ -29,7 +29,7 @@ describe("model creation effectiveness — actual reference grounding", () => {
   test("material semantic decisions retain explicit evidence states at their canonical owners", async () => {
     const [schema, modelling] = await Promise.all([
       source("../docs/02-reference/package/schema.md"),
-      source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
+      source("../.agents/skills/lazydesigner-modelling/SKILL.md"),
     ]);
     for (const state of ["SUPPORTED", "PROVISIONAL", "CONFLICTING", "UNAVAILABLE"]) {
       expect(schema).toContain(state);
@@ -40,7 +40,7 @@ describe("model creation effectiveness — actual reference grounding", () => {
 
   test("view pairing stays conditional instead of becoming a universal intake ritual", async () => {
     const [modelling, validation] = await Promise.all([
-      source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
+      source("../.agents/skills/lazydesigner-modelling/SKILL.md"),
       source("../docs/03-authoring/validation/visual.md"),
     ]);
     expect(modelling).toContain("View Pair Map");
@@ -50,7 +50,7 @@ describe("model creation effectiveness — actual reference grounding", () => {
 
   test("visual PASS requires actual reference plus fresh current model evidence", async () => {
     const [modelling, validation, camera] = await Promise.all([
-      source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
+      source("../.agents/skills/lazydesigner-modelling/SKILL.md"),
       source("../docs/03-authoring/validation/visual.md"),
       source("server/tools/camera.ts"),
     ]);
@@ -68,7 +68,7 @@ describe("model creation effectiveness — actual reference grounding", () => {
 
   test("grounding does not add automatic similarity authority or runtime framework", async () => {
     const [modelling, validation, profile, cubes] = await Promise.all([
-      source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
+      source("../.agents/skills/lazydesigner-modelling/SKILL.md"),
       source("../docs/03-authoring/validation/visual.md"),
       source("lib/registrationProfile.ts"),
       source("server/tools/cubes.ts"),
