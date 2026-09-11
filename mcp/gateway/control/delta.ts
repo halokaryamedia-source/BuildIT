@@ -6,7 +6,7 @@ import type { ControlAuthoringDomain, ControlDelta } from "./types";
 import type { BlockitAuthoringPhaseAffinity } from "../projectAffinity";
 
 const STATE_MUTATIONS = new Set([
-  "manage_cubes", "add_group", "modify_group", "reparent_element", "remove_element",
+  "manage_cubes", "add_group", "modify_group", "duplicate_element", "reparent_element", "remove_element",
   "rename_element", "manage_locator", "manage_null_object", "bone_rigging",
   "create_texture", "activate_texture", "paint_fill_tool", "draw_shape_tool",
   "paint_with_brush", "eraser_tool", "paint_texture_transaction", "manage_material",
@@ -58,7 +58,9 @@ function geometryInvalidation(capability: string, result: unknown): ControlAutho
     }
     return ["GEOMETRY", "TEXTURING", "ANIMATION"];
   }
-  if (capability === "remove_element") return ["GEOMETRY", "TEXTURING", "ANIMATION"];
+  if (capability === "remove_element" || capability === "duplicate_element") {
+    return ["GEOMETRY", "TEXTURING", "ANIMATION"];
+  }
   if (HIERARCHY_OR_MOTION_STRUCTURE.has(capability)) return ["GEOMETRY", "ANIMATION"];
   return ["GEOMETRY"];
 }
