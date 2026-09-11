@@ -2,305 +2,124 @@
 
 Updated: 2026-09-11
 
-This file owns the reference-preparation handoff relationship between ChatGPT and Codex. It does not duplicate detailed schemas or stage-document contracts.
+This file owns only the **handoff boundary** between ChatGPT Reference Preparation and Codex. It deliberately does not repeat the operational flow, JSON schema, stage contracts, or package load contract.
 
 Canonical owners:
 
 ```text
-ChatGPT operational reference flow
-→ docs/knowledge/chatgpt-reference-flow.md
-
-REFERENCE.json schema
-→ docs/knowledge/reference-package-schema.md
-
-GEOMETRY.md
-→ docs/knowledge/geometry-reference-contract.md
-
-TEXTURE.md
-→ docs/knowledge/texture-reference-contract.md
-
-ANIMATION.md
-→ docs/knowledge/animation-reference-contract.md
-
-Codex/Astra package load order
-→ docs/knowledge/reference-package-load-contract.md
-
-Durable visual-reference policy
-→ docs/foundation/04-reference-guide.md
+Reference Preparation flow → ../flow.md
+Durable policy            → ../policy.md
+REFERENCE.json             → schema.md
+GEOMETRY.md                → geometry.md
+TEXTURE.md                 → texture.md
+ANIMATION.md               → animation.md
+Codex package load         → load-contract.md
+Image system               → ../image/README.md
 ```
 
 ## Purpose
 
-ChatGPT prepares enough confirmed visual and technical reference information for Codex to work without repeating avoidable interpretation.
+ChatGPT should resolve avoidable ambiguity before Codex spends context and reasoning on it.
 
 ```text
-MAKE AMBIGUITY EXPLICIT BEFORE CODEX PAYS TO RESOLVE IT
+CONFIRMED USER INTENT
++ APPROVED VISUAL AUTHORITY
++ COMPACT STRUCTURED FACTS
++ ONLY USEFUL STAGE GUIDANCE
+→ SELF-CONTAINED CODEX HANDOFF
 ```
 
-## Canonical ChatGPT-Side Flow
+The package must be enough for the next correct authoring decision without requiring the original ChatGPT transcript.
 
-```text
-USER REQUEST
-→ UNDERSTAND
-→ REQUIREMENT GATE
-→ ASK SIMPLE QUESTIONS IF BLOCKING INFO IS MISSING
-→ PROMPT COMPILER
-→ CLEAN PRODUCTION BRIEF
-→ FINAL CONFIRMATION
-→ REFERENCE PLAN
-→ GENERATE REQUIRED IMAGE(S)
-→ INTERNAL QA
-→ USER VISUAL REVIEW WHEN MATERIAL
-→ PACKAGE GENERATION CONFIRMATION WHEN REQUIRED
-→ PACKAGE CONSISTENCY GATE
-→ REFERENCE PACKAGE
-→ CODEX
-```
-
-No user-facing image or handoff file is generated before the relevant explicit confirmation gate.
-
-## Handoff Package
-
-Default package is intentionally small:
+## Default Package
 
 ```text
 asset_reference/
 ├── REFERENCE.json
 ├── GEOMETRY.md
-├── TEXTURE.md      ← only when required
-├── ANIMATION.md    ← only when required
+├── TEXTURE.md      ← only when useful
+├── ANIMATION.md    ← only when useful / required
 └── images/
-    └── approved/supporting reference images
+    └── approved/supporting references
 ```
 
-Do not add `README.md`, `CODEX_START.md`, transcripts, compiled prompts, or other duplicate briefing files by default.
+Do not add `README.md`, `CODEX_START.md`, transcripts, compiled prompts, generic tutorials, or duplicate briefing files by default.
 
-## Authority Model
+## Authority Boundary
 
 ```text
-1. explicit current user requirement
-2. approved visual reference
-3. REFERENCE.json structured facts
-4. active stage Markdown projection
-5. downstream Codex interpretation
+explicit current user requirement
+→ approved visual reference
+→ confirmed scale requirement
+→ REFERENCE.json structured facts
+→ active stage Markdown projection
+→ Codex interpretation
 ```
 
-`REFERENCE.json` is the canonical structured index. Stage Markdown files express only stage-specific consequences of the same authority. Images remain visual authority for visible design.
+Images own visible design. `REFERENCE.json` owns stable structured facts, relationships, unknowns, scale, and readiness. Stage Markdown explains only stage-specific consequences.
 
-A lower authority never silently overrides a higher authority. Material conflicts block only the dependent decision until resolved.
+A lower layer never silently overrides a higher layer.
 
-## Canonical Asset Profiles
+## Handoff Readiness
+
+The handoff is valid only when:
 
 ```text
-PROP_FURNITURE
-VEHICLE
-HUMANOID
-CREATURE
-MECHANICAL
-PLANT_FOLIAGE
-GENERIC
+required confirmation/approval is explicit
+blocking unknowns for the intended next stage are resolved
+scale authority is internally consistent
+listed documents/images exist
+image IDs and stage relevance resolve
+stage documents introduce no unsupported facts
+readiness agrees with blockers
 ```
 
-Profiles provide decision vocabulary, not geometry presets.
+If a conflict is material only to one stage, block that dependent stage rather than resetting unrelated readiness.
 
-## Optional Reference Modules
+## Codex Consumption
 
-```text
-CONCEPT
-TURNAROUND
-STRUCTURAL_DETAIL
-MATERIAL_TEXTURE
-RIG_DEFORMATION
-POSE_ACTION
-EXPRESSION_FACE
-ANIMATION_KEYFRAME
-```
-
-Do not force every module on every asset.
-
-## Machine-Readable Contract
-
-Canonical file:
+Codex follows `load-contract.md`:
 
 ```text
 REFERENCE.json
-```
-
-Schema identifier:
-
-```text
-lazydesigner-reference-v1
-```
-
-Exact field ownership and vocabulary live only in:
-
-```text
-docs/knowledge/reference-package-schema.md
-```
-
-Do not maintain another full JSON schema in this document or in the Reference Preparation Skill.
-
-## Stage Documents
-
-### `GEOMETRY.md`
-
-Owned only by:
-
-```text
-docs/knowledge/geometry-reference-contract.md
-```
-
-Contains only asset-specific Geometry interpretation already supported by stronger authority. It must not become a Cube plan, UV plan, animation plan, or Tool-call plan.
-
-### `TEXTURE.md`
-
-Owned only by:
-
-```text
-docs/knowledge/texture-reference-contract.md
-```
-
-Create only when material/texturing guidance materially improves downstream correctness. It must not become a pixel-by-pixel painting recipe or UV packing plan.
-
-### `ANIMATION.md`
-
-Owned only by:
-
-```text
-docs/knowledge/animation-reference-contract.md
-```
-
-Create only when animation is required and motion guidance materially helps. It must not become a compulsory frame-by-frame implementation recipe unless the user explicitly requires that precision.
-
-## Image Identity
-
-Every packaged image receives a stable semantic ID in `REFERENCE.json`.
-
-Example:
-
-```text
-IMG_GEO_01 → PRIMARY_GEOMETRY → images/turnaround.png
-IMG_TEX_01 → MATERIAL_TEXTURE → images/material-reference.png
-IMG_ANIM_01 → ANIMATION_KEYFRAME → images/keyframe-guide.png
-```
-
-Stage Markdown refers to image IDs and states what each image owns for that stage. Codex should not scan the whole image folder by default.
-
-## Codex/Astra Load Rule
-
-Package consumption is owned by:
-
-```text
-docs/knowledge/reference-package-load-contract.md
-```
-
-Default behavior:
-
-```text
-REFERENCE.json
-→ determine active stage/readiness
-→ load only active stage Markdown
-→ inspect only image IDs referenced by that stage
+→ identify task/stage/readiness
+→ load active stage document when present
+→ inspect only images relevant to that stage
+→ load the matching authoring Skill/profile context
 → work
 ```
 
-Do not load every stage document and every image automatically.
+Do not scan all Markdown files or all images by default.
 
-## Unknown Classification
+## Correction / Continuation
 
-Unknowns remain:
-
-```text
-blocking
-non_blocking
-```
-
-`REFERENCE.json` owns the canonical unknown inventory. Stage Markdown repeats only stage-relevant consequences.
-
-A Texture-only unknown must not block Geometry. A rig blocker may block Animation while Texture remains ready.
-
-## Stage Readiness
-
-Canonical values:
-
-```text
-READY
-NOT_REQUIRED
-NEEDS_REVIEW
-BLOCKED
-```
-
-Readiness is stage-specific. Missing Texture information does not automatically block Geometry. Animation may be `NOT_REQUIRED`.
-
-## Package Consistency Gate
-
-Before handoff, ChatGPT verifies:
-
-```text
-all listed documents actually exist
-all referenced image IDs actually exist
-stage files agree with REFERENCE.json
-no stage file introduces unsupported facts
-no stage file leaks another stage's implementation plan
-readiness agrees with blockers
-omitted optional files are not referenced
-```
-
-Failure means the package is not ready for Codex.
-
-## Correction Behavior
-
-For bounded user changes:
+For a bounded change:
 
 ```text
 USER DELTA
-→ compile CHANGE + PRESERVE
-→ ask only if the new target is materially ambiguous
-→ concise confirmation before revised artifact generation
+→ preserve unaffected approved authority
 → update affected REFERENCE.json facts
 → update only affected stage document(s)
 → update only affected image(s)
-→ preserve unaffected accepted information
-```
-
-Do not rebuild the entire package for a local change.
-
-## Existing Asset / Update
-
-```text
-USER CHANGE REQUEST
-→ ChatGPT resolves only missing reference/technical facts
-→ preserve accepted visual/technical authority
-→ update affected package content
 → hand revised package to Codex
 ```
 
-The package remains self-contained. Codex should not need the original ChatGPT transcript to understand current authority.
+Do not rebuild the complete package for a local correction.
 
-## System Development Boundary
-
-System-development work does not require an asset reference package by default.
-
-```text
-USER MCP / PLUGIN / BUILD REQUEST
-→ product-development workflow
-```
-
-Do not misuse this package as a general development-brief format.
+For existing assets, the package may be partial when only one stage needs new reference clarification. It is not a second persistent asset-state database.
 
 ## Non-Goals
 
-The Reference Package must not become:
+The handoff must not become:
 
 ```text
-conversation transcript
 giant master prompt
+conversation archive
 copy of Skills or Tool schemas
+Cube-by-Cube modelling plan
 hidden source of guessed requirements
-mandatory full set of stage documents for trivial assets
-second asset-state database
-Cube-by-Cube modelling blueprint
-duplicate authority system across JSON and Markdown
+mandatory full set of stage documents
+parallel workflow/state system
 ```
 
-Its purpose is to make the next Codex authoring decision correct, explicit, and efficient.
+Its only job is to carry the minimum confirmed authority needed for reliable downstream authoring.
