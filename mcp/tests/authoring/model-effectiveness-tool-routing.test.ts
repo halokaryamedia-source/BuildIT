@@ -7,25 +7,23 @@ async function source(path: string): Promise<string> {
 
 describe("model creation effectiveness — tool routing", () => {
   test("Geometry focus gets complete AUTHORING guidance without Animation tools", async () => {
-    const [orchestrator, modelling, workflow] = await Promise.all([
-      source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md"),
+    const [controlRegistry, modelling, workflow] = await Promise.all([
+      source("gateway/control/registry.ts"),
       source("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
       source("prompts/bedrock_entity_workflow.md"),
     ]);
     const geometryRuntime = selectMcpPhaseWorkflowBody(workflow, "geometry");
 
-    for (const tool of ["get_project_info", "manage_cubes", "capture_model_views", "inspect_elements", "export_model"]) {
-      expect(orchestrator).toContain(tool);
-    }
     for (const tool of ["manage_cubes", "inspect_elements", "create_texture"]) {
       expect(geometryRuntime).toContain(tool);
     }
     expect(geometryRuntime).toContain("fresh model views");
     expect(geometryRuntime).not.toContain("create_animation");
-    expect(orchestrator).toMatch(/Skip `get_project_info` after create\/export unless .*lifecycle state.*unknown\/stale/i);
+    expect(controlRegistry).toContain("authoringDomainForCapability");
+    expect(controlRegistry).toContain("sourceOwnerForCapability");
     expect(modelling).toContain("conditional surface integrity");
     expect(modelling).toContain("overlap alone never proves correctness");
-    expect(orchestrator).toContain("Semantic cohort rule");
+    expect(modelling).toContain("Semantic cohort rule");
   });
 
   test("specialists reuse known state instead of forcing lifecycle/discovery rereads", async () => {
@@ -43,12 +41,12 @@ describe("model creation effectiveness — tool routing", () => {
     expect(texturing).toContain("Pin atlas UUID and pass `texture_id` when multiple textures are loaded");
   });
 
-  test("convenience tools retain branch-only roles", async () => {
-    const [camera, elements, history, orchestrator] = await Promise.all([
+  test("convenience tools retain branch-only roles and are not promoted by Control", async () => {
+    const [camera, elements, history, contract] = await Promise.all([
       source("server/tools/camera.ts"),
       source("server/tools/element.ts"),
       source("server/tools/history.ts"),
-      source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md"),
+      source("gateway/contract.ts"),
     ]);
 
     expect(camera).toContain("cameraToolDocs[1].status, false");
@@ -59,10 +57,10 @@ describe("model creation effectiveness — tool routing", () => {
     const duplicateDoc = elements.slice(duplicateStart, duplicateEnd);
     expect(duplicateStart).toBeGreaterThan(-1);
     expect(duplicateDoc).toContain("status: STATUS_EXPERIMENTAL");
-    expect(orchestrator).not.toContain("duplicate_element");
+    expect(contract).not.toMatch(/PRIMARY_CAPABILITIES[\s\S]*"duplicate_element"/);
 
     expect(history).toContain('name: "get_undo_stack"');
-    expect(orchestrator).not.toContain("get_undo_stack");
+    expect(contract).not.toMatch(/PRIMARY_CAPABILITIES[\s\S]*"get_undo_stack"/);
   });
 
   test("routing hardening preserves the existing Bedrock registration profile", async () => {
