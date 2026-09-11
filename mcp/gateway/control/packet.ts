@@ -1,7 +1,6 @@
 import { createHash } from "node:crypto";
 import type { GatewayRuntimeStatus } from "../backend";
 import { resolveDevelopmentIntent, type ControlDevelopmentResolution } from "./developmentIntent";
-import { CONTROL_ROUTING_POLICY, type ControlRoutingPolicy } from "./routingPolicy";
 import { contextForAuthoringDomain } from "./registry";
 import { buildControlSnapshot } from "./snapshot";
 import {
@@ -42,7 +41,6 @@ export type ControlPacket = Omit<ControlSnapshot, "context" | "mode"> & {
   control_protocol: "lazydesigner-control-v1";
   task_context_id: string;
   readiness: ControlReadiness;
-  routing: ControlRoutingPolicy;
   workspace: ControlWorkspaceSummary;
   reference: ControlReferenceSummary;
   stage_context: ControlStageContext | null;
@@ -317,7 +315,6 @@ export async function buildControlPacket(
       options.currentUserDelta?.trim() || null
     ),
     readiness: buildReadiness(snapshot, workspace, reference, mode),
-    routing: CONTROL_ROUTING_POLICY,
     workspace: workspaceSummary(workspace),
     reference: referenceSummary(reference),
     stage_context: stageContext,
