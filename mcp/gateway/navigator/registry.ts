@@ -36,12 +36,17 @@ function contextLabel(path: string): string {
   return profile ? `profile/${profile.toLowerCase().replaceAll("_", "-")}` : "doc/context";
 }
 
+function repoFile(path: string): URL {
+  return new URL(`../../../${path}`, import.meta.url);
+}
+
 async function contentHandle(path: string): Promise<NavigatorContextHandle> {
-  const info = await stat(path);
+  const file = repoFile(path);
+  const info = await stat(file);
   const signature = `${info.size}:${info.mtimeMs}`;
   const cached = contextHandleCache.get(path);
   if (cached?.signature === signature) return cached.handle;
-  const bytes = await readFile(path);
+  const bytes = await readFile(file);
   const sha256 = createHash("sha256").update(bytes).digest("hex");
   const handle: NavigatorContextHandle = {
     id: `ctx:${contextLabel(path)}@${sha256.slice(0, 12)}`,
