@@ -6,7 +6,7 @@ This file owns **current implementation continuation only**. Product architectur
 
 ## Current Objective
 
-The REMOTE_GITHUB pre-local hardening phase is complete enough to freeze safely. Bounded source defects found after the initial freeze were corrected without reopening a general cleanup phase: controller inspection schema/docs match, zero/null semantics are guarded, Particle is classified and invalidated through its Animation ownership, direct capability source ownership is more precise, and `duplicate_element` now invalidates the dependent authoring evidence it can affect. Further optimization that would change the stable Gateway status contract, broaden canonical phase ownership across support tools, or depend on measured Runtime behavior remains a separate evidence-driven task; installed/native/visual proof remains deferred to `LOCAL_CODE` / `LIVE_BLOCKBENCH` as appropriate.
+The REMOTE_GITHUB pre-local hardening phase is complete enough to freeze safely. Bounded source defects found after the initial freeze were corrected without reopening a general cleanup phase: controller inspection schema/docs match, zero/null semantics are guarded, Particle is classified and invalidated through its Animation ownership, direct capability source ownership is more precise, `duplicate_element` invalidates its dependent authoring evidence, canonical name-only phase coverage now matches Runtime classification for exposed non-Core tools, and Texture invalidation distinguishes authored mutations from focus-only state such as `activate_texture`. Further optimization that depends on execution evidence is deferred to `LOCAL_CODE`; installed/native/visual proof remains deferred to `LIVE_BLOCKBENCH`.
 
 ## Completed Baseline
 
@@ -18,6 +18,7 @@ The REMOTE_GITHUB pre-local hardening phase is complete enough to freeze safely.
 ✓ exactly-one-profile Geometry loading
 ✓ content-addressed context reuse
 ✓ single capability-phase owner in mcp/lib/authoringPhase.ts
+✓ exposed non-Core capability name coverage aligned with Runtime family classification
 ✓ single search fallback owner in mcp/gateway/control/routingPolicy.ts
 ✓ stable four-tool Gateway surface
 ✓ Geometry + Texturing shared AUTHORING surface
@@ -34,14 +35,19 @@ The REMOTE_GITHUB pre-local hardening phase is complete enough to freeze safely.
 ✓ orphan mcp/gateway/control/contextCache.ts removed
 ✓ registry.ts owns content-addressed context-handle caching
 ✓ packet.ts owns known/cached/invalidated context delivery
-✓ direct source owners added for render-profile, locator/null, texture activation, paint, and element mutations where implementation ownership is unambiguous
+✓ direct source owners cover identified texture, paint, locator, selection, render-profile and element support capabilities
+✓ consolidated wrappers remain owned by mcp/server/tools.ts where that wrapper is the real implementation boundary
 ✓ context ownership regression guard added
+✓ support capability source-owner regression guard added
 ✓ Gateway/Control envelope overlap instrumented in measure-control-context.ts
 ✓ stable Gateway status contract left intact pending local measurement
 ✓ Runtime/catalog/project/interruption recovery owned by Gateway backend
 ✓ Workspace/Reference readiness recovery owned by Control projection
 ✓ OUTCOME_UNKNOWN mutation interruption remains no-auto-retry
 ✓ duplicate_element is tracked as a Geometry mutation and invalidates Geometry/Texturing/Animation dependent evidence
+✓ authored gradient/copy/layer/material-import Texture changes invalidate Texture evidence
+✓ activate_texture no longer invalidates authored Texture evidence because it only changes active focus
+✓ Control phase-name coverage and Texture-mutation precision regression guards added
 ✓ deterministic recovery ownership regression guard added
 ✓ Bedrock-first authoring contract regression guard added
 ✓ compatibility-bound BlockIT identifiers intentionally preserved
@@ -57,10 +63,12 @@ The REMOTE_GITHUB pre-local hardening phase is complete enough to freeze safely.
 
 ```text
 Control / Gateway policy ownership     COMPLETE IN SOURCE
+Canonical capability phase coverage    HARDENED IN SOURCE
 Tool-routing / source ownership        HARDENED FOR IDENTIFIED DIRECT OWNERS
 Animation Controller ownership         COMPLETE IN SOURCE
 Particle Control ownership             HARDENED IN SOURCE
 Element mutation invalidation          HARDENED IN SOURCE
+Texture mutation invalidation          HARDENED / MINIMIZED IN SOURCE
 Controller inspection contract         HARDENED IN SOURCE
 Controller nullish/zero semantics      REGRESSION-GUARDED
 Dead-code / obsolete helper sweep      COMPLETE ENOUGH TO FREEZE
@@ -69,24 +77,19 @@ Error/recovery ownership               COMPLETE IN SOURCE
 Bedrock-first contract audit           COMPLETE IN SOURCE
 Repository regression guards           UPDATED
 
-REMOTE_GITHUB SOURCE HARDENING         RE-FROZEN AFTER BOUNDED DEFECT FIXES
+REMOTE_GITHUB SOURCE HARDENING         FROZEN
 ```
 
-Do not add another remote-only cleanup phase merely to keep changing source. Reopen remote mutation only for a newly identified concrete source defect with bounded ownership. Family-fallback support-tool phase coverage must be handled through the single canonical owner in `mcp/lib/authoringPhase.ts`; do not create a second Control mapping table.
+Do not add another remote-only cleanup phase merely to keep changing source. Reopen remote mutation only for a newly identified concrete source defect with bounded ownership. Capability phase ownership remains single-sourced in `mcp/lib/authoringPhase.ts`; do not create a second Control mapping table.
 
 ## Next Meaningful Context
 
 ```text
-REMOTE_GITHUB (only when a concrete source defect is identified)
-→ audit active support capability names against canonical mcp/lib/authoringPhase.ts ownership
-→ keep family/name phase ownership single-sourced; do not duplicate policy in Control
-→ patch only proven classification or mutation-invalidation gaps
-→ add static regression guards for each bounded fix
-
 LOCAL_CODE
 → run bun/typecheck/repository verification
+→ run Control phase-name coverage regression test
+→ run Control routing/invalidation/source-owner regression tests
 → run controller inspection/mutation/native-composition tests
-→ run Control routing/invalidation regression tests
 → run docs:build + docs:check from canonical generators
 → run measure:control
 → compare full Gateway envelope vs cached-context envelope
@@ -97,6 +100,7 @@ LIVE_BLOCKBENCH
 → deploy/reload the matching current LazyDesigner build
 → verify Gateway/Runtime project affinity
 → verify Geometry/Texturing/Animation surfaces live
+→ exercise Texture support tools and confirm Control continuation does not treat them as CORE
 → exercise inspect_animation → manage_animation_controller → focused re-inspection
 → verify controller Undo/persistence/native blend/nested composition behavior
 → exercise Reference Package + Control continuation
