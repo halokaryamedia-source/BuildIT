@@ -1,142 +1,303 @@
 # Particle Knowledge Map
 
-This file is the navigation owner for durable particle knowledge used by ChatGPT-side Particle Reference Authoring.
+Canonical knowledge map for ChatGPT-side Minecraft Bedrock / Snowstorm particle reference authoring.
 
-## Evidence Classes
+## Provenance labels
 
-Every important rule should be understood as one of four evidence classes:
+Every durable rule should be understood through one of these evidence classes:
 
 ```text
 OFFICIAL BEDROCK
-  documented Minecraft Bedrock particle behavior or schema
-
 SNOWSTORM / WINTERSKY
-  editor or preview-runtime behavior specific to Snowstorm/Wintersky
-
 EMPIRICALLY VERIFIED
-  behavior reproduced during accepted particle authoring work
-
 HEURISTIC
-  bounded authoring guidance used for QA or design decisions; not runtime truth
 ```
 
-Do not silently upgrade a Snowstorm-specific observation into Bedrock validity, or a heuristic into visual/runtime proof.
+### OFFICIAL BEDROCK
 
-## Read Order
+Use for behavior documented by Microsoft Minecraft Creator particle references, Molang documentation, or entity integration documentation.
+
+### SNOWSTORM / WINTERSKY
+
+Use for editor/preview-specific behavior, UI behavior, compatibility differences, release-specific limitations, or Wintersky rendering semantics.
+
+### EMPIRICALLY VERIFIED
+
+Use for behavior reproduced during an accepted real authoring case. This does not automatically make it a universal Bedrock rule.
+
+### HEURISTIC
+
+Use for bounded authoring guidance such as readability thresholds, conservative particle budgets, keep-out reasoning, and decomposition advice.
+
+Never present a heuristic as exact Minecraft runtime truth.
+
+---
+
+## Knowledge domains
+
+### Foundation
 
 ```text
-need Bedrock structure / component ownership
-→ fundamentals.md
+fundamentals.md
+```
 
-need particle Molang behavior / variable ownership
+Owns:
+- particle document mental model;
+- description/basic render parameters;
+- component families;
+- lifecycle boundaries;
+- emitter vs particle responsibility;
+- high-level decomposition.
+
+### Emitter
+
+```text
+emitter.md
+```
+
+Owns:
+- emitter rates;
+- emitter lifetimes;
+- initialization;
+- point/sphere/disc/box/entity-AABB/custom shapes;
+- offsets;
+- `surface_only`;
+- launch direction ownership;
+- density reasoning.
+
+### Motion
+
+```text
+motion.md
+```
+
+Owns:
+- initial impulse;
+- dynamic acceleration and drag;
+- parametric motion;
+- collision;
+- kill planes/environment expiration;
+- ballistic/buoyant/drift/jet motion classes;
+- motion-envelope reasoning.
+
+### Appearance / Rendering
+
+```text
+appearance-rendering.md
+```
+
+Owns:
+- materials;
+- billboard size/facing;
+- UVs;
+- flipbook;
+- tinting/gradients;
+- lighting;
+- transparency/overdraw;
+- atlas hygiene;
+- target-distance readability.
+
+### Molang
+
+```text
+molang.md
+```
+
+Owns:
+- emitter-owned vs particle-owned variables;
+- stable random state;
+- age/lifetime expressions;
+- initialization/update/render ownership;
+- expression-cost guidance;
+- stable class selection.
+
+### Curves
+
+```text
+curves.md
+```
+
+Owns:
+- linear, Bezier, Bezier chain, Catmull-Rom curves;
+- curve input/range;
+- curve variables;
+- normalized lifetime progress;
+- curve/tint relationships;
+- curve reuse and cost guidance.
+
+### Events
+
+```text
+events.md
+```
+
+Owns:
+- emitter and particle lifetime events;
+- collision events;
+- child visual-effect events;
+- event relationship types;
+- pre-effect expressions;
+- master/child architecture;
+- fan-out and bundle integrity.
+
+### Snowstorm / Wintersky
+
+```text
+snowstorm.md
+```
+
+Owns:
+- Snowstorm editor boundary;
+- Wintersky preview boundary;
+- target-specific compatibility;
+- Quick Setup/release awareness;
+- vector-initial-speed compatibility finding;
+- emitter-age preview instability finding;
+- editor-vs-content bug classification.
+
+### Performance
+
+```text
+performance.md
+```
+
+Owns:
+- visible population estimation;
+- spawn rate/lifetime/max-particle interaction;
+- translucent overdraw;
+- collision/Molang/parametric cost guidance;
+- event fan-out;
+- distance-aware budgeting;
+- static-budget proof limits.
+
+### Entity Integration
+
+```text
+entity-integration.md
+```
+
+Owns:
+- entity particle-effect mapping;
+- locators and bone attachment;
+- animation and animation-controller triggering;
+- pre-effect scripts;
+- local orientation expectations;
+- fire-and-forget vs sustained binding intent.
+
+### Troubleshooting
+
+```text
+troubleshooting.md
+```
+
+Owns symptom-first causal diagnosis for:
+- missing effects;
+- wrong trajectory;
+- wrong density;
+- texture/alpha issues;
+- flipbook problems;
+- unstable class switching;
+- child events;
+- collisions;
+- Snowstorm/Minecraft mismatch;
+- performance regressions.
+
+---
+
+## Workflow and delivery owners
+
+Knowledge is separate from execution workflow.
+
+```text
+authoring-spec.md → normalize requested effect
+workflow.md       → authoring sequence
+qa.md             → static/preflight acceptance
+delivery.md       → final package contract
+patterns.md       → reusable physical starting patterns
+```
+
+Do not duplicate deep knowledge into workflow files. Workflow should point to the relevant knowledge owner only when the decision requires it.
+
+---
+
+## Lazy-read routing
+
+Do not preload the full particle corpus.
+
+Recommended loading:
+
+```text
+basic particle task
+→ authoring-spec.md + workflow.md
+
+emission/spawn issue
+→ emitter.md
+
+trajectory/physics issue
+→ motion.md
+
+visual/material/atlas issue
+→ appearance-rendering.md
+
+Molang expression issue
 → molang.md
 
-need Snowstorm editor / Wintersky preview compatibility
+lifetime progression/curve issue
+→ curves.md
+
+nested/child effect issue
+→ events.md
+
+Snowstorm preview/compatibility issue
 → snowstorm.md
 
-need request normalization
-→ authoring-spec.md
+performance/density issue
+→ performance.md
 
-need authoring sequence
-→ workflow.md
+entity attachment issue
+→ entity-integration.md
 
-need validation
-→ qa.md
-
-need final package
-→ delivery.md
-
-need reusable physical starting model
-→ patterns.md
+unclear failure
+→ troubleshooting.md
 ```
 
-## Coverage Map
+Load multiple files only when the task actually crosses those ownership boundaries.
 
-Current durable knowledge covers:
+---
+
+## Confidence hierarchy
+
+When rules conflict, prefer:
 
 ```text
-DOCUMENT
-├─ description / render parameters
-├─ components
-├─ curves
-└─ events
-
-EMITTER
-├─ initialization
-├─ rate: instant / steady / manual
-├─ lifetime: looping / once / expression
-├─ lifetime events / timelines
-└─ shapes: point / sphere / box / disc
-
-PARTICLE
-├─ lifetime
-├─ initial speed / spin
-├─ motion dynamic
-├─ motion parametric
-├─ collision
-├─ billboard / UV / flipbook
-└─ tinting
-
-MOLANG
-├─ emitter-owned variables
-├─ particle-owned variables
-├─ random ownership
-├─ curves
-├─ per-frame expressions
-└─ cost / stability guidance
-
-EVENTS
-├─ expression
-├─ sequence
-├─ randomize
-├─ sound
-└─ nested particle effect
-
-SNOWSTORM / WINTERSKY
-├─ live preview
-├─ Quick Setup
-├─ event preview
-├─ texture editing
-├─ vector initial-speed caveat
-└─ editor/runtime parity limits
+current explicit user requirement
+→ current official Bedrock documentation for Bedrock semantics
+→ reproduced target-editor behavior for Snowstorm-specific compatibility
+→ accepted empirical project evidence
+→ conservative heuristic
 ```
 
-## Source Priority
+Never let a Snowstorm-specific workaround redefine generic Bedrock validity.
 
-Prefer sources in this order for durable factual claims:
+Never let static preflight claim live rendering or FPS truth.
 
-1. Microsoft Minecraft Creator particle JSON documentation.
-2. Microsoft Snowstorm overview/tutorial for editor positioning.
-3. Snowstorm repository/release notes for current editor behavior.
-4. Wintersky repository/source behavior when preview semantics matter.
-5. Accepted project evidence for reproduced compatibility issues.
-6. Heuristic authoring guidance only where authoritative/runtime proof is unavailable or unnecessary.
+---
 
-## Current Knowledge-Gap Queue
-
-The following are intentionally not yet treated as fully closed knowledge areas:
+## Current coverage state
 
 ```text
-render material blending/sorting edge cases
-all facing_camera_mode nuances
-all entity-space/local-space transforms
-collision edge cases and event timing
-full event timeline semantics
-all curve types and edge behavior
-resource-pack/entity binding variants
-performance behavior on target hardware
-Snowstorm vs Minecraft parity edge cases
+Bedrock document fundamentals     STRONG
+Emitter lifecycle + shapes        STRONG
+Dynamic/parametric/collision      STRONG
+Billboard/material/atlas          STRONG
+Particle Molang                   STRONG
+Curves                            STRONG
+Events / child effects            STRONG
+Snowstorm / Wintersky             STRONG BASELINE
+Performance reasoning             STRONG STATIC
+Entity integration                STRONG REFERENCE BOUNDARY
+Troubleshooting                   STRONG CAUSAL GUIDE
+Real multi-family visual cases    DEFERRED BY USER
 ```
 
-Expand these only from authoritative source evidence or a reproduced real case. Do not create speculative rules merely to make the knowledge tree look complete.
-
-## Sources
-
-Primary references:
-
-- https://learn.microsoft.com/en-us/minecraft/creator/reference/content/particlesreference/?view=minecraft-bedrock-stable
-- https://learn.microsoft.com/en-us/minecraft/creator/reference/content/particlesreference/examples/particlecomponents/particle_document?view=minecraft-bedrock-stable
-- https://learn.microsoft.com/en-us/minecraft/creator/documents/particleeffects?view=minecraft-bedrock-stable
-- https://learn.microsoft.com/en-us/minecraft/creator/documents/molang/practical-molang?view=minecraft-bedrock-stable
-- https://github.com/JannisX11/snowstorm
-- https://github.com/JannisX11/wintersky
+The next improvements should deepen source-specific edge cases and version-specific Snowstorm behavior, not create another parallel particle framework.
