@@ -81,6 +81,41 @@ Known → Gateway; unknown/stale → `search_capabilities`; schema → `describe
 
 `batch` uses operation="batch" + batch_operation= for one coherent cohort, not loops per key. `properties` owns clip state; `native_operations` nested controllers/curves. Controller/effect/graph/copy-paste are conditional.
 
+## Execution Path Preference
+Use semantic/native animation capabilities directly. Do not emulate the Blockbench timeline UI when the Runtime already exposes the underlying Timeline/Animator behavior.
+
+```text
+create a coherent new clip with known numeric keys
+→ create_animation once
+
+create/edit/delete multiple related keys
+→ manage_animation_timeline(operation="keyframes") with one bone/channel cohort
+
+repeat/pattern/range correction across many keys
+→ manage_animation_timeline(operation="batch")
+
+play/pause/stop/set_time/select_range
+→ manage_animation_timeline(operation="timeline")
+
+clip properties / length / fps / loop / Molang properties
+→ manage_animation_timeline(operation="properties")
+
+sound / particle / timeline effects
+→ manage_animation_effects
+
+controller composition / transitions / nested controller operations
+→ manage_animation_controller
+```
+
+Rules:
+- Do **not** use `trigger_action`, `emulate_clicks`, or `fill_dialog` for normal animation playback, timeline navigation, keyframes, graph edits, controllers, or effects.
+- Prefer one bounded keyframe/batch mutation over loops of one-key calls when a coherent cohort shares the same correction intent.
+- Reuse the animation UUID returned by creation/mutation; do not reselect or rediscover the clip merely to confirm identity.
+- Do not call `inspect_animation` after every successful deterministic mutation. Inspect only when required state is unknown/stale or when the next correction depends on a field not present in the mutation receipt.
+- Do not repeatedly `set_time` to collect static evidence. Prefer one bounded `capture_model_views(animation_preview)` request across the representative times required by the verdict.
+- Timeline selection/view expansion is editor state, not authored motion. Change it only when it materially supports evidence or a native operation that depends on selection.
+- Native Timeline/Animator API calls are the intended execution path; the fact that Blockbench UI updates afterward does not make them UI automation.
+
 ## Motion Design Contract
 
 Before keys define only applicable facts (no foot-plant/gameplay contract for an unrelated mechanical loop):
