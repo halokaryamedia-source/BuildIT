@@ -11,6 +11,7 @@ export type ControlProfile =
   | "PLANT_FOLIAGE"
   | "GENERIC";
 
+export type ControlReferenceAssetKind = "MODEL" | "PARTICLE";
 export type ControlReferenceStage = "GEOMETRY" | "TEXTURE" | "ANIMATION";
 
 export type ControlReferenceProjection = {
@@ -20,6 +21,7 @@ export type ControlReferenceProjection = {
   fingerprint: string | null;
   schema: string | null;
   asset_name: string | null;
+  asset_kind: ControlReferenceAssetKind | null;
   intent: string | null;
   selected_profile: ControlProfile | null;
   requirements: {
@@ -37,6 +39,19 @@ export type ControlReferenceProjection = {
     texture: string | null;
     animation: string | null;
   };
+  particle: {
+    identifier: string | null;
+    particle_json: string | null;
+    texture_reference: string | null;
+    texture_png: string | null;
+    texture_state: string | null;
+    recommended_locator: string | null;
+    recommended_animation: string | null;
+    trigger_intent: string | null;
+    trigger_time_seconds: number | null;
+    bind_to_actor: boolean | null;
+    review_state: string | null;
+  } | null;
   blocking_unknowns: string[];
   non_blocking_unknowns: string[];
   documents: Partial<Record<ControlReferenceStage, string>>;
@@ -100,6 +115,13 @@ function profileValue(value: unknown): ControlProfile | null {
     : null;
 }
 
+function assetKindValue(value: unknown): ControlReferenceAssetKind | null {
+  const candidate = stringValue(value)?.toUpperCase();
+  return candidate === "MODEL" || candidate === "PARTICLE"
+    ? candidate
+    : null;
+}
+
 function normalizeStage(value: unknown): ControlReferenceStage | null {
   const candidate = stringValue(value)?.toUpperCase();
   if (candidate === "GEOMETRY" || candidate === "TEXTURE" || candidate === "ANIMATION") {
@@ -137,6 +159,10 @@ export async function readReferencePackageProjection(
     const readiness = record(root.readiness);
     const unknowns = record(root.unknowns);
     const documents = record(root.documents);
+    const particle = record(root.particle);
+    const particleTrigger = record(particle?.trigger);
+    const selectedProfile = profileValue(asset?.profile);
+    const assetKind = assetKindValue(asset?.kind) ?? (selectedProfile ? "MODEL" : null);
     const imageEntries = Array.isArray(root.images) ? root.images : [];
     const images = imageEntries.flatMap((entry) => {
       const item = record(entry);
@@ -163,8 +189,9 @@ export async function readReferencePackageProjection(
       fingerprint: createHash("sha256").update(raw).digest("hex"),
       schema: "lazydesigner-reference-v1",
       asset_name: stringValue(asset?.name),
+      asset_kind: assetKind,
       intent: stringValue(asset?.intent),
-      selected_profile: profileValue(asset?.profile),
+      selected_profile: selectedProfile,
       requirements: {
         dimensions_blocks: dimensions ? {
           width: numberOrNull(dimensions.width),
@@ -180,6 +207,19 @@ export async function readReferencePackageProjection(
         texture: stringValue(readiness?.texture),
         animation: stringValue(readiness?.animation),
       },
+      particle: assetKind === "PARTICLE" ? {
+        identifier: stringValue(particle?.identifier),
+        particle_json: stringValue(particle?.particle_json),
+        texture_reference: stringValue(particle?.texture_reference),
+        texture_png: stringValue(particle?.texture_png),
+        texture_state: stringValue(particle?.texture_state),
+        recommended_locator: stringValue(particle?.recommended_locator),
+        recommended_animation: stringValue(particle?.recommended_animation),
+        trigger_intent: stringValue(particleTrigger?.intent),
+        trigger_time_seconds: numberOrNull(particleTrigger?.time_seconds),
+        bind_to_actor: boolOrNull(particle?.bind_to_actor),
+        review_state: stringValue(particle?.review_state),
+      } : null,
       blocking_unknowns: stringList(unknowns?.blocking),
       non_blocking_unknowns: stringList(unknowns?.non_blocking),
       documents: {
@@ -212,6 +252,7 @@ function emptyReference(
     fingerprint: null,
     schema: null,
     asset_name: null,
+    asset_kind: null,
     intent: null,
     selected_profile: null,
     requirements: {
@@ -220,6 +261,7 @@ function emptyReference(
       animation_required: null,
     },
     readiness: { overall: null, geometry: null, texture: null, animation: null },
+    particle: null,
     blocking_unknowns: [],
     non_blocking_unknowns: [],
     documents: {},
