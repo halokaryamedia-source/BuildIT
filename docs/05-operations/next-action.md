@@ -6,106 +6,80 @@ This file owns **current implementation continuation only**. Product architectur
 
 ## Current Objective
 
-The broad REMOTE_GITHUB source-cleanup phase is complete. The active remote-only continuation is **pre-local hardening**: eliminate remaining stale authority pointers, duplicate policy ownership, dead/obsolete routing residue, and context/tool-routing drift that can be proven from source without Runtime or Blockbench execution. Local/live Blockbench testing remains deferred until explicitly reactivated.
+The REMOTE_GITHUB pre-local hardening phase is now complete enough to freeze safely. Source ownership, routing policy, tool-surface boundaries, context ownership, recovery ownership, and Bedrock-first constraints are aligned in current source. Further optimization that would change the stable Gateway status contract or depend on measured Runtime behavior is deferred to `LOCAL_CODE`; installed/native/visual proof remains deferred to `LIVE_BLOCKBENCH`.
 
 ## Completed Baseline
 
 ```text
-✓ AI-first docs + minimum-context contract
-✓ Reference Preparation / typed authority / package contracts
-✓ canonical LazyDesigner Control source at mcp/gateway/control/
+✓ canonical LazyDesigner Control at mcp/gateway/control/
 ✓ former navigator/ source removed with no alias
-✓ legacy asset-router Skill removed
 ✓ ASSET_AUTHORING / SYSTEM_DEVELOPMENT routing
 ✓ GEOMETRY_CONTEXT / TEXTURE_CONTEXT / ANIMATION_CONTEXT
 ✓ exactly-one-profile Geometry loading
-✓ dynamic content-addressed context reuse
-✓ canonical capability classification in mcp/lib/authoringPhase.ts
-✓ effect-aware downstream invalidation
-✓ Workspace lifecycle readiness
-✓ metadata-only search/describe status rereads removed
-✓ compact Control packet with self-contained stage_context
-✓ canonical REFERENCE_PREPARATION:
-  - lazydesigner-reference-preparation
-  - lazydesigner-prompt-compiler
-✓ canonical ASSET_AUTHORING:
-  - lazydesigner-modelling
-  - lazydesigner-texturing
-  - lazydesigner-animation
-✓ canonical PRODUCT_DEVELOPMENT:
-  - lazydesigner-mcp-development
-  - lazydesigner-blockbench-development
-  - lazydesigner-development-brief
-✓ old primary Skill paths physically removed
-✓ root/docs/CI/regressions route to canonical Skill identities
-✓ authoring-phase regression now reads canonical modelling/texturing/animation Skills
-✓ authoring Skill owner regression guard added
-✓ safe presentation branding migrated to LazyDesigner in:
-  - MCP initialize/server instructions
-  - Gateway backend human-readable errors/status
-  - plugin lifecycle/install/dev-sync messages
-  - Blockbench panel + status bar
-  - local install docs + mcp/llms.txt
-✓ compatibility identifier boundary documented + guarded
-✓ stale repository regressions repaired:
-  - current-doc-sync
-  - repository-github-discipline
-  - repository-supply-chain
-  - control-source-migration
-✓ Experimental Navigator history no longer advertises removed production ownership
-✓ regression guard covers Experimental Navigator authority pointers
-✓ Control routing policy owns the Gateway search fallback limit
-✓ routing-policy ownership regression guard added
-✓ Bedrock Entity registration profile keeps import/ui outside the normal surface
-✓ Geometry + Texturing remain one shared AUTHORING surface
-✓ Animation remains the only foreign authoring surface
-✓ particle authoring remains intentionally bounded to the Animation specialist route
-✓ orphan contextCache helper/export removed
-✓ context ownership regression guard added; registry + packet remain the only context reuse owners
-✓ Control/Gateway measurement now exposes envelope-level orientation overlap without changing the stable status contract
-✓ no speculative Texture/Animation result compaction added without evidence
+✓ content-addressed context reuse
+✓ single capability-phase owner in mcp/lib/authoringPhase.ts
+✓ single search fallback owner in mcp/gateway/control/routingPolicy.ts
+✓ stable four-tool Gateway surface
+✓ Geometry + Texturing shared AUTHORING surface
+✓ Animation isolated as the only foreign authoring surface
+✓ Particle retained as Animation-specialist asset support; no extra phase
+✓ generic import/ui fallback remains extended opt-in only
+✓ focused consolidated public tools keep legacy executors hidden
+✓ canonical lazydesigner-* primary Skills
+✓ legacy primary Skill paths removed
+✓ Experimental Navigator authority pointers retired and guarded
+✓ orphan mcp/gateway/control/contextCache.ts removed
+✓ registry.ts owns content-addressed context-handle caching
+✓ packet.ts owns known/cached/invalidated context delivery
+✓ context ownership regression guard added
+✓ Gateway/Control envelope overlap instrumented in measure-control-context.ts
+✓ stable Gateway status contract left intact pending local measurement
+✓ Runtime/catalog/project/interruption recovery owned by Gateway backend
+✓ Workspace/Reference readiness recovery owned by Control projection
+✓ OUTCOME_UNKNOWN mutation interruption remains no-auto-retry
+✓ deterministic recovery ownership regression guard added
+✓ Bedrock-first authoring contract regression guard added
+✓ compatibility-bound BlockIT identifiers intentionally preserved
+✓ no speculative receipt/result compaction without execution evidence
 ```
 
-## Active Remote Hardening Order
+## Remote Freeze State
 
 ```text
-1. Control / Gateway policy ownership                         COMPLETE IN SOURCE
-   → search fallback default now comes from CONTROL_ROUTING_POLICY
-   → stable four-tool Gateway surface preserved
+Control / Gateway policy ownership     COMPLETE IN SOURCE
+Tool-routing / source ownership        COMPLETE IN SOURCE
+Dead-code / obsolete helper sweep      COMPLETE ENOUGH TO FREEZE
+Context economy source audit           COMPLETE ENOUGH FOR LOCAL MEASUREMENT
+Error/recovery ownership               COMPLETE IN SOURCE
+Bedrock-first contract audit           COMPLETE IN SOURCE
+Repository regression guards           UPDATED
 
-2. Tool-routing / source ownership                           COMPLETE ENOUGH FOR NEXT PHASE
-   → high-frequency capabilities retain one semantic phase owner
-   → legacy consolidated executors stay hidden behind focused public tools
-   → normal Bedrock profile excludes import/ui fallback families
-   → Particle remains an Animation-specialist asset route; no extra phase added
-
-3. Dead-code / obsolete helper sweep                         COMPLETE ENOUGH FOR NEXT PHASE
-   → orphan contextCache export/helper removed
-   → content-addressed handle cache remains in registry.ts
-   → known/cached/invalidated context delivery remains in packet.ts
-   → compatibility identifiers remain intentionally untouched
-
-4. Context economy                                           COMPLETE ENOUGH FOR LOCAL MEASUREMENT
-   → Geometry remains Modelling Skill + exactly one profile
-   → Texturing/Animation remain specialist-only by default
-   → stage_context remains self-contained for recovery/continuation
-   → Gateway status and Control have known normalized-orientation overlap
-   → measure-control-context now reports the full Gateway envelope and repeated orientation projection
-   → do not break the stable status contract based on static character counts alone
-   → no mutation-receipt or recovery-state trimming without execution evidence
-
-5. Error/recovery ownership                                  CURRENT
-   → ensure runtime offline, project loss, stale catalog, failed mutation, interrupted mutation, workspace/reference staleness each have one deterministic owner
-   → preserve no-auto-retry semantics for outcome-unknown mutation interruption
-
-6. Bedrock-first contract audit                              NEXT
-   → ensure abstraction never weakens Bedrock geometry/UV/texture/animation/controller/particle/export constraints
-
-7. Repository contract guards + remote freeze
-   → prevent retired Navigator/Skill/docs ownership from reappearing
-   → keep compatibility identifiers separate from human-facing branding
-   → freeze for LOCAL_CODE / LIVE_BLOCKBENCH proof
+REMOTE_GITHUB SOURCE HARDENING         FROZEN
 ```
+
+Do not add another remote-only cleanup phase merely to keep changing source. Reopen remote mutation only for a newly identified concrete source defect with bounded ownership.
+
+## Next Meaningful Context
+
+```text
+LOCAL_CODE
+→ run bun/typecheck/repository verification
+→ run docs:build + docs:check from canonical generators
+→ run measure:control
+→ compare full Gateway envelope vs cached-context envelope
+→ inspect any failing regression/type owner
+→ change source only when execution evidence identifies a concrete defect
+
+LIVE_BLOCKBENCH
+→ deploy/reload the matching current LazyDesigner build
+→ verify Gateway/Runtime project affinity
+→ verify Geometry/Texturing/Animation surfaces live
+→ exercise Reference Package + Control continuation
+→ verify interrupted/recovery behavior where safely reproducible
+→ run representative Bedrock model quality/efficiency acceptance
+```
+
+Generated API-doc presentation freshness remains a `LOCAL_CODE` task because generated output must be produced by the canonical generator rather than hand-edited.
 
 ## Identifier Migration Boundary
 
@@ -125,23 +99,6 @@ internal compatibility symbols/DOM/event keys where rename has no current value
 
 Canonical boundary: `docs/04-system/compatibility-identifiers.md`.
 
-## Deferred Higher-Context Residue
-
-Do not convert remote source assumptions into claimed runtime proof. The remaining proof steps need a context that can execute canonical generators/tests or Blockbench itself:
-
-```text
-LOCAL_CODE
-→ update generated API-doc presentation source where still stale
-→ bun run docs:build
-→ bun run docs:check
-→ run the relevant source verifier(s)
-→ run measure:control and compare Gateway envelope / cached-context footprint
-→ commit canonical source + generated output together
-
-LIVE_BLOCKBENCH
-→ only when installed/runtime/native/visual proof is explicitly reactivated
-```
-
 Compatibility-bound identifier migration is a separate future task and must be dependency-mapped atomically before any serialized value changes.
 
 ## Stop Rules
@@ -151,15 +108,17 @@ Compatibility-bound identifier migration is a separate future task and must be d
 - No legacy primary Skill aliases.
 - No second persistent state DB inside Control.
 - No duplicate capability-domain table outside `mcp/lib/authoringPhase.ts`.
-- No new authoring phase merely to classify a supporting capability such as Particle.
+- No duplicate Gateway search default outside `CONTROL_ROUTING_POLICY`.
+- No new authoring phase merely to classify Particle or another supporting capability.
 - No all-profile/all-stage loading as reassurance.
 - No full downstream reset for a bounded dependency.
 - No blind package/protocol/plugin/environment rename.
-- No speculative Gateway status-contract compaction from static byte/character counts alone.
-- No speculative receipt compaction without recovery-state evidence.
+- No speculative Gateway status-contract compaction from static character counts alone.
+- No automatic retry for outcome-unknown mutation interruption.
+- No speculative mutation-receipt compaction without recovery evidence.
 - No hand-editing generated docs/output.
-- No local/live acceptance while user testing remains deferred.
+- No claim of Bun/typecheck/CI/local/live PASS until that context actually executes it.
 
 ## Proof Boundary
 
-Current work establishes source contracts and regression intent only. No Bun/typecheck/CI/local Runtime/Blockbench execution was performed in this phase. Generated freshness, installed LazyDesigner activation, live behavior, visual quality, and measured whole-task savings remain unverified until their proof context is explicitly activated.
+Current remote work establishes source contracts, ownership, and regression intent only. No Bun/typecheck/CI/local Runtime/Blockbench execution was performed in this phase. Generated freshness, installed LazyDesigner activation, live behavior, visual quality, and measured whole-task savings remain unverified until their corresponding proof contexts are activated.
