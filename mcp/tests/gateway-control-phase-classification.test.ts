@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { classifyMcpToolPhaseByName } from "@/lib/authoringPhase";
-import { authoringDomainForCapability } from "@/gateway/navigator";
+import { authoringDomainForCapability } from "@/gateway/control";
 
 describe("LazyDesigner Control canonical phase classification", () => {
   test("Control derives high-frequency capability domains from authoringPhase", () => {
@@ -24,7 +24,7 @@ describe("LazyDesigner Control canonical phase classification", () => {
   });
 
   test("Control registry no longer carries duplicate Geometry/Texturing/Animation capability sets", async () => {
-    const source = await Bun.file("gateway/navigator/registry.ts").text();
+    const source = await Bun.file("gateway/control/registry.ts").text();
     expect(source).toContain("classifyMcpToolPhaseByName");
     expect(source).not.toContain("GEOMETRY_CAPABILITIES");
     expect(source).not.toContain("TEXTURING_CAPABILITIES");
