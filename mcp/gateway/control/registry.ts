@@ -118,6 +118,16 @@ const SOURCE_BY_CAPABILITY: Record<string, ControlSourceOwner> = {
     specialist: MODELLING_PATH,
     test_owner: "mcp/tests/batch-group-rename.test.ts",
   },
+  select_all_of_type: {
+    source: "mcp/server/tools/element.ts",
+    specialist: MODELLING_PATH,
+    test_owner: "mcp/tests/p1-core-ownership.test.ts",
+  },
+  get_selection: {
+    source: "mcp/server/tools/element.ts",
+    specialist: null,
+    test_owner: "mcp/tests/p1-core-ownership.test.ts",
+  },
   manage_locator: {
     source: "mcp/server/tools/locators.ts",
     specialist: MODELLING_PATH,
@@ -126,6 +136,11 @@ const SOURCE_BY_CAPABILITY: Record<string, ControlSourceOwner> = {
   manage_null_object: {
     source: "mcp/server/tools/locators.ts",
     specialist: MODELLING_PATH,
+    test_owner: "mcp/tests/bedrock-locator-coverage.test.ts",
+  },
+  list_locator_elements: {
+    source: "mcp/server/tools/locators.ts",
+    specialist: null,
     test_owner: "mcp/tests/bedrock-locator-coverage.test.ts",
   },
   bone_rigging: {
@@ -148,7 +163,37 @@ const SOURCE_BY_CAPABILITY: Record<string, ControlSourceOwner> = {
     specialist: TEXTURING_PATH,
     test_owner: "mcp/tests/authoring/asset-authoring-usage-slimming.test.ts",
   },
+  list_textures: {
+    source: "mcp/server/tools/texture.ts",
+    specialist: TEXTURING_PATH,
+    test_owner: "mcp/tests/texture-authoring-contract.test.ts",
+  },
+  get_texture: {
+    source: "mcp/server/tools/texture.ts",
+    specialist: TEXTURING_PATH,
+    test_owner: "mcp/tests/texture-authoring-contract.test.ts",
+  },
   activate_texture: {
+    source: "mcp/server/tools/texture.ts",
+    specialist: TEXTURING_PATH,
+    test_owner: "mcp/tests/texture-authoring-contract.test.ts",
+  },
+  add_texture_group: {
+    source: "mcp/server/tools/texture.ts",
+    specialist: TEXTURING_PATH,
+    test_owner: "mcp/tests/texture-authoring-contract.test.ts",
+  },
+  list_materials: {
+    source: "mcp/server/tools/texture.ts",
+    specialist: TEXTURING_PATH,
+    test_owner: "mcp/tests/texture-authoring-contract.test.ts",
+  },
+  get_material_info: {
+    source: "mcp/server/tools/texture.ts",
+    specialist: TEXTURING_PATH,
+    test_owner: "mcp/tests/texture-authoring-contract.test.ts",
+  },
+  import_texture_set: {
     source: "mcp/server/tools/texture.ts",
     specialist: TEXTURING_PATH,
     test_owner: "mcp/tests/texture-authoring-contract.test.ts",
@@ -163,12 +208,52 @@ const SOURCE_BY_CAPABILITY: Record<string, ControlSourceOwner> = {
     specialist: TEXTURING_PATH,
     test_owner: "mcp/tests/paint-tool-selection.test.ts",
   },
+  gradient_tool: {
+    source: "mcp/server/tools/paint.ts",
+    specialist: TEXTURING_PATH,
+    test_owner: "mcp/tests/paint-tool-selection.test.ts",
+  },
+  color_picker_tool: {
+    source: "mcp/server/tools/paint.ts",
+    specialist: TEXTURING_PATH,
+    test_owner: "mcp/tests/paint-tool-selection.test.ts",
+  },
+  copy_brush_tool: {
+    source: "mcp/server/tools/paint.ts",
+    specialist: TEXTURING_PATH,
+    test_owner: "mcp/tests/paint-tool-selection.test.ts",
+  },
+  paint_settings: {
+    source: "mcp/server/tools/paint.ts",
+    specialist: TEXTURING_PATH,
+    test_owner: "mcp/tests/paint-tool-selection.test.ts",
+  },
   paint_with_brush: {
     source: "mcp/server/tools/paint.ts",
     specialist: TEXTURING_PATH,
     test_owner: "mcp/tests/paint-stroke.test.ts",
   },
   eraser_tool: {
+    source: "mcp/server/tools/paint.ts",
+    specialist: TEXTURING_PATH,
+    test_owner: "mcp/tests/paint-tool-selection.test.ts",
+  },
+  create_brush_preset: {
+    source: "mcp/server/tools/paint.ts",
+    specialist: TEXTURING_PATH,
+    test_owner: "mcp/tests/paint-tool-selection.test.ts",
+  },
+  load_brush_preset: {
+    source: "mcp/server/tools/paint.ts",
+    specialist: TEXTURING_PATH,
+    test_owner: "mcp/tests/paint-tool-selection.test.ts",
+  },
+  texture_selection: {
+    source: "mcp/server/tools/paint.ts",
+    specialist: TEXTURING_PATH,
+    test_owner: "mcp/tests/paint-tool-selection.test.ts",
+  },
+  texture_layer_management: {
     source: "mcp/server/tools/paint.ts",
     specialist: TEXTURING_PATH,
     test_owner: "mcp/tests/paint-tool-selection.test.ts",
