@@ -49,6 +49,10 @@ const GEOMETRY_MAINTENANCE_TOOLS = new Set([
   "manage_locator",
   "manage_null_object",
 ]);
+const AUTHORING_SELECTION_TOOLS = new Set([
+  "select_all_of_type",
+  "get_selection",
+]);
 const CORE_TEXTURE_TOOLS = new Set(["list_textures"]);
 const ANIMATION_EXCLUDED_CORE_TOOLS = new Set(["create_project"]);
 
@@ -75,6 +79,7 @@ const CORE_NAMED_CAPABILITIES = new Set([
 const GEOMETRY_NAMED_CAPABILITIES = new Set([
   ...GEOMETRY_MAINTENANCE_TOOLS,
   ...GEOMETRY_ELEMENT_TOOLS,
+  ...AUTHORING_SELECTION_TOOLS,
   "bone_rigging",
 ]);
 
@@ -263,8 +268,6 @@ export function classifyMcpToolPhase(
     toolName === "save_checkpoint"
   ) return null;
   if (
-    toolName === "select_all_of_type" ||
-    toolName === "get_selection" ||
     toolName === "list_locator_elements" ||
     toolName === "undo" ||
     toolName === "redo" ||
@@ -282,6 +285,7 @@ export function classifyMcpToolPhase(
   }
   if (family === "elements") {
     if (CORE_ELEMENT_TOOLS.has(toolName)) return "core";
+    if (AUTHORING_SELECTION_TOOLS.has(toolName)) return "geometry";
     if (GEOMETRY_ELEMENT_TOOLS.has(toolName)) return "geometry";
     if (toolName === "filter_by_material") return "texturing";
   }
