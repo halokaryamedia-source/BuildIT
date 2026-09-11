@@ -103,7 +103,7 @@ broad scans          0
 ```
 
 - Prefer direct fetch when the exact path is known.
-- For a named MCP defect, use `docs/knowledge/implementation-map.md` before broad search.
+- For a named MCP defect, use `docs/04-system/implementation-map.md` before broad search.
 - Open more only for a concrete unresolved question.
 - Truncated, paginated, partial, or capped output is incomplete evidence, not proof of absence.
 - Verify exact repository/ref/access once before concluding a target is absent.
@@ -350,9 +350,9 @@ high-impact mutations               0 unless explicitly authorized
 # BlockIT repository boundaries
 
 ```text
-continuation       → docs/knowledge/next-action.md
-proof state        → docs/knowledge/current-validation.md
-implementation     → docs/knowledge/implementation-map.md
+continuation       → docs/05-operations/next-action.md
+proof state        → docs/05-operations/current-validation.md
+implementation     → docs/04-system/implementation-map.md
 asset continuity   → workspace/active/<project>/README.md
 generated API docs → canonical MCP source + generator
 research           → Experimental/
