@@ -4,143 +4,120 @@ async function read(path: string) {
   return (await Bun.file(path).text()).replaceAll("**", "").replace(/\s+/g, " ").toLowerCase();
 }
 
-describe("reference Minecraft-first coverage", () => {
-  test("execution consent stays bounded at the ChatGPT reference owner", async () => {
+describe("LazyDesigner reference preparation contract", () => {
+  test("reference generation is gated by blocking requirements and explicit confirmation", async () => {
     const [skill, flow] = await Promise.all([
       read("../.agents/skills/blockbench-reference-generator/SKILL.md"),
-      read("../docs/knowledge/flow.md"),
+      read("../docs/02-reference/flow.md"),
     ]);
-    expect(skill).toContain("zero clarification");
-    expect(skill).toContain("generation is output, not discovery");
-    expect(skill).toContain("readiness is not permission to generate");
-    expect(skill).toContain("fresh explicit user instruction");
-    expect(flow).toContain("chatgpt generates one fixed five-preview board");
-    expect(flow).toContain("user approves");
+
+    expect(skill).toContain("requirement gate");
+    expect(skill).toContain("blocking");
+    expect(skill).toContain("final confirmation");
+    expect(skill).toContain("silence is not approval");
+    expect(flow).toContain("requirement gate");
+    expect(flow).toContain("final confirmation");
   });
 
-  test("original source image is accepted while canonical board stays optional stronger coverage", async () => {
-    const [agents, skill, guide, product, flow] = await Promise.all([
-      read("../AGENTS.md"),
+  test("source images remain evidence while final generated sheets target Minecraft/Blockbench", async () => {
+    const [skill, policy, standard] = await Promise.all([
       read("../.agents/skills/blockbench-reference-generator/SKILL.md"),
-      read("../docs/foundation/04-reference-guide.md"),
-      read("../docs/foundation/02-product-requirements.md"),
-      read("../docs/knowledge/flow.md"),
+      read("../docs/02-reference/policy.md"),
+      read("../docs/02-reference/image/standard.md"),
     ]);
 
-    expect(agents).toContain("actual source image");
-    for (const text of [guide, product, flow]) {
-      expect(text).toContain("original source image");
-    }
-    expect(agents).toContain("do not force board generation");
-    expect(guide).toContain("accept the user's actual image first");
-    expect(product).toContain("do not require board generation");
-    expect(flow).toContain("do not force board generation");
-    expect(skill).toContain("canonical board is optional");
-    for (const text of [agents, skill, guide, product, flow]) {
-      expect(text).not.toContain("direct | 3d_assisted");
-      expect(text).not.toContain("shape reconstruction");
-      expect(text).not.toContain("primitiveanything");
-    }
+    expect(policy).toContain("accept the user's actual image first");
+    expect(skill).toContain("minecraft/blockbench target interpretation only");
+    expect(standard).toContain("minecraft target only");
+    expect(standard).toContain("do not include the original real image");
   });
 
-  test("multiple source images are first-class evidence without adding mandatory intake", async () => {
-    const [skill, guide] = await Promise.all([
+  test("one unified visual system uses only decision-critical panels", async () => {
+    const [skill, standard] = await Promise.all([
       read("../.agents/skills/blockbench-reference-generator/SKILL.md"),
-      read("../docs/foundation/04-reference-guide.md"),
+      read("../docs/02-reference/image/standard.md"),
     ]);
 
-    expect(skill).toContain("one or more source images are enough");
-    expect(skill).toContain("use each only for evidence it visibly supports");
-    expect(skill).toContain("do not average conflicting views into invented structure");
-    expect(guide).toContain("multiple source images");
-    expect(guide).toContain("consume that evidence before asking for another image");
-  });
-
-  test("default generated board has five fixed broad preview positions", async () => {
-    const [skill, guide, flow] = await Promise.all([
-      read("../.agents/skills/blockbench-reference-generator/SKILL.md"),
-      read("../docs/foundation/04-reference-guide.md"),
-      read("../docs/knowledge/flow.md"),
-    ]);
-    for (const text of [skill, guide, flow]) {
-      expect(text).toContain("left | front | back");
-      expect(text).toContain("top  | front-left 3/4");
+    for (const text of [skill, standard]) {
+      expect(text).toContain("1 primary reference sheet");
+      expect(text).toContain("geometry_ambiguity");
+      expect(text).toContain("texture_ambiguity");
+      expect(text).toContain("animation_ambiguity");
+      expect(text).toContain("p1");
+      expect(text).toContain("p2");
+      expect(text).toContain("p3");
     }
-    expect(skill).toContain("five-preview");
-    expect(flow).toContain("five-preview");
-    expect(skill).toContain("source-nearest orthographic anchor");
-    expect(guide).toContain("not five exact engineering drawings");
+    expect(standard).toContain("content decides layout");
+    expect(standard).not.toContain("five fixed broad preview positions");
   });
 
-  test("goal is recognizable Blockbench geometry plus Minecraft-readable texture", async () => {
-    const [skill, guide, texturing] = await Promise.all([
+  test("construction views are minimum-sufficient rather than a mandatory turnaround ritual", async () => {
+    const [policy, standard] = await Promise.all([
+      read("../docs/02-reference/policy.md"),
+      read("../docs/02-reference/image/standard.md"),
+    ]);
+
+    expect(policy).toContain("minimum sufficient construction evidence");
+    expect(standard).toContain("use the minimum sufficient views");
+    expect(standard).toContain("right → only when left/right asymmetry matters");
+    expect(standard).toContain("top");
+    expect(standard).toContain("only when materially useful");
+  });
+
+  test("Minecraft player-relative scale is canonical without inventing exact dimensions", async () => {
+    const [skill, scale] = await Promise.all([
       read("../.agents/skills/blockbench-reference-generator/SKILL.md"),
-      read("../docs/foundation/04-reference-guide.md"),
-      read("../.agents/skills/blockit-bedrock-texturing/SKILL.md"),
+      read("../docs/02-reference/image/scale-and-escalation.md"),
     ]);
-    for (const text of [skill, guide]) {
-      expect(text).toContain("minecraft-first");
-      expect(text).toContain("geometry");
-      expect(text).toContain("texture");
-    }
-    expect(skill).toContain("simplest blockbench-buildable representation");
-    expect(skill).toContain("never lazy-voxelize");
-    expect(guide).toContain("does not need to be 100% identical");
-    expect(texturing).toContain("palette roles");
-    expect(texturing).toMatch(/identity pass/i);
+
+    expect(skill).toContain("minecraft player scale");
+    expect(scale).toContain("all asset sizing");
+    expect(scale).toContain("anchored to minecraft player scale");
+    expect(scale).toContain("player_height");
+    expect(scale).toContain("rideable_1p");
+    expect(scale).toContain("must not invent exact block values");
   });
 
-  test("minor drift uses one consistent interpretation; material conflict still blocks", async () => {
-    const [guide, flow, modelling, texturing] = await Promise.all([
-      read("../docs/foundation/04-reference-guide.md"),
-      read("../docs/knowledge/flow.md"),
-      read("../.agents/skills/blockbench-bedrock-modelling/SKILL.md"),
-      read("../.agents/skills/blockit-bedrock-texturing/SKILL.md"),
-    ]);
-    for (const text of [guide, flow, modelling]) {
-      expect(text).toContain("minor");
-      expect(text).toContain("material");
-    }
-    expect(modelling).toContain("do not average drift");
-    expect(modelling).toContain("simplest recognizable blockbench-buildable interpretation");
-    expect(texturing).toContain("improved | unchanged | regressed");
-    expect(texturing).toContain("blocked");
-  });
-
-  test("correction uses the smallest coherent edit and reserves full regeneration for global failure", async () => {
-    const [skill, guide] = await Promise.all([
+  test("sheet escalation preserves identity and scale instead of overpacking", async () => {
+    const [skill, standard, scale] = await Promise.all([
       read("../.agents/skills/blockbench-reference-generator/SKILL.md"),
-      read("../docs/foundation/04-reference-guide.md"),
+      read("../docs/02-reference/image/standard.md"),
+      read("../docs/02-reference/image/scale-and-escalation.md"),
     ]);
 
-    for (const text of [skill, guide]) {
-      expect(text).toContain("delta-first");
-      expect(text).toContain("smallest coherent");
-      expect(text).toContain("structural defect affecting multiple views");
-      expect(text).toContain("global identity / pose / layout / cross-view coherence failure");
-      expect(text).toContain("regenerate the full board");
-    }
-    expect(skill).toContain("do not repeat the full generation specification");
-    expect(guide).toContain("full-board regeneration is a fallback");
+    expect(skill).toContain("sheet 02+");
+    expect(standard).toContain("identity lock");
+    expect(scale).toContain("scale lock");
+    expect(scale).toContain("remove p3");
+    expect(scale).toContain("remove lowest-value p2");
+    expect(scale).toContain("sheet 02+");
   });
 
-  test("pose, presentation and automatic budget stay bounded while user-directed corrections remain possible", async () => {
-    const [skill, guide] = await Promise.all([
+  test("generation prompting uses compiled state, not raw conversation", async () => {
+    const [skill, prompt, templates] = await Promise.all([
       read("../.agents/skills/blockbench-reference-generator/SKILL.md"),
-      read("../docs/foundation/04-reference-guide.md"),
+      read("../docs/02-reference/image/prompt-contract.md"),
+      read("../docs/02-reference/image/master-templates.md"),
     ]);
-    expect(skill).toContain("stable natural neutral stance");
-    expect(skill).toContain("bilateral alignment");
-    expect(skill).toContain("direction/bend");
-    expect(skill).toContain("no panel borders, grid lines, dividers, labels");
-    expect(guide).toContain("outside the image");
-    expect(skill).toContain("first draft = maximum 1");
-    expect(skill).toContain("targeted correction = maximum 1");
-    expect(skill).toContain("automatic variants = 0");
-    expect(skill).toContain("fresh explicit user-directed correction");
-    expect(skill).toContain("new user-led review cycle");
-    expect(guide).toContain("user-directed correction");
-    expect(guide).toContain("new user-led review cycle");
-    expect(skill).toContain("return one image only");
+
+    expect(skill).toContain("clean compiled brief");
+    expect(prompt).toContain("never generate directly from the raw conversation");
+    expect(prompt).toContain("identity lock");
+    expect(templates).toContain("template a");
+    expect(templates).toContain("template b");
+    expect(templates).toContain("template c");
+  });
+
+  test("corrections are delta-first and preserve unaffected visual authority", async () => {
+    const [skill, prompt] = await Promise.all([
+      read("../.agents/skills/blockbench-reference-generator/SKILL.md"),
+      read("../docs/02-reference/image/prompt-contract.md"),
+    ]);
+
+    expect(skill).toContain("change + preserve");
+    expect(skill).toContain("bounded editing");
+    expect(prompt).toContain("approved current sheet");
+    expect(prompt).toContain("change");
+    expect(prompt).toContain("preserve");
   });
 });
