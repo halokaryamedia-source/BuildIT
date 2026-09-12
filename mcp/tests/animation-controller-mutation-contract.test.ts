@@ -120,10 +120,11 @@ describe("AnimationController mutation closure", () => {
 
   test("mutation stays inside the existing animation family and generated docs owner", async () => {
     const [registration, manifest, inspection] = await Promise.all([
-      source("server/tools.ts"), source("build/docs-manifest.ts"), source("server/tools/animation-inspection.ts"),
+      source("server/runtime/registration.ts"), source("build/docs-manifest.ts"), source("server/tools/animation-inspection.ts"),
     ]);
     expect(registration).toContain("registerAnimationControllerTools");
     expect(registration).toContain("registerAnimationFamilyTools");
+    expect(registration).toContain("registerAnimationControllerTools();");
     expect(manifest).toContain("animationControllerToolDocs");
     expect(inspection).not.toContain('name: "manage_animation_controller"');
     expect(inspection).toContain("readOnlyHint: true");
