@@ -68,11 +68,6 @@ const TOOL_DISCOVERY_INTENT_GROUPS = [
     "check the rendered width height length and ground bounds",
   ],
   [
-    "manage_geometry_reference",
-    "load an approved GLB as a 3D geometry reference",
-    "hide update or remove the 3D-Assisted Evidence model reference",
-  ],
-  [
     "manage_cubes",
     "add a new cube to the Bedrock model",
     "create cube geometry from explicit coordinates",
@@ -550,17 +545,17 @@ export function assertToolDiscoveryEvalIntegrity(
 ): void {
   const failures: string[] = [];
 
-  if (report.enabled_tool_count !== 56) {
+  if (report.enabled_tool_count !== 54) {
     failures.push(
-      `enabled_tool_count=${report.enabled_tool_count}; expected 56`
+      `enabled_tool_count=${report.enabled_tool_count}; expected 54`
     );
   }
   if (report.case_count < 100 || report.case_count > 150) {
     failures.push(`case_count=${report.case_count}; expected 100..150`);
   }
-  if (report.expected_tool_count !== 39) {
+  if (report.expected_tool_count !== 38) {
     failures.push(
-      `expected_tool_count=${report.expected_tool_count}; expected 39`
+      `expected_tool_count=${report.expected_tool_count}; expected 38`
     );
   }
   if (report.missing_expected_tools.length > 0) {
