@@ -37,4 +37,18 @@ describe("adaptive cuboid budget policy", () => {
     expect(standard).toContain("reference-critical identity landmark");
     expect(standard).toMatch(/do not merge across a required joint/i);
   });
+
+  test("modelling specialist keeps the execution hot path representation-first without duplicating the full standard", async () => {
+    const skill = await text("../.agents/skills/lazydesigner-modelling/SKILL.md");
+
+    expect(skill).toContain("representation choice");
+    expect(skill).toContain("No per-Cube plan");
+    expect(skill).toContain("No orphan/filler Cube");
+    expect(skill).toContain("Decide representation **before** counting Cubes");
+    expect(skill).toContain("anti-overcube guardrail, not a classifier");
+    expect(skill).toContain("PLANAR_CUTOUT_CARRIER");
+    expect(skill).toContain("SEGMENTED_FORM");
+    expect(skill).toContain("simplest recognizable Blockbench-buildable interpretation");
+    expect(skill).toMatch(/do not create one Cube per MCP call/i);
+  });
 });
