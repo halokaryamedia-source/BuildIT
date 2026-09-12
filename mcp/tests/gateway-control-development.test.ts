@@ -12,6 +12,11 @@ const status: GatewayRuntimeStatus = {
     catalog_stale: false, runtime_signature: "runtime-a", connected_signature: "runtime-a", catalog_count: 47,
     health: { build_identity: "sha256:build-a", product: { authoring_phase: "geometry" }, project_context: { active_project_uuid: "project-a", requested_project_uuid: "project-a", requested_project_available: true, open_project_count: 1 } },
   },
+  connection: {
+    state: "ready", generation: 1, reconnect_count: 0, catalog_refresh_count: 1,
+    last_ready_at: "2026-09-12T00:00:00.000Z", last_transition_at: "2026-09-12T00:00:00.000Z",
+    reconnect: { failures: 0, retry_after_ms: 0 },
+  },
   operations: { active: 0, queued: 0, max_queue_depth: 8, completed: 0, failed: 0, timed_out: 0, rejected_busy: 0 },
   last_error: null,
 };

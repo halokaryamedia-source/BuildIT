@@ -2,12 +2,6 @@
 /// <reference types="blockbench-types" />
 import { createResource, resources } from "@/lib/factories";
 import { findByResourceId, makeResourceUri } from "@/lib/resourceUri";
-import {
-  isBlockItThreeDAssistedReference,
-  readThreeDAssistedReferenceEvidence,
-  type ReferenceModelRuntime,
-  type ThreeDAssistedFrontDirection,
-} from "@/server/tools/project";
 
 // Register projects resource using the factory pattern
 createResource("projects", {
@@ -282,42 +276,6 @@ createResource("textures", {
   },
 });
 
-function normalizeHalfTurn(yaw: unknown): 0 | 180 | null {
-  if (typeof yaw !== "number" || !Number.isFinite(yaw)) return null;
-  const normalized = ((yaw % 360) + 360) % 360;
-  if (Math.abs(normalized) <= 1e-6 || Math.abs(normalized - 360) <= 1e-6) {
-    return 0;
-  }
-  if (Math.abs(normalized - 180) <= 1e-6) return 180;
-  return null;
-}
-
-function recoverThreeDAssistedAlignment(reference: ReferenceModelRuntime) {
-  const rawProjectFront =
-    (Format as { forward_direction?: string } | undefined)?.forward_direction ??
-    "-z";
-  const projectFront: ThreeDAssistedFrontDirection | null =
-    rawProjectFront === "+z" || rawProjectFront === "-z"
-      ? rawProjectFront
-      : null;
-  const yaw = normalizeHalfTurn(reference.rotation?.[1]);
-  const sourceFront: ThreeDAssistedFrontDirection | null =
-    projectFront === null || yaw === null
-      ? null
-      : yaw === 0
-        ? projectFront
-        : projectFront === "+z"
-          ? "-z"
-          : "+z";
-
-  return {
-    source_front_direction: sourceFront,
-    project_front_direction: projectFront,
-    applied_yaw_degrees: yaw,
-    recoverable: sourceFront !== null,
-  };
-}
-
 /**
  * Conditionally registers the reference_models resource at plugin runtime.
  * The Plugins global must never be read at module scope so this module stays
@@ -396,34 +354,20 @@ export function registerReferenceModelsResource(): void {
         return defaultValue;
       };
 
-      // Helper to extract reference model info. Tool-owned 3D-Assisted Evidence references
-      // also expose the same quantitative evidence needed after a fresh MCP/Codex
-      // connection, without creating a second discovery tool or persisting a
-      // parallel registry.
       const getReferenceModelInfo = (model: OutlinerElement) => {
-        const refModel = model as ReferenceModelRuntime;
-        const threeDAssistedOwned = isBlockItThreeDAssistedReference(model);
-        const loaded = Boolean(refModel.mesh?.children.length);
+        const refModel = model as OutlinerElement & {
+          path?: string; origin?: unknown; rotation?: unknown; scale?: unknown;
+          visibility?: boolean; wireframe?: boolean; locked?: boolean; export?: boolean;
+          mesh?: { children?: unknown[] };
+        };
         return {
-          uuid: refModel.uuid,
-          name: refModel.name,
-          path: refModel.path || null,
+          uuid: refModel.uuid, name: refModel.name, path: refModel.path || null,
           origin: normalizeVec3(refModel.origin, [0, 0, 0]),
           rotation: normalizeVec3(refModel.rotation, [0, 0, 0]),
           scale: normalizeVec3(refModel.scale, [1, 1, 1]),
-          visibility: refModel.visibility ?? true,
-          wireframe: refModel.wireframe ?? false,
-          locked: refModel.locked ?? false,
-          export: refModel.export !== false,
-          loaded,
-          three_d_assisted_owned: threeDAssistedOwned,
-          reference_only: threeDAssistedOwned ? true : null,
-          production_geometry: threeDAssistedOwned ? false : null,
-          alignment: threeDAssistedOwned ? recoverThreeDAssistedAlignment(refModel) : null,
-          evidence:
-            threeDAssistedOwned && loaded
-              ? readThreeDAssistedReferenceEvidence(refModel)
-              : null,
+          visibility: refModel.visibility ?? true, wireframe: refModel.wireframe ?? false,
+          locked: refModel.locked ?? false, export: refModel.export !== false,
+          loaded: Boolean(refModel.mesh?.children?.length),
         };
       };
 

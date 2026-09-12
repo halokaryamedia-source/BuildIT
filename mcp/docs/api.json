@@ -1,6 +1,6 @@
 {
   "version": "0.2.0",
-  "generatedAt": "2026-09-10T09:19:07.967Z",
+  "generatedAt": "2026-09-12T06:50:34.641Z",
   "tools": [
     {
       "name": "manage_cubes",
@@ -772,7 +772,7 @@
     {
       "name": "capture_model_views",
       "title": "Capture Model Views",
-      "description": "Captures 1-5 deterministic labeled square PNG views (default 512×512; optional icon size) without changing the active editor camera. Model framing requires visible Cubes; explicit framing can also capture a loaded visible 3D-Assisted Evidence reference before blockout. Returns observation only; no score/PASS/FAIL.",
+      "description": "Captures 1-5 deterministic labeled square PNG views (default 512×512; optional icon size) without changing the active editor camera. Model and explicit framing require visible Cube geometry in the current Blockbench project. Returns observation only; no score/PASS/FAIL.",
       "status": "stable",
       "category": "Camera & Screenshots",
       "annotations": {
@@ -3085,7 +3085,7 @@
     {
       "name": "inspect_particle",
       "title": "Inspect Bedrock Particle",
-      "description": "Inspects a Bedrock .particle.json document from an absolute path or inline content. Defaults to compact summary diagnostics; component and full modes are explicit to keep context usage bounded.",
+      "description": "Inspects a Bedrock .particle.json document from an absolute path or inline content. Diagnostics use the repository current-stable compatibility catalog; they do not by themselves prove exact target-version field/default availability. Defaults to compact summary diagnostics; component and full modes are explicit to keep context usage bounded.",
       "status": "experimental",
       "category": "Animation",
       "annotations": {
@@ -3139,7 +3139,7 @@
     {
       "name": "manage_particle",
       "title": "Manage Bedrock Particle",
-      "description": "Creates or losslessly patches a Bedrock .particle.json document, preserves unknown JSON fields, validates final particle semantics, optionally performs a verified transactional file write, and can load the particle into Blockbench's native preview. Animation/controller timing and downstream runtime binding remain owned by existing animation/controller tools.",
+      "description": "Creates or losslessly patches a Bedrock .particle.json document, preserves unknown JSON fields, validates against the repository current-stable compatibility catalog, optionally performs a verified transactional file write, and can load the particle into Blockbench's native preview. New creation requires an explicit texture reference. Missing custom particle bitmaps route through existing create_texture + paint tools and finalize through paint_texture_transaction PNG output; manage_particle never duplicates texture authoring. Downstream runtime binding remains owned by existing animation/controller tools.",
       "status": "experimental",
       "category": "Animation",
       "annotations": {
@@ -3180,7 +3180,9 @@
                       "ambient",
                       "collision_splash"
                     ],
-                    "default": "steady"
+                    "default": "steady",
+                    "description": "Bootstrap convenience only. Preset numeric values are editable starting points, not canonical visual or production defaults.",
+                    "markdownDescription": "Bootstrap convenience only. Preset numeric values are editable starting points, not canonical visual or production defaults."
                   },
                   "material": {
                     "type": "string",
@@ -3502,6 +3504,118 @@
                 "description": "Ordered targeted particle mutations. Use patch for deep edits without replacing unknown sibling fields.",
                 "markdownDescription": "Ordered targeted particle mutations. Use patch for deep edits without replacing unknown sibling fields."
               },
+              "texture_dependency": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "source": {
+                        "type": "string",
+                        "const": "existing"
+                      },
+                      "texture": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Bedrock texture reference already available to the resource pack.",
+                        "markdownDescription": "Bedrock texture reference already available to the resource pack."
+                      }
+                    },
+                    "required": [
+                      "source",
+                      "texture"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "source": {
+                        "type": "string",
+                        "const": "vanilla"
+                      },
+                      "texture": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Vanilla Bedrock texture reference reused without authoring a new bitmap.",
+                        "markdownDescription": "Vanilla Bedrock texture reference reused without authoring a new bitmap."
+                      }
+                    },
+                    "required": [
+                      "source",
+                      "texture"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "source": {
+                        "type": "string",
+                        "const": "generated"
+                      },
+                      "state": {
+                        "type": "string",
+                        "enum": [
+                          "missing",
+                          "ready"
+                        ],
+                        "default": "missing"
+                      },
+                      "texture": {
+                        "type": "string"
+                      },
+                      "output_path": {
+                        "type": "string",
+                        "description": "Absolute final PNG path. It must end with the same textures/particle/... path declared by texture.",
+                        "markdownDescription": "Absolute final PNG path. It must end with the same textures/particle/... path declared by texture."
+                      },
+                      "overwrite": {
+                        "type": "boolean",
+                        "default": false
+                      },
+                      "name": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Texture name passed to the existing create_texture capability.",
+                        "markdownDescription": "Texture name passed to the existing create_texture capability."
+                      },
+                      "width": {
+                        "type": "integer",
+                        "minimum": 16,
+                        "maximum": 4096,
+                        "default": 16
+                      },
+                      "height": {
+                        "type": "integer",
+                        "minimum": 16,
+                        "maximum": 4096,
+                        "default": 16
+                      },
+                      "transparent": {
+                        "type": "boolean",
+                        "const": true,
+                        "default": true
+                      },
+                      "description": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Compact visual brief for the existing Texturing paint pipeline.",
+                        "markdownDescription": "Compact visual brief for the existing Texturing paint pipeline."
+                      }
+                    },
+                    "required": [
+                      "source",
+                      "texture",
+                      "output_path",
+                      "name",
+                      "description"
+                    ],
+                    "additionalProperties": false
+                  }
+                ],
+                "description": "Optional texture provenance/handoff metadata. New particle creation still requires an explicit final texture reference in create.texture or set_render; generated state=missing routes the bitmap dependency to existing Texturing.",
+                "markdownDescription": "Optional texture provenance/handoff metadata. New particle creation still requires an explicit final texture reference in create.texture or set_render; generated state=missing routes the bitmap dependency to existing Texturing."
+              },
               "output": {
                 "type": "object",
                 "properties": {
@@ -3539,7 +3653,7 @@
     {
       "name": "inspect_animation",
       "title": "Inspect Animation Clip or Controller",
-      "description": "Inspects authored Bedrock Animation clips or AnimationControllers. Use bone/channel/time_range for focused transform evidence; this is not model-element inspection.",
+      "description": "Inspects authored Bedrock Animation clips or AnimationControllers. Use bone for focused authored-bone transforms, state for focused controller-state detail, and include_effect_keyframes only when full authored Animation effects are required.",
       "status": "experimental",
       "category": "Animation",
       "annotations": {
@@ -3566,8 +3680,8 @@
               "state": {
                 "type": "string",
                 "minLength": 1,
-                "description": "Optional controller state UUID or unique name for focused state-machine detail.",
-                "markdownDescription": "Optional controller state UUID or unique name for focused state-machine detail."
+                "description": "Optional controller state UUID or unique exact name for focused state-machine detail.",
+                "markdownDescription": "Optional controller state UUID or unique exact name for focused state-machine detail."
               },
               "include_effect_keyframes": {
                 "type": "boolean",
@@ -4340,38 +4454,6 @@
             "required": [
               "id",
               "parent"
-            ],
-            "additionalProperties": false
-          }
-        },
-        "$schema": "http://json-schema.org/draft-07/schema#"
-      }
-    },
-    {
-      "name": "materialize_3d_assisted_scaffold",
-      "title": "Materialize 3D-Assisted Scaffold",
-      "description": "Materializes the accepted 3D_ASSISTED workspace decomposition as editable Group/Cube scaffolding in one Undo transaction. Requires current Shape and Decomposition gates, hashes and dimensions. Rejects collisions; continue with semantic Geometry cleanup, not final visual approval.",
-      "status": "experimental",
-      "category": "Elements",
-      "annotations": {
-        "destructiveHint": false,
-        "readOnlyHint": false,
-        "openWorldHint": false
-      },
-      "parameters": {
-        "$ref": "#/definitions/materialize_3d_assisted_scaffold",
-        "definitions": {
-          "materialize_3d_assisted_scaffold": {
-            "type": "object",
-            "properties": {
-              "workspace_path": {
-                "type": "string",
-                "description": "Absolute Active Workspace containing approved 3D_ASSISTED state and decomposition.",
-                "markdownDescription": "Absolute Active Workspace containing approved 3D_ASSISTED state and decomposition."
-              }
-            },
-            "required": [
-              "workspace_path"
             ],
             "additionalProperties": false
           }
@@ -6418,7 +6500,7 @@
     {
       "name": "paint_texture_transaction",
       "title": "Paint Texture Transaction",
-      "description": "Applies bounded set/fill/erase, mirrored copy_region, or seeded masked noise to a non-layered texture with revision protection and one native Undo. Copy preserves RGBA and requires explicit matching UV regions. Noise changes requested channels and preserves transparent pixels by default; neither operation grades art.",
+      "description": "Applies bounded set/fill/erase, mirrored copy_region, or seeded masked noise to a non-layered texture with revision protection and one native Undo. Optional output writes the final bitmap to a verified PNG path in the same transaction, so particle sprites reuse Texturing instead of adding a particle-specific save tool.",
       "status": "stable",
       "category": "Paint Tools",
       "annotations": {
@@ -6795,6 +6877,24 @@
                 "additionalProperties": false,
                 "description": "Bedrock Cube AO at the current preview pose. Explicit targets, visible Cubes as occluders; preserves alpha, rejects conflicting UV. Repeated bakes darken again; use Undo to restore. Exclusive with operations.",
                 "markdownDescription": "Bedrock Cube AO at the current preview pose. Explicit targets, visible Cubes as occluders; preserves alpha, rejects conflicting UV. Repeated bakes darken again; use Undo to restore. Exclusive with operations."
+              },
+              "output": {
+                "type": "object",
+                "properties": {
+                  "path": {
+                    "type": "string"
+                  },
+                  "overwrite": {
+                    "type": "boolean",
+                    "default": false
+                  }
+                },
+                "required": [
+                  "path"
+                ],
+                "additionalProperties": false,
+                "description": "Optional verified PNG output for the final authored bitmap. Used by particle sprites and other external texture assets without adding a second save tool.",
+                "markdownDescription": "Optional verified PNG output for the final authored bitmap. Used by particle sprites and other external texture assets without adding a second save tool."
               }
             },
             "required": [
@@ -6895,100 +6995,9 @@
       }
     },
     {
-      "name": "manage_geometry_reference",
-      "title": "Manage 3D-Assisted Evidence Reference",
-      "description": "Loads, updates, or removes one approved local 3D-Assisted Evidence .glb through Blockbench Reference Models. It never converts mesh triangles to Bedrock geometry.",
-      "status": "experimental",
-      "category": "Project",
-      "annotations": {
-        "destructiveHint": true,
-        "openWorldHint": true
-      },
-      "parameters": {
-        "$ref": "#/definitions/manage_geometry_reference",
-        "definitions": {
-          "manage_geometry_reference": {
-            "type": "object",
-            "properties": {
-              "action": {
-                "type": "string",
-                "enum": [
-                  "load",
-                  "update",
-                  "remove"
-                ],
-                "description": "3D-Assisted Evidence reference lifecycle action.",
-                "markdownDescription": "3D-Assisted Evidence reference lifecycle action."
-              },
-              "path": {
-                "type": "string",
-                "minLength": 1,
-                "description": "Absolute local .glb path; required only for load.",
-                "markdownDescription": "Absolute local .glb path; required only for load."
-              },
-              "id": {
-                "type": "string",
-                "minLength": 1,
-                "description": "Tool-owned 3D-Assisted Evidence reference UUID or unique exact name; required for update/remove.",
-                "markdownDescription": "Tool-owned 3D-Assisted Evidence reference UUID or unique exact name; required for update/remove."
-              },
-              "source_front_direction": {
-                "type": "string",
-                "enum": [
-                  "+z",
-                  "-z"
-                ],
-                "description": "Required load-time front direction encoded by the approved 3D-Assisted Evidence GLB.",
-                "markdownDescription": "Required load-time front direction encoded by the approved 3D-Assisted Evidence GLB."
-              },
-              "origin": {
-                "type": "array",
-                "minItems": 3,
-                "maxItems": 3,
-                "items": [
-                  {
-                    "type": "number"
-                  },
-                  {
-                    "type": "number"
-                  },
-                  {
-                    "type": "number"
-                  }
-                ],
-                "description": "Reference origin [x,y,z]. Load default is [0,0,0].",
-                "markdownDescription": "Reference origin [x,y,z]. Load default is [0,0,0]."
-              },
-              "uniform_scale": {
-                "type": "number",
-                "exclusiveMinimum": 0,
-                "description": "Uniform scale multiplier. Load default is 1; non-uniform scaling is unsupported.",
-                "markdownDescription": "Uniform scale multiplier. Load default is 1; non-uniform scaling is unsupported."
-              },
-              "visibility": {
-                "type": "boolean",
-                "description": "Reference visibility. Load default is true.",
-                "markdownDescription": "Reference visibility. Load default is true."
-              },
-              "wireframe": {
-                "type": "boolean",
-                "description": "Reference wireframe mode. Load default is false.",
-                "markdownDescription": "Reference wireframe mode. Load default is false."
-              }
-            },
-            "required": [
-              "action"
-            ],
-            "additionalProperties": false
-          }
-        },
-        "$schema": "http://json-schema.org/draft-07/schema#"
-      }
-    },
-    {
       "name": "switch_authoring_phase",
       "title": "switch_authoring_phase",
-      "description": "Changes focus or hands off AUTHORING↔Animation in the same task. Animation requires a checkpoint and either user approvals or explicitly authorized autonomous verification; internal PASS never means user approval.",
+      "description": "Changes authoring focus in the same task. Geometry↔Texturing stays on the shared AUTHORING surface; AUTHORING↔Animation is the actual Runtime surface handoff. Animation requires a saved checkpoint, UV Layout PASS, no blockers, and either explicit user Geometry+Texture approval or explicitly authorized autonomous verification with current-revision evidence. Internal diagnostic PASS never equals user approval.",
       "status": "stable",
       "category": "Project",
       "annotations": {},

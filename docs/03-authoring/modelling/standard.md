@@ -1,4 +1,4 @@
-# BlockIT — Geometry Standard
+# LazyDesigner — Geometry Standard
 
 **Status:** Active Policy  
 **Version:** 2.1  

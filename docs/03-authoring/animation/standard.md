@@ -1,4 +1,4 @@
-# BlockIT — Animation Standard
+# LazyDesigner — Animation Standard
 
 **Status:** Active Policy  
 **Version:** 1.3  
@@ -76,7 +76,7 @@ Interpolation is a means, not a quality target. Prefer the simplest interpolatio
 
 ## Procedural Math / Molang
 
-Molang may own transform values, animation timing, blend behavior, controller conditions, and effect scripts when the runtime cause is mathematical or reactive. BlockIT preserves authored text; it must not evaluate gameplay truth or invent unknown query values. Explicit authored poses retain identity-critical action/contact/silhouette ownership when procedural math is not the real motion cause.
+Molang may own transform values, animation timing, blend behavior, controller conditions, and effect scripts when the runtime cause is mathematical or reactive. LazyDesigner preserves authored text; it must not evaluate gameplay truth or invent unknown query values. Explicit authored poses retain identity-critical action/contact/silhouette ownership when procedural math is not the real motion cause.
 
 Molang trigonometric functions use degrees. `q.`, `v.`, `t.`, and `c.` are aliases for query/variable/temp/context namespaces.
 

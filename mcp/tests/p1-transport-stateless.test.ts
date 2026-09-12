@@ -69,7 +69,7 @@ describe("P1.4 stateless Streamable HTTP ownership", () => {
       animationSurface
     );
 
-    expect(registered).toEqual(animationSurface);
+    expect(registered).toEqual([...animationSurface]);
     expect(animationSurface.length).toBeLessThan(authoringSurface.length);
     expect(animationSurface).toContain("switch_authoring_phase");
     expect(animationSurface).toContain("create_animation");

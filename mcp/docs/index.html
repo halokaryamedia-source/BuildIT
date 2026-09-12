@@ -18,7 +18,7 @@
 
       <div class="nav-group">
         <p class="nav-heading">Overview</p>
-        <a href="#tools" class="nav-link">Tools <span class="count">(68)</span></a>
+        <a href="#tools" class="nav-link">Tools <span class="count">(66)</span></a>
         <a href="#prompts" class="nav-link">Prompts <span class="count">(1)</span></a>
         <a href="#resources" class="nav-link">Resources <span class="count">(10)</span></a>
       </div>
@@ -28,13 +28,13 @@
         <a href="#cat-cubes" class="nav-link">Cubes <span class="count">(1)</span></a>
         <a href="#cat-camera-screenshots" class="nav-link">Camera &amp; Screenshots <span class="count">(4)</span></a>
         <a href="#cat-animation" class="nav-link">Animation <span class="count">(8)</span></a>
-        <a href="#cat-elements" class="nav-link">Elements <span class="count">(14)</span></a>
+        <a href="#cat-elements" class="nav-link">Elements <span class="count">(13)</span></a>
         <a href="#cat-export" class="nav-link">Export <span class="count">(2)</span></a>
         <a href="#cat-history" class="nav-link">History <span class="count">(4)</span></a>
         <a href="#cat-import-export" class="nav-link">Import/Export <span class="count">(1)</span></a>
         <a href="#cat-material-instances" class="nav-link">Material Instances <span class="count">(1)</span></a>
         <a href="#cat-paint-tools" class="nav-link">Paint Tools <span class="count">(13)</span></a>
-        <a href="#cat-project" class="nav-link">Project <span class="count">(5)</span></a>
+        <a href="#cat-project" class="nav-link">Project <span class="count">(4)</span></a>
         <a href="#cat-textures" class="nav-link">Textures <span class="count">(11)</span></a>
         <a href="#cat-ui-interaction" class="nav-link">UI Interaction <span class="count">(4)</span></a>
       </div>
@@ -45,15 +45,15 @@
         <h1>BlockIT — Bedrock Entity MCP</h1>
         <p class="subtitle">API Reference — v0.2.0</p>
         <nav class="stats">
-          <a href="#tools"><strong>68</strong> tools (30 stable, 38 experimental)</a>
+          <a href="#tools"><strong>66</strong> tools (30 stable, 36 experimental)</a>
           <a href="#prompts"><strong>1</strong> prompts</a>
           <a href="#resources"><strong>10</strong> resources</a>
         </nav>
       </header>
 
       <section id="install" class="doc-section">
-        <h2>Install BlockIT Locally</h2>
-<p>BlockIT must be validated from this repository's <strong><code>Local</code> branch</strong>. Do <strong>not</strong> use the upstream hosted Blockbench MCP plugin as proof of BlockIT; it is a different product surface.</p>
+        <h2>Install LazyDesigner Locally</h2>
+<p>LazyDesigner must be validated from this repository's <strong><code>Local</code> branch</strong>. Do <strong>not</strong> use an upstream hosted Blockbench MCP plugin as proof of LazyDesigner; it is a different product/artifact surface.</p>
 <p>Build the local plugin from <code>mcp/</code>:</p>
 <pre><code class="language-bash">bun install --frozen-lockfile
 bun run typecheck
@@ -61,14 +61,15 @@ bun run test
 bun run build
 bun run docs:check
 </code></pre>
-<p>Load the generated file in desktop Blockbench:</p>
-<pre><code class="language-text">mcp/dist/mcp.js
+<p>Load the generated compatibility bundle in desktop Blockbench:</p>
+<pre><code class="language-text">mcp/dist/blockit_mcp.js
 </code></pre>
+<p><code>blockit_mcp.js</code> is a retained compatibility filename, not the current product name.</p>
 <p>Default MCP endpoint after the plugin is running:</p>
 <pre><code class="language-text">http://127.0.0.1:3000/bb-mcp
 </code></pre>
-<p>Keep the <strong>Extended MCP Profile</strong> off for the normal Bedrock Entity baseline. <code>risky_eval</code> and <code>from_geo_json</code> remain disabled.</p>
-<p>For the current repository acceptance procedure, follow root <code>docs/knowledge/next-action.md</code> and <code>docs/knowledge/operations/local-acceptance-runbook.md</code>. This install fragment only owns local build/load guidance; it does not replace repository task routing.</p>
+<p>Keep <strong>Legacy UI Fallbacks (Debug)</strong> disabled for normal Bedrock Entity authoring. <code>risky_eval</code> and <code>from_geo_json</code> remain disabled.</p>
+<p>For the current repository acceptance procedure, follow root <code>docs/05-operations/next-action.md</code> and <code>docs/05-operations/local-acceptance-runbook.md</code>. This install fragment only owns local build/load guidance; it does not replace repository task routing.</p>
 
       </section>
 
@@ -179,7 +180,7 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">Capture Model Views</p>
-      <p class="card-desc">Captures 1-5 deterministic labeled square PNG views (default 512×512; optional icon size) without changing the active editor camera. Model framing requires visible Cubes; explicit framing can also capture a loaded visible 3D-Assisted Evidence reference before blockout. Returns observation only; no score/PASS/FAIL.</p>
+      <p class="card-desc">Captures 1-5 deterministic labeled square PNG views (default 512×512; optional icon size) without changing the active editor camera. Model and explicit framing require visible Cube geometry in the current Blockbench project. Returns observation only; no score/PASS/FAIL.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -386,7 +387,7 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">Inspect Bedrock Particle</p>
-      <p class="card-desc">Inspects a Bedrock .particle.json document from an absolute path or inline content. Defaults to compact summary diagnostics; component and full modes are explicit to keep context usage bounded.</p>
+      <p class="card-desc">Inspects a Bedrock .particle.json document from an absolute path or inline content. Diagnostics use the repository current-stable compatibility catalog; they do not by themselves prove exact target-version field/default availability. Defaults to compact summary diagnostics; component and full modes are explicit to keep context usage bounded.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -425,7 +426,7 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">Manage Bedrock Particle</p>
-      <p class="card-desc">Creates or losslessly patches a Bedrock .particle.json document, preserves unknown JSON fields, validates final particle semantics, optionally performs a verified transactional file write, and can load the particle into Blockbench's native preview. Animation/controller timing and downstream runtime binding remain owned by existing animation/controller tools.</p>
+      <p class="card-desc">Creates or losslessly patches a Bedrock .particle.json document, preserves unknown JSON fields, validates against the repository current-stable compatibility catalog, optionally performs a verified transactional file write, and can load the particle into Blockbench's native preview. New creation requires an explicit texture reference. Missing custom particle bitmaps route through existing create_texture + paint tools and finalize through paint_texture_transaction PNG output; manage_particle never duplicates texture authoring. Downstream runtime binding remains owned by existing animation/controller tools.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -451,6 +452,11 @@ bun run docs:check
       <td class="col-type">object | object | object | object | object | object | object | object | object[]</td>
       <td><span class="param-optional">optional</span></td>
       <td class="col-desc">Ordered targeted particle mutations. Use patch for deep edits without replacing unknown sibling fields. <span class="param-meta">(default: <code>[]</code>) [maxItems: 64]</span></td>
+    </tr><tr>
+      <td class="col-name">texture_dependency</td>
+      <td class="col-type">object | object | object</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Optional texture provenance/handoff metadata. New particle creation still requires an explicit final texture reference in create.texture or set_render; generated state=missing routes the bitmap dependency to existing Texturing.</td>
     </tr><tr>
       <td class="col-name">output</td>
       <td class="col-type">object</td>
@@ -479,7 +485,7 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">Inspect Animation Clip or Controller</p>
-      <p class="card-desc">Inspects authored Bedrock Animation clips or AnimationControllers. Use bone/channel/time_range for focused transform evidence; this is not model-element inspection.</p>
+      <p class="card-desc">Inspects authored Bedrock Animation clips or AnimationControllers. Use bone for focused authored-bone transforms, state for focused controller-state detail, and include_effect_keyframes only when full authored Animation effects are required.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -504,7 +510,7 @@ bun run docs:check
       <td class="col-name">state</td>
       <td class="col-type">string</td>
       <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Optional controller state UUID or unique name for focused state-machine detail. <span class="param-meta">[minLength: 1]</span></td>
+      <td class="col-desc">Optional controller state UUID or unique exact name for focused state-machine detail. <span class="param-meta">[minLength: 1]</span></td>
     </tr><tr>
       <td class="col-name">include_effect_keyframes</td>
       <td class="col-type">boolean</td>
@@ -848,35 +854,6 @@ bun run docs:check
       <td class="col-type">string</td>
       <td><span class="param-required">required</span></td>
       <td class="col-desc">New parent Group UUID or unique exact name; use `root` for root placement. <span class="param-meta">[minLength: 1]</span></td>
-    </tr></tbody>
-    </table>
-      </div>
-    </div>
-<div id="tool-materialize_3d_assisted_scaffold" class="card tool-card">
-      <div class="card-header">
-        <h3 class="card-name">materialize_3d_assisted_scaffold</h3>
-        <div class="card-badges">
-          <span class="badge badge-experimental">experimental</span>
-
-        </div>
-      </div>
-      <p class="card-title">Materialize 3D-Assisted Scaffold</p>
-      <p class="card-desc">Materializes the accepted 3D_ASSISTED workspace decomposition as editable Group/Cube scaffolding in one Undo transaction. Requires current Shape and Decomposition gates, hashes and dimensions. Rejects collisions; continue with semantic Geometry cleanup, not final visual approval.</p>
-      <div class="overflow-x">
-        <table class="param-table">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Required</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody><tr>
-      <td class="col-name">workspace_path</td>
-      <td class="col-type">string</td>
-      <td><span class="param-required">required</span></td>
-      <td class="col-desc">Absolute Active Workspace containing approved 3D_ASSISTED state and decomposition.</td>
     </tr></tbody>
     </table>
       </div>
@@ -1857,7 +1834,7 @@ bun run docs:check
         </div>
       </div>
       <p class="card-title">Paint Texture Transaction</p>
-      <p class="card-desc">Applies bounded set/fill/erase, mirrored copy_region, or seeded masked noise to a non-layered texture with revision protection and one native Undo. Copy preserves RGBA and requires explicit matching UV regions. Noise changes requested channels and preserves transparent pixels by default; neither operation grades art.</p>
+      <p class="card-desc">Applies bounded set/fill/erase, mirrored copy_region, or seeded masked noise to a non-layered texture with revision protection and one native Undo. Optional output writes the final bitmap to a verified PNG path in the same transaction, so particle sprites reuse Texturing instead of adding a particle-specific save tool.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -1888,6 +1865,11 @@ bun run docs:check
       <td class="col-type">object</td>
       <td><span class="param-optional">optional</span></td>
       <td class="col-desc">Bedrock Cube AO at the current preview pose. Explicit targets, visible Cubes as occluders; preserves alpha, rejects conflicting UV. Repeated bakes darken again; use Undo to restore. Exclusive with operations.</td>
+    </tr><tr>
+      <td class="col-name">output</td>
+      <td class="col-type">object</td>
+      <td><span class="param-optional">optional</span></td>
+      <td class="col-desc">Optional verified PNG output for the final authored bitmap. Used by particle sprites and other external texture assets without adding a second save tool.</td>
     </tr></tbody>
     </table>
       </div>
@@ -1962,70 +1944,6 @@ bun run docs:check
         <p class="empty-params">No parameters</p>
       </div>
     </div>
-<div id="tool-manage_geometry_reference" class="card tool-card">
-      <div class="card-header">
-        <h3 class="card-name">manage_geometry_reference</h3>
-        <div class="card-badges">
-          <span class="badge badge-experimental">experimental</span>
-          <span class="badge badge-destructive">destructive</span><span class="badge badge-openworld">open-world</span>
-        </div>
-      </div>
-      <p class="card-title">Manage 3D-Assisted Evidence Reference</p>
-      <p class="card-desc">Loads, updates, or removes one approved local 3D-Assisted Evidence .glb through Blockbench Reference Models. It never converts mesh triangles to Bedrock geometry.</p>
-      <div class="overflow-x">
-        <table class="param-table">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Required</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody><tr>
-      <td class="col-name">action</td>
-      <td class="col-type">&quot;load&quot; | &quot;update&quot; | &quot;remove&quot;</td>
-      <td><span class="param-required">required</span></td>
-      <td class="col-desc">3D-Assisted Evidence reference lifecycle action.</td>
-    </tr><tr>
-      <td class="col-name">path</td>
-      <td class="col-type">string</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Absolute local .glb path; required only for load. <span class="param-meta">[minLength: 1]</span></td>
-    </tr><tr>
-      <td class="col-name">id</td>
-      <td class="col-type">string</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Tool-owned 3D-Assisted Evidence reference UUID or unique exact name; required for update/remove. <span class="param-meta">[minLength: 1]</span></td>
-    </tr><tr>
-      <td class="col-name">source_front_direction</td>
-      <td class="col-type">&quot;+z&quot; | &quot;-z&quot;</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Required load-time front direction encoded by the approved 3D-Assisted Evidence GLB.</td>
-    </tr><tr>
-      <td class="col-name">origin</td>
-      <td class="col-type">unknown[]</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Reference origin [x,y,z]. Load default is [0,0,0]. <span class="param-meta">[minItems: 3, maxItems: 3]</span></td>
-    </tr><tr>
-      <td class="col-name">uniform_scale</td>
-      <td class="col-type">number</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Uniform scale multiplier. Load default is 1; non-uniform scaling is unsupported.</td>
-    </tr><tr>
-      <td class="col-name">visibility</td>
-      <td class="col-type">boolean</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Reference visibility. Load default is true.</td>
-    </tr><tr>
-      <td class="col-name">wireframe</td>
-      <td class="col-type">boolean</td>
-      <td><span class="param-optional">optional</span></td>
-      <td class="col-desc">Reference wireframe mode. Load default is false.</td>
-    </tr></tbody>
-    </table>
-      </div>
-    </div>
 <div id="tool-switch_authoring_phase" class="card tool-card">
       <div class="card-header">
         <h3 class="card-name">switch_authoring_phase</h3>
@@ -2035,7 +1953,7 @@ bun run docs:check
         </div>
       </div>
 
-      <p class="card-desc">Changes focus or hands off AUTHORING↔Animation in the same task. Animation requires a checkpoint and either user approvals or explicitly authorized autonomous verification; internal PASS never means user approval.</p>
+      <p class="card-desc">Changes authoring focus in the same task. Geometry↔Texturing stays on the shared AUTHORING surface; AUTHORING↔Animation is the actual Runtime surface handoff. Animation requires a saved checkpoint, UV Layout PASS, no blockers, and either explicit user Geometry+Texture approval or explicitly authorized autonomous verification with current-revision evidence. Internal diagnostic PASS never equals user approval.</p>
       <div class="overflow-x">
         <table class="param-table">
       <thead>
@@ -2612,7 +2530,7 @@ bun run docs:check
       </section>
 
       <footer class="page-footer">
-        Generated 2026-09-10T09:19:07.967Z from Zod schemas
+        Generated 2026-09-12T06:50:34.641Z from Zod schemas
       </footer>
     </main>
   </div>

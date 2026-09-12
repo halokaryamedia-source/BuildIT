@@ -5,22 +5,8 @@ import { createTool, type ToolSpec } from "@/lib/factories";
 import { STATUS_EXPERIMENTAL, STATUS_STABLE } from "@/lib/constants";
 import { resolveCoreGroup, resolveCoreTexture } from "@/lib/coreIdentity";
 import { elementIdSchema } from "@/lib/zodObjects";
-import { isAbsoluteFilesystemPath, requireOpenProject } from "@/lib/util";
-import { materializeThreeDAssistedScaffoldFromWorkspace } from "@/server/threeDAssistedMaterializer";
+import { requireOpenProject } from "@/lib/util";
 import {planGroupRename, applyGroupRename, type RenameAnimation} from "@/lib/batchGroupRename";
-
-export const materializeThreeDAssistedParameters = z.object({
-  workspace_path: z.string().refine(isAbsoluteFilesystemPath, "Expected an absolute Active Workspace path.")
-    .describe("Absolute Active Workspace containing approved 3D_ASSISTED state and decomposition."),
-}).strict();
-
-export const materializeThreeDAssistedTool: ToolSpec = {
-  name: "materialize_3d_assisted_scaffold",
-  description: "Materializes the accepted 3D_ASSISTED workspace decomposition as editable Group/Cube scaffolding in one Undo transaction. Requires current Shape and Decomposition gates, hashes and dimensions. Rejects collisions; continue with semantic Geometry cleanup, not final visual approval.",
-  parameters: materializeThreeDAssistedParameters,
-  annotations: { title: "Materialize 3D-Assisted Scaffold", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
-  status: STATUS_EXPERIMENTAL,
-};
 
 export const removeElementParameters = z.object({
   id: elementIdSchema.describe(
@@ -394,7 +380,6 @@ export const elementToolDocs: ToolSpec[] = [
     parameters: reparentElementParameters,
     status: STATUS_EXPERIMENTAL,
   },
-  materializeThreeDAssistedTool,
 ];
 
 interface IElementMatch {
@@ -863,17 +848,6 @@ function vector3Equals(
 }
 
 export function registerElementTools() {
-  createTool(materializeThreeDAssistedTool.name, {
-    ...materializeThreeDAssistedTool,
-    parameters: materializeThreeDAssistedParameters,
-    async execute({ workspace_path }) {
-      const receipt = materializeThreeDAssistedScaffoldFromWorkspace(workspace_path);
-      return {
-        content: [{ type: "text" as const, text: `Materialized ${receipt.primitive_count} primitives. Continue with semantic Geometry cleanup.` }],
-        structuredContent: receipt,
-      };
-    },
-  }, materializeThreeDAssistedTool.status);
   createTool(elementToolDocs[0].name, {
     ...elementToolDocs[0],
     async execute({ id }) {

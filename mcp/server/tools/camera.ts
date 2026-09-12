@@ -6,7 +6,6 @@ import { captureScreenshot, captureAppScreenshot, imageContent } from "@/lib/uti
 import { readRenderedModelBounds, type RenderedModelBounds, type Vec3 } from "@/lib/renderedModelBounds";
 import { STATUS_EXPERIMENTAL, STATUS_STABLE } from "@/lib/constants";
 import { vector3Schema, projectionEnum } from "@/lib/zodObjects";
-import { hasVisibleLoadedBlockItThreeDAssistedReference } from "./project";
 
 const CAPTURE_SIZE = 512;
 const FRAME_PADDING = 0.12;
@@ -224,7 +223,7 @@ export const cameraToolDocs: ToolSpec[] = [
   {
     name: "capture_model_views",
     description:
-      "Captures 1-5 deterministic labeled square PNG views (default 512×512; optional icon size) without changing the active editor camera. Model framing requires visible Cubes; explicit framing can also capture a loaded visible 3D-Assisted Evidence reference before blockout. Returns observation only; no score/PASS/FAIL.",
+      "Captures 1-5 deterministic labeled square PNG views (default 512×512; optional icon size) without changing the active editor camera. Model and explicit framing require visible Cube geometry in the current Blockbench project. Returns observation only; no score/PASS/FAIL.",
     annotations: {
       title: "Capture Model Views",
       readOnlyHint: true,
@@ -538,13 +537,8 @@ export function registerCameraTools() {
         if (!observed.bounds || observed.rendered_cube_count === 0) {
           throw new Error("Model framing requires visible Cube geometry to capture.");
         }
-      } else if (
-        observed.rendered_cube_count === 0 &&
-        !hasVisibleLoadedBlockItThreeDAssistedReference()
-      ) {
-        throw new Error(
-          "Explicit framing requires visible Cube geometry or a loaded visible BlockIT 3D-Assisted Evidence reference."
-        );
+      } else if (observed.rendered_cube_count === 0) {
+        throw new Error("Explicit framing requires visible Cube geometry to capture.");
       }
 
       const framingBounds =

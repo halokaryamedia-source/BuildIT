@@ -218,7 +218,7 @@ async function verify(): Promise<void> {
   const preflight = { reachable: false } as Parameters<typeof classifyPreflightFailure>[0];
 
   registerMcpProfile(EXPECTED_PROFILE);
-  let expectedNames = getMcpSurfaceToolNames(EXPECTED_PROFILE, phase).sort();
+  let expectedNames = [...getMcpSurfaceToolNames(EXPECTED_PROFILE, phase)].sort();
 
   console.log(`BlockIT local diagnostic gate: ${targetUrl}`);
   console.log(
@@ -252,7 +252,7 @@ async function verify(): Promise<void> {
   };
   if (!phaseArg && !process.env.BLOCKIT_EXPECTED_PHASE && isMcpAuthoringPhase(product.authoring_phase)) {
     phase = product.authoring_phase;
-    expectedNames = getMcpSurfaceToolNames(EXPECTED_PROFILE, phase).sort();
+    expectedNames = [...getMcpSurfaceToolNames(EXPECTED_PROFILE, phase)].sort();
   }
   preflight.productMatches = product.id === PRODUCT_ID;
   code = classifyPreflightFailure(preflight);
@@ -395,8 +395,8 @@ async function verify(): Promise<void> {
     .map((tool) => tool.name)
     .filter((name): name is string => typeof name === "string")
     .sort();
-  const missing = expectedNames.filter((name) => !names.includes(name));
-  const unexpected = names.filter((name) => !expectedNames.includes(name));
+  const missing = expectedNames.filter((name: string) => !names.includes(name));
+  const unexpected = names.filter((name: string) => !expectedNames.includes(name));
   const forbidden = FORBIDDEN_TOOLS.filter((name) => names.includes(name));
   const surfaceOk =
     listResponse.status === 200 &&

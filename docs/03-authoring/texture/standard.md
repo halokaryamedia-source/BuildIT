@@ -1,4 +1,4 @@
-# BlockIT — UV Layout & Texture Standard
+# LazyDesigner — UV Layout & Texture Standard
 
 **Status:** Active Policy  
 **Version:** 1.8

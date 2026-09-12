@@ -9,7 +9,6 @@ import {
   type RootMotionTrackInput,
 } from "@/lib/rootMotionAnalysis";
 import {
-  analyzeProjectedEnvelopeFidelity,
   analyzeRigGraph,
   summarizeSurfaceQualityWarnings,
 } from "@/lib/modelQuality";
@@ -23,10 +22,6 @@ import {
   type AnimationQualityChannel,
   type AnimationQualityTrackInput,
 } from "@/lib/animationQuality";
-import {
-  listBlockItThreeDAssistedReferences,
-  readThreeDAssistedReferenceEvidence,
-} from "./project";
 
 const wiredTools = new Set<string>();
 const CUBE_FACE_KEYS = ["north", "south", "east", "west", "up", "down"] as const;
@@ -38,18 +33,6 @@ function objectRecord(value: unknown): Record<string, unknown> | null {
     : null;
 }
 
-function finiteVec3(value: unknown): [number, number, number] | null {
-  if (
-    !Array.isArray(value) ||
-    value.length < 3 ||
-    !value.slice(0, 3).every(
-      (entry) => typeof entry === "number" && Number.isFinite(entry)
-    )
-  ) {
-    return null;
-  }
-  return [value[0], value[1], value[2]];
-}
 
 function geometryHygieneRuntime() {
   if (typeof Cube === "undefined" || typeof Group === "undefined") {
@@ -103,58 +86,6 @@ function rigGraphRuntime() {
         group.parent instanceof Group ? group.parent.uuid : null,
     }))
   );
-}
-
-function referenceEnvelopeFidelityRuntime(
-  structuredContent: Record<string, unknown>
-) {
-  const bounds = objectRecord(structuredContent.bounds);
-  const modelMin = finiteVec3(bounds?.min);
-  const modelMax = finiteVec3(bounds?.max);
-  if (!modelMin || !modelMax) {
-    return {
-      state: "unavailable" as const,
-      reason: "rendered_model_bounds_unavailable" as const,
-    };
-  }
-
-  const references = listBlockItThreeDAssistedReferences();
-  if (references.length === 0) {
-    return {
-      state: "unavailable" as const,
-      reason: "no_3d_assisted_reference" as const,
-    };
-  }
-  if (references.length > 1) {
-    return {
-      state: "unavailable" as const,
-      reason: "ambiguous_3d_assisted_reference" as const,
-      reference_count: references.length,
-    };
-  }
-
-  const [reference] = references;
-  try {
-    const evidence = readThreeDAssistedReferenceEvidence(reference);
-    const analysis = analyzeProjectedEnvelopeFidelity({
-      model_bounds: { min: modelMin, max: modelMax },
-      reference_bounds: evidence.world_bounds,
-    });
-    if (analysis.state !== "available") return analysis;
-    return {
-      ...analysis,
-      reference: {
-        uuid: reference.uuid,
-        name: reference.name,
-      },
-    };
-  } catch (error) {
-    return {
-      state: "unavailable" as const,
-      reason: "3d_assisted_reference_evidence_unavailable" as const,
-      message: error instanceof Error ? error.message : String(error),
-    };
-  }
 }
 
 function textureColorProfileRuntime(
@@ -498,10 +429,6 @@ export function wireAuthoringQualityIntelligence(): void {
     { field: "geometry_hygiene", read: () => geometryHygieneRuntime() },
     { field: "surface_quality_summary", read: surfaceQualitySummaryRuntime },
     { field: "rig_graph", read: () => rigGraphRuntime() },
-    {
-      field: "reference_envelope_fidelity",
-      read: referenceEnvelopeFidelityRuntime,
-    },
   ]);
   wireTool("list_textures", [
     { field: "optimization_opportunities", read: () => textureOptimizationRuntime() },
