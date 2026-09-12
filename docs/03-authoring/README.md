@@ -27,7 +27,7 @@ Do not load every authoring document together.
 
 ```text
 GEOMETRY_CONTEXT
-+ blockbench-bedrock-modelling Skill
++ lazydesigner-modelling Skill
 + exactly one modelling profile
 ```
 
@@ -37,7 +37,7 @@ Conditionally read `modelling/standard.md`, `workflow.md`, or `validation/visual
 
 ```text
 TEXTURE_CONTEXT
-+ blockit-bedrock-texturing Skill
++ lazydesigner-texturing Skill
 ```
 
 Load only the relevant file under `texture/` when its specific material/render/pattern policy can change the decision.
@@ -46,7 +46,7 @@ Load only the relevant file under `texture/` when its specific material/render/p
 
 ```text
 ANIMATION_CONTEXT
-+ blockit-bedrock-animation Skill
++ lazydesigner-animation Skill
 ```
 
 Load `animation/standard.md` or `validation/visual.md` only when a durable motion/verification rule is materially needed.
