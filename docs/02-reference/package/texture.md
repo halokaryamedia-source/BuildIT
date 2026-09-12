@@ -1,6 +1,6 @@
 # LazyDesigner Texture Reference Contract
 
-Updated: 2026-09-11
+Updated: 2026-09-12
 
 This document owns the canonical content contract for generated `TEXTURE.md` files inside a LazyDesigner Reference Package.
 
@@ -52,6 +52,40 @@ explicit current user requirement
 ```
 
 `TEXTURE.md` must not introduce a new material/color interpretation that is absent from stronger authority.
+
+## Pixel Art Visual Authority
+
+An approved Pixel Art artifact can be a first-class visual reference for Texturing, but it remains **visual authority**, not mapped implementation state.
+
+When Pixel Art supplies the appearance target, `TEXTURE.md` may interpret only the appearance facts that matter downstream:
+
+```text
+palette/value relationships
+material grouping
+identity markings / landmark regions
+pixel-cluster language
+projection/orientation when relevant
+alpha behavior
+style_lock_id + relevant style constraints
+reference-fidelity constraints
+```
+
+Do not copy Pixel Art working history, prompts, QA scratch, or its full knowledge corpus into `TEXTURE.md`.
+
+Do not infer from a Pixel Art image:
+
+```text
+UV coordinates
+atlas packing
+Blockbench texture UUID
+material-instance state
+render-profile state
+mapped-surface PASS
+```
+
+Those remain Texturing/Runtime-owned.
+
+If a Pixel Art constraint cannot survive the actual model UV/surface state, downstream Texturing must preserve the visual intent where possible and return the bounded UV/Geometry conflict upstream rather than silently redesigning the reference.
 
 ## Canonical Structure
 
@@ -129,6 +163,8 @@ identity accent remains higher-contrast than surrounding cloth
 
 Avoid unnecessary fixed RGB/HEX values unless the user explicitly provides them or exact branded color matching is required.
 
+When an approved Pixel Art artifact carries exact authoritative palette values, those values may be preserved as reference evidence. Do not promote provisional palette shades to fixed requirements.
+
 Do not bake scene lighting into the material description.
 
 ## 4. Identity-Critical Markings
@@ -182,6 +218,8 @@ wood grain follows the length of the shelf
 fabric stripe continues across adjoining mapped surfaces
 vehicle hazard stripe keeps the approved diagonal direction
 ```
+
+For Pixel Art-backed references, preserve deliberate cluster language and visible pixel scale only when those are part of the approved visual target. Do not convert the reference into smooth painterly shading unless the user explicitly changes style direction.
 
 Do not convert this into a generic procedural texturing tutorial.
 
@@ -262,6 +300,9 @@ IMG_GEO_01
 
 IMG_TEX_01
 - close material/color authority for hat, basket, and clothing
+
+IMG_PIXEL_01
+- approved Pixel Art authority for palette, cluster language, marking layout, and alpha silhouette
 
 IMG_SOURCE_01
 - source authority for held tool material
@@ -379,6 +420,7 @@ MCP/Gateway schemas
 generic Blockbench tutorials
 invented RGB/HEX values
 generic palette filler not grounded in authority
+Pixel Art prompt/history/QA scratch
 ```
 
 ## Correction Rule
