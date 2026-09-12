@@ -6,7 +6,7 @@ async function source(path: string): Promise<string> {
   return Bun.file(path).text();
 }
 
-describe("pre-local BlockIT plugin surface hardening", () => {
+describe("pre-local LazyDesigner plugin surface hardening", () => {
   test("surface manifest distinguishes phase, exposed, disabled, and catalog entries deterministically", () => {
     const manifest = createSurfaceManifest({
       profile: "bedrock_entity",
@@ -35,16 +35,17 @@ describe("pre-local BlockIT plugin surface hardening", () => {
     expect(manifest.prompts.exposed_count).toBe(1);
   });
 
-  test("plugin identity is BlockIT-owned while upstream runtime authority is rejected", async () => {
-    expect(PRODUCT_NAME).toContain("BlockIT");
+  test("plugin identity is LazyDesigner-owned while compatibility identifiers stay internal", async () => {
+    expect(PRODUCT_NAME).toContain("LazyDesigner");
     expect(PRODUCT_REPOSITORY).toBe("https://github.com/halokaryamedia-source/BuildIT");
     const [indexSource, readme] = await Promise.all([source("index.ts"), source("README.md")]);
-    expect(indexSource).toContain("title: PRODUCT_NAME");
+    expect(indexSource).toContain('title: "LazyDesigner"');
     expect(indexSource).not.toContain("repository: PRODUCT_REPOSITORY");
     expect(indexSource).toContain('author: "Anonymous"');
     expect(indexSource).not.toContain("jasonjgardner.github.io/blockbench-mcp-plugin");
     expect(readme).toContain("runtime authority for this repository");
-    expect(readme).toContain("BlockIT source/builds come from this repository");
+    expect(readme).toContain("LazyDesigner source/builds come from this repository");
+    expect(readme).toContain("compatibility bundle filename remains `dist/blockit_mcp.js`");
   });
 
   test("panel identity stays minimal without build fingerprint state", async () => {
@@ -57,7 +58,7 @@ describe("pre-local BlockIT plugin surface hardening", () => {
     expect(buildSource).not.toContain("GITHUB_SHA");
   });
 
-  test("panel keeps readiness primary while capability counts stay in Advanced", async () => {
+  test("panel keeps human readiness primary and hides AI registry details", async () => {
     const [panel, uiSource, identitySource] = await Promise.all([
       source("ui/panel.html"),
       source("ui/index.ts"),
@@ -65,34 +66,36 @@ describe("pre-local BlockIT plugin surface hardening", () => {
     ]);
 
     expect(panel).toContain("runtimeStatusLabel(runtime.state)");
-    expect(panel).toContain("availableToolCount");
-    expect(panel).toContain("resources.length");
-    expect(panel).toContain("availablePromptCount");
-    expect(panel).toContain("Advanced details");
-    expect(panel).toContain("Runtime endpoint");
-    expect(panel).toContain("tools.length");
-    expect(panel).not.toContain("exposed /");
+    expect(panel).toContain("Current project");
+    expect(panel).toContain("Open Project Folder");
+    expect(panel).toContain("AI handles the technical authoring workflow in the background.");
+    expect(panel).not.toContain("availableToolCount");
+    expect(panel).not.toContain("resources.length");
+    expect(panel).not.toContain("availablePromptCount");
+    expect(panel).not.toContain("Advanced details");
+    expect(panel).not.toContain("Runtime endpoint");
+    expect(panel).not.toContain("tools.length");
     expect(panel).not.toContain("mcp.server.phase");
     expect(panel).not.toContain("server.authoringPhase");
 
-    expect(uiSource).toContain('name: "BlockIT"');
-    expect(uiSource).toContain("tools: Object.values(tools)");
-    expect(uiSource).toContain("availableToolCount(): number");
-    expect(uiSource).toContain("showDisabled: false");
+    expect(uiSource).toContain('name: "LazyDesigner"');
+    expect(uiSource).toContain("void input.tools");
+    expect(uiSource).toContain("void input.resources");
+    expect(uiSource).toContain("void input.prompts");
+    expect(uiSource).not.toContain("availableToolCount");
     expect(uiSource).not.toContain("createSurfaceManifest");
     expect(identitySource).toContain("authoring_phase: authoringPhase");
   });
 
-  test("status bar and plugin summary use user-facing BlockIT readiness language", async () => {
+  test("status bar and plugin summary use user-facing LazyDesigner readiness language", async () => {
     const [statusSource, statusCss, identitySource] = await Promise.all([
       source("ui/statusBar.ts"),
       source("ui/statusBar.css"),
       source("lib/productIdentity.ts"),
     ]);
 
-    expect(statusSource).toContain('return "BlockIT Ready"');
+    expect(statusSource).toContain('return "LazyDesigner Ready"');
     expect(statusSource).toContain("BLOCKIT_RUNTIME_STATUS_CHANGED");
-    expect(statusSource).toContain("127.0.0.1:${port}${endpoint}");
     expect(statusSource).not.toContain("serverInfo");
     expect(statusCss).not.toContain("mcp-server-info");
     expect(statusCss).not.toContain("animation: pulse");
@@ -114,21 +117,19 @@ describe("pre-local BlockIT plugin surface hardening", () => {
     expect(execute).toBeGreaterThan(fullValidation);
   });
 
-  test("canonical implementation map preserves mapped Bedrock capability and protected gaps", async () => {
-    const implementation = await source("../docs/knowledge/implementation-map.md");
+  test("canonical implementation map preserves one-system ownership and protected boundaries", async () => {
+    const implementation = await source("../docs/04-system/implementation-map.md");
     for (const capability of [
-      "TextureMesh direct authoring",
-      "Locator/Null",
       "manage_animation_controller",
-      "blend-transition curves are available",
-      "native visible bounding-box fields",
-      "animated textures",
-      "bone-binding expressions",
+      "manage_locator",
+      "manage_null_object",
       "material instances",
-    ]) expect(implementation).toContain(capability);
-    expect(implementation).toContain("manage_locator");
-    expect(implementation).toContain("manage_null_object");
-    expect(implementation).toContain("Protected gaps remain");
-    expect(implementation).not.toContain("controller blend-curve mutation");
+      "mcp/server/runtime/bootstrap.ts",
+      "mcp/plugin/runtimeHost.ts",
+      "mcp/plugin/devSync.ts",
+    ]) expect(implementation.toLowerCase()).toContain(capability.toLowerCase());
+    expect(implementation).toContain("There is one authoring system");
+    expect(implementation).toContain("Capability/intelligence reduction is not an efficiency strategy");
+    expect(implementation).toContain("never visual/user approval");
   });
 });
