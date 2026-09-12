@@ -1,8 +1,8 @@
 # BlockIT — Geometry Standard
 
 **Status:** Active Policy  
-**Version:** 2.0  
-**Updated:** 2026-09-10
+**Version:** 2.1  
+**Updated:** 2026-09-12
 
 ## Purpose
 
@@ -149,6 +149,111 @@ Detail-only span/thickness `<= 4 Blockbench units` is an **anti-overcube guardra
 
 Prefer fewer meaningful Cuboids over dense approximations. Split a mass only for demonstrated different silhouette/orientation, separate transform/pivot/motion, genuinely separate visible volume, or verified technical constraint. Adding another Cube is not the default correction.
 
+### Adaptive Cuboid Budget
+
+There is **no universal Cube-count cap**. Complexity budget is earned by visible or functional need.
+
+Each proposed Cube must pass at least one **Marginal Geometry Value** test:
+
+```text
+SILHOUETTE      changes a material visible contour
+VOLUME          creates a materially distinct 3D mass/depth
+NEGATIVE_SPACE  owns an opening/cutout boundary that Texture cannot own
+CONTACT         establishes a visible attachment/contact surface
+LAYERING        creates a materially separate 3D layer/inset/overhang
+TRANSFORM       requires independent/shared transform ownership
+MOTION          participates in articulation, clearance, or deformation spacing
+TECHNICAL       satisfies a proven Bedrock/export/UV constraint
+```
+
+If a proposed Cube passes none of these tests, it is **REDUNDANT_GEOMETRY** and must be represented by Texture, merged into an existing mass, or omitted.
+
+A Cube is not justified merely because:
+
+- the reference contains a small color/shading boundary;
+- more segments make a curve look numerically smoother;
+- a neighboring Cube already exists;
+- a tool can create it cheaply;
+- symmetry makes it easy to duplicate;
+- it hides a gap caused by a wrong primary mass;
+- it increases apparent modelling detail.
+
+### Representation Ladder
+
+Use the lowest-complexity native representation that preserves the requirement:
+
+```text
+1. TEXTURE / alpha detail
+2. one SOLID_CUBOID or PLANE_LIKE carrier
+3. one rotated Cuboid
+4. one LAYERED_SURFACE relation
+5. CROSSED_PAIR cutout carrier when view coverage requires it
+6. small SEGMENTED_FORM cohort
+7. denser segmented approximation only after lower levels visibly fail
+```
+
+Escalate **one level at a time**. Do not jump directly to dense segmentation.
+
+A more complex level is justified only when the simpler level causes a material failure in one of:
+
+```text
+silhouette
+volume/depth
+opening/negative space
+contact/layering
+motion/articulation
+reference-critical identity landmark
+```
+
+### Segmented Curve Rule
+
+A curved/organic/sloped form may use several rotated Cuboids, but every segment must own a meaningful change of direction, silhouette, contact, or articulation.
+
+Reject:
+
+```text
+micro-segments whose removal is visually immaterial
+unit-Cube staircasing used as generic smoothing
+multiple almost-collinear segments with no visible contour benefit
+hidden segments that only fill internal volume
+```
+
+Prefer the **coarsest segment count that preserves the required contour** at the relevant reference/model viewing scale.
+
+For articulated chains, segment count may be driven by motion topology rather than static smoothness; do not merge across a required joint.
+
+### Merge / Remove Challenge
+
+Before secondary Geometry PASS, perform one cohort-level simplification challenge:
+
+```text
+For each dense/repeated cohort:
+- can adjacent Cuboids merge without changing a material contour?
+- can a repeated surface detail move to Texture?
+- can one rotated Cuboid replace several stepped Cuboids?
+- can alpha own the internal silhouette on a planar carrier?
+- is any Cube compensating for an incorrect neighboring mass?
+```
+
+Only mutate when the answer is evidence-backed; this is not an automatic simplifier.
+
+The intended outcome is **minimum sufficient geometry**, not minimum node count.
+
+### Complexity Escalation Gate
+
+Before adding a dense cohort (`>= 4` new Cuboids for one local feature), record a compact reason:
+
+```text
+feature
+simpler representation attempted/considered
+material failure of the simpler representation
+why the proposed cohort fixes that failure
+```
+
+This reasoning is transient; do not create a persistent per-Cube bureaucracy.
+
+Repeated/symmetric cohorts should still be authored in one coherent batch after the representation decision is made.
+
 ## Surface Integrity Contract
 
 Surface integrity means **every material surface relationship is intentional**, **not that every model is universally watertight**.
@@ -223,7 +328,7 @@ A required non-visible effect, hold, or attachment point that needs transform id
 
 ## Completion Criteria
 
-Geometry is ready for UV/texture only when whole primary form passed visual review, representation choices match the visible 3D requirement, small/detail Geometry survived the guardrail challenge, major proportions/contacts are coherent, required surface relationships are intentional, material shared transforms have an owner, required primary hierarchy/pivots are established, each material rotation/pivot has a reason, Cuboid count is purposeful, no major geometry issue remains, and visual claims use fresh current-revision evidence.
+Geometry is ready for UV/texture only when whole primary form passed visual review, representation choices match the visible 3D requirement, small/detail Geometry survived the guardrail challenge, dense cohorts survived the merge/remove challenge, major proportions/contacts are coherent, required surface relationships are intentional, material shared transforms have an owner, required primary hierarchy/pivots are established, each material rotation/pivot has a reason, Cuboid count is purposeful, no major geometry issue remains, and visual claims use fresh current-revision evidence.
 
 ## Related
 
