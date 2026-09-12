@@ -7,6 +7,7 @@ ai-context-loading.md
 authoring-stage-context.md
 tool-execution-paths.md
 tool-efficiency-audit.md
+tool-capability-integrity-audit.md
 control/context-projection.md
 implementation-map.md
 skill-taxonomy.md
@@ -28,6 +29,9 @@ Does a Tool act through direct/native Blockbench state or UI automation?
 Which Tools still create avoidable public choice, calls or implicit-state overhead?
 → tool-efficiency-audit.md
 
+Did historical cleanup/compaction remove meaningful Tool capability or intelligence?
+→ tool-capability-integrity-audit.md
+
 What does Control project to Codex?
 → control/context-projection.md
 
@@ -41,4 +45,4 @@ Which legacy BlockIT identifier must remain stable during migration?
 → compatibility-identifiers.md
 ```
 
-AI load rule: use this domain for context loading, shared Stage Context, Tool execution-path/efficiency questions, Control/context routing, source ownership, Skill ownership, or compatibility-identifier questions. Do not use it as a substitute for product flow or authoring standards.
+AI load rule: use this domain for context loading, shared Stage Context, Tool execution-path/efficiency/integrity questions, Control/context routing, source ownership, Skill ownership, or compatibility-identifier questions. Do not use it as a substitute for product flow or authoring standards.
