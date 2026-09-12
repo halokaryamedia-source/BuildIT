@@ -1,6 +1,6 @@
 # LazyDesigner Workspace Context
 
-Last verified stable facts: 2026-09-11  
+Last verified stable facts: 2026-09-12  
 Stability: stable design contract; implementation/proof tracked separately
 
 This file owns **stable project facts only**.
@@ -109,9 +109,9 @@ describe_capability
 invoke_capability
 ```
 
-Current semantic phase union retains **54 callable Bedrock tools** after retirement of the two legacy 3D-assisted capabilities. Geometry and Texturing startup stages expose the same shared AUTHORING surface; Animation remains a separate runtime surface. Installed evidence is tracked separately in `docs/05-operations/current-validation.md`. Direct Runtime MCP remains for Inspector/conformance/debugging, not normal AI-client authoring.
+Current semantic phase union retains **54 callable Bedrock tools** after retirement of the two legacy 3D-assisted capabilities. Geometry and Texturing startup stages expose the same 47-tool AUTHORING surface; Animation exposes the separate 18-tool Runtime surface. Installed evidence is tracked separately in `docs/05-operations/current-validation.md`. Direct Runtime MCP remains for Inspector/conformance/debugging, not normal AI-client authoring.
 
-Gateway handoff keeps the same task/chat alive and refreshes backend catalog only when crossing AUTHORING↔Animation.
+Gateway keeps the same task/chat alive across focus/surface handoff. Catalog/connection invalidation after phase-affinity changes remains conservative in current source; relaxing Geometry↔Texturing same-AUTHORING reuse requires the targeted LOCAL_CODE transport proof recorded in `docs/05-operations/next-action.md`.
 
 ## Repository / Runtime Separation
 
