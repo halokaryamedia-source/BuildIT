@@ -36,21 +36,21 @@ Rules:
 
 ## Shared Authoring Stage Contract
 
-Geometry, Texturing, and Animation share one cross-stage context/handoff owner:
+Geometry, Texturing, and Animation share one canonical cross-stage semantic owner:
 
 ```text
 docs/04-system/authoring-stage-context.md
 ```
 
 It owns:
-- stage-specific context projection shape;
+- stage-specific context projection semantics;
 - evidence-reuse/economy rules;
 - diagnostic PASS vs approval semantics;
 - AUTHORING↔Animation handoff semantics;
 - correction convergence;
 - compact stage-exit projection.
 
-Load it **once per oriented authoring task/session** and reuse it while unchanged. Specialist Skills should provide domain intelligence, not independent copies of this cross-stage policy.
+**Normal hot path does not load this document as an additional payload.** Control provides current stage state and the active specialist carries the minimum operational triggers needed to execute. Load the shared contract only when a material cross-stage, approval, evidence-freshness, convergence, or handoff question remains unresolved. Do not load it merely because authoring started.
 
 ## Load Classes
 
@@ -109,7 +109,6 @@ Reference Preparation ends at an approved, consistent handoff package. It does n
 current user intent / delta
 actual approved reference image(s) relevant to geometry
 GEOMETRY_CONTEXT projection
-docs/04-system/authoring-stage-context.md (reuse when already loaded and unchanged)
 .agents/skills/lazydesigner-modelling/SKILL.md
 exactly one selected profile from docs/03-authoring/modelling/profiles/
 ```
@@ -119,6 +118,8 @@ exactly one selected profile from docs/03-authoring/modelling/profiles/
 ### CONDITIONAL
 
 ```text
+docs/04-system/authoring-stage-context.md
+  → cross-stage / approval / evidence-freshness / convergence / handoff ambiguity
 docs/03-authoring/modelling/standard.md
   → durable geometry-policy question not sufficiently resolved by specialist procedure
 docs/03-authoring/workflow.md
@@ -149,7 +150,6 @@ PRODUCT_DEVELOPMENT Skills
 ```text
 current user intent / texture delta
 TEXTURE_CONTEXT projection
-docs/04-system/authoring-stage-context.md (reuse when already loaded and unchanged)
 .agents/skills/lazydesigner-texturing/SKILL.md
 relevant approved material/reference views
 current atlas / UV identity supplied by projection/runtime state
@@ -158,6 +158,8 @@ current atlas / UV identity supplied by projection/runtime state
 ### CONDITIONAL
 
 ```text
+docs/04-system/authoring-stage-context.md
+  → cross-stage / approval / evidence-freshness / convergence / handoff ambiguity
 docs/03-authoring/texture/standard.md
   → durable texture-policy ambiguity
 docs/03-authoring/texture/material.md
@@ -191,7 +193,6 @@ PRODUCT_DEVELOPMENT Skills
 ```text
 current user intent / animation delta
 ANIMATION_CONTEXT projection
-docs/04-system/authoring-stage-context.md (reuse when already loaded and unchanged)
 .agents/skills/lazydesigner-animation/SKILL.md
 relevant approved pose/motion reference views
 current participating rig + clip identity supplied by projection/runtime state
@@ -200,6 +201,8 @@ current participating rig + clip identity supplied by projection/runtime state
 ### CONDITIONAL
 
 ```text
+docs/04-system/authoring-stage-context.md
+  → cross-stage / approval / evidence-freshness / convergence / handoff ambiguity
 docs/03-authoring/animation/standard.md
   → durable animation-policy ambiguity
 docs/03-authoring/validation/visual.md
@@ -282,7 +285,7 @@ current delta
 → continue
 ```
 
-Do not reload the initial package, profile, shared stage contract, or sibling domain unless the current delta invalidated that context.
+Do not reload the initial package, profile, shared stage contract, or sibling domain unless the current delta invalidated that context or exposed a material cross-stage ambiguity.
 
 ## Broadening Rule
 
@@ -301,9 +304,9 @@ Otherwise do not broaden.
 
 AI context loading is correct when:
 - the task has one resolved domain/stage;
-- the shared authoring-stage contract is loaded at most once while unchanged;
-- only one primary specialist is active for that semantic owner;
+- one primary specialist is active for that semantic owner;
 - only one primary modelling profile is loaded when Geometry needs one;
+- the shared authoring-stage contract is loaded only for a material cross-stage ambiguity, not as routine duplicate context;
 - sibling domains remain unloaded unless a proved dependency crosses the boundary;
 - operational history/status is not loaded as general knowledge;
 - repeated unchanged context is reused rather than resent;
