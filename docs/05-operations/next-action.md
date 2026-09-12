@@ -5,9 +5,11 @@ Branch: `Local` only.
 
 This file owns **current implementation continuation only**. Product workflow belongs in `docs/01-product/flow.md`; source/context ownership in `docs/04-system/`; proof interpretation in `docs/05-operations/current-validation.md`.
 
+Canonical Control source: `mcp/gateway/control/`. The former `mcp/gateway/navigator/` source is removed with no alias; `Experimental/blockit-navigator/` is historical documentation only.
+
 ## Current State
 
-The current REMOTE_GITHUB architecture-hardening scope is complete enough to stop broad cleanup safely.
+The current REMOTE_GITHUB architecture-hardening scope is in its final synchronization pass before LOCAL_CODE.
 
 ```text
 Control                 SOURCE-HARDENED
@@ -18,6 +20,7 @@ Tools                   ZERO-LOSS GUARDED
 Validation / QA / Gates SOURCE-HARDENED
 Skills / Knowledge      CONTEXT-HARDENED
 Reference flow          AUDITED
+Repository contracts    SYNCHRONIZATION IN PROGRESS
 ```
 
 Current invariants:
@@ -30,17 +33,27 @@ Current invariants:
 - Internal diagnostics and Blockbench Validator state are evidence only; they never create visual PASS or user approval.
 - AUTHORING↔Animation handoff requires canonical readiness plus a saved checkpoint. Control lifecycle `READY` is not handoff authorization.
 - Geometry↔Texturing remain one shared AUTHORING surface; semantic focus may change without creating a second tool family or workflow engine.
-- `switch_authoring_phase` now applies the registered Runtime phase/surface handler before returning its Gateway receipt.
+- `switch_authoring_phase` applies the registered Runtime phase/surface handler before returning its Gateway receipt.
 - Normal authoring loads one active specialist; the shared stage contract is conditional policy context rather than a second routine payload.
 - Control projects one compact active-stage envelope and references stage evidence instead of duplicating full semantic documents.
-- Public consolidated capability development routes to the actual Runtime public owner, not the legacy `server/tools.ts` facade.
+- Public consolidated capability development routes to the actual Runtime public owner, not the compatibility `server/tools.ts` facade.
 - No second router, capability registry, persistent state database, authoring workflow engine, or alternate tool implementation path is allowed without a proved requirement.
 
 ## Next Meaningful Context
 
-### REMOTE_GITHUB
+### REMOTE_GITHUB — current final synchronization
 
-Reopen remote mutation only for a **new concrete bounded source defect** with a clear owner. Do not continue speculative cleanup merely to reduce line count, tool count, or static character count.
+Finish the exact-head synchronization gate:
+
+```text
+remove remaining retired-source closure
+→ regenerate canonical prompt/API outputs
+→ align stale regression contracts with current ownership
+→ bun run verify:full
+→ accept only exact-head PASS
+```
+
+No hand-editing generated docs/output. Generated prompt/API artifacts remain generator-owned.
 
 Do not remotely force:
 
@@ -50,16 +63,14 @@ Do not remotely force:
 - capability removal for context savings;
 - compatibility identifier migration.
 
-### LOCAL_CODE — when explicitly activated
+### LOCAL_CODE — after synchronized REMOTE_GITHUB gate
 
 From the matching clean `Local` SHA:
 
 ```text
 install pinned dependencies
-→ run targeted authoring-flow / phase-control / Gateway tests
-→ typecheck
-→ verify generated freshness
-→ run bun run verify:full once as terminal source evidence
+→ run targeted authoring-flow / phase-control / Gateway tests only if additional local-only evidence is needed
+→ typecheck/build confirmation when not already covered by exact-head CI evidence
 → measure Control/context and authoring-surface costs
 → fix only failures tied to current source
 ```
@@ -116,4 +127,4 @@ Measure **Cost to Accepted Result** without lowering accepted quality.
 
 ## Proof Boundary
 
-Current remote work establishes source architecture, ownership, contracts, and regression intent only. The current source has **not** been typechecked/executed locally or proven live in Blockbench during this phase. Installed-runtime freshness, reload survival, native mutation behavior, visual fidelity, and measured usage savings remain future proof work.
+REMOTE_GITHUB can establish source architecture, generated freshness, typecheck/test/build contracts when exact-head CI executes them. The current source has **not been typechecked/executed locally** or proven live in Blockbench during this phase. Installed-runtime freshness, reload survival, native mutation behavior, visual fidelity, and measured usage savings remain higher-context proof work.
