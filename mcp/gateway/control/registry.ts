@@ -128,6 +128,11 @@ const SOURCE_BY_CAPABILITY: Record<string, ControlSourceOwner> = {
     specialist: null,
     test_owner: "mcp/tests/p1-core-ownership.test.ts",
   },
+  inspect_elements: {
+    source: "mcp/server/runtime/consolidatedTools.ts",
+    specialist: null,
+    test_owner: "mcp/tests/consolidated-validation-preservation.test.ts",
+  },
   manage_locator: {
     source: "mcp/server/tools/locators.ts",
     specialist: MODELLING_PATH,
@@ -264,14 +269,14 @@ const SOURCE_BY_CAPABILITY: Record<string, ControlSourceOwner> = {
     test_owner: "mcp/tests/prelocal-wiring-policy.test.ts",
   },
   manage_material: {
-    source: "mcp/server/tools.ts",
+    source: "mcp/server/runtime/consolidatedTools.ts",
     specialist: TEXTURING_PATH,
-    test_owner: "mcp/tests/authoring-phase-surface.test.ts",
+    test_owner: "mcp/tests/consolidated-validation-preservation.test.ts",
   },
   manage_material_instances: {
-    source: "mcp/server/tools/material-instances.ts",
+    source: "mcp/server/runtime/consolidatedTools.ts",
     specialist: TEXTURING_PATH,
-    test_owner: "mcp/tests/material-instance-mutation-result.test.ts",
+    test_owner: "mcp/tests/consolidated-validation-preservation.test.ts",
   },
   manage_render_profile: {
     source: "mcp/server/tools/render-profile.ts",
@@ -289,9 +294,9 @@ const SOURCE_BY_CAPABILITY: Record<string, ControlSourceOwner> = {
     test_owner: "mcp/tests/animation-native-intelligence.test.ts",
   },
   manage_animation_timeline: {
-    source: "mcp/server/tools.ts",
+    source: "mcp/server/runtime/consolidatedTools.ts",
     specialist: ANIMATION_PATH,
-    test_owner: "mcp/tests/animation-timeline-batch-ownership.test.ts",
+    test_owner: "mcp/tests/consolidated-validation-preservation.test.ts",
   },
   manage_animation_effects: {
     source: "mcp/server/tools/animation-effects.ts",
@@ -314,9 +319,9 @@ const SOURCE_BY_CAPABILITY: Record<string, ControlSourceOwner> = {
     test_owner: "mcp/tests/particle-tool-contract.test.ts",
   },
   switch_authoring_phase: {
-    source: "mcp/server/tools.ts",
+    source: "mcp/server/runtime/phaseControl.ts",
     specialist: null,
-    test_owner: "mcp/tests/authoring-phase-surface.test.ts",
+    test_owner: "mcp/tests/authoring-flow-simplification.test.ts",
   },
   get_project_info: {
     source: "mcp/server/tools/project.ts",
