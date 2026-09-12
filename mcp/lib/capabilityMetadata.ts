@@ -65,6 +65,28 @@ const MAINTENANCE_CAPABILITIES = new Set([
 ]);
 
 const SEARCH_ALIASES: Readonly<Record<string, readonly string[]>> = {
+  add_group: [
+    "create bone",
+    "create bones",
+    "add bone",
+    "add bones",
+    "group batch",
+    "bone batch",
+  ],
+  modify_group: [
+    "set pivot",
+    "bone pivot",
+    "group pivot",
+    "move group",
+    "translate group",
+  ],
+  reparent_element: [
+    "parent bone",
+    "unparent bone",
+    "reparent bone",
+    "move parent",
+    "change parent",
+  ],
   manage_locator: [
     "locator",
     "attachment point",
