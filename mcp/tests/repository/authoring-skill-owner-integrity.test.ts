@@ -27,13 +27,13 @@ describe("canonical authoring Skill ownership", () => {
   });
 
   test("particle authoring remains a bounded Animation specialist route", async () => {
-    const [tools, animation] = await Promise.all([
-      source("server/tools.ts"),
+    const [registration, animation] = await Promise.all([
+      source("server/runtime/registration.ts"),
       source("../.agents/skills/lazydesigner-animation/SKILL.md"),
     ]);
 
-    expect(tools).toContain("registerParticleTools()");
-    expect(tools).toContain("registerParticleResources()");
+    expect(registration).toContain("registerParticleTools()");
+    expect(registration).toContain("registerParticleResources()");
     expect(animation).toContain("inspect_particle / manage_particle");
     expect(animation).toContain("Particle is asset-only");
   });
