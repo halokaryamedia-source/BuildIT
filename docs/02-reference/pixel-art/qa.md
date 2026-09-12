@@ -2,79 +2,79 @@
 
 Run only the gates applicable to the current artifact. Do not re-audit unchanged areas after every micro-edit.
 
+## Ready-for-review contract
+
+An asset is ready for user review only when all applicable conditions are true:
+- artifact class and target mode are resolved;
+- production canvas/grid is explicit;
+- subject reads at native target size;
+- silhouette and major negative spaces are stable;
+- visible pixel scale is coherent;
+- clusters are deliberate rather than noisy;
+- palette roles are economical;
+- material and identity cues are sufficient for the requested use;
+- reference-driven identity is preserved where supported;
+- set-level Style Lock is respected when applicable;
+- transparent edges are clean when alpha is required;
+- applicable QA gates pass;
+- no unresolved BLOCKING ambiguity remains.
+
+`READY_FOR_REVIEW` is not user approval. Approval remains separate.
+
 ## Core gates
 
 ### GRID INTEGRITY
-PASS when:
-- all authored detail aligns to one intentional integer grid;
-- no blurred or interpolated production edges remain;
-- visible pixel scale is coherent.
+PASS when all authored detail aligns to one intentional integer grid, no blurred/interpolated production edges remain, and visible pixel scale is coherent.
 
 ### SILHOUETTE READABILITY
-PASS when:
-- the subject class and defining form read at target scale;
-- negative-space landmarks remain clear;
-- major protrusions or functional parts are not lost.
+PASS when subject class and defining form read at target scale, negative-space landmarks remain clear, and major functional parts are not lost.
 
 ### CLUSTER QUALITY
-PASS when:
-- pixel groups communicate mass, lighting, material, or identity;
-- orphan/noise pixels are absent unless intentionally meaningful;
-- edge staircases follow deliberate form rhythm.
+PASS when clusters communicate mass, lighting, material, or identity; noise/orphan pixels are absent unless intentional; edge staircases follow form.
 
 ### PALETTE ECONOMY
-PASS when:
-- every palette role contributes materially to readability;
-- redundant near-duplicate colors are not accumulating without purpose;
-- contrast hierarchy remains clear.
+PASS when every palette role contributes materially, near-duplicate colors are justified, and contrast hierarchy remains clear.
 
 ### MATERIAL READABILITY
-PASS when applicable when:
-- major materials are distinguishable using value/cluster/highlight behavior, not hue alone.
+PASS when applicable materials are distinguishable through value/cluster/highlight behavior, not hue alone.
 
 ### PIXEL-SCALE CONSISTENCY
-PASS when:
-- no region appears authored at a different implicit resolution;
-- detail density remains consistent with the selected target mode.
+PASS when no region appears authored at another implicit resolution and detail density matches target mode.
 
 ### IDENTITY FIDELITY
-PASS for reference-driven work when:
-- silhouette, proportion hierarchy, landmarks, material grouping, and color identity preserve supported source evidence.
+For reference-driven work, PASS when silhouette, proportion hierarchy, landmarks, material grouping, and defining color identity preserve supported evidence.
 
 ### TARGET COMPATIBILITY
-PASS when:
-- GENERIC_PIXEL, MINECRAFT_NATIVE, or MIVUBI_HD_PIXEL rules are satisfied;
-- target-size readability is preserved.
+PASS when selected target-mode rules are satisfied and target-size readability is preserved.
 
-### EDGE CLEANUP
-PASS when:
-- no accidental halos, matte residue, half-transparent fringe, or inconsistent jagged artifacts remain.
-
-### BACKGROUND / ALPHA
-PASS when:
-- requested transparency is true alpha;
-- checkerboards or preview backgrounds are not baked into production pixels.
+### EDGE CLEANUP / ALPHA
+PASS when there are no accidental halos, matte residue, half-transparent fringe, baked checkerboards, or preview backgrounds in production pixels.
 
 ## Conditional gates
 
 ### STYLE LOCK
-For series work only.
-
-PASS when canvas logic, pixel scale, occupancy, perspective, outline, palette relationship, light direction, and cluster density remain compatible with the established set.
+For series work only. PASS when canvas logic, pixel scale, occupancy, perspective, outline, palette relationship, light direction, contrast, and cluster density remain compatible with the established set.
 
 ### FRAME CONSISTENCY
-For animated sprites only.
-
-PASS when anchor, apparent volume, palette, identity landmarks, and pixel scale remain stable across frames unless intentionally changed by motion.
+For animated sprites only. PASS when anchor, apparent volume, palette, identity landmarks, and pixel scale remain stable unless motion intentionally changes them.
 
 ### TILE SEAM
-For repeating tile/pattern assets only.
+For repeating assets only. PASS when required edges repeat without unintended seams or phase jumps.
 
-PASS when required edges repeat without visible unintended seams or phase jumps.
+## Anti-pattern guards
+
+Treat these as warnings handled by the relevant gate, not as a second QA system:
+- fake pixelation: smooth image → resize/filter → no deliberate cluster cleanup;
+- mixed implicit resolution;
+- noise-as-detail;
+- palette inflation without semantic roles;
+- compensating for a weak silhouette with shading/outlines;
+- over-dithering where clean clusters read better;
+- unjustified style drift within one family;
+- enlarging the canvas mainly to avoid simplification;
+- baked transparency previews instead of true alpha.
 
 ## Verdict
-
-Return one:
 
 ```text
 PASS
@@ -82,7 +82,7 @@ REVISE
 BLOCKED
 ```
 
-For `REVISE`, identify the smallest causal correction and the specific affected gate(s).
+For `REVISE`, identify the smallest causal correction and affected gate(s).
 
 Correction priority:
 
@@ -95,4 +95,4 @@ wrong silhouette / composition
 → secondary detail cleanup
 ```
 
-Batch one coherent correction. Then rerun only the affected gates plus any gate that the correction could plausibly regress.
+Batch one coherent correction, then rerun only affected gates plus any gate the correction could plausibly regress.
