@@ -17,7 +17,7 @@ docs/04-system/ai-context-loading.md
 Project the **minimum sufficient current decision context** without turning Control into a second Reference Package, workflow engine, or persistent asset database.
 
 ```text
-REFERENCE PACKAGE
+REFERENCE PACKAGE / approved reference artifact
 + WORKSPACE / RUNTIME STATE
 + USER DELTA
 + READINESS / FRESHNESS
@@ -42,7 +42,7 @@ stage_context
 → one self-contained decision envelope for the active semantic owner
 ```
 
-Do not repeat complete Workspace state, full Reference readiness, document prose, image metadata, Skill text, Tool schemas, per-Cube plans, or per-keyframe plans in the packet.
+Do not repeat complete Workspace state, full Reference readiness, document prose, image metadata, Skill text, Tool schemas, per-Cube plans, per-pixel plans, or per-keyframe plans in the packet.
 
 ## Stage Context: Source-Owned Shape
 
@@ -120,6 +120,46 @@ Animation / timeline / controller / effects / particle motion context
 
 If ownership is ambiguous, resolve the owner first. Do not send all three contexts as a hedge.
 
+Pixel Art is intentionally **not** a Control authoring domain. It is a Reference Preparation specialist. When a Pixel Art artifact becomes production evidence, Control projects only the compact facts the active authoring stage needs.
+
+## Pixel Art Handoff Rule
+
+A Pixel Art artifact may be consumed by Texturing, Particle, or another downstream workflow without loading the Pixel Art knowledge corpus into Control.
+
+Canonical handoff shape is compact and evidence-oriented:
+
+```text
+artifact identity / reference id
+target mode: GENERIC_PIXEL | MINECRAFT_NATIVE | MIVUBI_HD_PIXEL
+grid / dimensions when material
+style-lock fields that affect production
+palette/material roles when material
+alpha / background requirement
+identity-critical landmarks / fidelity constraints
+animation frame contract when relevant
+known blockers / provisional facts
+```
+
+For Texturing:
+
+```text
+approved pixel-art artifact
+→ TEXTURE_CONTEXT receives relevant image/reference identity + material/style constraints
+→ lazydesigner-texturing owns UV / atlas / mapped-surface implementation
+```
+
+For Particle texture use:
+
+```text
+approved pixel-art texture artifact
+→ consuming Particle workflow receives texture identity + required alpha/grid/style facts
+→ Particle authoring owns emitter/lifecycle/Molang/VFX semantics
+```
+
+Control must not serialize `docs/02-reference/pixel-art/**`, the Pixel Art Skill, cluster theory, palette theory, or generation history into an authoring packet. Those are upstream production rules, not downstream runtime state.
+
+If the downstream stage only needs the produced image, pass/reference the image and the smallest semantic constraints that can change implementation.
+
 ## Geometry Profile Rule
 
 Only Geometry normally loads a full modelling profile:
@@ -154,6 +194,10 @@ wheel placement correction
 logo/material correction
 → TEXTURE_CONTEXT + affected surface/reference evidence
 
+pixel-art palette correction already reflected in approved reference artifact
+→ TEXTURE_CONTEXT + current artifact/reference identity + affected material constraints
+→ do not reload Pixel Art corpus
+
 knee gap during walk
 → ANIMATION_CONTEXT + affected motion evidence
 → Geometry handoff only when ownership proves structural
@@ -167,7 +211,7 @@ Projection does not create truth.
 explicit current user requirement
 → task authority
 
-approved reference image(s)
+approved reference image(s) / pixel-art artifact
 → visual authority
 
 Reference Package metadata/document
@@ -206,6 +250,8 @@ Animation key mutation
 → Geometry/UV remain fresh unless a structural blocker is discovered
 ```
 
+A revised upstream Pixel Art artifact stales only downstream evidence that actually depends on the changed visual/material facts. It does not globally invalidate Geometry or unrelated authoring state.
+
 Do not globally invalidate all context after a bounded mutation.
 
 ## Readiness
@@ -236,6 +282,7 @@ second persistent asset database
 copy of whole Skills
 copy of Tool schemas
 per-Cube / per-pixel / per-keyframe plan
+Pixel Art authoring engine
 permanent workflow engine
 all-context bundle
 ```
@@ -249,6 +296,8 @@ one active stage context is selected
 packet remains compact and self-contained for orientation
 large semantic detail stays with its canonical owner until needed
 only Geometry receives one full selected profile
+Pixel Art remains upstream reference ownership, not a new Control stage
+approved Pixel Art evidence is projected only as compact downstream constraints
 user intent remains unchanged
 blockers remain explicit
 bounded mutations invalidate only affected evidence
