@@ -82,8 +82,14 @@ docs/02-reference/policy.md
 
 .agents/skills/lazydesigner-prompt-compiler/SKILL.md
   → after blocking requirements are resolved
+
 docs/02-reference/image/*
-  → only when generating/editing reference imagery
+  → only when generating/editing smooth visual/model reference imagery
+.agents/skills/lazydesigner-pixel-art-authoring/SKILL.md + docs/02-reference/pixel-art/*
+  → only when the selected artifact is strict integer-grid pixel art, icon, sprite, tile/pattern, or pixel-art reference conversion
+.agents/skills/lazydesigner-particle-reference-authoring/SKILL.md + docs/02-reference/particle/*
+  → only when authoring/auditing Bedrock/Snowstorm particle/VFX artifacts
+
 docs/02-reference/package/*
   → only when building/validating Codex handoff package
 ```
@@ -95,9 +101,58 @@ docs/03-authoring/**
 docs/04-system/control/**
 docs/05-operations/**
 PRODUCT_DEVELOPMENT Skills
+unselected sibling reference specialists
 ```
 
-Reference Preparation ends at an approved, consistent handoff package. It does not pre-author Blockbench geometry.
+Reference Preparation ends at an approved/usable branch artifact or consistent handoff package. It does not pre-author Blockbench geometry.
+
+### Reference branch loading
+
+Select the branch before reading its specialist corpus:
+
+```text
+VISUAL / MODEL
+→ reference-preparation + image owner(s) only
+
+PIXEL ART
+→ reference-preparation + pixel-art Skill
+→ one primary pixel-art owner
+→ at most 1–2 causal secondary owners
+
+PARTICLE / VFX
+→ reference-preparation + particle Skill
+→ minimum particle owner bundle
+
+COMPOSED
+→ load each specialist only for the dependency it owns
+```
+
+Do not load image, pixel-art and particle corpora together merely because they are all Reference Preparation.
+
+Pixel Art hot-path examples:
+
+```text
+simple icon
+→ pixel-art Skill + iconography
+→ qa only near finalization
+
+reference-to-pixel conversion
+→ pixel-art Skill + reference-conversion
+→ silhouette or palette only when the current decision requires it
+
+Minecraft-native pixel asset
+→ pixel-art Skill + minecraft-compatibility + relevant artifact owner
+
+sprite animation
+→ pixel-art Skill + sprites + animation
+→ qa near finalization
+
+tile/pattern
+→ pixel-art Skill + tiles-patterns
+→ qa near finalization
+```
+
+`pixel` in an actual Blockbench atlas/UV/Painter task is **not** a reason to load Pixel Art Reference Authoring. That belongs to Texturing below.
 
 ---
 
@@ -137,6 +192,7 @@ full Reference Package
 all modelling profiles
 full texture standards
 full animation standards
+REFERENCE_PREPARATION specialist corpora unless consuming a specific already-produced artifact
 PRODUCT_DEVELOPMENT Skills
 05-operations unless continuing/proving repository work
 ```
@@ -172,6 +228,8 @@ docs/03-authoring/validation/visual.md
   → visual verdict ambiguity
 bounded Geometry context
   → only for a proved upstream geometry/UV defect
+approved pixel-art artifact/profile fields
+  → only when the user intentionally supplies Pixel Art output as texture design authority
 ```
 
 ### EXCLUDED
@@ -181,8 +239,11 @@ complete modelling profile prose
 complete Geometry construction history
 complete Animation context
 unrelated material sub-standards
+pixel-art knowledge corpus after its artifact/profile has already been handed off
 PRODUCT_DEVELOPMENT Skills
 ```
+
+Texturing owns actual Blockbench atlas/UV/mapped-surface mutation even when the design language is pixel art.
 
 ---
 
@@ -305,7 +366,8 @@ Otherwise do not broaden.
 AI context loading is correct when:
 - the task has one resolved domain/stage;
 - one primary specialist is active for that semantic owner;
-- only one primary modelling profile is loaded when Geometry needs one;
+- Pixel Art and Particle reference specialists are loaded only when their branch is selected;
+- one primary modelling profile is loaded when Geometry needs one;
 - the shared authoring-stage contract is loaded only for a material cross-stage ambiguity, not as routine duplicate context;
 - sibling domains remain unloaded unless a proved dependency crosses the boundary;
 - operational history/status is not loaded as general knowledge;
