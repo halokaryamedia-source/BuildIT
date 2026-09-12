@@ -11,6 +11,7 @@ export const MCP_AUTHORING_PHASES = [
 
 export type McpAuthoringPhase = (typeof MCP_AUTHORING_PHASES)[number];
 export type McpToolPhaseCategory = "core" | McpAuthoringPhase;
+export type McpRuntimeSurface = "AUTHORING" | "ANIMATION";
 
 export const DEFAULT_MCP_AUTHORING_PHASE: McpAuthoringPhase = "geometry";
 
@@ -18,11 +19,6 @@ export const BEDROCK_AUTHORING_COORDINATE_CONTRACT =
   "Coords: 16 Blockbench units=1 Minecraft block; x=width,y=height,z=length,+Y=up.";
 
 let activeAuthoringPhase: McpAuthoringPhase = DEFAULT_MCP_AUTHORING_PHASE;
-
-const RETIRED_CAPABILITIES = new Set([
-  "materialize_3d_assisted_scaffold",
-  "manage_geometry_reference",
-]);
 
 const CORE_FAMILIES = new Set<McpRegistrationFamily>([
   "camera",
@@ -138,7 +134,6 @@ const ANIMATION_NAMED_CAPABILITIES = new Set([
 export function classifyMcpToolPhaseByName(
   toolName: string
 ): McpToolPhaseCategory | null {
-  if (RETIRED_CAPABILITIES.has(toolName)) return null;
   if (CORE_NAMED_CAPABILITIES.has(toolName)) return "core";
   if (GEOMETRY_NAMED_CAPABILITIES.has(toolName)) return "geometry";
   if (TEXTURING_NAMED_CAPABILITIES.has(toolName)) return "texturing";
@@ -146,8 +141,14 @@ export function classifyMcpToolPhaseByName(
   return null;
 }
 
+export function getMcpRuntimeSurface(
+  phase: McpAuthoringPhase
+): McpRuntimeSurface {
+  return phase === "animation" ? "ANIMATION" : "AUTHORING";
+}
+
 function isAuthoringStage(phase: McpAuthoringPhase): boolean {
-  return phase !== "animation";
+  return getMcpRuntimeSurface(phase) === "AUTHORING";
 }
 
 const PHASE_OWNER_SUMMARY: Record<McpAuthoringPhase, string> = {
@@ -200,12 +201,12 @@ export function buildMcpPhaseRuntimeContract(
   allowedTools: readonly string[] = []
 ): string {
   const label = phase.toUpperCase();
-  const surface = isAuthoringStage(phase) ? "AUTHORING" : "ANIMATION";
+  const surface = getMcpRuntimeSurface(phase);
   const allowed =
     allowedTools.length > 0
       ? ` Allowed tools (${allowedTools.length}): ${allowedTools.join(", ")}.`
       : "";
-  const transition = isAuthoringStage(phase)
+  const transition = surface === "AUTHORING"
     ? "Geometry↔Texturing stays in AUTHORING."
     : "Upstream correction requires AUTHORING handoff.";
   return [
@@ -225,7 +226,7 @@ export function buildMcpPhasePromptHeader(
   return [
     "## Active Stage Contract",
     buildMcpPhaseRuntimeContract(phase, allowedTools),
-    isAuthoringStage(phase)
+    getMcpRuntimeSurface(phase) === "AUTHORING"
       ? "Geometry and Texturing guidance share the AUTHORING Runtime surface."
       : "Animation guidance is isolated; upstream correction returns to AUTHORING.",
   ].join("\n\n");
@@ -234,7 +235,7 @@ export function buildMcpPhasePromptHeader(
 export function buildMcpPhaseHandoffContract(
   phase: McpAuthoringPhase
 ): string {
-  if (isAuthoringStage(phase)) {
+  if (getMcpRuntimeSurface(phase) === "AUTHORING") {
     return [
       "## Authoring Focus / Handoff",
       getMcpPhaseReadinessSummary(phase),
@@ -254,8 +255,6 @@ export function classifyMcpToolPhase(
   toolName: string,
   family: McpRegistrationFamily
 ): McpToolPhaseCategory | null {
-  if (RETIRED_CAPABILITIES.has(toolName)) return null;
-
   const namedPhase = classifyMcpToolPhaseByName(toolName);
   if (namedPhase !== null) return namedPhase;
 
@@ -298,7 +297,7 @@ export function isMcpToolExposedForPhase(
   phase: McpAuthoringPhase
 ): boolean {
   if (
-    phase === "animation" &&
+    getMcpRuntimeSurface(phase) === "ANIMATION" &&
     ANIMATION_EXCLUDED_CORE_TOOLS.has(toolName)
   ) {
     return false;
@@ -306,6 +305,7 @@ export function isMcpToolExposedForPhase(
 
   const category = classifyMcpToolPhase(toolName, family);
   if (category === "core") return true;
-  if (phase === "animation") return category === "animation";
-  return category === "geometry" || category === "texturing";
+  return getMcpRuntimeSurface(phase) === "ANIMATION"
+    ? category === "animation"
+    : category === "geometry" || category === "texturing";
 }
