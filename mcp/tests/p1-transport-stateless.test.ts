@@ -44,7 +44,10 @@ describe("P1.4 stateless Streamable HTTP ownership", () => {
     expect(netSource).not.toContain("invalidateToolRegistrationRuntimeCaches");
     expect(registrationSource).toContain("invalidateToolRegistrationRuntimeCaches()");
     expect(factoriesSource).toContain(
-      "Invalidation is intentionally explicit so profile and phase mutations"
+      "Invalidate only the phase/profile-sensitive tool surface"
+    );
+    expect(factoriesSource).toContain(
+      "Tool callbacks, resources and prompts are generation-stable"
     );
     expect(factoriesSource).toContain("getToolRegistrationEntries(");
   });
