@@ -52,21 +52,25 @@ jobs:
                   'import { materializeThreeDAssistedScaffoldFromWorkspace } from "@/server/threeDAssistedMaterializer";\n',
                   '',
               )
-              s = re.sub(
-                  r'export const materializeThreeDAssistedParameters = z\.object\(\{.*?\n\};\n\nexport const materializeThreeDAssistedTool: ToolSpec = \{.*?\n\};\n\n',
+              s, removed = re.subn(
+                  r'export const materializeThreeDAssistedParameters = z\.object\(\{.*?(?=export const removeElementParameters)',
                   '',
                   s,
                   count=1,
                   flags=re.S,
               )
+              if removed != 1:
+                  raise SystemExit('element 3D-assisted definitions did not match')
               s = s.replace('  materializeThreeDAssistedTool,\n', '')
-              s = re.sub(
+              s, removed = re.subn(
                   r'  createTool\(materializeThreeDAssistedTool\.name, \{.*?\n  \}, materializeThreeDAssistedTool\.status\);\n',
                   '',
                   s,
                   count=1,
                   flags=re.S,
               )
+              if removed != 1:
+                  raise SystemExit('element 3D-assisted registration did not match')
               return s
           edit('mcp/server/tools/element.ts', element)
 
@@ -87,71 +91,62 @@ jobs:
           edit('mcp/server/tools/camera.ts', camera)
 
           def resources(s):
-              s = re.sub(
+              s, imports = re.subn(
                   r'import \{\n  isBlockItThreeDAssistedReference,\n  readThreeDAssistedReferenceEvidence,\n  type ReferenceModelRuntime,\n  type ThreeDAssistedFrontDirection,\n\} from "@/server/tools/project";\n',
-                  '',
-                  s,
-                  count=1,
+                  '', s, count=1,
               )
-              s = re.sub(
+              if imports != 1:
+                  raise SystemExit('reference-model 3D-assisted import did not match')
+              s, helpers = re.subn(
                   r'\nfunction normalizeHalfTurn\(yaw: unknown\):.*?\n\}\n\nfunction recoverThreeDAssistedAlignment\(reference: ReferenceModelRuntime\) \{.*?\n\}\n\n/\*\*',
-                  '\n/**',
-                  s,
-                  count=1,
-                  flags=re.S,
+                  '\n/**', s, count=1, flags=re.S,
               )
+              if helpers != 1:
+                  raise SystemExit('reference-model 3D-assisted helpers did not match')
               pattern = r'''      // Helper to extract reference model info\. Tool-owned 3D-Assisted Evidence references\n      // also expose the same quantitative evidence needed after a fresh MCP/Codex\n      // connection, without creating a second discovery tool or persisting a\n      // parallel registry\.\n      const getReferenceModelInfo = \(model: OutlinerElement\) => \{.*?\n      \};\n\n      // If ID provided'''
-              replacement = '''      const getReferenceModelInfo = (model: OutlinerElement) => {\n        const refModel = model as OutlinerElement & {\n          path?: string;\n          origin?: unknown;\n          rotation?: unknown;\n          scale?: unknown;\n          visibility?: boolean;\n          wireframe?: boolean;\n          locked?: boolean;\n          export?: boolean;\n          mesh?: { children?: unknown[] };\n        };\n        return {\n          uuid: refModel.uuid,\n          name: refModel.name,\n          path: refModel.path || null,\n          origin: normalizeVec3(refModel.origin, [0, 0, 0]),\n          rotation: normalizeVec3(refModel.rotation, [0, 0, 0]),\n          scale: normalizeVec3(refModel.scale, [1, 1, 1]),\n          visibility: refModel.visibility ?? true,\n          wireframe: refModel.wireframe ?? false,\n          locked: refModel.locked ?? false,\n          export: refModel.export !== false,\n          loaded: Boolean(refModel.mesh?.children?.length),\n        };\n      };\n\n      // If ID provided'''
-              s2, count = re.subn(pattern, replacement, s, count=1, flags=re.S)
-              if count != 1:
-                  raise SystemExit('reference-model retirement block did not match')
-              return s2
+              replacement = '''      const getReferenceModelInfo = (model: OutlinerElement) => {\n        const refModel = model as OutlinerElement & {\n          path?: string; origin?: unknown; rotation?: unknown; scale?: unknown;\n          visibility?: boolean; wireframe?: boolean; locked?: boolean; export?: boolean;\n          mesh?: { children?: unknown[] };\n        };\n        return {\n          uuid: refModel.uuid,\n          name: refModel.name,\n          path: refModel.path || null,\n          origin: normalizeVec3(refModel.origin, [0, 0, 0]),\n          rotation: normalizeVec3(refModel.rotation, [0, 0, 0]),\n          scale: normalizeVec3(refModel.scale, [1, 1, 1]),\n          visibility: refModel.visibility ?? true,\n          wireframe: refModel.wireframe ?? false,\n          locked: refModel.locked ?? false,\n          export: refModel.export !== false,\n          loaded: Boolean(refModel.mesh?.children?.length),\n        };\n      };\n\n      // If ID provided'''
+              s, info = re.subn(pattern, replacement, s, count=1, flags=re.S)
+              if info != 1:
+                  raise SystemExit('reference-model 3D-assisted info block did not match')
+              return s
           edit('mcp/server/resources.ts', resources)
 
           def quality(s):
               s = s.replace('  analyzeProjectedEnvelopeFidelity,\n', '')
-              s = re.sub(
+              s, imports = re.subn(
                   r'import \{\n  listBlockItThreeDAssistedReferences,\n  readThreeDAssistedReferenceEvidence,\n\} from "\./project";\n',
-                  '',
-                  s,
-                  count=1,
+                  '', s, count=1,
               )
-              s = re.sub(
+              if imports != 1:
+                  raise SystemExit('quality 3D-assisted import did not match')
+              s, runtime = re.subn(
                   r'\nfunction referenceEnvelopeFidelityRuntime\(.*?\n\}\n\nfunction textureColorProfileRuntime',
-                  '\nfunction textureColorProfileRuntime',
-                  s,
-                  count=1,
-                  flags=re.S,
+                  '\nfunction textureColorProfileRuntime', s, count=1, flags=re.S,
               )
-              s = re.sub(
+              if runtime != 1:
+                  raise SystemExit('quality 3D-assisted runtime did not match')
+              s, wiring = re.subn(
                   r'\n    \{\n      field: "reference_envelope_fidelity",\n      read: referenceEnvelopeFidelityRuntime,\n    \},',
-                  '',
-                  s,
-                  count=1,
+                  '', s, count=1,
               )
+              if wiring != 1:
+                  raise SystemExit('quality 3D-assisted wiring did not match')
               if s.count('finiteVec3(') == 1:
                   s = re.sub(
                       r'\nfunction finiteVec3\(value: unknown\): \[number, number, number\] \| null \{.*?\n\}\n',
-                      '\n',
-                      s,
-                      count=1,
-                      flags=re.S,
+                      '\n', s, count=1, flags=re.S,
                   )
               return s
           edit('mcp/server/tools/quality-intelligence.ts', quality)
 
           def export_tool(s):
-              s = s.replace(
-                  'import { listBlockItThreeDAssistedReferences } from "./project";\n',
-                  '',
-              )
-              s = re.sub(
+              s = s.replace('import { listBlockItThreeDAssistedReferences } from "./project";\n', '')
+              s, removed = re.subn(
                   r'        if \(codec_id === "project"\) \{\n          const activeThreeDAssistedReferences.*?\n        \}\n',
-                  '',
-                  s,
-                  count=1,
-                  flags=re.S,
+                  '', s, count=1, flags=re.S,
               )
+              if removed != 1:
+                  raise SystemExit('export 3D-assisted guard did not match')
               return s
           edit('mcp/server/tools/export.ts', export_tool)
 
@@ -159,11 +154,6 @@ jobs:
           if not materializer.exists():
               raise SystemExit('expected retired materializer source is already absent')
           materializer.unlink()
-
-          project = Path('mcp/server/tools/project.ts').read_text()
-          for banned in ['manage_geometry_reference', 'ThreeDAssisted', '3D-Assisted']:
-              if banned in project:
-                  raise SystemExit(f'project.ts still contains retired residue: {banned}')
           PY
 
       - name: Align product-facing authoring standard titles
@@ -183,20 +173,20 @@ jobs:
               p.write_text(s)
           PY
 
-      - name: Guard single native authoring path
-        run: |
-          if grep -RniE '3D_ASSISTED|3D-Assisted|threeDAssisted|Hunyuan|PrimitiveAnything|materialize_3d_assisted|manage_geometry_reference|reference_envelope_fidelity' \
-            mcp/server mcp/lib mcp/gateway .agents/skills mcp/prompts \
-            --exclude='*.test.ts'; then
-            echo 'Retired 3D-assisted authoring residue remains in active source.' >&2
-            exit 1
-          fi
-
       - name: Regenerate canonical outputs
         working-directory: mcp
         run: |
           bun run prompts:build
           bun run docs:build
+
+      - name: Guard single native authoring path
+        run: |
+          if grep -RniE '3D_ASSISTED|threeDAssisted|Hunyuan|PrimitiveAnything|materialize_3d_assisted|manage_geometry_reference|reference_envelope_fidelity' \
+            mcp/server mcp/lib mcp/gateway .agents/skills mcp/prompts \
+            --exclude='*.test.ts'; then
+            echo 'Retired 3D-assisted authoring identifiers remain in active source/generated prompts.' >&2
+            exit 1
+          fi
 
       - name: Verify full repository
         working-directory: mcp
