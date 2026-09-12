@@ -32,11 +32,60 @@ ACCENT
 
 Clusters may overlap roles visually, but each authored region should have a reason.
 
-## Edge rhythm
+## Edge topology
 
-Curves and diagonals should use intentional staircase patterns. Avoid accidental alternating jaggies that break the form.
+Pixel-art quality depends on how clusters meet, not only on whether clusters exist.
 
-At low resolutions, a clean simplified curve is better than literal but noisy contour tracing.
+Review these explicitly:
+
+```text
+JAGGIES
+BANDING
+HUGGING
+TANGENTS
+STAIRCASE RHYTHM
+CURVE ECONOMY
+CORNER CONTROL
+CLUSTER INTERLOCK
+```
+
+### Jaggies
+
+A diagonal or curve fails when step lengths change without supporting the intended form. Prefer a deliberate progression of run lengths over irregular one-pixel wobble.
+
+### Banding
+
+Avoid parallel cluster edges that unintentionally track each other and expose the grid as repeated bands. Break or reshape one boundary when the visual result reads as striping rather than form.
+
+### Hugging
+
+Avoid highlight/shadow clusters that merely trace another contour at constant distance without describing volume, material, or light. A contour-following band needs a causal reason.
+
+### Tangents
+
+Avoid unrelated edges touching at one pixel or one short run when that contact merges forms or creates a false joint. Preserve intentional negative-space separation.
+
+### Staircase rhythm
+
+Curves and diagonals should use intentional step sequences. At low resolutions, a simplified clean arc is better than literal noisy tracing.
+
+### Corner control
+
+Use corners to clarify plane change, silhouette, or contact. Do not create accidental square bumps because two clusters meet poorly.
+
+### Cluster interlock
+
+Shadow, light, and material clusters should interlock into readable form. Avoid disconnected islands that look pasted on top of the base mass.
+
+## Curve economy
+
+Use the fewest directional changes needed to communicate the characteristic arc. More contour samples are not automatically more accurate at pixel-art scale.
+
+When several curve variants are plausible, prefer the one with:
+- clearer silhouette;
+- smoother staircase rhythm;
+- fewer accidental tangents;
+- stronger native-scale readability.
 
 ## Orphan pixels
 
@@ -58,6 +107,6 @@ Do not use random isolated pixels to simulate quality, age, grain, or surface te
 Inspect both:
 
 1. native target scale for readability;
-2. enlarged nearest-neighbor view for grid/cluster defects.
+2. enlarged nearest-neighbor view for grid/cluster/topology defects.
 
-Neither view alone is sufficient.
+Native scale owns semantic success. Enlarged view owns craft cleanup. Neither view alone is sufficient.
