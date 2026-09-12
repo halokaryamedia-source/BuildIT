@@ -50,18 +50,18 @@ describe("P1 Bedrock Entity registration profile", () => {
   });
 
   test("registration root consumes the explicit default profile", async () => {
-    const source = await readFile(
-      new URL("../server/tools.ts", import.meta.url),
-      "utf8"
-    );
+    const [facade, registration] = await Promise.all([
+      readFile(new URL("../server/tools.ts", import.meta.url), "utf8"),
+      readFile(new URL("../server/runtime/registration.ts", import.meta.url), "utf8"),
+    ]);
 
-    expect(source).toContain(
+    expect(facade).toContain(
       "registerMcpProfile(DEFAULT_MCP_REGISTRATION_PROFILE);"
     );
-    expect(source).toContain("getRegistrationFamilies(profile)");
-    expect(source).toContain("import: registerImportTools");
-    expect(source).toContain("ui: registerUITools");
-    expect(source).not.toContain("registerImportTools,\n  registerUITools");
+    expect(registration).toContain("getRegistrationFamilies(profile)");
+    expect(registration).toContain("import: registerImportTools");
+    expect(registration).toContain("ui: registerUITools");
+    expect(registration).not.toContain("registerImportTools,\n  registerUITools");
   });
 
   test("runtime prompt registry excludes maintainer-only references", async () => {
