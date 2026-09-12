@@ -30,7 +30,8 @@ describe("LazyDesigner Bedrock-first contract", () => {
     expect(modelling).toContain("Native UV Layout");
     expect(modelling).toContain("Group/Bone-owned");
     expect(texturing).toContain("LazyDesigner Bedrock Texturing");
-    expect(texturing).toContain("Bedrock PBR");
+    expect(texturing).toContain("PBR/material semantics");
+    expect(texturing).toContain("manage_material");
     expect(animation).toContain("LazyDesigner Bedrock Animation");
     expect(animation).toContain("Animation Controller");
     expect(animation).toContain("Particle is asset-only");
