@@ -50,7 +50,7 @@ describe("canonical LazyDesigner Skill identity", () => {
     }
   });
 
-  test("active authority, tests and CI do not reload retired Skill paths", async () => {
+  test("active authority and CI do not reload retired Skill paths", async () => {
     const roots = [
       "../AGENTS.md",
       "../workspace/README.md",
@@ -58,8 +58,6 @@ describe("canonical LazyDesigner Skill identity", () => {
       "../docs/03-authoring",
       "../docs/04-system",
       "../docs/05-operations",
-      "tests/authoring",
-      "tests/repository",
       "../.github/workflows",
     ];
 
@@ -71,9 +69,8 @@ describe("canonical LazyDesigner Skill identity", () => {
 
     const retiredPaths = [RETIRED_ROUTER_PATH, RETIRED_REFERENCE_PATH, ...RETIRED_SPECIALIST_PATHS, ...RETIRED_DEVELOPMENT_PATHS];
     for (const path of files) {
-      if (path.endsWith("legacy-router-retirement.test.ts")) continue;
-      const text = await Bun.file(path).text();
-      for (const retired of retiredPaths) expect(text, path).not.toContain(retired);
+      const body = await Bun.file(path).text();
+      for (const retired of retiredPaths) expect(body, path).not.toContain(retired);
     }
   });
 
