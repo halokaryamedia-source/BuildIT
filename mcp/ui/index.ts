@@ -38,6 +38,14 @@ type HumanProjectState = {
   hasFolder: boolean;
 };
 
+type HumanPanelContext = {
+  runtime: {
+    state: McpServerStatus;
+    detail: string;
+  };
+  project: HumanProjectState;
+};
+
 function readHumanProjectState(): HumanProjectState {
   if (typeof Project === "undefined" || !Project) {
     return { open: false, name: "No project open", hasFolder: false };
@@ -199,15 +207,13 @@ export function uiSetup(input: UiSetupInput) {
             4000
           );
         },
-        async copyErrorDetails(): Promise<void> {
-          // @ts-ignore - Vue component context
-          const vm = this;
-          const detail = String(vm.runtime.detail || "").trim();
+        async copyErrorDetails(this: HumanPanelContext): Promise<void> {
+          const detail = String(this.runtime.detail || "").trim();
           const text = [
             "LazyDesigner support details",
-            `Status: ${vm.runtime.state}`,
+            `Status: ${this.runtime.state}`,
             `Blockbench: ${Blockbench.version}`,
-            `Project: ${vm.project.open ? vm.project.name : "No project open"}`,
+            `Project: ${this.project.open ? this.project.name : "No project open"}`,
             `Authoring stage: ${input.phase}`,
             `Message: ${detail || "No additional error detail was reported."}`,
           ].join("\n");
