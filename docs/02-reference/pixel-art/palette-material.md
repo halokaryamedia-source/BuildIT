@@ -21,6 +21,22 @@ A role can share a color with another role when the asset remains readable. More
 
 Resolve form first through value grouping. Hue variation should support material or identity, not compensate for weak value structure.
 
+## Identity color
+
+Preserve subject-specific color when it is a defining cue, such as a functional accent, distinctive liquid, team/faction marker, warning color, or characteristic finish. Identity color remains subordinate to silhouette and value readability.
+
+If two important colors collapse to the same value, use controlled value adjustment, spacing, outline, or a clearer cluster boundary rather than arbitrary palette expansion.
+
+Keep authority explicit:
+
+```text
+REFERENCE_SUPPORTED
+EXISTING_STYLE_SUPPORTED
+PROVISIONAL
+```
+
+Never present a provisional shade as reference-accurate.
+
 ## Hue shifting
 
 Controlled hue shifting may improve depth and material separation. Keep it subordinate to the established palette family and target mode.
