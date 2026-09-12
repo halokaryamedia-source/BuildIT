@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { getCapabilityMetadata } from "@/lib/capabilityMetadata";
+import { getMcpRuntimeSurface } from "@/lib/authoringPhase";
 
 async function text(path: string): Promise<string> {
   return Bun.file(new URL(path, import.meta.url)).text();
@@ -31,11 +32,19 @@ describe("single-owner authoring flow", () => {
     expect(projection).toContain("per-Cube / per-pixel / per-keyframe plan");
   });
 
+  test("semantic stages map to exactly two Runtime surfaces", () => {
+    expect(getMcpRuntimeSurface("geometry")).toBe("AUTHORING");
+    expect(getMcpRuntimeSurface("texturing")).toBe("AUTHORING");
+    expect(getMcpRuntimeSurface("animation")).toBe("ANIMATION");
+  });
+
   test("Runtime phase tool applies the phase before returning its Gateway receipt", async () => {
     const phaseControl = await text("../server/runtime/phaseControl.ts");
 
+    expect(phaseControl).toContain("getMcpRuntimeSurface");
     expect(phaseControl).toContain("requestMcpPhaseSwitch(target_phase);");
     expect(phaseControl).toContain("Geometry↔Texturing stays on the shared AUTHORING surface");
+    expect(phaseControl).toContain("runtime_surface: targetSurface");
     expect(phaseControl.indexOf("requestMcpPhaseSwitch(target_phase);")).toBeLessThan(
       phaseControl.indexOf("return {")
     );
