@@ -1,24 +1,40 @@
 # LazyDesigner Authoring Stage Context Contract
 
-This document owns the cross-stage context and handoff rules shared by Geometry, Texturing, and Animation specialists. Domain-specific reasoning remains in the relevant specialist Skill.
+This document owns the cross-stage context and handoff semantics shared by Geometry, Texturing, and Animation specialists. Domain-specific reasoning remains in the relevant specialist Skill.
+
+## Loading Rule
+
+This is a **canonical semantic owner, not a routine authoring payload**.
+
+Normal hot path:
+
+```text
+Control stage projection
++ exactly one active specialist
++ exactly one selected modelling profile when Geometry needs it
+→ execute
+```
+
+The specialist carries only the operational triggers required for normal work. Load this document only when a material cross-stage, approval, evidence-freshness, convergence, or AUTHORING↔Animation handoff question remains unresolved. Do not load it in addition to a specialist merely as reassurance.
 
 ## Context Projection
 
 Normal specialist work consumes a **stage-specific projection from LazyDesigner Control**, not the complete prior-stage Skill/Profile/Reference Package.
 
-Projection contains only decision-relevant state:
+The Control packet is intentionally compact. It carries current decision identity/readiness and references to the relevant stage evidence rather than duplicating all semantic prose. Domain detail is consumed from the referenced stage document, approved image(s), workspace/Runtime state, or a narrowly requested missing relationship only when it can change the next decision.
+
+Shared projection envelope:
 
 ```text
 original user intent / current task
 asset identity + selected_profile label
 current stage and persisted upstream gate state
-relevant semantic part IDs and relationships
-relevant approved reference evidence
-current authored asset identities/state when known
-blocking unknowns and upstream blockers
+relevant approved reference document/image identities
+current authored asset/workspace identity
+blocking unknowns
 ```
 
-Add only domain-relevant fields:
+Domain-specific detail when actually required:
 
 ```text
 Geometry  → primary masses, topology, dimensions, pivots, openings, motion-readiness
@@ -72,7 +88,7 @@ AUTONOMOUS_VERIFIED
 
 Both require UV Layout PASS, a saved checkpoint, and no blockers. Autonomous verification requires explicit prior user authorization plus current-revision evidence and must never be described as user approval.
 
-Geometry↔Texturing stays on the shared AUTHORING surface. `HANDOFF_REQUIRED` + Gateway `switch_authoring_phase` is reserved for AUTHORING↔Animation.
+Geometry↔Texturing stays on the shared AUTHORING Runtime surface. Changing Geometry/Texturing focus may update semantic phase state, but it is **not** a foreign Runtime-surface handoff. `HANDOFF_REQUIRED` is reserved for AUTHORING↔Animation.
 
 ## Correction / Convergence
 
@@ -95,7 +111,7 @@ Return only state needed by Control/next stage:
 
 ```text
 changed authored identities
-relevant semantic part IDs/relationships
+relevant semantic part IDs/relationships when needed for continuation
 current evidence freshness
 upstream blocker if discovered
 stage-specific blocking unknowns
