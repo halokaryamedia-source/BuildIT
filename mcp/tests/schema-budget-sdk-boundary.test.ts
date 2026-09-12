@@ -117,7 +117,7 @@ describe("schema budget is not an authoring limit", () => {
 
   test("documented handoff readiness matches the canonical tool schema", async () => {
     const { phaseControlToolDocs } = await import("@/server/tools");
-    const skill = await Bun.file("../.agents/skills/blockit-bedrock-texturing/SKILL.md").text();
+    const skill = await Bun.file("../.agents/skills/lazydesigner-texturing/SKILL.md").text();
     const example = skill.match(/```json\r?\n([\s\S]*?)\r?\n```/);
     expect(example).not.toBeNull();
     const readiness = JSON.parse(example![1]!);
