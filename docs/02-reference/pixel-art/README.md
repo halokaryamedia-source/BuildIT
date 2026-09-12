@@ -12,23 +12,9 @@ This folder contains durable pixel-art knowledge only. The Skill owns execution 
 
 ## Scope
 
-Pixel Art owns:
-- standalone icons;
-- object / prop pixel representations;
-- sprites and sprite-animation references;
-- tiles and repeating patterns;
-- Minecraft-native and MIVUBI HD pixel references;
-- deliberate reference-image conversion into pixel-art language;
-- style-lock consistency for pixel-art sets;
-- pixel-art QA and delivery metadata.
+Pixel Art owns standalone icons, object/prop pixel representations, sprites and sprite-animation references, tiles/patterns, Minecraft-native and MIVUBI HD pixel references, deliberate reference conversion, Style Lock consistency, QA, and compact delivery metadata.
 
-Pixel Art does **not** own:
-- model geometry, rigging, pivots, or 3D proportions;
-- UV layout or production atlas mutation;
-- Blockbench Painter/runtime execution;
-- mapped-surface verification;
-- Bedrock particle emitter, Molang, lifecycle, collision, or event behavior;
-- generic smooth illustration generation.
+Pixel Art does **not** own model geometry/rigging, UV or production atlas mutation, Blockbench Painter/runtime execution, mapped-surface verification, Bedrock particle runtime semantics, or generic smooth illustration generation.
 
 A helper relationship is a handoff, never duplicated ownership.
 
@@ -66,11 +52,24 @@ MINECRAFT_NATIVE
 MIVUBI_HD_PIXEL
 ```
 
-`MINECRAFT_NATIVE` favors compact vanilla-like abstraction. `MIVUBI_HD_PIXEL` permits richer material definition while preserving strict grid and cluster discipline.
+## Core Contracts
+
+These are durable owners, not default hot-path reads:
+
+```text
+authoring-spec.md   → artifact/target/evidence contract when classification or authority is materially ambiguous
+workflow.md         → lifecycle/sequence ambiguity beyond the Skill hot path
+prompt-contract.md  → request normalization, especially CHANGE + PRESERVE revisions
+style-language.md   → style vocabulary when a style decision cannot be resolved from the active Style Lock or artifact owner
+qa.md               → final/revision verdict owner
+delivery.md         → naming, artifact identity, packaging and downstream handoff owner
+```
+
+Do not load these all together. The Skill already carries the normal execution triggers.
 
 ## Minimal Owner Routing
 
-After loading the Pixel Art Skill, choose one primary owner first:
+After loading the Pixel Art Skill, choose one primary causal/artifact owner first:
 
 ```text
 simple icon                     → iconography.md
@@ -80,7 +79,7 @@ Minecraft visual target         → minecraft-compatibility.md
 resolution / resizing           → resolution-scaling.md
 grid / jaggies / noise          → grid-clusters.md
 silhouette                      → silhouette.md
-palette / material              → palette-material.md
+palette / color identity / material → palette-material.md
 shading                         → shading.md
 series consistency              → style-lock.md
 sprite / frame asset            → sprites.md
@@ -89,7 +88,7 @@ tile / repeat                   → tiles-patterns.md
 texture reference               → texture-reference.md
 transparent-edge problem        → transparent-background.md
 existing asset diagnosis        → audit-revision.md
-final validation                → qa.md
+final validation/native-scale review → qa.md
 requested delivery / handoff    → delivery.md
 ```
 
@@ -97,21 +96,15 @@ Add a second owner only when a real dependency changes the decision. Do not read
 
 ## Downstream Boundaries
 
-```text
-Pixel Art → Texturing
-```
+### Pixel Art → Texturing
 
 Texturing owns actual UV mapping, production atlas mutation, Blockbench texture state, materials/render profile, and mapped-surface verification. Pixel Art supplies only the visual/reference contract required by Texturing.
 
-```text
-Pixel Art → Particle
-```
+### Pixel Art → Particle
 
 Particle owns particle JSON, emitter behavior, motion, Molang, lifecycle, events, and collision. Pixel Art may supply texture/frame visual assets only.
 
-```text
-Pixel Art sprite animation ≠ Bedrock bone animation
-```
+### Sprite animation
 
 Frame-based sprite motion stays in this domain. Blockbench/Bedrock bone animation remains owned by `lazydesigner-animation`.
 
@@ -137,17 +130,6 @@ Do not carry the whole Pixel Art corpus into Texturing, Particle, Geometry, or A
 
 ## Quality Principle
 
-A finished asset must read at its actual target size. More pixels, more colors, and more micro-detail are not evidence of higher quality.
+A finished asset must read at its actual target size. More pixels, colors, and micro-detail are not evidence of higher quality.
 
-Primary quality signals are:
-
-```text
-grid integrity
-silhouette readability
-cluster coherence
-palette economy
-material readability
-identity fidelity
-target compatibility
-style-lock consistency when applicable
-```
+Primary quality signals are grid integrity, silhouette readability, cluster coherence, palette economy, material readability, identity fidelity, target compatibility, and Style Lock consistency when applicable.
