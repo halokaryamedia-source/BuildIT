@@ -162,10 +162,11 @@ const CAPABILITY_EFFECTS: Readonly<Record<string, CapabilityEffects>> = {
   switch_authoring_phase: {
     projectAffinity: "preserve",
     phaseAffinity: "update_from_result",
-    // Geometry↔Texturing share one AUTHORING surface. Gateway decides whether
-    // the returned phase actually crosses the AUTHORING↔Animation boundary;
-    // only that real surface change requires catalog refresh.
-    invalidateCatalog: false,
+    // Keep catalog invalidation conservative until same-surface transport reuse
+    // is covered by local Gateway/Runtime tests. The Runtime receipt still
+    // reports surface_changed so that optimization can be added without
+    // changing semantic ownership later.
+    invalidateCatalog: true,
   },
 };
 
