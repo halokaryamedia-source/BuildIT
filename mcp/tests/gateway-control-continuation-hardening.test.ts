@@ -43,9 +43,10 @@ describe("LazyDesigner Control continuation hardening", () => {
     expect(delta.next_intent).toBe("VERIFY_OR_CONTINUE_GEOMETRY");
   });
 
-  test("gateway captures phase-before only for phase handoff, not every invoke", async () => {
+  test("gateway captures phase-before only when the canonical receipt owner requires it", async () => {
     const source = await Bun.file("gateway/index.ts").text();
-    expect(source).toContain('const phaseBefore = capability === "switch_authoring_phase"');
+    expect(source).toContain("capabilityNeedsPhaseSnapshot(capability)");
+    expect(source).toContain("deriveControlReceipt");
     expect(source).toContain("phaseBefore,");
     expect(source).toContain("phaseAfter,");
     expect(source).toContain("buildControlDelta");
