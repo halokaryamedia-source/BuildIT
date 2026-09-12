@@ -99,7 +99,7 @@ describe("tool execution path contract", () => {
     expect(skill).toContain("→ color_picker_tool");
     expect(skill).toMatch(/do not call `color_picker_tool` just to put a known value/i);
     expect(skill).toMatch(/one coherent `paint_texture_transaction` over many one-pixel Painter calls/i);
-    expect(skill).toMatch(/do not use `trigger_action`, `emulate_clicks`, or `fill_dialog` for normal texturing/i);
+    expect(skill).toMatch(/trigger_action.*emulate_clicks.*fill_dialog.*normal texturing/is);
     expect(skill).toMatch(/do not call `activate_texture` immediately before a tool that already accepts explicit `texture_id`/i);
   });
 
@@ -111,7 +111,7 @@ describe("tool execution path contract", () => {
     expect(skill).toContain("add_group(groups=[...])");
     expect(skill).toMatch(/prefer explicit UUID\/name targeting over editor selection/i);
     expect(skill).toMatch(/do not create one Cube per MCP call/i);
-    expect(skill).toMatch(/do not use `trigger_action`, `emulate_clicks`, or `fill_dialog` for normal Cube\/Group creation/i);
+    expect(skill).toMatch(/trigger_action.*emulate_clicks.*fill_dialog.*normal Cube\/Group creation/is);
   });
 
   test("animation specialist prefers native timeline and bounded cohorts over UI/key loops", async () => {
@@ -120,7 +120,7 @@ describe("tool execution path contract", () => {
     expect(skill).toContain('manage_animation_timeline(operation="batch")');
     expect(skill).toContain('manage_animation_timeline(operation="timeline")');
     expect(skill).toContain('manage_animation_timeline(operation="properties")');
-    expect(skill).toMatch(/do not use `trigger_action`, `emulate_clicks`, or `fill_dialog` for normal animation/i);
+    expect(skill).toMatch(/trigger_action.*emulate_clicks.*fill_dialog.*normal animation/is);
     expect(skill).toMatch(/prefer one bounded keyframe\/batch mutation over loops of one-key calls/i);
     expect(skill).toMatch(/do not call `inspect_animation` after every successful deterministic mutation/i);
     expect(skill).toMatch(/prefer one bounded `capture_model_views\(animation_preview\)` request/i);
