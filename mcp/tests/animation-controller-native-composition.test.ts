@@ -109,9 +109,10 @@ describe("native Bedrock controller composition", () => {
   });
 
   test("advanced controller support does not expand MCP tool count", async () => {
-    const [source, server] = await Promise.all([
+    const [source, server, bootstrap] = await Promise.all([
       Bun.file("server/tools/animation-controller-native-intelligence.ts").text(),
       Bun.file("server/server.ts").text(),
+      Bun.file("server/runtime/bootstrap.ts").text(),
     ]);
     expect(source).toContain('getAllToolDefinitions()["manage_animation_controller"]');
     expect(source).toContain("native_operations");
@@ -119,6 +120,7 @@ describe("native Bedrock controller composition", () => {
     expect(source).toContain("add_animation_item");
     expect(source).toContain("wouldCreateControllerCompositionCycle");
     expect(source).not.toContain("createTool(");
-    expect(server).toContain("wireAnimationControllerNativeIntelligence();");
+    expect(server).toContain("initializeRuntimeCapabilityWiring();");
+    expect(bootstrap).toContain("wireAnimationControllerNativeIntelligence();");
   });
 });
