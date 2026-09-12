@@ -79,7 +79,7 @@ describe("existing animation effect mutation contract", () => {
   test("source keeps one-Undo preflight, native datapoint cap, preview-file preservation, and inspect-compatible continuation", async () => {
     const [source, registrations, docsManifest, inspection] = await Promise.all([
       Bun.file("server/tools/animation-effects.ts").text(),
-      Bun.file("server/tools.ts").text(),
+      Bun.file("server/runtime/registration.ts").text(),
       Bun.file("build/docs-manifest.ts").text(),
       Bun.file("server/tools/animation-inspection.ts").text(),
     ]);
@@ -94,6 +94,7 @@ describe("existing animation effect mutation contract", () => {
     expect(source.match(/Undo\.initEdit/g)?.length).toBe(1);
     expect(source).not.toContain("MolangParser");
     expect(registrations).toContain("registerAnimationEffectTools();");
+    expect(registrations).toContain("registerAnimationFamilyTools");
     expect(docsManifest).toContain('import { animationEffectToolDocs } from "../server/tools/animation-effects";');
     expect(docsManifest).toContain("...animationEffectToolDocs");
     expect(inspection).toContain("particle/sound/timeline effect keyframes");
