@@ -38,6 +38,7 @@ jobs:
             exit 1
           fi
 
+      # Trigger marker: exact routed-schema validation verification.
       - name: Regenerate canonical MCP documentation
         working-directory: mcp
         run: bun run docs:build
