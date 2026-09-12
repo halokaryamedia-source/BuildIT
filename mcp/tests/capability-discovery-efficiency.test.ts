@@ -17,6 +17,16 @@ describe("capability discovery efficiency", () => {
       expect(getCapabilityMetadata(capability).tier).toBe("primary");
     }
 
+    expect(getCapabilityMetadata("add_group").searchAliases).toEqual(
+      expect.arrayContaining(["create bone", "bone batch"])
+    );
+    expect(getCapabilityMetadata("modify_group").searchAliases).toEqual(
+      expect.arrayContaining(["set pivot", "bone pivot"])
+    );
+    expect(getCapabilityMetadata("reparent_element").searchAliases).toEqual(
+      expect.arrayContaining(["parent bone", "unparent bone"])
+    );
+
     expect(getCapabilityMetadata("bone_rigging").tier).toBe("support");
     expect(getCapabilityMetadata("bone_rigging").searchAliases).toEqual(
       expect.arrayContaining(["inverse kinematics", "ik target", "mirror bone"])
