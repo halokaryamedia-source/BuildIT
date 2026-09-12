@@ -65,6 +65,14 @@ const MAINTENANCE_CAPABILITIES = new Set([
 ]);
 
 const SEARCH_ALIASES: Readonly<Record<string, readonly string[]>> = {
+  manage_cubes: [
+    "geometry create",
+    "create cube",
+    "create cubes",
+    "cube batch",
+    "bedrock geometry",
+    "geometry batch",
+  ],
   add_group: [
     "create bone",
     "create bones",
