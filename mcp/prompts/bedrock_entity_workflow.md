@@ -26,16 +26,15 @@ Reuse fresh tool state. Do not inspect every Cube, capture after every mutation,
 
 Reference-driven work requires the actual approved image in active multimodal context. Path/memory is not image evidence. Missing material reference evidence → `BLOCKED`.
 
-Choose DIRECT or 3D_ASSISTED with the user; never infer or auto-switch. For DIRECT Geometry: create the project, add required Groups and Cubes, set explicit positions/sizes/parents/transforms, then capture canonical views for visual review. Do not use the retired reference-grounded plan/compiler flow.
+Use the single native LazyDesigner Geometry path: create the project, establish required Groups/Bones and Cubes, set explicit positions/sizes/parents/transforms, then capture judgeable views for visual review. Do not revive retired external/3D-assisted modelling routes.
 
 ## Simple Rigid Fast Path
-
-3D_ASSISTED: after external gates, use Gateway `materialize_3d_assisted_scaffold(workspace_path)`.
 
 For a clear predominantly rigid object with simple topology and no material cross-view conflict:
 
 ```text
 identity + envelope + primary masses
+→ representation choice
 → transform ownership
 → minimum meaningful hierarchy
 → one coherent primary Cube batch
@@ -43,13 +42,13 @@ identity + envelope + primary masses
 → correct only observed mismatch
 ```
 
-Construction examples are **not presets**. Rigid slopes may be **Cube-owned**; shared transforms/contact/articulation are **Group/Bone**-owned. After primary `PASS`, add identity-weighted detail.
+Construction examples are **not presets**. Rigid slopes may be **Cube-owned**; shared transforms/contact/articulation are **Group/Bone**-owned. Use the minimum sufficient Bedrock-native geometry; add segmentation only when it materially improves silhouette, volume, negative space, contact, layering, transform ownership, motion, or a technical requirement. After primary `PASS`, add identity-weighted detail.
 
 Use evidence maps only for material ambiguity in identity, count, topology, depth, attachment, negative space or orientation; skip them for clear rigid references.
 
 ## Geometry / Visual Gate
 
-No `evidence_map`, `reference_grounded_v1`, role namespaces or compiler strategies for ordinary Geometry. Decide masses, counts, contacts, negative spaces and transforms before a coherent batch; no automatic coordinate inference.
+No `evidence_map`, `reference_grounded_v1`, role namespaces or compiler strategies for ordinary Geometry. Decide masses, counts, contacts, negative spaces, representation and transforms before a coherent batch; no automatic coordinate inference.
 
 Reuse returned UUID/from/to/origin/rotation/`box_uv_region`; do not immediately re-inspect fresh Cubes. Tool success is execution evidence only.
 
@@ -65,7 +64,7 @@ PASS       = no critical/major supported mismatch
 
 Known major mismatch stays FAIL despite earlier approval; never submit as READY_FOR_USER_REVIEW. Use side/bottom views for concealed contacts; distinguish dark paint from missing geometry.
 
-Correction: reuse fresh target state; otherwise `inspect_elements(mode=detail)` once. Diagnose `TRANSLATE | RESIZE | ROTATE | REATTACH | SPLIT | MERGE/REMOVE | ADD MASS`, mutate, verify `geometry_effect`, then compare `IMPROVED | UNCHANGED | REGRESSED`. Capture affected view(s) first. Same causal correction failing twice without new evidence → `BLOCKED`.
+Correction: reuse fresh target state; otherwise `inspect_elements(mode=detail)` once. Diagnose `TRANSLATE | RESIZE | ROTATE | REATTACH | SPLIT | MERGE/REMOVE | ADD MASS`, mutate one coherent cohort, verify `geometry_effect`, then compare `IMPROVED | UNCHANGED | REGRESSED`. Capture affected view(s), not every unchanged view. Same causal correction failing twice without new evidence → `BLOCKED`.
 
 ## UV Layout
 
@@ -78,6 +77,7 @@ Require integral physical pixel mapping, no invalid/out-of-bounds UV, no acciden
 Review/park: reconcile README/report with artifact revision; separate operation, technical, visual and user verdicts. Preserve rejection history; missing usage is UNKNOWN. Never silently replace dimensions. Check neutral/extreme contacts, semantic UV grouping and identity patches using current specialist procedures.
 
 ## Texture Atlas
+
 Check sub-unit Box UV collapse; prefer per-face UV over thickening. Keep density; verify minimum native packing, padding, pixel preservation and Undo.
 
 Use **one base-color atlas PNG** for the whole model, never one base color per body part/Cube/material zone. Blank atlases require explicit dimensions; 128×128 is the default only without an approved size. Approved bitmap size/density takes precedence, and native template logical UV may differ from physical pixels. Do not rely on the provisional 16×16 default. Reuse atlas UUID and pass `texture_id` when multiple textures exist. PBR support textures are additional atlas channels, not UV Layout.
