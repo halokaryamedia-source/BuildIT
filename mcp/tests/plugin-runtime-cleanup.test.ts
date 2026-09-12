@@ -19,29 +19,31 @@ describe("pre-local plugin runtime cleanup", () => {
   });
 
   test("plugin uses unique install identity and does not report ready before TCP bind", async () => {
-    const index = await source("index.ts");
-    const tools = await source("server/tools.ts");
-    const net = await source("server/net.ts");
+    const [index, runtimeHost, tools, net] = await Promise.all([
+      source("index.ts"),
+      source("plugin/runtimeHost.ts"),
+      source("server/tools.ts"),
+      source("server/net.ts"),
+    ]);
 
-    const candidateCreated = index.indexOf("const candidate = createNetServer(nativeNet");
-    const candidateOwned = index.indexOf("httpServer = candidate;", candidateCreated);
-    const listeningHook = index.indexOf('server.once("listening"');
-    const errorHook = index.indexOf('server.once("error"');
-    const bindCleanup = index.indexOf("candidate.closeActiveSockets()", errorHook);
-    const resetServer = index.indexOf("return false;", bindCleanup);
-    const failClosedReturn = index.indexOf("if (!(await startMcpServer(generation))) return;");
-    const readyUi = index.indexOf("uiSetup({");
+    const candidateCreated = runtimeHost.indexOf("const candidate = createNetServer(this.nativeNet");
+    const candidateOwned = runtimeHost.indexOf("this.httpServer = candidate;", candidateCreated);
+    const listeningHook = runtimeHost.indexOf('server.once("listening"');
+    const errorHook = runtimeHost.indexOf('server.once("error"');
+    const bindCleanup = runtimeHost.indexOf("candidate.closeActiveSockets()", candidateCreated);
+    const failedReturn = runtimeHost.indexOf("return false;", bindCleanup);
+    const startCall = index.indexOf("if (!(await runtimeHost.start(generation))) return;");
+    const readyUi = index.indexOf("blockbenchIntegration.setupUi(");
 
     expect(index).toContain('BBPlugin.register("blockit_mcp"');
     expect(candidateCreated).toBeGreaterThan(-1);
     expect(candidateOwned).toBeGreaterThan(candidateCreated);
     expect(listeningHook).toBeGreaterThan(-1);
     expect(errorHook).toBeGreaterThan(-1);
-    expect(bindCleanup).toBeGreaterThan(errorHook);
-    expect(resetServer).toBeGreaterThan(bindCleanup);
-    expect(failClosedReturn).toBeGreaterThan(resetServer);
-    expect(failClosedReturn).toBeLessThan(readyUi);
-    expect(listeningHook).toBeLessThan(readyUi);
+    expect(bindCleanup).toBeGreaterThan(candidateCreated);
+    expect(failedReturn).toBeGreaterThan(bindCleanup);
+    expect(startCall).toBeGreaterThan(-1);
+    expect(readyUi).toBeGreaterThan(startCall);
 
     expect(tools).toMatch(/if \(!phaseSwitchHandler\).*throw/);
     expect(tools).toContain("requestMcpPhaseSwitch");
@@ -53,14 +55,18 @@ describe("pre-local plugin runtime cleanup", () => {
   });
 
   test("phase switching follows the current profile and keeps Gateway clients stable", async () => {
-    const index = await source("index.ts");
+    const [index, runtimeHost] = await Promise.all([
+      source("index.ts"),
+      source("plugin/runtimeHost.ts"),
+    ]);
 
     expect(index).toContain("const activeProfile = getActiveMcpRegistrationProfile();");
     expect(index).toContain("applyMcpToolSurface(activeProfile, targetPhase);");
     expect(index).not.toContain("applyMcpToolSurface(registrationProfile, targetPhase);");
-    expect(index).toContain("serverConfig.profile = activeProfile;");
-    expect(index).toContain("serverConfig.phase = targetPhase;");
-    expect(index).toContain("Gateway clients refresh automatically");
+    expect(index).toContain("runtimeHost.updateSurface(activeProfile, targetPhase);");
+    expect(runtimeHost).toContain("updateSurface(profile: McpRegistrationProfile, phase: McpAuthoringPhase)");
+    expect(runtimeHost).toContain("this.config.profile = profile;");
+    expect(runtimeHost).toContain("this.config.phase = phase;");
   });
 
   test("Blockbench lifecycle callbacks stay synchronous while async teardown is coordinator-owned", async () => {
@@ -78,19 +84,27 @@ describe("pre-local plugin runtime cleanup", () => {
     expect(lifecycle).toContain("beginRuntimeGenerationTeardown");
   });
 
-  test("plugin unload detaches UI synchronously and drains listener ownership asynchronously", async () => {
-    const index = await source("index.ts");
-    const net = await source("server/net.ts");
-    const ui = await source("ui/index.ts");
-    const status = await source("ui/statusBar.ts");
-    const settings = await source("ui/settings.ts");
+  test("plugin unload detaches integration synchronously and drains listener ownership asynchronously", async () => {
+    const [index, runtimeHost, integration, net, ui, status, settings] = await Promise.all([
+      source("index.ts"),
+      source("plugin/runtimeHost.ts"),
+      source("plugin/blockbenchIntegration.ts"),
+      source("server/net.ts"),
+      source("ui/index.ts"),
+      source("ui/statusBar.ts"),
+      source("ui/settings.ts"),
+    ]);
 
     const teardownStart = index.indexOf("function beginBlockItRuntimeTeardown");
-    const uiTeardown = index.indexOf("uiTeardown();", teardownStart);
-    const closeCapture = index.indexOf("const closePromise = current?.closeAndWait()", teardownStart);
+    const integrationTeardown = index.indexOf("blockbenchIntegration.teardown();", teardownStart);
+    const runtimeTeardown = index.indexOf("runtimeHost.teardown(generation);", teardownStart);
     expect(teardownStart).toBeGreaterThan(-1);
-    expect(uiTeardown).toBeGreaterThan(teardownStart);
-    expect(closeCapture).toBeGreaterThan(uiTeardown);
+    expect(integrationTeardown).toBeGreaterThan(teardownStart);
+    expect(runtimeTeardown).toBeGreaterThan(integrationTeardown);
+    expect(integration).toContain("uiTeardown();");
+    expect(integration).toContain("settingsTeardown();");
+    expect(runtimeHost).toContain("const closePromise = current?.closeAndWait() ?? Promise.resolve();");
+    expect(runtimeHost).toContain("beginRuntimeGenerationTeardown(generation");
     expect(net).toContain("activeSockets");
     expect(net).toContain("closeActiveSockets");
     expect(net).toContain("waitForRuntimeOperationDrain()");
