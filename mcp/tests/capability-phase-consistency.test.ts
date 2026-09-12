@@ -18,7 +18,7 @@ const EXPECTED_PHASES = {
   bone_rigging: "geometry",
   create_texture: "texturing",
   list_textures: "core",
-  get_texture: "core",
+  get_texture: "texturing",
   activate_texture: "texturing",
   apply_texture: "texturing",
   paint_texture_transaction: "texturing",
