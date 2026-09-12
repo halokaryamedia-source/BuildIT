@@ -35,9 +35,9 @@ describe("LazyDesigner Control status economy", () => {
     expect(describeBlock).not.toContain("current_phase:");
   });
 
-  test("status reads remain explicit for orientation and phase handoff only", async () => {
+  test("status reads remain explicit for orientation and canonical phase snapshot only", async () => {
     const source = await Bun.file("gateway/index.ts").text();
     expect(source).toContain("await backend.getStatus()");
-    expect(source).toContain('const phaseBefore = capability === "switch_authoring_phase"');
+    expect(source).toContain("capabilityNeedsPhaseSnapshot(capability)");
   });
 });
