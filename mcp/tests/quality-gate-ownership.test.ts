@@ -13,7 +13,6 @@ describe("quality diagnostics vs gate ownership", () => {
       "geometry_hygiene",
       "surface_quality_summary",
       "rig_graph",
-      "reference_envelope_fidelity",
       "optimization_opportunities",
       "color_profile",
       "root_motion",
@@ -22,6 +21,10 @@ describe("quality diagnostics vs gate ownership", () => {
       expect(quality).toContain(`field: "${field}"`);
     }
 
+    // Projected GLB/reference-envelope Runtime augmentation was intentionally
+    // retired with the old 3D-assisted authoring source. The pure diagnostic
+    // helper remains separately testable without reintroducing that Runtime path.
+    expect(quality).not.toContain('field: "reference_envelope_fidelity"');
     expect(quality).not.toMatch(/field:\s*["'](?:approved|approval|visual_pass|user_approval|gate)["']/i);
     expect(quality).not.toContain("requestMcpPhaseSwitch(");
     expect(quality).not.toContain("setMcpPhaseSwitchHandler(");
