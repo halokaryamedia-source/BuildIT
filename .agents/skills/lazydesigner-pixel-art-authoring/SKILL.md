@@ -1,25 +1,32 @@
 ---
 name: lazydesigner-pixel-art-authoring
-description: ChatGPT-side specialist for deliberate grid-accurate pixel art authoring, reference conversion, Minecraft-native icons, object sprites, tile/pattern assets, and texture references with strict silhouette, cluster, palette, and delivery discipline.
+description: ChatGPT-side specialist for deliberate grid-accurate pixel art authoring, reference conversion, Minecraft-native icons, object sprites, tile/pattern assets, and texture references with strict silhouette, cluster, palette, and handoff discipline.
 ---
 
 # LazyDesigner Pixel Art Authoring
 
-Canonical ChatGPT/Codex-side specialist for pixel-art tasks. It owns standalone pixel-art authoring and reference preparation; it does **not** replace LazyDesigner Texturing, Particle authoring, Blockbench runtime mutation, or MCP texture execution.
+Canonical Reference Preparation specialist for standalone pixel-art tasks.
 
-## Route
+It owns pixel-art reasoning and artifact preparation. It does **not** own Blockbench texture mutation, UV/atlas state, model geometry, Bedrock particle runtime semantics, or bone animation.
+
+Canonical domain index:
 
 ```text
-USER PIXEL-ART REQUEST
+docs/02-reference/pixel-art/README.md
+```
+
+## Hot Path
+
+```text
+USER REQUEST
+→ normalize only material intent fields
 → classify artifact once
-→ resolve target visual mode
-→ choose lowest viable grid / detail budget
-→ establish silhouette and composition contract
-→ establish palette + cluster language
-→ author / transform
-→ applicable QA gates once
-→ ARTIFACT READY FOR REVIEW
-→ optional Texturing / Particle / downstream handoff
+→ select target mode
+→ choose lowest viable grid/detail budget
+→ resolve silhouette/composition
+→ author with deliberate clusters + palette/material language
+→ run applicable QA once
+→ deliver asset or compact downstream handoff
 ```
 
 Artifact classes:
@@ -41,13 +48,20 @@ MINECRAFT_NATIVE
 MIVUBI_HD_PIXEL
 ```
 
-Do not create extra modes unless the requested output genuinely requires a distinct production contract.
+## True Pixel Rule
 
-## True-pixel rule
+Pixel art is authored on an integer grid.
 
-Pixel art is authored on an integer grid. Never satisfy a pixel-art request by merely generating or resizing a smooth illustration and applying a pixelation effect.
+Never satisfy the request by:
 
-The causal order is:
+```text
+smooth illustration
+→ blur/downscale/pixelation filter
+→ nearest-neighbor upscale
+→ call it finished
+```
+
+Required causal order:
 
 ```text
 GRID
@@ -55,196 +69,139 @@ GRID
 → MAJOR MASSES
 → PALETTE
 → PIXEL CLUSTERS
-→ SHADING / MATERIAL CUES
+→ MATERIAL / SHADING CUES
 → IDENTITY ACCENTS
 → QA
 ```
 
-Reject or correct:
+Reject accidental anti-aliasing, mixed pixel scale, uncontrolled gradients, random orphan noise, pseudo-pixel artifacts, and detail that does not improve identity/function.
 
-```text
-soft anti-aliasing
-blurred edges
-sub-pixel detail
-mixed pixel scale
-uncontrolled gradients
-random single-pixel noise
-checkerboard noise without material cause
-inconsistent staircase rhythm
-AI pseudo-pixel artifacts
-```
+## Resolution Budget
 
-Intentional selective anti-aliasing is allowed only when the requested style explicitly requires it and the final grid remains coherent.
+Choose the smallest grid that preserves requested identity and use.
 
-## Resolution-budget rule
-
-Choose the smallest grid that preserves the requested identity and function.
-
-Default planning tiers:
+Planning tiers may include:
 
 ```text
 MICRO      8×8 / 12×12
 ICON       16×16
 DETAILED   24×24 / 32×32
 HD_PIXEL   48×48 / 64×64
-SPECIAL    explicit/custom target
+SPECIAL    explicit target
 ```
 
-These are planning tiers, not universal output defaults. User-specified dimensions, existing asset conventions, or target-game requirements take precedence.
+These are planning aids, not universal defaults. Explicit target requirements override them.
 
-Do not upscale complexity simply because a larger canvas is available. Extra pixels require justified silhouette, material, animation, or identity information.
+## Style / Series Rule
 
-## Silhouette-first rule
-
-Before shading, establish whether the subject reads from its outer contour and negative space at target viewing size.
-
-Evaluate only applicable factors:
+For related assets, reuse one compact `style_lock_id` and only decision-relevant fields from:
 
 ```text
-primary axis
-major protrusions
-negative-space landmarks
-width / height relationship
-visual center
-asymmetric identity cues
-readability at actual display scale
+docs/02-reference/pixel-art/style-lock.md
 ```
 
-If silhouette identity fails, fix massing before adding colors or micro-detail.
+Do not retransmit prior prompts, full asset history, or full Pixel Art docs for each new icon.
 
-## Cluster discipline
+## Revision Rule
 
-Think in coherent pixel clusters, not isolated decorative pixels.
-
-Useful cluster roles:
+Bounded revision requires:
 
 ```text
-PRIMARY MASS
-SECONDARY MASS
-EDGE CLUSTER
-SHADOW CLUSTER
-LIGHT CLUSTER
-DETAIL CLUSTER
-ACCENT PIXEL / ACCENT CLUSTER
+CHANGE
+PRESERVE
 ```
 
-Avoid orphan pixels unless they are a deliberate high-value identity cue. Avoid repetitive staircase edges that do not follow form. A clean cluster that communicates form is preferable to several noisy pixels.
+Preserve all still-valid accepted identity/style fields by default. Do not redesign unrelated regions during a correction.
 
-## Palette discipline
-
-Build the smallest useful palette. Common semantic roles:
+Detailed normalization is owned by:
 
 ```text
-OUTLINE / DEEP SHADOW
-SHADOW
-BASE
-LIGHT
-SPECULAR
-ACCENT
-IDENTITY
-EMISSIVE
+docs/02-reference/pixel-art/prompt-contract.md
 ```
 
-Not every asset needs every role. Hue shifting is allowed when it improves material separation or form readability, but palette expansion must remain deliberate.
+## Minimal Owner Loading
 
-For series work, preserve palette relationships and contrast hierarchy across assets unless the subject materially requires an exception.
+Do **not** preload the Pixel Art corpus.
 
-## Material readability
+Start with one primary owner selected from the domain README.
 
-Do not represent material identity through hue alone. Use cluster shape, highlight sharpness, edge behavior, transparency/cutout behavior, and value contrast when applicable.
-
-Typical material families include:
+Typical bundles:
 
 ```text
-WOOD
-METAL
-STONE
-GLASS
-PLASTIC
-CLOTH
-LEATHER
-LIQUID
-FOLIAGE
-EMISSIVE
+simple icon
+→ SKILL + iconography.md
+
+object / prop
+→ SKILL + object-prop.md
+
+reference conversion
+→ SKILL + reference-conversion.md
+
+Minecraft target
+→ SKILL + relevant artifact owner
+→ minecraft-compatibility.md only when target-specific rules matter
+
+sprite
+→ SKILL + sprites.md
+→ animation.md only when frame motion is requested
+
+tile / repeat
+→ SKILL + tiles-patterns.md
+
+existing asset correction
+→ SKILL + audit-revision.md
+→ one causal technical owner
 ```
 
-Examples are causal guidance, not hard presets:
+Add a second technical owner only when a real dependency changes the next decision.
+
+Load `qa.md` near finalization, not after every pixel mutation. Load `delivery.md` only for packaging or downstream handoff.
+
+## Core Visual Discipline
+
+Keep these invariants without loading extra docs unless a material decision needs detail:
 
 ```text
-metal   → compact sharp highlights + higher local contrast
-glass   → edge/reflection cues + controlled transparency/open-space logic
-cloth   → broader softer clusters + restrained specular accents
-liquid  → container-aware level, meniscus/readable fill mass, material-specific highlight
-foliage → silhouette rhythm + grouped leaf masses, not uniform speckle
+silhouette before micro-detail
+coherent clusters over isolated noise
+smallest useful palette
+material identity through value/cluster/highlight behavior, not hue alone
+actual target-size readability over zoomed-in prettiness
+transparent background/edges remain clean when required
+reference identity outranks decorative invention
 ```
 
-## Minecraft target modes
+For series work, style consistency is judged against the shared Style Lock, not against literal identical colors/shapes.
 
-### MINECRAFT_NATIVE
+## Minecraft Modes
 
-Prioritize:
+`MINECRAFT_NATIVE`:
 
 ```text
-low or canonical target resolution
 compact palette
 strong silhouette
 large readable clusters
-minimal micro-detail
+low/canonical detail budget
 vanilla-compatible abstraction
 ```
 
-Do not imitate smooth vector art with a pixel filter.
-
-### MIVUBI_HD_PIXEL
-
-Prioritize:
+`MIVUBI_HD_PIXEL`:
 
 ```text
-strict integer grid
-richer but controlled palette
-higher material definition
-more refined cluster transitions
-strong silhouette retained at normal scale
-Minecraft-friendly abstraction retained
+strict grid retained
+richer controlled material definition
+refined clusters
+strong normal-scale readability
+no painterly gradients or micro-noise inflation
 ```
 
-HD never means abandoning pixel scale, introducing painterly gradients, or filling the canvas with micro-noise.
+Detailed target guidance lives in `minecraft-compatibility.md`.
 
-## Perspective contract
+## Reference Conversion
 
-Resolve one projection before detailed authoring:
+Treat source imagery as evidence, not as a bitmap to pixelate.
 
-```text
-FRONT
-SIDE
-ORTHOGRAPHIC
-3/4
-ISOMETRIC
-TOP_DOWN
-ITEM_ICON
-GUI_ICON
-```
-
-Do not introduce unnecessary perspective merely to make a small icon appear more complex.
-
-## Reference-conversion rule
-
-For image-driven work:
-
-```text
-SOURCE IMAGE
-→ identify subject and target use
-→ extract identity landmarks
-→ remove photographic complexity
-→ resolve silhouette
-→ translate materials into pixel language
-→ apply target palette / grid budget
-→ QA against reference identity
-```
-
-Never use `resize → nearest-neighbor → call it finished` as the conversion method.
-
-Reference fidelity prioritization:
+Priority:
 
 ```text
 silhouette
@@ -255,178 +212,78 @@ silhouette
 → secondary detail
 ```
 
-If source evidence is ambiguous, preserve supported identity and simplify unsupported detail instead of inventing decorative complexity.
+Simplify unsupported detail rather than inventing complexity.
 
-## Style Lock
+## QA
 
-When multiple assets belong to one set, create or reuse one internal `PIXEL_STYLE_PROFILE` containing only decision-relevant fields:
+Near finalization, load `qa.md` and evaluate applicable gates once.
+
+Minimum concerns:
 
 ```text
-canvas / target grid
-visible pixel scale
-outline treatment
-palette behavior
-light direction
-contrast range
-perspective
-subject occupancy / padding
-detail density
-shadow language
-material highlight language
+grid integrity
+silhouette readability
+cluster coherence
+palette economy
+pixel-scale consistency
+material readability
+identity fidelity
+target compatibility
+edge/alpha cleanup
+style-lock consistency when applicable
+frame consistency when animated
 ```
 
-Once accepted or clearly established by existing assets, reuse the profile for subsequent assets. Do not silently drift style because the subject changes.
-
-A subject-specific exception is allowed when needed for recognizability, but keep the shared visual grammar.
-
-## Animation support
-
-Sprite animation is conditional, not part of the default hot path.
-
-When requested:
+Verdict:
 
 ```text
-identity landmarks
-→ key poses
-→ breakdown poses
-→ timing / loop intent
-→ cluster cleanup per frame
-→ silhouette + volume consistency
-→ frame-to-frame QA
+PASS | REVISE | BLOCKED
 ```
 
-Avoid redrawing unrelated details between frames. Preserve anchor points, volume, palette, and pixel scale unless motion explicitly changes them.
+On `REVISE`, apply the smallest causal correction, then rerun only affected gates.
 
-## Relationship to Texturing
+## Handoff Boundary
 
-Pixel Art Authoring owns standalone pixel design and reference preparation.
-
-LazyDesigner Texturing owns application to actual model UVs, mapped surfaces, Blockbench texture state, render profile, and production atlas mutation.
+Pixel Art is Reference Preparation, not a Control authoring stage.
 
 ```text
-PIXEL ART AUTHORING
-→ approved/usable pixel design or reference
-→ TEXTURING
-→ mapped production texture
+Pixel Art → Texturing
 ```
 
-Do not duplicate UV, atlas mutation, Blockbench Painter, material-instance, or mapped-surface ownership from `lazydesigner-texturing`.
-
-## Relationship to Particle
-
-When a particle needs a pixel-authored texture:
+Pass approved visual constraints only. Texturing owns UV, atlas, Blockbench texture state, render/material state, and mapped verification.
 
 ```text
-PARTICLE AUTHORING
-→ texture visual requirement
-→ PIXEL ART AUTHORING
-→ texture asset / reference
-→ PARTICLE AUTHORING resumes
+Pixel Art → Particle
 ```
 
-Particle physics, emitter behavior, Molang, lifecycle, and event ownership remain with particle authoring.
+Pass texture/frame visual facts only. Particle owns emitter, lifecycle, motion, Molang, collision, and events.
 
-## Context-budget rule
-
-Do not preload all Pixel Art documentation.
+Exact compact handoff shape is owned by:
 
 ```text
-simple icon
-→ SKILL + iconography owner + QA only when finalizing
-
-reference conversion
-→ SKILL + reference-fidelity/silhouette owner + palette only if needed
-
-Minecraft-native asset
-→ SKILL + minecraft compatibility owner + relevant artifact owner
-
-sprite
-→ SKILL + sprite owner + QA
-
-tile/pattern
-→ SKILL + tile/pattern owner + QA
-
-problem diagnosis
-→ SKILL + exactly one causal owner first
+docs/02-reference/pixel-art/delivery.md
 ```
 
-Prefer one primary technical owner plus at most one or two real dependencies. If more are needed, split the problem into causal decisions.
+Do not carry the entire Pixel Art corpus downstream.
 
-## Simplicity ladder
+## Evidence Classes
 
-Prefer:
-
-```text
-simple silhouette + compact palette
-→ structured shading clusters
-→ material-specific detail
-→ secondary accents
-→ animation / multi-frame / complex patterning
-```
-
-Use the first level that satisfies the requested visual function.
-
-## QA contract
-
-Near finalization, evaluate applicable gates once:
+Preserve:
 
 ```text
-GRID INTEGRITY
-SILHOUETTE READABILITY
-CLUSTER QUALITY
-PALETTE ECONOMY
-PIXEL-SCALE CONSISTENCY
-MATERIAL READABILITY
-IDENTITY FIDELITY
-TARGET COMPATIBILITY
-EDGE CLEANUP
-BACKGROUND / ALPHA CORRECTNESS
-STYLE-LOCK CONSISTENCY (series only)
-FRAME CONSISTENCY (animation only)
-```
-
-Result is `PASS | REVISE | BLOCKED` with the smallest causal correction.
-
-Do not repeatedly re-audit after every single pixel. Batch one coherent correction, then rerun only affected gates.
-
-## Delivery boundary
-
-Default output is the authored/revised pixel-art asset plus concise production-relevant notes when needed.
-
-Do not create ZIPs, manifests, sprite sheets, atlases, or downstream handoff metadata unless requested or required by the target format.
-
-When handing to Texturing, Particle, or another authoring phase, pass only:
-
-```text
-artifact identity
-artifact class
-target mode
-grid / dimensions
-style profile fields that matter
-palette roles when relevant
-alpha/background requirement
-reference-fidelity constraints
-animation frame contract when relevant
-known blockers
-```
-
-Never pass the entire Pixel Art knowledge corpus as handoff context.
-
-## Evidence discipline
-
-Separate:
-
-```text
-USER REQUIREMENT
-REFERENCE-SUPPORTED
-EXISTING-STYLE-SUPPORTED
+USER_REQUIREMENT
+REFERENCE_SUPPORTED
+EXISTING_STYLE_SUPPORTED
 PROVISIONAL
 ```
 
-Never present a provisional palette, grid, light direction, material treatment, or style interpretation as if the user explicitly requested it.
+Never present provisional dimensions, palette, light direction, or style interpretation as user-approved truth.
 
-## Boundary
+## Stop Condition
 
-This Skill may author or direct standalone pixel icons, object/prop pixel art, sprites, tile/pattern assets, Minecraft-oriented pixel references, and revisions/audits of those assets.
-
-It does not own model geometry, UV mutation, Blockbench Painter execution, Bedrock particle physics, animation-controller runtime, in-game performance claims, or generic smooth illustration generation.
+Stop Pixel Art authoring when:
+- the requested artifact is produced/revised;
+- applicable QA reaches the available proof ceiling;
+- unresolved blockers are explicit;
+- requested delivery/handoff is complete;
+- no downstream Texturing/Particle/Blockbench ownership is being duplicated.
