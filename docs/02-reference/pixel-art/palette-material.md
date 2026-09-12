@@ -17,6 +17,52 @@ EMISSIVE
 
 A role can share a color with another role when the asset remains readable. More colors are not inherently better.
 
+## Palette ramps
+
+Think in reusable ramps, not isolated color labels.
+
+A ramp is an ordered perceptual relationship such as:
+
+```text
+DEEP SHADOW
+→ SHADOW
+→ BASE
+→ LIGHT
+→ SPECULAR
+```
+
+The ramp may hue-shift as value changes. It does not need equal numeric spacing.
+
+Professional palette decisions should consider:
+
+```text
+RAMP SHARING
+RAMP CROSSING
+VALUE COMPRESSION
+ACCENT EXCLUSIVITY
+PERCEPTUAL CLUSTERING
+```
+
+### Ramp sharing
+
+Different materials may reuse one or more colors when doing so preserves cohesion and readability. Do not allocate a unique full ramp to every surface by default.
+
+### Ramp crossing
+
+One material's light may reuse or approach another material's base when the relationship is visually coherent. Avoid rigidly separating every material into isolated color families.
+
+### Value compression
+
+At tiny scales, reduce unnecessary intermediate shades. Preserve the strongest value decisions that communicate form and identity.
+
+### Accent exclusivity
+
+Reserve the highest saturation, brightest emissive, or strongest local contrast for genuinely important identity/function cues. Do not distribute focal accents uniformly.
+
+### Perceptual clustering
+
+Several neighboring colors may still read as one mass at native scale. Judge the perceptual result, not the numeric palette count alone.
+
 ## Value hierarchy
 
 Resolve form first through value grouping. Hue variation should support material or identity, not compensate for weak value structure.
@@ -100,6 +146,16 @@ Use dithering only when it communicates a deliberate transition, material, or li
 
 Do not use dithering as a default substitute for well-shaped clusters.
 
+## Palette pruning
+
+Before finalization, remove any color whose loss does not materially reduce:
+- form readability;
+- material distinction;
+- identity;
+- target compatibility.
+
+If two shades perform the same perceptual role at native size, merge them unless a deliberate texture/style reason requires both.
+
 ## Series consistency
 
 Within a Style Lock, preserve:
@@ -108,6 +164,7 @@ Within a Style Lock, preserve:
 - highlight intensity;
 - saturation hierarchy;
 - accent priority;
-- material grammar.
+- material grammar;
+- ramp relationships.
 
 A new material may extend the palette, but it should still look like it belongs to the same set.
