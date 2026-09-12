@@ -1,6 +1,6 @@
 ---
 name: lazydesigner-pixel-art-authoring
-description: ChatGPT-side specialist for deliberate grid-accurate pixel art authoring, reference conversion, Minecraft-native icons, object sprites, tile/pattern assets, and texture references with strict silhouette, cluster, palette, and handoff discipline.
+description: ChatGPT-side specialist for deliberate grid-accurate pixel art authoring, reference conversion, Minecraft-native icons, object sprites, tile/pattern assets, and texture references with strict silhouette, edge-topology, palette, Minecraft-family, and handoff discipline.
 ---
 
 # LazyDesigner Pixel Art Authoring
@@ -15,17 +15,30 @@ Canonical domain index:
 docs/02-reference/pixel-art/README.md
 ```
 
+Canonical professional production contract:
+
+```text
+docs/02-reference/pixel-art/authoring-spec.md
+```
+
 ## Hot Path
 
 ```text
 USER REQUEST
 → normalize only material intent fields
 → classify artifact once
-→ select target mode
+→ resolve target mode / Minecraft visual family when material
 → choose lowest viable grid/detail budget
-→ resolve silhouette/composition
-→ author with deliberate clusters + palette/material language
-→ run applicable QA once
+→ composition + silhouette
+→ value / palette-ramp structure
+→ deliberate cluster construction
+→ edge-topology cleanup
+→ causal shading / material response
+→ outline / separation logic when used
+→ identity landmarks
+→ simplification pass
+→ applicable target-specific pass
+→ QA once
 → deliver asset or compact downstream handoff
 ```
 
@@ -48,6 +61,19 @@ MINECRAFT_NATIVE
 MIVUBI_HD_PIXEL
 ```
 
+Minecraft-facing visual families when relevant:
+
+```text
+ITEM ICON
+BLOCK TEXTURE
+ENTITY / SKIN TEXTURE
+GUI / SYMBOL
+PARTICLE TEXTURE
+REFERENCE-ONLY PIXEL ART
+```
+
+Do not treat all Minecraft pixel assets as one identical style problem.
+
 ## True Pixel Rule
 
 Pixel art is authored on an integer grid.
@@ -65,16 +91,41 @@ Required causal order:
 
 ```text
 GRID
-→ SILHOUETTE
-→ MAJOR MASSES
-→ PALETTE
+→ SILHOUETTE / MASSES
+→ VALUE + PALETTE RELATIONSHIPS
 → PIXEL CLUSTERS
-→ MATERIAL / SHADING CUES
-→ IDENTITY ACCENTS
+→ EDGE TOPOLOGY
+→ SHADING / MATERIAL RESPONSE
+→ IDENTITY
+→ SIMPLIFICATION
 → QA
 ```
 
-Reject accidental anti-aliasing, mixed pixel scale, uncontrolled gradients, random orphan noise, pseudo-pixel artifacts, and detail that does not improve identity/function.
+Reject accidental anti-aliasing, mixed pixel scale, uncontrolled gradients, random orphan noise, pseudo-pixel artifacts, pillow shading without form cause, and detail that does not improve identity/function/material read.
+
+## Artist Judgment Hierarchy
+
+When visual priorities compete:
+
+```text
+READABILITY
+> FORM
+> IDENTITY
+> MATERIAL
+> STYLE CONSISTENCY
+> DETAIL
+> DECORATION
+```
+
+When detail is uncertain:
+
+```text
+REMOVE DETAIL
+→ CHECK AT NATIVE SCALE
+→ RESTORE ONLY IF READABILITY / FORM / IDENTITY / MATERIAL READ DECREASES
+```
+
+This is the default antidote to AI-style over-decoration.
 
 ## Resolution Budget
 
@@ -92,6 +143,92 @@ SPECIAL    explicit target
 
 These are planning aids, not universal defaults. Explicit target requirements override them.
 
+Do not increase resolution merely to avoid hard simplification decisions.
+
+## Professional Craft Invariants
+
+Keep these without loading extra docs unless a material decision needs detail:
+
+```text
+silhouette before micro-detail
+coherent clusters over isolated noise
+intentional staircase rhythm
+no unjustified banding / hugging / tangents
+smallest useful palette
+perceptual ramps over isolated swatches
+lighting follows form before material response
+no unsupported pillow shading
+outlines serve separation/form, not automatic decoration
+material identity uses value/cluster/highlight behavior, not hue alone
+native-size readability outranks zoomed-in prettiness
+reference identity outranks decorative invention
+```
+
+If any of these becomes the actual defect, load only the corresponding causal owner from the domain README.
+
+## Palette / Ramp Rule
+
+Do not judge palette sophistication by color count.
+
+Use only when useful:
+
+```text
+RAMP SHARING
+RAMP CROSSING
+VALUE COMPRESSION
+ACCENT EXCLUSIVITY
+PERCEPTUAL CLUSTERING
+PALETTE PRUNING
+```
+
+Identity colors remain subordinate to readable value structure.
+
+## Edge Topology Rule
+
+Professional edge cleanup considers:
+
+```text
+JAGGIES
+BANDING
+HUGGING
+TANGENTS
+STAIRCASE RHYTHM
+CURVE ECONOMY
+CORNER CONTROL
+CLUSTER INTERLOCK
+```
+
+Do not mechanically smooth every diagonal. Preserve deliberate rhythm appropriate to the form and target style.
+
+## Shading Rule
+
+Use:
+
+```text
+LIGHT SOURCE
+→ FORM / PLANES
+→ SHADOW MASS
+→ LIGHT MASS
+→ MATERIAL RESPONSE
+```
+
+Do not shade enclosed shapes as dark-edge-to-bright-center pillows unless the actual form/light evidence supports it.
+
+## Outline Rule
+
+When outlining is part of the style, distinguish function where applicable:
+
+```text
+OUTER CONTOUR
+INTERNAL CONTOUR
+CONTACT EDGE
+LIGHT-FACING EDGE
+SHADOW EDGE
+BACKGROUND-DEPENDENT EDGE
+```
+
+Avoid treating every internal boundary with the same outline weight.
+
 ## Style / Series Rule
 
 For related assets, reuse one compact `style_lock_id` and only decision-relevant fields from:
@@ -101,6 +238,8 @@ docs/02-reference/pixel-art/style-lock.md
 ```
 
 Do not retransmit prior prompts, full asset history, or full Pixel Art docs for each new icon.
+
+Subject-specific exceptions are allowed when recognition/material behavior requires them; exceptions do not silently redefine the family grammar.
 
 ## Revision Rule
 
@@ -153,25 +292,11 @@ existing asset correction
 → one causal technical owner
 ```
 
+Load `grid-clusters.md`, `palette-material.md`, `shading.md`, or `style-language.md` only when that specific craft decision is material.
+
 Add a second technical owner only when a real dependency changes the next decision.
 
 Load `qa.md` near finalization, not after every pixel mutation. Load `delivery.md` only for packaging or downstream handoff.
-
-## Core Visual Discipline
-
-Keep these invariants without loading extra docs unless a material decision needs detail:
-
-```text
-silhouette before micro-detail
-coherent clusters over isolated noise
-smallest useful palette
-material identity through value/cluster/highlight behavior, not hue alone
-actual target-size readability over zoomed-in prettiness
-transparent background/edges remain clean when required
-reference identity outranks decorative invention
-```
-
-For series work, style consistency is judged against the shared Style Lock, not against literal identical colors/shapes.
 
 ## Minecraft Modes
 
@@ -181,8 +306,9 @@ For series work, style consistency is judged against the shared Style Lock, not 
 compact palette
 strong silhouette
 large readable clusters
-low/canonical detail budget
+restrained detail
 vanilla-compatible abstraction
+family-specific visual grammar
 ```
 
 `MIVUBI_HD_PIXEL`:
@@ -190,12 +316,15 @@ vanilla-compatible abstraction
 ```text
 strict grid retained
 richer controlled material definition
-refined clusters
+refined clusters / edge topology
 strong normal-scale readability
+Minecraft abstraction retained
 no painterly gradients or micro-noise inflation
 ```
 
 Detailed target guidance lives in `minecraft-compatibility.md`.
+
+For block textures, macro repetition matters. A tile that is locally clean but produces obvious wallpaper landmarks in repeated fields is not complete.
 
 ## Reference Conversion
 
@@ -224,14 +353,18 @@ Minimum concerns:
 grid integrity
 silhouette readability
 cluster coherence
-palette economy
+edge topology
+palette / ramp economy
 pixel-scale consistency
+shading causality
 material readability
 identity fidelity
-target compatibility
+detail necessity
+target / Minecraft-family compatibility
 edge/alpha cleanup
 style-lock consistency when applicable
 frame consistency when animated
+tile seam + macro repetition when repeating
 ```
 
 Verdict:
