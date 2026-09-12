@@ -19,9 +19,9 @@ describe("Locator discovery efficiency", () => {
       expect(listBlock).not.toContain(detailedField);
     }
 
-    const orchestrator = await source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md");
-    expect(orchestrator).toContain("## State Reuse / Anti-Loop");
-    expect(orchestrator).toContain("no confirmation readback");
-    expect(orchestrator).toMatch(/Do not automatically re-read fresh .*targets with `inspect_elements\(mode=detail\)`/);
+    const modelling = await source("../.agents/skills/lazydesigner-modelling/SKILL.md");
+    expect(modelling).toContain("## Minimum Necessary Evidence");
+    expect(modelling).toContain("Reuse fresh exact authored state; otherwise `inspect_elements(mode=detail)` once.");
+    expect(modelling).toContain("Do not inspect each newly created Cube after a successful deterministic batch.");
   });
 });
