@@ -2,6 +2,7 @@ import { z } from "zod";
 import { createTool } from "@/lib/factories";
 import {
   getActiveMcpAuthoringPhase,
+  getMcpRuntimeSurface,
   type McpAuthoringPhase,
 } from "@/lib/authoringPhase";
 import {
@@ -54,8 +55,9 @@ export function registerPhaseControlTool(): void {
           throw new Error("Runtime phase switching is unavailable; reload BlockIT.");
         }
         const previousPhase = getActiveMcpAuthoringPhase();
-        const surfaceChanged =
-          (previousPhase === "animation") !== (target_phase === "animation");
+        const previousSurface = getMcpRuntimeSurface(previousPhase);
+        const targetSurface = getMcpRuntimeSurface(target_phase);
+        const surfaceChanged = previousSurface !== targetSurface;
         const readinessSummary = readiness
           ? summarizeAnimationHandoffReadiness(readiness)
           : null;
@@ -74,6 +76,7 @@ export function registerPhaseControlTool(): void {
           ],
           structuredContent: {
             phase: target_phase,
+            runtime_surface: targetSurface,
             reason,
             resume_from,
             readiness,
