@@ -60,6 +60,13 @@ type LifecycleProjection = {
   reasons: string[];
 };
 
+const NOT_REQUIRED_LIFECYCLE: LifecycleProjection = {
+  ready: true,
+  blocked: false,
+  orientation_required: false,
+  reasons: [],
+};
+
 function emptyWorkspace(): ControlWorkspaceProjection {
   return {
     available: false,
@@ -203,7 +210,8 @@ function buildReadiness(
   snapshot: ControlSnapshot,
   workspace: ControlWorkspaceProjection,
   reference: ControlReferenceProjection,
-  mode: ControlTaskMode
+  mode: ControlTaskMode,
+  lifecycle: LifecycleProjection
 ): ControlReadiness {
   if (mode === "SYSTEM_DEVELOPMENT") {
     return {
@@ -223,7 +231,6 @@ function buildReadiness(
   const contextReady = snapshot.context.required.length > 0;
   const activeReferenceReadiness = readinessForAuthoringDomain(snapshot.authoring.domain, reference);
   const activeReferenceBlocked = activeReferenceReadiness === "BLOCKED";
-  const lifecycle = lifecycleForDomain(snapshot.authoring.domain, workspace);
   const reasons: string[] = [];
 
   if (!snapshot.runtime.online) reasons.push("RUNTIME_OFFLINE");
@@ -240,12 +247,11 @@ function buildReadiness(
     snapshot.project.binding === "LOST" ||
     activeReferenceBlocked ||
     lifecycle.blocked;
-  const orientationRequired = lifecycle.orientation_required;
 
   return {
     modelling_start: blocked
       ? "BLOCKED"
-      : projectReady && domainReady && contextReady && !orientationRequired
+      : projectReady && domainReady && contextReady && !lifecycle.orientation_required
         ? "READY"
         : "NEEDS_ORIENTATION",
     runtime_ready: runtimeReady,
@@ -291,15 +297,15 @@ export async function buildControlPacket(
         currentUserDelta: options.currentUserDelta,
       })
     : null;
+  const lifecycle = mode === "ASSET_AUTHORING"
+    ? lifecycleForDomain(snapshot.authoring.domain, workspace)
+    : NOT_REQUIRED_LIFECYCLE;
   const workspaceBlockers = mode === "ASSET_AUTHORING"
     ? workspace.blockers.map((_, index) => `WORKSPACE_BLOCKER_${index + 1}`)
     : [];
   const referenceBlockers = mode === "ASSET_AUTHORING" && stageContext?.stage_readiness === "BLOCKED"
     ? ["REFERENCE_STAGE_BLOCKED"]
     : [];
-  const lifecycle = mode === "ASSET_AUTHORING"
-    ? lifecycleForDomain(snapshot.authoring.domain, workspace)
-    : { ready: true, blocked: false, orientation_required: false, reasons: [] };
   const lifecycleBlockers = lifecycle.blocked ? lifecycle.reasons : [];
   const blockers = [
     ...snapshot.blockers,
@@ -320,7 +326,7 @@ export async function buildControlPacket(
       development,
       options.currentUserDelta?.trim() || null
     ),
-    readiness: buildReadiness(snapshot, workspace, reference, mode),
+    readiness: buildReadiness(snapshot, workspace, reference, mode, lifecycle),
     workspace: workspaceSummary(workspace),
     reference: referenceSummary(reference),
     stage_context: stageContext,
