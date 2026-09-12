@@ -17,6 +17,8 @@ ChatGPT Reference Preparation
 → Blockbench
 ```
 
+Canonical Control source: `mcp/gateway/control/`. Navigator active source path: removed.
+
 The current source contract is Bedrock-first and keeps one ownership chain. Geometry and Texturing share AUTHORING; Animation is the only separate authoring Runtime surface.
 
 ## Source-Proven Contracts
@@ -83,7 +85,7 @@ server/runtime/bootstrap.ts          exactly-once Runtime intelligence wiring
 server/tools/**                       domain Tool implementations
 ```
 
-`switch_authoring_phase` now applies the registered Runtime phase/surface handler before returning its Gateway handoff receipt. Geometry↔Texturing remains one shared AUTHORING surface; Animation remains the only foreign authoring surface.
+`switch_authoring_phase` applies the registered Runtime phase/surface handler before returning its Gateway handoff receipt. Geometry↔Texturing remains one shared AUTHORING surface; Animation remains the only foreign authoring surface.
 
 Runtime phase/profile changes use granular registration/surface state rather than creating a second workflow engine.
 
@@ -115,7 +117,7 @@ domain intelligence for Geometry / Texture / Animation / Particle
 
 Consolidated capabilities delegate to retained original executors. Unknown branches fail instead of silently falling back to another operation.
 
-Family baselines guard Geometry/Element, Texture/Material, Animation, Particle, Inspection and Export surfaces. Consolidated validation-preservation guards now cover Inspection, Material, Animation Timeline, and Material Instances rather than Animation Timeline alone. No implementation algorithm was intentionally simplified for context/tool-count reduction.
+Family baselines guard Geometry/Element, Texture/Material, Animation, Particle, Inspection and Export surfaces. Consolidated validation-preservation guards cover Inspection, Material, Animation Timeline, and Material Instances rather than Animation Timeline alone. No implementation algorithm was intentionally simplified for context/tool-count reduction.
 
 ### Validation / QA / Gates
 
@@ -156,13 +158,13 @@ docs/04-system/authoring-stage-context.md
 docs/04-system/control/context-projection.md
 ```
 
-Normal authoring hot path loads one active specialist and only the stage-relevant Control projection. Geometry may additionally load exactly one selected modelling profile. `authoring-stage-context.md` is the canonical cross-stage semantic owner but is now **conditional context**, loaded only for a material cross-stage/approval/freshness/convergence/handoff ambiguity rather than duplicated on every authoring turn.
+Normal authoring hot path loads one active specialist and only the stage-relevant Control projection. Geometry may additionally load exactly one selected modelling profile. `authoring-stage-context.md` is the canonical cross-stage semantic owner but is **conditional context**, loaded only for a material cross-stage/approval/freshness/convergence/handoff ambiguity rather than duplicated on every authoring turn.
 
-Reference Preparation already compiles confirmed user intent before generation and does not pass raw conversation transcript or prompt history as the Codex handoff package.
+Reference Preparation compiles confirmed user intent before generation and does not pass raw conversation transcript or prompt history as the Codex handoff package.
 
 ### Development Source Ownership
 
-Control development routing now points public consolidated capabilities at their actual Runtime public owners:
+Control development routing points public consolidated capabilities at their actual Runtime public owners:
 
 ```text
 inspect_elements
@@ -175,7 +177,7 @@ switch_authoring_phase
 → mcp/server/runtime/phaseControl.ts
 ```
 
-This prevents bounded SYSTEM_DEVELOPMENT work from defaulting to the legacy `mcp/server/tools.ts` facade when the public route is owned elsewhere.
+This prevents bounded SYSTEM_DEVELOPMENT work from defaulting to the compatibility `mcp/server/tools.ts` facade when the public route is owned elsewhere.
 
 ## Compatibility Boundary
 
@@ -200,6 +202,10 @@ Historical BlockIT native/runtime proof predates the current LazyDesigner harden
 
 ## Current Proof Ceiling
 
+REMOTE_GITHUB verification has been exercised during the current synchronization pass and has already exposed stale contracts that are being corrected. A terminal `verify:full` PASS is not yet claimed until the exact synchronized head completes successfully.
+
+The current head has **not been typechecked/executed locally** or proven live in Blockbench.
+
 Safe current claims:
 
 ```text
@@ -214,11 +220,10 @@ Reference Package compact projection            implemented in source
 compatibility boundaries                         documented in source
 ```
 
-Not yet established for the current head:
+Still requiring terminal/current-head or higher-context proof:
 
 ```text
-Bun/typecheck/test execution
-canonical generated-output freshness
+terminal verify:full on synchronized exact head
 installed LazyDesigner Runtime freshness
 live Gateway survival across reload/rebuild/close-open
 native phase-switch transport behavior on the current build
@@ -229,8 +234,6 @@ visual/reference acceptance
 Minecraft in-game behavior
 measured token/latency or whole-task usage savings
 ```
-
-Tests added during the remote hardening phase are **source regression intent until they are actually executed**.
 
 ## Efficiency Interpretation
 
