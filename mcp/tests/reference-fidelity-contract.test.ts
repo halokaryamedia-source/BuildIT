@@ -7,24 +7,21 @@ async function readRepo(path: string): Promise<string> {
   return readFile(new URL(path, root), "utf8");
 }
 
-describe("BlockIT reference fidelity contract", () => {
-  test("reference generator preserves buildable structural evidence", async () => {
-    const reference = await readRepo(
-      ".agents/skills/blockbench-reference-generator/SKILL.md"
-    );
+describe("LazyDesigner reference fidelity contract", () => {
+  test("reference standard preserves buildable structural evidence", async () => {
+    const reference = await readRepo("docs/02-reference/image/standard.md");
 
-    expect(reference).toContain("## Buildable Evidence Handoff");
-    expect(reference).toContain("required visible part count");
-    expect(reference).toContain("attachment/contact direction");
-    expect(reference).toContain("Cross-view completeness");
-    expect(reference).toContain("Depth readability");
-    expect(reference).toContain("largest structural difference first");
-    expect(reference).toContain("joint neighborhoods readable");
+    expect(reference).toContain("required parts are present");
+    expect(reference).toContain("FRONT → width / height / visible part count / primary silhouette");
+    expect(reference).toContain("LEFT  → depth / profile / attachment / body axis");
+    expect(reference).toContain("attachments/openings agree");
+    expect(reference).toContain("cross-view structural contradiction");
+    expect(reference).toContain("joint");
   });
 
   test("geometry blocks material construction gaps before primary batch", async () => {
     const modelling = await readRepo(
-      ".agents/skills/blockbench-bedrock-modelling/SKILL.md"
+      ".agents/skills/lazydesigner-modelling/SKILL.md"
     );
 
     expect(modelling).toContain("### Reference Evidence Contract");
@@ -39,14 +36,13 @@ describe("BlockIT reference fidelity contract", () => {
 
   test("fidelity remains qualitative and causal instead of scalar", async () => {
     const modelling = await readRepo(
-      ".agents/skills/blockbench-bedrock-modelling/SKILL.md"
+      ".agents/skills/lazydesigner-modelling/SKILL.md"
     );
-    const reference = await readRepo(
-      ".agents/skills/blockbench-reference-generator/SKILL.md"
-    );
+    const reference = await readRepo("docs/02-reference/image/standard.md");
 
     expect(modelling).toContain("observed difference | severity | owning cause");
     expect(modelling).toContain("similarity scores cannot justify `PASS`");
-    expect(reference).toContain("must not fix one view by materially breaking another");
+    expect(modelling).toContain("no required orthographic relation materially regresses");
+    expect(reference).toContain("cross-view structural contradiction");
   });
 });
