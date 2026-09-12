@@ -1,12 +1,12 @@
 # LazyDesigner Control Context Projection
 
-Updated: 2026-09-11
+Updated: 2026-09-12
 
 This document defines the canonical stage-specific context contract projected by LazyDesigner Control to Codex for asset authoring.
 
-Control owns projection. Skills consume projection. Reference Preparation owns source reference facts. Workspace/Runtime own current asset state. No stage Skill should rebuild this contract independently.
+Control owns **selection and transport**. Skills consume the projection. Reference Preparation owns source reference facts. Workspace/Runtime own current authored state. No stage Skill should rebuild this contract independently.
 
-Overall AI loading policy, including REQUIRED / CONDITIONAL / EXCLUDED context outside Control projection, is owned by:
+Overall REQUIRED / CONDITIONAL / EXCLUDED loading policy is owned by:
 
 ```text
 docs/04-system/ai-context-loading.md
@@ -14,59 +14,43 @@ docs/04-system/ai-context-loading.md
 
 ## Objective
 
-Project only the information required for the current authoring decision while preserving source authority and avoiding repeated reasoning.
+Project the **minimum sufficient current decision context** without turning Control into a second Reference Package, workflow engine, or persistent asset database.
 
 ```text
 REFERENCE PACKAGE
-+ CURRENT ASSET / WORKSPACE STATE
++ WORKSPACE / RUNTIME STATE
 + USER DELTA
 + READINESS / FRESHNESS
         ↓
       CONTROL
         ↓
 GEOMETRY_CONTEXT | TEXTURE_CONTEXT | ANIMATION_CONTEXT
-        ↓
-      CODEX
 ```
-
-The objective is not smallest possible payload. The objective is the minimum sufficient payload that reduces wrong-route recovery, repeated discovery, and repeated interpretation.
 
 ## Packet Layering
 
-A Control packet separates **identity/availability summary** from **active-stage decision detail**.
+Control separates compact summaries from one active-stage projection:
 
 ```text
 workspace
-→ summary only:
-  available
-  fingerprint
-  asset
-  unavailable_reason when material
+→ availability / fingerprint / asset / unavailable reason
 
 reference
-→ summary only:
-  available
-  fingerprint
-  asset_name
-  selected_profile
-  unavailable_reason when material
+→ availability / fingerprint / asset / selected profile / unavailable reason
 
 stage_context
-→ one self-contained active-stage projection
+→ one self-contained decision envelope for the active semantic owner
 ```
 
-Do not repeat Workspace gates, next step, full Reference readiness, requirements, document lists or image lists at the top level when the active decision already receives the required subset through `stage_context`.
+Do not repeat complete Workspace state, full Reference readiness, document prose, image metadata, Skill text, Tool schemas, per-Cube plans, or per-keyframe plans in the packet.
 
-The full Workspace and Reference projections remain internal Control inputs for readiness, lifecycle checks, context identity and stage projection. Output compaction must not weaken those internal decisions.
+## Stage Context: Source-Owned Shape
 
-`stage_context` intentionally stays self-contained. Do not remove original intent, current delta, selected profile, active requirements, active reference document/image IDs, or current Workspace stage/gates merely to reduce bytes if doing so would force Codex to reconstruct the decision from neighboring packet fields.
-
-## Shared Envelope
-
-Every stage projection uses one compact shared envelope:
+The Runtime implementation in `mcp/gateway/control/contextProjection.ts` owns the concrete packet shape. The canonical envelope is intentionally compact:
 
 ```text
 context_type
+context_hash
 original_user_intent
 current_user_delta
 selected_profile
@@ -75,124 +59,53 @@ workspace_revision_or_hash
 stage_readiness
 blocking_unknowns
 non_blocking_unknowns_relevant_to_stage
+requirements
+reference_document
+reference_image_ids
+workspace.asset
+workspace.current_stage
+workspace.gates
+workspace.next_step
 ```
 
-Rules:
-- `original_user_intent` is preserved unchanged as authority context.
-- `current_user_delta` contains only the current requested change when applicable.
-- `selected_profile` is a label and routing signal; only Geometry normally receives the selected profile document.
-- stage blockers are filtered to the current decision.
-- unchanged large content should be referenced by stable identity/hash rather than resent verbatim when the client already has it.
+This is deliberate. `stage_context` does **not** duplicate the complete semantic contents of the referenced Geometry/Texture/Animation document.
 
-## GEOMETRY_CONTEXT
+## Where Domain Detail Lives
 
-Purpose: support Geometry, hierarchy, pivots/rig-readiness, representation and UV-readiness decisions.
-
-Canonical payload includes only material fields:
+Decision detail is resolved only when it is material:
 
 ```text
-shared envelope
-requirements.dimensions_blocks
-requirements.animation_required
-selected modelling profile
-relevant approved reference views
-semantic parts relevant to geometry
-part count / topology / attachment / contact
-negative spaces / openings
-cross-view depth evidence
-symmetry / asymmetry
-representation hints
-motion participation
-articulation / pivot / clearance constraints when geometry-affecting
-geometry-owned constraints
-current geometry state / affected UUIDs for corrections
-relevant acceptance / invalidation state
+reference_document + relevant image IDs
+→ approved stage evidence / semantic relationships
+
+workspace / Runtime state
+→ current authored identities and live state
+
+active specialist
+→ domain execution reasoning
+
+selected Geometry profile
+→ reusable asset-class modelling guidance
 ```
 
-Normally exclude:
-- complete material styling prose;
-- unrelated PBR settings;
-- complete animation clip/keyframe plans;
-- unrelated texture atlas details;
-- full secondary profiles.
-
-Profile loading rule:
+Examples of detail that may be read from those owners when required:
 
 ```text
-Modelling Core
-+ exactly one selected primary profile
-+ narrowly scoped secondary guidance only when justified
+Geometry
+→ masses / topology / dimensions / pivots / openings / motion readiness
+
+Texturing
+→ material cohorts / markings / alpha / emissive / PBR / atlas relations
+
+Animation
+→ moving chains / hierarchy / pivots / axes / contact / clearance / pose timing
 ```
 
-## TEXTURE_CONTEXT
-
-Purpose: support atlas, painting, material, alpha, emissive/PBR and mapped-surface fidelity decisions.
-
-Canonical payload includes only material fields:
-
-```text
-shared envelope
-Geometry APPROVED
-UV Layout PASS
-relevant semantic parts / surface cohorts
-material entries
-major color/material regions
-identity-critical markings
-surface/pattern direction and scale constraints
-alpha/cutout ownership
-emissive / PBR requirements
-relevant approved reference views
-atlas identity / texture UUID
-UV / mapped-face state needed for current task
-current texture state / affected surface IDs for corrections
-texture-stage blockers
-```
-
-Normally exclude:
-- wheelbase/chassis/body-plan reasoning;
-- unrelated joint/pivot data;
-- complete modelling profile prose;
-- unrelated animation timing/pose data;
-- geometry construction history that does not affect mapped surfaces.
-
-`selected_profile` may remain as a compact label for semantic interpretation, but Texturing does not load the full profile by default.
-
-## ANIMATION_CONTEXT
-
-Purpose: support motion, pose, timeline, controllers/effects and playback verification decisions.
-
-Canonical payload includes only material fields:
-
-```text
-shared envelope
-Geometry / Texture approval state required by lifecycle
-checkpoint / current asset revision
-relevant semantic moving parts
-parent-child hierarchy for participating parts
-pivot / axis intent
-joint overlap / coverage constraints
-clearance / contact / attachment invariants
-motion participation classification
-RIG_DEFORMATION guidance when relevant
-POSE_ACTION guidance when relevant
-ANIMATION_KEYFRAME guidance when relevant
-relevant approved pose / motion reference views
-current animation UUID / clip properties / affected timeline cohort
-animation-stage blockers
-```
-
-Normally exclude:
-- full UV atlas layout;
-- unrelated material palette/PBR entries;
-- complete modelling profile prose;
-- geometry details outside participating motion chains;
-- unrelated nonparticipating joints.
-
-`selected_profile` remains a compact label only. Animation consumes explicit articulation/motion semantics rather than reopening the whole profile.
+Do not eagerly serialize those full structures into every Control packet merely because they exist.
 
 ## Projection Selection
 
-Control selects context from the active authoring domain:
+Control selects exactly one active semantic domain:
 
 ```text
 Geometry / hierarchy / pivots / UV readiness
@@ -201,95 +114,103 @@ Geometry / hierarchy / pivots / UV readiness
 Texture / atlas / material / PBR / paint
 → TEXTURE_CONTEXT
 
-Animation / timeline / controller / animation effect
+Animation / timeline / controller / effects / particle motion context
 → ANIMATION_CONTEXT
 ```
 
 If ownership is ambiguous, resolve the owner first. Do not send all three contexts as a hedge.
 
+## Geometry Profile Rule
+
+Only Geometry normally loads a full modelling profile:
+
+```text
+lazydesigner-modelling
++ exactly one selected profile
+```
+
+Texturing and Animation receive the selected profile as a compact label only. They consume explicit material/motion relationships from relevant stage evidence instead of reopening full Geometry profile prose.
+
 ## Correction Projection
 
-For bounded corrections, project a delta rather than reconstructing the initial package.
+For bounded corrections, preserve the original intent and project only the changed decision boundary:
+
+```text
+current_user_delta
++ current context identities/hashes
++ affected stage evidence
++ current Workspace/Runtime state
+→ continue
+```
+
+Do not reconstruct the initial package or resend unrelated approved information.
 
 Examples:
 
 ```text
 wheel placement correction
-→ GEOMETRY_CONTEXT
-  + current user delta
-  + wheel semantic part/cohort
-  + affected reference view(s)
-  + current geometry identity
+→ GEOMETRY_CONTEXT + affected geometry evidence/state
 
-logo / material correction
-→ TEXTURE_CONTEXT
-  + affected material/surface cohort
-  + relevant reference crop/view
-  + current atlas/texture identity
+logo/material correction
+→ TEXTURE_CONTEXT + affected surface/reference evidence
 
 knee gap during walk
-→ ANIMATION_CONTEXT
-  + hip/knee participating chain
-  + coverage/clearance constraint
-  + affected clip/time/pose evidence
-  + geometry handoff marker only if ownership proves upstream
+→ ANIMATION_CONTEXT + affected motion evidence
+→ Geometry handoff only when ownership proves structural
 ```
-
-Do not resend unrelated approved information.
 
 ## Authority Rules
 
-Projection does not create new truth.
+Projection does not create truth.
 
 ```text
-explicit user requirement
-→ highest task authority
+explicit current user requirement
+→ task authority
 
 approved reference image(s)
 → visual authority
 
-Reference Package metadata
-→ structured technical authority where evidence-backed
+Reference Package metadata/document
+→ evidence-backed structured authority
 
-workspace / Runtime state
+workspace / Runtime
 → current authored-state authority
 
 domain docs
 → durable semantic policy
 
-Skill/profile docs
-→ execution procedure / reusable knowledge
+Skill/profile
+→ execution procedure / reusable specialist guidance
 
 Control projection
-→ selection/transport only
+→ selection / transport only
 ```
 
-Control may normalize names and select subsets, but it must not silently rewrite user intent, invent missing facts, or promote provisional evidence to supported fact.
+Control may normalize names and select subsets, but must not invent missing facts or promote provisional evidence.
 
 ## Freshness
 
-Each projection records freshness only for evidence classes that can affect the current decision.
-
-Recommended conceptual states:
+Mutations stale only affected evidence.
 
 ```text
-FRESH
-STALE
-UNKNOWN
-NOT_REQUIRED
+Geometry resize affecting mapped surfaces
+→ affected UV / Texture evidence stale
+
+Texture mutation
+→ Geometry evidence remains fresh
+
+participating pivot/hierarchy mutation
+→ affected Animation evidence stale
+
+Animation key mutation
+→ Geometry/UV remain fresh unless a structural blocker is discovered
 ```
 
-A mutation stales only affected evidence. Do not globally invalidate all captures, atlas information, animation state, or acceptance gates after a bounded change.
-
-Examples:
-- Geometry resize affecting mapped surfaces → affected UV/Texture evidence stale.
-- Texture paint mutation → Geometry evidence remains fresh.
-- Pivot/hierarchy change on participating bone → relevant animation evidence stale.
-- Animation keyframe mutation → Geometry/UV evidence remains fresh unless a structural blocker is discovered.
+Do not globally invalidate all context after a bounded mutation.
 
 ## Readiness
 
-Projection should contain stage-specific readiness, not one global vague status.
+Stage readiness is local to the active decision:
 
 ```text
 READY
@@ -297,59 +218,41 @@ NEEDS_REVIEW
 BLOCKED
 ```
 
-`BLOCKED` requires a decision-changing blocker for the active stage. A missing future-stage detail must not block an earlier legal stage.
-
-Examples:
-- missing underside color does not block Geometry;
-- unresolved wheel count can block Geometry;
-- missing material authority can block affected Texturing while Geometry remains approved;
-- unsuitable knee pivot can block Animation and require bounded Geometry handoff.
+A future-stage missing detail must not block an earlier legal stage.
 
 ## Context Identity / Reuse
 
-Control should prefer content-addressed continuation when large unchanged context is already known.
+Control uses content-addressed handles and `context_hash` so unchanged Skill/profile/context can be reused rather than retransmitted.
 
-Conceptual identity:
-
-```text
-context_hash = hash(
-  original intent identity
-  + reference package identity
-  + workspace revision
-  + active stage
-  + selected profile
-  + current delta
-  + relevant freshness/readiness state
-)
-```
-
-Use the hash to avoid resending unchanged profile/reference/workspace content. A hash is an identity aid, not proof that underlying live state is still valid; freshness rules still apply.
+Hash/identity is an efficiency aid, not live-state proof. Workspace/Runtime freshness rules still apply.
 
 ## Non-Goals
 
-Control projections must not become:
-- a second Reference Package;
-- a second persistent asset database;
-- copies of entire Skills;
-- copies of Runtime Tool schemas;
-- per-Cube/per-keyframe plans;
-- permanent stage-specific workflow engines;
-- an excuse to load all available context.
+Control projection must not become:
+
+```text
+second Reference Package
+second persistent asset database
+copy of whole Skills
+copy of Tool schemas
+per-Cube / per-pixel / per-keyframe plan
+permanent workflow engine
+all-context bundle
+```
 
 ## Completion Contract
 
-The projection system is correct when:
+Projection is correct when:
 
 ```text
-top-level Reference/Workspace remain compact summaries
-stage_context contains one self-contained active-stage decision projection
-Geometry receives only geometry-relevant profile/reference/current-state context
-Texture receives only material/UV/mapped-surface context
-Animation receives only participating motion/rig/clip context
+one active stage context is selected
+packet remains compact and self-contained for orientation
+large semantic detail stays with its canonical owner until needed
+only Geometry receives one full selected profile
 user intent remains unchanged
-stage blockers remain explicit
+blockers remain explicit
 bounded mutations invalidate only affected evidence
 unchanged context can be reused by identity/hash
 ```
 
-Control remains the selector/router. Codex remains the reasoning/authoring agent. Skills remain execution specialists. Domain docs remain durable semantic authorities.
+Control remains selector/router. Codex remains the reasoning/authoring agent. Skills remain execution specialists. Domain docs remain durable semantic authorities.
