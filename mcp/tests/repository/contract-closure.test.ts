@@ -54,8 +54,9 @@ describe("MCP dependency closure", () => {
       text("lib/authoringPhase.ts"),
     ]);
 
-    expect(workflow).toContain("Geometry APPROVED");
+    expect(workflow).toMatch(/USER APPROVAL or authorized autonomous verification/i);
     expect(workflow).toContain("UV Layout PASS");
+    expect(workflow).toMatch(/Animation begins only after canonical readiness/i);
     expect(runbook).toContain("Geometry↔Texturing stays on the shared AUTHORING surface");
     expect(runbook).toMatch(/UV readiness preflight[\s\S]*user Geometry APPROVED[\s\S]*UV Layout PASS/);
     expect(phaseContract).toContain("UV Readiness Preflight");
