@@ -72,7 +72,7 @@ Geometry and Texturing retain distinct semantic owners but share the AUTHORING R
 
 The previous 3D-assisted/Hunyuan/PrimitiveAnything modelling path is retired. Normal modelling has one native Group/Cube authoring path.
 
-Generated API docs must never be hand-edited.
+Generated API docs and prompt manifests must never be hand-edited.
 
 ## Current Source Runtime Surface
 
@@ -80,10 +80,10 @@ Generated API docs must never be hand-edited.
 Gateway client surface        4 fixed tools
 Active phase-union catalog   54 tools
 AUTHORING surface            47 tools
-Animation surface            20 tools
+Animation surface            18 tools
 ```
 
-Generated source-doc snapshots may temporarily retain retired compatibility descriptors until the next canonical generator pass. They are excluded from active Runtime phase surfaces and are not current authoring capabilities.
+Generated source-doc/prompt snapshots may be stale until the next canonical generator pass. Generated artifacts never override current source/runtime ownership.
 
 Installed Runtime counts and lifecycle state are proof results; see `../docs/05-operations/current-validation.md`.
 
@@ -154,7 +154,7 @@ These do not prove visual fidelity or accepted asset quality.
 
 Static footprint guardrails are maintained by `scripts/measure-default-surface.ts` and `scripts/measure-phase-surfaces.ts`. Control payload diagnostics use `scripts/measure-control-context.ts`. They are not Authoring Efficiency proof.
 
-Normal authoring loads one active specialist. Geometry may additionally load exactly one selected modelling profile. Shared Stage Context is reused while unchanged; do not reload full Reference Packages/profiles/sibling domains as reassurance.
+Normal authoring loads one active specialist. Geometry may additionally load exactly one selected modelling profile. The shared Stage Context document is the canonical cross-stage semantic owner but is loaded only for a material cross-stage/approval/freshness/convergence/handoff ambiguity; it is not a routine second payload.
 
 ## Current Capability Shape
 
