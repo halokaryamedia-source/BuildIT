@@ -32,6 +32,16 @@ describe("single-owner authoring flow", () => {
     expect(projection).toContain("per-Cube / per-pixel / per-keyframe plan");
   });
 
+  test("Control computes lifecycle and stage readiness once per packet", async () => {
+    const packet = await text("../gateway/control/packet.ts");
+    const lifecycleCalls = packet.match(/lifecycleForDomain\(/g) ?? [];
+
+    // One function declaration + one packet evaluation. buildReadiness reuses it.
+    expect(lifecycleCalls.length).toBe(2);
+    expect(packet).not.toContain("readinessForAuthoringDomain(");
+    expect(packet).toContain("stageContext?.stage_readiness ?? null");
+  });
+
   test("semantic stages map to exactly two Runtime surfaces", () => {
     expect(getMcpRuntimeSurface("geometry")).toBe("AUTHORING");
     expect(getMcpRuntimeSurface("texturing")).toBe("AUTHORING");
