@@ -48,6 +48,66 @@ PLANT_FOLIAGE texture task
 
 If the projection lacks a decision-critical material fact, request only that missing context through Control. Do not broaden into the full profile as reassurance.
 
+## Pixel Art Reference Intake
+
+A Pixel Art artifact is **reference evidence**, not a second Texturing workflow or a Control stage.
+
+When an approved/usable Pixel Art artifact is supplied, consume only the fields that can change mapped appearance:
+
+```text
+artifact identity
+canvas / grid dimensions
+palette roles or exact palette when authoritative
+material grouping
+identity markings / landmark regions
+orientation / projection
+alpha intent
+style_lock_id + relevant style fields only
+reference-fidelity constraints
+source/reference identity
+known blockers
+provenance class when provided
+```
+
+Interpret provenance without promotion:
+
+```text
+USER_REQUIREMENT
+REFERENCE_SUPPORTED
+EXISTING_STYLE_SUPPORTED
+PROVISIONAL
+```
+
+`PROVISIONAL` Pixel Art choices remain provisional until stronger authority resolves them.
+
+Do **not** import from Pixel Art:
+
+```text
+UV coordinates
+atlas placement
+Blockbench texture UUID
+material-instance state
+render-profile state
+mapped-surface PASS claims
+particle runtime semantics
+```
+
+unless those facts came from the actual Runtime/Texturing owner.
+
+Consumption rule:
+
+```text
+Pixel Art visual contract
+→ map intent onto actual UV/surface state
+→ preserve approved identity/style constraints
+→ adapt only where mapped-surface reality requires it
+→ verify on mapped model
+```
+
+A Pixel Art artifact may guide palette, clusters, material language, alpha silhouette, or markings, but it does not prove those relationships are already valid on the model. Mapped-surface verification remains Texturing-owned.
+
+Do not load the full Pixel Art corpus during normal Texturing. If one visual fact is missing, request the compact artifact/handoff fact or the specific approved reference evidence, not all Pixel Art docs.
+
 ## Asset-Only Visual Runtime Boundary
 No RP dev: opaque/cutout/blend/emissive; Texture variants asset-only.
 
