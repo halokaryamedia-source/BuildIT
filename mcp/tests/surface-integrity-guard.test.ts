@@ -33,8 +33,12 @@ describe("advertised surface and fail-closed integrity guards", () => {
         !name.includes("fixture") &&
         !extendedToolNames.has(name)
     );
-    expect(enabledDefinitions.length).toBe(56);
+    // Two legacy 3D-assisted capabilities were intentionally retired from the
+    // normal Bedrock authoring catalog; the retained callable source surface is 54.
+    expect(enabledDefinitions.length).toBe(54);
     expect(enabledDefinitions.some(([name]) => name === "manage_render_profile")).toBe(true);
+    expect(enabledDefinitions.some(([name]) => name === "manage_geometry_reference")).toBe(false);
+    expect(enabledDefinitions.some(([name]) => name === "materialize_3d_assisted_scaffold")).toBe(false);
 
     for (const [, toolDef] of enabledDefinitions) {
       const { description, status } = toolDef as {
@@ -55,7 +59,7 @@ describe("advertised surface and fail-closed integrity guards", () => {
     expect(getEnabledToolDefinitions().manage_cubes).toBeDefined();
     expect(getEnabledToolDefinitions().create_project).toBeDefined();
     expect(getEnabledToolDefinitions().export_model).toBeDefined();
-    expect(getEnabledToolDefinitions().manage_geometry_reference).toBeDefined();
+    expect(getEnabledToolDefinitions().manage_geometry_reference).toBeUndefined();
     expect(getEnabledToolDefinitions().manage_render_profile).toBeDefined();
 
     // manage_render_profile is intentionally an ordinary Zod union. Its
@@ -145,10 +149,8 @@ describe("advertised surface and fail-closed integrity guards", () => {
     expect(exportSource).toContain(
       "Refusing to replace the existing .bbmodel"
     );
-    expect(exportSource).toContain("listBlockItThreeDAssistedReferences");
-    expect(exportSource).toContain(
-      "Remove them with manage_geometry_reference before project export"
-    );
+    expect(exportSource).not.toContain("listBlockItThreeDAssistedReferences");
+    expect(exportSource).not.toContain("manage_geometry_reference");
 
     const paintSource = await source("server/tools/paint.ts");
     const boundsCalls = (
