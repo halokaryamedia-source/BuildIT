@@ -101,9 +101,26 @@ Use `.agents/skills/lazydesigner-development-brief/SKILL.md` only when architect
 
 ### Reference Preparation
 
-Image/reference generation belongs in **ChatGPT** using `.agents/skills/lazydesigner-reference-preparation/SKILL.md`. Codex authoring consumes the actual user-approved reference package; it does not recreate the reference workflow.
+Reference generation belongs in **ChatGPT** using `.agents/skills/lazydesigner-reference-preparation/SKILL.md`. Codex authoring consumes the actual user-approved/usable reference artifact or package; it does not recreate the reference workflow.
 
-Use `docs/02-reference/README.md` as the Reference domain index. Generate only minimum useful visual evidence. Sheet 01 is the identity/scale anchor; Sheet 02+ exists only for real information overflow. Do not force fixed turnaround boards or extra views when they do not reduce downstream uncertainty.
+Use `docs/02-reference/README.md` as the Reference domain index. First classify the required capability, then load only that branch:
+
+```text
+smooth concept / turnaround / model reference
+→ image reference branch
+
+strict integer-grid icon / sprite / tile / pixel-art conversion
+→ .agents/skills/lazydesigner-pixel-art-authoring/SKILL.md
+→ docs/02-reference/pixel-art/
+
+Bedrock / Snowstorm particle or VFX artifact
+→ .agents/skills/lazydesigner-particle-reference-authoring/SKILL.md
+→ docs/02-reference/particle/
+```
+
+Generate only minimum useful evidence. For smooth image/model references, Sheet 01 is the identity/scale anchor; Sheet 02+ exists only for real information overflow. Do not force fixed turnaround boards or extra views when they do not reduce downstream uncertainty.
+
+Do not route an actual Blockbench atlas/UV/Painter task to Pixel Art merely because the desired texture is pixel-styled. Actual mapped texture production remains `lazydesigner-texturing`. Pixel Art may supply an approved image/style artifact to Texturing or a particle texture to Particle without taking over their ownership.
 
 ### Asset Authoring
 
