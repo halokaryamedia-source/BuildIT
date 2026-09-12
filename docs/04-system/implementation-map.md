@@ -38,6 +38,16 @@ Animation / effects/controllers    → lazydesigner-animation
 routing/context selection          → LazyDesigner Control
 ```
 
+Semantic stage and Runtime surface are intentionally separate concepts:
+
+```text
+semantic stage  GEOMETRY  → Runtime surface AUTHORING
+semantic stage  TEXTURING → Runtime surface AUTHORING
+semantic stage  ANIMATION → Runtime surface ANIMATION
+```
+
+`mcp/lib/authoringPhase.ts` is the single mapping owner. Geometry↔Texturing is a semantic-owner/focus change inside the same AUTHORING surface; only AUTHORING↔Animation is a true Runtime surface boundary.
+
 ### Product Development
 
 ```text
@@ -120,7 +130,7 @@ mcp/server/runtime/consolidatedTools.ts
 → retained original executors remain canonical implementation
 
 mcp/server/runtime/phaseControl.ts
-→ AUTHORING↔Animation control capability
+→ semantic focus change + AUTHORING↔Animation Runtime handoff receipt
 
 mcp/server/runtime/bootstrap.ts
 → exactly-once Runtime intelligence wiring
@@ -135,7 +145,7 @@ mcp/server/tools/**
 
 ```text
 mcp/lib/capabilityMetadata.ts  canonical tier/search aliases/declarative effects
-mcp/lib/authoringPhase.ts      canonical capability semantic phase classification
+mcp/lib/authoringPhase.ts      semantic stage classification + AUTHORING/ANIMATION surface mapping
 mcp/lib/authoringReadiness.ts  canonical Animation handoff readiness
 mcp/lib/validationVerdict.ts   conservative Validator gate projection
 mcp/lib/factories.ts           Tool/Resource/Prompt registration + canonical validation/result compaction
@@ -280,7 +290,7 @@ mcp/prompts/**       canonical Runtime prompt source + manifest
 mcp/tests/**         contract/integration regressions
 ```
 
-Generated API/prompt outputs are generator-owned and must not be hand-edited.
+Completed one-shot retirement/finalization workflows and migration scripts do not remain in the active repository surface. Generated API/prompt outputs are generator-owned and must not be hand-edited.
 
 ## Compatibility Boundary
 
