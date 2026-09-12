@@ -35,7 +35,7 @@ describe("LazyDesigner compatibility identifier boundary", () => {
     expect(statusBar).toContain('BLOCKIT_RUNTIME_STATUS_CHANGED = "blockit-runtime-status-changed"');
   });
 
-  test("human-facing Runtime, Gateway and UI language uses LazyDesigner", async () => {
+  test("human-facing Runtime, Gateway and UI language uses LazyDesigner or neutral compatibility language", async () => {
     const [backend, affinity, settings, plugin, server, ui, panel, statusBar, readme] = await Promise.all([
       source("gateway/backend.ts"),
       source("gateway/projectAffinity.ts"),
@@ -53,7 +53,8 @@ describe("LazyDesigner compatibility identifier boundary", () => {
     expect(backend).toContain("current LazyDesigner surface");
     expect(affinity).toContain("LazyDesigner project affinity");
     expect(affinity).toContain("LazyDesigner authoring phase affinity");
-    expect(settings).toContain("LazyDesigner Legacy UI Fallbacks");
+    expect(settings).toContain('name: "Legacy Compatibility (Developer)"');
+    expect(settings).toContain("Leave this off for normal use");
     expect(server).toContain("LazyDesigner Bedrock Entity authoring");
     expect(plugin).toContain("Installed LazyDesigner Bedrock Entity MCP");
     expect(plugin).toContain("Uninstalled LazyDesigner Bedrock Entity MCP");
