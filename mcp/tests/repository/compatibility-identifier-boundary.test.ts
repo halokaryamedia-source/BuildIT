@@ -64,9 +64,9 @@ describe("LazyDesigner compatibility identifier boundary", () => {
     expect(panel).toContain('class="lazydesigner-card"');
     expect(panel).toContain('aria-label="LazyDesigner status"');
     expect(statusBar).toContain('return "LazyDesigner Starting"');
-    expect(statusBar).toContain('return "LazyDesigner Error"');
+    expect(statusBar).toContain('return "LazyDesigner Needs Attention"');
     expect(statusBar).toContain('return "LazyDesigner Ready"');
-    expect(statusBar).toContain("Click to open LazyDesigner panel");
+    expect(statusBar).toContain("Click to open LazyDesigner");
     expect(readme).toContain("LazyDesigner");
 
     expect(backend).not.toContain("BlockIT Gateway queue is full");
