@@ -35,14 +35,14 @@ describe("P1.4 stateless Streamable HTTP ownership", () => {
   });
 
   test("request-owned reconstruction reuses registration caches until a surface mutation", async () => {
-    const [netSource, toolsSource, factoriesSource] = await Promise.all([
+    const [netSource, registrationSource, factoriesSource] = await Promise.all([
       readFile(new URL("../server/net.ts", import.meta.url), "utf8"),
-      readFile(new URL("../server/tools.ts", import.meta.url), "utf8"),
+      readFile(new URL("../server/runtime/registration.ts", import.meta.url), "utf8"),
       readFile(new URL("../lib/factories.ts", import.meta.url), "utf8"),
     ]);
 
     expect(netSource).not.toContain("invalidateToolRegistrationRuntimeCaches");
-    expect(toolsSource).toContain("invalidateToolRegistrationRuntimeCaches()");
+    expect(registrationSource).toContain("invalidateToolRegistrationRuntimeCaches()");
     expect(factoriesSource).toContain(
       "Invalidation is intentionally explicit so profile and phase mutations"
     );
@@ -114,25 +114,31 @@ describe("P1.4 stateless Streamable HTTP ownership", () => {
     expect(source).not.toContain("sessions:");
   });
 
-  test("plugin lifecycle owns only the HTTP server, not session timers or transports", async () => {
-    const [indexSource, settingsSource] = await Promise.all([
+  test("RuntimeHost owns only the HTTP listener lifecycle, not protocol sessions", async () => {
+    const [indexSource, runtimeHostSource, settingsSource] = await Promise.all([
       readFile(new URL("../index.ts", import.meta.url), "utf8"),
+      readFile(new URL("../plugin/runtimeHost.ts", import.meta.url), "utf8"),
       readFile(new URL("../ui/settings.ts", import.meta.url), "utf8"),
     ]);
 
-    expect(indexSource).not.toContain('from "@/lib/sessions"');
-    expect(indexSource).not.toContain("SessionTransports");
-    expect(indexSource).not.toContain("sessionTransports");
-    expect(indexSource).not.toContain("mcp_session_timeout");
-    expect(indexSource).not.toContain("mcp_sse_heartbeat");
-    expect(indexSource).toContain("const candidate = createNetServer(nativeNet, { ...config, generation })");
-    expect(indexSource).toContain("await waitForServerListening(candidate)");
+    for (const source of [indexSource, runtimeHostSource]) {
+      expect(source).not.toContain('from "@/lib/sessions"');
+      expect(source).not.toContain("SessionTransports");
+      expect(source).not.toContain("sessionTransports");
+      expect(source).not.toContain("mcp_session_timeout");
+      expect(source).not.toContain("mcp_sse_heartbeat");
+    }
+    expect(indexSource).toContain("const runtimeHost = new RuntimeHost()");
+    expect(indexSource).toContain("await runtimeHost.start(generation)");
+    expect(runtimeHostSource).toContain("const candidate = createNetServer(this.nativeNet, { ...config, generation })");
+    expect(runtimeHostSource).toContain("await this.waitForListening(candidate)");
+    expect(runtimeHostSource).toContain("current?.closeAndWait()");
 
     expect(settingsSource).not.toContain("mcp_session_timeout");
     expect(settingsSource).not.toContain("mcp_sse_heartbeat");
   });
 
-  test("UI does not present stateless requests as durable client sessions", async () => {
+  test("human UI does not present stateless requests or AI registries as durable client state", async () => {
     const [uiSource, statusSource, templateSource] = await Promise.all([
       readFile(new URL("../ui/index.ts", import.meta.url), "utf8"),
       readFile(new URL("../ui/statusBar.ts", import.meta.url), "utf8"),
@@ -142,20 +148,22 @@ describe("P1.4 stateless Streamable HTTP ownership", () => {
     expect(uiSource).not.toContain("sessionManager");
     expect(uiSource).not.toContain("sessions:");
     expect(uiSource).not.toContain("createSurfaceManifest");
-    expect(uiSource).toContain("tools: Object.values(tools)");
-    expect(uiSource).toContain("availableToolCount(): number");
+    expect(uiSource).toContain("void input.tools");
+    expect(uiSource).toContain("void input.resources");
+    expect(uiSource).toContain("void input.prompts");
+    expect(uiSource).not.toContain("availableToolCount");
 
     expect(statusSource).not.toContain("sessionManager");
     expect(statusSource).not.toContain("server_one_client");
     expect(statusSource).not.toContain("server_clients");
-    expect(statusSource).toContain('return "BlockIT Ready"');
+    expect(statusSource).toContain('return "LazyDesigner Ready"');
 
     expect(templateSource).not.toContain("sessions.length");
     expect(templateSource).not.toContain("connected_clients");
-    expect(templateSource).not.toContain("exposed /");
-    expect(templateSource).toContain("availableToolCount");
-    expect(templateSource).toContain("Advanced details");
-    expect(templateSource).toContain("Runtime endpoint");
+    expect(templateSource).not.toContain("availableToolCount");
+    expect(templateSource).not.toContain("Runtime endpoint");
+    expect(templateSource).toContain("Current project");
+    expect(templateSource).toContain("AI handles the technical authoring workflow in the background.");
   });
 
   test("Origin rejection still precedes stateless MCP server construction", async () => {
