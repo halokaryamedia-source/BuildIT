@@ -13,8 +13,11 @@ reference task starts
 need durable evidence/authority rule
 → policy.md
 
-need to generate/edit reference imagery
+need to generate/edit smooth reference imagery
 → image/README.md
+
+need deliberate integer-grid pixel art, icon, sprite, tile/pattern, or pixel conversion
+→ pixel-art/README.md
 
 need to author a Bedrock/Snowstorm particle reference asset
 → particle/README.md
@@ -23,7 +26,7 @@ need to build/validate/consume Codex package
 → package/README.md
 ```
 
-`policy.md`, `image/`, `particle/`, and `package/` are conditional owners, not mandatory boot context for every reference request.
+`policy.md`, `image/`, `pixel-art/`, `particle/`, and `package/` are conditional owners, not mandatory boot context for every reference request.
 
 ## Independent capability branches
 
@@ -34,6 +37,11 @@ VISUAL / MODEL REFERENCE
 → image/
 → optional package/
 
+PIXEL ART REFERENCE / STANDALONE ASSET
+→ pixel-art/
+→ strict grid-authored icon / sprite / tile / object / texture reference
+→ optional Texturing / Particle / downstream handoff
+
 PARTICLE / VFX REFERENCE
 → particle/
 → clean Bedrock/Snowstorm particle package
@@ -41,13 +49,15 @@ PARTICLE / VFX REFERENCE
 ```
 
 Rules:
-- a particle-only request does not require image reference generation;
-- an image/model-reference request does not require particle authoring;
-- use both branches only when the user explicitly needs both or one materially depends on the other;
-- do not create cross-branch artifacts merely to complete a template.
+- a particle-only request does not require image or pixel-art reference generation unless a visual texture dependency actually requires it;
+- a pixel-art-only request does not require smooth image-reference generation;
+- an image/model-reference request does not require pixel-art or particle authoring;
+- use multiple branches only when the user explicitly needs them or one materially depends on another;
+- do not create cross-branch artifacts merely to complete a template;
+- actual Blockbench atlas/UV/Painter mutation belongs to `lazydesigner-texturing`, even when the desired style is pixel art.
 
-The particle branch is a ChatGPT-side reference-authoring capability. It is not part of MCP runtime implementation.
+The Pixel Art and Particle branches are ChatGPT-side reference-authoring capabilities. They are not new MCP authoring stages or runtime subsystems.
 
 ## Boundary
 
-This domain ends when the approved reference artifact/package is ready for downstream use. Actual Blockbench asset authoring belongs to `../03-authoring/`; MCP implementation remains under `mcp/`.
+This domain ends when the approved/usable reference artifact or requested package is ready for downstream use. Actual Blockbench asset authoring belongs to `../03-authoring/`; MCP implementation remains under `mcp/`.
