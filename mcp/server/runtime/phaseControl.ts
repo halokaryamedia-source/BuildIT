@@ -30,7 +30,7 @@ export function requestMcpPhaseSwitch(phase: McpAuthoringPhase): void {
 export const phaseControlToolDocs = {
   name: "switch_authoring_phase",
   description:
-    `Changes focus or hands off AUTHORING↔Animation in the same task. ${ANIMATION_HANDOFF_READINESS_RULE}`,
+    `Changes authoring focus in the same task. Geometry↔Texturing stays on the shared AUTHORING surface; AUTHORING↔Animation is the actual Runtime surface handoff. ${ANIMATION_HANDOFF_READINESS_RULE}`,
   parameters: z.object({
     target_phase: z.enum(["geometry", "texturing", "animation"]),
     reason: z.string().min(1),
@@ -59,6 +59,12 @@ export function registerPhaseControlTool(): void {
         const readinessSummary = readiness
           ? summarizeAnimationHandoffReadiness(readiness)
           : null;
+
+        // Apply the canonical Runtime surface/focus before returning the handoff
+        // receipt. Gateway affinity follows this result; it does not own Runtime
+        // tool exposure itself.
+        requestMcpPhaseSwitch(target_phase);
+
         return {
           content: [
             {
@@ -74,7 +80,9 @@ export function registerPhaseControlTool(): void {
             readiness_summary: readinessSummary,
             surface_changed: surfaceChanged,
             reload_required: false,
-            action: "continue through Gateway in the same task",
+            action: surfaceChanged
+              ? "continue through Gateway in the same task; Runtime surface changes automatically"
+              : "continue through Gateway in the same task; shared AUTHORING surface is unchanged",
           },
         };
       },
