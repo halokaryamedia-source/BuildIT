@@ -43,9 +43,10 @@ describe("Reference Preparation content contract", () => {
 
     expect(schema).toContain('"dimensions_blocks"');
     expect(schema).toContain('"player_relative_scale"');
-    expect(schema).toContain("numeric dimensions = numeric authority");
-    expect(schema).toContain("semantic world-scale anchor, not a numeric conversion table");
+    expect(schema).toContain("explicit user dimensions remain authoritative");
     expect(schema).toMatch(/never infer block values from image pixels/i);
+    expect(schema).toContain("PLAYER_HEIGHT");
+    expect(schema).not.toMatch(/pixels?\s*(?:=|→)\s*blocks?/i);
   });
 
   test("image relevance survives optional stage Markdown omission", async () => {
