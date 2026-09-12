@@ -77,7 +77,7 @@ Control                     front-line context/readiness/routing
 Gateway client surface      4 fixed tools
 Active phase-union catalog 54 tools
 AUTHORING source surface   47 tools
-Animation source surface   20 tools
+Animation source surface   18 tools
 ```
 
 Gateway tools are always:
