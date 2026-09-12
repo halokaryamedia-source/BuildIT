@@ -1,5 +1,5 @@
 name: Finalize Authoring Synchronization
-# synchronization audit retry after minimal panel-contract alignment
+# synchronization audit retry after repository contract pass
 
 on:
   push:
