@@ -32,7 +32,6 @@ const PRIMARY_CAPABILITIES = new Set([
   "remove_element",
   "rename_element",
   "manage_locator",
-  "bone_rigging",
   "create_texture",
   "list_textures",
   "get_texture",
@@ -73,10 +72,10 @@ const SEARCH_ALIASES: Readonly<Record<string, readonly string[]>> = {
     "anchor point",
   ],
   bone_rigging: [
-    "bone rig",
-    "rigging",
-    "pivot hierarchy",
-    "bedrock bones",
+    "inverse kinematics",
+    "ik target",
+    "mirror bone",
+    "rig mirror",
   ],
   apply_texture: [
     "assign texture",
