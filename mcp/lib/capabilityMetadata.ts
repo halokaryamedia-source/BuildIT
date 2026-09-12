@@ -52,9 +52,9 @@ const PRIMARY_CAPABILITIES = new Set([
   "manage_particle",
 ]);
 
-const EXPERIMENTAL_CAPABILITIES = new Set([
-  "manage_geometry_reference",
-]);
+// Keep the tier available for future bounded experiments, but do not retain
+// retired capability names as active metadata.
+const EXPERIMENTAL_CAPABILITIES = new Set<string>();
 
 const MAINTENANCE_CAPABILITIES = new Set([
   "trigger_action",
