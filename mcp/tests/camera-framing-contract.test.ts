@@ -33,16 +33,15 @@ describe("capture_model_views explicit framing contract", () => {
     expect(cameraSource).toContain("this tool does not judge resemblance");
   });
 
-  test("keeps model framing Cube-owned while explicit framing can use loaded 3D-Assisted evidence", async () => {
+  test("keeps model and explicit framing Cube-owned after retirement of 3D-assisted evidence", async () => {
     const cameraSource = await Bun.file(
       new URL("../server/tools/camera.ts", import.meta.url)
     ).text();
-    expect(cameraSource).toContain("hasVisibleLoadedBlockItThreeDAssistedReference");
+    expect(cameraSource).not.toContain("BlockItThreeDAssistedReference");
+    expect(cameraSource).not.toContain("3D-Assisted Evidence");
     expect(cameraSource).toContain('framingInput.mode === "model"');
     expect(cameraSource).toContain("Model framing requires visible Cube geometry");
-    expect(cameraSource).toContain(
-      "Explicit framing requires visible Cube geometry or a loaded visible BlockIT 3D-Assisted Evidence reference."
-    );
+    expect(cameraSource).toContain("Explicit framing requires visible Cube geometry to capture.");
   });
 
   test("accepts a finite positive target envelope", () => {
