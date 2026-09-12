@@ -12,6 +12,8 @@ async function source(path: string): Promise<string> {
   return Bun.file(path).text();
 }
 
+const TEST_TEXTURE_REVISION = `sha256:1x1:${"a".repeat(64)}`;
+
 describe("particle end-to-end static contract", () => {
   test("keeps one canonical Bedrock particle resource layout", () => {
     expect(BEDROCK_PARTICLE_RESOURCE_LAYOUT).toEqual({
@@ -32,7 +34,7 @@ describe("particle end-to-end static contract", () => {
 
   test("existing paint transaction owns optional final PNG output", () => {
     const valid = paintTransactionParameters.safeParse({
-      expected_revision: "a".repeat(64),
+      expected_revision: TEST_TEXTURE_REVISION,
       operations: [
         {
           operation: "set_pixels",
@@ -45,7 +47,7 @@ describe("particle end-to-end static contract", () => {
       },
     });
     const relative = paintTransactionParameters.safeParse({
-      expected_revision: "a".repeat(64),
+      expected_revision: TEST_TEXTURE_REVISION,
       operations: [
         {
           operation: "set_pixels",
