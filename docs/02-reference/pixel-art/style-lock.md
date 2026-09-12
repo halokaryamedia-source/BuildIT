@@ -2,68 +2,171 @@
 
 ## Purpose
 
-Keep a series of pixel-art assets visually coherent without forcing every subject into identical geometry or palette values.
+Keep a series of pixel-art assets visually coherent without forcing every subject into identical geometry or literal palette values.
 
-## Profile fields
+Style Lock is a compact reusable visual contract, not a prompt archive or a second project-state system.
 
-Use only decision-relevant fields:
+## Identity
+
+Each established set may use one stable `style_lock_id`.
 
 ```text
-canvas / target grid
-visible pixel scale
-subject occupancy
-projection family
-outline treatment
-palette relationship
-light direction
-contrast range
-cluster density
-shadow language
-material highlight language
-alpha/background convention
+style_lock_id
+→ identifies one visual grammar
+→ reused across related assets
+→ changes only when the shared grammar materially changes
 ```
 
-Do not store the full source prompt, full reference corpus, or downstream UV state inside Style Lock.
+Do not create a new ID for ordinary subject-specific exceptions or revisions that preserve the same family grammar.
 
-## Establishing a profile
+## Canonical Profile Shape
 
-A profile may come from:
+Keep only decision-relevant fields.
 
-1. explicit user instruction;
-2. an accepted existing asset set;
-3. a clearly dominant project convention;
-4. provisional first-pass choices when no stronger authority exists.
+### Core fields
 
-Mark provisional fields internally. Do not present them as user-approved requirements.
+```text
+style_lock_id
+canvas_or_target_grid
+visible_pixel_scale
+subject_occupancy
+projection_family
+outline_treatment
+palette_relationship
+light_direction
+contrast_range
+cluster_density
+shadow_language
+material_highlight_language
+alpha_background_convention
+```
+
+### Optional fields
+
+Use only when the set actually requires them:
+
+```text
+shared_padding_rule
+shared_anchor_rule
+shared_emissive_language
+shared_animation_timing_language
+shared_material_exception_rules
+```
+
+Do not add fields merely because they are measurable.
+
+## Field Authority
+
+Each field should preserve its authority class when material:
+
+```text
+USER_REQUIREMENT
+REFERENCE_SUPPORTED
+EXISTING_STYLE_SUPPORTED
+PROVISIONAL
+```
+
+If a field is provisional, it may guide a first pass but must not be presented as approved project truth.
+
+## Establishing a Profile
+
+Resolve fields in this order:
+
+1. explicit current user instruction;
+2. accepted existing asset set;
+3. clearly dominant project convention;
+4. conservative provisional choice.
+
+Do not average conflicting accepted examples silently. If two existing assets imply materially different grammar, determine whether they are separate style families rather than creating a vague hybrid profile.
+
+## Compactness Rule
+
+Style Lock must not contain:
+
+```text
+full source prompt
+full image/reference corpus
+conversation history
+per-pixel coordinates
+complete palette dumps unless exact palette reuse is authoritative
+UV coordinates
+Blockbench texture UUIDs
+particle runtime behavior
+revision diary
+```
+
+Those belong to their actual owners or are transient working context.
 
 ## Reuse
 
-For subsequent assets in the same set, preserve the profile unless the subject requires a justified exception for recognition or material behavior.
-
-Example valid exception:
+For a subsequent asset in the same set:
 
 ```text
-most icons use selective outline
-→ glass bottle needs reduced interior outline to preserve transparency read
+current subject requirement
++ style_lock_id
++ only style fields that can change the decision
+→ author new asset
 ```
 
-The exception changes local treatment, not the entire family grammar.
+Do not retransmit the entire Pixel Art corpus or all prior assets when the compact profile plus one representative accepted asset is sufficient.
 
-## Drift detection
+## Subject-Specific Exceptions
 
-Treat these as likely style drift:
+An exception is valid when required for recognizability, transparency, material behavior, or functional readability.
 
-- different implicit pixel scale;
+Example:
+
+```text
+family = selective outline
+→ glass bottle reduces interior outline
+→ transparency remains readable
+→ style_lock_id remains unchanged
+```
+
+Record only the local exception that materially affects the asset. Do not mutate the shared profile for a one-off subject requirement.
+
+## Drift Detection
+
+Treat these as likely style drift when unsupported:
+
+- changed implicit pixel scale;
 - inconsistent canvas occupancy;
-- switching between full and selective outline without reason;
+- switching full/selective/no outline without material reason;
 - conflicting light direction;
 - substantially different contrast range;
-- perspective family changing between comparable icons;
-- one asset using micro-noise while the rest use clean clusters;
-- arbitrary palette expansion.
+- projection family changing between comparable icons;
+- one asset using micro-noise while the set uses clean clusters;
+- arbitrary palette expansion;
+- inconsistent padding or anchor behavior in a UI/icon set;
+- materially different shadow/highlight grammar for the same material family.
 
-## Revision behavior
+## Profile Update
 
-If the user changes the style direction for the set, update the Style Lock once and propagate only the fields actually changed.
+When the user intentionally changes the shared style direction:
 
-Do not re-author unaffected assets merely because the profile metadata changed.
+```text
+identify changed shared fields
+→ update Style Lock once
+→ preserve unchanged fields
+→ propagate only where required
+```
+
+Do not re-author unaffected assets merely because profile metadata changed.
+
+A major change that intentionally creates a separate visual family should receive a new `style_lock_id`; a bounded correction within the same grammar should not.
+
+## Downstream Handoff
+
+Pass only `style_lock_id` plus fields that can affect the next owner.
+
+Examples:
+
+```text
+Texturing
+→ visible pixel scale, palette relationship, light/shadow language, alpha convention
+
+Particle texture
+→ visible pixel scale, palette/emissive language, alpha convention, frame language when animated
+```
+
+Downstream owners do not need the full Style Lock when only a subset changes their decision.
