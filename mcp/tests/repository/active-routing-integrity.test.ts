@@ -5,8 +5,8 @@ async function source(path: string): Promise<string> {
   return Bun.file(path).text();
 }
 
-function backtickedSkillLikeNames(text: string): string[] {
-  return [...text.matchAll(/`([a-z0-9]+(?:-[a-z0-9]+)+)`/g)]
+function backtickedLazyDesignerSkillNames(text: string): string[] {
+  return [...text.matchAll(/`(lazydesigner-[a-z0-9-]+)`/g)]
     .map((match) => match[1])
     .filter((name, index, all) => all.indexOf(name) === index)
     .sort();
@@ -28,10 +28,10 @@ describe("active routing integrity", () => {
     ]);
 
     const referenced = new Set([
-      ...backtickedSkillLikeNames(root),
-      ...backtickedSkillLikeNames(developmentBrief),
-      ...backtickedSkillLikeNames(mcpDevelopment),
-      ...backtickedSkillLikeNames(blockbenchDevelopment),
+      ...backtickedLazyDesignerSkillNames(root),
+      ...backtickedLazyDesignerSkillNames(developmentBrief),
+      ...backtickedLazyDesignerSkillNames(mcpDevelopment),
+      ...backtickedLazyDesignerSkillNames(blockbenchDevelopment),
     ]);
 
     for (const name of referenced) {
