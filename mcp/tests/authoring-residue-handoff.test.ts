@@ -69,12 +69,16 @@ describe("REMOTE_GITHUB authoring handoff contracts", () => {
     );
   });
 
-  test("continuation stays compact and routes only current local residue", async () => {
-    const continuation = await Bun.file("../docs/knowledge/next-action.md").text();
-    expect(continuation.length).toBeLessThan(2_500);
+  test("continuation stays compact and routes only current synchronization residue", async () => {
+    const continuation = await Bun.file("../docs/05-operations/next-action.md").text();
+    expect(continuation.length).toBeLessThan(8_000);
     for (const marker of [
-      "SOURCE_READY", "verify:full", "AUTHORING TAXONOMY", "DIRECT | 3D_ASSISTED",
-      "user assets", "Do not publish Stable",
+      "REMOTE_GITHUB",
+      "verify:full",
+      "exact-head PASS",
+      "LOCAL_CODE",
+      "LIVE_BLOCKBENCH",
+      "no second Control/router/profile/state system",
     ]) {
       expect(continuation.toLowerCase()).toContain(marker.toLowerCase());
     }
@@ -86,11 +90,11 @@ describe("REMOTE_GITHUB authoring handoff contracts", () => {
       "textureVariantPlan.ts",
       "bedrockProjectIdentity.ts",
       "bedrockExportIntegrity.ts",
+      "DIRECT | 3D_ASSISTED",
     ]) {
       expect(continuation).not.toContain(retired);
     }
-    // Gateway tool cardinality is tested against registration, not continuation prose.
-    expect(continuation).toMatch(/managed (?:installation|package)/i);
-    expect(continuation).toMatch(/(?:no|not)[^\n]*background polling/i);
+    expect(continuation).toContain("persistent Gateway survives Runtime/plugin reload");
+    expect(continuation).toContain("no claim of Bun/typecheck/CI/local/live PASS until that proof actually ran");
   });
 });
