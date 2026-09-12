@@ -21,6 +21,22 @@ An asset is ready for user review only when all applicable conditions are true:
 
 `READY_FOR_REVIEW` is not user approval. Approval remains separate.
 
+## Native-scale review
+
+Use both views when visual review is material:
+
+```text
+100% target scale
+→ semantic/readability judgment
+
+integer nearest-neighbor enlargement
+→ grid/cluster/edge inspection
+```
+
+At native scale check recognition, identity landmarks, value separation, important-detail survival, canvas balance, and whether noise collapses into unintended texture. At enlarged scale check staircase intent, orphan-pixel justification, alpha cleanliness, cluster coherence, and pixel-scale consistency.
+
+Never approve an asset solely because an enlarged preview looks detailed.
+
 ## Core gates
 
 ### GRID INTEGRITY
