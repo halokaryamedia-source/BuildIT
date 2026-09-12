@@ -1,6 +1,6 @@
 ---
 name: lazydesigner-reference-preparation
-description: ChatGPT-side reference-preparation authority. Resolve only vital missing requirements, route to the correct independent reference capability, confirm visual/model targets when material, and delegate particle/VFX work to the particle specialist fast path.
+description: ChatGPT-side reference-preparation authority. Resolve only vital missing requirements, route to the correct independent reference capability, confirm visual/model targets when material, and delegate pixel-art or particle/VFX work to their specialist fast paths.
 ---
 
 # LazyDesigner Reference Preparation
@@ -20,11 +20,15 @@ USER REQUEST
    │  → bounded final confirmation when material
    │  → image reference owners
    │  → image QA / user visual approval
+   ├─ PIXEL ART
+   │  → lazydesigner-pixel-art-authoring
+   │  → integer-grid / silhouette / cluster / palette contract
+   │  → pixel QA / review
    ├─ PARTICLE / VFX
    │  → lazydesigner-particle-reference-authoring
    │  → no ceremonial pre-confirmation when no BLOCKING ambiguity remains
    │  → particle QA / target-environment review when material
-   └─ BOTH
+   └─ COMPOSED
       → use each branch only for the dependency it owns
 → PACKAGE ONLY WHEN REQUESTED
 → CONSISTENCY GATE when a package/handoff exists
@@ -58,6 +62,12 @@ Image-generation prompt contract
 Image master templates
 → docs/02-reference/image/master-templates.md
 
+Pixel-art reference entry
+→ docs/02-reference/pixel-art/README.md
+
+Pixel-art specialist
+→ .agents/skills/lazydesigner-pixel-art-authoring/SKILL.md
+
 Particle/VFX reference entry
 → docs/02-reference/particle/README.md
 
@@ -68,7 +78,7 @@ Reference package contracts
 → docs/02-reference/package/README.md
 ```
 
-Do not maintain parallel copies of detailed image, particle, or package contracts in this Skill.
+Do not maintain parallel copies of detailed image, pixel-art, particle, or package contracts in this Skill.
 
 ## Boundary
 
@@ -77,6 +87,7 @@ ChatGPT Reference Preparation owns:
 - prompt normalization when useful;
 - branch selection;
 - image-reference planning/generation/editing for the visual branch;
+- pixel-art delegation for strict grid-authored icons/sprites/tiles/reference conversion;
 - particle-reference delegation for the particle branch;
 - branch-specific QA coordination;
 - package creation only when requested.
@@ -116,7 +127,7 @@ USEFUL
 OPTIONAL
 ```
 
-`BLOCKING` means the answer can materially change identity, primary structure, scale/viewing distance, required articulation/motion, or another major output decision.
+`BLOCKING` means the answer can materially change identity, primary structure, scale/viewing distance, required articulation/motion, target grid/style mode, or another major output decision.
 
 When BLOCKING information is missing:
 - do not generate/author the affected branch yet;
@@ -125,6 +136,24 @@ When BLOCKING information is missing:
 - never ask the user for topology, pivot ownership, UV strategy, Molang implementation, or prompting terminology.
 
 `USEFUL` is asked only when the expected gain is material. `OPTIONAL` remains unspecified unless evidence resolves it.
+
+### Pixel-art fast path
+
+Pixel-art work does not require visual/model-sheet ceremony when the output contract is already clear.
+
+```text
+BLOCKING pixel-art ambiguity remains
+→ ask minimum decision-changing question
+
+no BLOCKING ambiguity remains
+→ delegate directly to lazydesigner-pixel-art-authoring
+→ choose conservative reversible grid/style decisions where allowed
+→ author first pass
+→ applicable pixel QA
+→ user review when visual acceptance is material
+```
+
+Do not treat the word `pixel` as sufficient classification. If the request is actual Blockbench atlas/UV/Painter mutation, it belongs to LazyDesigner Texturing, not Pixel Art Reference Authoring.
 
 ### Particle-only exception
 
@@ -148,7 +177,7 @@ This exception applies only to particle/VFX authoring. It does not permit guessi
 
 After blocking information is resolved, use `lazydesigner-prompt-compiler` when normalization materially helps.
 
-The compiler may organize, normalize wording, remove superseded directions, and deduplicate. It may not invent dimensions, materials, topology, animation requirements, hidden structure, motion, or unsupported design choices.
+The compiler may organize, normalize wording, remove superseded directions, and deduplicate. It may not invent dimensions, materials, topology, animation requirements, hidden structure, motion, target grid/style identity, or unsupported design choices.
 
 The compiled brief is internal working state and is not exported by default.
 
@@ -170,7 +199,7 @@ Sudah sesuai?
 
 Silence is not approval. A materially revised visual target requires another bounded confirmation.
 
-Do not apply this ceremony to a particle-only request that already has no BLOCKING ambiguity.
+Do not apply this ceremony automatically to Pixel Art or Particle requests that already have no BLOCKING ambiguity.
 
 ## Visual/model branch
 
@@ -201,6 +230,31 @@ Core visual rules:
 
 A generated visual becomes approved visual authority only after explicit user acceptance when visual approval is material.
 
+## Pixel-art branch
+
+Delegate to `.agents/skills/lazydesigner-pixel-art-authoring/SKILL.md` and `docs/02-reference/pixel-art/README.md`.
+
+Use this branch for deliberate integer-grid assets such as:
+
+```text
+icon
+object / prop pixel art
+sprite / sprite animation
+seamless tile / pattern
+pixel-art reference conversion
+Minecraft-native or MIVUBI HD pixel reference
+```
+
+Do not preload smooth image-reference modules for a pixel-art-only request unless a source image must be interpreted and the pixel specialist explicitly requires bounded image evidence.
+
+Pixel Art may supply a texture image/reference to Particle or Texturing. Ownership then returns to the consuming specialist:
+
+```text
+Pixel Art → image / style artifact
+Texturing → UV / atlas / mapped-surface production
+Particle → emitter / lifecycle / Molang / VFX semantics
+```
+
 ## Particle/VFX branch
 
 Delegate to `.agents/skills/lazydesigner-particle-reference-authoring/SKILL.md` and `docs/02-reference/particle/README.md`.
@@ -220,6 +274,10 @@ Otherwise stop at the branch-specific reviewed artifact.
 ### Visual/model package
 
 Use canonical owners under `docs/02-reference/package/`. Include only required files such as `REFERENCE.json`, `GEOMETRY.md`, optional `TEXTURE.md`, optional `ANIMATION.md`, and approved/supporting images.
+
+### Pixel-art package
+
+Follow the selected pixel-art delivery contract. Do not invent ZIP/atlas/manifest output merely because a pixel asset exists. Downstream handoff should carry only artifact identity, target mode, grid, style-lock fields, palette/alpha constraints and known blockers that affect the consumer.
 
 ### Particle/VFX package
 
