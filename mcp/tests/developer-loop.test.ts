@@ -77,10 +77,11 @@ describe("developer loop", () => {
   });
 
   test("dev sync owns build, atomic deploy, native reload, and live freshness", async () => {
-    const [packageJson, buildSource, pluginSource, deploySource, readme] = await Promise.all([
+    const [packageJson, buildSource, entrySource, devSyncSource, deploySource, readme] = await Promise.all([
       Bun.file("package.json").json(),
       Bun.file("build/index.ts").text(),
       Bun.file("index.ts").text(),
+      Bun.file("plugin/devSync.ts").text(),
       Bun.file("scripts/deploy-local.ts").text(),
       Bun.file("README.md").text(),
     ]);
@@ -96,14 +97,19 @@ describe("developer loop", () => {
     expect(buildSource).toContain("STALE_BUILD");
     expect(buildSource).toContain("DEPLOYED_OFFLINE");
 
-    expect(pluginSource).toContain('process.env.NODE_ENV !== "development"');
-    expect(pluginSource).toContain('plugin.source !== "file"');
-    expect(pluginSource).toContain('requireNativeModule("fs"');
-    expect(pluginSource).toContain("claimRuntimeGeneration");
-    expect(pluginSource).toContain("beginBlockItRuntimeTeardown");
-    expect(pluginSource).toContain("watchDirectory");
-    expect(pluginSource).toContain("plugin.reload?.()");
-    expect(pluginSource).not.toContain("await teardownBlockItRuntime()");
+    expect(devSyncSource).toContain('process.env.NODE_ENV !== "development"');
+    expect(devSyncSource).toContain('plugin.source !== "file"');
+    expect(devSyncSource).toContain('requireNativeModule("fs"');
+    expect(devSyncSource).toContain("watchDirectory");
+    expect(devSyncSource).toContain("plugin.reload?.()");
+    expect(devSyncSource).toContain("isRuntimeGenerationCurrent(generation)");
+    expect(entrySource).toContain("claimRuntimeGeneration");
+    expect(entrySource).toContain("beginBlockItRuntimeTeardown");
+    expect(entrySource).toContain("setupLocalDevAutoReload(generation, currentBuildIdentity())");
+    expect(entrySource).not.toContain("watchDirectory");
+    expect(entrySource).not.toContain('requireNativeModule("fs"');
+    expect(entrySource).not.toContain("await teardownBlockItRuntime()");
+
     expect(deploySource).toContain("await copyFile(source, stagedTarget)");
     expect(deploySource).toContain("await rename(stagedTarget, target)");
     expect(deploySource).not.toContain("await copyFile(source, target)");
