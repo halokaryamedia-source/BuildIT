@@ -27,7 +27,7 @@ Use it when deciding which Docs, Skills, reference fields, or current-state evid
 ```text
 docs/
 ├── 01-product/      product identity, requirements, end-to-end flow
-├── 02-reference/    ChatGPT reference preparation, image rules, handoff package
+├── 02-reference/    ChatGPT reference preparation: image, pixel art, particle, handoff package
 ├── 03-authoring/    modelling, texture, animation, validation, finalization
 ├── 04-system/       Control, AI context loading, source ownership, Skill taxonomy
 └── 05-operations/   current status, next action, local acceptance
@@ -36,14 +36,25 @@ docs/
 ## Fast Task Routing
 
 ```text
-prepare/generate reference
+prepare/generate visual or model reference
 → 02-reference/README.md
+→ image/ owner only
+
+standalone pixel art / icon / sprite / pixel-reference conversion
+→ 02-reference/README.md
+→ pixel-art/README.md
+→ .agents/skills/lazydesigner-pixel-art-authoring/SKILL.md
+
+Bedrock/Snowstorm particle reference
+→ 02-reference/README.md
+→ particle/README.md
+→ .agents/skills/lazydesigner-particle-reference-authoring/SKILL.md
 
 model / geometry / rig / UV
 → 03-authoring/README.md
 → modelling owner only
 
-texture / material / PBR
+texture / material / PBR / mapped production texture
 → 03-authoring/README.md
 → texture owner only
 
@@ -58,6 +69,22 @@ change LazyDesigner source/system
 continue prior repository work / interpret proof
 → 05-operations/README.md
 ```
+
+### Pixel Art Boundary Shortcut
+
+```text
+standalone pixel image or reference
+→ REFERENCE PREP / Pixel Art
+
+pixel design applied to actual model UV / atlas / Blockbench texture
+→ ASSET AUTHORING / Texturing
+
+pixel texture used by a particle
+→ Pixel Art supplies visual asset
+→ Particle retains emitter/runtime ownership
+```
+
+Do not create a Pixel Art Control stage or duplicate Texturing/Particle ownership.
 
 ## AI Context Policy
 
