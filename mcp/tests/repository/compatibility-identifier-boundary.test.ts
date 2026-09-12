@@ -56,9 +56,10 @@ describe("LazyDesigner compatibility identifier boundary", () => {
     expect(settings).toContain('name: "Legacy Compatibility (Developer)"');
     expect(settings).toContain("Leave this off for normal use");
     expect(server).toContain("LazyDesigner Bedrock Entity authoring");
-    expect(plugin).toContain("Installed LazyDesigner Bedrock Entity MCP");
-    expect(plugin).toContain("Uninstalled LazyDesigner Bedrock Entity MCP");
-    expect(plugin).toContain("LazyDesigner MCP initialization failed");
+    expect(plugin).toContain('title: "LazyDesigner"');
+    expect(plugin).toContain('Blockbench.showQuickMessage("LazyDesigner installed"');
+    expect(plugin).toContain('Blockbench.showQuickMessage("LazyDesigner removed"');
+    expect(plugin).toContain("LazyDesigner runtime initialization failed");
     expect(ui).toContain('name: "LazyDesigner"');
     expect(panel).toContain('aria-label="LazyDesigner Runtime status"');
     expect(panel).toContain("LazyDesigner panel");
