@@ -1,0 +1,215 @@
+name: Finalize Authoring Synchronization
+
+on:
+  push:
+    branches: [Local]
+    paths:
+      - ".github/workflows/finalize-authoring-sync.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  synchronize:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: true
+          fetch-depth: 1
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6
+        with:
+          bun-version-file: .bun-version
+
+      - name: Install exact dependencies
+        working-directory: mcp
+        run: bun install --frozen-lockfile
+
+      - name: Remove final retired 3D-assisted source closure
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          def edit(path, fn):
+              p = Path(path)
+              old = p.read_text()
+              new = fn(old)
+              if new == old:
+                  raise SystemExit(f"expected synchronization edit did not change {path}")
+              p.write_text(new)
+
+          def element(s):
+              s = s.replace(
+                  'import { isAbsoluteFilesystemPath, requireOpenProject } from "@/lib/util";\n',
+                  'import { requireOpenProject } from "@/lib/util";\n',
+              )
+              s = s.replace(
+                  'import { materializeThreeDAssistedScaffoldFromWorkspace } from "@/server/threeDAssistedMaterializer";\n',
+                  '',
+              )
+              s = re.sub(
+                  r'export const materializeThreeDAssistedParameters = z\.object\(\{.*?\n\};\n\nexport const materializeThreeDAssistedTool: ToolSpec = \{.*?\n\};\n\n',
+                  '',
+                  s,
+                  count=1,
+                  flags=re.S,
+              )
+              s = s.replace('  materializeThreeDAssistedTool,\n', '')
+              s = re.sub(
+                  r'  createTool\(materializeThreeDAssistedTool\.name, \{.*?\n  \}, materializeThreeDAssistedTool\.status\);\n',
+                  '',
+                  s,
+                  count=1,
+                  flags=re.S,
+              )
+              return s
+          edit('mcp/server/tools/element.ts', element)
+
+          def camera(s):
+              s = s.replace(
+                  'import { hasVisibleLoadedBlockItThreeDAssistedReference } from "./project";\n',
+                  '',
+              )
+              s = s.replace(
+                  'Captures 1-5 deterministic labeled square PNG views (default 512×512; optional icon size) without changing the active editor camera. Model framing requires visible Cubes; explicit framing can also capture a loaded visible 3D-Assisted Evidence reference before blockout. Returns observation only; no score/PASS/FAIL.',
+                  'Captures 1-5 deterministic labeled square PNG views (default 512×512; optional icon size) without changing the active editor camera. Model and explicit framing require visible Cube geometry in the current Blockbench project. Returns observation only; no score/PASS/FAIL.'
+              )
+              old = '''      } else if (\n        observed.rendered_cube_count === 0 &&\n        !hasVisibleLoadedBlockItThreeDAssistedReference()\n      ) {\n        throw new Error(\n          "Explicit framing requires visible Cube geometry or a loaded visible BlockIT 3D-Assisted Evidence reference."\n        );\n      }\n'''
+              new = '''      } else if (observed.rendered_cube_count === 0) {\n        throw new Error("Explicit framing requires visible Cube geometry to capture.");\n      }\n'''
+              if old not in s:
+                  raise SystemExit('camera explicit-framing retirement block did not match')
+              return s.replace(old, new)
+          edit('mcp/server/tools/camera.ts', camera)
+
+          def resources(s):
+              s = re.sub(
+                  r'import \{\n  isBlockItThreeDAssistedReference,\n  readThreeDAssistedReferenceEvidence,\n  type ReferenceModelRuntime,\n  type ThreeDAssistedFrontDirection,\n\} from "@/server/tools/project";\n',
+                  '',
+                  s,
+                  count=1,
+              )
+              s = re.sub(
+                  r'\nfunction normalizeHalfTurn\(yaw: unknown\):.*?\n\}\n\nfunction recoverThreeDAssistedAlignment\(reference: ReferenceModelRuntime\) \{.*?\n\}\n\n/\*\*',
+                  '\n/**',
+                  s,
+                  count=1,
+                  flags=re.S,
+              )
+              pattern = r'''      // Helper to extract reference model info\. Tool-owned 3D-Assisted Evidence references\n      // also expose the same quantitative evidence needed after a fresh MCP/Codex\n      // connection, without creating a second discovery tool or persisting a\n      // parallel registry\.\n      const getReferenceModelInfo = \(model: OutlinerElement\) => \{.*?\n      \};\n\n      // If ID provided'''
+              replacement = '''      const getReferenceModelInfo = (model: OutlinerElement) => {\n        const refModel = model as OutlinerElement & {\n          path?: string;\n          origin?: unknown;\n          rotation?: unknown;\n          scale?: unknown;\n          visibility?: boolean;\n          wireframe?: boolean;\n          locked?: boolean;\n          export?: boolean;\n          mesh?: { children?: unknown[] };\n        };\n        return {\n          uuid: refModel.uuid,\n          name: refModel.name,\n          path: refModel.path || null,\n          origin: normalizeVec3(refModel.origin, [0, 0, 0]),\n          rotation: normalizeVec3(refModel.rotation, [0, 0, 0]),\n          scale: normalizeVec3(refModel.scale, [1, 1, 1]),\n          visibility: refModel.visibility ?? true,\n          wireframe: refModel.wireframe ?? false,\n          locked: refModel.locked ?? false,\n          export: refModel.export !== false,\n          loaded: Boolean(refModel.mesh?.children?.length),\n        };\n      };\n\n      // If ID provided'''
+              s2, count = re.subn(pattern, replacement, s, count=1, flags=re.S)
+              if count != 1:
+                  raise SystemExit('reference-model retirement block did not match')
+              return s2
+          edit('mcp/server/resources.ts', resources)
+
+          def quality(s):
+              s = s.replace('  analyzeProjectedEnvelopeFidelity,\n', '')
+              s = re.sub(
+                  r'import \{\n  listBlockItThreeDAssistedReferences,\n  readThreeDAssistedReferenceEvidence,\n\} from "\./project";\n',
+                  '',
+                  s,
+                  count=1,
+              )
+              s = re.sub(
+                  r'\nfunction referenceEnvelopeFidelityRuntime\(.*?\n\}\n\nfunction textureColorProfileRuntime',
+                  '\nfunction textureColorProfileRuntime',
+                  s,
+                  count=1,
+                  flags=re.S,
+              )
+              s = re.sub(
+                  r'\n    \{\n      field: "reference_envelope_fidelity",\n      read: referenceEnvelopeFidelityRuntime,\n    \},',
+                  '',
+                  s,
+                  count=1,
+              )
+              if s.count('finiteVec3(') == 1:
+                  s = re.sub(
+                      r'\nfunction finiteVec3\(value: unknown\): \[number, number, number\] \| null \{.*?\n\}\n',
+                      '\n',
+                      s,
+                      count=1,
+                      flags=re.S,
+                  )
+              return s
+          edit('mcp/server/tools/quality-intelligence.ts', quality)
+
+          def export_tool(s):
+              s = s.replace(
+                  'import { listBlockItThreeDAssistedReferences } from "./project";\n',
+                  '',
+              )
+              s = re.sub(
+                  r'        if \(codec_id === "project"\) \{\n          const activeThreeDAssistedReferences.*?\n        \}\n',
+                  '',
+                  s,
+                  count=1,
+                  flags=re.S,
+              )
+              return s
+          edit('mcp/server/tools/export.ts', export_tool)
+
+          materializer = Path('mcp/server/threeDAssistedMaterializer.ts')
+          if not materializer.exists():
+              raise SystemExit('expected retired materializer source is already absent')
+          materializer.unlink()
+
+          project = Path('mcp/server/tools/project.ts').read_text()
+          for banned in ['manage_geometry_reference', 'ThreeDAssisted', '3D-Assisted']:
+              if banned in project:
+                  raise SystemExit(f'project.ts still contains retired residue: {banned}')
+          PY
+
+      - name: Align product-facing authoring standard titles
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          replacements = {
+            'docs/03-authoring/modelling/standard.md': [('# BlockIT — Modelling Standard', '# LazyDesigner — Modelling Standard')],
+            'docs/03-authoring/texture/standard.md': [('# BlockIT — Texture Standard', '# LazyDesigner — Texture Standard')],
+            'docs/03-authoring/animation/standard.md': [('# BlockIT — Animation / Motion Standard', '# LazyDesigner — Animation / Motion Standard'), ('BlockIT preserves authored text', 'LazyDesigner preserves authored text')],
+          }
+          for path, pairs in replacements.items():
+              p = Path(path)
+              s = p.read_text()
+              before = s
+              for old, new in pairs:
+                  s = s.replace(old, new)
+              if s == before:
+                  raise SystemExit(f'expected branding edit did not change {path}')
+              p.write_text(s)
+          PY
+
+      - name: Guard single native authoring path
+        run: |
+          if grep -RniE '3D_ASSISTED|3D-Assisted|threeDAssisted|Hunyuan|PrimitiveAnything|materialize_3d_assisted|manage_geometry_reference|reference_envelope_fidelity' \
+            mcp/server mcp/lib mcp/gateway .agents/skills mcp/prompts \
+            --exclude='*.test.ts'; then
+            echo 'Retired 3D-assisted authoring residue remains in active source.' >&2
+            exit 1
+          fi
+
+      - name: Regenerate canonical outputs
+        working-directory: mcp
+        run: |
+          bun run prompts:build
+          bun run docs:build
+
+      - name: Verify full repository
+        working-directory: mcp
+        run: bun run verify:full
+
+      - name: Remove transient workflow and commit synchronized source
+        run: |
+          rm .github/workflows/finalize-authoring-sync.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "418982c+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "refactor: finalize single authoring path synchronization"
+          git push origin HEAD:Local
