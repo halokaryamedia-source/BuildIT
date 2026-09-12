@@ -10,6 +10,10 @@ function sourceCount(source: string, pattern: RegExp, label: string): number {
   return Number(raw);
 }
 
+function expectToolCount(body: string, label: string, count: number): void {
+  expect(body).toMatch(new RegExp(`${label}\\s+${count}\\s+tools`, "i"));
+}
+
 describe("current developer-facing documentation sync", () => {
   test("canonical documentation routing uses the domain hierarchy", async () => {
     const [docs, root, context, flow, implementation, validation, next] = await Promise.all([
@@ -45,13 +49,13 @@ describe("current developer-facing documentation sync", () => {
     const animationToolCount = sourceCount(phaseMeasureSource, /animation:\s*(\d+),/, "Animation surface count");
 
     expect(geometryToolCount).toBe(texturingToolCount);
-    expect(rootReadme).toContain(`Active phase-union catalog   ${callableToolCount} tools`);
-    expect(rootReadme).toContain(`AUTHORING source surface     ${geometryToolCount} tools`);
-    expect(rootReadme).toContain(`Animation source surface     ${animationToolCount} tools`);
-    expect(mcpReadme).toContain(`Active phase-union catalog   ${callableToolCount} tools`);
-    expect(mcpReadme).toContain(`AUTHORING surface            ${geometryToolCount} tools`);
-    expect(mcpReadme).toContain(`Animation surface            ${animationToolCount} tools`);
-    expect(gatewayReadme).toContain(`Runtime callable union   ${callableToolCount}`);
+    expectToolCount(rootReadme, "Active phase-union catalog", callableToolCount);
+    expectToolCount(rootReadme, "AUTHORING source surface", geometryToolCount);
+    expectToolCount(rootReadme, "Animation source surface", animationToolCount);
+    expectToolCount(mcpReadme, "Active phase-union catalog", callableToolCount);
+    expectToolCount(mcpReadme, "AUTHORING surface", geometryToolCount);
+    expectToolCount(mcpReadme, "Animation surface", animationToolCount);
+    expect(gatewayReadme).toMatch(new RegExp(`Runtime callable union\\s+${callableToolCount}`, "i"));
   });
 
   test("reference and authoring specialists point to canonical owners", async () => {
@@ -61,7 +65,7 @@ describe("current developer-facing documentation sync", () => {
     ]);
 
     expect(reference).toContain("docs/02-reference/image/standard.md");
-    expect(reference).toContain("docs/02-reference/package/schema.md");
+    expect(reference).toContain("docs/02-reference/package/README.md");
     expect(modelling).toContain("docs/03-authoring/modelling/profiles/README.md");
     for (const owner of [reference, modelling]) {
       expect(owner).not.toContain("docs/knowledge/");
