@@ -23,8 +23,8 @@ describe("Runtime boundary regressions", () => {
     const source = await repoFile("server/net.ts");
 
     expect(source).toContain("getCapabilityMetadata");
-    expect(source).toContain("effects.projectAffinity");
-    expect(source).toContain("effects.phaseAffinity");
+    expect(source).toContain("capabilityEffects?.projectAffinity");
+    expect(source).toContain("capabilityEffects?.phaseAffinity");
     expect(source).not.toContain("capability === 'create_project'");
     expect(source).not.toContain("envelope.capability === 'create_project'");
     expect(source).not.toContain("capability === 'switch_authoring_phase'");
