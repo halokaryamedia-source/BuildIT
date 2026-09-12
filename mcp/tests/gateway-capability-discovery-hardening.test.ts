@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import {
+  classifyCapabilityTier,
   searchCapabilityCatalog,
   type BackendTool,
 } from "@/gateway/contract";
@@ -13,10 +14,6 @@ describe("BlockIT Gateway capability discovery hardening", () => {
     {
       name: "create_brush_preset",
       description: "Create a reusable texture brush preset.",
-    },
-    {
-      name: "manage_geometry_reference",
-      description: "Load approved GLB geometry evidence.",
     },
     {
       name: "emulate_clicks",
@@ -63,11 +60,10 @@ describe("BlockIT Gateway capability discovery hardening", () => {
     ]);
   });
 
-  test("experimental remains discoverable for relevant evidence intent", () => {
-    const result = searchCapabilityCatalog(tools, "approved GLB geometry evidence", 4);
-    expect(result[0]).toMatchObject({
-      capability_id: "manage_geometry_reference",
-      tier: "experimental",
-    });
+  test("retired 3D-assisted names receive no active experimental priority", () => {
+    expect(classifyCapabilityTier({
+      name: "manage_geometry_reference",
+      description: "Retired compatibility name only.",
+    })).toBe("support");
   });
 });
