@@ -238,10 +238,11 @@ describe("Bedrock animation native intelligence", () => {
   });
 
   test("runtime wiring expands capability without adding another MCP tool", async () => {
-    const [runtime, server, skill] = await Promise.all([
+    const [runtime, bootstrap, server, skill] = await Promise.all([
       Bun.file("server/tools/animation-native-intelligence.ts").text(),
+      Bun.file("server/runtime/bootstrap.ts").text(),
       Bun.file("server/server.ts").text(),
-      Bun.file("../.agents/skills/blockit-bedrock-animation/SKILL.md").text(),
+      Bun.file("../.agents/skills/lazydesigner-animation/SKILL.md").text(),
     ]);
 
     expect(runtime).toContain('operation: z.literal("properties")');
@@ -251,7 +252,8 @@ describe("Bedrock animation native intelligence", () => {
     expect(runtime).toContain("rotation_global");
     expect(runtime).toContain("diagnostics_cost");
     expect(runtime).not.toContain("createTool(");
-    expect(server).toContain("wireAnimationNativeIntelligence();");
+    expect(server).toContain("initializeRuntimeCapabilityWiring");
+    expect(bootstrap).toContain("wireAnimationNativeIntelligence");
     expect(skill).toContain("operation: properties");
     expect(skill).toContain("math.ease_{in|out|in_out}_");
   });
