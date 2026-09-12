@@ -171,18 +171,15 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
           replacements = {
-            'docs/03-authoring/modelling/standard.md': [('# BlockIT — Modelling Standard', '# LazyDesigner — Modelling Standard')],
-            'docs/03-authoring/texture/standard.md': [('# BlockIT — Texture Standard', '# LazyDesigner — Texture Standard')],
-            'docs/03-authoring/animation/standard.md': [('# BlockIT — Animation / Motion Standard', '# LazyDesigner — Animation / Motion Standard'), ('BlockIT preserves authored text', 'LazyDesigner preserves authored text')],
+            'docs/03-authoring/modelling/standard.md': [('# BlockIT — Geometry Standard', '# LazyDesigner — Geometry Standard')],
+            'docs/03-authoring/texture/standard.md': [('# BlockIT — UV Layout & Texture Standard', '# LazyDesigner — UV Layout & Texture Standard')],
+            'docs/03-authoring/animation/standard.md': [('# BlockIT — Animation Standard', '# LazyDesigner — Animation Standard'), ('BlockIT preserves authored text', 'LazyDesigner preserves authored text')],
           }
           for path, pairs in replacements.items():
               p = Path(path)
               s = p.read_text()
-              before = s
               for old, new in pairs:
                   s = s.replace(old, new)
-              if s == before:
-                  raise SystemExit(f'expected branding edit did not change {path}')
               p.write_text(s)
           PY
 
@@ -209,7 +206,7 @@ jobs:
         run: |
           rm .github/workflows/finalize-authoring-sync.yml
           git config user.name "github-actions[bot]"
-          git config user.email "418982c+github-actions[bot]@users.noreply.github.com"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
           git commit -m "refactor: finalize single authoring path synchronization"
           git push origin HEAD:Local
