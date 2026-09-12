@@ -49,7 +49,7 @@ describe("LazyDesigner Control source migration", () => {
     expect(packageJson.scripts["measure:navigator"]).toBeUndefined();
   });
 
-  test("source ownership docs point to canonical Control and treat Navigator as retired history", async () => {
+  test("source ownership docs point to canonical Control and keep Navigator retired", async () => {
     const [implementation, validation, next] = await Promise.all([
       text("../docs/04-system/implementation-map.md"),
       text("../docs/05-operations/current-validation.md"),
@@ -59,10 +59,11 @@ describe("LazyDesigner Control source migration", () => {
     for (const owner of [implementation, validation, next]) {
       expect(owner).toContain("mcp/gateway/control/");
     }
-    expect(implementation).toMatch(/former `mcp\/gateway\/navigator\/` source path has been removed/i);
+    expect(implementation).toContain("Canonical source: `mcp/gateway/control/`");
+    expect(implementation).not.toMatch(/canonical source:\s*`mcp\/gateway\/navigator\//i);
     expect(validation).toMatch(/Navigator active source path: removed/i);
-    expect(next).toMatch(/former navigator\/ source removed/i);
-    expect(next).toMatch(/no alias|with no alias/i);
+    expect(next).toMatch(/former `mcp\/gateway\/navigator\/` source is removed/i);
+    expect(next).toMatch(/no alias/i);
   });
 
   test("Experimental Navigator history cannot advertise retired production ownership", async () => {
