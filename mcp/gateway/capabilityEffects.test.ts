@@ -23,7 +23,7 @@ describe("resolveGatewayCapabilityEffects", () => {
     );
 
     expect(resolved.effects.phaseAffinity).toBe("update_from_result");
-    expect(resolved.effects.invalidateCatalog).toBe(false);
+    expect(resolved.effects.invalidateCatalog).toBe(true);
     expect(resolved.authoringPhase).toBe("animation");
     expect(resolved.surfaceChanged).toBe(true);
   });
@@ -35,6 +35,7 @@ describe("resolveGatewayCapabilityEffects", () => {
       "geometry"
     );
 
+    expect(resolved.effects.invalidateCatalog).toBe(true);
     expect(resolved.authoringPhase).toBe("texturing");
     expect(resolved.surfaceChanged).toBe(false);
   });
