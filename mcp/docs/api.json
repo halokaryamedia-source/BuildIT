@@ -1,6 +1,6 @@
 {
   "version": "0.2.0",
-  "generatedAt": "2026-09-12T06:50:34.641Z",
+  "generatedAt": "2026-09-12T07:24:12.459Z",
   "tools": [
     {
       "name": "manage_cubes",
@@ -1106,7 +1106,7 @@
                       "keyframes",
                       "operation"
                     ],
-                    "additionalProperties": false
+                    "additionalProperties": true
                   },
                   {
                     "type": "object",
@@ -1231,7 +1231,7 @@
                       "action",
                       "operation"
                     ],
-                    "additionalProperties": false
+                    "additionalProperties": true
                   },
                   {
                     "type": "object",
@@ -1382,7 +1382,7 @@
                       "action",
                       "operation"
                     ],
-                    "additionalProperties": false
+                    "additionalProperties": true
                   },
                   {
                     "type": "object",
@@ -1644,7 +1644,7 @@
                       "action",
                       "operation"
                     ],
-                    "additionalProperties": false
+                    "additionalProperties": true
                   }
                 ]
               },
@@ -3779,7 +3779,7 @@
                 "required": [
                   "mode"
                 ],
-                "additionalProperties": false
+                "additionalProperties": true
               },
               {
                 "type": "object",
@@ -3871,7 +3871,7 @@
                 "required": [
                   "mode"
                 ],
-                "additionalProperties": false
+                "additionalProperties": true
               },
               {
                 "type": "object",
@@ -3901,7 +3901,7 @@
                   "id",
                   "mode"
                 ],
-                "additionalProperties": false
+                "additionalProperties": true
               }
             ]
           }
@@ -5038,7 +5038,7 @@
                 "required": [
                   "operation"
                 ],
-                "additionalProperties": false
+                "additionalProperties": true
               },
               {
                 "type": "object",
@@ -5074,7 +5074,7 @@
                 "required": [
                   "operation"
                 ],
-                "additionalProperties": false
+                "additionalProperties": true
               },
               {
                 "type": "object",
@@ -5124,7 +5124,7 @@
                   "material_name",
                   "operation"
                 ],
-                "additionalProperties": false
+                "additionalProperties": true
               },
               {
                 "type": "object",
@@ -5183,7 +5183,7 @@
                   "assignments",
                   "operation"
                 ],
-                "additionalProperties": false
+                "additionalProperties": true
               },
               {
                 "type": "object",
@@ -5225,7 +5225,7 @@
                 "required": [
                   "operation"
                 ],
-                "additionalProperties": false
+                "additionalProperties": true
               }
             ]
           }
@@ -7613,7 +7613,7 @@
                   "name",
                   "operation"
                 ],
-                "additionalProperties": false
+                "additionalProperties": true
               },
               {
                 "type": "object",
@@ -7688,7 +7688,7 @@
                   "material",
                   "operation"
                 ],
-                "additionalProperties": false
+                "additionalProperties": true
               },
               {
                 "type": "object",
@@ -7727,7 +7727,7 @@
                   "channel",
                   "operation"
                 ],
-                "additionalProperties": false
+                "additionalProperties": true
               },
               {
                 "type": "object",
@@ -7747,7 +7747,7 @@
                   "material",
                   "operation"
                 ],
-                "additionalProperties": false
+                "additionalProperties": true
               }
             ]
           }
