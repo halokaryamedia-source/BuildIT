@@ -38,7 +38,14 @@ jobs:
             exit 1
           fi
 
-      # Trigger marker: exact routed-schema validation verification.
+      - name: Verify routed schema zero-loss contract
+        working-directory: mcp
+        run: bun test tests/tool-factory-zero-loss.test.ts
+
+      - name: Verify particle texture output contract
+        working-directory: mcp
+        run: bun test tests/particle-end-to-end-static-contract.test.ts
+
       - name: Regenerate canonical MCP documentation
         working-directory: mcp
         run: bun run docs:build
