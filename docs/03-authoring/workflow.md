@@ -1,58 +1,161 @@
-# BlockIT — Modelling Workflow Policy
+# LazyDesigner — Authoring Workflow Policy
 
 **Status:** Active Policy  
-**Version:** 1.0  
-**Updated:** 2026-08-14
+**Version:** 2.0  
+**Updated:** 2026-09-12
 
 ## Purpose
 
-Own durable modelling-stage and evidence-economy rules. The single detailed current sequence lives in [Current Flow](../knowledge/flow.md); agent/tool routing lives in the active skills. This policy does not create a second operational checklist.
+Own durable cross-domain authoring sequence and dependency rules without duplicating specialist procedures. Detailed domain execution remains in the active specialist Skill and its canonical standard.
 
-## Core Contract
+## Canonical Lifecycle
 
 ```text
-known current state + optional grounded reference when reference-driven
-→ fast-path when non-reference: intent → simple envelope → manage_cubes (skip full Semantic/View maps)
-→ when reference-driven: Semantic Form → construction / transform ownership / contact invariants → Primary Form Hypothesis
-→ minimum coherent primary Cubes + required primary Groups/pivots
-→ only evidence that can change the next decision
-→ FAIL | UNVERIFIED→PROVISIONAL (continue with hypothesis) | PASS (reference-fidelity verdict needs paired images)
-→ causal local correction or global rebuild
-→ identity-weighted downstream work only after prerequisites pass
+REFERENCE / REQUIREMENTS
+→ GEOMETRY
+→ GEOMETRY VERIFY
+→ USER APPROVAL or authorized autonomous verification
+→ UV LAYOUT / UV PASS
+→ TEXTURING
+→ TEXTURE VERIFY
+→ USER APPROVAL or authorized autonomous verification
+→ ANIMATION READINESS when required
+→ ANIMATION when required
+→ FINALIZATION
+→ COMPLETE
 ```
+
+Geometry and Texturing are distinct semantic owners but share the same `AUTHORING` Runtime surface. Animation uses the separate `ANIMATION` Runtime surface.
+
+```text
+GEOMETRY semantic stage  → AUTHORING Runtime surface
+TEXTURING semantic stage → AUTHORING Runtime surface
+ANIMATION semantic stage → ANIMATION Runtime surface
+```
+
+Geometry↔Texturing correction does not require `HANDOFF_REQUIRED` or a Runtime surface switch. `HANDOFF_REQUIRED` is reserved for AUTHORING↔Animation.
+
+## Single-Owner Execution
+
+Normal work activates exactly one semantic specialist:
+
+```text
+Geometry / hierarchy / pivots / UV
+→ lazydesigner-modelling
+
+Texture / atlas / Painter / material / PBR
+→ lazydesigner-texturing
+
+Animation / motion / effects / controllers
+→ lazydesigner-animation
+```
+
+Control projects only the active-stage context. Geometry may load exactly one selected modelling profile. Do not load sibling specialists or the shared stage contract as reassurance.
 
 ## Minimum Necessary Evidence
 
-- Reuse fresh exact identity/authored state returned by prior calls when sufficient — `manage_cubes` return values are sufficient for immediate correction without `inspect_elements(mode=detail)`.
-- Use focused discovery only for unknown, stale, or ambiguous state.
-- `inspect_elements(mode=detail)` is a fallback for missing/stale exact target state, not a mandatory pre-correction ritual.
-- `inspect_model_bounds` is only for material envelope/scale/ground/displacement or bounded surface/contact questions; reuse fresh evidence.
-- Do not inspect every newly placed Cube or capture after every mutation.
-- `UNVERIFIED` is an evidence state, not a command to create more calls — for non-reference tasks it becomes `PROVISIONAL` and work continues with a marked hypothesis.
-- After a local correction, capture affected view(s) first; expand only when a material cross-view claim could regress.
+Reuse fresh exact identity/authored state returned by prior calls when sufficient.
 
-## Primary / Downstream Boundary
+```text
+known target + known capability
+→ mutate
+→ reuse receipt
+→ verify only evidence made stale or able to change the verdict
+```
 
-Form/contact/articulation-defining hierarchy and pivots may belong in the primary blockout. Neutral organization and secondary geometry wait until primary form passes. Production texture/animation must not compensate for unresolved dependent geometry/hierarchy/pivot problems.
+Use focused discovery only for unknown, stale, or ambiguous state. Avoid confirmation reads after successful deterministic mutations, screenshot-per-micro-mutation loops, broad status/search/describe rituals, and full-profile/package reloads.
 
-Existing-asset work may accept the current asset as the task baseline when upstream correction is outside scope, without certifying that baseline as reference-accurate.
+## Geometry
 
-## Correction / Convergence
+Geometry owns shape, hierarchy, transform ownership, pivots, articulation readiness, openings/negative space, contact, dimensions, and UV Layout semantics.
 
-Use one diagnosed causal class: `TRANSLATE | RESIZE | ROTATE | REATTACH | SPLIT | MERGE/REMOVE | ADD MASS`. Preserve declared invariants, verify returned structural effect, then classify the visual result `IMPROVED | UNCHANGED | REGRESSED`. A material cross-view regression rejects the correction. Stop the same failed causal direction after two attempts without new evidence.
+Use the minimum sufficient Bedrock-native geometry. Representation complexity is earned by silhouette, real volume, negative-space boundary, contact, layering, transform ownership, motion, or a proven technical constraint. Surface-only information belongs in Texture.
+
+A coherent geometry cohort is authored first, then visually/structurally verified. Tool success is execution evidence only.
+
+## UV Layout
+
+UV Layout remains Geometry-owned mapping state. Production UV work follows Geometry approval/authorized verification and must reach UV Layout PASS before Texturing can advance.
+
+A material UV change invalidates only affected downstream texture evidence. Do not globally reset unrelated accepted state.
+
+## Texturing
+
+Texturing owns atlas pixels, palette/material styling, mapped-surface readability, alpha/emissive/PBR intent, identity markings, pattern continuity, and Texture Verify.
+
+Texture must not compensate for a missing/incorrect mass, attachment, opening, hierarchy, or pivot. A proved upstream defect returns to Geometry owner inside the shared AUTHORING surface.
+
+## Animation
+
+Animation begins only after canonical readiness: saved checkpoint, UV Layout PASS, no blockers, and either explicit upstream user approval or explicitly authorized current-revision autonomous verification.
+
+Animation owns motion, timeline, controller composition, animation-bound effects, and playback evidence. It does not own structural rig mutation. A proved hierarchy/pivot/clearance blocker returns to AUTHORING through the Gateway handoff and resumes the same task.
+
+## Verification / Correction
+
+```text
+MUTATE coherent cohort
+→ VERIFY affected evidence
+→ PASS?
+   ├─ yes → READY_FOR_USER_REVIEW or next legal stage
+   └─ no  → diagnose first material owning cause
+            → one bounded correction
+            → refresh affected evidence
+            → IMPROVED | UNCHANGED | REGRESSED
+```
+
+Internal PASS never equals user approval. The same causal direction failing twice without new evidence becomes `BLOCKED` rather than a third guess.
+
+## Dependency Invalidation
+
+Invalidate only what the mutation can materially affect.
+
+```text
+Geometry change affecting mapped surfaces
+→ affected UV/Texture evidence stale
+
+UV change
+→ affected Texture evidence stale
+
+Texture mutation
+→ Geometry/UV evidence remains fresh
+
+participating hierarchy/pivot change
+→ affected Animation evidence stale
+
+Animation keyframe change
+→ Geometry/UV/Texture evidence remains fresh unless a structural blocker is discovered
+```
 
 ## Persistence
 
-Persistent asset state is saved at meaningful handoff/resume/park/completion boundaries. Mutation count alone is not a checkpoint trigger; do not turn transient tool activity into repository memory.
+Persist meaningful boundaries such as approval, handoff, resume, park, and completion. Mutation count alone is not a checkpoint trigger. Workspace state is continuation state, not a second Runtime database.
+
+## Canonical Owners
+
+```text
+Authoring index / stage routing
+→ docs/03-authoring/README.md
+
+Geometry policy
+→ docs/03-authoring/modelling/standard.md
+
+Texture policy
+→ docs/03-authoring/texture/standard.md
+
+Animation policy
+→ docs/03-authoring/animation/standard.md
+
+Cross-stage semantic ambiguity
+→ docs/04-system/authoring-stage-context.md
+
+Context loading
+→ docs/04-system/ai-context-loading.md
+
+Runtime/source ownership
+→ docs/04-system/implementation-map.md
+```
 
 ## Proof Boundary
 
-Tool/source/CI success is structural/static evidence only. Live Blockbench behavior, persistence, and visual/model-quality claims remain `LOCAL PROOF REQUIRED` until directly tested when local acceptance is explicitly active.
-
-## Related
-
-- [Product Requirements](02-product-requirements.md)
-- [Reference Guide](04-reference-guide.md)
-- [Geometry Standard](05-geometry-standard.md)
-- [Visual Validation](07-visual-validation.md)
-- [Current Flow](../knowledge/flow.md)
+Source/static evidence can establish contracts, ownership, schemas, routing, and deterministic behavior. Installed Runtime freshness, native Blockbench mutation/playback/persistence, visual fidelity, and accepted-result efficiency require matching local/live proof.
