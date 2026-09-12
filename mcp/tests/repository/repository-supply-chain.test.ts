@@ -22,7 +22,7 @@ function actionRefs(workflow: string): ActionRef[] {
 
 function expectImmutableActions(workflow: string, expectedActions: string[]): void {
   const refs = actionRefs(workflow);
-  expect(refs.map((entry) => entry.action).sort()).toEqual([...expectedActions].sort());
+  expect([...new Set(refs.map((entry) => entry.action))].sort()).toEqual([...expectedActions].sort());
   for (const ref of refs) {
     expect(ref.revision).toMatch(/^[0-9a-f]{40}$/);
     expect(ref.note).toMatch(/^v\d+$/);
@@ -31,13 +31,13 @@ function expectImmutableActions(workflow: string, expectedActions: string[]): vo
 }
 
 describe("repository workflow supply chain", () => {
-  test("verification and experimental workflows pin trusted Actions to immutable revisions", async () => {
-    const [repository, authoring, mcp, release, experimental] = await Promise.all([
+  test("active verification and distribution workflows pin trusted Actions to immutable revisions", async () => {
+    const [repository, authoring, mcp, release, distribution] = await Promise.all([
       source("../.github/workflows/repository-verify.yml"),
       source("../.github/workflows/authoring-policy-verify.yml"),
       source("../.github/workflows/mcp-verify.yml"),
       source("../.github/workflows/release-verify.yml"),
-      source("../.github/workflows/blockbench-web-poc.yml"),
+      source("../.github/workflows/managed-distribution.yml"),
     ]);
 
     for (const workflow of [repository, authoring, release]) {
@@ -48,10 +48,11 @@ describe("repository workflow supply chain", () => {
       "oven-sh/setup-bun",
       "actions/upload-artifact",
     ]);
-    expectImmutableActions(experimental, [
+    expectImmutableActions(distribution, [
       "actions/checkout",
-      "actions/setup-node",
+      "oven-sh/setup-bun",
       "actions/upload-artifact",
+      "actions/download-artifact",
     ]);
   });
 
