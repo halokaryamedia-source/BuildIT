@@ -34,10 +34,10 @@ describe("Bedrock Locator / Null Object direct coverage", () => {
   });
 
   test("Locator tools stay inside the existing elements family", async () => {
-    const toolsRoot = await source("server/tools.ts");
-    expect(toolsRoot).toContain('import { registerLocatorTools } from "./tools/locators"');
-    expect(toolsRoot).toContain("registerElementTools();\n  registerLocatorTools();");
-    expect(toolsRoot).toContain("elements: registerElementFamilyTools");
+    const registration = await source("server/runtime/registration.ts");
+    expect(registration).toContain('import { registerLocatorTools } from "../tools/locators"');
+    expect(registration).toContain("registerElementTools();\n  registerLocatorTools();");
+    expect(registration).toContain("elements: registerElementFamilyTools");
   });
 
   test("explicit parent targets are resolved before Undo and failures can roll back", async () => {
@@ -93,19 +93,17 @@ describe("Bedrock Locator / Null Object direct coverage", () => {
     expect(locatorSource).toContain("IK fields remain Blockbench editor/animation state");
   });
 
-  test("current owners keep Locator coverage mapped while protected gaps remain explicit", async () => {
-    const [orchestrator, implementation] = await Promise.all([
-      source("../.agents/skills/blockit-bedrock-entity-mcp/SKILL.md"),
-      source("../docs/knowledge/implementation-map.md"),
+  test("current owners keep Locator coverage mapped without inventing another system", async () => {
+    const [registration, implementation] = await Promise.all([
+      source("server/runtime/registration.ts"),
+      source("../docs/04-system/implementation-map.md"),
     ]);
-    expect(orchestrator).toMatch(/identity\/hierarchy\/detail\s+→ inspect_elements\(mode=search\|outline\|detail\)/);
-    expect(orchestrator).toMatch(/Locator\/Null\s+→ manage_locator \/ manage_null_object/);
-    expect(orchestrator).toContain("## State Reuse / Anti-Loop");
-    expect(orchestrator).toContain("no confirmation readback");
-    expect(orchestrator).toMatch(/Do not automatically re-read fresh .*targets with `inspect_elements\(mode=detail\)`/);
-    expect(implementation).toContain("mcp/tests/bedrock-locator-coverage.test.ts");
-    expect(implementation).toContain("TextureMesh direct authoring/inspection");
-    expect(implementation).toContain("blend-transition curves are available through `manage_animation_controller`");
-    expect(implementation).not.toContain("controller blend-curve mutation");
+    expect(registration).toContain("registerLocatorTools();");
+    expect(registration).toContain("elements: registerElementFamilyTools");
+    expect(implementation).toContain("There is one authoring system.");
+    expect(implementation).toContain("mcp/server/tools/**");
+    expect(implementation).toContain("authored Geometry / Texture / Animation / Particle / inspection / export implementations");
+    expect(implementation).toContain("manage_animation_controller");
+    expect(implementation).toContain("These extensions do not create additional controller tools/profiles.");
   });
 });
