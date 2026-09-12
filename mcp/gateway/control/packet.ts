@@ -5,7 +5,6 @@ import { contextForAuthoringDomain } from "./registry";
 import { buildControlSnapshot } from "./snapshot";
 import {
   buildControlStageContext,
-  readinessForAuthoringDomain,
   type ControlStageContext,
 } from "./contextProjection";
 import { readReferencePackageProjection, type ControlReferenceProjection } from "./referencePackage";
@@ -211,7 +210,8 @@ function buildReadiness(
   workspace: ControlWorkspaceProjection,
   reference: ControlReferenceProjection,
   mode: ControlTaskMode,
-  lifecycle: LifecycleProjection
+  lifecycle: LifecycleProjection,
+  activeReferenceReadiness: string | null
 ): ControlReadiness {
   if (mode === "SYSTEM_DEVELOPMENT") {
     return {
@@ -229,7 +229,6 @@ function buildReadiness(
   const projectReady = snapshot.project.binding === "BOUND";
   const domainReady = snapshot.authoring.domain !== null;
   const contextReady = snapshot.context.required.length > 0;
-  const activeReferenceReadiness = readinessForAuthoringDomain(snapshot.authoring.domain, reference);
   const activeReferenceBlocked = activeReferenceReadiness === "BLOCKED";
   const reasons: string[] = [];
 
@@ -303,7 +302,7 @@ export async function buildControlPacket(
   const workspaceBlockers = mode === "ASSET_AUTHORING"
     ? workspace.blockers.map((_, index) => `WORKSPACE_BLOCKER_${index + 1}`)
     : [];
-  const referenceBlockers = mode === "ASSET_AUTHORING" && stageContext?.stage_readiness === "BLOCKED"
+  const referenceBlockers = stageContext?.stage_readiness === "BLOCKED"
     ? ["REFERENCE_STAGE_BLOCKED"]
     : [];
   const lifecycleBlockers = lifecycle.blocked ? lifecycle.reasons : [];
@@ -326,7 +325,14 @@ export async function buildControlPacket(
       development,
       options.currentUserDelta?.trim() || null
     ),
-    readiness: buildReadiness(snapshot, workspace, reference, mode, lifecycle),
+    readiness: buildReadiness(
+      snapshot,
+      workspace,
+      reference,
+      mode,
+      lifecycle,
+      stageContext?.stage_readiness ?? null
+    ),
     workspace: workspaceSummary(workspace),
     reference: referenceSummary(reference),
     stage_context: stageContext,
