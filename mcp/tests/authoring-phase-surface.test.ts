@@ -67,11 +67,13 @@ describe("authoring stage MCP surface", () => {
     expect(geometry.has("create_animation")).toBe(false);
 
     const animation = phaseSurface("animation");
-    expect(animation.size).toBe(20);
+    expect(animation.size).toBe(18);
     expect(animation.has("create_animation")).toBe(true);
     expect(animation.has("create_project")).toBe(false);
     expect(animation.has("manage_cubes")).toBe(false);
     expect(animation.has("create_texture")).toBe(false);
+    expect(animation.has("select_all_of_type")).toBe(false);
+    expect(animation.has("get_selection")).toBe(false);
     for (const retired of RETIRED_3D_CAPABILITIES) {
       expect(animation.has(retired), retired).toBe(false);
     }
