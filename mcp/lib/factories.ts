@@ -295,7 +295,9 @@ export function extractShape(schema: z.ZodType): Record<string, z.ZodType> {
 export function withToolBranch<T extends z.ZodType, K extends string, V extends string>(
   schema: T, field: K, value: V
 ) {
-  return z.object({ ...extractShape(schema), [field]: z.literal(value) })
+  return z
+    .object({ ...extractShape(schema), [field]: z.literal(value) })
+    .passthrough()
     .transform((input, ctx): z.infer<T> & Record<K, V> => {
       const { [field]: _branch, ...payload } = input;
       const parsed = schema.safeParse(payload);
