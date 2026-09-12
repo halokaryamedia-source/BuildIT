@@ -41,9 +41,9 @@ describe("single-owner authoring flow", () => {
     );
   });
 
-  test("phase metadata does not force catalog invalidation for every focus change", () => {
+  test("phase metadata preserves semantic phase affinity while transport refresh remains conservative", () => {
     const effects = getCapabilityMetadata("switch_authoring_phase").effects;
     expect(effects.phaseAffinity).toBe("update_from_result");
-    expect(effects.invalidateCatalog).toBe(false);
+    expect(effects.invalidateCatalog).toBe(true);
   });
 });
