@@ -291,13 +291,17 @@ export function extractShape(schema: z.ZodType): Record<string, z.ZodType> {
   return {};
 }
 
-/** Keep the public discriminator and the primitive's validation in one schema. */
+/**
+ * Keep the public discriminator and primitive validation in one exact schema.
+ * The branch envelope rejects fields outside the advertised shape, then the
+ * retained executor schema remains authoritative for refinements and semantics.
+ */
 export function withToolBranch<T extends z.ZodType, K extends string, V extends string>(
   schema: T, field: K, value: V
 ) {
   return z
     .object({ ...extractShape(schema), [field]: z.literal(value) })
-    .passthrough()
+    .strict()
     .transform((input, ctx): z.infer<T> & Record<K, V> => {
       const { [field]: _branch, ...payload } = input;
       const parsed = schema.safeParse(payload);
