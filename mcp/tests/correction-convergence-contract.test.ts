@@ -20,7 +20,7 @@ describe("LazyDesigner correction convergence contract", () => {
     expect(shared).toContain("reuse fresh state/evidence");
     expect(shared).toContain("one bounded coherent mutation");
     expect(shared).toContain("same causal direction failing twice without new evidence");
-    expect(shared).toContain("blocked rather than a third guess");
+    expect(shared).toMatch(/becomes `?blocked`? rather than a third guess/);
   });
 
   test("geometry reuses exact state and blocks repeated same-cause correction", async () => {
