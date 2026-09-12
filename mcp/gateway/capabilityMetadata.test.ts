@@ -11,7 +11,7 @@ const tool = (name: string, description = "") => ({
 describe("canonical capability metadata", () => {
   test("preserves tier ownership outside Gateway", () => {
     expect(getCapabilityMetadata("manage_cubes").tier).toBe("primary");
-    expect(getCapabilityMetadata("manage_geometry_reference").tier).toBe("experimental");
+    expect(getCapabilityMetadata("manage_geometry_reference").tier).toBe("support");
     expect(getCapabilityMetadata("risky_eval").tier).toBe("maintenance");
     expect(getCapabilityMetadata("unknown_future_tool").tier).toBe("support");
   });
