@@ -71,11 +71,11 @@ describe("repository GitHub discipline", () => {
       source("../docs/04-system/compatibility-identifiers.md"),
     ]);
 
-    expect(packageRules).toContain("Generated / Static Verification");
-    expect(packageRules).toContain("bun run docs:build");
-    expect(packageRules).toContain("bun run docs:check");
-    expect(packageRules).toContain("bun run prompts:build");
+    expect(packageRules).toContain("## Generated Documentation / Prompts");
+    expect(packageRules).toContain("docs/api.json + docs/index.html");
     expect(packageRules).toContain("prompts/manifest.json");
+    expect(packageRules).toMatch(/Never hand-edit generated API\/prompt output/i);
+    expect(packageRules).toMatch(/owning generator path|canonical generator/i);
     expect(specialist).toContain("Preflight generated ownership");
     expect(next).toMatch(/No hand-editing generated docs\/output/i);
     expect(compatibility).toContain("Generated Documentation Boundary");
