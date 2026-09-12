@@ -61,7 +61,7 @@ describe("LazyDesigner compatibility identifier boundary", () => {
     expect(plugin).toContain('Blockbench.showQuickMessage("LazyDesigner removed"');
     expect(plugin).toContain("LazyDesigner runtime initialization failed");
     expect(ui).toContain('name: "LazyDesigner"');
-    expect(panel).toContain('aria-label="LazyDesigner Runtime status"');
+    expect(panel).toContain('aria-label="LazyDesigner status"');
     expect(panel).toContain("LazyDesigner panel");
     expect(statusBar).toContain('return "LazyDesigner Starting"');
     expect(statusBar).toContain('return "LazyDesigner Error"');
