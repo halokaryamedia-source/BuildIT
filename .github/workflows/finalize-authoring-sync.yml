@@ -38,6 +38,7 @@ jobs:
             exit 1
           fi
 
+      # Trigger marker: bootstrap registration ordering verification.
       - name: Verify full synchronized repository
         working-directory: mcp
         run: bun run verify:full
