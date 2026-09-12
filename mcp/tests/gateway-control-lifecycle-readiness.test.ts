@@ -5,10 +5,13 @@ import { join } from "node:path";
 import { buildControlPacket } from "@/gateway/control";
 import type { GatewayRuntimeStatus } from "@/gateway/backend";
 
-function status(phase: "geometry" | "texturing" | "animation"): GatewayRuntimeStatus {
+function status(
+  phase: "geometry" | "texturing" | "animation",
+  projectUuid: string = "project-a"
+): GatewayRuntimeStatus {
   return {
     gateway: "ready",
-    affinity: { project_uuid: "project-a", authoring_phase: phase },
+    affinity: { project_uuid: projectUuid, authoring_phase: phase },
     runtime: {
       online: true,
       endpoint: "http://127.0.0.1:3000/bb-mcp",
@@ -21,8 +24,8 @@ function status(phase: "geometry" | "texturing" | "animation"): GatewayRuntimeSt
         build_identity: "sha256:build-a",
         product: { authoring_phase: phase },
         project_context: {
-          active_project_uuid: "project-a",
-          requested_project_uuid: "project-a",
+          active_project_uuid: projectUuid,
+          requested_project_uuid: projectUuid,
           requested_project_available: true,
           open_project_count: 1,
         },
@@ -93,7 +96,9 @@ describe("LazyDesigner Control lifecycle readiness", () => {
   });
 
   test("missing Workspace asks for orientation instead of inventing downstream failure", async () => {
-    const packet = await buildControlPacket(status("texturing"));
+    const packet = await buildControlPacket(
+      status("texturing", "project-without-workspace")
+    );
     expect(packet.readiness.modelling_start).toBe("NEEDS_ORIENTATION");
     expect(packet.readiness.reasons).toContain("WORKSPACE_LIFECYCLE_UNAVAILABLE");
     expect(packet.blockers).not.toContain("GEOMETRY_APPROVAL_REQUIRED");
