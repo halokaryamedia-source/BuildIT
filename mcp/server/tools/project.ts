@@ -2,32 +2,10 @@
 /// <reference types="blockbench-types" />
 import { z } from "zod";
 import { createTool, type ToolSpec } from "@/lib/factories";
-import { STATUS_EXPERIMENTAL, STATUS_STABLE } from "@/lib/constants";
+import { STATUS_STABLE } from "@/lib/constants";
 import { readRenderedModelBounds } from "@/lib/renderedModelBounds";
-import { isAbsoluteFilesystemPath } from "@/lib/util";
 
 export const DEFAULT_BEDROCK_UV_RESOLUTION = 128;
-
-// Compatibility-only schema retained until the next LOCAL_CODE docs generation.
-// The capability is retired and never exposed by the active phase surface.
-const retiredLocalGlbPathSchema = z
-  .string()
-  .min(1)
-  .refine(isAbsoluteFilesystemPath, {
-    message:
-      "3D-Assisted Evidence reference path must be an absolute local filesystem path.",
-  })
-  .refine((path) => /\.glb$/i.test(path), {
-    message: "3D-Assisted Evidence supports local .glb files only.",
-  });
-
-const retiredReferenceVec3Schema = z.tuple([
-  z.number().finite(),
-  z.number().finite(),
-  z.number().finite(),
-]);
-
-const retiredFrontDirectionSchema = z.enum(["+z", "-z"]);
 
 export const createProjectParameters = z
   .object({
@@ -47,111 +25,6 @@ export const createProjectParameters = z
 
 export const getProjectInfoParameters = z.object({});
 export const inspectModelBoundsParameters = z.object({});
-
-export const manageGeometryReferenceParameters = z
-  .object({
-    action: z
-      .enum(["load", "update", "remove"])
-      .describe("3D-Assisted Evidence reference lifecycle action."),
-    path: retiredLocalGlbPathSchema
-      .optional()
-      .describe("Absolute local .glb path; required only for load."),
-    id: z
-      .string()
-      .min(1)
-      .optional()
-      .describe(
-        "Tool-owned 3D-Assisted Evidence reference UUID or unique exact name; required for update/remove."
-      ),
-    source_front_direction: retiredFrontDirectionSchema
-      .optional()
-      .describe(
-        "Required load-time front direction encoded by the approved 3D-Assisted Evidence GLB."
-      ),
-    origin: retiredReferenceVec3Schema
-      .optional()
-      .describe("Reference origin [x,y,z]. Load default is [0,0,0]."),
-    uniform_scale: z
-      .number()
-      .finite()
-      .positive()
-      .optional()
-      .describe(
-        "Uniform scale multiplier. Load default is 1; non-uniform scaling is unsupported."
-      ),
-    visibility: z
-      .boolean()
-      .optional()
-      .describe("Reference visibility. Load default is true."),
-    wireframe: z
-      .boolean()
-      .optional()
-      .describe("Reference wireframe mode. Load default is false."),
-  })
-  .strict()
-  .superRefine((value, ctx) => {
-    const reject = (key: keyof typeof value, message: string) => {
-      if (value[key] !== undefined) {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, path: [key], message });
-      }
-    };
-
-    if (value.action === "load") {
-      if (!value.path) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ["path"],
-          message: "load requires path.",
-        });
-      }
-      if (!value.source_front_direction) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ["source_front_direction"],
-          message: "load requires source_front_direction.",
-        });
-      }
-      reject(
-        "id",
-        "load does not accept id; v1 supports one active 3D-Assisted Evidence reference."
-      );
-      return;
-    }
-
-    if (!value.id) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["id"],
-        message: `${value.action} requires id.`,
-      });
-    }
-    reject(
-      "path",
-      `${value.action} does not change the GLB source; remove and reload instead.`
-    );
-    reject(
-      "source_front_direction",
-      `${value.action} does not change source orientation; remove and reload instead.`
-    );
-
-    if (value.action === "remove") {
-      reject("origin", "remove accepts only action and id.");
-      reject("uniform_scale", "remove accepts only action and id.");
-      reject("visibility", "remove accepts only action and id.");
-      reject("wireframe", "remove accepts only action and id.");
-    } else if (
-      value.origin === undefined &&
-      value.uniform_scale === undefined &&
-      value.visibility === undefined &&
-      value.wireframe === undefined
-    ) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["action"],
-        message: "update requires an actual transform or display change.",
-      });
-    }
-  });
 
 export const projectToolDocs: ToolSpec[] = [
   {
@@ -187,18 +60,6 @@ export const projectToolDocs: ToolSpec[] = [
     },
     parameters: inspectModelBoundsParameters,
     status: STATUS_STABLE,
-  },
-  {
-    name: "manage_geometry_reference",
-    description:
-      "Loads, updates, or removes one approved local 3D-Assisted Evidence .glb through Blockbench Reference Models. It never converts mesh triangles to Bedrock geometry.",
-    annotations: {
-      title: "Manage 3D-Assisted Evidence Reference",
-      destructiveHint: true,
-      openWorldHint: true,
-    },
-    parameters: manageGeometryReferenceParameters,
-    status: STATUS_EXPERIMENTAL,
   },
 ];
 
@@ -362,16 +223,4 @@ export function registerProjectTools() {
       };
     },
   }, projectToolDocs[2].status);
-
-  // Retained only as a generated-doc compatibility descriptor until the next
-  // LOCAL_CODE generator pass. It is excluded from every active phase surface.
-  createTool(projectToolDocs[3].name, {
-    ...projectToolDocs[3],
-    parameters: manageGeometryReferenceParameters,
-    async execute() {
-      throw new Error(
-        "manage_geometry_reference is retired. Use the normal native BlockIT Geometry path."
-      );
-    },
-  }, projectToolDocs[3].status);
 }
