@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { readFile } from "node:fs/promises";
 
-async function skill(path: string): Promise<string> {
+async function repoFile(path: string): Promise<string> {
   return readFile(new URL(`../../${path}`, import.meta.url), "utf8");
 }
 
@@ -9,23 +9,23 @@ function normalized(value: string): string {
   return value.replace(/\s+/g, " ").toLowerCase();
 }
 
-describe("BlockIT correction convergence contract", () => {
-  test("router enforces one-cause correction and bounded retries", async () => {
-    const router = normalized(
-      await skill(".agents/skills/blockit-bedrock-entity-mcp/SKILL.md")
+describe("LazyDesigner correction convergence contract", () => {
+  test("shared stage owner enforces one-cause correction and bounded retries", async () => {
+    const shared = normalized(
+      await repoFile("docs/04-system/authoring-stage-context.md")
     );
 
-    expect(router).toContain("correction convergence contract");
-    expect(router).toContain("largest material difference");
-    expect(router).toContain("first wrong owner/cause");
-    expect(router).toContain("reuse fresh state/evidence");
-    expect(router).toContain("same causal direction may be attempted at most twice");
-    expect(router).toContain("downstream compensation is not convergence");
+    expect(shared).toContain("correction / convergence");
+    expect(shared).toContain("one diagnosed cause");
+    expect(shared).toContain("reuse fresh state/evidence");
+    expect(shared).toContain("one bounded coherent mutation");
+    expect(shared).toContain("same causal direction failing twice without new evidence");
+    expect(shared).toContain("blocked rather than a third guess");
   });
 
   test("geometry reuses exact state and blocks repeated same-cause correction", async () => {
     const geometry = normalized(
-      await skill(".agents/skills/blockbench-bedrock-modelling/SKILL.md")
+      await repoFile(".agents/skills/lazydesigner-modelling/SKILL.md")
     );
 
     expect(geometry).toContain("local correction / convergence");
@@ -36,7 +36,7 @@ describe("BlockIT correction convergence contract", () => {
 
   test("texturing refreshes only stale evidence and does not guess a third variant", async () => {
     const texturing = normalized(
-      await skill(".agents/skills/blockit-bedrock-texturing/SKILL.md")
+      await repoFile(".agents/skills/lazydesigner-texturing/SKILL.md")
     );
 
     expect(texturing).toContain("correction convergence");
@@ -48,7 +48,7 @@ describe("BlockIT correction convergence contract", () => {
 
   test("animation reuses timeline state and refuses denser-key retry loops", async () => {
     const animation = normalized(
-      await skill(".agents/skills/blockit-bedrock-animation/SKILL.md")
+      await repoFile(".agents/skills/lazydesigner-animation/SKILL.md")
     );
 
     expect(animation).toContain("correction convergence");
