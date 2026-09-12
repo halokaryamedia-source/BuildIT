@@ -139,6 +139,19 @@ mcp/server/tools/**
 → authored Geometry / Texture / Animation / Particle / inspection / export implementations
 ```
 
+Representative focused owners:
+
+```text
+manage_locator / manage_null_object
+→ mcp/server/tools/locators.ts
+
+manage_material_instances
+→ material instances owner under mcp/server/tools/**
+
+manage_animation_controller
+→ animation controller owner under mcp/server/tools/**
+```
+
 `mcp/server/tools.ts` remains a thin compatibility facade/bootstrap boundary; it is not the owner of Runtime state anymore.
 
 ## Shared Runtime Libraries
