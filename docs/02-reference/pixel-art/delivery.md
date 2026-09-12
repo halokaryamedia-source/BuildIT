@@ -1,16 +1,14 @@
 # Pixel Art Delivery
 
-This file owns Pixel Art delivery and downstream handoff shape. It does not define Texturing, Particle, Control, or package-stage semantics.
+This file owns Pixel Art delivery, artifact identity, naming, and downstream handoff shape. It does not define Texturing, Particle, Control, or package-stage semantics.
 
 ## Default Delivery
 
-Deliver only the asset(s) requested by the user plus minimum production-relevant metadata when needed.
+Deliver only the asset(s) requested by the user plus minimum production-relevant metadata when needed. Do not create ZIPs, manifests, sprite sheets, atlases, or package metadata merely to satisfy a template.
 
-Do not create ZIPs, manifests, sprite sheets, atlases, or package metadata merely to satisfy a template.
+## Artifact Identity and Naming
 
-## Artifact Identity
-
-A delivered artifact should resolve one stable identity before handoff:
+Resolve one stable identity before handoff:
 
 ```text
 artifact_id / slug
@@ -22,7 +20,19 @@ style_lock_id when part of a set
 source/reference identity when fidelity matters
 ```
 
-Use one canonical identity across filenames and handoff metadata. Revision labels are not part of semantic identity unless the user explicitly requires versioned deliverables.
+Use existing project naming conventions when available. Otherwise prefer concise lowercase `snake_case`. For series, keep one base identity with semantic suffixes. Avoid revision-history suffixes in final production names when a clean identity is available.
+
+Examples:
+
+```text
+fishing_rod
+parking_icon
+fuel_bottle_blue
+cyberpunk_kiosk
+cat_walk_01
+```
+
+Naming does not define style or runtime ownership.
 
 ## Evidence Provenance
 
@@ -55,20 +65,7 @@ source/reference identity
 known blockers
 ```
 
-Do not include:
-
-```text
-UV coordinates
-atlas placement
-Blockbench texture UUID
-material-instance state
-render-profile state
-mapped-surface PASS claims
-```
-
-unless those facts came from the actual Texturing/Runtime owner.
-
-Texturing converts the approved pixel design into production mapped texture state. Pixel Art does not prescribe implementation details that belong to Texturing.
+Do not include UV coordinates, atlas placement, Blockbench texture UUID, material-instance state, render-profile state, or mapped-surface PASS claims unless those facts came from the actual Texturing/Runtime owner.
 
 ## Downstream Particle Handoff
 
@@ -87,69 +84,21 @@ source/reference identity
 known blockers
 ```
 
-Do not include particle runtime claims such as:
-
-```text
-spawn rate
-lifetime
-velocity
-emitter shape
-Molang
-collision
-event behavior
-```
-
-Those remain Particle-owned.
+Do not include spawn rate, lifetime, velocity, emitter shape, Molang, collision, or event behavior. Those remain Particle-owned.
 
 ## Sprite Animation Delivery
 
-Create a sprite sheet only when requested or required by the target. Otherwise ordered frames are valid.
-
-When a sheet is required, preserve:
-
-```text
-frame order
-frame dimensions
-frame count
-loop intent
-anchor/alignment convention when authoritative
-```
-
-Do not infer engine-specific packing metadata without evidence.
+Create a sprite sheet only when requested or required by the target. Otherwise ordered frames are valid. When a sheet is required, preserve frame order, frame dimensions, frame count, loop intent, and authoritative anchor/alignment convention. Do not infer engine-specific packing metadata without evidence.
 
 ## Style Lock Handoff
 
-Do not transmit an entire working history. Pass only the fields that constrain future assets or downstream appearance, for example:
-
-```text
-style_lock_id
-visible pixel scale
-outline treatment
-palette behavior
-light direction
-contrast range
-projection
-subject occupancy / padding
-detail density
-shadow/highlight language
-```
-
-If a field is not decision-relevant downstream, omit it.
+Pass only fields that constrain future assets or downstream appearance, such as `style_lock_id`, visible pixel scale, outline treatment, palette behavior, light direction, contrast range, projection, occupancy/padding, detail density, and shadow/highlight language. Omit fields that are not decision-relevant downstream.
 
 ## Clean Output
 
-Production output must not contain:
-
-- baked checkerboard transparency previews;
-- accidental white/black matte halos;
-- smooth-resize residue;
-- unused generated backgrounds;
-- duplicate revision layers presented as final assets;
-- hidden scratch assets bundled as production files.
+Production output must not contain baked checkerboard previews, accidental matte halos, smooth-resize residue, unused generated backgrounds, duplicate revision layers presented as final assets, or hidden scratch assets bundled as production files.
 
 ## Handoff State
-
-A validated pixel-art artifact and a production-mapped texture/effect are separate states.
 
 ```text
 PIXEL_ART_READY
