@@ -44,29 +44,59 @@ Profile names describe the **asset class**, not the modelling technique. Technic
 
 ## 1. REFERENCE_PREPARATION
 
-Purpose: prepare visual and structured technical reference evidence before Codex authoring so Codex does not repeat avoidable interpretation.
+Purpose: prepare visual, pixel-art, particle/VFX and structured technical reference evidence before optional Codex authoring so Codex does not repeat avoidable interpretation.
 
 Execution owner: ChatGPT.
 
 | Canonical path | Canonical name | Role |
 | --- | --- | --- |
-| `.agents/skills/lazydesigner-reference-preparation/SKILL.md` | `lazydesigner-reference-preparation` | requirements, reference planning, generation, QA and handoff |
+| `.agents/skills/lazydesigner-reference-preparation/SKILL.md` | `lazydesigner-reference-preparation` | orchestration: requirements, branch selection, visual reference planning, QA and optional package/handoff |
 | `.agents/skills/lazydesigner-prompt-compiler/SKILL.md` | `lazydesigner-prompt-compiler` | internal prompt normalization helper |
+| `.agents/skills/lazydesigner-particle-reference-authoring/SKILL.md` | `lazydesigner-particle-reference-authoring` | standalone Bedrock/Snowstorm particle reference authoring, texture dependencies and particle delivery |
+| `.agents/skills/lazydesigner-pixel-art-authoring/SKILL.md` | `lazydesigner-pixel-art-authoring` | standalone grid-accurate pixel art, icons, sprites, tiles/patterns, reference conversion and pixel texture references |
 
 Canonical flow: `docs/02-reference/flow.md`.
 
 ```text
 UNDERSTAND
 → REQUIREMENT GATE
-→ PROMPT COMPILER
-→ FINAL USER CONFIRMATION
-→ REFERENCE PLAN
-→ GENERATE
-→ QA / REVIEW
-→ PACKAGE
+→ PROMPT COMPILER when useful
+→ CLASSIFY REFERENCE CAPABILITY
+   ├─ VISUAL / MODEL → image reference owners
+   ├─ PIXEL ART      → lazydesigner-pixel-art-authoring
+   ├─ PARTICLE / VFX → lazydesigner-particle-reference-authoring
+   └─ COMPOSED       → only the branches required by the dependency graph
+→ branch-specific QA / review
+→ PACKAGE ONLY WHEN REQUESTED
+→ optional downstream handoff
 ```
 
 Reference Preparation must not own Blockbench mutation, MCP/plugin implementation, or Codex modelling decisions.
+
+### Reference specialist boundaries
+
+`lazydesigner-reference-preparation` is the orchestration authority, not a duplicate implementation owner. Pixel Art and Particle are independent specialist branches because each has a materially different production contract and may produce standalone artifacts without requiring visual/model-sheet generation.
+
+```text
+smooth visual/model concept/turnaround/reference sheet
+→ image reference branch
+
+strict integer-grid icon/sprite/tile/pixel conversion
+→ pixel-art specialist
+
+Bedrock/Snowstorm particle JSON, emitter/texture VFX artifact
+→ particle specialist
+```
+
+When one branch supplies another, preserve ownership rather than merging systems. Example:
+
+```text
+PARTICLE requires deliberately authored pixel texture
+→ Pixel Art owns the texture image
+→ Particle owns emitter/lifecycle/Molang/runtime semantics
+```
+
+Pixel Art does not own mapped UV/atlas mutation in Blockbench. Production application to model surfaces remains `lazydesigner-texturing`.
 
 ## 2. ASSET_AUTHORING
 
@@ -93,6 +123,20 @@ Reference Package / Workspace / current task
 The shared authoring-stage contract does not select tools or replace specialist reasoning. It only owns rules that are genuinely cross-stage.
 
 Do not reintroduce a permanent asset-router Skill or duplicate Control routing policy inside specialist Skills.
+
+### Pixel Art vs Texturing
+
+Use semantic ownership, not the word `pixel` alone:
+
+```text
+standalone icon / sprite / tile / pixel-art reference image
+→ REFERENCE_PREPARATION / lazydesigner-pixel-art-authoring
+
+actual Blockbench texture atlas / mapped UV surface / Painter mutation / PBR
+→ ASSET_AUTHORING / lazydesigner-texturing
+```
+
+A Pixel Art output may become an input to Texturing, but that handoff does not make Pixel Art an authoring-stage domain.
 
 ## 3. PRODUCT_DEVELOPMENT
 
@@ -124,7 +168,7 @@ clear bounded source/build/test change
 → exact source owner; no development-brief ceremony
 ```
 
-Asset-authoring Skills are not loaded for normal product development unless the development task explicitly changes/evaluates authoring behavior.
+Asset-authoring and reference-authoring Skills are not loaded for normal product development unless the development task explicitly changes/evaluates those semantics.
 
 ## Naming Rules
 
@@ -133,6 +177,8 @@ Canonical LazyDesigner product-specific Skill names use prefix `lazydesigner-` p
 ```text
 lazydesigner-reference-preparation
 lazydesigner-prompt-compiler
+lazydesigner-particle-reference-authoring
+lazydesigner-pixel-art-authoring
 lazydesigner-modelling
 lazydesigner-texturing
 lazydesigner-animation
@@ -149,15 +195,18 @@ Canonical loading bundles are owned by `docs/04-system/ai-context-loading.md`.
 
 ```text
 REFERENCE_PREPARATION task
+→ orchestration Skill + exactly the selected specialist branch
+→ do not preload sibling reference specialists
 → do not load PRODUCT_DEVELOPMENT Skills
 
 ASSET_AUTHORING task
-→ load/reuse shared authoring-stage contract
+→ load/reuse shared authoring-stage contract only when materially needed
 → Control selects one active specialist
+→ do not load REFERENCE_PREPARATION specialists as authoring engines
 → do not load PRODUCT_DEVELOPMENT Skills
 
 PRODUCT_DEVELOPMENT task
-→ do not load ASSET_AUTHORING Skills unless explicitly required by changed authoring semantics
+→ do not load ASSET_AUTHORING or REFERENCE_PREPARATION Skills unless explicitly required by changed semantics
 ```
 
 The Prompt Compiler receives only current intent, confirmed answers and still-valid approved decisions. Rejected/superseded directions are not active production context.
@@ -167,7 +216,7 @@ The Prompt Compiler receives only current intent, confirmed answers and still-va
 Completed source-level Skill identity migrations:
 
 ```text
-REFERENCE_PREPARATION → lazydesigner-reference-preparation + lazydesigner-prompt-compiler
+REFERENCE_PREPARATION → orchestration + prompt compiler + particle specialist + pixel-art specialist
 asset-router Skill → retired and removed
 ASSET_AUTHORING specialists → canonical lazydesigner-* names
 PRODUCT_DEVELOPMENT specialists → canonical lazydesigner-* names
