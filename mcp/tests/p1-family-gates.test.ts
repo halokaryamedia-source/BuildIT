@@ -24,7 +24,7 @@ describe("P1.2 MCP family gates", () => {
     ]);
   });
 
-  test("Blockbench integration owns debug fallback profile selection", async () => {
+  test("Blockbench integration owns developer-only legacy compatibility selection", async () => {
     const [settingsSource, integrationSource, indexSource] = await Promise.all([
       readFile(new URL("../ui/settings.ts", import.meta.url), "utf8"),
       readFile(new URL("../plugin/blockbenchIntegration.ts", import.meta.url), "utf8"),
@@ -32,8 +32,9 @@ describe("P1.2 MCP family gates", () => {
     ]);
 
     expect(settingsSource).toContain(`new Setting(MCP_EXTENDED_FAMILIES_SETTING_ID, {`);
-    expect(settingsSource).toContain('name: "Legacy UI Fallbacks (Debug)"');
-    expect(settingsSource).toContain("not an authoring profile");
+    expect(settingsSource).toContain('name: "Legacy Compatibility (Developer)"');
+    expect(settingsSource).toContain("Troubleshooting support for older or generic Blockbench workflows");
+    expect(settingsSource).toContain("Leave this off for normal use");
     expect(settingsSource).toContain("value: false");
 
     expect(integrationSource).toContain("settingsSetup();");
