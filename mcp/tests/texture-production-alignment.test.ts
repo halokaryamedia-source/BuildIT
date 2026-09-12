@@ -214,9 +214,10 @@ describe("texture production alignment", () => {
 
 describe("texture production alignment wiring", () => {
   test("runtime adds metadata alignment and exclusive manage_material without a new MCP tool", async () => {
-    const [runtime, server] = await Promise.all([
+    const [runtime, server, bootstrap] = await Promise.all([
       Bun.file("server/tools/texture-quality-runtime.ts").text(),
       Bun.file("server/server.ts").text(),
+      Bun.file("server/runtime/bootstrap.ts").text(),
     ]);
     expect(runtime).toContain('runtimeDefinition("list_textures")');
     expect(runtime).toContain('runtimeDefinition("manage_material")');
@@ -225,6 +226,7 @@ describe("texture production alignment wiring", () => {
     expect(runtime).toContain("planExclusivePbrMaterialAssignment");
     expect(runtime).toContain('color_texture="none"');
     expect(runtime).toContain('mer_texture="none"');
-    expect(server).toContain("wireTextureQualityRuntime()");
+    expect(server).toContain("initializeRuntimeCapabilityWiring();");
+    expect(bootstrap).toContain("wireTextureQualityRuntime();");
   });
 });
