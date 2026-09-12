@@ -13,14 +13,14 @@ describe("shared authoring stage context ownership", () => {
 
     expect(taxonomy).toContain("shared semantic contract, not a Skill or router");
     expect(taxonomy).toContain("Do not create a `stage`, `authoring-core`, `manager`, or equivalent Skill");
-    expect(loading).toContain("Specialist Skills should provide domain intelligence");
+    expect(loading).toContain("active specialist carries the minimum operational triggers");
     expect(contract).toContain("Domain-specific reasoning remains in the relevant specialist Skill");
   });
 
   test("context loading keeps one specialist and one modelling profile", async () => {
     const loading = await source("../../docs/04-system/ai-context-loading.md");
 
-    expect(loading).toContain("only one primary specialist is active");
+    expect(loading).toContain("one primary specialist is active");
     expect(loading).toContain("only one primary modelling profile is loaded");
     expect(loading).toContain("no task uses `read all docs` as a normal boot step");
   });
