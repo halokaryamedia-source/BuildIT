@@ -29,7 +29,11 @@ Current invariants:
 - Tool consolidation is routing-only. Original executors, schemas, validation, native behavior, and domain intelligence remain retained.
 - Internal diagnostics and Blockbench Validator state are evidence only; they never create visual PASS or user approval.
 - AUTHORING↔Animation handoff requires canonical readiness plus a saved checkpoint. Control lifecycle `READY` is not handoff authorization.
-- Control projects one active authoring stage. Shared Stage Context and unchanged content-addressed context are reused instead of reloading full profiles/packages.
+- Geometry↔Texturing remain one shared AUTHORING surface; semantic focus may change without creating a second tool family or workflow engine.
+- `switch_authoring_phase` now applies the registered Runtime phase/surface handler before returning its Gateway receipt.
+- Normal authoring loads one active specialist; the shared stage contract is conditional policy context rather than a second routine payload.
+- Control projects one compact active-stage envelope and references stage evidence instead of duplicating full semantic documents.
+- Public consolidated capability development routes to the actual Runtime public owner, not the legacy `server/tools.ts` facade.
 - No second router, capability registry, persistent state database, authoring workflow engine, or alternate tool implementation path is allowed without a proved requirement.
 
 ## Next Meaningful Context
@@ -42,7 +46,7 @@ Do not remotely force:
 
 - Tool algorithm simplification;
 - public Gateway status contract changes based only on static size;
-- Runtime transport rewrites;
+- Runtime transport rewrites without matching tests;
 - capability removal for context savings;
 - compatibility identifier migration.
 
@@ -52,12 +56,32 @@ From the matching clean `Local` SHA:
 
 ```text
 install pinned dependencies
-→ run the smallest targeted regressions/typecheck for any failure owner
+→ run targeted authoring-flow / phase-control / Gateway tests
+→ typecheck
+→ verify generated freshness
 → run bun run verify:full once as terminal source evidence
-→ regenerate/check API docs and prompt artifacts when required
 → measure Control/context and authoring-surface costs
 → fix only failures tied to current source
 ```
+
+Specific phase-transport proof:
+
+```text
+Geometry → Texturing focus
+→ Runtime handler applies target focus
+→ AUTHORING tool set remains identical
+→ verify whether Gateway connection/catalog can safely remain warm
+
+AUTHORING → Animation
+→ Runtime handler applies Animation surface
+→ Gateway refreshes to Animation catalog
+
+Animation → AUTHORING
+→ Runtime handler restores shared AUTHORING surface
+→ Gateway refreshes to AUTHORING catalog
+```
+
+Only after these tests should Gateway catalog invalidation be relaxed for Geometry↔Texturing. Do not optimize this by assumption.
 
 Do not rerun broad verification between every edit.
 
@@ -70,6 +94,7 @@ persistent Gateway survives Runtime/plugin reload
 Runtime rebuild recovery
 Blockbench close → open recovery
 AUTHORING ↔ Animation catalog handoff
+Geometry ↔ Texturing focus change preserves the shared surface
 project affinity / rebind behavior
 interrupted mutation → inspect-before-retry recovery
 Geometry / Texturing / Animation / Particle execution
