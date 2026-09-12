@@ -81,7 +81,7 @@ describe("model-wide texel density diagnostics", () => {
 
   test("Texturing routes undersized UV islands upstream instead of painting around them", async () => {
     const skill = await Bun.file(
-      "../.agents/skills/blockit-bedrock-texturing/SKILL.md"
+      "../.agents/skills/lazydesigner-texturing/SKILL.md"
     ).text();
     const inspection = await Bun.file(
       "server/tools/element-inspection.ts"
