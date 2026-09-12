@@ -33,7 +33,9 @@ stage-scoped readiness and bounded invalidation
 control_delta continuation
 ```
 
-Control selects context and lifecycle state; it is not a second Runtime, recovery engine, or persistent authored-state database.
+Control selects context and lifecycle state; it is not a second Runtime, recovery engine, semantic database, or persistent authored-state database.
+
+The normal authoring packet is intentionally compact. It carries decision/readiness/reference/workspace identities and does not duplicate complete Geometry/Texture/Animation semantic documents inside `stage_context`.
 
 ### Gateway
 
@@ -65,6 +67,8 @@ canonical declarative capability effects
 
 Plugin reload, Runtime rebuild, authoring phase change, or temporary Runtime loss are designed to recover below the persistent Gateway. Only replacing the Gateway process itself requires client reconnection. This behavior is **source-designed but not live-proven in the current phase**.
 
+Catalog invalidation after phase changes remains intentionally conservative until same-AUTHORING-surface transport reuse is covered by local Gateway/Runtime tests. The Runtime receipt already distinguishes `surface_changed=false` for Geometry↔Texturing from true AUTHORING↔Animation handoff.
+
 ### Runtime
 
 Current ownership is split explicitly:
@@ -74,12 +78,14 @@ server/net.ts                         Runtime HTTP/MCP transport + operation ser
 server/runtime/registration.ts       registration/profile/surface ownership
 server/runtime/consolidatedRoutes.ts consolidated route descriptors
 server/runtime/consolidatedTools.ts  routing-only wrappers
-server/runtime/phaseControl.ts       AUTHORING↔Animation control capability
+server/runtime/phaseControl.ts       authoring-focus + AUTHORING↔Animation control capability
 server/runtime/bootstrap.ts          exactly-once Runtime intelligence wiring
 server/tools/**                       domain Tool implementations
 ```
 
-Runtime phase/profile changes use granular surface invalidation rather than discarding unrelated resource/prompt/callback caches.
+`switch_authoring_phase` now applies the registered Runtime phase/surface handler before returning its Gateway handoff receipt. Geometry↔Texturing remains one shared AUTHORING surface; Animation remains the only foreign authoring surface.
+
+Runtime phase/profile changes use granular registration/surface state rather than creating a second workflow engine.
 
 ### Plugin / Blockbench Boundary
 
@@ -109,7 +115,7 @@ domain intelligence for Geometry / Texture / Animation / Particle
 
 Consolidated capabilities delegate to retained original executors. Unknown branches fail instead of silently falling back to another operation.
 
-Family baselines guard Geometry/Element, Texture/Material, Animation, Particle, Inspection and Export surfaces. No implementation algorithm was intentionally simplified for context/tool-count reduction.
+Family baselines guard Geometry/Element, Texture/Material, Animation, Particle, Inspection and Export surfaces. Consolidated validation-preservation guards now cover Inspection, Material, Animation Timeline, and Material Instances rather than Animation Timeline alone. No implementation algorithm was intentionally simplified for context/tool-count reduction.
 
 ### Validation / QA / Gates
 
@@ -142,7 +148,7 @@ Quality-intelligence augmentation remains evidence-only and cannot create approv
 
 ### Skills / Knowledge / Context
 
-Canonical context loading is owned by:
+Canonical semantic owners remain:
 
 ```text
 docs/04-system/ai-context-loading.md
@@ -150,9 +156,26 @@ docs/04-system/authoring-stage-context.md
 docs/04-system/control/context-projection.md
 ```
 
-Normal authoring uses one active specialist and only the stage-relevant projection. Geometry may load exactly one selected modelling profile; Texturing/Animation receive only material/motion-relevant projected relationships by default. Shared Stage Context is a semantic contract, not another Skill/router/workflow engine.
+Normal authoring hot path loads one active specialist and only the stage-relevant Control projection. Geometry may additionally load exactly one selected modelling profile. `authoring-stage-context.md` is the canonical cross-stage semantic owner but is now **conditional context**, loaded only for a material cross-stage/approval/freshness/convergence/handoff ambiguity rather than duplicated on every authoring turn.
 
 Reference Preparation already compiles confirmed user intent before generation and does not pass raw conversation transcript or prompt history as the Codex handoff package.
+
+### Development Source Ownership
+
+Control development routing now points public consolidated capabilities at their actual Runtime public owners:
+
+```text
+inspect_elements
+manage_material
+manage_material_instances
+manage_animation_timeline
+→ mcp/server/runtime/consolidatedTools.ts
+
+switch_authoring_phase
+→ mcp/server/runtime/phaseControl.ts
+```
+
+This prevents bounded SYSTEM_DEVELOPMENT work from defaulting to the legacy `mcp/server/tools.ts` facade when the public route is owned elsewhere.
 
 ## Compatibility Boundary
 
@@ -181,6 +204,8 @@ Safe current claims:
 
 ```text
 Control/Gateway/Runtime/Plugin ownership         implemented in source
+single-owner authoring context flow              implemented + regression-guarded in source
+Runtime phase-handler application                implemented + source-guarded
 persistent-Gateway recovery architecture        implemented in source
 zero-loss Tool routing contracts                implemented + regression-guarded in source
 canonical QA/readiness separation               implemented + regression-guarded in source
@@ -196,6 +221,8 @@ Bun/typecheck/test execution
 canonical generated-output freshness
 installed LazyDesigner Runtime freshness
 live Gateway survival across reload/rebuild/close-open
+native phase-switch transport behavior on the current build
+same-AUTHORING-surface no-reconnect optimization
 native project affinity/rebind behavior
 Undo/playback/persistence/export execution
 visual/reference acceptance
