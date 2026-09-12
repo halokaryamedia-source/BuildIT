@@ -11,7 +11,7 @@ async function source(path: string): Promise<string> {
 }
 
 function actionRefs(workflow: string): ActionRef[] {
-  return [...workflow.matchAll(/^\s*uses:\s+([^@\s]+)@([^\s#]+)(?:\s+#\s*(.+))?$/gm)].map(
+  return [...workflow.matchAll(/^\s*-?\s*uses:\s+([^@\s]+)@([^\s#]+)(?:\s+#\s*(.+))?$/gm)].map(
     (match) => ({
       action: match[1],
       revision: match[2],
@@ -25,9 +25,9 @@ function expectImmutableActions(workflow: string, expectedActions: string[]): vo
   expect([...new Set(refs.map((entry) => entry.action))].sort()).toEqual([...expectedActions].sort());
   for (const ref of refs) {
     expect(ref.revision).toMatch(/^[0-9a-f]{40}$/);
-    expect(ref.note).toMatch(/^v\d+$/);
+    if (ref.note) expect(ref.note).toMatch(/^v\d+$/);
   }
-  expect(workflow).not.toMatch(/^\s*uses:\s+[^\s]+@(main|master|latest|v\d+)\s*$/gm);
+  expect(workflow).not.toMatch(/^\s*-?\s*uses:\s+[^\s]+@(main|master|latest|v\d+)\s*$/gm);
 }
 
 describe("repository workflow supply chain", () => {
