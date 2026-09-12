@@ -15,7 +15,7 @@ describe("resolveGatewayCapabilityEffects", () => {
     expect(resolved.authoringPhase).toBeNull();
   });
 
-  test("updates authoring phase through metadata", () => {
+  test("updates authoring phase while surface change stays result-driven", () => {
     const resolved = resolveGatewayCapabilityEffects(
       "switch_authoring_phase",
       { phase: "animation", surface_changed: true },
@@ -23,9 +23,20 @@ describe("resolveGatewayCapabilityEffects", () => {
     );
 
     expect(resolved.effects.phaseAffinity).toBe("update_from_result");
-    expect(resolved.effects.invalidateCatalog).toBe(true);
+    expect(resolved.effects.invalidateCatalog).toBe(false);
     expect(resolved.authoringPhase).toBe("animation");
     expect(resolved.surfaceChanged).toBe(true);
+  });
+
+  test("same AUTHORING surface focus change does not report a surface change", () => {
+    const resolved = resolveGatewayCapabilityEffects(
+      "switch_authoring_phase",
+      { phase: "texturing", surface_changed: false },
+      "geometry"
+    );
+
+    expect(resolved.authoringPhase).toBe("texturing");
+    expect(resolved.surfaceChanged).toBe(false);
   });
 
   test("ordinary capabilities preserve affinity", () => {
